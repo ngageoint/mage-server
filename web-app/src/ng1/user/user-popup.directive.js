@@ -15,17 +15,11 @@ module.exports = function locationPopup() {
   return directive;
 };
 
-LocationPopupController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
+LocationPopupController.$inject = ['$scope', 'MapService'];
 
-function LocationPopupController($scope, LocalStorageService, MapService) {
+function LocationPopupController($scope, MapService) {
   $scope.followingUser = MapService.followedFeature;
   $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
-
-  if ($scope.user.avatarUrl) {
-    $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
-  } else {
-    $scope.avatarUrl = "images/missing_photo.png";
-  }
 
   $scope.onInfoClicked = function() {
     $scope.userPopupInfo({user: $scope.user});

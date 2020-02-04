@@ -12,7 +12,7 @@
 <div ng-if="$ctrl.action === 'signup'" class="section-container ng-animatable fade-in">
   <div class="signup-container">
     <div class="wand-container">
-      <img class="mage-wand" src="/images/bluewand.png"/>
+      <img class="mage-wand" src="/assets/images/bluewand.png"/>
     </div>
     <local-signup strategy="$ctrl.localAuthenticationStrategy" on-cancel="$ctrl.returnToSignin()" on-success="$ctrl.showSignupSuccess()"></local-signup>
   </div>
@@ -20,7 +20,7 @@
 <div ng-if="$ctrl.action === 'signup-confirm'" class="section-container ng-animatable fade-in">
   <div class="signup-container">
     <div class="wand-container">
-      <img class="mage-wand" src="/images/bluewand.png"/>
+      <img class="mage-wand" src="/assets/images/bluewand.png"/>
     </div>
     <p>Thank you for signing up!</p>
     <p>An administrator will need to approve your account before you can login.</p>
@@ -41,8 +41,8 @@
 <div class="app-store-container" ng-if="($ctrl.action === 'signin' || !$ctrl.action) && !$ctrl.hideSignup">
   <p>iOS or Android user? Check out our mobile app</p>
   <div class="app-store-badges">
-    <a class="app-store-badge" href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"><img src="/images/ios_app_store_black.svg" height="49"></img></a>
-    <a class="app-store-badge" href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"><img src="/images/google-play-badge.png" height="49"></img></a>
+    <a class="app-store-badge" href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"><img src="/assets/images/ios_app_store_black.svg" height="49"></img></a>
+    <a class="app-store-badge" href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"><img src="/assets/images/google-play-badge.png" height="49"></img></a>
   </div>
   <a class="about-link" href="javascript:void(0)" ng-click="$ctrl.showAbout()">About MAGE v{{$ctrl.api.version.major}}.{{$ctrl.api.version.minor}}.{{$ctrl.api.version.micro}}</a>
 </div>

@@ -6,7 +6,7 @@ $small-screen-breakpoint: 1025px;
 
 @each $image in $background-images {
   .mage-#{$image}-bg {
-    background-image: url('./ng1/img/#{$image}.jpg');
+    background-image: url('/assets/images/splash/#{$image}.jpg');
   }
 }
 

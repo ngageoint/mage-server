@@ -12,16 +12,10 @@ module.exports = function userNewsItem() {
   return directive;
 };
 
-UserNewsItemController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
+UserNewsItemController.$inject = ['$scope', 'MapService'];
 
-function UserNewsItemController($scope, LocalStorageService, MapService) {
+function UserNewsItemController($scope, MapService) {
   $scope.followingUser = MapService.followedFeature;
-
-  if ($scope.user.avatarUrl) {
-    $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
-  } else {
-    $scope.avatarUrl = "images/missing_photo.png";
-  }
 
   $scope.followUser = function(e, user) {
     e.stopPropagation();

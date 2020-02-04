@@ -40,10 +40,7 @@ class AdminUserController {
       user: this.UserService.getUser(this.$stateParams.userId),
       teams: this.Team.query({populate: false}).$promise}
     ).then(result => {
-      this.user = result.user;
-      this.avatarUrl = this.avatarUrl(this.user, this.LocalStorageService.getToken());
-      this.iconUrl = this.iconUrl(this.user, this.LocalStorageService.getToken());
-  
+      this.user = result.user;  
       this.teams = result.teams;
       this.team = {};
   
@@ -103,22 +100,6 @@ class AdminUserController {
     }
 
     return device.iconClass;
-  }
-
-  avatarUrl(user, token) {
-    if (user && user.avatarUrl) {
-      return user.avatarUrl + "?access_token=" + token;
-    } else {
-      return "images/missing_photo.png";
-    }
-  }
-
-  iconUrl(user, token) {
-    if (user && user.iconUrl) {
-      return user.iconUrl + "?access_token=" + token;
-    } else {
-      return "images/missing_marker.png";
-    }
   }
 
   editUser(user) {

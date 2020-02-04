@@ -9,7 +9,7 @@ const IconModel = require('../models/icon')
 
 const appRoot = path.resolve(__dirname, '..');
 const iconBase = environment.iconBaseDirectory;
-const defaultIconPath = path.join(appRoot, 'public/img/default-icon.png');
+const defaultIconPath = path.join(appRoot, 'assets/default-icon.png');
 
 function Icon(eventId, formId, primary, variant) {
   this._eventId = eventId || null;
