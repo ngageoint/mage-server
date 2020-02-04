@@ -310,7 +310,23 @@ exports.getUsers = function(options, callback) {
 };
 
 exports.createUser = async function(user, callback) {
-  var create = {
+  var create = await updateUserWithSettings(user);
+        
+  log.info("Creating new user " + create.username);
+  await User.create(create, function(err, user) {
+    if (err) return callback(err);
+
+    user.populate('roleId', function(err, user) {
+      callback(err, user);
+    });
+  });
+};
+
+/*
+Set any user properties that are controlled via settings
+*/
+async function updateUserWithSettings(user) {
+  var update = {
     username: user.username,
     displayName: user.displayName,
     email: user.email,
@@ -323,31 +339,28 @@ exports.createUser = async function(user, callback) {
   };
 
   log.info("Reading security settings");
-  const securitySettings = await Setting.getSetting('security');
+  let securitySettings = await Setting.getSetting('security');
   if(securitySettings && securitySettings.settings) {
     let userAutoActive = securitySettings.settings.autoApproveUser;
     if(userAutoActive) {
       log.info("Auto-Activate Users is " + userAutoActive.enabled);
-      create.active = userAutoActive.enabled;
+      update.active = userAutoActive.enabled;
     }
     let defaultEventId = securitySettings.settings.newUserEvent;
     if(defaultEventId) {
-      Event.getById(defaultEventId, {}, function(err, event) {
-        if (err) return callback(err);
-        log.info("Adding user " + user.username + " to default event " + event.name);
-        //TODO add to team or event??
-      });
+      await addUserToTeamByEventId(defaultEventId, update);
     }
   }
-        
-  log.info("Creating new user " + create.username);
-  await User.create(create, function(err, user) {
-    if (err) return callback(err);
 
-    user.populate('roleId', function(err, user) {
-      callback(err, user);
-    });
-  });
+  return update;
+};
+
+async function addUserToTeamByEventId(eventId, user) {
+  var team = await Team.getTeamByEventId(eventId);
+
+  //TODO add user to team
+  //Team.addUser(team, user, {});
+  return team.name;
 };
 
 exports.updateUser = function(user, callback) {
