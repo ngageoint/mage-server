@@ -352,9 +352,12 @@ async function addUserToTeamByEventId(eventId, user) {
   log.debug("Attempting to locate team with the event id of " + eventId);
   var team = await Team.getTeamByEventId(eventId);
 
-  if(team) {
+  if (team) {
     log.info("Adding " + user.username + " to event team " + team.name);
     await Team.addUserWithPromise(team, user);
+  } else {
+    log.error("Failed to find team with eventId " + eventId 
+    +". User " + user.username + " was not added to any event.");
   }
 };
 
