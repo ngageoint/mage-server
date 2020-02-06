@@ -344,7 +344,7 @@ exports.createUser = async function(user, callback) {
   });
 
   //We have to wait for the user to be created before we can add them to a team.
-  if(newUser && defaultEventId) {
+  if(newUser && newUser.active && defaultEventId) {
     await addUserToTeamByEventId(defaultEventId, newUser);
   }
 };
