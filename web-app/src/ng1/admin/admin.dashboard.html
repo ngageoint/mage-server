@@ -89,7 +89,7 @@
             <div class="admin-table">
               <div class="well-item"
                   ng-repeat="d in ($ctrl.filteredDevices = ($ctrl.unregisteredDevices | filter:$ctrl.filterDevices)) | orderBy:'uid' | offset: devicesPage*devicesPerPage | limitTo:devicesPerPage" >
-                <div class="row pointer" ng-click="gotoDevice(d)">
+                <div class="row pointer" ng-click="$ctrl.gotoDevice(d)">
                   <div class="col-md-12">
                     <div class="right-gap pull-left">
                       <i class="fa" ng-class="iconClass(d)"></i>

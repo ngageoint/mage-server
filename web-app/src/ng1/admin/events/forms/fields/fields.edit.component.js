@@ -311,7 +311,7 @@ class AdminFormFieldsEditController {
       delete this.exportError;
 
       if (this.$state.current.url.indexOf('/forms/new') !== -1) {
-        this.$state.go('admin.fieldsEdit', { eventId: this.event.id, formId: this.form.id });
+        this.$state.go('admin.formFieldsEdit', { eventId: this.event.id, formId: this.form.id });
         return;
       }
     }

@@ -7,8 +7,6 @@ import fileBrowser from './file-upload/file.browser.component';
 import  '@uirouter/angular-hybrid';
 import { SwaggerComponent } from "../app/swagger/swagger.component";
 
-import './img';
-
 require('angular-minicolors');
 require('select2');
 

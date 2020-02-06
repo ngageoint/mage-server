@@ -37,7 +37,7 @@ function AvatarUserController($scope, $element, $http, LocalStorageService) {
     var url = $scope.user.avatarUrl + '?_dc=' + $scope.user.lastUpdated;
     getAvatar(url);
   } else {
-    image.src = "images/baseline-account_circle-24px.svg";
+    image.src = "/assets/images/baseline-account_circle-24px.svg";
     imageElement.addClass('circle-avatar-no-border');
   }
 
@@ -85,9 +85,5 @@ var orientationMap = {
 };
 
 function avatarUrl(user) {
-  if (user && user.avatarUrl) {
-    return user.avatarUrl + '?_dc=' + user.lastUpdated;
-  } else {
-    return "images/missing_photo.png";
-  }
+  return user.avatarUrl + '?_dc=' + user.lastUpdated;
 }

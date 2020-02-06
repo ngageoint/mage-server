@@ -1,8 +1,8 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb">
-      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
-      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
       <li class="active">{{$ctrl.form.name}}
     </ol>
   </div>
@@ -51,7 +51,7 @@
 
   <div class="row top-gap-l bottom-gap-l">
     <div class="col-md-4">
-      <a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}/fields">
+      <a ui-sref="admin.formFieldsEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
         <div class="card form-section-card">
           <div class="card-content">
             <span class="fa-stack fa-lg form-section-fields">
@@ -69,7 +69,7 @@
       </a>
     </div>
     <div class="col-md-4">
-      <a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}/map">
+      <a ui-sref="admin.formMapEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
         <div class="card form-section-card">
           <div class="card-content">
             <span class="fa-stack fa-lg form-section-map">
@@ -87,7 +87,7 @@
       </a>
     </div>
     <div class="col-md-4">
-      <a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}/feed">
+      <a ui-sref="admin.formFeedEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
         <div class="card form-section-card">
           <div class="card-content">
             <span class="fa-stack fa-lg form-section-feed">

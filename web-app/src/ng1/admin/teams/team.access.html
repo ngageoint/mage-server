@@ -1,8 +1,8 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb">
-      <li><i class="fa fa-users admin-dashboard"></i> <a href="#/admin/teams">Teams</li></a>
-      <li><a ng-href="#/admin/teams/{{$ctrl.team.id}}">{{$ctrl.team.name}}</a></li>
+      <li><i class="fa fa-users admin-dashboard"></i><a ui-sref="admin.teams">Teams</a></li>
+      <li><a ui-sref="admin.team({ teamId: $ctrl.team.id })">{{ $ctrl.team.name }}</a></li>
       <li class="active">Access</li>
     </ol>
   </div>

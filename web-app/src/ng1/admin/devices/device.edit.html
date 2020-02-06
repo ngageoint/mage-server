@@ -1,13 +1,12 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb" ng-if="$ctrl.device.id">
-      <li><i class="fa fa-mobile-phone admin-dashboard"></i> <a href="#/admin/devices">Devices</li></a>
-      <li><a ng-href="#/admin/devices/{{$ctrl.device.id}}">{{$ctrl.device.uid}}</a></li>
+      <li><i class="fa fa-mobile-phone admin-dashboard"></i><a ui-sref="admin.devices">Devices</a></li>
+      <li><a ui-sref="admin.device({ deviceId: $ctrl.device.id })">{{ $ctrl.device.uid }}</a></li>
       <li class="active">Edit</li>
     </ol>
     <ol class="breadcrumb" ng-if="!$ctrl.device.id">
-      <li><i class="fa fa-mobile-phone admin-dashboard"></i> <a href="#/admin/devices">Devices</li></a>
-      <li><a href="#/admin/devices">Devices</a></li>
+      <li><i class="fa fa-mobile-phone admin-dashboard"></i><a ui-sref="admin.devices">Devices</a></li>
       <li class="active">New</li>
     </ol>
   </div>
