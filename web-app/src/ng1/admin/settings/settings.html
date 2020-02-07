@@ -92,7 +92,7 @@
                       <div class="row">
                           <div class="col-sm-12">
                             <div class="form-group">
-                              <label class="control-label" for="type">Devices Require Admin Approval</label>
+                              <label class="control-label" for="type">New Devices Require Admin Approval</label>
                               <ui-select ng-model="$ctrl.security.devicesReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
                                 <ui-select-choices repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
@@ -110,7 +110,7 @@
                 </div>
               </div>
 
-              <div class="row" ng-show="$ctrl.local">
+              <div class="row" ng-show="$ctrl.strategyName === 'local'">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">

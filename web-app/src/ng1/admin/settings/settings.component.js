@@ -77,7 +77,6 @@ class AdminSettingsController {
   $onInit() {
     this.Api.get(api => {
       var authenticationStrategies = api.authenticationStrategies || {};
-      this.local = authenticationStrategies.local;
       this.pill = authenticationStrategies.local ? 'security' : 'banner';
       this.strategyName = 'third-party';
       //TODO for sure there is a less dumb way to do this
