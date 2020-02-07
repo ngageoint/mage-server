@@ -58,31 +58,23 @@
                       <div class="row">
                         <div class="col-sm-12">
                           <div class="form-group">
-                            <label class="control-label" for="type">Auto-Activate User Accounts</label>
-                            <ui-select ng-model="$ctrl.security.autoApproveUser.enabled" theme="bootstrap">
+                            <label class="control-label" for="type">New Users Require Admin Approval</label>
+                            <ui-select ng-model="$ctrl.security.usersReqAdmin.enabled" theme="bootstrap">
                               <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                              <ui-select-choices repeat="autoApproveUserChoice.value as autoApproveUserChoice in $ctrl.autoApproveUserChoices">
-                                <div ng-bind-html="autoApproveUserChoice.title"></div>
-                                <small ng-bind-html="autoApproveUserChoice.description"></small>
+                              <ui-select-choices repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
+                                <div ng-bind-html="usersReqAdminChoice.title"></div>
+                                <small ng-bind-html="usersReqAdminChoice.description"></small>
                               </ui-select-choices>
                             </ui-select>
-                            <div ng-if= "$ctrl.strategyName == 'local'">
-                                <p class="help-block">
-                                  <strong>If enabled, this essentially has the effect of disabling user security</strong>.  
-                                </p>
-                            </div>
-                            <div ng-if= "$ctrl.strategyName != 'local'">
-                                <p class="help-block">If enabled, this eliminates the extra step of requiring an admin to approve each each user.
-                                </p>
-                            </div>
+                            <p class="help-block">If disabled, admin approval is <b>NOT</b> required to approve new users.</p>
                           </div>
                         </div>
                       </div>
 
-                      <div ng-show="$ctrl.security.autoApproveUser.enabled">
+                      <div ng-show="$ctrl.security.usersReqAdmin.enabled == false">
                         <div class="row">
                           <div class="col-sm-12">
-                            <label class="control-label" for="type">New User Default Event</label>
+                            <label class="control-label" for="type">New Users Default Event(s)</label>
                             <div class="form-group">
                               <ui-select ng-model="$ctrl.security.newUserEvent" theme="bootstrap">
                                 <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
@@ -100,15 +92,15 @@
                       <div class="row">
                           <div class="col-sm-12">
                             <div class="form-group">
-                              <label class="control-label" for="type">Auto-Register Devices</label>
-                              <ui-select ng-model="$ctrl.security.autoRegisterDevice.enabled" theme="bootstrap">
+                              <label class="control-label" for="type">Devices Require Admin Approval</label>
+                              <ui-select ng-model="$ctrl.security.devicesReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                                <ui-select-choices repeat="autoRegisterDeviceChoice.value as autoRegisterDeviceChoice in $ctrl.autoRegisterDeviceChoices">
-                                  <div ng-bind-html="autoRegisterDeviceChoice.title"></div>
-                                  <small ng-bind-html="autoRegisterDeviceChoice.description"></small>
+                                <ui-select-choices repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
+                                  <div ng-bind-html="devicesReqAdminChoice.title"></div>
+                                  <small ng-bind-html="devicesReqAdminChoice.description"></small>
                                 </ui-select-choices>
                               </ui-select>
-                              <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required to register devices.</p>
+                              <p class="help-block">If disabled, admin approval is <b>NOT</b> required to register devices.</p>
                             </div>
                           </div>
                         </div>

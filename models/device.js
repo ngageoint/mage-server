@@ -152,10 +152,10 @@ exports.createDevice = async function(device) {
     log.info("Reading security settings");
     const securitySettings = await Setting.getSetting('security');
     if(securitySettings && securitySettings.settings) {
-      let autoRegisterDevice = securitySettings.settings.autoRegisterDevice;
-      if (autoRegisterDevice) {
-        log.info("Auto-Register Devices is " + autoRegisterDevice.enabled);
-        update.registered = autoRegisterDevice.enabled;
+      let devicesReqAdmin = securitySettings.settings.devicesReqAdmin;
+      if (devicesReqAdmin) {
+        log.info("Admin approval required to approve new devices is: " + devicesReqAdmin.enabled);
+        update.registered = !devicesReqAdmin.enabled;
       }
     }
   }

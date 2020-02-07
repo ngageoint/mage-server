@@ -10,25 +10,25 @@ class AdminSettingsController {
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
 
-    this.autoApproveUser = {};
-    this.autoApproveUserChoices = [{
+    this.usersReqAdmin = {};
+    this.usersReqAdminChoices = [{
       title: 'No',
-      description: 'Do not auto-activate MAGE user accounts.',
+      description: 'New users do not require admin approval.',
       value: false
     },{
       title: 'Yes',
-      description: 'Auto-activate MAGE user accounts.',
+      description: 'New users require admin approval.',
       value: true
     }];
 
-    this.autoRegisterDevice = {};
-    this.autoRegisterDeviceChoices = [{
+    this.devicesReqAdmin = {};
+    this.devicesReqAdminChoices = [{
       title: 'No',
-      description: 'Do not auto-register MAGE devices.',
+      description: 'New devices do not require admin approval.',
       value: false
     },{
       title: 'Yes',
-      description: 'Auto-register MAGE devices.',
+      description: 'New devices require admin approval.',
       value: true
     }];
 
@@ -105,15 +105,15 @@ class AdminSettingsController {
         };
       }
 
-      if (!this.security.autoApproveUser) {
-        this.security.autoApproveUser = {
-          enabled: false
+      if (!this.security.usersReqAdmin) {
+        this.security.usersReqAdmin = {
+          enabled: true
         };
       }
 
-      if (!this.security.autoRegisterDevice) {
-        this.security.autoRegisterDevice = {
-          enabled: false
+      if (!this.security.devicesReqAdmin) {
+        this.security.devicesReqAdmin = {
+          enabled: true
         };
       }
   

@@ -326,10 +326,10 @@ exports.createUser = async function(user, callback) {
   let securitySettings = await Setting.getSetting('security');
   var defaultEventId;
   if(securitySettings && securitySettings.settings) {
-    let userAutoActive = securitySettings.settings.autoApproveUser;
-    if(userAutoActive) {
-      log.info("Auto-Activate Users is " + userAutoActive.enabled);
-      update.active = userAutoActive.enabled;
+    let usersReqAdmin = securitySettings.settings.usersReqAdmin;
+    if(usersReqAdmin) {
+      log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
+      update.active = !usersReqAdmin.enabled;
     }
     defaultEventId = securitySettings.settings.newUserEvent;
   }
