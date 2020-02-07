@@ -13,7 +13,7 @@ class AuthorizeController {
   }
 
   authorize() {
-    this._UserService.authorize('local', this.user, false, {uid: this.uid}).success(data => {
+    this._UserService.authorize(this.strategy, this.user, false, {uid: this.uid}).success(data => {
       if (data.device.registered) {
         this.onAuthorized({device: data});
       } else {
@@ -39,18 +39,15 @@ class AuthorizeController {
   }
 }
 
-var template = require('./authorize.html');
-var bindings = {
-  user: '<',
-  onCancel: '&',
-  onAuthorized: '&'
-};
-var controller = AuthorizeController;
-
 AuthorizeController.$inject = ['UserService', '$element'];
 
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./authorize.html'),
+  bindings: {
+    user: '<',
+    strategy: '@',
+    onCancel: '&',
+    onAuthorized: '&'
+  },
+  controller: AuthorizeController
 };

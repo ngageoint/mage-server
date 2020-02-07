@@ -2,10 +2,9 @@ import {textField, snackbar} from 'material-components-web';
 
 class LocalSigninController {
 
-  constructor(UserService, $element, $timeout) {
+  constructor(UserService, $element) {
     this._UserService = UserService;
     this._$element = $element;
-    this._$timeout = $timeout;
   }
 
   $postLink() {
@@ -16,8 +15,9 @@ class LocalSigninController {
 
   signin() {
     this._UserService.signin({username: this.username, password: this.password}).then(response => {
-      var user = response.user;
-      this.onSignin({user: user});
+      this.onSignin({
+        $event: { user: response.user, strategy: this.strategy.name }
+      });
     }, response => {
       this.showStatus = true;
       this.statusTitle = 'Error signing in';
@@ -29,20 +29,15 @@ class LocalSigninController {
   }
 }
 
-var template = require('./local.signin.html');
-var bindings = {
-  strategy: '<',
-  signinType: '@',
-  onSignin: '&',
-  onSignup: '&',
-  hideSignup: '<'
-};
-var controller = LocalSigninController;
+LocalSigninController.$inject = ['UserService', '$element'];
 
-LocalSigninController.$inject = ['UserService', '$element', '$timeout'];
-
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./local.signin.html'),
+  bindings: {
+    strategy: '<',
+    onSignin: '&',
+    onSignup: '&',
+    hideSignup: '<'
+  },
+  controller: LocalSigninController
 };

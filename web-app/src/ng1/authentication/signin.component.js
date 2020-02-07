@@ -9,36 +9,36 @@ class SigninController {
 
   $onInit() {
     this.localAuthenticationStrategy = this.api.authenticationStrategies.local;
+    if (this.localAuthenticationStrategy) {
+      this.localAuthenticationStrategy.name = 'local';
+    }
+    
     this.thirdPartyStrategies = _.map(_.omit(this.api.authenticationStrategies, this.localStrategyFilter), function(strategy, name) {
       strategy.name = name;
       return strategy;
     });
+
+    console.log('strats', this.thirdPartyStrategies);
   }
 
-  localStrategyFilter(strategy, name) {
+  localStrategyFilter(_strategy, name) {
     return name === 'local';
   }
 
-  localSignin(user) {
-    this.user = user;
-    this.onSignin({user: user.user, strategy: this.localAuthenticationStrategy});
+  signin($event) {
+    this.onSignin({ user: $event.user, strategy: $event.strategy });
   }
 }
 
-var template = require('./signin.component.html');
-var bindings = {
-  api: '<',
-  onSignin: '&',
-  onSignup: '&',
-  hideSignup: '<'
-};
-
 SigninController.$inject = ['UserService', '$element'];
 
-var controller = SigninController;
-
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./signin.component.html'),
+  bindings: {
+    api: '<',
+    onSignin: '&',
+    onSignup: '&',
+    hideSignup: '<'
+  },
+  controller: SigninController
 };

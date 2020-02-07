@@ -1,18 +1,20 @@
 import landing from './landing.js';
+import signin from './signin.component.js';
+import localSignin from './local.signin.js';
+import localSignup from './local.signup.js';
+import oauthSignin from './oauth.signin.js';
+import ldapSignin from './ldap.signin.js';
+import authorize from './authorize.component.js';
 import authentication from './authentication.component.js';
-import signup from './signup.component.js';
 
 var angular = require('angular');
 
 angular.module('mage')
   .component('landing', landing)
   .component('authentication', authentication)
-  .component('localSignin', require('./local.signin.js'))
-  .component('localSignup', require('./local.signup.js'))
-  .component('ldapSignin', require('./ldap.signin.js'))
-  .component('oauthSignin', require('./oauth.signin.js'))
-  .component('authorize', require('./authorize.component.js'))
-  .component('signin', require('./signin.component.js'))
-  .component('signup', signup)
-  .controller('SigninController', require('./signin.controller'))
-  .controller('AuthorizeController', require('./authorize.controller'));
+  .component('localSignin', localSignin)
+  .component('localSignup', localSignup)
+  .component('ldapSignin', ldapSignin)
+  .component('oauthSignin', oauthSignin)
+  .component('authorize', authorize)
+  .component('signin', signin);
