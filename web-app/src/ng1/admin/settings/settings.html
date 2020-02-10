@@ -29,31 +29,17 @@
             <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
 
             <form ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
-
+              <div data-ng-repeat="strategy in $ctrl.strategies">
               <div class="row">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">
                       <div class="row">
                         <div class="col-md-12 bottom-gap">
-                          <h3>Users and Devices</h3>
+                          <h3>{{strategy}} Authentication</h3>
                           <hr>
                         </div>
-                      </div>
-    
-                      <div class="row">
-                        <div class="col-sm-12">
-                          <div class="form-group">
-                            <label class="control-label" for="type">User Authentication Strategy</label>
-                            <div class="form-group">
-                              <input type="text" placeholder="unknown" ng-model="$ctrl.strategyName" class="form-control" ng-disabled="true">
-                            </div>
-                            <p class="help-block">Method used to authenticate users. This configuration is controlled by <code>config.js</code>, which is located 
-                              in the base install directory.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      </div>                
 
                       <div class="row">
                         <div class="col-sm-12">
@@ -109,8 +95,9 @@
     
                 </div>
               </div>
+              </div>
 
-              <div class="row" ng-show="$ctrl.strategyName === 'local'">
+              <div class="row" ng-show="$ctrl.authConfig.local">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">

@@ -71,23 +71,29 @@ class AdminSettingsController {
       footerBackgroundColor: 'FFFFFF'
     };
 
-    this.strategyName = "unknown"
+    this.strategies = [];
+    this.authConfig = {};
   }
 
   $onInit() {
     this.Api.get(api => {
-      var authenticationStrategies = api.authenticationStrategies || {};
-      this.pill = authenticationStrategies.local ? 'security' : 'banner';
-      this.strategyName = 'third-party';
+      this.authConfig = api.authenticationStrategies || {};
+      this.pill = this.authConfig.local ? 'security' : 'banner';
       //TODO for sure there is a less dumb way to do this
-      if(authenticationStrategies.local){
-        this.strategyName = 'local';
-      }else if (authenticationStrategies.ldap) {
-        this.strategyName = 'ldap';
-      }else if(authenticationStrategies.google){
-        this.strategyName = 'google';
-      }else if(authenticationStrategies.geoaxis){
-        this.strategyName = 'geoaxis';
+      if(this.authConfig.local){
+        this.strategies.push('local');
+      }
+      if (this.authConfig.ldap) {
+        this.strategies.push('ldap');
+      }
+      if(this.authConfig.google) {
+        this.strategies.push('google');
+      }
+      if(this.authConfig.geoaxis) { 
+        this.strategies.push('geoaxis');
+      } 
+      if(this.authConfig.login-gov) { 
+        this.strategies.push('login-gov');
       } 
     });
 
