@@ -33,7 +33,7 @@ class AdminSettingsController {
     }];
 
     this.events = [];
-    this.newUserEvent = {};
+    this.newUserEvents;
   
     this.accountLock = {};
     this.accountLockChoices = [{

@@ -62,8 +62,8 @@
                           <div class="col-sm-12">
                             <label class="control-label" for="type">New Users Default Event(s)</label>
                             <div class="form-group">
-                              <ui-select ng-model="$ctrl.security.newUserEvent" theme="bootstrap">
-                                <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
+                              <ui-select multiple ng-model="$ctrl.security.newUserEvents" theme="bootstrap">
+                                <ui-select-match placeholder="Select an event">{{$item.name}}</ui-select-match>
                                 <ui-select-choices repeat="event.id as event in $ctrl.events">
                                   <div ng-bind-html="event.name"></div>
                                   <small ng-bind-html="event.description"></small>
@@ -91,8 +91,7 @@
                           </div>
                         </div>
                     </div>
-                  </div>
-    
+                  </div>    
                 </div>
               </div>
               </div>

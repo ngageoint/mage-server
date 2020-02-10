@@ -324,14 +324,14 @@ exports.createUser = async function(user, callback) {
 
   log.info("Reading security settings");
   let securitySettings = await Setting.getSetting('security');
-  var defaultEventId;
+  var newUserEvents;
   if(securitySettings && securitySettings.settings) {
     let usersReqAdmin = securitySettings.settings.usersReqAdmin;
     if(usersReqAdmin) {
       log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
       update.active = !usersReqAdmin.enabled;
     }
-    defaultEventId = securitySettings.settings.newUserEvent;
+    newUserEvents = securitySettings.settings.newUserEvents;    
   }
         
   log.info("Creating new user " + update.username);
@@ -344,8 +344,10 @@ exports.createUser = async function(user, callback) {
   });
 
   //We have to wait for the user to be created before we can add them to a team.
-  if(newUser && newUser.active && defaultEventId) {
-    await addUserToTeamByEventId(defaultEventId, newUser);
+  if(newUser && newUser.active && newUserEvents && newUserEvents.length > 0) {
+    for(i = 0; i < newUserEvents.length; i++) {
+      await addUserToTeamByEventId(newUserEvents[i], newUser);
+    }
   }
 };
 
