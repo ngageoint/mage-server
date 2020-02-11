@@ -2,7 +2,7 @@
 import mongoose, { Document } from 'mongoose'
 
 
-const DELETE_KEY: '4b3e8386-3951-11ea-ab3f-83a298287f14' = '4b3e8386-3951-11ea-ab3f-83a298287f14'
+const DELETE_KEY = Symbol('DELETE_KEY')
 export function transformObject<T>(x: any, transform: any, target: any = {}): T {
   const out = Object.assign(target || {}, x)
   for (const key of Object.keys(transform)) {

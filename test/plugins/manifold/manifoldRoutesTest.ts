@@ -57,7 +57,7 @@ describe.only('manifold routes', function() {
               description: 'Adapting 1s',
               isReadable: true,
               isWritable: false,
-              libPath: '/var/manifold/a1'
+              modulePath: '/var/manifold/a1'
             },
             'a2': {
               id: 'a2',
@@ -65,7 +65,7 @@ describe.only('manifold routes', function() {
               description: 'Adapting 2s',
               isReadable: true,
               isWritable: false,
-              libPath: '/var/manifold/a2'
+              modulePath: '/var/manifold/a2'
             }
           },
           sources: {
@@ -139,7 +139,7 @@ describe.only('manifold routes', function() {
             description: 'A test adapter',
             isReadable: true,
             isWritable: false,
-            libPath: '/var/lib/mage/manifold/adapter123'
+            modulePath: '/var/lib/mage/manifold/adapter123'
           },
           title: 'Source 123',
           description: 'A test source',
@@ -156,7 +156,7 @@ describe.only('manifold routes', function() {
         expect(res.status).to.equal(200)
         expect(res.type).to.match(/^application\/json/)
         expect(res.body).to.deep.equal(transformJson(source, {
-          adapter: transformJson(source.adapter, { libPath: transformJson.DELETE_KEY })
+          adapter: transformJson(source.adapter, { modulePath: transformJson.DELETE_KEY })
         }))
       })
     })

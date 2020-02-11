@@ -209,7 +209,7 @@ describe.only('manifold repositories', function() {
         description: 'Adapting Xyz services',
         isReadable: true,
         isWritable: true,
-        libPath: '/var/mage/manifold/xyz'
+        modulePath: '/var/mage/manifold/xyz'
       }
       const created = await repo.create({
         id: 'ignore',
@@ -231,14 +231,14 @@ describe.only('manifold repositories', function() {
         description: 'Adapting Abc services',
         isReadable: true,
         isWritable: false,
-        libPath: '/var/mage/manifold/abc'
+        modulePath: '/var/mage/manifold/abc'
       }
       const seed2: AdapterDescriptor = {
         title: 'Xyz Adapter',
         description: 'Adapting Xyz services',
         isReadable: true,
         isWritable: false,
-        libPath: '/var/mage/manifold/xyz'
+        modulePath: '/var/mage/manifold/xyz'
       }
       await Promise.all([
         repo.create(seed1),
@@ -257,7 +257,7 @@ describe.only('manifold repositories', function() {
         description: 'Needs an update',
         isReadable: true,
         isWritable: true,
-        libPath: '/var/mage/manifold/adapter123'
+        modulePath: '/var/mage/manifold/adapter123'
       }
       const existing = await repo.create(seed)
       const update = {
@@ -286,7 +286,7 @@ describe.only('manifold repositories', function() {
         description: 'Marked for delete',
         isReadable: true,
         isWritable: false,
-        libPath: '/var/mage/manifold/doomed'
+        modulePath: '/var/mage/manifold/doomed'
       }
       const created = await repo.create(seed)
       const beforeDelete = await repo.readAll()

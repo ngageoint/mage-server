@@ -10,3 +10,8 @@ export interface ManifoldAdapter {
 
   connectTo(source: SourceDescriptor): Promise<SourceConnection>
 }
+
+export interface ManifoldPlugin {
+
+  createAdapter(): Promise<ManifoldAdapter>
+}

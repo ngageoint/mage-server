@@ -1,8 +1,7 @@
-import { AdapterDescriptor, SourceDescriptor } from "../models"
+import { AdapterDescriptor, SourceDescriptor, AdapterDescriptorEntity } from "../models"
 import { AdapterRepository, SourceRepository } from "../repositories"
 import OgcApiFeatures from "../ogcapi-features"
-import { ManifoldAdapter } from "../adapters"
-
+import { ManifoldAdapter, ManifoldPlugin } from "../adapters"
 
 /**
  * The ManifoldDescriptor contains all the currently available adapters and
@@ -17,9 +16,9 @@ export interface ManifoldDescriptor {
   }
 }
 
-
 export class ManifoldService {
 
+  readonly adapters: {[id: string]: ManifoldAdapter} = {}
   readonly adapterRepo: AdapterRepository
   readonly sourceRepo: SourceRepository
 
@@ -45,10 +44,25 @@ export class ManifoldService {
   }
 
   async getAdapterForSource(source: SourceDescriptor): Promise<ManifoldAdapter> {
-    if (typeof source.adapter === 'string') {
-
+    let adapterDesc = source.adapter
+    if (typeof adapterDesc === 'string') {
+      adapterDesc = (await this.adapterRepo.findById(adapterDesc)) as AdapterDescriptorEntity
     }
-    throw new Error('unimplemented')
+    const path = adapterDesc.modulePath
+    if (!adapterDesc.id) {
+      throw new Error(`adapter descriptor titled ${adapterDesc.title} has no id for source titled ${source.title}, id ${source.id}`)
+    }
+    let adapter = this.adapters[adapterDesc.id!]
+    if (!adapter) {
+      // TODO: this should be retrieved from an injected plugin manager or
+      // some such concept later after creating the new plugin loading system.
+      // maybe this method will even go away entirely if manifold adapters are
+      // one of many well-defined plugin hooks
+      const plugin = require(path) as ManifoldPlugin
+      adapter = await plugin.createAdapter()
+      this.adapters[adapterDesc.id!] = adapter
+    }
+    return adapter
   }
 }
 
