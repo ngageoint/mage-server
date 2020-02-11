@@ -14,7 +14,7 @@ mongoose.Error.messages.general.required = "{PATH} is required.";
 
 log.info('Starting MAGE Server ...');
 
-// Create directory for storing SAGE media attachments
+// Create directory for storing media attachments
 const attachmentBase = environment.attachmentBaseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
@@ -37,7 +37,7 @@ fs.mkdirp(iconBase, function(err) {
 require('./migrate').runDatabaseMigrations()
   .then(() => {
     log.info('database initialized; loading plugins ...');
-    
+
     var plugins = require('./plugins');
     plugins.initialize(app, function(err) {
       if (err) {
