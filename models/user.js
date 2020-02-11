@@ -341,13 +341,15 @@ exports.createUser = async function(user, callback) {
   log.info("Reading security settings");
   let securitySettings = await Setting.getSetting('security');
   var newUserEvents;
+  var newUserTeams;
   if(securitySettings && securitySettings.settings) {
     let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
     if(usersReqAdmin) {
       log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
       update.active = !usersReqAdmin.enabled;
     }
-    newUserEvents = securitySettings.settings[authenticationType].newUserEvents;    
+    newUserEvents = securitySettings.settings[authenticationType].newUserEvents;   
+    newUserTeams = securitySettings.settings[authenticationType].newUserTeams;  
   }
         
   log.info("Creating new user " + update.username);
@@ -359,10 +361,20 @@ exports.createUser = async function(user, callback) {
     });
   });
 
-  //We have to wait for the user to be created before we can add them to a team.
-  if(newUser && newUser.active && newUserEvents && Array.isArray(newUserEvents)) {
-    for(i = 0; i < newUserEvents.length; i++) {
-      await addUserToTeamByEventId(newUserEvents[i], newUser);
+  //We have to wait for the user to be created before we can add them to an event and/or team.
+  if(newUser && newUser.active) {
+    if(newUserEvents && Array.isArray(newUserEvents)){
+      for(i = 0; i < newUserEvents.length; i++) {
+        await addUserToTeamByEventId(newUserEvents[i], newUser);
+      }
+    }
+
+    if(newUserTeams && Array.isArray(newUserTeams)) {
+      for (var i = 0; i < newUserTeams.length; i++) {
+        Team.addUser({_id: mongoose.Types.ObjectId(newUserTeams[i])}, newUser, function(err, team) {
+          //TODO implement
+        });
+      }
     }
   }
 };
