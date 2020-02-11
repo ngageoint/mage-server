@@ -258,6 +258,19 @@ exports.getUserById = function(id, callback) {
   });
 };
 
+exports.getUserByIdWithPromise = function(id) {
+  const promise = new Promise(function(resolve, reject) {
+    User.findById(id).populate('roleId')
+      .exec()
+      .then(user => {
+        resolve(user ? user : undefined);
+      })
+      .catch(err => reject(err));
+  });
+
+  return promise;
+};
+
 exports.getUserByUsername = function(username, callback) {
   User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
     callback(err, user);
@@ -322,16 +335,19 @@ exports.createUser = async function(user, callback) {
     authentication: user.authentication
   };
 
+  //e.g. local, ldap, etc
+  var authenticationType = user.authentication.type;
+
   log.info("Reading security settings");
   let securitySettings = await Setting.getSetting('security');
   var newUserEvents;
   if(securitySettings && securitySettings.settings) {
-    let usersReqAdmin = securitySettings.settings.usersReqAdmin;
+    let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
     if(usersReqAdmin) {
       log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
       update.active = !usersReqAdmin.enabled;
     }
-    newUserEvents = securitySettings.settings.newUserEvents;    
+    newUserEvents = securitySettings.settings[authenticationType].newUserEvents;    
   }
         
   log.info("Creating new user " + update.username);

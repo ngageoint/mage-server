@@ -45,7 +45,7 @@
                         <div class="col-sm-12">
                           <div class="form-group">
                             <label class="control-label" for="type">New Users Require Admin Approval</label>
-                            <ui-select ng-model="$ctrl.security.usersReqAdmin.enabled" theme="bootstrap">
+                            <ui-select ng-model="$ctrl.security[strategy].usersReqAdmin.enabled" theme="bootstrap">
                               <ui-select-match>{{$select.selected.title}}</ui-select-match>
                               <ui-select-choices repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
                                 <div ng-bind-html="usersReqAdminChoice.title"></div>
@@ -57,12 +57,12 @@
                         </div>
                       </div>
 
-                      <div ng-show="$ctrl.security.usersReqAdmin.enabled == false">
+                      <div ng-show="$ctrl.security[strategy].usersReqAdmin.enabled == false">
                         <div class="row">
                           <div class="col-sm-12">
                             <label class="control-label" for="type">New Users Default Event(s)</label>
                             <div class="form-group">
-                              <ui-select multiple ng-model="$ctrl.security.newUserEvents" theme="bootstrap">
+                              <ui-select multiple ng-model="$ctrl.security[strategy].newUserEvents" theme="bootstrap">
                                 <ui-select-match>{{$item.name}}</ui-select-match>
                                 <ui-select-choices repeat="event.id as event in $ctrl.events">
                                   <div ng-bind-html="event.name"></div>
@@ -80,7 +80,7 @@
                           <div class="col-sm-12">
                             <label class="control-label" for="type">New Users Default Team(s)</label>
                             <div class="form-group">
-                              <ui-select multiple ng-model="$ctrl.security.newUserTeams" theme="bootstrap">
+                              <ui-select multiple ng-model="$ctrl.security[strategy].newUserTeams" theme="bootstrap">
                                 <ui-select-match>{{$item.name}}</ui-select-match>
                                 <ui-select-choices repeat="team.id as team in $ctrl.teams">
                                   <div ng-bind-html="team.name"></div>
@@ -100,7 +100,7 @@
                           <div class="col-sm-12">
                             <div class="form-group">
                               <label class="control-label" for="type">New Devices Require Admin Approval</label>
-                              <ui-select ng-model="$ctrl.security.devicesReqAdmin.enabled" theme="bootstrap">
+                              <ui-select ng-model="$ctrl.security[strategy].devicesReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
                                 <ui-select-choices repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
                                   <div ng-bind-html="devicesReqAdminChoice.title"></div>

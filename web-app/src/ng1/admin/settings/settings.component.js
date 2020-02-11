@@ -11,7 +11,11 @@ class AdminSettingsController {
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
 
-    this.usersReqAdmin = {};
+    this.events = [];
+    this.teams = [];
+    this.strategies = [];
+    this.authConfig = {};
+    
     this.usersReqAdminChoices = [{
       title: 'No',
       description: 'New users do not require admin approval.',
@@ -21,8 +25,6 @@ class AdminSettingsController {
       description: 'New users require admin approval.',
       value: true
     }];
-
-    this.devicesReqAdmin = {};
     this.devicesReqAdminChoices = [{
       title: 'No',
       description: 'New devices do not require admin approval.',
@@ -33,14 +35,12 @@ class AdminSettingsController {
       value: true
     }];
 
-    this.events = [];
-    this.newUserEvents = [];
-
-    this.teams = [];
-    this.newUserTeams = [];
-
-    this.strategies = [];
-    this.authConfig = {};
+    this.local = {
+      devicesReqAdmin: {enabled: true},
+      usersReqAdmin: {enabled: true},
+      newUserEvents: [],
+      newUserTeams: []
+    }
   
     this.accountLock = {};
     this.accountLockChoices = [{
@@ -114,16 +114,16 @@ class AdminSettingsController {
         };
       }
 
-      if (!this.security.usersReqAdmin) {
-        this.security.usersReqAdmin = {
-          enabled: true
-        };
-      }
-
-      if (!this.security.devicesReqAdmin) {
-        this.security.devicesReqAdmin = {
-          enabled: true
-        };
+      for (var i =0 ; i < this.strategies.length; i++) {
+        let strategy = this.strategies[i];
+        if(!this.security[strategy]) {
+          this.security[strategy] = {
+            devicesReqAdmin: {enabled: true},
+            usersReqAdmin: {enabled: true},
+            newUserEvents: [],
+            newUserTeams: []
+          }
+        }
       }
   
       this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
@@ -168,9 +168,12 @@ class AdminSettingsController {
       delete this.security.accountLock.max;
     }
 
-    if (this.security.usersReqAdmin.enabled) {
-      delete this.security.newUserEvents;
-      delete this.security.newUserTeams;
+    for (var i =0 ; i < this.strategies.length; i++) {
+      var strategy = this.strategies[i];
+      if (this.security[strategy].usersReqAdmin.enabled) {
+        delete this.security.newUserEvents[strategy];
+        delete this.security.newUserTeams[strategy];
+      }
     }
 
     this.Settings.update({type: 'security'}, this.security, () => {

@@ -146,13 +146,16 @@ exports.createDevice = async function(device) {
     appVersion: device.appVersion
   };
 
+  var user = await User.getUserByIdWithPromise(device.userId);
+  var authenticationType = user.authentication.type;
+
   if (device.registered) { 
     update.registered = device.registered;
   } else {
     log.info("Reading security settings");
     const securitySettings = await Setting.getSetting('security');
     if(securitySettings && securitySettings.settings) {
-      let devicesReqAdmin = securitySettings.settings.devicesReqAdmin;
+      let devicesReqAdmin = securitySettings.settings[authenticationType].devicesReqAdmin;
       if (devicesReqAdmin) {
         log.info("Admin approval required to approve new devices is: " + devicesReqAdmin.enabled);
         update.registered = !devicesReqAdmin.enabled;
