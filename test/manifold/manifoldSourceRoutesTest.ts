@@ -1,17 +1,15 @@
-import { expect } from 'chai'
-import { mock, reset, instance, when, deepEqual } from 'ts-mockito'
+import { expect, assert } from 'chai'
+import { mock, reset, instance, when } from 'ts-mockito'
 import request from 'supertest'
 import express, { Request, Response, NextFunction } from 'express'
-import { SourceRepository, AdapterRepository } from '../../../plugins/mage-manifold/repositories'
-import { SourceDescriptor, SourceDescriptorEntity, SourceDescriptorModel, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema, SourceDescriptorSchema } from '../../../plugins/mage-manifold/models'
+import { SourceRepository, AdapterRepository } from '../../manifold/repositories'
+import { SourceDescriptorEntity, SourceDescriptorModel, ManifoldModels, SourceDescriptorSchema } from '../../manifold/models'
 import mongoose from 'mongoose'
-import { parseEntity } from '../../utils'
-import { ManifoldService } from '../../../plugins/mage-manifold/services'
-import { ManifoldController, createRouter } from '../../../plugins/mage-manifold'
-import OgcApiFeatures from '../../../plugins/mage-manifold/ogcapi-features'
-import { FeatureCollection } from 'geojson'
-import { ManifoldAdapter, SourceConnection } from '../../../plugins/mage-manifold/adapters'
-const log = require('../../../logger')
+import { ManifoldService } from '../../manifold/services'
+import { ManifoldController, createRouter } from '../../manifold'
+import OgcApiFeatures from '../../manifold/ogcapi-features'
+import { ManifoldAdapter, SourceConnection } from '../../manifold/adapters'
+import log = require('../../logger')
 
 describe('manifold source routes', function() {
 
@@ -55,6 +53,9 @@ describe('manifold source routes', function() {
 
   describe('path /{sourceId}/collections', function() {
 
+    it('is tested', function() {
+      assert.fail('TODO')
+    })
   })
 
   describe('path /{sourceId}/collections/{collectionId}', function() {

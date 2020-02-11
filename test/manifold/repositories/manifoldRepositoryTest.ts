@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 import { describe, it, before, beforeEach, after, afterEach } from 'mocha'
 import { expect } from 'chai'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import { AdapterRepository, BaseRepository, EntityReference, SourceRepository } from '../../../../plugins/mage-manifold/repositories'
-import { AdapterDescriptor, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema, SourceDescriptor, SourceDescriptorModel, SourceDescriptorSchema } from '../../../../plugins/mage-manifold/models';
+import { AdapterRepository, BaseRepository, EntityReference, SourceRepository } from '../../../manifold/repositories'
+import { AdapterDescriptor, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema, SourceDescriptorModel, SourceDescriptorSchema } from '../../../manifold/models'
 
 describe('manifold repositories', function() {
 

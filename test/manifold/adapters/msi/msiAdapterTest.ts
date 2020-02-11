@@ -2,9 +2,9 @@
 import { expect } from 'chai'
 import nock from 'nock'
 import { ParsedUrlQuery } from 'querystring'
-import NgaMsi from '../../../../../plugins/mage-manifold/adapters/msi'
-import { SourceDescriptor } from '../../../../../plugins/mage-manifold/models'
-import OgcApiFeatures from '../../../../../plugins/mage-manifold/ogcapi-features'
+import NgaMsi from '../../../../manifold/adapters/msi'
+import { SourceDescriptor } from '../../../../manifold/models'
+import OgcApiFeatures from '../../../../manifold/ogcapi-features'
 
 type QueryStringMatcher = (query: ParsedUrlQuery) => boolean
 

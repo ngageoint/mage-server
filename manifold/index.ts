@@ -9,7 +9,7 @@ import OgcApiFeatures from './ogcapi-features'
 import { SourceDescriptorEntity, ManifoldModels, AdapterDescriptorSchema, AdapterDescriptorModel, SourceDescriptorModel, SourceDescriptorSchema } from './models'
 import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
 import { ManifoldAdapter } from './adapters'
-const log = require('../../logger')
+import log = require('../logger')
 
 declare global {
   namespace Express {

@@ -1,12 +1,12 @@
 
 import { describe, beforeEach, afterEach, it } from 'mocha'
-import chai,  { expect, assert } from 'chai'
+import { expect, assert } from 'chai'
 import { mock, instance, reset, spy, when, verify } from 'ts-mockito'
 import mongoose from 'mongoose'
-import { ManifoldService } from '../../../../plugins/mage-manifold/services'
-import { AdapterRepository, SourceRepository } from '../../../../plugins/mage-manifold/repositories'
-import { SourceDescriptor, AdapterDescriptor, AdapterDescriptorModel, AdapterDescriptorSchema, ManifoldModels, AdapterDescriptorEntity } from '../../../../plugins/mage-manifold/models'
-import { ManifoldAdapter, ManifoldPlugin } from '../../../../plugins/mage-manifold/adapters'
+import { ManifoldService } from '../../../manifold/services'
+import { AdapterRepository, SourceRepository } from '../../../manifold/repositories'
+import { SourceDescriptor, AdapterDescriptorSchema, ManifoldModels, AdapterDescriptorEntity } from '../../../manifold/models'
+import { ManifoldAdapter } from '../../../manifold/adapters'
 import path from 'path'
 import plugin = require('./manifold_plugin_1')
 

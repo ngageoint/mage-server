@@ -11,7 +11,7 @@ describe('plugins routes', function() {
   let app: express.Application;
 
   beforeEach(async function() {
-    const app = express();
+    app = express();
     const pluginService = {} as PluginService
     const routes = await initializePluginsRoutes(app, {});
   });
@@ -45,6 +45,4 @@ describe('plugins routes', function() {
       });
     })
   });
-
-
 });

@@ -1,4 +1,4 @@
-import { ManifoldPlugin, ManifoldAdapter } from "../../../../../plugins/mage-manifold/adapters"
+import { ManifoldPlugin, ManifoldAdapter } from "../../../../manifold/adapters"
 
 
 class TestManifoldPlugin implements ManifoldPlugin {
