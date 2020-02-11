@@ -63,7 +63,7 @@
                             <label class="control-label" for="type">New Users Default Event(s)</label>
                             <div class="form-group">
                               <ui-select multiple ng-model="$ctrl.security.newUserEvents" theme="bootstrap">
-                                <ui-select-match placeholder="Select an event or multiple events">{{$item.name}}</ui-select-match>
+                                <ui-select-match>{{$item.name}}</ui-select-match>
                                 <ui-select-choices repeat="event.id as event in $ctrl.events">
                                   <div ng-bind-html="event.name"></div>
                                   <small ng-bind-html="event.description"></small>
@@ -81,7 +81,7 @@
                             <label class="control-label" for="type">New Users Default Team(s)</label>
                             <div class="form-group">
                               <ui-select multiple ng-model="$ctrl.security.newUserTeams" theme="bootstrap">
-                                <ui-select-match placeholder="Select a team or multiple teams">{{$item.name}}</ui-select-match>
+                                <ui-select-match>{{$item.name}}</ui-select-match>
                                 <ui-select-choices repeat="team.id as team in $ctrl.teams">
                                   <div ng-bind-html="team.name"></div>
                                   <small ng-bind-html="team.description"></small>

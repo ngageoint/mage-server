@@ -34,10 +34,13 @@ class AdminSettingsController {
     }];
 
     this.events = [];
-    this.newUserEvents;
+    this.newUserEvents = [];
 
     this.teams = [];
-    this.newUserTeams;
+    this.newUserTeams = [];
+
+    this.strategies = [];
+    this.authConfig = {};
   
     this.accountLock = {};
     this.accountLockChoices = [{
@@ -74,9 +77,6 @@ class AdminSettingsController {
       footerTextColor: '#000000',
       footerBackgroundColor: 'FFFFFF'
     };
-
-    this.strategies = [];
-    this.authConfig = {};
   }
 
   $onInit() {
@@ -166,6 +166,11 @@ class AdminSettingsController {
   saveSecurity() {
     if (!this.maxLock.enabled) {
       delete this.security.accountLock.max;
+    }
+
+    if (this.security.usersReqAdmin.enabled) {
+      delete this.security.newUserEvents;
+      delete this.security.newUserTeams;
     }
 
     this.Settings.update({type: 'security'}, this.security, () => {
