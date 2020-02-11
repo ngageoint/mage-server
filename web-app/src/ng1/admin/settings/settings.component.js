@@ -40,8 +40,37 @@ class AdminSettingsController {
       usersReqAdmin: {enabled: true},
       newUserEvents: [],
       newUserTeams: []
-    }
+    };
+
+    this.ldap = {
+      devicesReqAdmin: {enabled: true},
+      usersReqAdmin: {enabled: true},
+      newUserEvents: [],
+      newUserTeams: []
+    };
+
+    this.google = {
+      devicesReqAdmin: {enabled: true},
+      usersReqAdmin: {enabled: true},
+      newUserEvents: [],
+      newUserTeams: []
+    };
   
+    this.geoaxis = {
+      devicesReqAdmin: {enabled: true},
+      usersReqAdmin: {enabled: true},
+      newUserEvents: [],
+      newUserTeams: []
+    };
+
+    //TODO cant have a dash for login-gov
+    this.logingov = {
+      devicesReqAdmin: {enabled: true},
+      usersReqAdmin: {enabled: true},
+      newUserEvents: [],
+      newUserTeams: []
+    };
+
     this.accountLock = {};
     this.accountLockChoices = [{
       title: 'Off',
@@ -96,9 +125,10 @@ class AdminSettingsController {
       if(this.authConfig.geoaxis) { 
         this.strategies.push('geoaxis');
       } 
-      if(this.authConfig.login-gov) { 
-        this.strategies.push('login-gov');
-      } 
+      //TODO figure out how to handle this case
+      //if(this.authConfig.login-gov) { 
+        //this.strategies.push('login-gov');
+      //} 
     });
 
     this.Settings.query(settings => {
