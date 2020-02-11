@@ -6,7 +6,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import { AdapterRepository, BaseRepository, EntityReference, SourceRepository } from '../../../../plugins/mage-manifold/repositories'
 import { AdapterDescriptor, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema, SourceDescriptor, SourceDescriptorModel, SourceDescriptorSchema } from '../../../../plugins/mage-manifold/models';
 
-describe.only('manifold repositories', function() {
+describe('manifold repositories', function() {
 
   let mongo: MongoMemoryServer
   let uri: string

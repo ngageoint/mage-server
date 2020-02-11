@@ -11,7 +11,7 @@ import path from 'path'
 import plugin = require('./manifold_plugin_1')
 
 
-describe.only('manifold service', function() {
+describe('manifold service', function() {
 
   const modulePath = path.resolve(__dirname, 'manifold_plugin_1')
   const adapterMock = mock<ManifoldAdapter>()

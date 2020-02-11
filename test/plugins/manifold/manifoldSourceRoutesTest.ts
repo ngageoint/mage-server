@@ -13,7 +13,7 @@ import { FeatureCollection } from 'geojson'
 import { ManifoldAdapter, SourceConnection } from '../../../plugins/mage-manifold/adapters'
 const log = require('../../../logger')
 
-describe.only('manifold source routes', function() {
+describe('manifold source routes', function() {
 
   const SourceDescriptorModel: SourceDescriptorModel = mongoose.model(ManifoldModels.SourceDescriptor, SourceDescriptorSchema)
   const adapterRepoMock = mock<AdapterRepository>()

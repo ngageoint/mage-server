@@ -11,7 +11,7 @@ import { ManifoldDescriptor, ManifoldService } from '../../../plugins/mage-manif
 const log = require('../../../logger')
 
 
-describe.only('manifold routes', function() {
+describe('manifold routes', function() {
 
   const AdapterDescriptorModel: AdapterDescriptorModel = mongoose.model(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
   const SourceDescriptorModel: SourceDescriptorModel = mongoose.model(ManifoldModels.SourceDescriptor, SourceDescriptorSchema)
