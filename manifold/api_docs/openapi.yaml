@@ -1,0 +1,156 @@
+openapi: 3.0.1
+info:
+  title: MAGE Manifold API
+  description: >
+    MAGE Manifold is an add-on API to the MAGE Server for configuring external
+    data sources that can provide relevant contextual data to MAGE clients in
+    a feed and/or on the map.
+  contact:
+    name: MAGE Support
+    email: mage@nga.mil
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers: []
+x-controller: manifold
+paths:
+  /descriptor:
+    get:
+      operationId: getManifoldDescriptor
+      responses:
+        200:
+          description: >
+            Success - return the descriptor of the current Manifold
+            configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManifoldDescriptor'
+  /sources:
+    post:
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/SourceDescriptor'
+                - type: object
+                  required: [ adapter ]
+                # - type: object
+                #   not:
+                #     type: object
+                #     required: [ id ]
+      responses:
+        201:
+          description: >
+            Success - return the descriptor of the created source.
+          headers:
+            location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDescriptor'
+  /sources/{sourceId}:
+    parameters:
+      - $ref: '#/components/parameters/sourceIdInPath'
+    get:
+      operationId: getSource
+      responses:
+        200:
+          description: >
+            Success - return the source descriptor for the specified ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDescriptor'
+  /sources/{sourceId}/api:
+    parameters:
+      - $ref: '#/components/parameters/sourceIdInPath'
+    get:
+      operationId: getSourceApi
+      responses:
+        200:
+          description: >
+            Success - return the OpenAPI definition document for the speicified
+            source.  The returned document will be compliant with the
+            [OGC API - Features - Part1: Core](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html)
+            specification.
+          content:
+            application/json:
+              schema:
+                type: object
+                externalDocs:
+                  url: https://github.com/OAI/OpenAPI-Specification
+components:
+  schemas:
+    AdapterDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+    SourceDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        adapter:
+          oneOf:
+            - $ref: '#/components/schemas/AdapterDescriptor/properties/id'
+            - $ref: '#/components/schemas/AdapterDescriptor'
+        isReadable:
+          type: boolean
+        isWritable:
+          type: boolean
+    ManifoldDescriptor:
+      description: >
+        The Manifold Descriptor object contains all available adapters as well
+        as configured sources.  The adapters and sources entries are each
+        objects whose keys are IDs and values are the corresponding objects.
+      type: object
+      properties:
+        adapters:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AdapterDescriptor'
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SourceDescriptor'
+
+  parameters:
+    sourceIdInPath:
+      in: path
+      name: sourceId
+      required: true
+      schema:
+        $ref: '#/components/schemas/SourceDescriptor/properties/id'
+
+  responses:
+    manifoldDescriptor:
+      description: Return the current manifold descriptor.
+      headers:
+        location:
+          required: false
+          schema:
+            type: string
+            format: uri
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ManifoldDescriptor'

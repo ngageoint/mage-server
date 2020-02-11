@@ -25,6 +25,9 @@ module.exports = function(app, security) {
     }
   });
 
+  // TODO: these seem like duplicates of logic in the core app
+  // make these middleware available to plugins
+
   // Grab the user for any endpoint that uses eventId
   app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
   app.param('eventId', function(req, res, next, eventId) {
