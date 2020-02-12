@@ -165,8 +165,8 @@ class AdminSettingsController {
     for (var i =0 ; i < this.strategies.length; i++) {
       var strategy = this.strategies[i];
       if (this.security[strategy].usersReqAdmin.enabled) {
-        delete this.security.newUserEvents[strategy];
-        delete this.security.newUserTeams[strategy];
+        delete this.security[strategy].newUserEvents;
+        delete this.security[strategy].newUserTeams;
       }
     }
 

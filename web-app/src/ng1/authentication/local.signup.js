@@ -65,12 +65,16 @@ class LocalSignupController {
     this._UserService.signup(user, this.signupComplete.bind(this), this.signupFailed.bind(this));
   }
 
-  signupComplete() {
+  signupComplete(data) {
     this._$timeout(() => {
       this.user = {};
       this.passwordStrengthScore = 0;
       this.onSuccess();
-      this.showStatusMessage("Success", "Account created, contact an administrator to activate your account.");
+      if(data && data.active) {
+        this.showStatusMessage("Success", "Account created, your account is now active.");
+      } else{
+        this.showStatusMessage("Success", "Account created, contact an administrator to activate your account.");
+      }
     });
   }
 
