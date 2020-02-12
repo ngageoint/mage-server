@@ -35,42 +35,6 @@ class AdminSettingsController {
       value: true
     }];
 
-    this.local = {
-      devicesReqAdmin: {enabled: true},
-      usersReqAdmin: {enabled: true},
-      newUserEvents: [],
-      newUserTeams: []
-    };
-
-    this.ldap = {
-      devicesReqAdmin: {enabled: true},
-      usersReqAdmin: {enabled: true},
-      newUserEvents: [],
-      newUserTeams: []
-    };
-
-    this.google = {
-      devicesReqAdmin: {enabled: true},
-      usersReqAdmin: {enabled: true},
-      newUserEvents: [],
-      newUserTeams: []
-    };
-  
-    this.geoaxis = {
-      devicesReqAdmin: {enabled: true},
-      usersReqAdmin: {enabled: true},
-      newUserEvents: [],
-      newUserTeams: []
-    };
-
-    //TODO cant have a dash for login-gov
-    this.logingov = {
-      devicesReqAdmin: {enabled: true},
-      usersReqAdmin: {enabled: true},
-      newUserEvents: [],
-      newUserTeams: []
-    };
-
     this.accountLock = {};
     this.accountLockChoices = [{
       title: 'Off',
