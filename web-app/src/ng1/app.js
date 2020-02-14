@@ -119,7 +119,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
 
   $stateProvider.state({
     name: 'landing',
-    url: '/signin?action',
+    url: '/signin?action?strategy',
     component: 'landing',
     resolve: {
       api: ['$q', 'Api', function($q,  Api) {

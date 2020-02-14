@@ -97,16 +97,12 @@ class LocalSignupController {
 
 LocalSignupController.$inject = ['UserService', '$element', '$timeout'];
 
-var template = require('./local.signup.html');
-var bindings = {
-  strategy: '<',
-  onCancel: '&',
-  onSuccess: '&'
-};
-var controller = LocalSignupController;
-
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./local.signup.html'),
+  bindings: {
+    strategy: '<',
+    onCancel: '&',
+    onSuccess: '&'
+  },
+  controller: LocalSignupController
 };
