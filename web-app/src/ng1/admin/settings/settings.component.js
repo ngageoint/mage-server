@@ -76,23 +76,11 @@ class AdminSettingsController {
     this.Api.get(api => {
       this.authConfig = api.authenticationStrategies || {};
       this.pill = this.authConfig.local ? 'security' : 'banner';
-      //TODO for sure there is a less dumb way to do this
-      if(this.authConfig.local){
-        this.strategies.push('local');
+      
+      var strategy = {};
+      for(strategy in this.authConfig) {
+        this.strategies.push(strategy);
       }
-      if (this.authConfig.ldap) {
-        this.strategies.push('ldap');
-      }
-      if(this.authConfig.google) {
-        this.strategies.push('google');
-      }
-      if(this.authConfig.geoaxis) { 
-        this.strategies.push('geoaxis');
-      } 
-      //TODO figure out how to handle this case
-      //if(this.authConfig.login-gov) { 
-        //this.strategies.push('login-gov');
-      //} 
     });
 
     this.Settings.query(settings => {
