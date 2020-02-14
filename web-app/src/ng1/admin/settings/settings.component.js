@@ -77,7 +77,7 @@ class AdminSettingsController {
       this.authConfig = api.authenticationStrategies || {};
       this.pill = this.authConfig.local ? 'security' : 'banner';
       
-      var strategy = {};
+      let strategy = {};
       for(strategy in this.authConfig) {
         this.strategies.push(strategy);
       }
