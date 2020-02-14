@@ -15,3 +15,4 @@ require('./events');
 require('./layers');
 require('./settings');
 require('./teams');
+require('./plugins');

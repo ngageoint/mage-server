@@ -33,4 +33,6 @@ angular.module('mage')
   .factory('LayerService', require('./layer.service'))
   .factory('FilterService', require('./filter.service'))
   .factory('Settings', require('./settings.resource'))
-  .factory('PollingService', require('./polling.service'));
+  .factory('PollingService', require('./polling.service'))
+  .factory('Plugin', require('./plugin.resource'));
+

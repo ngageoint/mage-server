@@ -105,7 +105,8 @@
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
     "migrate": "node -e \"require('./migrate').runDatabaseMigrations().then(() => process.exit(0), err => {throw err})\"",
-    "start": "node app.js"
+    "start": "node app.js",
+    "debug": "node --inspect=localhost:14242 app.js"
   },
   "bundleDependencies": [],
   "private": true,

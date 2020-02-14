@@ -40,7 +40,13 @@
                 "node_modules"
               ]
             },
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/jquery-file-download/src/Scripts/jquery.fileDownload.js",
+              "node_modules/systemjs/dist/system.js",
+              "node_modules/systemjs/dist/extras/amd.js",
+              "node_modules/systemjs/dist/extras/named-exports.js"
+            ]
           },
           "configurations": {
             "production": {

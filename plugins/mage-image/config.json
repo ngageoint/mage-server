@@ -1,4 +1,5 @@
 {
+  "path": "app/dist/image/bundles/image.umd.js",
   "enable": false,
   "image": {
     "orient": true,

@@ -341,6 +341,19 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
     resolve: resolveAdmin()
   });
 
+  $stateProvider.state('admin.plugins', {
+    redirectTo: 'admin.plugins.dashboard',
+    url: '/plugins',
+    component: 'adminPlugins',
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.plugins.dashboard', {
+    url: '/dashboard',
+    component: 'adminPluginsDashboard',
+    resolve: resolveAdmin()
+  });
+
   $stateProvider.state('profile', {
     url: '/profile',
     component: "userProfile",

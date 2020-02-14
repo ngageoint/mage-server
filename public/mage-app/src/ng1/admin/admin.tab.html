@@ -46,6 +46,12 @@
       <div>Layers</div>
     </div>
 
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.tab === 'plugins'}" ng-click="$ctrl.tabChanged('admin.plugins')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.state === '/plugins'}"></div>
+      <i class="fa fa-plug"></i>
+      <div>Plugins</div>
+    </div>
+
     <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.tab === 'settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
       <div ng-class="{'admin-action-arrow-left': $ctrl.state === '/settings'}"></div>
       <i class="fa fa-wrench"></i>

@@ -1,27 +1,35 @@
-# NgApp
+# MAGE Web Application
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.21.
+The MAGE web client is a hybrid app built on [AngularJS](https://angularjs.org/) and [Angular](https://angular.io/).
 
-## Development server
+## Building
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+The MAGE web client uses [npm](https://www.npmjs.com/) and [Angular CLI](https://cli.angular.io/) to manage dependencies and bundle assets.
+From the `public/mage-app` directory
+```bash
+$ npm install
+$ ng build
+```
 
-## Code scaffolding
+## Running MAGE web client
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+For the web client to be useful, you'll want to [start a local MAGE server](../README.md#running-the-server).
 
-## Build
+### Debug build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+From the `public/mage-app` directory
+```bash
+$ npm install
+$ ng serve
+```
+This command uses Angular CLI to start a server running on http://localhost:4200.  That 
+configuration also proxies all requests for `/api` to the local MAGE server, which the configuration assumes is bound to
+http://localhost:4242.  This debug Angular CLI server will watch and hot-load any changes to the resources in the `public` 
+directory, and apply source maps so you can inspect the content in your browser's development console.
 
-## Running unit tests
+### Production build
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+The `ngn build` command you ran earlier uses Angular CLI to minify, obfuscate, and bundle 
+all of the MAGE web app's JavaScript and CSS assets into the `dist` directory.  The MAGE server [Express](../express.js) 
+configuration will serve the assets from that directory.  You can also potentially serve the contents of that directory 
+from a separate reverse proxy server, such as nginx or Apache httpd, as they are just static web resources.

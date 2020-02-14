@@ -2,7 +2,9 @@ const webpack = require('webpack');
 
 module.exports = {
   module: {
-    rules: [{
+    rules: [{ 
+      parser: { system: false } 
+    },{
       test: /\.html$/, loader: 'html-loader' 
     },{
       test: /\.(png|jpg|ico|gif|svg)$/,
