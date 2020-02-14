@@ -40,7 +40,7 @@ If you are considering building your own iOS or Android application based on the
 MAGE runs on most *nix operating systems, such as macOS, CentOS, and Ubuntu.  Although not currently supported, MAGE will run on Windows systems with some minor configuration (mainly paths) work.
 
 MAGE depends the following software:
-* [Node.js](https://nodejs.org/) >= 6 an <= 8
+* [Node.js](https://nodejs.org/) >= 8
 * [MongoDB](https://www.mongodb.org/) >= 3.0
 * [Apache HTTP Server](https://httpd.apache.org/) >= 2.2.15
 * [GraphicsMagick](http://www.graphicsmagick.org/) (optional, but recommended for image rotation and thumbnails) >= 1.3
@@ -58,7 +58,7 @@ $ source ~/.bashrc
 #### Install [Node.js](https://nodejs.org/) with Node Version Manager
 
 ```bash
-$ nvm install 8
+$ nvm install --lts
 $ node --version
 ```
 
