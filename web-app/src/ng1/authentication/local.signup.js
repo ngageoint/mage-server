@@ -71,9 +71,9 @@ class LocalSignupController {
       this.passwordStrengthScore = 0;
       this.onSuccess();
       if(data && data.active) {
-        this.showStatusMessage("Success", "Account created, your account is now active.");
+        this.showStatusMessage("Success", "Your account has been created and is now active.");
       } else{
-        this.showStatusMessage("Success", "Account created, contact an administrator to activate your account.");
+        this.showStatusMessage("Success", "Your account has been created but it is not enabled.  An administrator needs to enable your account before you can log in.");
       }
     });
   }
