@@ -1,0 +1,142 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
+      <li class="active">{{$ctrl.form.name}}
+    </ol>
+  </div>
+</div>
+
+<div class="container" ng-show="$ctrl.event">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 ng-if="$ctrl.form.id">Edit form: {{$ctrl.form.name}}</h2>
+      <h2 ng-if="!$ctrl.form.id">New form</h2>
+    </div>
+  </div>
+
+  <div class="row top-gap-l">
+    <div class="col-xs-12">
+
+      <form name="$ctrl.generalForm">
+        <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid}">
+          <label class="control-label">Name</label>
+            <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true"/>
+            <span class="help-block" ng-if="$ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid">Name is required</span>
+        </div>
+        <div class="top-gap">
+          <label class="control-label">Description</label>
+            <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
+        </div>
+
+        <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
+          <label class="control-label">Color</label>
+            <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="$ctrl.form.color" name="color" ng-required="true">
+            <span class="help-block" ng-if="$ctrl.generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+        </div>
+      </form>
+
+      <div class="row top-gap">
+        <div class="col-xs-12">
+          <button class="btn btn-success pull-right" ng-if="$ctrl.generalForm.$dirty && !$ctrl.saving" ng-click="$ctrl.saveForm($ctrl.event)" ng-disabled="$ctrl.generalForm.$invalid">Save</button>
+          <button class="btn btn-success pull-right" ng-if="!$ctrl.generalForm.$dirty && !$ctrl.saving" disabled="disabled">Save</button>
+          <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row top-gap-l bottom-gap-l">
+    <div class="col-md-4">
+      <a ui-sref="admin.formFieldsEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
+        <div class="card form-section-card">
+          <div class="card-content">
+            <span class="fa-stack fa-lg form-section-fields">
+              <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+              <i class="fa fa-fw fa-file-text fa-stack-1x fa-inverse form-section-fields-icon"></i>
+            </span>
+            <div class="form-section-title">
+              Fields
+            </div>
+            <div class="form-section-description">
+              <p>Create custom form fields that include your organization's unique information.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a ui-sref="admin.formMapEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
+        <div class="card form-section-card">
+          <div class="card-content">
+            <span class="fa-stack fa-lg form-section-map">
+              <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+              <i class="fa fa-fw fa-map-marker fa-stack-1x fa-inverse fa-fw"></i>
+            </span>
+            <div class="form-section-title">
+              Map
+            </div>
+            <div class="form-section-description">
+              <p>Quickly recognize information geospatially by using your organization's symbology.</p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a ui-sref="admin.formFeedEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">
+        <div class="card form-section-card">
+          <div class="card-content">
+            <span class="fa-stack fa-lg form-section-feed">
+              <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+              <i class="fa fa-fw fa-list-ul fa-stack-1x fa-inverse form-section-feed-icon"></i>
+            </span>
+            <div class="form-section-title">
+              Feed
+            </div>
+            <div class="form-section-description">
+              <p>Call attention to important details by customizing what users see in the consolodated feed. </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row top-gap-l bottom-gap-l">
+    <div class="col-xs-12">
+      <div class="card">
+        <div class="card-content">
+          <strong class="text-info">Export Form</strong>
+          <p class="text-info top-gap-s">Export this form for use in another event.</p>
+          <a class="btn btn-info top-gap" ng-href="{{'/api/events/' + $ctrl.event.id + '/' + $ctrl.form.id + '/form.zip?access_token=' + $ctrl.token}}">
+            <i class="fa fa-download"></i> Export
+          </a>
+
+          <span class="help-block" ng-if="true">{{$ctrl.exportError}}</span>
+        </div>
+      </div>
+
+      <div class="card top-gap" ng-if="!$ctrl.form.archived">
+        <div class="card-content">
+          <strong class="text-danger">Archive Form</strong>
+          <p class="text-danger top-gap-s">Archiving a form will remove it from the list of forms a users sees when creating an observation. The form can be restored at any time.</p>
+          <button class="btn btn-danger top-gap" ng-click="$ctrl.archiveForm()"> <i class="fa fa-trash"></i> Archive</button>
+        </div>
+      </div>
+
+      <div class="card top-gap" ng-if="$ctrl.form.archived">
+        <div class="card-content">
+          <strong class="text-success">Restore Form</strong>
+          <p class="text-success top-gap-s">Restoring a form will add it back to the list of forms a users sees when creating an observation.</p>
+          <button class="btn btn-success top-gap" ng-click="$ctrl.restoreForm()"> <i class="fa fa-check"></i> Restore</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

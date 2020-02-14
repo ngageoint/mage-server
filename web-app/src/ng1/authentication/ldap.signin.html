@@ -1,0 +1,74 @@
+<div class="row">
+  <div class="col-md-12">
+    <form class="form" method="post" autocomplete="off">
+      <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+        <input type="text" 
+          name="username" 
+          placeholder="{{$ctrl.strategy.title}} Username" 
+          autocomplete="new-password" 
+          autocapitalize="off"
+          ng-model="$ctrl.username" 
+          ng-value="$ctrl.username" 
+          class="mdc-text-field__input">
+        <div class="mdc-notched-outline">
+          <div class="mdc-notched-outline__leading"></div>
+          <div class="mdc-notched-outline__notch">
+            <label for="username" class="mdc-floating-label">{{$ctrl.strategy.title}} Username</label>
+          </div>
+          <div class="mdc-notched-outline__trailing"></div>
+        </div>
+      </div>
+
+      <div class="top-gap">
+        <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+          <input id="ldap-password" 
+            type="password" 
+            name="password" 
+            placeholder="{{$ctrl.strategy.title}} Password"
+            autocomplete="new-password" 
+            autocapitalize="off" 
+            ng-model="$ctrl.password" 
+            ng-value="$ctrl.password"
+            class="mdc-text-field__input">
+          <div class="mdc-notched-outline">
+            <div class="mdc-notched-outline__leading"></div>
+            <div class="mdc-notched-outline__notch">
+              <label for="ldap-password" class="mdc-floating-label">{{$ctrl.strategy.title}} Password</label>
+            </div>
+            <div class="mdc-notched-outline__trailing"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-button-container">
+        <button class="mdc-button mdc-button--raised third-party-button"
+          ng-style="{'background-color': $ctrl.strategy.buttonColor, 'border-color': $ctrl.strategy.buttonColor}"
+          ng-click="$ctrl.signin($ctrl.strategy)">
+
+          <span class="third-party-button-content">
+            <span ng-if="!$ctrl.strategy.icon" class="third-party-logo">
+              <i class="fa fa-lg fa-shield" ng-style="{'color': $ctrl.strategy.buttonColor}"></i>
+            </span>
+            <span ng-if="$ctrl.strategy.icon" class="third-party-logo">
+              <img data-ng-src="data:image/png;base64,{{$ctrl.strategy.icon}}"></img>
+            </span>
+          
+            <span class="third-party-button-text" ng-style="{color: $ctrl.strategy.textColor}">Sign In With {{$ctrl.strategy.title}}</span>
+          </span>
+
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Status message area -->
+<div class="mdc-snackbar">
+  <div class="mdc-snackbar__surface">
+    <div class="mdc-snackbar__label" role="status">
+      <h4>{{$ctrl.statusTitle}}</h4>
+      {{$ctrl.statusMessage}}
+    </div>
+    <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+  </div>
+</div>

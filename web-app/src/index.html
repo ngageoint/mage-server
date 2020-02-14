@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>MAGE</title>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <script type="systemjs-importmap">
+    {
+      "imports": {
+        "@angular/core": "app:angular-core",
+        "@angular/common": "app:angular-common",
+        "@angular/compiler": "app:angular-compiler",
+        "@uirouter/angular-hybrid": "app:uirouter-hybrid"
+      }
+    }
+    </script>
+</head>
+
+<body class="mdc-typography" ng-controller="NavController">
+  <banner ng-if="myself" class="banner" type="header"></banner>
+  <navbar myself="myself" ng-show="myself"></navbar>
+  <ui-view class="route-content"></ui-view>
+  <banner ng-if="myself" class="banner" type="footer"></banner>
+</body>
+
+</html>

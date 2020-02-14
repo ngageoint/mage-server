@@ -1,0 +1,42 @@
+<div class="content-flex about-content">
+  <h2>About {{$ctrl.name}} {{$ctrl.serverVersion.major}}.{{$ctrl.serverVersion.minor}}.{{$ctrl.serverVersion.micro}}</h2>
+  <p>
+      MAGE is a dynamic, secure, mobile situational awareness and field data collection platform that supports
+      low-bandwidth and disconnected users. MAGE can integrate with existing command centers and common operating
+      pictures or stand alone as a complete, mission-ready solution. The MAGE mobile app on iOS and Android
+      allows agents in the field to create and share geo-tagged observations with attached photos, videos,
+      audio, and form data. MAGE's data collection forms are easily tailored to suit any team and mission with
+      custom form fields and map symbologies. In addition to data collection, the MAGE mobile app can optionally
+      report field agents' locations at regular intervals to the MAGE server. The MAGE server's web app provides
+      a common operating picture of field agents' observations and latest reported locations.
+  </p>
+  <h2 class="top-gap-l">Mobile Applications</h2>
+  <ul>
+    <li>Create and view observations with photos, video and voice.</li>
+    <li>Friendly Force Tracking.</li>
+    <li>Observation storage and synching for offline usage.</li>
+    <li>GeoPackage capable, view offline feature and raster data.</li>
+  </ul>
+  <div class="app-store-container" ng-if="$ctrl.action === 'signin' || !$ctrl.action">
+    <div class="app-store-badges">
+      <a class="app-store-badge" href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"><img src="/assets/images/ios_app_store_black.svg" height="49"></img></a>
+      <a class="app-store-badge" href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"><img src="/assets/images/google-play-badge.png" height="49"></img></a>
+    </div>
+  </div>
+  <h2 class="top-gap-l">API</h2>
+  <p>Browse and try the MAGE API live with <a ui-sref="swagger">Swagger UI.</a></p>
+  <p><strong>Important:</strong> Swagger interactive documentation will modify MAGE data via API calls; please be careful with <strong>POST/PUT/DELETE</strong> operations.</p>
+
+  <h2 class="top-gap-l">Acknowledgements</h2>
+  <div class="row bottom-gap-l">
+    <div class="col-md-6">
+      <h4>Tech Stack</h4>
+      <p>The MAGE server is built on <a href="http://nodejs.org/" target="_blank">NodeJS</a>, with data stored in <a href="http://www.mongodb.org/" target="_blank">MongoDB</a> via <a href="http://mongoosejs.com/" target="_blank">mongoose</a>. Routing provided with <a href="http://expressjs.com/" target="_blank">express</a>, and authentication with <a href="http://passportjs.org/" target="_blank">passport</a>.</p>
+      <p>The front end maps are powered by <a href="http://leafletjs.com/" target="_blank">Leaflet</a>. The responsive layouts and buttons are styled by a modified version of <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a>. The whole front end is tied together by <a href="http://angularjs.org/" target="_blank">AngularJS</a>.</p>
+    </div>
+    <div class="col-md-6">
+      <h4>Iconography</h4>
+      <p>The icons used throughout the app come from <a href="http://fortawesome.github.io/Font-Awesome/" target="_blank">Font Awesome</a></p>
+    </div>
+  </div>
+</div>

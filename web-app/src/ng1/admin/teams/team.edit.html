@@ -1,0 +1,46 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb" ng-if="$ctrl.team.id">
+      <li><i class="fa fa-users admin-dashboard"></i><a ui-sref="admin.teams">Teams</a></li>
+      <li><a ui-sref="admin.team({ teamId: $ctrl.team.id })">{{ $ctrl.team.name }}</a></li>
+      <li class="active">Edit</li>
+    </ol>
+    <ol class="breadcrumb" ng-if="!$ctrl.team.id">
+      <li><i class="fa fa-users admin-dashboard"></i><a ui-sref="admin.teams">Teams</a></li>
+      <li class="active">New</li>
+    </ol>
+  </div>
+</div>
+
+<div class="container bottom-gap-l">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 ng-if="team.id">Edit team: {{$ctrl.team.name}}</h2>
+      <h2 ng-if="!team.id">New team</h2>
+    </div>
+  </div>
+  <hr>
+
+  <div class="row">
+    <div class="col-md-12" ng-show="$ctrl.team">
+
+      <form ng-submit="$ctrl.saveTeam()" class="form">
+        <div class="form-group">
+          <label class="control-label">Name</label>
+          <input class="form-control" type="text" placeholder="Team name" ng-model="$ctrl.team.name"/>
+        </div>
+        <div class="form-group">
+          <label class="control-label">Description</label>
+          <textarea class="form-control" type="text" placeholder="Brief description of the team." ng-model="$ctrl.team.description"/>
+        </div>
+      </form>
+
+      <span class="pull-right">
+        <a class="btn btn-default" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.cancel()">Cancel</a>
+        <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveTeam($ctrl.team)"><i class="fa fa-check"></i> Save</a>
+      </span>
+
+    </div>
+  </div>
+</div>
+

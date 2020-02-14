@@ -11,41 +11,60 @@ module.exports = {
       "micro": parseInt(version[2])
     },
     "authenticationStrategies": {
-      "local": {
-        "passwordMinLength": 14
+      local: {
+        passwordMinLength: 14
       }
-      // ldap: {
-      //   title: "LDAP",
-      //   type: "ldap",
-      //   url: '',
-      //   baseDN: '',
-      //   username: '',
-      //   password: '',
-      //   ldapUsernameField: '',
-      //   ldapDisplayNameField: '',
-      //   ldapEmailField: '',
-      //   textColor: "#000000",
-      //   buttonColor: "#FFFFFF",
-      //   icon: ""
-      // }
-      // "google": {
-      //   "url": " ",
-      //   "callbackURL": " ",
-      //   "clientID": " ",
-      //   "clientSecret": " "
+      // saml: {
+      //   type: 'saml',
+      //   title: 'SAML',
+      //   usernameAttribute: '',
+      //   displayNameAttribute: '',
+      //   emailAttribute: '',
+      //   textColor: '#FFFFFF',
+      //   buttonColor: '#000000',
+      //   icon: '',
+      //   options: {
+      //     issuer: '',
+      //     entryPoint: '',
+      //     callbackPath: '/auth/saml/callback'
+      //   }
       // },
-      // "geoaxis": {
-      //   "authorizationUrl": 'https://geoaxis.gxaccess.com',
-      //   "apiUrl": 'https://gxisapi.gxaccess.com',
-      //   "clientID": '',
-      //   "clientSecret": '',
-      //   "callbackUrl": '',
-      //   "title": "GeoAxis",
-      //   "type": "oauth",
-      //   "textColor": "FFFFFF",
-      //   "buttonColor": "#163043",
-      //   "icon": "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"
-      // }
+      //  ldap: {
+      //    title: "LDAP",
+      //    type: "ldap",
+      //    url: '',
+      //    baseDN: '',
+      //    username: '',
+      //    password: '',
+      //    ldapUsernameField: '',
+      //    ldapDisplayNameField: '',
+      //    ldapEmailField: '',
+      //    textColor: "#FFFFFF",
+      //    buttonColor: "#000000",
+      //    icon: ""
+      //  },
+      // google: {
+      //   type: 'oauth',
+      //   title: 'Google',
+      //   textColor: '#FFFFFF',
+      //   buttonColor: '#4285F4',
+      //   icon: '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',
+      //   callbackURL: "/auth/google/callback",
+      //   clientID: "",
+      //   clientSecret: ""
+      // },
+      //  geoaxis: {
+      //    "authorizationUrl": 'https://geoaxis.gxaccess.com',
+      //    "apiUrl": 'https://gxisapi.gxaccess.com',
+      //    "clientID": 'f',
+      //    "clientSecret": '',
+      //    "callbackUrl": '',
+      //    "title": "GeoAxis",
+      //    "type": "oauth",
+      //    "textColor": "FFFFFF",
+      //    "buttonColor": "#163043",
+      //    "icon": "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"
+      //  }
       //"login-gov": {
       //  "loa": "1"
       //  "url": "",

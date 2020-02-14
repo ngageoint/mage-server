@@ -145,7 +145,7 @@ module.exports = function(app, security) {
       if (req.accepts('application/json')) {
         const response = layerXform.transform(req.layer, {path: req.getPath()});
         res.json(response);
-      } else if (req.accepts('application/octet-stream') && req.layer.file) {
+      } else if (req.layer.file) { // TODO verify accepts header req.accepts(req.layer.contentType), Android needs to be fixed first
         var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
         stream.on('open', () => {
           res.type(req.layer.file.contentType);
@@ -165,7 +165,7 @@ module.exports = function(app, security) {
       if (req.accepts('application/json')) {
         const response = layerXform.transform(req.layer, {path: req.getPath()});
         res.json(response);
-      } else if (req.accepts('application/octet-stream') && req.layer.file) {
+      } else if (req.layer.file) { // TODO verify accepts header req.accepts(req.layer.contentType), Android needs to be fixed first
         var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
         stream.on('open', () => {
           res.type(req.layer.file.contentType);

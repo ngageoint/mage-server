@@ -1,0 +1,54 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb" ng-if="$ctrl.event.id">
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
+      <li class="active">Edit</li>
+    </ol>
+    <ol class="breadcrumb" ng-if="!$ctrl.event.id">
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li class="active">New</li>
+    </ol>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 ng-if="$ctrl.event.id">Edit event: {{$ctrl.event.name}}</h2>
+      <h2 ng-if="!$ctrl.event.id">New event</h2>
+    </div>
+  </div>
+  <hr>
+
+  <div class="row">
+    <div class="col-md-12" ng-show="$ctrl.event">
+
+      <form ng-submit="$ctrl.saveEvent()" class="form">
+        <div class="form-group">
+          <label class="control-label">Name</label>
+          <input class="form-control" type="text" placeholder="Event name" ng-model="$ctrl.event.name"/>
+        </div>
+        <div class="form-group">
+          <label class="control-label">Description</label>
+          <textarea class="form-control" type="text" placeholder="Brief description of the event." ng-model="$ctrl.event.description"/>
+        </div>
+      </form>
+
+      <div class="clearfix">
+        <span class="pull-right">
+          <a class="btn btn-default" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.cancel()">Cancel</a>
+          <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveEvent($ctrl.event)"><i class="fa fa-check"></i> Save</a>
+        </span>
+      </div>
+
+      <div class="alert alert-danger form-group" ng-show="$ctrl.error">
+        <strong>{{$ctrl.error.message}}</strong>
+        <div ng-if="$ctrl.error.errors">
+          <li ng-repeat="(key, value) in $ctrl.error.errors">{{value.message}}</li>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

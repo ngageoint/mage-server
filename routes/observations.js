@@ -318,26 +318,6 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:eventId/observations/:observationIdInPath',
-    passport.authenticate('bearer'),
-    validateObservationReadAccess,
-    parseQueryParams,
-    function (req, res, next) {
-      const options = { fields: req.parameters.fields };
-      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
-        if (err) {
-          return next(err);
-        }
-        if (!observation) {
-          return res.sendStatus(404);
-        }
-        const response = observationXform.transform(observation, transformOptions(req));
-        res.json(response);
-      });
-    }
-  );
-
-  app.get(
     '/api/events/:eventId/observations/(:observationId).zip',
     passport.authenticate('bearer'),
     validateObservationReadAccess,
@@ -345,9 +325,9 @@ module.exports = function(app, security) {
     getIconForObservation,
     function (req, res) {
       var formMap = {};
-      req.event.forms.forEach(function(form) {
+      req.event.forms.forEach(function (form) {
         var fieldsByName = {};
-        form.fields.forEach(function(field) {
+        form.fields.forEach(function (field) {
           fieldsByName[field.name] = field;
         });
         form.fieldsByName = fieldsByName;
@@ -369,14 +349,34 @@ module.exports = function(app, security) {
 
         if (req.observationIcon) {
           const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
-          archive.file(iconPath, {name: req.observation._id + '/media/icon.png'});
+          archive.file(iconPath, { name: req.observation._id + '/media/icon.png' });
         }
 
-        req.observation.attachments.forEach(function(attachment) {
-          archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), {name: req.observation._id + '/media/' + attachment.name});
+        req.observation.attachments.forEach(function (attachment) {
+          archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), { name: req.observation._id + '/media/' + attachment.name });
         });
 
         archive.finalize();
+      });
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/observations/:observationIdInPath',
+    passport.authenticate('bearer'),
+    validateObservationReadAccess,
+    parseQueryParams,
+    function (req, res, next) {
+      const options = { fields: req.parameters.fields };
+      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
+        if (err) {
+          return next(err);
+        }
+        if (!observation) {
+          return res.sendStatus(404);
+        }
+        const response = observationXform.transform(observation, transformOptions(req));
+        res.json(response);
       });
     }
   );

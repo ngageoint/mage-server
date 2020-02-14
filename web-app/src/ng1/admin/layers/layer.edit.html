@@ -1,0 +1,249 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb" ng-if="$ctrl.layer.id">
+      <li><i class="fa fa-map admin-dashboard"></i><a ui-sref="admin.layers">Layers</a></li>
+      <li><a ui-sref="admin.layer({ layerId: $ctrl.layer.id })">{{ $ctrl.layer.name }}</a></li>
+      <li class="active">Edit</li>
+    </ol>
+    <ol class="breadcrumb" ng-if="!$ctrl.layer.id">
+      <li><i class="fa fa-map admin-dashboard"></i><a ui-sref="admin.layers">Layers</a></li>
+      <li class="active">New</li>
+    </ol>
+  </div>
+</div>
+
+<div class="h-100">
+  <div class="full-flex-column">
+    <div class="flex-row">
+      <div class="flex-fill-space">
+        <h2 ng-if="$ctrl.layer.id">Edit layer: {{$ctrl.layer.name}}</h2>
+        <h2 ng-if="!$ctrl.layer.id">New layer</h2>
+      </div>
+      <hr>
+    </div>
+    <div class="form-wrapper">
+      <div class="form-with-preview">
+        <div class="form-inputs">
+          <div class="form-input-inner">
+            <form ng-submit="$ctrl.saveLayer()" class="form">
+              <div class="top-gap">
+                <div class="mdc-text-field mdc-text-field--outlined w-100">
+                  <input type="text" id="layer-name" placeholder="i.e. HurricaneSandy" ng-model="$ctrl.layer.name" value="${{ctrl.layer.name}}" class="mdc-text-field__input" required>
+                  <div class="mdc-notched-outline">
+                    <div class="mdc-notched-outline__leading"></div>
+                    <div class="mdc-notched-outline__notch">
+                      <label for="layer-name" class="mdc-floating-label">Layer Name</label>
+                    </div>
+                    <div class="mdc-notched-outline__trailing"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="top-gap">
+                <div class="mdc-text-field mdc-text-field--textarea text-area-field">
+                  <textarea id="textarea" class="mdc-text-field__input" type="text" ng-model="$ctrl.layer.description">${{ctrl.layer.description}}</textarea>
+                  <div class="mdc-notched-outline">
+                    <div class="mdc-notched-outline__leading"></div>
+                    <div class="mdc-notched-outline__notch">
+                      <label for="textarea" class="mdc-floating-label">Description</label>
+                    </div>
+                    <div class="mdc-notched-outline__trailing"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div ng-show="$ctrl.layer.id == undefined" class="field top-gap">
+                <div class="mdc-typeography--subtitle">Layer Type</div>
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
+                      value="Imagery" 
+                      id="imagery_option" 
+                      name="layer-type">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="imagery_option">Imagery <span class="muted"> (WMS, XYZ or TMS Layers)</span></label>
+                </div>
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
+                      value="Feature" 
+                      id="feature_option" 
+                      name="layer-type">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="feature_option">Static <span class="muted"> (KML)</span></label>
+                </div>
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
+                      value="GeoPackage" 
+                      id="geopackage_option" 
+                      name="layer-type">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="geopackage_option">GeoPackage</label>
+                </div>
+              </div>
+
+              <div class="form-group" ng-if="$ctrl.layer.type === 'GeoPackage' && !$ctrl.layer.id">
+                <label class="control-label">Choose GeoPackage File</label>
+                <file-browser on-file-chosen="$ctrl.onGeoPackageFile($event)" enctype="multipart/form-data"></file-browser>
+              </div>
+
+              <div class="top-gap"> 
+                <div class="mdc-text-field mdc-text-field--outlined" ng-show="$ctrl.layer.type === 'Imagery'" style="width: 100%">
+                  <input type="text" 
+                      id="layer-url"
+                      placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                      value="{{$ctrl.layer.url}}"
+                      ng-model="$ctrl.layer.url" 
+                      ng-change="$ctrl.urlChange()"
+                      class="mdc-text-field__input" required>
+                  <div class="mdc-notched-outline">
+                    <div class="mdc-notched-outline__leading"></div>
+                    <div class="mdc-notched-outline__notch">
+                      <label for="layer-url" class="mdc-floating-label">Layer URL</label>
+                    </div>
+                    <div class="mdc-notched-outline__trailing"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="top-gap" ng-show="$ctrl.layer.type === 'Imagery'">
+                <div class="mdc-form-field">
+                  <div class="mdc-checkbox">
+                    <input 
+                      type="checkbox"
+                      ng-model="$ctrl.layer.base"
+                      class="mdc-checkbox__native-control"
+                      id="baseLayer_cb"/>
+                    <div class="mdc-checkbox__background">
+                      <svg class="mdc-checkbox__checkmark"
+                          viewBox="0 0 24 24">
+                        <path 
+                          class="mdc-checkbox__checkmark-path"
+                          fill="none"
+                          d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                      </svg>
+                      <div class="mdc-checkbox__mixedmark"></div>
+                    </div>
+                  </div>
+                  <label for="baseLayer_cb">Base Layer</label>
+                </div>
+              </div>
+
+              <div class="top-gap" ng-show="$ctrl.layer.type === 'Imagery'">
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
+                      value="XYZ" 
+                      id="xyz_option" 
+                      name="layer-format">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="xyz_option">XYZ</label>
+                </div>
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
+                      value="TMS" 
+                      id="tms_option" 
+                      name="layer-format">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="tms_option">TMS</label>
+                </div>
+                <div class="mdc-form-field">
+                  <div class="mdc-radio">
+                    <input 
+                      class="mdc-radio__native-control" 
+                      type="radio" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
+                      value="WMS" 
+                      id="wms_option" 
+                      name="layer-format">
+                    <div class="mdc-radio__background">
+                      <div class="mdc-radio__outer-circle"></div>
+                      <div class="mdc-radio__inner-circle"></div>
+                    </div>
+                  </div>
+                  <label for="wms_option">WMS</label>
+                </div>
+              </div>
+
+              <admin-layer-wms-edit ng-if="$ctrl.layer.format === 'WMS' && $ctrl.layer.type === 'Imagery'"
+                layer-url="{{$ctrl.layer.url}}"
+                wms-options="$ctrl.wmsOptions"
+                on-wms-options-update="$ctrl.wmsOptionsUpdate(options)"/>
+
+              <div ng-if="$ctrl.saving && $ctrl.layer.type === 'GeoPackage' && $ctrl.layer.geopackage" class="form-group">
+                <uib-progressbar max="$ctrl.total" value="$ctrl.progress"><span style="color:white; white-space:nowrap;">{{$ctrl.progress | filesize}} / {{$ctrl.total | filesize}}</span></uib-progressbar>
+              </div>
+
+            </form>
+          </div>
+          <button class="mdc-fab mdc-fab--extended admin-fab--absolute layer-save-fab" 
+                ng-class="{'disabled': saving}" ng-click="$ctrl.saveLayer()">
+            <span class="material-icons mdc-fab__icon">save</span>
+            <span class="mdc-fab__label">Save Layer</span>
+          </button>
+
+          <div id="error-snackbar" class="mdc-snackbar">
+            <div class="mdc-snackbar__surface">
+              <div class="mdc-snackbar__label">
+                {{$ctrl.errorMessage}}
+              </div>
+              <div class="mdc-snackbar__actions">
+                <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="form-preview">
+          <div class="form-preview-inner">
+            <admin-layer-preview url="{{$ctrl.layer.url}}" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format}}" wms="$ctrl.wmsOptions"></admin-layer-preview>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
