@@ -269,7 +269,8 @@ to `localhost`.  We **strongly urge** you never to allow insecure connections to
 MAGE server bound to a publicly-accessible IP address.
 
 You can start with the documentation of the [cookie library](https://www.npmjs.com/package/cookies#secure-cookies)
-MAGE uses for mroe details and information on properly configuring MAGE behind a reverse proxy with TLS/HTTPS.
+MAGE uses for more details about requiring secure cookies as well as properly configuring MAGE
+behind a reverse proxy with TLS/HTTPS.
 
 ### Running with `forever`
 
