@@ -459,7 +459,7 @@ class LeafletController {
           // Zoom and center point
           this.map.once('zoomend', () => {
             featureLayer.layer.zoomToShowLayer(layer, () => {
-              this.openPopup(layer, { zoomToLocation: true });
+              this.openPopup(layer, { zoomToLocation: false });
             });
           });
           this.map.setView(layer.getLatLng(), 17);
@@ -472,7 +472,7 @@ class LeafletController {
           this.openPopup(layer);
         } else {
           featureLayer.layer.zoomToShowLayer(layer, () => {
-            this.openPopup(layer, { zoomToLocation: true });
+            this.openPopup(layer, { zoomToLocation: false });
           });
         }
       }
