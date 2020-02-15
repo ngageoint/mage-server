@@ -9,15 +9,15 @@
 </div>
 
 <div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="newObservation">
-  <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
+  <observation-form form="newObservationForm" observation="newObservation" on-form-close="onFormClose()"></observation-form>
 </div>
 
 <user-view 
-    class="slide-left new-obs-card view-obs-card feed-card ng-animatable" 
-    ng-if="viewUser" 
-    user="viewUser" 
-    event="event" 
-    observations="observations"></user-view>
+  class="slide-left new-obs-card view-obs-card feed-card ng-animatable" 
+  ng-if="viewUser" 
+  user="viewUser" 
+  event="event" 
+  observations="observations"></user-view>
 
 <observation-view
     class="slide-left new-obs-card view-obs-card feed-card ng-animatable"
@@ -25,9 +25,12 @@
     observation="viewObservation" 
     event="event"></observation-view>
 
-<form-directive ng-if="editObservation" class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll"
-    form="editForm"
-    form-observation="editObservation"></form-directive>
+<observation-form ng-if="editObservation" class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll"
+  form="editForm"
+  observation="editObservation"
+  on-form-close="onFormClose()"
+  on-observation-delete="onObservationDelete($event)">
+</observation-form>
 
 <tab-list on-tab-switch="onTabSwitched(index)" tabs="tabs" class="tab-bg"></tab-list>
 <div class="observation-feed-container content content--active">
