@@ -6,8 +6,8 @@
     on-accept="$ctrl.acceptDisclaimer()" 
     on-cancel="$ctrl.returnToSignin()"></disclaimer>
 </div>
-<div ng-if="$ctrl.action === 'device-id'" class="device-id-container ng-animatable fade-in">
-  <authorize user="$ctrl.user" on-authorized="$ctrl.authorized(device)" on-cancel="$ctrl.returnToSignin()"></authorize>
+<div ng-if="$ctrl.action === 'authorize-device'" class="device-id-container ng-animatable fade-in">
+  <authorize user="$ctrl.user" strategy="{{$ctrl.strategy}}" on-authorized="$ctrl.authorized(device)" on-cancel="$ctrl.returnToSignin()"></authorize>
 </div>
 <div ng-if="$ctrl.action === 'signup'" class="section-container ng-animatable fade-in">
   <div class="signup-container">
@@ -17,7 +17,7 @@
     <local-signup strategy="$ctrl.localAuthenticationStrategy" on-cancel="$ctrl.returnToSignin()" on-success="$ctrl.showSignupSuccess()"></local-signup>
   </div>
 </div>
-<div ng-if="$ctrl.action === 'signup-confirm'" class="section-container ng-animatable fade-in">
+<div ng-if="$ctrl.action === 'inactive-account'" class="section-container ng-animatable fade-in">
   <div class="signup-container">
     <div class="wand-container">
       <img class="mage-wand" src="/assets/images/bluewand.png"/>

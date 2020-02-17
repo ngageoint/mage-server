@@ -73,7 +73,7 @@ class LocalSignupController {
       if(data && data.active) {
         this.showStatusMessage("Success", "Your account has been created and is now active.");
       } else{
-        this.showStatusMessage("Success", "Your account has been created but it is not enabled.  An administrator needs to enable your account before you can log in.");
+        this.showStatusMessage("Success", "Your account has been created but it is not active.  An administrator needs to activate your account before you can log in.");
       }
     });
   }
@@ -101,16 +101,12 @@ class LocalSignupController {
 
 LocalSignupController.$inject = ['UserService', '$element', '$timeout'];
 
-var template = require('./local.signup.html');
-var bindings = {
-  strategy: '<',
-  onCancel: '&',
-  onSuccess: '&'
-};
-var controller = LocalSignupController;
-
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./local.signup.html'),
+  bindings: {
+    strategy: '<',
+    onCancel: '&',
+    onSuccess: '&'
+  },
+  controller: LocalSignupController
 };

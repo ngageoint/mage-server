@@ -6,6 +6,14 @@ import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import  '@uirouter/angular-hybrid';
 import { SwaggerComponent } from "../app/swagger/swagger.component";
+import { downgradeComponent } from '@angular/upgrade/static';
+
+import {
+  MatIcon,
+  MatButton,
+  MatToolbar,
+  MatSpinner
+} from '@angular/material';
 
 require('angular-minicolors');
 require('select2');
@@ -24,6 +32,10 @@ const app = angular.module('mage', [
 ]);
 
 app
+  .directive('matIcon', downgradeComponent({ component: MatIcon }))
+  .directive('matButton', downgradeComponent({ component: MatButton }))
+  .directive('matToolbar', downgradeComponent({ component: MatToolbar }))
+  .directive('matSpinner', downgradeComponent({ component: MatSpinner }))
   .component('filterPanel', require('./filter/filter'))
   .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))
@@ -64,7 +76,6 @@ require('./material-components');
 config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$urlServiceProvider', '$animateProvider'];
 
 function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServiceProvider, $animateProvider) {
-  // $urlRouterProvider.deferIntercept();
   $urlServiceProvider.deferIntercept();
   
   $httpProvider.defaults.withCredentials = true;
@@ -119,7 +130,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
 
   $stateProvider.state({
     name: 'landing',
-    url: '/signin?action',
+    url: '/signin?action?strategy',
     component: 'landing',
     resolve: {
       api: ['$q', 'Api', function($q,  Api) {

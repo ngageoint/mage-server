@@ -5,6 +5,7 @@ class AuthenticationController {
     this._authService = authService;
 
     this.action = $stateParams.action;
+    this.strategy = $stateParams.strategy;
   }
 
   $onInit() {
@@ -32,7 +33,7 @@ class AuthenticationController {
   }
 
   showSignupSuccess() {
-    this.action = 'signup-confirm';
+    this.action = 'inactive-account';
   }
 
   authorized() {
@@ -51,9 +52,10 @@ class AuthenticationController {
     this.onSuccess();
   }
 
-  onSignin(user) {
+  onSignin(user, strategy) {
     this.user = user;
-    this.action = 'device-id';
+    this.strategy = strategy;
+    this.action = 'authorize-device';
   }
 }
 

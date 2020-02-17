@@ -1,65 +1,55 @@
-module.exports = {
+import { textField, snackbar } from 'material-components-web';
+
+class LdapSigninController {
+  constructor($element, $uibModal, UserService) {
+    this.$element = $element;
+    this.$uibModal = $uibModal;
+    this.UserService = UserService;
+  }
+
+  $postLink() {
+    this.usernameField = new textField.MDCTextField(this.$element.find('.mdc-text-field')[0]);
+    this.passwordField = new textField.MDCTextField(this.$element.find('.mdc-text-field')[1]);
+    this.snackbar = new snackbar.MDCSnackbar(this.$element.find('.mdc-snackbar')[0]);
+  }
+
+  signin() {
+    this.UserService.ldapSignin({ username: this.username, password: this.password }).then(response => {
+      const user = response.user;
+
+      // User has an account, but its not active
+      if (!user.active) {
+        this.showStatus = true;
+        this.statusTitle = 'Account Created';
+        this.statusMessage = 'Please contact a MAGE administrator to activate your account.';
+        this.snackbar.open();
+        return;
+      }
+
+      this.onSignin({
+        $event: {
+          user: user,
+          strategy: this.strategy.name
+        }
+      });
+    }, response => {
+      this.statusTitle = 'Error signing in';
+      this.statusMessage = response.data || 'Please check your username and password and try again.';
+      this.usernameField.valid = false;
+      this.passwordField.valid = false;
+      this.snackbar.open();
+    });
+  }
+}
+
+LdapSigninController.$inject = ['$element', '$uibModal', 'UserService'];
+
+export default {
   template: require('./ldap.signin.html'),
   bindings: {
     strategy: '<',
-    signinType: '@',
     onSignin: '&'
   },
   controller: LdapSigninController
 };
 
-LdapSigninController.$inject = ['$uibModal', 'UserService'];
-
-function LdapSigninController($uibModal, UserService) {
-
-  this.signin = function() {
-    var self = this;
-    UserService.ldapSignin({username: this.username, password: this.password}).then(function(response) {
-      var user = response.user;
-
-      // User has an account, but its not active
-      if (!user.active) {
-        self.showStatus = true;
-        self.statusTitle = 'Account Created';
-        self.statusMessage = 'Please contact a MAGE administrator to activate your account.';
-        self.statusLevel = 'alert-success';
-        return;
-      }
-
-      self.onSignin();
-
-      $uibModal.open({
-        template: require('./authorize-modal.html'),
-        controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-          $scope.user = user;
-          $scope.authorize = function (params) {
-            UserService.authorize('local', user, false, {uid: params.uid}).success(function(data) {
-              if (data.device.registered) {
-                $uibModalInstance.close($scope);
-              } else {
-                $scope.status = 400;
-                $scope.statusTitle = 'Invalid Device ID';
-                $scope.statusMessage = 'Please check your device ID and try again.';
-                $scope.statusLevel = 'alert-warning';
-              }
-            }).error(function (data, status) {
-              $scope.status = status;
-              $scope.statusTitle = 'Invalid Device ID';
-              $scope.statusMessage = data.errorMessage;
-              $scope.statusLevel = 'alert-warning';
-            });
-          };
-
-          $scope.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-          };
-        }]
-      });
-    }, function(response) {
-      self.showStatus = true;
-      self.statusTitle = 'Error signing in';
-      self.statusMessage = response.data || 'Please check your username and password and try again.';
-      self.statusLevel = 'alert-danger';
-    });
-  };
-}
