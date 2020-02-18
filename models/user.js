@@ -343,13 +343,15 @@ exports.createUser = async function(user, callback) {
   var newUserEvents;
   var newUserTeams;
   if(securitySettings && securitySettings.settings) {
-    let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
-    if(usersReqAdmin) {
-      log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
-      update.active = !usersReqAdmin.enabled;
+    if(securitySettings.settings[authenticationType]) {
+      let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
+      if(usersReqAdmin) {
+        log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
+        update.active = !usersReqAdmin.enabled;
+      }
+      newUserEvents = securitySettings.settings[authenticationType].newUserEvents;   
+      newUserTeams = securitySettings.settings[authenticationType].newUserTeams;  
     }
-    newUserEvents = securitySettings.settings[authenticationType].newUserEvents;   
-    newUserTeams = securitySettings.settings[authenticationType].newUserTeams;  
   }
         
   log.info("Creating new user " + update.username);
