@@ -1,0 +1,13 @@
+<mat-form-field appearance="outline">
+  <mat-label>{{field.title + (field.required ? ' *' : '')}}</mat-label>
+  <mat-select [(ngModel)]="field.value">
+    <mat-option>
+      <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{field.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
+    </mat-option>
+
+    <mat-option [value]="null"></mat-option>
+    <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
+      {{choice.title}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>

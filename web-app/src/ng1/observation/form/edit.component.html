@@ -7,7 +7,7 @@
     <div ng-switch on="field.type">
       <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
       <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
-      <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
+      <observation-edit-dropdown ng-switch-when="dropdown" [field]="field"></observation-edit-dropdown>
       <email-edit ng-switch-when="email" field="field"></email-edit>
       <geometry-edit ng-switch-when="geometry" 
         feature="{type: 'Feature', geometry: field.value, style: $ctrl.geometryStyle}" 
@@ -22,5 +22,5 @@
       <textarea-edit ng-switch-when="textarea" field="field"></textarea-edit>
     </div>
   </div>
-  <span>* required</span>
+  <span class="mdc-typography--caption">* indicates required field</span>
 </div>
