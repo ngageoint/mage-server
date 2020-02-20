@@ -17,22 +17,24 @@ import {
   MatFormField,
   MatIconModule,
   MatButtonModule,
+  MatChipsModule,
   MatToolbarModule,
   MatProgressSpinnerModule,
   MatFormFieldModule,
   MatInputModule,
   MatAutocompleteModule,
-  MatSelectModule,
-  MatSelect
+  MatSelectModule
 } from '@angular/material';
 
 import { SwaggerComponent } from './swagger/swagger.component';
+import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
 import { DropdownComponent } from './observation/edit/dropdown/dropdown.component';
+import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
 import app from '../ng1/app.js';
 
 @NgModule({
-  declarations: [SwaggerComponent, DropdownComponent],
+  declarations: [SwaggerComponent, DropdownComponent, MultiSelectDropdownComponent, ScrollWrapperComponent],
   imports: [
     BrowserModule,
     UpgradeModule,
@@ -49,11 +51,12 @@ import app from '../ng1/app.js';
     MatAutocompleteModule,
     MatSelectModule,
     NgxMatSelectSearchModule,
+    MatChipsModule,
     ScrollingModule
   ],
   providers: [],
   bootstrap: [],
-  entryComponents:[MatIcon, MatButton, MatToolbar, MatSpinner, MatFormField, DropdownComponent, SwaggerComponent]
+  entryComponents:[MatIcon, MatButton, MatToolbar, MatSpinner, MatFormField, DropdownComponent, MultiSelectDropdownComponent, ScrollWrapperComponent, SwaggerComponent]
 })
 export class AppModule { 
   constructor(private upgrade: UpgradeModule) { }
