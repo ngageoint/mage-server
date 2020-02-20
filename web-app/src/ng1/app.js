@@ -12,8 +12,11 @@ import {
   MatIcon,
   MatButton,
   MatToolbar,
-  MatSpinner
+  MatSpinner,
+  MatFormField
 } from '@angular/material';
+
+import { DropdownComponent } from '../../src/app/observation/edit/dropdown/dropdown.component';
 
 require('angular-minicolors');
 require('select2');
@@ -36,6 +39,8 @@ app
   .directive('matButton', downgradeComponent({ component: MatButton }))
   .directive('matToolbar', downgradeComponent({ component: MatToolbar }))
   .directive('matSpinner', downgradeComponent({ component: MatSpinner }))
+  .directive('matFormField', downgradeComponent({ component: MatFormField }))
+  .directive('observationEditDropdown', downgradeComponent({ component: DropdownComponent }))
   .component('filterPanel', require('./filter/filter'))
   .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))

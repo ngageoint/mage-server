@@ -31,4 +31,8 @@ $mage-app-theme: mat-light-theme($mage-app-primary, $mage-app-accent, $mage-app-
 @import "./ng1/css/style.scss";
 @import "./ng1/css/map.scss";
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: unset;
+}
