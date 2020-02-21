@@ -1,5 +1,5 @@
 {
-  "name": "mage-server",
+  "name": "@ngageoint/mage-service",
   "version": "5.3.4",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
@@ -18,7 +18,7 @@
   ],
   "homepage": "https://www1.nga.mil",
   "engines": {
-    "node": ">= 8.x <= 10.x",
+    "node": ">= 8.x",
     "npm": ">= 5.x"
   },
   "dependencies": {
@@ -114,8 +114,7 @@
   },
   "scripts": {
     "postinstall": "node bin/postinstall",
-    "build": "npm run build-ts && npm run build-web",
-    "build-ts": "tsc && cpy --parents 'docs/**/*' dist/",
+    "build": "tsc && cpy --parents 'docs/**/*' dist/",
     "run": "node dist/app.js",
     "run-debug": "ts-node app.js",
     "report": "nyc report",
@@ -129,7 +128,8 @@
     "start": "node dist/app.js",
     "debug": "node --inspect-brk=9229 app.js",
     "build-web": "npm --prefix web-app run build",
-    "start-web": "npm --prefix web-app run start"
+    "start-web": "npm --prefix web-app run start",
+    "prepare": "npm run build"
   },
   "config": {
     "mongodbMemoryServer": {
@@ -138,5 +138,8 @@
   },
   "bundleDependencies": [],
   "private": true,
-  "main": "app.js"
+  "main": "dist/app.js",
+  "files": [
+    "dist/**/*"
+  ]
 }
