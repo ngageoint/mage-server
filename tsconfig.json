@@ -1,13 +1,14 @@
 {
-  "include": [ "*", "manifold", "plugins" ],
+  "include": [ "*", "manifold" ],
   "exclude": [
     "functionalTests",
     "node_modules",
+    "plugins",
     "public",
     "scratch",
     "scripts",
     "test",
-    "web-app"
+    "web-app",
   ],
   "compilerOptions": {
     "baseUrl": ".",

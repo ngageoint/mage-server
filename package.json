@@ -113,7 +113,6 @@
     ]
   },
   "scripts": {
-    "postinstall": "node bin/postinstall",
     "build": "tsc && cpy --parents 'docs/**/*' dist/",
     "run": "node dist/app.js",
     "run-debug": "ts-node app.js",
