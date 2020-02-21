@@ -140,6 +140,7 @@
   "private": true,
   "main": "dist/app.js",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "bin/*"
   ]
 }
