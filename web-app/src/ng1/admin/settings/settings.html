@@ -30,13 +30,13 @@
 
             <form ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
               <div ng-if="$ctrl.authConfig" data-ng-repeat="strategy in $ctrl.strategies">
-              <div class="row">
+              <div class="row" style="padding-bottom: 25px;">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">
                       <div class="row">
                         <div class="col-md-12 bottom-gap">
-                          <h3>{{strategy}} Authentication</h3>
+                          <h3>{{strategy.toUpperCase()}} Authentication</h3>
                           <hr>
                         </div>
                       </div>                
