@@ -35,10 +35,17 @@ class LeafletController {
   }
 
   $onInit() {
-    const mapPosition = this.LocalStorageService.getMapPosition() || {
-      center: [0, 0],
-      zoom: 3
-    };
+    let mapPosition = this.LocalStorageService.getMapPosition();
+    if (!mapPosition) {
+      this.LocalStorageService.setMapPosition({
+        center: {
+          lng:0,
+          lat: 0
+        },
+        zoom: 3
+      });
+      mapPosition = this.LocalStorageService.getMapPosition()
+    }
     this.map = L.map("map", {
       center: mapPosition.center,
       zoom: mapPosition.zoom,
