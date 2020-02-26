@@ -13,7 +13,7 @@
 
       <div class="row">
         <div class="col-md-3">
-          <ul class="nav nav-pills nav-stacked" ng-show="$ctrl.local">
+          <ul class="nav nav-pills nav-stacked">
             <li ng-class="{active: $ctrl.pill === 'security'}"><a ng-click="$ctrl.pill = 'security'" href="javascript:void(0);">Security</a></li>
           </ul>
           <ul class="nav nav-pills nav-stacked">
@@ -29,8 +29,95 @@
             <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
 
             <form ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
+              <div ng-if="$ctrl.authConfig" data-ng-repeat="strategy in $ctrl.strategies">
+              <div class="row" style="padding-bottom: 25px;">
+                <div class="col-sm-11">
+                  <div class="card">
+                    <div class="card-content">
+                      <div class="row">
+                        <div class="col-md-12 bottom-gap">
+                          <h3>{{strategy.toUpperCase()}} Authentication</h3>
+                          <hr>
+                        </div>
+                      </div>                
 
-              <div class="row">
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="control-label" for="type">New Users Require Admin Approval</label>
+                            <ui-select ng-model="$ctrl.security[strategy].usersReqAdmin.enabled" theme="bootstrap">
+                              <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                              <ui-select-choices repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
+                                <div ng-bind-html="usersReqAdminChoice.title"></div>
+                                <small ng-bind-html="usersReqAdminChoice.description"></small>
+                              </ui-select-choices>
+                            </ui-select>
+                            <p class="help-block">If disabled, admin approval is <b>NOT</b> required to approve new users.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div ng-show="$ctrl.security[strategy].usersReqAdmin.enabled == false">
+                        <div class="row">
+                          <div class="col-sm-12">
+                            <label class="control-label" for="type">New Users Default Event(s)</label>
+                            <div class="form-group">
+                              <ui-select multiple ng-model="$ctrl.security[strategy].newUserEvents" theme="bootstrap">
+                                <ui-select-match>{{$item.name}}</ui-select-match>
+                                <ui-select-choices repeat="event.id as event in $ctrl.events">
+                                  <div ng-bind-html="event.name"></div>
+                                  <small ng-bind-html="event.description"></small>
+                                </ui-select-choices>
+                              </ui-select>
+                              <ui-select-no-choice>
+                                There are no events...
+                              </ui-select-no-choice>
+                              <p class="help-block">When new users are created, this is the event that they will be added to by default.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-sm-12">
+                            <label class="control-label" for="type">New Users Default Team(s)</label>
+                            <div class="form-group">
+                              <ui-select multiple ng-model="$ctrl.security[strategy].newUserTeams" theme="bootstrap">
+                                <ui-select-match>{{$item.name}}</ui-select-match>
+                                <ui-select-choices repeat="team.id as team in $ctrl.teams">
+                                  <div ng-bind-html="team.name"></div>
+                                  <small ng-bind-html="team.description"></small>
+                                </ui-select-choices>
+                              </ui-select>
+                              <ui-select-no-choice>
+                                There are no teams...
+                              </ui-select-no-choice>
+                              <p class="help-block">When new users are created, this is the team that they will be added to by default.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+    
+                      <div class="row">
+                          <div class="col-sm-12">
+                            <div class="form-group">
+                              <label class="control-label" for="type">New Devices Require Admin Approval</label>
+                              <ui-select ng-model="$ctrl.security[strategy].devicesReqAdmin.enabled" theme="bootstrap">
+                                <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                <ui-select-choices repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
+                                  <div ng-bind-html="devicesReqAdminChoice.title"></div>
+                                  <small ng-bind-html="devicesReqAdminChoice.description"></small>
+                                </ui-select-choices>
+                              </ui-select>
+                              <p class="help-block">If disabled, admin approval is <b>NOT</b> required to register devices.</p>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                  </div>    
+                </div>
+              </div>
+              </div>
+
+              <div class="row" ng-show="$ctrl.authConfig.local">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">

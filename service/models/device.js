@@ -2,7 +2,9 @@ var mongoose = require('mongoose')
   , async = require('async')
   , Observation = require('./observation')
   , User = require('./user')
-  , Token = require('./token');
+  , Token = require('./token')
+  , Setting = require('../models/setting')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -130,7 +132,7 @@ exports.count = function() {
   return Device.count({}).exec();
 };
 
-exports.createDevice = function(device) {
+exports.createDevice = async function(device) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
@@ -144,9 +146,24 @@ exports.createDevice = function(device) {
     appVersion: device.appVersion
   };
 
-  if (device.registered) update.registered = device.registered;
+  var user = await User.getUserByIdWithPromise(device.userId);
+  var authenticationType = user.authentication.type;
 
-  return Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec();
+  if (device.registered) { 
+    update.registered = device.registered;
+  } else {
+    log.info("Reading security settings");
+    const securitySettings = await Setting.getSetting('security');
+    if(securitySettings && securitySettings.settings) {
+      let devicesReqAdmin = securitySettings.settings[authenticationType].devicesReqAdmin;
+      if (devicesReqAdmin) {
+        log.info("Admin approval required to approve new devices is: " + devicesReqAdmin.enabled);
+        update.registered = !devicesReqAdmin.enabled;
+      }
+    }
+  }
+  log.info("Creating new device ", device.uid);
+  return await Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec();
 };
 
 exports.updateDevice = function(id, update) {

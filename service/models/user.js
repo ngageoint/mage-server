@@ -9,7 +9,9 @@ var mongoose = require('mongoose')
   , Team = require('./team')
   , Observation = require('./observation')
   , Location = require('./location')
-  , CappedLocation = require('./cappedLocation');
+  , CappedLocation = require('./cappedLocation')
+  , Setting = require('../models/setting')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -256,6 +258,19 @@ exports.getUserById = function(id, callback) {
   });
 };
 
+exports.getUserByIdWithPromise = function(id) {
+  const promise = new Promise(function(resolve, reject) {
+    User.findById(id).populate('roleId')
+      .exec()
+      .then(user => {
+        resolve(user ? user : undefined);
+      })
+      .catch(err => reject(err));
+  });
+
+  return promise;
+};
+
 exports.getUserByUsername = function(username, callback) {
   User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
     callback(err, user);
@@ -307,8 +322,8 @@ exports.getUsers = function(options, callback) {
   });
 };
 
-exports.createUser = function(user, callback) {
-  var create = {
+exports.createUser = async function(user, callback) {
+  var update = {
     username: user.username,
     displayName: user.displayName,
     email: user.email,
@@ -320,13 +335,63 @@ exports.createUser = function(user, callback) {
     authentication: user.authentication
   };
 
-  User.create(create, function(err, user) {
+  //e.g. local, ldap, etc
+  var authenticationType = user.authentication.type;
+
+  log.info("Reading security settings");
+  let securitySettings = await Setting.getSetting('security');
+  var newUserEvents;
+  var newUserTeams;
+  if(securitySettings && securitySettings.settings) {
+    if(securitySettings.settings[authenticationType]) {
+      let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
+      if(usersReqAdmin) {
+        log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
+        update.active = !usersReqAdmin.enabled;
+      }
+      newUserEvents = securitySettings.settings[authenticationType].newUserEvents;   
+      newUserTeams = securitySettings.settings[authenticationType].newUserTeams;  
+    }
+  }
+        
+  log.info("Creating new user " + update.username);
+  var newUser = await User.create(update, function(err, user) {
     if (err) return callback(err);
 
     user.populate('roleId', function(err, user) {
       callback(err, user);
     });
   });
+
+  //We have to wait for the user to be created before we can add them to an event and/or team.
+  if(newUser && newUser.active) {
+    if(newUserEvents && Array.isArray(newUserEvents)){
+      for(i = 0; i < newUserEvents.length; i++) {
+        await addUserToTeamByEventId(newUserEvents[i], newUser);
+      }
+    }
+
+    if(newUserTeams && Array.isArray(newUserTeams)) {
+      for (var i = 0; i < newUserTeams.length; i++) {
+        Team.addUser({_id: mongoose.Types.ObjectId(newUserTeams[i])}, newUser, function(err, team) {
+          //TODO implement
+        });
+      }
+    }
+  }
+};
+
+async function addUserToTeamByEventId(eventId, user) {
+  log.debug("Attempting to locate team with the event id of " + eventId);
+  var team = await Team.getTeamByEventId(eventId);
+
+  if (team) {
+    log.info("Adding " + user.username + " to event team " + team.name);
+    await Team.addUserWithPromise(team, user);
+  } else {
+    log.error("Failed to find team with eventId " + eventId 
+    +". User " + user.username + " was not added to any event.");
+  }
 };
 
 exports.updateUser = function(user, callback) {
