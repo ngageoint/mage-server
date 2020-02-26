@@ -124,9 +124,11 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     } else if (token) {
       log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
       next(new Error("Not supported"));
+    } else {
+      return res.sendStatus(403);
     }
   }
-
+ 
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.

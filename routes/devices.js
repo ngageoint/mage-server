@@ -8,7 +8,11 @@ module.exports = function(app, security) {
   var passport = security.authentication.passport;
   var resource = new DeviceResource(passport);
 
-  // Create a new device, requires CREATE_DEVICE role
+  /**
+   * Create a new device, requires CREATE_DEVICE role
+   * 
+   * @deprecated Use /auth/{strategy}/authorize instead.
+   */
   app.post('/api/devices',
     passport.authenticate('bearer'),
     resource.ensurePermission('CREATE_DEVICE'),
@@ -62,8 +66,12 @@ DeviceResource.prototype.ensurePermission = function(permission) {
 
 /**
  * TODO: this should return a 201 and a location header
+ * 
+ * @deprecated Use /auth/{strategy}/authorize instead.
  */
 DeviceResource.prototype.create = function(req, res, next) {
+  console.warn("Calling deprecated function to create device.  Call authorize instead.");
+
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
 
