@@ -2,10 +2,12 @@
   "name": "@ngageoint/mage-service",
   "version": "5.3.4",
   "displayName": "MAGE Server",
-  "description": "Geospatial situation awareness application.",
+  "description": "MAGE is a geospatial situational awareness and data collection application.",
   "keywords": [
     "NGA",
-    "MAGE"
+    "MAGE",
+    "situational awareness",
+    "geospatial"
   ],
   "author": {
     "name": "NGA"
@@ -138,6 +140,8 @@
   "bundleDependencies": [],
   "private": true,
   "main": "dist/app.js",
+  "bin": {
+  },
   "files": [
     "dist/**/*",
     "bin/*"
