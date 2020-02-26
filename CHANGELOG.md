@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Add filter support to edit observation select/dropdown.
 * Fix mobile web export.
 * Fix observation download bug.
 * Fix bug where unregistered devices were not shown on admin dashboard.

@@ -11,7 +11,11 @@ module.exports = function fileUploadGrid() {
       preview: '=',
       uploadId: '=',
       uploadFileFormName: '=',
-      defaultImageUrl: '='
+      defaultImageUrl: '=',
+      onAdd: '&',
+      onRemove: '&',
+      onUpload: '&',
+      onError: '&'
     },
     controller: FileUploadController
   };
@@ -57,10 +61,13 @@ function FileUploadController($scope, $element) {
         if ($scope.attachmentsToUpload === 1) {
           $scope.firstFile = $scope.files[newId];
         }
+
         $scope.$apply(function() {
-          $scope.$emit('uploadFile', newId, $scope.files[newId], $scope.url);
+          $scope.onAdd({
+            $event: { id: newId }
+          });
         });
-        console.log('file', file);
+
         if (file.type.match('image')) {
           return previewImage($scope.files[newId]);
         } else if (file.type.match('video')) {
@@ -78,7 +85,10 @@ function FileUploadController($scope, $element) {
     } else {
       $scope.firstFile = undefined;
     }
-    $scope.$emit('removeUpload', id);
+
+    $scope.onRemove({
+      $event: { id: id }
+    });
   };
 
   $scope.$watch('url', function(url) {
@@ -170,18 +180,20 @@ function FileUploadController($scope, $element) {
   var uploadComplete = function(response) {
     var theFile = this;
     $scope.$apply(function() {
-      // $scope.file = null;
       $scope.files[theFile.fileId].uploading = false;
-      $scope.$emit('uploadComplete', $scope.url, response, theFile.fileId);
+      $scope.onUpload({
+        $event: { id: theFile.fileId, response: response }
+      });
     });
   };
 
   var uploadFailed = function(response) {
     var theFile = this;
     $scope.$apply(function() {
-      // $scope.file = null;
       $scope.files[theFile.fileId].uploading = false;
-      $scope.$emit('uploadFailed', $scope.url, response, theFile.fileId);
+      $scope.onError({
+        $event: { id: theFile.fileId }
+      });
     });
   };
 

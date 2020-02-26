@@ -35,10 +35,17 @@ class LeafletController {
   }
 
   $onInit() {
-    const mapPosition = this.LocalStorageService.getMapPosition() || {
-      center: [0, 0],
-      zoom: 3
-    };
+    let mapPosition = this.LocalStorageService.getMapPosition();
+    if (!mapPosition) {
+      this.LocalStorageService.setMapPosition({
+        center: {
+          lng:0,
+          lat: 0
+        },
+        zoom: 3
+      });
+      mapPosition = this.LocalStorageService.getMapPosition()
+    }
     this.map = L.map("map", {
       center: mapPosition.center,
       zoom: mapPosition.zoom,
@@ -459,7 +466,7 @@ class LeafletController {
           // Zoom and center point
           this.map.once('zoomend', () => {
             featureLayer.layer.zoomToShowLayer(layer, () => {
-              this.openPopup(layer, { zoomToLocation: true });
+              this.openPopup(layer, { zoomToLocation: false });
             });
           });
           this.map.setView(layer.getLatLng(), 17);
@@ -472,7 +479,7 @@ class LeafletController {
           this.openPopup(layer);
         } else {
           featureLayer.layer.zoomToShowLayer(layer, () => {
-            this.openPopup(layer, { zoomToLocation: true });
+            this.openPopup(layer, { zoomToLocation: false });
           });
         }
       }

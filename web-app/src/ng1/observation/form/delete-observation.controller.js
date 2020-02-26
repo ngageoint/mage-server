@@ -12,7 +12,7 @@ function DeleteObservationController($scope, $uibModalInstance, EventService, ob
 
   $scope.delete = function() {
     EventService.archiveObservation($scope.observation).then(function() {
-      $scope.$emit('observation:delete',  $scope.observation);
+      $uibModalInstance.close();
     });
   };
 }

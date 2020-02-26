@@ -72,18 +72,6 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
 
   };
 
-  $scope.cancelNewObservation = function() {
-    $scope.newObservationForms = null;
-    $scope.$emit('observation:cancel');
-  };
-
-  $scope.$on('observation:delete', function(e, observation) {
-    $scope.newObservation = null;
-    $scope.editObservation = null;
-    $scope.viewObservation = null;
-    MapService.removeFeatureFromLayer(observation, 'Observations');
-  });
-
   $scope.$on('user:view', function(e, user) {
     $scope.viewUser = user;
     $scope.newObservation = null;
@@ -208,14 +196,17 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
     return ObservationService.getObservationIconUrlForEvent(event.id, primaryForm.id, primary.value, secondary.value);
   }
 
-  $scope.$on('observation:editDone', function() {
+  $scope.onFormClose = function() {
     $scope.newObservation = null;
     $scope.editObservation = null;
-  });
+  }
 
-  $scope.$on('observation:cancel', function() {
+  $scope.onObservationDelete = function($event) {
     $scope.newObservation = null;
-  });
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+    MapService.removeFeatureFromLayer($event.observation, 'Observations');
+  }
 
   $scope.$watch('event', function() {
     $scope.newObservation = null;

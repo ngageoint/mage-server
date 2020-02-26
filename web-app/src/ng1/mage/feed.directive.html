@@ -8,16 +8,17 @@
   </div>
 </div>
 
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="newObservation">
-  <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
-</div>
+<!-- TODO this needs angular 8 scroll directive-->
+<feed-scroll-wrapper ng-if="newObservation">
+  <observation-form form="newObservationForm" observation="newObservation" on-form-close="onFormClose()"></observation-form>
+</feed-scroll-wrapper>
 
 <user-view 
-    class="slide-left new-obs-card view-obs-card feed-card ng-animatable" 
-    ng-if="viewUser" 
-    user="viewUser" 
-    event="event" 
-    observations="observations"></user-view>
+  class="slide-left new-obs-card view-obs-card feed-card ng-animatable" 
+  ng-if="viewUser" 
+  user="viewUser" 
+  event="event" 
+  observations="observations"></user-view>
 
 <observation-view
     class="slide-left new-obs-card view-obs-card feed-card ng-animatable"
@@ -25,9 +26,9 @@
     observation="viewObservation" 
     event="event"></observation-view>
 
-<form-directive ng-if="editObservation" class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll"
-    form="editForm"
-    form-observation="editObservation"></form-directive>
+<feed-scroll-wrapper ng-if="editObservation">
+  <observation-form form="editForm" observation="editObservation" on-form-close="onFormClose()" on-observation-delete="onObservationDelete($event)"></observation-form>
+</feed-scroll-wrapper>
 
 <tab-list on-tab-switch="onTabSwitched(index)" tabs="tabs" class="tab-bg"></tab-list>
 <div class="observation-feed-container content content--active">

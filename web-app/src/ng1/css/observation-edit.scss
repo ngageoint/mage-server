@@ -1,3 +1,19 @@
+.observation-edit-toolbar {
+  position: sticky;
+  display: flex;
+  top: 0;
+  z-index: 1;
+}
+
+.observation-edit-toolbar__title {
+  flex: 1 1 auto;
+  padding-left: 20px;
+}
+
+.observation-edit-toolbar__progress circle {
+  stroke: white;
+}
+
 .form-mask {
   background: black;
   position: absolute;
