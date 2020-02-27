@@ -1,7 +1,8 @@
 {
-  "name": "@ngageoint/mage-web",
-  "version": "5.3.3",
-  "description": "MAGE Web",
+  "private": true,
+  "name": "@ngageoint/mage-web-app",
+  "version": "5.3.4",
+  "description": "The MAGE web-app is the UI for interacting with the MAGE service in a web browser.",
   "keywords": [
     "NGA",
     "mage"
@@ -68,9 +69,9 @@
     "leaflet": "1.6.0",
     "leaflet-control-geocoder": "1.6.0",
     "leaflet-editable": "1.2.0",
-    "leaflet-groupedlayercontrol": "https://github.com/newmanw/leaflet-groupedlayercontrol.git#master",
+    "leaflet-groupedlayercontrol": "git+https://github.com/newmanw/leaflet-groupedlayercontrol.git#master",
     "leaflet.markercluster": "1.4.1",
-    "leaflet.vectorgrid": "https://github.com/newmanw/Leaflet.VectorGrid.git",
+    "leaflet.vectorgrid": "git+https://github.com/newmanw/Leaflet.VectorGrid.git",
     "material-components-web": "3.2.0",
     "md-date-time-picker": "./src/ng1/vendor/md-date-time-picker",
     "mgrs": "1.0.0",

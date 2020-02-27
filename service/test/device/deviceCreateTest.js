@@ -1,10 +1,13 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
+  , chai = require('chai')
   , mongoose = require('mongoose')
   , app = require('../../express')
   , MockToken = require('../mockToken')
   , TokenModel = mongoose.model('Token');
+
+const expect = chai.expect;
+const should = chai.should();
 
 require('sinon-mongoose');
 
@@ -15,7 +18,7 @@ require('../../models/user');
 var UserModel = mongoose.model('User');
 
 describe("device create tests", function() {
-  
+
   afterEach(function() {
     sinon.restore();
   });
@@ -54,7 +57,7 @@ describe("device create tests", function() {
         userId: userId.toString()
       });
 
-    request(app)
+    const res = await request(app)
       .post('/api/devices')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
@@ -64,13 +67,11 @@ describe("device create tests", function() {
         description: 'Some description',
         userId: userId.toString()
       })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var device = res.body;
-        should.exist(device);
-      })
-      .end(done);
+
+    res.status.should.equal(200)
+    res.type.should.match(/json/)
+    const device = res.body
+    expect(device).to.exist
   });
 
   it("should create unregistered device", function(done) {

@@ -10,7 +10,7 @@ module.exports = function(app, security) {
 
   /**
    * Create a new device, requires CREATE_DEVICE role
-   * 
+   *
    * @deprecated Use /auth/{strategy}/authorize instead.
    */
   app.post('/api/devices',
@@ -66,7 +66,7 @@ DeviceResource.prototype.ensurePermission = function(permission) {
 
 /**
  * TODO: this should return a 201 and a location header
- * 
+ *
  * @deprecated Use /auth/{strategy}/authorize instead.
  */
 DeviceResource.prototype.create = function(req, res, next) {

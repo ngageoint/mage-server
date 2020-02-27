@@ -1,5 +1,5 @@
 {
-  "name": "@ngageoint/mage-service",
+  "name": "@ngageoint/mage.service",
   "version": "5.3.4",
   "displayName": "MAGE Server",
   "description": "MAGE is a geospatial situational awareness and data collection application.",
@@ -45,6 +45,7 @@
     "jose": "0.3.2",
     "json2csv": "4.5.1",
     "jszip": "2.5.0",
+    "mgrs": "^1.0.0",
     "moment": "2.22.2",
     "mongodb-migrations": "0.8.5",
     "mongoose": "4.13.14",
@@ -65,6 +66,7 @@
     "pem-jwk": "1.5.1",
     "pem2jwk": "1.0.1",
     "pug": "2.0.4",
+    "request": "^2.88.2",
     "shp-write": "git+https://github.com/newmanw/shp-write.git#fix-polygon-export",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
@@ -79,11 +81,15 @@
   "devDependencies": {
     "@types/async": "^3.0.5",
     "@types/chai": "^4.2.7",
+    "@types/express": "^4.17.2",
+    "@types/express-serve-static-core": "^4.17.2",
     "@types/fs-extra": "^8.0.1",
     "@types/geojson": "^7946.0.7",
     "@types/mocha": "^5.2.7",
     "@types/mongoose": "^4.7.51",
+    "@types/node": "^13.7.6",
     "@types/node-fetch": "^2.5.4",
+    "@types/superagent": "^4.1.7",
     "@types/supertest": "^2.0.8",
     "ajv": "^6.11.0",
     "assert": "2.0.0",
@@ -93,6 +99,7 @@
     "mocha": "6.2.1",
     "mock-fs": "4.10.1",
     "mongodb-memory-server": "^6.2.4",
+    "mongodb-memory-server-core": "^6.2.4",
     "nock": "^11.7.2",
     "nyc": "^14.1.1",
     "proxyquire": "2.1.0",
@@ -115,7 +122,7 @@
     ]
   },
   "scripts": {
-    "build": "tsc && cpy --parents 'docs/**/*' dist/",
+    "build": "tsc && cpy --parents package.json 'docs/**/*' dist/",
     "run": "node dist/app.js",
     "run-debug": "ts-node app.js",
     "report": "nyc report",
@@ -140,8 +147,6 @@
   "bundleDependencies": [],
   "private": true,
   "main": "dist/app.js",
-  "bin": {
-  },
   "files": [
     "dist/**/*",
     "bin/*"

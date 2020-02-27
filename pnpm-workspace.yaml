@@ -1,0 +1,8 @@
+packages:
+  # the root package.json
+  - '.'
+  - 'service'
+  - 'web-app'
+  # exclude packages that are inside test/ directories
+  # - '!**/test/**'
+  - '!**/dist/**'

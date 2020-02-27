@@ -1,5 +1,6 @@
 import { Feature } from "geojson"
 import fetch from 'node-fetch'
+import { URL } from 'url'
 import  { ManifoldAdapter, SourceConnection } from '..'
 import OgcApiFeatures from '../../ogcapi-features'
 import { SourceDescriptor } from "../../models";

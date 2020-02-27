@@ -1,17 +1,16 @@
-
+import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import nock from 'nock'
-import { ParsedUrlQuery } from 'querystring'
 import NgaMsi from '../../../../manifold/adapters/msi'
 import { SourceDescriptor } from '../../../../manifold/models'
 import OgcApiFeatures from '../../../../manifold/ogcapi-features'
 
-type QueryStringMatcher = (query: ParsedUrlQuery) => boolean
+type QueryStringMatcher = (query: any) => boolean
 
 const oneMonth = 1000 * 60 * 60 * 24 * 28
 
 function queryStringConditions(...conditions: QueryStringMatcher[]): QueryStringMatcher {
-  return (query: ParsedUrlQuery): boolean => {
+  return (query: any): boolean => {
     for (const c of conditions) {
       if (!c(query)) {
         return false
@@ -21,15 +20,15 @@ function queryStringConditions(...conditions: QueryStringMatcher[]): QueryString
   }
 }
 
-function queryHasOutputAndSort(query: ParsedUrlQuery): boolean {
+function queryHasOutputAndSort(query: any): boolean {
   return query.output === 'json' && query.sort === 'date'
 }
 
-function asamDateQueryCloseTo(start: number | null, until?: number): (query: ParsedUrlQuery) => boolean
-function asamDateQueryCloseTo(start: number | null, until: number | null, tolerance: number): (query: ParsedUrlQuery) => boolean
-function asamDateQueryCloseTo(...range: [(number | null)?, (number | null)?, (number)?]): ((query: ParsedUrlQuery) => boolean) {
+function asamDateQueryCloseTo(start: number | null, until?: number): (query: any) => boolean
+function asamDateQueryCloseTo(start: number | null, until: number | null, tolerance: number): (query: any) => boolean
+function asamDateQueryCloseTo(...range: [(number | null)?, (number | null)?, (number)?]): ((query: any) => boolean) {
   const [ from, until = Date.now(), tolerance = 1000 * 60 * 60 * 24 ] = range
-  return (function (query: ParsedUrlQuery): boolean {
+  return (function (query: any): boolean {
     const queryKeys = Object.keys(query)
     const queryFrom  = query[NgaMsi.AsamQueryParams.dateMin] as string
     const queryTo = query[NgaMsi.AsamQueryParams.dateMax] as string
