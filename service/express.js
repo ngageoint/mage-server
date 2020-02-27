@@ -56,10 +56,10 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
-app.use(require('body-parser')({
-  limit: '16mb',
-  keepExtensions: true
-}));
+const bodyLimit = { limit: '16mb' };
+app.use(
+    express.json(bodyLimit),
+    express.urlencoded( { ...bodyLimit, extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'web-app/dist')));
