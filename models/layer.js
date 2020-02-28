@@ -82,9 +82,8 @@ function transform(layer, ret, options) {
   ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
-
   const path = options.path || '';
-  if (ret.type === 'Feature') ret.url = [path, ret.id].join('/');
+  if (ret.type === 'Feature') ret.url = path;
 }
 
 LayerSchema.set('toObject', {
