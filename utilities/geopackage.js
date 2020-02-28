@@ -1,5 +1,6 @@
 const fs = require('fs-extra'),
   path = require('path'),
+  GP = require('@ngageoint/geopackage'),
   GeoPackageAPI = require('@ngageoint/geopackage').GeoPackage,
   FeatureTile = require('@ngageoint/geopackage').FeatureTiles,
   ShadedFeaturesTile = require('@ngageoint/geopackage').ShadedFeaturesTile,
@@ -71,7 +72,7 @@ async function tile(layer, tableName, { x, y, z }) {
   let tile;
   switch (table.type) {
     case 'tile':
-      tile = await GeoPackageAPI.xyzTile(geopackage, table.name, x, y, z, tileSize, tileSize);
+      tile = await geopackage.xyzTile(table.name, x, y, z, tileSize, tileSize);
       break;
     case 'feature':
       x = Number(x);

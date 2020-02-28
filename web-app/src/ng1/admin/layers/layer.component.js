@@ -10,6 +10,7 @@ class AdminLayerController {
     this.Layer = Layer;
     this.Event = Event;
     this.UserService = UserService;
+    this.LocalStorageService = LocalStorageService;
 
     this.layerEvents = [];
     this.nonTeamEvents = [];
@@ -39,6 +40,8 @@ class AdminLayerController {
       if (this.layer.unavailable) {
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 1000);
       }
+
+      this.updateUrlLayers();
 
       this.Event.query(events => {
         this.event = {};
@@ -73,6 +76,21 @@ class AdminLayerController {
   _filterEvents(event) {
     const filteredEvents = this.$filter('filter')([event], this.eventSearch);
     return filteredEvents && filteredEvents.length;
+  }
+
+  updateUrlLayers() {
+    const mapping = [];
+    if (this.layer.tables) {
+      this.layer.tables.forEach(table => {
+        mapping.push({
+          table: table.name,
+          url: `/api/layers/${this.layer.id}/${
+            table.name
+          }/{z}/{x}/{y}.png?access_token=${this.LocalStorageService.getToken()}`,
+        });
+      });
+    }
+    this.urlLayers = mapping;
   }
 
   addEventToLayer(event) {
@@ -133,7 +151,6 @@ class AdminLayerController {
   }
 
   confirmCreateLayer() {
-    console.log('create the layer anyway');
     this.Layer.makeAvailable({ id: this.$stateParams.layerId }, layer => {
       if (layer.processing) {
         this.layer.processing = layer.processing;
@@ -145,6 +162,7 @@ class AdminLayerController {
   checkLayerProcessingStatus() {
     this.Layer.get({ id: this.$stateParams.layerId }, layer => {
       this.layer = layer;
+      this.updateUrlLayers();
       if (layer.state === 'unavailable') {
         this.layer.processing = layer.processing;
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 5000);

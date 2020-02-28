@@ -45,7 +45,6 @@ module.exports = function(app, security) {
     try {
       const result = await geopackage.open(req.file.path);
       const gp = result.geoPackage;
-      console.log('gp', gp);
       if (!gp) {
         // GeoPackage is fatally invalid just send back the errors
         return res.status(400).json(result);
@@ -65,17 +64,14 @@ module.exports = function(app, security) {
   }
 
   async function setupGeoPackageProcessing(req, res, next) {
-    console.log('setup geopackage processing', req.layer);
     const layer = req.layer;
     if (layer.type !== 'GeoPackage') {
       return next();
     }
     try {
       const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
-      console.log('geopackagePath', geopackagePath);
       const result = await geopackage.open(geopackagePath);
       const gp = result.geoPackage;
-      console.log('gp', gp);
       if (!gp) {
         // GeoPackage is fatally invalid just send back the errors
         return res.status(400).json(result);
@@ -111,7 +107,6 @@ module.exports = function(app, security) {
       }
       layer.tables = geopackage.getTables(gp);
       layer.processing = [];
-      console.log('layer.processing is set now');
       for (let i = 0; i < layer.tables.length; i++) {
         const gpLayer = layer.tables[i];
 
@@ -131,7 +126,6 @@ module.exports = function(app, security) {
           });
         }
       }
-      console.log('saving layer', layer);
       layer.save();
       return next();
     } catch (err) {
@@ -244,6 +238,31 @@ module.exports = function(app, security) {
   });
 
   app.get(
+    '/api/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
+    access.authorize('READ_LAYER_ALL'),
+    function(req, res, next) {
+      const tileParams = {
+        x: Number(req.params.x),
+        y: Number(req.params.y),
+        z: Number(req.params.z),
+      };
+
+      const table = req.layer.tables.find(table => table.name === req.params.tableName);
+      if (!table) {
+        return res.status(404).send('Table does not exist in layer.');
+      }
+      geopackage
+        .tile(req.layer, req.params.tableName, tileParams)
+        .then(tile => {
+          if (!tile) return res.status(404);
+          res.contentType('image/jpeg');
+          res.send(tile);
+        })
+        .catch(err => next(err));
+    },
+  );
+
+  app.get(
     '/api/events/:eventId/layers',
     passport.authenticate('bearer'),
     validateEventAccess,
@@ -296,6 +315,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
+    validateEventAccess,
     passport.authenticate('bearer'),
     function(req, res, next) {
       const tileBuffer = 8;
@@ -367,6 +387,9 @@ module.exports = function(app, security) {
     validateLayerParams,
     validateGeopackage,
     function(req, res, next) {
+      if (req.newLayer.type !== 'GeoPackage') {
+        req.newLayer.state = 'available';
+      }
       new api.Layer()
         .create(req.newLayer)
         .then(layer => {
@@ -392,26 +415,21 @@ module.exports = function(app, security) {
       for (let i = 0; i < layer.processing.length; i++) {
         layerStatusMap[layer.processing[i].layer] = i;
       }
-      console.log('go optimize it');
       // optimize after the layer is returned to the client
       let currentLayer;
-      const optimizied = await geopackage.optimize(
-        path.join(environment.layerBaseDirectory, layer.file.relativePath),
-        function(progress) {
-          if (currentLayer && currentLayer !== progress.layer) {
-            const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
-            oldLayerStatus.complete = true;
-            currentLayer = progress.layer;
-          }
+      await geopackage.optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
+        if (currentLayer && currentLayer !== progress.layer) {
+          const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
+          oldLayerStatus.complete = true;
+          currentLayer = progress.layer;
+        }
 
-          const layerStatus = layer.processing[layerStatusMap[progress.layer]];
-          layerStatus.count = progress.count;
-          layerStatus.total = progress.totalCount;
-          layerStatus.description = progress.description;
-          layer.save();
-        },
-      );
-      console.log('optimize is done', optimizied);
+        const layerStatus = layer.processing[layerStatusMap[progress.layer]];
+        layerStatus.count = progress.count;
+        layerStatus.total = progress.totalCount;
+        layerStatus.description = progress.description;
+        layer.save();
+      });
       layer.processing = undefined;
       layer.state = 'available';
       layer.save();

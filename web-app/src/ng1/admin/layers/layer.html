@@ -257,6 +257,26 @@
             </div>
           </div>
 
+          <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type === 'GeoPackage'">
+            <div ng-if="$ctrl.layer.tables && $ctrl.layer.tables.length">
+              Tables:
+              <span ng-repeat="table in $ctrl.layer.tables">
+                {{table.name}}
+              </span>
+              <div style="height: 400px; width: 100%;">
+                <admin-layer-preview layers="$ctrl.urlLayers" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format || 'XYZ'}}" wms="$ctrl.layer.wmsOptions"></admin-layer-preview>
+              </div>
+            </div>
+            <div ng-if="$ctrl.layer.type === 'GeoPackage' && (!$ctrl.layer.tables || !$ctrl.layer.tables.length)">
+              No tables
+            </div>
+          </div>
+          <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type !== 'GeoPackage' && $ctrl.layer.type !== 'Feature'">
+            <div style="height: 400px; width: 100%;">
+              <admin-layer-preview url="{{$ctrl.layer.url}}" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format || 'XYZ'}}" wms="$ctrl.layer.wmsOptions"></admin-layer-preview>
+            </div>
+          </div>
+
           <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type === 'Feature' && $ctrl.hasLayerEditPermission">
             <div class="row">
               <div class="col-md-12">
