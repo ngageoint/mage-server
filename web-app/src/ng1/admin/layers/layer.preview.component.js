@@ -2,8 +2,9 @@ import countries from '../../mage/countries-land-10km.geo.json';
 import L from 'leaflet';
 
 class LayerPreviewController {
-  constructor($element) {
+  constructor($element, FeatureService) {
     this.$element = $element;
+    this.FeatureService = FeatureService;
   }
 
   $postLink() {
@@ -50,11 +51,23 @@ class LayerPreviewController {
       this.map.removeLayer(this.mapLayer);
     }
 
+    if (this.bounds) {
+      this.map.fitBounds([
+        [this.bounds[1], this.bounds[0]],
+        [this.bounds[3], this.bounds[2]],
+      ]);
+    }
+
     if (this.layers) {
       this.layers.forEach(layer => {
         this.createTileLayer(layer.url);
       });
     } else {
+      console.log('this', this);
+      if (this.url && this.type === 'Feature') {
+        this.mapLayer = this.createKmlLayer(this.url);
+        return;
+      }
       if (!this.url || !this.format) return;
 
       if (this.format === 'XYZ' || this.format === 'TMS') {
@@ -63,6 +76,28 @@ class LayerPreviewController {
         this.mapLayer = this.createWmsLayer(this.url, this.wms);
       }
     }
+  }
+
+  createKmlLayer(url) {
+    this.FeatureService.loadFeatureUrl(url + '/features').then(response => {
+      const gjLayer = L.geoJson(response, {
+        pointToLayer: (feature, latlng) => {
+          const options = {
+            pane: this.MARKER_OVERLAY_PANE,
+          };
+          if (feature.style && feature.style.iconUrl) {
+            options.iconUrl = feature.style.iconUrl;
+          }
+          options.tooltip = editMode;
+          return L.fixedWidthMarker(latlng, options);
+        },
+        style: function(feature) {
+          return feature.style;
+        },
+      });
+      gjLayer.addTo(this.map);
+      this.map.fitBounds(gjLayer.getBounds());
+    });
   }
 
   createTileLayer(url, tms) {
@@ -91,7 +126,7 @@ class LayerPreviewController {
   }
 }
 
-LayerPreviewController.$inject = ['$element'];
+LayerPreviewController.$inject = ['$element', 'FeatureService'];
 
 export default {
   template: require('./layer.preview.html'),
@@ -99,6 +134,7 @@ export default {
     url: '@',
     type: '@',
     format: '@',
+    bounds: '<',
     wms: '<',
     layers: '<',
   },

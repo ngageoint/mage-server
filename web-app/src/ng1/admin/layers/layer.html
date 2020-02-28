@@ -136,6 +136,43 @@
           </div>
 
         </div>
+        <div class="row" ng-show="$ctrl.layer.type == 'Feature'">
+          <hr>
+          <div class="col-md-12 col-xs-12">
+            <div class="row" ng-if="$ctrl.layer.type === 'Feature' && $ctrl.hasLayerEditPermission">
+              <div class="col-md-12">
+                <nav class="navbar navbar-default admin-dashboard-navbar">
+                  <div class="container-fluid">
+                    <div class="navbar-header">
+                      <a class="navbar-brand">Add KML data</a>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+
+            <div class="admin-table">
+              <div class="well-item">
+                <div ng-show="$ctrl.layer.type == 'Feature'">
+                  <div ng-repeat="upload in $ctrl.uploads" class="bottom-gap">
+                    <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete($event)"></file-upload>
+
+                    <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} features from file {{$ctrl.status[$index].name}} </span></div>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                  <div class="col-md-12">
+                    <button class="btn btn-primary" ng-click="$ctrl.addUploadFile()">Add KML File</button>
+                    <button class="btn btn-success" ng-click="$ctrl.confirmUpload()">Upload File(s)</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div ng-if="$ctrl.layer.invalid">
           <hr>
@@ -271,44 +308,9 @@
               No tables
             </div>
           </div>
-          <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type !== 'GeoPackage' && $ctrl.layer.type !== 'Feature'">
+          <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type !== 'GeoPackage'">
             <div style="height: 400px; width: 100%;">
-              <admin-layer-preview url="{{$ctrl.layer.url}}" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format || 'XYZ'}}" wms="$ctrl.layer.wmsOptions"></admin-layer-preview>
-            </div>
-          </div>
-
-          <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type === 'Feature' && $ctrl.hasLayerEditPermission">
-            <div class="row">
-              <div class="col-md-12">
-                <nav class="navbar navbar-default admin-dashboard-navbar">
-                  <div class="container-fluid">
-                    <div class="navbar-header">
-                      <a class="navbar-brand">Add KML data</a>
-                    </div>
-                  </div>
-                </nav>
-              </div>
-            </div>
-
-            <div class="admin-table">
-              <div class="well-item">
-                <div ng-show="$ctrl.layer.type == 'Feature'">
-                  <div ng-repeat="upload in $ctrl.uploads" class="bottom-gap">
-                    <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete($event)"></file-upload>
-
-                    <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} features from file {{$ctrl.status[$index].name}} </span></div>
-                  </div>
-                </div>
-
-                <hr>
-
-                <div class="row">
-                  <div class="col-md-12">
-                    <button class="btn btn-primary" ng-click="$ctrl.addUploadFile()">Add KML File</button>
-                    <button class="btn btn-success" ng-click="$ctrl.confirmUpload()">Upload File(s)</button>
-                  </div>
-                </div>
-              </div>
+              <admin-layer-preview url="{{$ctrl.layer.url}}" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format}}" wms="$ctrl.layer.wmsOptions"></admin-layer-preview>
             </div>
           </div>
         </div>
