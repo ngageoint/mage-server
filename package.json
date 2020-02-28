@@ -43,6 +43,7 @@
     "jose": "0.3.2",
     "json2csv": "4.5.1",
     "jszip": "2.5.0",
+    "mgrs": "^1.0.0",
     "moment": "2.22.2",
     "mongodb-migrations": "0.8.5",
     "mongoose": "4.13.14",
