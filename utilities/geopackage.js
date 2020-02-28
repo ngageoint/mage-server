@@ -44,10 +44,22 @@ async function validate(geoPackage) {
 }
 
 function getTables(geoPackage) {
-  const tables = geoPackage.getTables();
-  const tileTables = tables.tiles.map(tableName => ({ name: tableName, type: 'tile' }));
-  const featureTables = tables.features.map(tableName => ({ name: tableName, type: 'feature' }));
-
+  // get the bounds for the tables
+  const tables = geoPackage.getTables(true);
+  const tileTables = tables.tiles.map(tableInfo => {
+    return {
+      name: tableInfo.table_name,
+      type: 'tile',
+      bbox: [tableInfo.min_x, tableInfo.min_y, tableInfo.max_x, tableInfo.max_y],
+    };
+  });
+  const featureTables = tables.features.map(tableInfo => {
+    return {
+      name: tableInfo.table_name,
+      type: 'feature',
+      bbox: [tableInfo.min_x, tableInfo.min_y, tableInfo.max_x, tableInfo.max_y],
+    };
+  });
   return tileTables.concat(featureTables);
 }
 
