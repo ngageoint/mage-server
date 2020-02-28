@@ -10,7 +10,6 @@ var mongoose = require('mongoose')
   , Observation = require('./observation')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
-  , Setting = require('../models/setting')
   , log = require('winston');
 
 // Creates a new Mongoose Schema object
@@ -253,22 +252,16 @@ var User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
 exports.getUserById = function(id, callback) {
-  User.findById(id).populate('roleId').exec(function(err, user) {
-    callback(err, user);
-  });
-};
-
-exports.getUserByIdWithPromise = function(id) {
-  const promise = new Promise(function(resolve, reject) {
-    User.findById(id).populate('roleId')
-      .exec()
-      .then(user => {
-        resolve(user ? user : undefined);
-      })
-      .catch(err => reject(err));
-  });
-
-  return promise;
+  callback = callback || function() {};
+  let result = User.findById(id).populate('roleId');
+  if (typeof callback === 'function') {
+    result = result.then(
+      user => {
+        callback(null, user);
+      },
+      callback);
+  }
+  return result;
 };
 
 exports.getUserByUsername = function(username, callback) {
@@ -349,11 +342,11 @@ exports.createUser = async function(user, callback) {
         log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
         update.active = !usersReqAdmin.enabled;
       }
-      newUserEvents = securitySettings.settings[authenticationType].newUserEvents;   
-      newUserTeams = securitySettings.settings[authenticationType].newUserTeams;  
+      newUserEvents = securitySettings.settings[authenticationType].newUserEvents;
+      newUserTeams = securitySettings.settings[authenticationType].newUserTeams;
     }
   }
-        
+
   log.info("Creating new user " + update.username);
   var newUser = await User.create(update, function(err, user) {
     if (err) return callback(err);
@@ -389,7 +382,7 @@ async function addUserToTeamByEventId(eventId, user) {
     log.info("Adding " + user.username + " to event team " + team.name);
     await Team.addUserWithPromise(team, user);
   } else {
-    log.error("Failed to find team with eventId " + eventId 
+    log.error("Failed to find team with eventId " + eventId
     +". User " + user.username + " was not added to any event.");
   }
 };

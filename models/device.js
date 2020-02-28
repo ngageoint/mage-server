@@ -138,7 +138,7 @@ exports.createDevice = async function(device) {
   // once that happens there is no need to do this
   device.uid = device.uid.toLowerCase();
 
-  var update = {
+  const update = {
     name: device.name,
     description: device.description,
     userId: device.userId,
@@ -146,10 +146,10 @@ exports.createDevice = async function(device) {
     appVersion: device.appVersion
   };
 
-  var user = await User.getUserByIdWithPromise(device.userId);
-  var authenticationType = user.authentication.type;
+  const user = await User.getUserById(device.userId);
+  const authenticationType = user.authentication.type;
 
-  if (device.registered) { 
+  if (device.registered) {
     update.registered = device.registered;
   } else {
     log.info("Reading security settings");

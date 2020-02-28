@@ -14,6 +14,8 @@ var RoleModel = mongoose.model('Role');
 require('../../models/user');
 var UserModel = mongoose.model('User');
 
+const Setting = require('../../models/setting');
+
 require('sinon-mongoose');
 
 describe("user create tests", function() {
@@ -43,8 +45,21 @@ describe("user create tests", function() {
       displayName: 'test',
       password: 'password',
       passwordconfirm: 'password',
-      roleId: roleId
+      roleId: roleId,
+      authentication: {
+        type: this.test.title
+      }
     });
+
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          [mockUser.authentication.type]: {
+            usersReqAdmin: true
+          }
+        }
+      })
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -117,8 +132,21 @@ describe("user create tests", function() {
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword'
+      passwordconfirm: 'passwordpassword',
+      authentication: {
+        type: this.test.title
+      }
     });
+
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          [mockUser.authentication.type]: {
+            usersReqAdmin: true
+          }
+        }
+      });
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -167,8 +195,21 @@ describe("user create tests", function() {
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword'
+      passwordconfirm: 'passwordpassword',
+      authentication: {
+        type: 'test_auth'
+      }
     });
+
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          [mockUser.authentication.type]: {
+            usersReqAdmin: true
+          }
+        }
+      })
 
     sinon.mock(mockUser)
       .expects('populate')
