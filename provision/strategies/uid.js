@@ -23,7 +23,7 @@ Strategy.prototype.check = function(req, options, done) {
     return done(new Error(options.badRequestMessage || 'Missing uid'));
   }
 
-  this.verify(uid, done);
+  this.verify(req, uid, done);
 };
 
 /**

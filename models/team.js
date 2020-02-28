@@ -349,3 +349,46 @@ exports.removeUserFromAllAcls = function(user, callback) {
 
   Team.update({}, update, {multi: true, new: true}, callback);
 };
+
+/*
+Get a team based on event id.  This will return the team 
+directly associated with the event.
+*/
+exports.getTeamByEventId = function(eventId) {
+  var conditions = {};
+  if (eventId) {
+    conditions.teamEventId = {
+      '$eq': eventId
+    };
+  }
+
+  const promise = new Promise(function(resolve, reject) {
+    Team.findOne(conditions)
+      .exec()
+      .then(team => {
+        resolve(team ? team : undefined);
+      })
+      .catch(err => reject(err));
+  });
+
+  return promise;
+};
+
+exports.addUserWithPromise = function(team, user) {
+  var update = {
+    $addToSet: {
+      userIds: mongoose.Types.ObjectId(user.id)
+    }
+  };
+
+  const promise = new Promise(function(resolve, reject) {
+    Team.findByIdAndUpdate(team._id, update)
+      .exec()
+      .then(team => {
+        resolve(team ? team : undefined);
+      })
+      .catch(err => reject(err));
+  });
+
+  return promise;
+};

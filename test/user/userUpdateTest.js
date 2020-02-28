@@ -200,9 +200,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(mockUser)
       .expects('save')
@@ -255,9 +255,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -301,9 +301,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -348,9 +348,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -396,9 +396,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser').never();
@@ -437,9 +437,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -484,9 +484,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -519,9 +519,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(User)
       .expects('updateUser')
@@ -564,9 +564,9 @@ describe("user update tests", function() {
     };
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
       .expects('update')
@@ -620,9 +620,9 @@ describe("user update tests", function() {
     };
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
       .expects('update')
@@ -667,9 +667,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -704,9 +704,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -885,9 +885,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(userId.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     var mockEvent = new EventModel({
       _id: 1,
@@ -952,9 +952,9 @@ describe("user update tests", function() {
       .yields(null, token);
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(userId.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     var eventAcl = {};
     eventAcl[userId.toString()] = 'OWNER';
@@ -1005,9 +1005,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(userId.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     var eventAcl = {};
     eventAcl[userId.toString()] = 'OWNER';
@@ -1059,8 +1059,8 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .chain('populate')
+      .resolves(mockUser);
 
     var mockEvent1 = new EventModel({
       _id: 1,
@@ -1115,9 +1115,9 @@ describe("user update tests", function() {
     });
 
     sinon.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .expects('findById').withArgs(userId.toHexString())
+      .chain('populate')
+      .resolves(mockUser);
 
     var mockEvent = new EventModel({
       _id: 1,

@@ -1,26 +1,31 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
+  , chai = require('chai')
   , mongoose = require('mongoose')
   , app = require('../../express')
   , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , TokenModel = mongoose.model('Token')
+  , Setting = require('../../models/setting');
 
 require('sinon-mongoose');
 
-require('../../models/device');
-var DeviceModel = mongoose.model('Device');
+const expect = chai.expect;
+const should = chai.should();
 
-require('../../models/user');
-var UserModel = mongoose.model('User');
+require('../../models/device');
+const DeviceModel = mongoose.model('Device');
+
+const UserOperations = require('../../models/user');
+const UserModel = UserOperations.Model;
 
 describe("device create tests", function() {
-  
+
   afterEach(function() {
     sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
+
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -30,10 +35,21 @@ describe("device create tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should create registered device", function(done) {
+  it("should create registered device", async function() {
     mockTokenWithPermission('CREATE_DEVICE');
 
-    var userId = mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
+
+    sinon.mock(UserOperations)
+      .expects('getUserById')
+      .withArgs(userId.toHexString())
+      .resolves(new UserModel({
+        _id: userId,
+        authentication: {
+          type: 'local'
+        }
+      }));
+
     sinon.mock(DeviceModel)
       .expects('findOneAndUpdate')
       .withArgs({
@@ -54,7 +70,7 @@ describe("device create tests", function() {
         userId: userId.toString()
       });
 
-    request(app)
+    const res = await request(app)
       .post('/api/devices')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
@@ -64,13 +80,10 @@ describe("device create tests", function() {
         description: 'Some description',
         userId: userId.toString()
       })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var device = res.body;
-        should.exist(device);
-      })
-      .end(done);
+
+    expect(res.status).to.equal(200)
+    expect(res.type).to.match(/json/)
+    expect(res.body).to.exist
   });
 
   it("should create unregistered device", function(done) {
@@ -84,7 +97,7 @@ describe("device create tests", function() {
       roleId: mongoose.Types.ObjectId(),
       active: true,
       authentication: {
-        type: 'local'
+        type: this.test.title
       }
     });
 
@@ -92,12 +105,19 @@ describe("device create tests", function() {
       .expects('validPassword')
       .yields(null, true);
 
-    sinon.mock(UserModel)
-      .expects('findOne')
-      .withArgs({username: 'test'})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockUser);
+    sinon.mock(UserOperations)
+      .expects('getUserById').withArgs(userId.toHexString())
+      .resolves(mockUser);
+
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          [mockUser.authentication.type]: {
+            devicesReqAdmin: true
+          }
+        }
+      });
 
     sinon.mock(DeviceModel)
       .expects('findOne')
@@ -163,7 +183,7 @@ describe("device create tests", function() {
       active: true,
       roleId: mongoose.Types.ObjectId(),
       authentication: {
-        type: 'local'
+        type: this.test.title
       }
     });
 
