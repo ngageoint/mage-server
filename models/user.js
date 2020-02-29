@@ -252,14 +252,15 @@ var User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
 exports.getUserById = function(id, callback) {
-  callback = callback || function() {};
   let result = User.findById(id).populate('roleId');
   if (typeof callback === 'function') {
     result = result.then(
       user => {
         callback(null, user);
       },
-      callback);
+      err => {
+        callback(err);
+      });
   }
   return result;
 };

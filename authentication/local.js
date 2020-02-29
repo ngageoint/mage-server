@@ -73,8 +73,12 @@ module.exports = function(app, passport, provisioning) {
 
           if (isValid) {
             User.validLogin(user)
-              .then(() => done(null, user))
-              .catch(err => done(err));
+              .then(() => {
+                done(null, user);
+              })
+              .catch(err => {
+                done(err);
+              });
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)

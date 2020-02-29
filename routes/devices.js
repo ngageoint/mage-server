@@ -1,5 +1,5 @@
 const log = require('winston');
-const DeviceModel = require('../models/device');
+const Device = require('../models/device');
 const access = require('../access');
 
 function DeviceResource() {}
@@ -10,8 +10,12 @@ module.exports = function(app, security) {
   var resource = new DeviceResource(passport);
 
   // DEPRECATED retain old routes as deprecated until next major version.
+  /**
+   * @deprecated
+   */
   app.post('/api/devices',
     function authenticate(req, res, next) {
+      log.warn('DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/{auth_strategy}/devices');
       passport.authenticate('local', function(err, user) {
         if (err) {
           return next(err);
@@ -24,8 +28,7 @@ module.exports = function(app, security) {
         });
       })(req, res, next);
     },
-    function(req, res, next) {
-      log.warn('DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/local/devices');
+    async function(req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
@@ -35,18 +38,17 @@ module.exports = function(app, security) {
         appVersion: req.param('appVersion'),
         userId: req.user.id
       };
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
-
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
+      try {
+        let device = await Device.getDeviceByUid(newDevice.uid);
+        if (!device) {
+          device = await Device.createDevice(newDevice);
+        }
+        return res.json(device)
+      }
+      catch(err) {
+        next(err);
+      }
+      next(new Error(`unknown error registering device ${newDevice.uid} for user ${newDevice.userId}`));
     }
   );
 
@@ -117,7 +119,7 @@ DeviceResource.prototype.create = function(req, res, next) {
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
 
-  DeviceModel.createDevice(req.newDevice)
+  Device.createDevice(req.newDevice)
     .then(device => {
       res.json(device);
     })
@@ -125,7 +127,7 @@ DeviceResource.prototype.create = function(req, res, next) {
 };
 
 DeviceResource.prototype.count = function (req, res, next) {
-  DeviceModel.count()
+  Device.count()
     .then(count => res.json({count: count}))
     .catch(err => next(err));
 };
@@ -153,7 +155,7 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
     }
   }
 
-  DeviceModel.getDevices({filter: filter, expand: expand})
+  Device.getDevices({filter: filter, expand: expand})
     .then(devices => res.json(devices))
     .catch(err => next(err));
 };
@@ -167,7 +169,7 @@ DeviceResource.prototype.getDevice = function(req, res, next) {
     }
   }
 
-  DeviceModel.getDeviceById(req.params.id, {expand: expand})
+  Device.getDeviceById(req.params.id, {expand: expand})
     .then(device => res.json(device))
     .catch(err => next(err));
 };
@@ -180,13 +182,19 @@ DeviceResource.prototype.updateDevice = function(req, res, next) {
   if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
-  DeviceModel.updateDevice(req.param('id'), update)
-    .then(device => res.json(device))
-    .catch(err => next(err));
+  return Device.updateDevice(req.param('id'), update)
+    .then(
+      device => {
+        res.json(device)
+      },
+      err => {
+        next(err)
+      }
+    );
 };
 
 DeviceResource.prototype.deleteDevice = function(req, res, next) {
-  DeviceModel.deleteDevice(req.param('id'))
+  Device.deleteDevice(req.param('id'))
     .then(device => {
       if (!device) return res.sendStatus(404);
 
