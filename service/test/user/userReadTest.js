@@ -1,3 +1,25 @@
+/*
+TODO:
+These and most of the other tests demonstrate the need to improve the overall
+code architecture.  There is a lot of brittle mocking:
+  mock(UserModel)
+    .expects('method')
+    .chain('nextMethod')
+    .yields(callbackArgs)
+We can improve this by following patterns like Loopback (https://loopback.io/doc/en/lb4/index.html)
+implements as well as several articles on implementing Clean Architecture
+- https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
+- https://mannhowie.com/clean-architecture-node
+We can create a layer of repositories for querying models, so that no outer
+controller/service level classes have access to the underlying Mongoose models,
+or the actual MongoDB API.  This will make testing routes easier because we
+would only need to mock an injected repository with a higher level API instead
+of mocking the actual Mongoose model classes which is cumbersome.  This is
+ostensibly somewhat similar to what the api module intended, but there is a lot
+of leakage throughout the code that needs to be cleaned.  Further, pretty much
+the entire codebase lacks any dependency injection.
+ */
+
 var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
@@ -160,8 +182,9 @@ describe("user read tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('exec')
-      .yields(null, new UserModel({
+      .withArgs(id.toHexString())
+      .chain('populate')
+      .resolves(new UserModel({
         _id: id,
         username: 'test'
       }));
@@ -218,13 +241,12 @@ describe("user read tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .withArgs(id.toString())
+      .withArgs(id.toHexString())
       .chain('populate')
-      .chain('exec')
-      .yields(null, mockUser);
+      .resolves(mockUser);
 
     request(app)
-      .get('/api/users/' + id.toString() + '/avatar')
+      .get('/api/users/' + id.toHexString() + '/avatar')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -251,13 +273,12 @@ describe("user read tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .withArgs(id.toString())
+      .withArgs(id.toHexString())
       .chain('populate')
-      .chain('exec')
-      .yields(null, mockUser);
+      .resolves(mockUser);
 
     request(app)
-      .get('/api/users/' + id.toString() + '/avatar')
+      .get('/api/users/' + id.toHexString() + '/avatar')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(404)
@@ -286,8 +307,7 @@ describe("user read tests", function() {
       .expects('findById')
       .withArgs(id.toString())
       .chain('populate')
-      .chain('exec')
-      .yields(null, mockUser);
+      .resolves(mockUser);
 
     request(app)
       .get('/api/users/' + id.toString() + '/icon')

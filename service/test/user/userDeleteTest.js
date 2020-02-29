@@ -41,8 +41,8 @@ describe("user delete tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('exec')
-      .yields(null, mockUser);
+      .chain('populate')
+      .resolves(mockUser);
 
     sinon.mock(mockUser)
       .expects('remove')

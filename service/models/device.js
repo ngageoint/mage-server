@@ -82,8 +82,7 @@ DeviceSchema.set("toJSON", {
   transform: transform
 });
 
-// Creates the Model for the User Schema
-var Device = mongoose.model('Device', DeviceSchema);
+const Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
 
 exports.getDeviceById = function(id, options) {
@@ -138,7 +137,7 @@ exports.createDevice = async function(device) {
   // once that happens there is no need to do this
   device.uid = device.uid.toLowerCase();
 
-  var update = {
+  const update = {
     name: device.name,
     description: device.description,
     userId: device.userId,
@@ -146,33 +145,36 @@ exports.createDevice = async function(device) {
     appVersion: device.appVersion
   };
 
-  var user = await User.getUserByIdWithPromise(device.userId);
-  var authenticationType = user.authentication.type;
+  const user = await User.getUserById(device.userId);
+  const authenticationType = user.authentication.type;
 
-  if (device.registered) { 
+  if (device.registered) {
     update.registered = device.registered;
   } else {
-    log.info("Reading security settings");
     const securitySettings = await Setting.getSetting('security');
-    if(securitySettings && securitySettings.settings) {
-      let devicesReqAdmin = securitySettings.settings[authenticationType].devicesReqAdmin;
-      if (devicesReqAdmin) {
-        log.info("Admin approval required to approve new devices is: " + devicesReqAdmin.enabled);
-        update.registered = !devicesReqAdmin.enabled;
+    if (securitySettings && securitySettings.settings) {
+      const authSettings = securitySettings.settings[authenticationType] || {};
+      const devicesReqAdmin = authSettings.devicesReqAdmin || {};
+      const autoRegister = devicesReqAdmin.enabled === false;
+      if (autoRegister) {
+        log.info(`auto-register device ${device.uid} for auth type ${authenticationType}`)
       }
+      update.registered = autoRegister;
     }
   }
-  log.info("Creating new device ", device.uid);
-  return await Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec();
+  log.info(`creating new device ${device.uid} for user ${device.userId}`);
+  return await Device.findOneAndUpdate({ uid: device.uid }, update,
+    { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true });
 };
 
-exports.updateDevice = function(id, update) {
+exports.updateDevice = async function(id, update) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
-  if (update.uid) update.uid = update.uid.toLowerCase();
-
-  return Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}).exec();
+  if (update.uid) {
+    update.uid = update.uid.toLowerCase();
+  }
+  return await Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true});
 };
 
 exports.deleteDevice = function(id) {
