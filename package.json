@@ -42,7 +42,6 @@
     "google-auth-library": "0.11.0",
     "jose": "0.3.2",
     "json2csv": "4.5.1",
-    "jszip": "2.5.0",
     "mgrs": "^1.0.0",
     "moment": "2.22.2",
     "mongodb-migrations": "0.8.5",
@@ -64,7 +63,6 @@
     "shp-write": "https://github.com/newmanw/shp-write.git#fix-polygon-export",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
-    "vt-pbf": "3.1.1",
     "walk": "2.3.4",
     "winston": "1.0.1",
     "wkx": "0.4.1",
@@ -73,10 +71,6 @@
     "xpath": "0.0.23"
   },
   "devDependencies": {
-    "@types/eslint": "^6.1.8",
-    "@types/eslint-plugin-prettier": "^2.2.0",
-    "@types/prettier": "^1.19.0",
-    "@types/typescript": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "2.21.0",
     "@typescript-eslint/parser": "2.21.0",
     "ajv": "^6.10.2",
