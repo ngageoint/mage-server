@@ -1,0 +1,12 @@
+{
+  "name": "@ngageoint/mage.project",
+  "description": "This is the root package definition for the Yarn-based mage-server monorepo.",
+  "private": true,
+  "workspaces": [
+    "service",
+    "web-app"
+  ],
+  "devDependencies": {
+    "@yarnpkg/pnpify": "^2.0.0-rc.18"
+  }
+}
