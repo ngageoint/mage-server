@@ -63,11 +63,10 @@ function FeatureService($q, $http) {
 
     if (event) {
       url += '/events/' + event.id + '/layers/' + layer.id + '/features';
-    }
-    if (layer) {
+    } else if (layer) {
       url += '/layers/' + layer.id + '/features';
     }
 
-    loadFeatureUrl(url, deferred, layer.name);
+    return loadFeatureUrl(url, deferred, layer.name);
   }
 }
