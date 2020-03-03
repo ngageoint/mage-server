@@ -39,4 +39,10 @@ function NavController($rootScope, $scope, $transitions, UserService, FilterServ
     FilterService.removeFilters();
     PollingService.setPollingInterval(0);
   });
+
+  this.feedToggle = function() {
+    this.toggleFeed = {
+      foo: 'bar'
+    };
+  }
 }

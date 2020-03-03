@@ -10,7 +10,8 @@ L.LocationMarker = L.Marker.extend({
       fillColor: options.color,
       fillOpacity: 0.15,
       weight: 2,
-      opacity: 0.5
+      opacity: 0.5,
+      pane: options.pane
     });
 
     this._locationMarker = L.circleMarker(latlng, {
@@ -19,13 +20,15 @@ L.LocationMarker = L.Marker.extend({
       fillOpacity: 0.7,
       weight: 2,
       opacity: 0.9,
-      radius: 5
+      radius: 5,
+      pane: options.pane
     });
 
     var group = [this._accuracyCircle, this._locationMarker];
 
     if (options.iconUrl) {
       this._iconMarker = L.marker(latlng, {
+        pane: options.pane,
         clickable: true,
         icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
       });

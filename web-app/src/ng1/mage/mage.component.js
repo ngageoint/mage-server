@@ -1,15 +1,19 @@
 import _ from 'underscore';
+import moment from 'moment';
 
 class MageController {
-  constructor($animate, $document, $uibModal, UserService, FilterService, EventService, MapService, Location) {
+  constructor($animate, $document, $timeout, $uibModal, UserService, FilterService, EventService, MapService, ObservationService, Location, Observation) {
     this.$animate = $animate;
     this.$document = $document;
+    this.$timeout = $timeout;
     this.$uibModal = $uibModal;
     this.UserService = UserService;
     this.FilterService = FilterService;
     this.EventService = EventService;
     this.MapService = MapService;
+    this.ObservationService = ObservationService;
     this.Location = Location;
+    this.Observation = Observation;
 
     this.hideFeed = false;
     this.feedChangedUsers = {};
@@ -44,6 +48,12 @@ class MageController {
       }
     };
     this.MapService.addListener(locationListener);
+  }
+
+  $onChanges(changes) {
+    if (changes.toggleFeed && !changes.toggleFeed.isFirstChange()) {
+      this.hideFeed = !this.hideFeed;
+    }
   }
 
   $onDestroy() {
@@ -87,12 +97,20 @@ class MageController {
     }
   }
 
-  toggleFeed($event) {
+  onToggleFeed($event) {
     this.hideFeed = $event.hidden;
   }
 
   showFeed() {
     this.hideFeed = false;
+  }
+
+  onAddObservation($event) {
+    if (this.hideFeed) {
+      this.showFeed();
+    }
+
+    this.newObservation = $event;
   }
 
   onLocation(location) {
@@ -134,12 +152,13 @@ class MageController {
   }
 }
 
-MageController.$inject = ['$animate', '$document', '$uibModal', 'UserService', 'FilterService', 'EventService', 'MapService', 'Location'];
+MageController.$inject = ['$animate', '$document', '$timeout', '$uibModal', 'UserService', 'FilterService', 'EventService', 'MapService', 'ObservationService', 'Location', 'Observation'];
 
 export default {
   template: require('./mage.html'),
   bindings: {
-    user: '<'
+    user: '<',
+    toggleFeed: '<'
   },
   controller: MageController
 };

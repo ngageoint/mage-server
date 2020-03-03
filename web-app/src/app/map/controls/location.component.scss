@@ -1,0 +1,13 @@
+.location {
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 32px;
+}
+
+.active {
+  color: white;
+}
+
+button:not(:last-child) {
+  margin-bottom: 8px;
+}

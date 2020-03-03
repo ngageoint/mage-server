@@ -1,3 +1,4 @@
+import 'hammerjs';
 import 'angular';
 
 import { enableProdMode, NgZone } from '@angular/core';

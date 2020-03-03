@@ -1,0 +1,13 @@
+<div class="opacity">
+  <mat-label class="opacity-label">Opacity</mat-label>
+  <mat-slider class="opacity-slider" 
+    color="primary" 
+    min="0" 
+    max="100" 
+    step="1" 
+    value=100 
+    thumbLabel
+    [displayWith]="formatOpacity"
+    (change)="opacityChanged($event, layer)">
+  </mat-slider>
+</div>

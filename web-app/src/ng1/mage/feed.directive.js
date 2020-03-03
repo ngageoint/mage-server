@@ -9,6 +9,7 @@ function NewsFeed() {
     template:  require('./feed.directive.html'),
     scope: {
       event: '=',
+      addObservation: '=',
       feedUsersChanged: '=',
       onToggleFeed: '&'
     },
@@ -18,9 +19,9 @@ function NewsFeed() {
   return directive;
 }
 
-NewsFeedController.$inject = ['$scope', '$element', 'MapService', 'EventService', 'ObservationService', 'FilterService', 'LocalStorageService', 'UserService', 'Observation', '$uibModal'];
+NewsFeedController.$inject = ['$scope', '$element', 'MapService', 'EventService', 'ObservationService', 'FilterService', 'UserService', 'Observation', '$uibModal'];
 
-function NewsFeedController($scope, $element, MapService, EventService, ObservationService, FilterService, LocalStorageService, UserService, Observation, $uibModal) {
+function NewsFeedController($scope, $element, MapService, EventService, ObservationService, FilterService, UserService, Observation, $uibModal) {
   var contentEls = $element.find('.content');
 
   $scope.tabs = [{
@@ -137,7 +138,7 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
     $scope.editObservation = observation;
   });
 
-  $scope.createNewObservation = function() {
+  function createNewObservation($event) {
     var event = FilterService.getEvent();
     if (!EventService.isUserInEvent(UserService.myself, event)) {
       $uibModal.open({
@@ -153,14 +154,13 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
       return;
     }
 
-    const mapPos = LocalStorageService.getMapPosition();
     newObservation = new Observation({
       id: 'new',
       eventId: event.id,
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: [mapPos.center.lng, mapPos.center.lat]
+        coordinates: [$event.latLng.lng, $event.latLng.lat]
       },
       properties: {
         timestamp: new Date(),
@@ -223,6 +223,15 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
       $scope.feedUsersChanged = {};
       $scope.usersChanged = 0;
     }
+  });
+
+  $scope.$watch('addObservation', function($event) {
+    if (!$event) return;
+
+    // Don't allow new observation if observation create is in progress
+    if ($scope.newObservation || $scope.newObservationForms) return;
+
+    createNewObservation($event);
   });
 
   $scope.$watch('feedObservationsChanged', function(feedObservationsChanged) {

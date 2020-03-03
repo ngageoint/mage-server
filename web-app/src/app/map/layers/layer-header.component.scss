@@ -1,0 +1,17 @@
+.item-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  min-width: 350px;
+}
+
+.item-content {
+  flex: 1;
+  padding: 12px 0 12px 16px;
+}
+
+.item-action {
+  margin-right: 8px;
+  pointer-events: all;
+}

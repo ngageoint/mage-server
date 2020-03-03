@@ -1,0 +1,30 @@
+<div class="item-container">
+  <div class="item-content">
+    <mat-checkbox *ngIf="multi"
+      class="item-action" 
+      color="primary" 
+      [checked]="layer.selected" 
+      (click)="$event.stopPropagation()"
+      (change)="checkChanged($event, layer)">
+    </mat-checkbox>
+
+    <mat-radio-button *ngIf="!multi"
+      class="item-action" 
+      color="primary" 
+      [checked]="layer.selected" 
+      (click)="$event.stopPropagation()"
+      (change)="radioChanged($event, layer)">
+    </mat-radio-button>
+
+    <mat-label>{{ layer.name }}</mat-label>
+  </div>
+  <div class="item-actions">
+    <button mat-icon-button matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event, layer)">
+      <mat-icon>crop_free</mat-icon>
+    </button>
+
+    <button class="item-action" mat-icon-button>
+      <mat-icon>{{collapsed ? 'more_vert' : 'more_horiz'}}</mat-icon>
+    </button>
+  </div>
+</div>
