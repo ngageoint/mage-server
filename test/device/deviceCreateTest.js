@@ -3,7 +3,7 @@ const request = require('supertest')
   , chai = require('chai')
   , mongoose = require('mongoose')
   , app = require('../../express')
-  , MockToken = require('../mockToken')
+  , createToken = require('../mockToken')
   , TokenModel = mongoose.model('Token')
   , Setting = require('../../models/setting');
 
@@ -12,7 +12,7 @@ require('sinon-mongoose');
 const expect = chai.expect;
 const should = chai.should();
 
-require('../../models/device');
+const DeviceOperations = require('../../models/device');
 const DeviceModel = mongoose.model('Device');
 
 const UserOperations = require('../../models/user');
@@ -24,7 +24,7 @@ describe("device create tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
@@ -32,17 +32,14 @@ describe("device create tests", function() {
       .withArgs({token: "12345"})
       .chain('populate')
       .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .yields(null, createToken(userId, [permission]));
   }
 
-  it("should create registered device", async function() {
+  it("allows an admin to create a registered device", async function() {
     mockTokenWithPermission('CREATE_DEVICE');
 
-    const userId = mongoose.Types.ObjectId();
-
     sinon.mock(UserOperations)
-      .expects('getUserById')
-      .withArgs(userId.toHexString())
+      .expects('getUserById').withArgs(userId.toHexString())
       .resolves(new UserModel({
         _id: userId,
         authentication: {
@@ -50,126 +47,98 @@ describe("device create tests", function() {
         }
       }));
 
-    sinon.mock(DeviceModel)
-      .expects('findOneAndUpdate')
-      .withArgs({
-        uid: '12345'
-      },{
-        description: "Some description",
-        name: "Test Device",
-        registered: true,
-        userId: userId.toString(),
-        appVersion: undefined,
-        userAgent: undefined
-      })
-      .chain('exec')
-      .resolves({
-        uid: '12345',
-        name: 'Test Device',
-        description: 'Some description',
-        userId: userId.toString()
-      });
+    const reqDevice = {
+      uid: '12345',
+      description: 'Some description',
+      userId: userId.toHexString()
+    };
+
+    const registeredDevice = new DeviceModel({
+      ...reqDevice,
+      _id: mongoose.Types.ObjectId(),
+      registered: true
+    })
+
+    const mockDeviceModel = sinon.mock(DeviceModel);
+    mockDeviceModel
+      .expects('findOneAndUpdate').withArgs({ uid: reqDevice.uid }, sinon.match.hasNested('registered', true))
+      .resolves(registeredDevice);
+
+    const res = await request(app)
+      .post('/api/devices')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send(reqDevice);
+
+    expect(res.status).to.equal(200)
+    expect(res.type).to.match(/json/)
+    expect(res.body).to.include({
+      ...reqDevice,
+      registered: true
+    });
+  });
+
+  it("DEPRECATED: creates an unregistered device with local auth", async function() {
+    mockTokenWithPermission('NO_PERMISSION');
+
+    const user = new UserModel({
+      _id: userId,
+      username: 'unregisteredDeviceTest',
+      displayName: 'Unregistered Device Test',
+      roleId: mongoose.Types.ObjectId(),
+      active: true,
+      authentication: {
+        type: 'local'
+      },
+      security: {}
+    });
+
+    const reqDevice = {
+      uid: '12345',
+      description: 'Some description',
+      appVersion: 'Some Version',
+      userId: userId.toHexString()
+    };
+
+    const device = new DeviceModel({
+      _id: mongoose.Types.ObjectId(),
+      ...reqDevice
+    });
+
+    sinon.mock(user)
+      .expects('validPassword').withArgs('test')
+      .yields(null, true);
+
+    const mockUserOps = sinon.mock(UserOperations);
+    mockUserOps
+      .expects('getUserByUsername').withArgs(user.username)
+      .yields(null, user);
+    mockUserOps
+      .expects('validLogin').withArgs(user)
+      .resolves(user);
+
+    const mockDeviceOps = sinon.mock(DeviceOperations);
+    mockDeviceOps
+      .expects('getDeviceByUid')
+      .resolves();
+    mockDeviceOps
+      .expects('createDevice')
+      .resolves(device);
 
     const res = await request(app)
       .post('/api/devices')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        uid: '12345',
-        name: 'Test Device',
-        description: 'Some description',
-        userId: userId.toString()
-      })
-
-    expect(res.status).to.equal(200)
-    expect(res.type).to.match(/json/)
-    expect(res.body).to.exist
-  });
-
-  it("should create unregistered device", function(done) {
-    mockTokenWithPermission('NO_PERMISSION');
-
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
-      _id: userId,
-      username: 'test',
-      displayName: 'test',
-      roleId: mongoose.Types.ObjectId(),
-      active: true,
-      authentication: {
-        type: this.test.title
-      }
-    });
-
-    sinon.mock(mockUser)
-      .expects('validPassword')
-      .yields(null, true);
-
-    sinon.mock(UserOperations)
-      .expects('getUserById').withArgs(userId.toHexString())
-      .resolves(mockUser);
-
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        settings: {
-          [mockUser.authentication.type]: {
-            devicesReqAdmin: true
-          }
-        }
-      });
-
-    sinon.mock(DeviceModel)
-      .expects('findOne')
-      .withArgs({
-        uid: '12345'
-      })
-      .chain('exec')
-      .resolves(null);
-
-    sinon.mock(DeviceModel)
-      .expects('findOneAndUpdate')
-      .withArgs({
-        uid: '12345'
-      },{
-        description: "Some description",
-        name: "Test Device",
-        userId: userId.toString(),
-        appVersion: 'Some Version',
-        userAgent: sinon.match.typeOf('string')
-      })
-      .chain('exec')
-      .resolves({
-        uid: '12345',
-        name: 'Test Device',
-        description: 'Some description',
-        userId: userId.toString()
-      });
-
-    sinon.mock(mockUser)
-      .expects('save')
-      .resolves(mockUser);
-
-    request(app)
-      .post('/api/devices')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        username: 'test',
+        username: user.username,
         password: 'test',
-        uid: '12345',
-        name: 'Test Device',
-        description: 'Some description',
-        appVersion: 'Some Version',
-        userId: userId.toString()
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var device = res.body;
-        should.exist(device);
-      })
-      .end(done);
+        ...reqDevice
+      });
+
+    expect(res.status).to.equal(200);
+    expect(res.type).to.match(/json/);
+    expect(res.body).to.include(reqDevice);
+    expect(res.body.registered).to.be.false
   });
 
   it("should skip create unregistered device if exists", function(done) {
@@ -222,7 +191,7 @@ describe("device create tests", function() {
         uid: '12345',
         name: 'Test Device',
         description: 'Some description',
-        userId: userId.toString()
+        userId: mockUser.id
       })
       .expect(200)
       .expect('Content-Type', /json/)
@@ -254,4 +223,18 @@ describe("device create tests", function() {
       .end(done);
   });
 
+  describe('auto-registration', function() {
+
+    it('auto-registers a device if the security settings allow', async function() {
+      chai.assert(false, 'TODO');
+    });
+
+    it('does not auto-register a device if the security settings do not allow', async function() {
+      chai.assert(false, 'TODO');
+    });
+
+    it('does not auto-register a device if the security settings do not exist', async function() {
+      chai.assert(false, 'TODO');
+    });
+  });
 });
