@@ -96,6 +96,7 @@
     "chai": "4.2.0",
     "coveralls": "3.0.4",
     "cpy-cli": "^2.0.0",
+    "iconv-lite": "^0.5.1",
     "mocha": "6.2.1",
     "mock-fs": "4.10.1",
     "mongodb-memory-server": "^6.2.4",

@@ -3,9 +3,9 @@ module.exports = {
   extension: [ 'js', 'ts' ],
   recursive: true,
   require: [
-    'ts-node/register',
-    'iconv-lite/encodings',
-    'mock-fs',
+    './node_modules/ts-node/register',
+    './node_modules/iconv-lite/encodings',
+    './node_modules/mock-fs',
     './test/env.js',
   ],
 };
