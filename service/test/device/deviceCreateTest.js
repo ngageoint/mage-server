@@ -4,11 +4,7 @@ const request = require('supertest')
   , mongoose = require('mongoose')
   , app = require('../../express')
   , createToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , Setting = require('../../models/setting');
-
-const expect = chai.expect;
-const should = chai.should();
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
