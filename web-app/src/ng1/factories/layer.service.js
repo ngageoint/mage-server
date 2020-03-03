@@ -12,9 +12,9 @@ function LayerService($q, Layer, LocalStorageService) {
 
   return service;
 
-  function getLayersForEvent(event) {
+  function getLayersForEvent(event, includeUnavailable) {
     const deferred = $q.defer();
-    Layer.queryByEvent({ eventId: event.id }, function(layers) {
+    Layer.queryByEvent({ eventId: event.id, includeUnavailable: includeUnavailable }, function(layers) {
       deferred.resolve(layers);
     });
 

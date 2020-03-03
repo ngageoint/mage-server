@@ -7,14 +7,14 @@ class AdminLayersController {
     this.$state = $state;
     this.Layer = Layer;
 
-    this.filter = "all";
+    this.filter = 'all';
     this.layers = [];
     this.page = 0;
     this.itemsPerPage = 10;
-  
-    this.hasLayerCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_LAYER');
-    this.hasLayerEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
-    this.hasLayerDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
+
+    this.hasLayerCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_LAYER');
+    this.hasLayerEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
+    this.hasLayerDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
 
     // For some reason angular is not calling into filter function with correct context
     this.filterLayers = this._filterLayers.bind(this);
@@ -22,21 +22,24 @@ class AdminLayersController {
   }
 
   $onInit() {
-    this.Layer.query(layers => {
+    this.Layer.query({ includeUnavailable: true }, layers => {
       this.layers = layers;
     });
   }
 
   _filterLayers(layer) {
-    var filteredLayers = this.$filter('filter')([layer], this.layerSearch);
+    const filteredLayers = this.$filter('filter')([layer], this.layerSearch);
     return filteredLayers && filteredLayers.length;
   }
 
   _filterType(layer) {
     switch (this.filter) {
-    case 'all': return true;
-    case 'online': return layer.type === 'Imagery';
-    case 'offline': return layer.type !== 'Imagery';
+      case 'all':
+        return true;
+      case 'online':
+        return layer.type === 'Imagery';
+      case 'offline':
+        return layer.type !== 'Imagery';
     }
   }
 
@@ -59,17 +62,17 @@ class AdminLayersController {
 
     this.$state.go('admin.layerEdit', { layerId: layer.id });
   }
-  
+
   deleteLayer($event, layer) {
     $event.stopPropagation();
 
-    var modalInstance = this.$uibModal.open({
+    const modalInstance = this.$uibModal.open({
       resolve: {
         layer: () => {
           return layer;
-        }
+        },
       },
-      component: "adminLayerDelete"
+      component: 'adminLayerDelete',
     });
 
     modalInstance.result.then(layer => {
@@ -82,5 +85,5 @@ AdminLayersController.$inject = ['$filter', '$uibModal', '$state', 'Layer', 'Use
 
 export default {
   template: require('./layers.html'),
-  controller: AdminLayersController
+  controller: AdminLayersController,
 };

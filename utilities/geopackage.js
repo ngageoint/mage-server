@@ -47,9 +47,12 @@ function getTables(geoPackage) {
   // get the bounds for the tables
   const tables = geoPackage.getTables(true);
   const tileTables = tables.tiles.map(tableInfo => {
+    const tileDao = geoPackage.getTileDao(tableInfo.table_name);
     return {
       name: tableInfo.table_name,
       type: 'tile',
+      minZoom: tileDao.minWebMapZoom,
+      maxZoom: tileDao.maxWebMapZoom,
       bbox: [tableInfo.min_x, tableInfo.min_y, tableInfo.max_x, tableInfo.max_y],
     };
   });

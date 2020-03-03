@@ -118,15 +118,9 @@ exports.getLayers = function(filter) {
   const conditions = {};
   if (filter.type) conditions.type = filter.type;
   if (filter.layerIds) conditions._id = { $in: filter.layerIds };
-  if (filter.processing) {
-    switch (filter.processing) {
-      case 'processed':
-        conditions.processing = { $exists: false };
-        break;
-      case 'processing':
-        conditions.processing = { $exists: true };
-        break;
-    }
+  console.log('filter.includeUnavailable', filter.includeUnavailable);
+  if (!filter.includeUnavailable) {
+    conditions.state = { $eq: 'available' };
   }
   return Layer.find(conditions).exec();
 };

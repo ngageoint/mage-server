@@ -156,10 +156,8 @@ module.exports = function(app, security) {
       type: req.param('type'),
     };
 
-    if (!req.param('processing')) {
-      req.parameters.processing = 'processed';
-    } else {
-      req.parameters.processing = req.param('processing');
+    if (req.param('includeUnavailable')) {
+      req.parameters.includeUnavailable = req.param('includeUnavailable');
     }
 
     next();
@@ -168,7 +166,7 @@ module.exports = function(app, security) {
   // get all layers
   app.get('/api/layers', access.authorize('READ_LAYER_ALL'), parseQueryParams, function(req, res, next) {
     new api.Layer()
-      .getLayers({ processing: req.parameters.processing })
+      .getLayers({ includeUnavailable: req.parameters.includeUnavailable })
       .then(layers => {
         const response = layerXform.transform(layers, { path: req.getPath() });
         res.json(response);
@@ -268,8 +266,13 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res, next) {
+      console.log('req.parameters.includeUnavailable', req.parameters);
       new api.Layer()
-        .getLayers({ layerIds: req.event.layerIds, type: req.parameters.type, processing: req.parameters.processing })
+        .getLayers({
+          layerIds: req.event.layerIds,
+          type: req.parameters.type,
+          includeUnavailable: req.parameters.includeUnavailable,
+        })
         .then(layers => {
           const response = layerXform.transform(layers, { path: req.getPath() });
           res.json(response);
@@ -388,7 +391,7 @@ module.exports = function(app, security) {
     validateGeopackage,
     function(req, res, next) {
       if (req.newLayer.type !== 'GeoPackage') {
-        req.newLayer.state = 'available';
+        req.newLayer.state = 'unavailable';
       }
       new api.Layer()
         .create(req.newLayer)
