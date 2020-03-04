@@ -118,7 +118,6 @@ exports.getLayers = function(filter) {
   const conditions = {};
   if (filter.type) conditions.type = filter.type;
   if (filter.layerIds) conditions._id = { $in: filter.layerIds };
-  console.log('filter.includeUnavailable', filter.includeUnavailable);
   if (!filter.includeUnavailable) {
     conditions.state = { $eq: 'available' };
   }
