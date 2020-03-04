@@ -45,7 +45,7 @@
     "@angular/router": "~8.2.14",
     "@angular/upgrade": "~8.2.14",
     "@ng-select/ng-select": "2.20.0",
-    "@ngageoint/geopackage": "1.1.6",
+    "@ngageoint/geopackage": "1.1.10",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
