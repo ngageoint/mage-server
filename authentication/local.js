@@ -73,8 +73,12 @@ module.exports = function(app, passport, provisioning) {
 
           if (isValid) {
             User.validLogin(user)
-              .then(() => done(null, user))
-              .catch(err => done(err));
+              .then(() => {
+                done(null, user);
+              })
+              .catch(err => {
+                done(err);
+              });
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)
@@ -135,49 +139,6 @@ module.exports = function(app, passport, provisioning) {
           });
         });
       })(req, res, next);
-    }
-  );
-
-  // DEPRECATED retain old routes as deprecated until next major version.
-  app.post('/api/devices',
-    function authenticate(req, res, next) {
-      passport.authenticate('local', function(err, user) {
-        if (err) return next(err);
-
-        if (!user) {
-          return next('route');
-        }
-
-        req.login(user, function(err) {
-          next(err);
-        });
-      })(req, res, next);
-    },
-    function(req, res, next) {
-      log.warn('DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/local/devices');
-
-      var newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
-
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
-
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
     }
   );
 

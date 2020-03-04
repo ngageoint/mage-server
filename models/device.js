@@ -2,7 +2,9 @@ var mongoose = require('mongoose')
   , async = require('async')
   , Observation = require('./observation')
   , User = require('./user')
-  , Token = require('./token');
+  , Token = require('./token')
+  , Setting = require('../models/setting')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -80,8 +82,7 @@ DeviceSchema.set("toJSON", {
   transform: transform
 });
 
-// Creates the Model for the User Schema
-var Device = mongoose.model('Device', DeviceSchema);
+const Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
 
 exports.getDeviceById = function(id, options) {
@@ -130,13 +131,13 @@ exports.count = function() {
   return Device.count({}).exec();
 };
 
-exports.createDevice = function(device) {
+exports.createDevice = async function(device) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
   device.uid = device.uid.toLowerCase();
 
-  var update = {
+  const update = {
     name: device.name,
     description: device.description,
     userId: device.userId,
@@ -144,18 +145,36 @@ exports.createDevice = function(device) {
     appVersion: device.appVersion
   };
 
-  if (device.registered) update.registered = device.registered;
+  const user = await User.getUserById(device.userId);
+  const authenticationType = user.authentication.type;
 
-  return Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec();
+  if (device.registered) {
+    update.registered = device.registered;
+  } else {
+    const securitySettings = await Setting.getSetting('security');
+    if (securitySettings && securitySettings.settings) {
+      const authSettings = securitySettings.settings[authenticationType] || {};
+      const devicesReqAdmin = authSettings.devicesReqAdmin || {};
+      const autoRegister = devicesReqAdmin.enabled === false;
+      if (autoRegister) {
+        log.info(`auto-register device ${device.uid} for auth type ${authenticationType}`)
+      }
+      update.registered = autoRegister;
+    }
+  }
+  log.info(`creating new device ${device.uid} for user ${device.userId}`);
+  return await Device.findOneAndUpdate({ uid: device.uid }, update,
+    { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true });
 };
 
-exports.updateDevice = function(id, update) {
+exports.updateDevice = async function(id, update) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
-  if (update.uid) update.uid = update.uid.toLowerCase();
-
-  return Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}).exec();
+  if (update.uid) {
+    update.uid = update.uid.toLowerCase();
+  }
+  return await Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true});
 };
 
 exports.deleteDevice = function(id) {

@@ -47,25 +47,25 @@ export class LeafletComponent {
     };
   }
 
-  onMapAvailable($event: any) {
+  onMapAvailable($event: any): void {
     this.map = $event.map;
   }
 
-  addLayer($event: any) {
+  addLayer($event: any): void {
     const group = this.groups[$event.group];
     $event.zIndex = group.offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
     $event.layer.pane.style.zIndex = $event.zIndex;
     group.layers.push($event);
   }
 
-  removeLayer($event: any) {
+  removeLayer($event: any): void {
     console.log('remove layer', $event);
     // const id = L.stamp($event.layer);
     // delete this.baseLayers[id];
     // delete this.overlayLayers[id];
   }
 
-  layerTogged($event: ToggleEvent) {
+  layerTogged($event: ToggleEvent): void {
     if ($event.layer.base) {
       this.baseToggled($event);
     } else {
@@ -73,7 +73,7 @@ export class LeafletComponent {
     }
   }
 
-  baseToggled($event: ToggleEvent) {
+  baseToggled($event: ToggleEvent): void {
     const previousBaseLayer = this.baseLayers.find((layer: any) => layer.selected);
     previousBaseLayer.selected = false;
     this.map.removeLayer(previousBaseLayer.layer);
@@ -82,7 +82,7 @@ export class LeafletComponent {
     this.map.addLayer($event.layer.layer);
   }
 
-  overlayToggled($event: ToggleEvent) {
+  overlayToggled($event: ToggleEvent): void {
     if ($event.value) {
       this.map.addLayer($event.layer.layer);
     } else {
@@ -90,29 +90,32 @@ export class LeafletComponent {
     }
   }
 
-  opacityChanged($event: OpacityEvent) {
+  opacityChanged($event: OpacityEvent): void {
     $event.layer.layer.pane.style.opacity = $event.value;
   }
 
-  zoom($event: ZoomEvent) {
-    if ($event.layer.layer.getBounds) {
-      const bounds = $event.layer.layer.getBounds();
+  zoom($event: ZoomEvent): void {
+    const layer = $event.layer.layer;
+    if (layer.getBounds) {
+      const bounds = layer.getBounds();
       this.map.fitBounds(bounds);
-    } else if ($event.layer.bbox) {
+    } else if (layer.table && layer.table.bbox) {
       this.map.fitBounds([
-        [$event.layer.bbox[0], $event.layer.bbox[1]],
-        [$event.layer.bbox[2], $event.layer.bbox[3]]
+        [layer.table.bbox[0], layer.table.bbox[1]],
+        [layer.table.bbox[2], layer.table.bbox[3]]
       ]);
     }
   }
 
-  reorder($event: ReorderEvent) {
+  reorder($event: ReorderEvent): void {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex);
-    const offset = $event.type === 'feature' ? LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET : LeafletComponent.TILE_PANE_Z_INDEX_OFFSET;
+    const offset =
+      $event.type === 'feature'
+        ? LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET
+        : LeafletComponent.TILE_PANE_Z_INDEX_OFFSET;
     $event.layers.forEach((layer: any, index: number) => {
       layer.zIndex = offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1);
       layer.layer.pane.style.zIndex = layer.zIndex;
     });
   }
-
 }

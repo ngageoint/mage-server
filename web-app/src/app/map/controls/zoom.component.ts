@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output, AfterViewInit, ViewChildren, ElementRef, QueryList } from '@angular/core';
-import L from 'leaflet';
+import { DomEvent } from 'leaflet';
 import { MatButton } from '@angular/material';
 
 export enum ZoomDirection {
@@ -22,18 +22,17 @@ export class ZoomComponent implements AfterViewInit {
   @Output() onZoom = new EventEmitter<ZoomEvent>();
 
   ngAfterViewInit(): void {
-    L.DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
-    L.DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
+    DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
+    DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
   }
 
-  onZoomIn($event: MouseEvent) {
+  onZoomIn($event: MouseEvent): void {
     $event.stopPropagation();
-    this.onZoom.emit({direction: ZoomDirection.IN})
+    this.onZoom.emit({ direction: ZoomDirection.IN });
   }
 
-  onZoomOut($event: MouseEvent) {
+  onZoomOut($event: MouseEvent): void {
     $event.stopPropagation();
-    this.onZoom.emit({ direction: ZoomDirection.OUT })
+    this.onZoom.emit({ direction: ZoomDirection.OUT });
   }
-
 }

@@ -1,7 +1,7 @@
-import { Component, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, Input } from '@angular/core';
+import { Component, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { NominatimService } from '../search/nominatim.service';
 import { MatList } from '@angular/material';
-import L from 'leaflet';
+import { DomEvent } from 'leaflet';
 
 export enum SearchState {
   ON,
@@ -34,11 +34,11 @@ export class SearchComponent implements AfterViewInit {
   constructor(private nominatim: NominatimService) { }
 
   ngAfterViewInit(): void {
-    L.DomEvent.disableClickPropagation(this.matList.nativeElement);
-    L.DomEvent.disableScrollPropagation(this.matList.nativeElement);
+    DomEvent.disableClickPropagation(this.matList.nativeElement);
+    DomEvent.disableScrollPropagation(this.matList.nativeElement);
   }
 
-  searchToggle() {
+  searchToggle(): void {
     this.searchState = this.searchState === SearchState.ON ? SearchState.OFF : SearchState.ON;
 
     if (this.searchState === SearchState.ON) {
@@ -48,7 +48,7 @@ export class SearchComponent implements AfterViewInit {
     }
   }
 
-  search(value: string) {
+  search(value: string): void {
     this.searching = true;
     this.nominatim.search(value).subscribe((data: any) => {
       this.searching = false;
@@ -56,7 +56,7 @@ export class SearchComponent implements AfterViewInit {
     });
   }
 
-  clear($event: MouseEvent, input: HTMLInputElement) {
+  clear($event: MouseEvent, input: HTMLInputElement): void {
     $event.stopPropagation();
     $event.preventDefault();
     input.value = null;
@@ -65,9 +65,8 @@ export class SearchComponent implements AfterViewInit {
     this.onSearchClear.emit();
   }
 
-  searchResultClick(result: any) {
+  searchResultClick(result: any): void {
     this.searchToggle();
     this.onSearch.emit({ feature: result });
   }
-
 }

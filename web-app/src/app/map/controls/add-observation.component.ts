@@ -1,6 +1,6 @@
-import { Component, OnInit, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Output, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material';
-import L from 'leaflet';
+import { DomEvent } from 'leaflet';
 
 @Component({
   selector: 'map-control-add-observation',
@@ -12,15 +12,12 @@ export class AddObservationComponent implements AfterViewInit {
 
   @Output() onAddObservation = new EventEmitter<void>();
 
-  constructor() { }
-
   ngAfterViewInit(): void {
-    L.DomEvent.disableClickPropagation(this.button.nativeElement);
+    DomEvent.disableClickPropagation(this.button.nativeElement);
   }
 
-  addObservation($event: MouseEvent) {
+  addObservation($event: MouseEvent): void {
     $event.stopPropagation();
     this.onAddObservation.emit();
   }
-
 }

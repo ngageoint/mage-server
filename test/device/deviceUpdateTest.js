@@ -1,16 +1,19 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
+  , chai = require('chai')
   , mongoose = require('mongoose')
   , app = require('../../express')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , UserModel = mongoose.model('User');
+  , MockToken = require('../mockToken');
+
+const expect = chai.expect;
+const should = chai.should();
 
 require('sinon-mongoose');
 
 require('../../models/device');
-var DeviceModel = mongoose.model('Device');
+const DeviceModel = mongoose.model('Device');
+const TokenModel = mongoose.model('Token');
+const UserModel = mongoose.model('User');
 
 describe("device update tests", function() {
 
@@ -94,54 +97,58 @@ describe("device update tests", function() {
   });
 
 
-  it("should remove token for unregistered device", function(done) {
+  it("should remove token for unregistered device", async function() {
+
+    /*
+    TODO:
+    this test and others have a lot of ugly deep mocking down to the mongodb
+    driver level.  that level of mocking does not belong in tests of high-level
+    apis and use cases.
+    */
+
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    var userId = mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
+    const deviceId = mongoose.Types.ObjectId();
 
-    var deviceId = mongoose.Types.ObjectId();
-    sinon.mock(TokenModel.collection)
-      .expects('remove')
-      .withArgs({ deviceId: deviceId})
-      .yields(null);
+    const reqDevice = {
+      uid: '12345',
+      registered: false,
+      description: 'Some description',
+      userId: userId.toHexString()
+    };
+
+    const mockTokenModel = sinon.mock(TokenModel);
+    mockTokenModel
+      .expects('remove').withArgs({ deviceId: deviceId.toHexString() })
+      .yields(null, 1);
 
     sinon.mock(UserModel)
-      .expects('findById')
+      .expects('findById').callsFake(function() {
+        console.log(arguments)
+      })
       .withArgs(userId)
       .chain('populate')
-      .chain('exec')
-      .yields(null, {});
+      .resolves({});
 
     sinon.mock(DeviceModel.collection)
       .expects('findAndModify')
       .yields(null, {
         value: {
-          uid: '12345',
-          name: 'Test Device',
-          registered: false,
-          description: 'Some description',
-          userId: userId.toString()
+          ...reqDevice,
+          _id: deviceId.toHexString()
         }
       });
 
-    request(app)
+    const res = await request(app)
       .put('/api/devices/' + deviceId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .send({
-        uid: '12345',
-        name: 'Test Device',
-        registered: 'false',
-        description: 'Some description',
-        userId: userId.toString()
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var device = res.body;
-        should.exist(device);
-      })
-      .end(done);
-  });
+      .send(reqDevice);
 
+    expect(res.status).to.equal(200);
+    expect(res.type).to.match(/json/);
+    expect(res.body).to.include(reqDevice);
+    mockTokenModel.verify();
+  });
 });

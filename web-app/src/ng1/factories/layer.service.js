@@ -3,27 +3,54 @@ module.exports = LayerService;
 LayerService.$inject = ['$q', 'Layer', 'LocalStorageService'];
 
 function LayerService($q, Layer, LocalStorageService) {
-  var service = {
-    getLayersForEvent: getLayersForEvent,
-    uploadGeopackage: uploadGeopackage
+  const service = {
+    getLayersForEvent,
+    uploadGeopackage,
+    getClosestFeaturesForLayers,
+    makeAvailable,
   };
 
   return service;
 
-  function getLayersForEvent(event) {
-    var deferred = $q.defer();
-    Layer.queryByEvent({eventId: event.id}, function(layers) {
+  function getLayersForEvent(event, includeUnavailable) {
+    const deferred = $q.defer();
+    Layer.queryByEvent({ eventId: event.id, includeUnavailable: includeUnavailable }, function(layers) {
       deferred.resolve(layers);
     });
 
     return deferred.promise;
   }
 
-  function uploadGeopackage(data) {
-    var deferred = $q.defer();
+  function getClosestFeaturesForLayers(layerIds, latlng, tile) {
+    const deferred = $q.defer();
+    Layer.closestFeatureByLayer({ layerIds: layerIds, latlng: latlng, tile: tile }, function(features) {
+      deferred.resolve(features);
+    });
 
-    var formData = new FormData();
-    for (var property in data) {
+    return deferred.promise;
+  }
+
+  function makeAvailable(layerId) {
+    const theDeferred = $q.defer();
+    $http
+      .get('/api/layers/' + layerId + '/available', {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .success(function(layer) {
+        theDeferred.resolve(layer);
+      })
+      .error(function(e) {
+        theDeferred.reject(e.responseJSON);
+      });
+
+    return theDeferred.promise;
+  }
+
+  function uploadGeopackage(data) {
+    const deferred = $q.defer();
+
+    const formData = new FormData();
+    for (const property in data) {
       if (data[property] != null) {
         formData.append(property, data[property]);
       }
@@ -33,27 +60,31 @@ function LayerService($q, Layer, LocalStorageService) {
       url: '/api/layers',
       type: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + LocalStorageService.getToken()
+        Authorization: 'Bearer ' + LocalStorageService.getToken(),
       },
       xhr: function() {
-        var myXhr = jQuery.ajaxSettings.xhr();
+        const myXhr = jQuery.ajaxSettings.xhr();
         if (myXhr.upload) {
-          myXhr.upload.addEventListener('progress', function(e) {
-            deferred.notify(e);
-          }, false);
+          myXhr.upload.addEventListener(
+            'progress',
+            function(e) {
+              deferred.notify(e);
+            },
+            false,
+          );
         }
         return myXhr;
       },
       success: function(data) {
         deferred.resolve(data);
       },
-      error: function() {
-        deferred.reject();
+      error: function(e) {
+        deferred.reject(e.responseJSON);
       },
       data: formData,
       cache: false,
       contentType: false,
-      processData: false
+      processData: false,
     });
 
     return deferred.promise;

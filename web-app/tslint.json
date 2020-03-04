@@ -43,6 +43,7 @@
         ]
       }
     ],
+    "no-bitwise": false,
     "no-consecutive-blank-lines": false,
     "no-console": [
       true,

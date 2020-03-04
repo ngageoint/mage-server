@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
-  version: 5.2.6
+  version: 5.3.3
 servers: []
 security:
   - mageToken: []
@@ -89,6 +89,62 @@ paths:
       responses:
         200:
           description: logout response
+   
+  /auth/local/signin:
+    post:
+      tags: [ Local Authentication & Authorization ]
+      summary: Authentication 
+      description: Authenticate a user using a local strategy. 
+      operationId: authenticate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserIn' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/UserIn' }
+      responses:
+        200:
+          description: Successfully signed in.
+
+  /auth/local/authorize:
+    post:
+      tags: [ Local Authentication & Authorization  ]
+      summary: Authorization and device creation
+      description: Authorize a user using a local strategy.  A device may also be created via this method.
+      operationId: authorize
+      parameters:
+        - name: uid
+          in: query
+          description: Id of the device that requires provisioning
+          required: true
+          schema: { $ref: '#/components/schemas/Device/properties/id' }
+        - name: name
+          in: query
+          description: Name of the device
+          schema: { $ref: '#/components/schemas/Device/properties/name' }
+        - name: description
+          in: query
+          description: Description of the device
+          schema: { $ref: '#/components/schemas/Device/properties/description' }
+        - name: appVersion
+          in: query
+          description: Application version of the device (required if creating a new device)
+          schema: { $ref: '#/components/schemas/Device/properties/appVersion' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DeviceIn' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/DeviceIn' }
+      responses:
+        200:
+          description: Successfuly provisioned device. If this was a new device, then it was successfuly created and auto-registration is turned on.
+        401:
+          description:  User is not authorized.  Typically this means you need to authenticate `/auth/local/signin`.
+        403:
+          description: Failure to provision the device.  This typically means the device needs to be registered.
 
   /api/users:
     post:
@@ -344,12 +400,15 @@ paths:
     post:
       tags:
         - Device
+      summary: Create a device
       description: >
         Save a new device document in the database.  The request client must
-        have `CREATE_DEVICE` permission.
+        have `CREATE_DEVICE` permission. `DEPRECATED`: Clients should be creating devices via authorize `/auth/{strategy}/authorize`
       operationId: createDevice
       requestBody:
         $ref: '#/components/requestBodies/DeviceIn'
+      deprecated:
+        true
       responses:
         200:
           description: new device response
@@ -2305,6 +2364,8 @@ components:
         name:
           type: string
         description:
+          type: string
+        appVersion:
           type: string
         userId:
           $ref: '#/components/schemas/User/properties/id'

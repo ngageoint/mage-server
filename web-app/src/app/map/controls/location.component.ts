@@ -1,5 +1,5 @@
-import { Component, Output, EventEmitter, AfterViewInit, ViewChild, ElementRef, ViewChildren, QueryList } from '@angular/core';
-import L from 'leaflet';
+import { Component, Output, EventEmitter, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { DomEvent } from 'leaflet';
 import { MatButton } from '@angular/material';
 
 export enum LocationState {
@@ -27,11 +27,11 @@ export class LocationComponent implements AfterViewInit {
   broadcastState = LocationState.OFF;
 
   ngAfterViewInit(): void {
-    L.DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
-    L.DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
+    DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
+    DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
   }
 
-  locate() {
+  locate(): void {
     this.locateState = this.locateState === LocationState.ON ? LocationState.OFF : LocationState.ON;
 
     if (this.locateState === LocationState.OFF && this.broadcastState === LocationState.ON) {
@@ -41,7 +41,7 @@ export class LocationComponent implements AfterViewInit {
     this.onLocate.emit({ state: this.locateState });
   }
 
-  broadcast() {
+  broadcast(): void {
     this.broadcastState = this.broadcastState === LocationState.ON ? LocationState.OFF : LocationState.ON;
 
     if (this.broadcastState === LocationState.ON && this.locateState === LocationState.OFF) {

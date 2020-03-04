@@ -2,9 +2,10 @@ import L from 'leaflet';
 import _ from 'underscore';
 import moment from 'moment';
 import MageFeatureEdit from '../leaflet-extensions/FeatureEdit';
-import {default as countries} from './countries-land-10km.geo.json';
-import { ZoomDirection } from '../../app/map/controls/zoom.component';
+import GeoPackageLayers from '../leaflet-extensions/GeoPackageLayers';
+import { default as countries } from './countries-land-10km.geo.json';
 import { LocationState } from '../../app/map/controls/location.component';
+import { ZoomDirection } from '../../app/map/controls/zoom.component';
 
 require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
@@ -13,7 +14,16 @@ require('leaflet.markercluster');
 L.Icon.Default.imagePath = '/';
 
 class LeafletController {
-  constructor($timeout, $element, MapService, GeometryService, LocalStorageService, EventService, FilterService) {
+  constructor(
+    $timeout,
+    $element,
+    MapService,
+    GeometryService,
+    LocalStorageService,
+    EventService,
+    FilterService,
+    LayerService
+  ) {
     this.$timeout = $timeout;
     this.$element = $element;
     this.MapService = MapService;
@@ -21,10 +31,10 @@ class LeafletController {
     this.LocalStorageService = LocalStorageService;
     this.EventService = EventService;
     this.FilterService = FilterService;
+    this.LayerService = LayerService;
 
     this.layers = {};
-    this.geopackageLayers = {};
-
+    this.geoPackageLayers;
     this.temporalLayers = [];
     this.spiderfyState = null;
     this.currentLocation = null;
@@ -37,11 +47,18 @@ class LeafletController {
   }
 
   $onInit() {
-    const mapPosition = this.LocalStorageService.getMapPosition() || {
-      center: [0, 0],
-      zoom: 3
-    };
-    this.map = L.map("map", {
+    let mapPosition = this.LocalStorageService.getMapPosition();
+    if (!mapPosition) {
+      this.LocalStorageService.setMapPosition({
+        center: {
+          lng: 0,
+          lat: 0
+        },
+        zoom: 3
+      });
+      mapPosition = this.LocalStorageService.getMapPosition();
+    }
+    this.map = L.map('map', {
       center: mapPosition.center,
       zoom: mapPosition.zoom,
       zoomControl: false,
@@ -55,7 +72,7 @@ class LeafletController {
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,
     // overlay map, etc, will be placed in its own map pane
-    this.BASE_LAYER_PANE = 'baseLayerPane';  // Create a map pane for our base layers
+    this.BASE_LAYER_PANE = 'baseLayerPane'; // Create a map pane for our base layers
     this.map.createPane(this.BASE_LAYER_PANE);
     this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = 100 * 100;
     this.map.getPane('tilePane').style.zIndex = 200 * 100;
@@ -64,24 +81,26 @@ class LeafletController {
     this.map.getPane('markerPane').style.zIndex = 600 * 100;
     this.map.getPane('tooltipPane').style.zIndex = 650 * 100;
     this.map.getPane('popupPane').style.zIndex = 700 * 100;
-    
+
     // Add in a base layer of styled GeoJSON in case the tiles do not load
     const FALLBACK_LAYER_PANE = 'fallbackLayerPane';
     this.map.createPane(FALLBACK_LAYER_PANE);
     this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = 1;
-    this.map.addLayer(L.geoJSON(countries, {
-      interactive: false,
-      style: function () {
-        return {
-          color: '#BBBBBB',
-          weight: .5,
-          fill: true,
-          fillColor: '#F9F9F6',
-          fillOpacity: 1
-        };
-      },
-      pane: FALLBACK_LAYER_PANE
-    }));
+    this.map.addLayer(
+      L.geoJSON(countries, {
+        interactive: false,
+        style: function() {
+          return {
+            color: '#BBBBBB',
+            weight: 0.5,
+            fill: true,
+            fillColor: '#F9F9F6',
+            fillOpacity: 1
+          };
+        },
+        pane: FALLBACK_LAYER_PANE
+      })
+    );
 
     this.featurePanes = [];
 
@@ -89,22 +108,32 @@ class LeafletController {
 
     this.map.on('locationfound', this.onLocation, this);
 
-    this.map.on('moveend', saveMapPosition, this);
     function saveMapPosition() {
-      let center = this.map.getCenter();
+      const center = this.map.getCenter();
       this.LocalStorageService.setMapPosition({
         center: L.latLng(L.Util.formatNum(center.lat), L.Util.formatNum(center.lng)),
         zoom: this.map.getZoom()
       });
     }
+    this.map.on('moveend', saveMapPosition, this);
+
+    this.geoPackageLayers = new GeoPackageLayers(
+      this.map,
+      this.layerControl,
+      this.TILE_LAYER_PANE,
+      this.FEA,
+      this.LayerService,
+      this.FilterService,
+      this.LocalStorageService
+    );
 
     this.map.on('baselayerchange', baseLayer => {
-      var layer = this.layers[baseLayer.name];
+      const layer = this.layers[baseLayer.name];
       this.MapService.selectBaseLayer(layer);
     });
 
     this.map.on('overlayadd', overlay => {
-      var layer = this.layers[overlay.name];
+      const layer = this.layers[overlay.name];
       this.MapService.overlayAdded(layer);
     });
 
@@ -127,6 +156,14 @@ class LeafletController {
     this.EventService.addPollListener(this.pollListener);
   }
 
+  saveMapPosition() {
+    const center = this.map.getCenter();
+    this.LocalStorageService.setMapPosition({
+      center: L.latLng(L.Util.formatNum(center.lat), L.Util.formatNum(center.lng)),
+      zoom: this.map.getZoom()
+    });
+  }
+
   $onDestroy() {
     this.MapService.removeListener(this.listener);
     this.EventService.removePollListener(this.pollListener);
@@ -143,7 +180,12 @@ class LeafletController {
   onSearch($event) {
     this.onSearchClear();
 
-    this.map.fitBounds(L.latLngBounds(L.latLng($event.feature.bbox[1], $event.feature.bbox[0]), L.latLng($event.feature.bbox[3], $event.feature.bbox[2])));
+    this.map.fitBounds(
+      L.latLngBounds(
+        L.latLng($event.feature.bbox[1], $event.feature.bbox[0]),
+        L.latLng($event.feature.bbox[3], $event.feature.bbox[2])
+      )
+    );
 
     const popup = L.popup({ className: 'leaflet-material-popup' }).setContent($event.feature.properties.display_name);
     this.searchMarker = L.marker([$event.feature.geometry.coordinates[1], $event.feature.geometry.coordinates[0]])
@@ -153,9 +195,9 @@ class LeafletController {
   }
 
   onSearchClear() {
-    if (this.searchMarker){
+    if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker);
-    };
+    }
   }
 
   onPoll() {
@@ -181,10 +223,12 @@ class LeafletController {
 
   onLocation(location) {
     // no need to do anything if the location has not changed
-    if (this.currentLocation &&
-      (this.currentLocation.lat === location.latlng.lat &&
-       this.currentLocation.lng === location.latlng.lng &&
-       this.currentLocation.accuracy === location.accuracy)) {
+    if (
+      this.currentLocation &&
+      this.currentLocation.lat === location.latlng.lat &&
+      this.currentLocation.lng === location.latlng.lng &&
+      this.currentLocation.accuracy === location.accuracy
+    ) {
       return;
     }
 
@@ -195,8 +239,9 @@ class LeafletController {
       this.map.addLayer(this.locationLayer);
     }
 
-    if (this.broadcast === LocationState.ON)
+    if (this.broadcast === LocationState.ON) {
       this.MapService.onLocation(location);
+    }
   }
 
   onBroadcast($event) {
@@ -214,23 +259,23 @@ class LeafletController {
     // this.userLocationControl.stopBroadcast();
   }
 
-  onLayersChanged({name, added = [], removed = []}) {
+  onLayersChanged({ name, added = [], removed = [] }) {
     added.forEach(added => {
       switch (added.type) {
-      case 'GeoPackage':
-        this.createGeoPackageLayer(added);
-        break;
-      case 'Imagery':
-        this.createRasterLayer(added);
-        break;
-      case 'geojson':
-        this.createGeoJsonLayer(added);
-        break;
+        case 'GeoPackage':
+          this.createGeoPackageLayer(added);
+          break;
+        case 'Imagery':
+          this.createRasterLayer(added);
+          break;
+        case 'geojson':
+          this.createGeoJsonLayer(added);
+          break;
       }
     });
-    
+
     removed.forEach(removed => {
-      var layer = this.layers[name];
+      const layer = this.layers[name];
       if (layer) {
         this.map.removeLayer(layer.layer);
         delete layer.layer;
@@ -239,85 +284,12 @@ class LeafletController {
     });
   }
 
-  createGeoPackageLayer(layerInfo) {
-    var filteredEvent = this.FilterService.getEvent();
-    layerInfo.tables.forEach(table => {
-      const pane = this.map.createPane(`pane-${layerInfo.id}`-`${table.name}`);
-
-      if (table.type === 'feature') {
-        this.featurePanes.push(pane);
-
-        var styles = {};
-        styles[table.name] = {
-          weight: 2,
-          radius: 3
-        };
-        table.layer = L.vectorGrid.protobuf('api/events/' + filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name + '/{z}/{x}/{y}.pbf?access_token={token}', {
-          token: this.LocalStorageService.getToken(),
-          maxNativeZoom: 18,
-          pane: pane,
-          vectorTileLayerStyles: styles,
-          interactive: true,
-          rendererFactory: L.canvas.tile,
-          getFeatureId: function (feature) {
-            feature.properties.id = layerInfo.id + table.name + feature.id;
-            return feature.properties.id;
-          }
-        });
-        table.layer.on('click', e => {
-          var layer = e.layer;
-          table.layer.setFeatureStyle(layer.properties.id, {
-            color: '#00FF00'
-          });
-
-          var content = '<b>' + table.name + '</b><br><br>';
-          var pairs = _.chain(layer.properties).omit('id').pairs().value();
-          if (pairs.length) {
-            content += '<table class="table table-striped">';
-            _.each(pairs, function (pair) {
-              content += '<tr>' + '<td>' + pair[0] + '</td>' + '<td>' + pair[1] + '</td>' + '</tr>';
-            });
-            content += '</table>';
-          }
-
-          var popup = L.popup({ maxHeight: 250})
-            .setLatLng(e.latlng)
-            .setContent(content)
-            .on('remove', function () {
-              table.layer.resetFeatureStyle(layer.properties.id);
-            });
-
-          popup.openOn(this.map);
-        });
-      } else {
-        table.layer = L.tileLayer('api/events/' + filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name + '/{z}/{x}/{y}.png?access_token={token}', {
-          token: this.LocalStorageService.getToken(),
-          minZoom: table.minZoom,
-          maxZoom: table.maxZoom,
-          pane: pane
-        });
-      }
-      table.layer.pane = pane;
-      var name = layerInfo.name + table.name;
-      this.layers[name] = layerInfo;
-      this.geopackageLayers[name] = layerInfo;
-
-      this.onAddLayer({
-        layer: table.layer,
-        name: table.name,
-        group: table.type === 'feature' ? 'feature' : 'tile',
-        bbox: table.bbox
-      });
-    });
-  }
-
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
     const pane = this.map.createPane(`pane-${layerInfo.id}`);
-
-    var options = {};
+    let options = {};
     if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
-      options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: pane};
+      options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: pane };
       if (layerInfo.base) {
         options.pane = this.BASE_LAYER_PANE;
       }
@@ -331,10 +303,9 @@ class LeafletController {
         pane: pane
       };
       if (layerInfo.base) {
-        options.pane = this.BASE_LAYER_PANE;
+        options.pane = this.BASE_LAYER_PANE; // TODO fix me
       }
-      if (layerInfo.wms.styles)
-        options.styles = layerInfo.wms.styles;
+      if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
       layerInfo.layer = new L.TileLayer.WMS(layerInfo.url, options);
     }
     this.layers[layerInfo.name] = layerInfo;
@@ -354,11 +325,30 @@ class LeafletController {
     });
   }
 
+  createGeoPackageLayer(layerInfo) {
+    layerInfo.tables.forEach(table => {
+      const pane = this.map.createPane(`pane-${layerInfo.id}-${table.name}`);
+      if (table.type === 'feature') {
+        this.featurePanes.push(pane);
+      }
+
+      const layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane);
+      const name = layerInfo.name + table.name;
+      this.layers[name] = layerInfo;
+
+      this.onAddLayer({
+        layer: layer,
+        name: table.name,
+        group: table.type === 'feature' ? 'feature' : 'tile'
+      });
+    });
+  }
+
   createGeoJsonLayer(data) {
     const pane = this.map.createPane(`pane-${data.id}`);
     this.featurePanes.push(pane);
 
-    var layerInfo = {
+    const layerInfo = {
       type: 'geojson',
       name: data.name,
       featureIdToLayer: {},
@@ -366,7 +356,7 @@ class LeafletController {
       pane: pane
     };
 
-    var geojson = this.createGeoJsonForLayer(data.geojson, layerInfo, pane);
+    const geojson = this.createGeoJsonForLayer(data.geojson, layerInfo, pane);
 
     if (data.options.cluster) {
       layerInfo.layer = L.markerClusterGroup({
@@ -374,7 +364,7 @@ class LeafletController {
         clusterPane: pane
       }).addLayer(geojson);
 
-      layerInfo.layer.on('spiderfied', function () {
+      layerInfo.layer.on('spiderfied', function() {
         if (this.spiderfyState) {
           this.spiderfyState.layer.openPopup();
         }
@@ -386,8 +376,9 @@ class LeafletController {
     layerInfo.layer.pane = pane;
     this.layers[data.name] = layerInfo;
 
-    if (data.options.temporal)
+    if (data.options.temporal) {
       this.temporalLayers.push(layerInfo);
+    }
 
     if (data.options.selected) {
       layerInfo.layer.addTo(this.map);
@@ -404,33 +395,32 @@ class LeafletController {
   }
 
   createGeoJsonForLayer(json, layerInfo, pane, editMode) {
-    var popup = layerInfo.options.popup;
-    var geojson = L.geoJson(json, {
+    const popup = layerInfo.options.popup;
+    const geojson = L.geoJson(json, {
       pane: pane,
-      onEachFeature: function (feature, layer) {
+      onEachFeature: function(feature, layer) {
         if (popup) {
           if (_.isFunction(popup.html)) {
-            var options = { autoPan: false, maxWidth: 400 };
-            if (popup.closeButton !== undefined)
-              options.closeButton = popup.closeButton;
+            const options = { autoPan: false, maxWidth: 400 };
+            if (popup.closeButton !== undefined) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }
           if (_.isFunction(popup.onOpen)) {
-            layer.on('popupopen', function () {
+            layer.on('popupopen', function() {
               popup.onOpen(feature);
             });
           }
           if (_.isFunction(popup.onClose)) {
-            layer.on('popupclose', function () {
+            layer.on('popupclose', function() {
               popup.onClose(feature);
             });
           }
         }
         if (layerInfo.options.showAccuracy) {
-          layer.on('popupopen', function () {
+          layer.on('popupopen', function() {
             layer.setAccuracy(layer.feature.properties.accuracy);
           });
-          layer.on('popupclose', function () {
+          layer.on('popupclose', function() {
             layer.setAccuracy(null);
           });
         }
@@ -439,7 +429,7 @@ class LeafletController {
       pointToLayer: (feature, latlng) => {
         if (layerInfo.options.temporal) {
           // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker class
-          var temporalOptions = {
+          const temporalOptions = {
             pane: pane,
             color: this.colorForFeature(feature, layerInfo.options.temporal)
           };
@@ -448,7 +438,7 @@ class LeafletController {
           }
           return L.locationMarker(latlng, temporalOptions);
         } else {
-          var options = {
+          const options = {
             pane: pane
           };
           if (feature.style && feature.style.iconUrl) {
@@ -458,7 +448,7 @@ class LeafletController {
           return L.fixedWidthMarker(latlng, options);
         }
       },
-      style: function (feature) {
+      style: function(feature) {
         return feature.style;
       }
     });
@@ -466,8 +456,8 @@ class LeafletController {
     return geojson;
   }
 
-  onFeaturesChanged({name, added = [], updated = [], removed = []}) {
-    var featureLayer = this.layers[name];
+  onFeaturesChanged({ name, added = [], updated = [], removed = [] }) {
+    const featureLayer = this.layers[name];
     const pane = featureLayer.layer.getPane();
     added.forEach(feature => {
       if (featureLayer.options.cluster) {
@@ -478,9 +468,8 @@ class LeafletController {
     });
 
     updated.forEach(feature => {
-      var layer = featureLayer.featureIdToLayer[feature.id];
-      if (!layer)
-        return;
+      const layer = featureLayer.featureIdToLayer[feature.id];
+      if (!layer) return;
       featureLayer.layer.removeLayer(layer);
       if (featureLayer.options.cluster) {
         featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
@@ -490,7 +479,7 @@ class LeafletController {
     });
 
     removed.forEach(feature => {
-      var layer = featureLayer.featureIdToLayer[feature.id];
+      const layer = featureLayer.featureIdToLayer[feature.id];
       if (layer) {
         delete featureLayer.featureIdToLayer[feature.id];
         featureLayer.layer.removeLayer(layer);
@@ -499,11 +488,10 @@ class LeafletController {
   }
 
   onFeatureZoom(zoom) {
-    var featureLayer = this.layers[zoom.name];
-    var layer = featureLayer.featureIdToLayer[zoom.feature.id];
-    if (!this.map.hasLayer(featureLayer.layer))
-      return;
-      
+    const featureLayer = this.layers[zoom.name];
+    const layer = featureLayer.featureIdToLayer[zoom.feature.id];
+    if (!this.map.hasLayer(featureLayer.layer)) return;
+
     if (featureLayer.options.cluster) {
       if (this.map.getZoom() < 17) {
         if (layer.getBounds) {
@@ -539,25 +527,24 @@ class LeafletController {
   }
 
   onFeatureDeselect(deselected) {
-    var featureLayer = this.layers[deselected.name];
-    var layer = featureLayer.featureIdToLayer[deselected.feature.id];
-    if (!this.map.hasLayer(featureLayer.layer))
-      return;
+    const featureLayer = this.layers[deselected.name];
+    const layer = featureLayer.featureIdToLayer[deselected.feature.id];
+    if (!this.map.hasLayer(featureLayer.layer)) return;
     layer.closePopup();
   }
 
   onLayerRemoved(layer) {
     switch (layer.type) {
-    case 'GeoPackage':
-      this.removeGeoPackageLayer(layer);
-      break;
-    default:
-      this.removeLayer(layer);
+      case 'GeoPackage':
+        this.geoPackageLayers.removeGeoPackageLayer(layer);
+        break;
+      default:
+        this.removeLayer(layer);
     }
   }
 
   removeLayer(layer) {
-    var layerInfo = this.layers[layer.name];
+    const layerInfo = this.layers[layer.name];
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer);
       delete this.layers[layer.name];
@@ -569,20 +556,6 @@ class LeafletController {
     }
   }
 
-  removeGeoPackageLayer(layer) {
-    layer.tables.forEach(table => {
-      var name = layer.name + table.name;
-      this.map.removeLayer(table.layer);
-      delete this.layers[name];
-      delete this.geopackageLayers[name];
-
-      // this.layerControl.removeLayer(table.layer);
-      this.onRemoveLayer({
-        layer: table.layer
-      });
-    });
-  }
-  
   onHideFeed() {
     this.map.invalidateSize({ pan: false });
   }
@@ -599,7 +572,7 @@ class LeafletController {
   openPopup(layer, options) {
     options = options || {};
     if (options.zoomToLocation) {
-      this.map.once('moveend', function () {
+      this.map.once('moveend', function() {
         layer.openPopup();
       });
       this.map.setView(layer.getLatLng(), options.zoomToLocation ? 17 : this.map.getZoom());
@@ -609,8 +582,10 @@ class LeafletController {
   }
 
   colorForFeature(feature, options) {
-    var age = Date.now() - moment(feature.properties[options.property]).valueOf();
-    var bucket = _.find(options.colorBuckets, function (bucket) { return age > bucket.min && age <= bucket.max; });
+    const age = Date.now() - moment(feature.properties[options.property]).valueOf();
+    const bucket = _.find(options.colorBuckets, function(bucket) {
+      return age > bucket.min && age <= bucket.max;
+    });
     return bucket ? bucket.color : null;
   }
 
@@ -621,9 +596,9 @@ class LeafletController {
 
     // TODO save feature pane opacitis
     const featurePaneOpacities = this.featurePanes.map(pane => pane.style.opacity || 1);
-    this.setPaneOpacity(this.featurePanes, .5);
+    this.setPaneOpacity(this.featurePanes, 0.5);
 
-    let layer = this.layers['Observations'].featureIdToLayer[feature.id];
+    const layer = this.layers['Observations'].featureIdToLayer[feature.id];
     if (layer) {
       this.map.removeLayer(layer);
     }
@@ -660,8 +635,8 @@ class LeafletController {
   }
 
   setPaneOpacity(panes, opacityFactor) {
-    panes.forEach((pane) => {
-      let opacity = this.map.getPane(pane).style.opacity || 1;
+    panes.forEach(pane => {
+      const opacity = this.map.getPane(pane).style.opacity || 1;
       this.map.getPane(pane).style.opacity = opacity * opacityFactor;
     });
   }
@@ -673,7 +648,16 @@ class LeafletController {
   }
 }
 
-LeafletController.$inject = ['$timeout', '$element', 'MapService', 'GeometryService', 'LocalStorageService', 'EventService', 'FilterService'];
+LeafletController.$inject = [
+  '$timeout',
+  '$element',
+  'MapService',
+  'GeometryService',
+  'LocalStorageService',
+  'EventService',
+  'FilterService',
+  'LayerService'
+];
 
 export default {
   template: require('./leaflet.component.html'),
