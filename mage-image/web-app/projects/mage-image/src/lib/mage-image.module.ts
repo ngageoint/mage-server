@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { UIRouterUpgradeModule } from "@uirouter/angular-hybrid";
 
-import { ImageComponent } from './image.component';
+import { ImageComponent } from './mage-image.component';
 import { Ng2StateDeclaration } from '@uirouter/angular';
 
 const CHILD_STATES: [Ng2StateDeclaration] = [{
@@ -19,7 +19,7 @@ const CHILD_STATES: [Ng2StateDeclaration] = [{
   ],
   exports: [ImageComponent]
 })
-export class PluginModule { 
+export class PluginModule {
   static rootState() {
     return 'admin.plugins.image';
   }

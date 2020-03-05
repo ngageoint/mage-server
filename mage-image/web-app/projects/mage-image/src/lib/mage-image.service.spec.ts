@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ImageService } from './image.service';
+import { ImageService } from './mage-image.service';
 
 describe('ImageService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));

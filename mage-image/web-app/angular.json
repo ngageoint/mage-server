@@ -5,23 +5,23 @@
   "projects": {
     "image": {
       "projectType": "library",
-      "root": "projects/image",
-      "sourceRoot": "projects/image/src",
+      "root": "projects/mage-image",
+      "sourceRoot": "projects/mage-image/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/image/tsconfig.lib.json",
-            "project": "projects/image/ng-package.json"
+            "tsConfig": "projects/mage-image/tsconfig.lib.json",
+            "project": "projects/mage-image/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/image/src/test.ts",
-            "tsConfig": "projects/image/tsconfig.spec.json",
-            "karmaConfig": "projects/image/karma.conf.js"
+            "main": "projects/mage-image/src/test.ts",
+            "tsConfig": "projects/mage-image/tsconfig.spec.json",
+            "karmaConfig": "projects/mage-image/karma.conf.js"
           }
         },
         "lint": {
@@ -37,6 +37,7 @@
           }
         }
       }
-    }},
-  "defaultProject": "image"
+    }
+  },
+  "defaultProject": "mage-image"
 }

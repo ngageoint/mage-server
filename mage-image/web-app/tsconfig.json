@@ -19,10 +19,10 @@
       "dom"
     ],
     "paths": {
-      "image": [
+      "mage-image": [
         "dist/image"
       ],
-      "image/*": [
+      "mage-image/*": [
         "dist/image/*"
       ]
     }
