@@ -3,39 +3,61 @@ module.exports = Layer;
 Layer.$inject = ['$resource'];
 
 function Layer($resource) {
-  var Layer = $resource('/api/layers/:id', {
-    id: '@id'
-  },{
-    get: {
-      headers: {
-        'Accept': 'application/json'
-      }
+  const Layer = $resource(
+    '/api/layers/:id',
+    {
+      id: '@id',
     },
-    create: {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    {
+      get: {
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+      create: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      update: {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+      makeAvailable: {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        url: '/api/layers/:id/available',
+        params: {
+          available: true,
+        },
+      },
+      queryByEvent: {
+        method: 'GET',
+        isArray: true,
+        url: '/api/events/:eventId/layers',
+      },
+      closestFeatureByLayer: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        isArray: true,
+        url: '/api/layers/features',
+      },
+      count: {
+        method: 'GET',
+        url: '/api/layers/count',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
     },
-    update: {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    },
-    queryByEvent: {
-      method: 'GET',
-      isArray: true,
-      url: '/api/events/:eventId/layers'
-    },
-    count: {
-      method: 'GET',
-      url: '/api/layers/count',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }
-  });
+  );
 
   Layer.prototype.$save = function(params, success, error) {
     if (this.type === 'Feature') {

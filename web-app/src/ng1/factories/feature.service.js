@@ -1,52 +1,72 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 module.exports = FeatureService;
 
 FeatureService.$inject = ['$q', '$http'];
 
 function FeatureService($q, $http) {
-  var featureCollectionsByLayer = {};
+  const featureCollectionsByLayer = {};
 
-  var service = {
-    getFeatureCollection: getFeatureCollection
+  const service = {
+    getFeatureCollection,
+    loadFeatureUrl,
   };
 
   return service;
 
+  function loadFeatureUrl(url, deferred, layerName) {
+    if (!deferred) {
+      deferred = $q.defer();
+    }
+    $http
+      .get(url, {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      .success(function(featureCollection) {
+        if (layerName) {
+          featureCollectionsByLayer[layerName] = featureCollection;
+        }
+
+        _.each(featureCollection.features, function(feature) {
+          const style = feature.properties.style;
+          if (!style) return;
+
+          feature.style = {};
+          if (style.iconStyle && style.iconStyle.icon) {
+            feature.style.iconUrl = style.iconStyle.icon.href;
+          }
+
+          if (style.lineStyle && style.lineStyle.color) {
+            feature.style.color = style.lineStyle.color.rgb;
+          }
+
+          if (style.polyStyle && style.polyStyle.color) {
+            feature.style.fillColor = style.polyStyle.color.rgb;
+            feature.style.fillOpacity = style.polyStyle.color.opacity / 255;
+          }
+        });
+
+        deferred.resolve(featureCollection);
+      });
+
+    return deferred.promise;
+  }
+
   function getFeatureCollection(event, layer) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
     if (featureCollectionsByLayer[layer.name]) {
       deferred.resolve(featureCollectionsByLayer[layer.name]);
     }
 
-    $http.get('/api/events/' + event.id + '/layers/' + layer.id + '/features', {
-      headers: {"Content-Type": "application/json"}
-    }).success(function(featureCollection) {
-      featureCollectionsByLayer[layer.name] = featureCollection;
+    let url = '/api';
 
-      _.each(featureCollection.features, function(feature) {
-        var style = feature.properties.style;
-        if (!style) return;
+    if (event) {
+      url += '/events/' + event.id + '/layers/' + layer.id + '/features';
+    } else if (layer) {
+      url += '/layers/' + layer.id + '/features';
+    }
 
-        feature.style = {};
-        if (style.iconStyle && style.iconStyle.icon) {
-          feature.style.iconUrl = style.iconStyle.icon.href;
-        }
-
-        if (style.lineStyle && style.lineStyle.color) {
-          feature.style.color = style.lineStyle.color.rgb;
-        }
-
-        if (style.polyStyle && style.polyStyle.color) {
-          feature.style.fillColor = style.polyStyle.color.rgb;
-          feature.style.fillOpacity = style.polyStyle.color.opacity / 255;
-        }
-      });
-
-      deferred.resolve(featureCollection);
-    });
-
-    return deferred.promise;
+    return loadFeatureUrl(url, deferred, layer.name);
   }
 }
