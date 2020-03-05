@@ -18,7 +18,7 @@
       "email": "newmanw10@gmail.com"
     }
   ],
-  "homepage": "https://www1.nga.mil",
+  "homepage": "https://www.nga.mil",
   "engines": {
     "node": ">= 8.x",
     "npm": ">= 5.x"
