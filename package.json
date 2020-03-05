@@ -7,7 +7,5 @@
     "web-app"
   ],
   "devDependencies": {
-    "@yarnpkg/pnpify": "^2.0.0-rc.18",
-    "typescript": "^3.8.3"
   }
 }
