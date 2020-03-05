@@ -2,14 +2,14 @@ import countries from '../../mage/countries-land-10km.geo.json';
 import L from 'leaflet';
 
 class LayerPreviewController {
-
-  constructor($element) {
+  constructor($element, FeatureService) {
     this.$element = $element;
+    this.FeatureService = FeatureService;
   }
 
   $postLink() {
     this.map = L.map(this.$element.find('.layer-preview-leaflet')[0], {
-      center: [0,0],
+      center: [0, 0],
       zoom: 3,
       minZoom: 0,
       maxZoom: 18,
@@ -17,23 +17,25 @@ class LayerPreviewController {
       trackResize: true,
       scrollWheelZoom: true,
       attributionControl: false,
-      worldCopyJump: true
+      worldCopyJump: true,
     });
 
     this.map.createPane('offlinePane').style.zIndex = 100;
 
-    this.map.addLayer(L.geoJSON(countries, {
-      pane: 'offlinePane',
-      style: function () {
-        return {
-          color: '#BBBBBB',
-          weight: .5,
-          fill: true,
-          fillColor: '#F9F9F6',
-          fillOpacity: 1
-        };
-      }
-    }));
+    this.map.addLayer(
+      L.geoJSON(countries, {
+        pane: 'offlinePane',
+        style: function() {
+          return {
+            color: '#BBBBBB',
+            weight: 0.5,
+            fill: true,
+            fillColor: '#F9F9F6',
+            fillOpacity: 1,
+          };
+        },
+      }),
+    );
 
     this.updateMap();
   }
@@ -49,26 +51,66 @@ class LayerPreviewController {
       this.map.removeLayer(this.mapLayer);
     }
 
-    if (!this.url || !this.format) return;
+    if (this.bounds) {
+      this.map.fitBounds([
+        [this.bounds[1], this.bounds[0]],
+        [this.bounds[3], this.bounds[2]],
+      ]);
+    }
 
-    if (this.format === 'XYZ' || this.format === 'TMS') {
-      this.mapLayer = this.createTileLayer(this.url, this.format === 'TMS');
-    } else if (this.format === 'WMS') {
-      this.mapLayer = this.createWmsLayer(this.url, this.wms);
+    if (this.layers) {
+      this.layers.forEach(layer => {
+        this.createTileLayer(layer.url);
+      });
+    } else {
+      console.log('this', this);
+      if (this.url && this.type === 'Feature') {
+        this.mapLayer = this.createKmlLayer(this.url);
+        return;
+      }
+      if (!this.url || !this.format) return;
+
+      if (this.format === 'XYZ' || this.format === 'TMS') {
+        this.mapLayer = this.createTileLayer(this.url, this.format === 'TMS');
+      } else if (this.format === 'WMS') {
+        this.mapLayer = this.createWmsLayer(this.url, this.wms);
+      }
     }
   }
 
+  createKmlLayer(url) {
+    this.FeatureService.loadFeatureUrl(url + '/features').then(response => {
+      const gjLayer = L.geoJson(response, {
+        pointToLayer: (feature, latlng) => {
+          const options = {
+            pane: this.MARKER_OVERLAY_PANE,
+          };
+          if (feature.style && feature.style.iconUrl) {
+            options.iconUrl = feature.style.iconUrl;
+          }
+          options.tooltip = editMode;
+          return L.fixedWidthMarker(latlng, options);
+        },
+        style: function(feature) {
+          return feature.style;
+        },
+      });
+      gjLayer.addTo(this.map);
+      this.map.fitBounds(gjLayer.getBounds());
+    });
+  }
+
   createTileLayer(url, tms) {
-    let options = { tms: tms, maxZoom: 18 };
+    const options = { tms: tms, maxZoom: 18 };
     return new L.TileLayer(url, options).addTo(this.map);
   }
 
   createWmsLayer(url, wms) {
-    let options = {
+    const options = {
       layers: wms.layers,
       version: wms.version,
       format: wms.format,
-      transparent: wms.transparent
+      transparent: wms.transparent,
     };
 
     if (wms.styles) options.styles = wms.styles;
@@ -76,7 +118,7 @@ class LayerPreviewController {
     if (wms.extent) {
       this.map.fitBounds([
         [wms.extent[1], wms.extent[0]],
-        [wms.extent[3], wms.extent[2]]
+        [wms.extent[3], wms.extent[2]],
       ]);
     }
 
@@ -84,7 +126,7 @@ class LayerPreviewController {
   }
 }
 
-LayerPreviewController.$inject = ['$element'];
+LayerPreviewController.$inject = ['$element', 'FeatureService'];
 
 export default {
   template: require('./layer.preview.html'),
@@ -92,7 +134,9 @@ export default {
     url: '@',
     type: '@',
     format: '@',
-    wms: '<'
+    bounds: '<',
+    wms: '<',
+    layers: '<',
   },
-  controller: LayerPreviewController
+  controller: LayerPreviewController,
 };
