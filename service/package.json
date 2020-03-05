@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@ngageoint/mage.service",
   "version": "5.3.4",
   "displayName": "MAGE Server",
@@ -145,10 +146,9 @@
     }
   },
   "bundleDependencies": [],
-  "private": true,
-  "main": "dist/app.js",
+  "main": "./dist/app.js",
   "files": [
-    "dist/**/*",
-    "bin/*"
+    "dist",
+    "bin"
   ]
 }
