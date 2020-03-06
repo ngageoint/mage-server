@@ -1,0 +1,34 @@
+{
+  "name": "@ngageoint/mage.instance",
+  "version": "5.3.4",
+  "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngageoint/mage-server.git"
+  },
+  "keywords": [
+    "nga",
+    "mage",
+    "geospatial",
+    "situational",
+    "awareness"
+  ],
+  "author": "Robert St. John",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ngageoint/mage-server/issues"
+  },
+  "homepage": "https://github.com/ngageoint/mage-server#readme",
+  "dependencies": {
+    "@ngageoint/mage.service": "~5.3.4",
+    "@ngageoint/mage.web-app": "~5.3.4"
+  },
+  "devDependencies": {
+    "@ngageoint/mage.service": "../service",
+    "@ngageoint/mage.web-app": "../web-app"
+  }
+}
