@@ -94,7 +94,11 @@
     "zone.js": "~0.9.1",
     "zxcvbn": "4.4.2"
   },
+  "peerDependencies": {
+    "@ngageoint/mage.service": "~5.3.0"
+  },
   "devDependencies": {
+    "@ngageoint/mage.service": "../service",
     "@angular-devkit/build-angular": "~0.803.21",
     "@angular/cli": "^8.3.22",
     "@angular/compiler-cli": "~8.2.14",
