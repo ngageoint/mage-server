@@ -1,5 +1,5 @@
 {
-  "include": [ "*", "manifold" ],
+  "include": [ "*", "manifold", "routes" ],
   "exclude": [
     "functionalTests",
     "node_modules",
