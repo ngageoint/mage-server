@@ -72,7 +72,7 @@
     "terraformer-arcgis-parser": "1.0.4",
     "walk": "2.3.4",
     "winston": "1.0.1",
-    "wkx": "0.4.1",
+    "wkx": "0.4.8",
     "wms-capabilities": "^0.4.0",
     "xmldom": "0.1.22",
     "xpath": "0.0.23"
