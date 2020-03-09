@@ -50,11 +50,11 @@ module.exports = function(app, security) {
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {
-    if (file[0] === '.' || file === 'index.js') {
+    if (file[0] === '.' || /index/.test(file) || /\.d\.ts/.test(file) || /\.map/.test(file)) {
       return;
     }
     const moduleName = file.substr(0, file.indexOf('.'));
-    log.debug(`loading ${moduleName} routes`);
+    log.debug(`loading ${moduleName} routes from ${file}`);
     const initRoutes = require('./' + moduleName);
     initRoutes(app, security);
   });
