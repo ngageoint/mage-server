@@ -21,8 +21,8 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 8.x",
-    "npm": ">= 5.x"
+    "node": ">= 10.x",
+    "npm": ">= 6.x"
   },
   "dependencies": {
     "@mapbox/togeojson": "0.16.0",
