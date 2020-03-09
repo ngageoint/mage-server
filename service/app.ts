@@ -1,8 +1,10 @@
-const environment = require('./environment/env')
-const log = require('./logger')
+const environment = require('./environment/env');
+const log = require('./logger');
 
-import fs from 'fs-extra'
-import * as mongoose from 'mongoose'
+import path from 'path';
+import fs from 'fs-extra';
+import mongoose from 'mongoose';
+import express from 'express';
 
 const mongooseLogger = log.loggers.get('mongoose');
 
@@ -37,13 +39,13 @@ fs.mkdirp(iconBase, function(err: any) {
 require('./migrate').runDatabaseMigrations()
   .then(() => {
     log.info('database initialized; loading plugins ...');
-    var plugins = require('./plugins');
+    var plugins = require(path.join('./plugins'));
     plugins.initialize(app, function(err: any) {
       if (err) {
         throw err;
       }
       log.info('opening app for connections ...');
-      app.emit('comingOfMage');
+      app.emit(MageReadyEvent);
     });
 
   })
@@ -52,8 +54,5 @@ require('./migrate').runDatabaseMigrations()
     process.exitCode = 1;
   });
 
-const app = require('./express.js');
-
-app.on('comingOfMage', () => {
-  app.listen(environment.port, environment.address, () => log.info(`MAGE Server: listening at address ${environment.address} on port ${environment.port}`));
-});
+export const MageReadyEvent: string = 'comingOfMage';
+export const app = require('./express.js') as express.Application;
