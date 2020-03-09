@@ -9,10 +9,9 @@ node_modules
 .vscode
 coverage
 dist
+dist-test
 docker/database
 docker/server/resources
 npm-debug.log
-public/.tmp
-public/dist/*
+pnpm-debug.log
 scratch
-service/pnpm-debug.log
