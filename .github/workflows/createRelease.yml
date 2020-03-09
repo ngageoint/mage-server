@@ -1,0 +1,56 @@
+on:
+  push:
+    tags:
+      - '*'
+
+name: Create Release
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        node: [12.x]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Set Friendly OS Name
+        id: friendly_os_name
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            echo "Setting friendly os to linux"
+            echo "::set-env name=FRIENDLY_OS::linux"
+          fi
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            echo "Setting friendly os to mac"
+            echo "::set-env name=FRIENDLY_OS::mac"
+          fi
+        shell: bash
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm test
+          cd web-app
+          npm install
+          cd ..
+          npm run build-web
+        env:
+          CI: true
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Zip Folder
+        run: zip -r mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.zip .
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
