@@ -128,14 +128,15 @@
     ]
   },
   "scripts": {
-    "build": "tsc && cpy --parents package.json 'docs/**/*' dist/",
-    "run": "node dist/app.js",
-    "run-debug": "ts-node app.js",
-    "report": "nyc report",
+    "build:tsc": "tsc",
+    "build:copy_docs": "cpy --parents 'docs/**/*' dist/",
+    "build:copy_package": "cpy package.json dist/dist-package.json",
+    "build": "npm-run-all build:tsc build:copy_docs build:copy_package",
     "test": "mocha",
     "dist-test:build": "npm run build && cd dist && cpy --parents '**/*' ../dist-test/ && cd .. && tsc --project tsconfig.dist-test.json",
     "dist-test:test": "cd dist-test && mocha '**/*Test.js'",
     "dist-test": "npm-run-all dist-test:build dist-test:test",
+    "report": "nyc report",
     "coverage": "nyc mocha",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "create-migration": "mm create --config=mm-config.js",
@@ -143,7 +144,8 @@
     "poststop": "sh bin/poststop.sh",
     "migrate": "node -e \"require('./migrate').runDatabaseMigrations().then(() => process.exit(0), err => {throw err})\"",
     "start": "node dist/app.js",
-    "debug": "node --inspect-brk=9229 app.js",
+    "start-ts": "ts-node app.ts",
+    "debug": "node --inspect-brk=9229 -r ts-node/register app.ts",
     "prepare": "npm run build"
   },
   "config": {

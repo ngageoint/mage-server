@@ -1,5 +1,19 @@
-var packageJson = require('./package');
-var version = packageJson.version.split(".");
+const packageJson = (() => {
+  try {
+    return require('./package');
+  }
+  catch (err) {
+  }
+  console.log('package.json not found; trying dist-package.json');
+  try {
+    return require('./dist-package');
+  }
+  catch (err) {
+  }
+  console.log('package-dist.json not found')
+  throw new Error('fail to locate package descriptor for api version compatibility');
+})();
+const version = packageJson.version.split(".");
 
 module.exports = {
   api: {
