@@ -54,7 +54,7 @@ module.exports = function(app, security) {
       return;
     }
     const moduleName = file.substr(0, file.indexOf('.'));
-    log.debug(`loading routes ${moduleName}`);
+    log.debug(`loading ${moduleName} routes`);
     const initRoutes = require('./' + moduleName);
     initRoutes(app, security);
   });
