@@ -130,7 +130,7 @@
   "scripts": {
     "build:tsc": "tsc",
     "build:copy_docs": "cpy --parents 'docs/**/*' dist/",
-    "build:copy_package": "cpy package.json dist/dist-package.json",
+    "build:copy_package": "cpy --rename=dist-package.json package.json dist/",
     "build": "npm-run-all build:tsc build:copy_docs build:copy_package",
     "test": "mocha",
     "dist-test:build": "npm run build && cd dist && cpy --parents '**/*' ../dist-test/ && cd .. && tsc --project tsconfig.dist-test.json",
