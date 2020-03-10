@@ -10,9 +10,10 @@ const packageJson = (() => {
   }
   catch (err) {
   }
-  console.log('package-dist.json not found')
+  console.log('dist-package.json not found')
   throw new Error('fail to locate package descriptor for api version compatibility');
 })();
+
 const version = packageJson.version.split(".");
 
 module.exports = {
