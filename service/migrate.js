@@ -41,7 +41,6 @@ class MigrationContext {
 module.exports.runDatabaseMigrations = function() {
   return waitForMongooseConnection()
     .then(function() {
-      models.initializeModels();
       const migrationsDir = path.resolve(migrateConfig.directory);
       log.info(`running database migrations in directory ${migrationsDir} ...`);
       return new MigrationContext().runFromDir(migrationsDir);

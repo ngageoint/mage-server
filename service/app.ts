@@ -1,7 +1,6 @@
 const environment = require('./environment/env');
 const log = require('./logger');
 
-import path from 'path';
 import fs from 'fs-extra';
 import mongoose from 'mongoose';
 import express from 'express';
@@ -36,6 +35,7 @@ fs.mkdirp(iconBase, function(err: any) {
   }
 });
 
+require('./models').initializeModels();
 require('./migrate').runDatabaseMigrations()
   .then(() => {
     app.emit(MageReadyEvent);
