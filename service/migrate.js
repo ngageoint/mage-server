@@ -2,7 +2,6 @@ const
 migrations = require('mongodb-migrations'),
 log = require('winston'),
 path = require('path'),
-env = require('./environment/env'),
 models = require('./models'),
 waitForMongooseConnection = require('./utilities/waitForMongooseConnection'),
 migrateConfig = require('./mm-config.js');
@@ -14,7 +13,7 @@ class MigrationContext {
       log.info(msg);
     });
   }
-  
+
   runFromDir(dir) {
     return new Promise(function(resolve, reject) {
       this.resolve = resolve;

@@ -1,17 +1,17 @@
 module.exports = function(app, security) {
-  const fs = require('fs-extra')
-    , extend = require('util')._extend
-    , async = require('async')
-    , log = require('../logger')
-    , config = require('../config')
-    , api = require('../api')
-    , User = require('../models/user')
-    , Event = require('../models/event')
-    , Team = require('../models/team')
-    , Role = require('../models/role')
-    , Device = require('../models/device')
-    , Icon = require('../models/icon')
-    , Setting = require('../models/setting');
+  const extend = require('util')._extend;
+  const async = require('async');
+  const log = require('../logger');
+  const config = require('../config');
+  const api = require('../api');
+  const User = require('../models/user');
+  const Event = require('../models/event');
+  const Team = require('../models/team');
+  const Role = require('../models/role');
+  const Device = require('../models/device');
+  const Icon = require('../models/icon');
+  const Setting = require('../models/setting');
+  const { modulesPathsInDir } = require('../utilities/loader');
 
   app.get('/api', function(req, res, next) {
     async.parallel({
@@ -49,12 +49,9 @@ module.exports = function(app, security) {
   });
 
   // Dynamically import all routes
-  fs.readdirSync(__dirname).forEach(function(file) {
-    if (file[0] === '.' || /index/.test(file) || /\.d\.ts/.test(file) || /\.map/.test(file)) {
-      return;
-    }
-    const moduleName = file.substr(0, file.indexOf('.'));
-    log.debug(`loading ${moduleName} routes from ${file}`);
+  modulesPathsInDir(__dirname).forEach(modulePath => {
+    const moduleName = modulePath.substr(0, modulePath.indexOf('.'));
+    log.debug(`loading ${moduleName} routes from ${modulePath}`);
     const initRoutes = require('./' + moduleName);
     initRoutes(app, security);
   });
