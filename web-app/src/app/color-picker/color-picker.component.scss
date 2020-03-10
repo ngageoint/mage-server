@@ -1,0 +1,111 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+mat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  margin-top: -16px;
+  margin-bottom: 16px;
+}
+
+:host ::ng-deep.mat-form-field-wrapper {
+  padding-bottom: unset;
+}
+
+.swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.swatch > mat-label {
+  display: block;
+  position: relative;
+  margin-bottom: 2px;
+  font: 400 12px/24px Roboto, "Helvetica Neue", sans-serif;
+  color: mat-color($app-primary);
+}
+
+.swatch-input {
+  cursor: pointer;
+}
+
+.checkboard {
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  right: 12px;
+  left: 12px;
+}
+
+.swatch-color {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color {
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.color-controls {
+  display: flex;
+  flex-direction: row;
+  margin-top: 4px;
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.saturation {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.hue {
+  position: relative;
+  height: 10px;
+}
+
+.alpha {
+  position: relative;
+  height: 10px;
+  margin-top: 4px;
+}
+
+.active-color {
+  position: relative;
+  height: 100%;
+  width: 24px;
+  margin-left: 4px;
+}
+
+.sketch-active {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+  border-radius: 2px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.25) 0px 0px 4px inset;
+}
+
+.actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+

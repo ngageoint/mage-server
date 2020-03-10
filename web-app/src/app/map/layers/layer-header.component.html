@@ -18,8 +18,9 @@
 
     <mat-label>{{ layer.name }}</mat-label>
   </div>
+
   <div class="item-actions">
-    <button mat-icon-button matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event, layer)">
+    <button *ngIf="hasBounds(layer)" mat-icon-button matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event, layer)">
       <mat-icon>crop_free</mat-icon>
     </button>
 
@@ -27,4 +28,5 @@
       <mat-icon>{{collapsed ? 'more_vert' : 'more_horiz'}}</mat-icon>
     </button>
   </div>
+  
 </div>

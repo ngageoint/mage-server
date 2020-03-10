@@ -9,7 +9,6 @@
       [baseLayers]="baseLayers" 
       [tileOverlays]="tileLayers" 
       [featureOverlays]="featureLayers"
-      (onToggle)="layerTogged($event)"
       (onZoom)="zoom($event)"
       (onOpacity)="opacityChanged($event)"
       (onReorder)="reorder($event)">
@@ -20,8 +19,8 @@
     <leaflet 
       (onMapAvailable)="onMapAvailable($event)" 
       (onAddObservation)="onAddObservation.emit($event)"
-      (onAddLayer)="addLayer($event)" 
-      (onRemoveLayer)="removeLayer($event)"></leaflet>
+      (onAddLayer)="addLayer($event)" >
+    </leaflet>
   </mat-sidenav-content>
 
 </mat-sidenav-container>

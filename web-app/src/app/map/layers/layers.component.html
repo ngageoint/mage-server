@@ -4,10 +4,10 @@
     <ng-container *ngFor="let layer of mageLayers">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
         <mat-expansion-panel-header cdkDragHandle class="drag-handle">
-          <layer-header [layer]="layer" multi="true" (onToggle)="onToggle.emit($event)" (onZoom)="onZoom.emit($event)"></layer-header>
+          <layer-header [layer]="layer" multi="true"></layer-header>
         </mat-expansion-panel-header>
       
-        <layer-content [layer]="layer" (onOpacity)="onOpacity.emit($event)"></layer-content>
+        <layer-content [layer]="layer"></layer-content>
       </mat-expansion-panel>
     </ng-container>
   </mat-accordion>
@@ -17,11 +17,26 @@
     <ng-container *ngFor="let layer of baseLayers">
         <mat-expansion-panel hideToggle #expansionPanel>
           <mat-expansion-panel-header>
-            <layer-header [layer]="layer" (onToggle)="onToggle.emit($event)" (onZoom)="onZoom.emit($event)"></layer-header>
+            <layer-header [layer]="layer"></layer-header>
           </mat-expansion-panel-header>
         
-          <layer-content [layer]="layer" (onOpacity)="onOpacity.emit($event)"></layer-content>
+          <layer-content [layer]="layer"></layer-content>
         </mat-expansion-panel>
+    </ng-container>
+  </mat-accordion>
+
+  <h4 class="header" *ngIf="featureOverlays.length">Feature Overlays</h4>
+  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true"
+    (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
+    <ng-container *ngFor="let layer of featureOverlays">
+      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
+        <mat-expansion-panel-header cdkDragHandle>
+          <layer-header [layer]="layer" multi="true">
+          </layer-header>
+        </mat-expansion-panel-header>
+  
+        <layer-content [layer]="layer"></layer-content>
+      </mat-expansion-panel>
     </ng-container>
   </mat-accordion>
 
@@ -30,23 +45,10 @@
     <ng-container *ngFor="let layer of tileOverlays">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
         <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true" (onToggle)="onToggle.emit($event)" (onZoom)="onZoom.emit($event)"></layer-header>
+          <layer-header [layer]="layer" multi="true"></layer-header>
         </mat-expansion-panel-header>
       
-        <layer-content [layer]="layer" (onOpacity)="onOpacity.emit($event)"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
-
-  <h4 class="header" *ngIf="featureOverlays.length">Feature Overlays</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
-    <ng-container *ngFor="let layer of featureOverlays">
-      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true" (onToggle)="onToggle.emit($event)" (onZoom)="onZoom.emit($event)"></layer-header>
-        </mat-expansion-panel-header>
-  
-        <layer-content [layer]="layer" (onOpacity)="onOpacity.emit($event)"></layer-content>
+        <layer-content [layer]="layer"></layer-content>
       </mat-expansion-panel>
     </ng-container>
   </mat-accordion>

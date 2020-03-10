@@ -1,51 +1,33 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatCheckboxChange, MatRadioChange } from '@angular/material';
-
-export interface ToggleEvent {
-  layer: any,
-  value: (boolean | number);
-}
-
-export interface ZoomEvent {
-  layer: any
-}
+import { LayerService } from './layer.service';
 
 @Component({
   selector: 'layer-header',
   templateUrl: './layer-header.component.html',
   styleUrls: ['./layer-header.component.scss']
 })
-export class LayerHeaderComponent implements OnInit {
+export class LayerHeaderComponent {
   @Input() layer: any;
   @Input() multi: boolean;
 
-  @Output() onToggle = new EventEmitter<ToggleEvent>();
-  @Output() onZoom = new EventEmitter<ZoomEvent>();
+  constructor(private layerService: LayerService) {}
 
-  constructor() { }
-
-  ngOnInit() {
+  hasBounds(layer: any): boolean {
+    const mapLayer = layer.layer;
+    return mapLayer.getBounds || (mapLayer.table && mapLayer.table.bbox);
   }
 
-  checkChanged(event: MatCheckboxChange, layer: any) {
-    this.onToggle.emit({
-      layer: layer,
-      value: event.checked
-    });
+  checkChanged(event: MatCheckboxChange, layer: any): void {
+    this.layerService.toggle(layer, event.checked);
   }
 
-  radioChanged(event: MatRadioChange, layer: any) {
-    this.onToggle.emit({
-      layer: layer,
-      value: event.value
-    });
+  radioChanged(event: MatRadioChange, layer: any): void {
+    this.layerService.toggle(layer, event.value);
   }
 
-  zoom($event: MouseEvent, layer: any) {
+  zoom($event: MouseEvent, layer: any): void {
     $event.stopPropagation();
-    this.onZoom.emit({
-      layer: layer
-    })
+    this.layerService.zoom(layer);
   }
-
 }

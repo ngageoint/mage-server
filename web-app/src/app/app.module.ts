@@ -10,7 +10,9 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
-import { 
+import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
+
+import {
   MatIcon,
   MatButton,
   MatToolbar,
@@ -56,23 +58,25 @@ import { LeafletComponent } from './map/leaflet.component';
 import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
+import { ColorPickerComponent } from './color-picker/color-picker.component';
 
 @NgModule({
   declarations: [
-    SwaggerComponent, 
-    DropdownComponent, 
-    MultiSelectDropdownComponent, 
-    ScrollWrapperComponent, 
-    ZoomComponent, 
-    AddObservationComponent, 
-    LocationComponent, 
-    SearchComponent, 
-    LayersControlComponent, 
+    SwaggerComponent,
+    DropdownComponent,
+    MultiSelectDropdownComponent,
+    ScrollWrapperComponent,
+    ZoomComponent,
+    AddObservationComponent,
+    LocationComponent,
+    SearchComponent,
+    LayersControlComponent,
     LeafletComponent,
     LeafletDirective,
     LayersComponent,
     LayerHeaderComponent,
-    LayerContentComponent
+    LayerContentComponent,
+    ColorPickerComponent
   ],
   imports: [
     BrowserModule,
@@ -102,15 +106,19 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
     NgxMatSelectSearchModule,
     MatChipsModule,
     MatSidenavModule,
-    ScrollingModule
+    ScrollingModule,
+    SaturationModule,
+    HueModule,
+    AlphaModule,
+    CheckboardModule
   ],
   providers: [],
   bootstrap: [],
-  entryComponents:[
-    MatIcon, 
-    MatButton, 
-    MatToolbar, 
-    MatSpinner, 
+  entryComponents: [
+    MatIcon,
+    MatButton,
+    MatToolbar,
+    MatSpinner,
     MatFormField,
     MatSidenav,
     MatSidenavContent,
@@ -124,12 +132,14 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
     AddObservationComponent,
     LayersControlComponent,
     ScrollWrapperComponent,
-    SwaggerComponent]
+    SwaggerComponent,
+    ColorPickerComponent
+  ]
 })
-export class AppModule { 
-  constructor(private upgrade: UpgradeModule) { }
+export class AppModule {
+  constructor(private upgrade: UpgradeModule) {}
 
-  public ngDoBootstrap() {
+  public ngDoBootstrap(): void {
     this.upgrade.bootstrap(document.body, [app.name]);
   }
 }

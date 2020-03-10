@@ -72,15 +72,14 @@ class LeafletController {
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,
     // overlay map, etc, will be placed in its own map pane
-    this.BASE_LAYER_PANE = 'baseLayerPane'; // Create a map pane for our base layers
-    this.map.createPane(this.BASE_LAYER_PANE);
-    this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = 100 * 100;
+    this.BASE_LAYER_PANE = this.map.createPane('baseLayerPane'); // Create a map pane for our base layers
+    this.map.getPane('baseLayerPane').style.zIndex = 100 * 100;
     this.map.getPane('tilePane').style.zIndex = 200 * 100;
     this.map.getPane('overlayPane').style.zIndex = 400 * 100;
     this.map.getPane('shadowPane').style.zIndex = 500 * 100;
     this.map.getPane('markerPane').style.zIndex = 600 * 100;
-    this.map.getPane('tooltipPane').style.zIndex = 650 * 100;
-    this.map.getPane('popupPane').style.zIndex = 700 * 100;
+    this.map.getPane('tooltipPane').style.zIndex = 800 * 100;
+    this.map.getPane('popupPane').style.zIndex = 900 * 100;
 
     // Add in a base layer of styled GeoJSON in case the tiles do not load
     const FALLBACK_LAYER_PANE = 'fallbackLayerPane';
@@ -286,13 +285,10 @@ class LeafletController {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
-    const pane = this.map.createPane(`pane-${layerInfo.id}`);
+    const pane = layerInfo.base ? this.BASE_LAYER_PANE : this.map.createPane(`pane-${layerInfo.id}`);
     let options = {};
     if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
       options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: pane };
-      if (layerInfo.base) {
-        options.pane = this.BASE_LAYER_PANE;
-      }
       layerInfo.layer = new L.TileLayer(layerInfo.url, options);
     } else if (layerInfo.format === 'WMS') {
       options = {
@@ -302,9 +298,7 @@ class LeafletController {
         transparent: layerInfo.wms.transparent,
         pane: pane
       };
-      if (layerInfo.base) {
-        options.pane = this.BASE_LAYER_PANE; // TODO fix me
-      }
+
       if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
       layerInfo.layer = new L.TileLayer.WMS(layerInfo.url, options);
     }
@@ -534,25 +528,10 @@ class LeafletController {
   }
 
   onLayerRemoved(layer) {
-    switch (layer.type) {
-      case 'GeoPackage':
-        this.geoPackageLayers.removeGeoPackageLayer(layer);
-        break;
-      default:
-        this.removeLayer(layer);
-    }
-  }
-
-  removeLayer(layer) {
     const layerInfo = this.layers[layer.name];
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer);
       delete this.layers[layer.name];
-
-      // this.layerControl.removeLayer(layerInfo.layer);
-      this.onRemoveLayer({
-        layer: layerInfo.layer
-      });
     }
   }
 
@@ -664,8 +643,7 @@ export default {
   bindings: {
     onMapAvailable: '&',
     onAddObservation: '&',
-    onAddLayer: '&',
-    onRemoveLayer: '&'
+    onAddLayer: '&'
   },
   controller: LeafletController
 };

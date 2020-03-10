@@ -1,6 +1,3 @@
-@import '~@angular/material/theming';
-@import "variables.scss";
-
 .opacity > mat-label {
   display: block;
 }
@@ -8,9 +5,17 @@
 .opacity-label {
   margin-bottom: -12px;
   font: 400 12px/24px Roboto, "Helvetica Neue", sans-serif;
-  color: mat-color($app-primary);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .opacity-slider {
+  width: 100%;
+}
+
+color-picker {
+  display: block;
+}
+
+mat-form-field {
   width: 100%;
 }

@@ -29,18 +29,16 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
 export class LayersControlComponent {
   @Output() onLayerPanelToggle = new EventEmitter<void>();
 
-  state: string = 'default';
-  stateClosed: string = 'default';
+  state = 'default';
+  stateClosed = 'default';
   showClose = false;
 
-  constructor() { }
-
-  toggleLayerMenu() {
+  toggleLayerMenu(): void {
     this.onLayerPanelToggle.emit();
     this.rotate();
   }
 
-  rotate() {
+  rotate(): void {
     if (this.state === 'default') {
       this.state = (this.state === 'default' ? 'rotated' : 'default');
     } else {
@@ -48,7 +46,7 @@ export class LayersControlComponent {
     }
   }
 
-  onDone(event) {
+  onDone(event): void {
     if (event.fromState === 'void') return;
 
     if (event.toState === 'rotated') {
@@ -57,7 +55,7 @@ export class LayersControlComponent {
     }
   }
 
-  onCloseDone(event) {
+  onCloseDone(event): void {
     if (event.fromState === 'void') return;
 
     if (event.toState === 'default') {
