@@ -129,11 +129,11 @@
   },
   "scripts": {
     "build:tsc": "tsc",
-    "build:copy_docs": "cpy --parents 'docs/**/*' dist/",
-    "build:copy_package": "cpy --rename=dist-package.json package.json dist/",
+    "build:copy_docs": "cpy --parents 'docs/**/*' lib/",
+    "build:copy_package": "cpy --rename=dist-package.json package.json lib/",
     "build": "npm-run-all build:tsc build:copy_docs build:copy_package",
     "test": "mocha",
-    "dist-test:build": "npm run build && cd dist && cpy --parents '**/*' ../dist-test/ && cd .. && tsc --project tsconfig.dist-test.json",
+    "dist-test:build": "npm run build && cd lib && cpy --parents '**/*' ../dist-test/ && cd .. && tsc --project tsconfig.dist-test.json",
     "dist-test:test": "cd dist-test && mocha '**/*Test.js'",
     "dist-test": "npm-run-all dist-test:build dist-test:test",
     "report": "nyc report",
@@ -153,9 +153,9 @@
       "version": "4.0.0"
     }
   },
-  "main": "./dist/app.js",
+  "main": "lib/app.js",
   "files": [
-    "dist",
+    "lib",
     "bin"
   ]
 }
