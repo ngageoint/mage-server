@@ -1,7 +1,4 @@
 
-const app = require('@ngageoint/mage.service/dist/app');
-const environment = require('@ngageoint/mage.service/dist/environment');
+const { boot } = require('@ngageoint/mage.service/dist/app');
 
-app.on(MageReadyEvent, () => {
-  app.listen(environment.port, environment.address, () => log.info(`MAGE Server: listening at address ${environment.address} on port ${environment.port}`));
-});
+boot().then(service => service.open());
