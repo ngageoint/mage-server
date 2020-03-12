@@ -33,4 +33,9 @@ export class LayersComponent {
       previousIndex: event.previousIndex
     });
   }
+
+  preventHeaderToggle(event: any, panel: any): void {
+    event.stopPropagation();
+    panel.toggle();
+  }
 }

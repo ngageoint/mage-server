@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MatSliderChange } from '@angular/material';
 import { LayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
@@ -8,7 +8,7 @@ import { ColorEvent } from 'src/app/color-picker/color-picker.component';
   templateUrl: './layer-content.component.html',
   styleUrls: ['./layer-content.component.scss']
 })
-export class LayerContentComponent implements OnInit {
+export class LayerContentComponent {
   @Input() layer: any;
   @Input() style: SimpleStyle;
 
@@ -19,14 +19,18 @@ export class LayerContentComponent implements OnInit {
 
   constructor(private layerService: LayerService) {}
 
-  ngOnInit(): void {
-    if (!this.style) {
+  toggleStyle(): void {
+    if (this.style) {
+      this.style = null;
+    } else {
       this.style = {
-        stroke: "#000000FF",
-        fill: "#00000011",
+        stroke: "#FF0000FF",
+        fill: "#00FF0011",
         width: 1
       }
     }
+
+    this.layerService.style(this.layer, this.style);
   }
 
   opacityChanged(event: MatSliderChange, layer: any): void {

@@ -1,10 +1,10 @@
 <div class="map-layers">
   <h4 class="header">MAGE</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y"  displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
+  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y"  multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
     <ng-container *ngFor="let layer of mageLayers">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle class="drag-handle">
-          <layer-header [layer]="layer" multi="true"></layer-header>
+        <mat-expansion-panel-header cdkDragHandle class="drag-handle" (click)="preventHeaderToggle($event, expansionPanel)">
+          <layer-header [layer]="layer" multi="true" (onToggle)="expansionPanel.toggle()"></layer-header>
         </mat-expansion-panel-header>
       
         <layer-content [layer]="layer"></layer-content>
@@ -16,7 +16,7 @@
   <mat-accordion class="layer-list" displayMode="flat">
     <ng-container *ngFor="let layer of baseLayers">
         <mat-expansion-panel hideToggle #expansionPanel>
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="">
             <layer-header [layer]="layer"></layer-header>
           </mat-expansion-panel-header>
         

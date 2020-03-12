@@ -24,8 +24,8 @@
       <mat-icon>crop_free</mat-icon>
     </button>
 
-    <button class="item-action" mat-icon-button>
-      <mat-icon>{{collapsed ? 'more_vert' : 'more_horiz'}}</mat-icon>
+    <button class="item-action" mat-icon-button (click)="toggle()">
+      <mat-icon [@expanded]='expanded'>more_vert</mat-icon>
     </button>
   </div>
   

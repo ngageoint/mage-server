@@ -19,3 +19,41 @@ color-picker {
 mat-form-field {
   width: 100%;
 }
+
+.style-actions {
+  margin-left: -8px;
+}
+
+.style-actions > button {
+  padding: 0 8px;
+}
+
+.style-actions > .mat-button > span  {
+  background: yellowgreen;
+}
+
+// .style-actions > .mat-button > .mat-button-wrapper > mat-icon {
+//   width: 18px;
+//   height: 18px;
+//   font-size: 18px;
+// }
+
+:host ::ng-deep.mat-icon {
+  height: 18px;
+  width: 18px;
+  line-height: 18px;
+  margin-right: 8px;
+  font-size: 18px;
+
+  // margin-left: 0;
+    // margin-right: 8px;
+    display: inline-block;
+    // width: 18px;
+    // height: 18px;
+    // font-size: 18px;
+    // vertical-align: top;
+}
+
+.style-override--remove {
+  margin-bottom: 16px;
+}

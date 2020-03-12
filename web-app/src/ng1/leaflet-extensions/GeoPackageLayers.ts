@@ -98,50 +98,52 @@ export default class GeoPackageLayers {
         };
       });
 
-      this.LayerService.getClosestFeaturesForLayers(layers, event.latlng, this.getTileFromPoint(event.latlng)).then(
-        features => {
-          if (!features.length) return;
-
-          let popup;
-          const layer = this.visibleGeoPackageLayers.find(layer => {
-            return layer.layerId === features[0].layerId && layer.table.name === features[0].gp_table;
-          });
-
-          this.closestLayer = geoJSON(features[0], {
-            pane: layer.pane,
-            onEachFeature(
-              feature: Feature<Geometry> & { gp_table: string; feature_count: number; coverage: number },
-              layer
-            ) {
-              let geojsonPopupHtml = '<div class="geojson-popup"><h6>' + feature.gp_table + '</h6>';
-              if (feature.coverage) {
-                geojsonPopupHtml += 'There are ' + feature.feature_count + ' features in this area.';
-              } else {
-                geojsonPopupHtml += '<table>';
-                for (const property in feature.properties) {
-                  if (Object.prototype.hasOwnProperty.call(feature.properties, property)) {
-                    geojsonPopupHtml +=
-                      '<tr><td class="title">' +
-                      property +
-                      '</td><td class="text">' +
-                      feature.properties[property] +
-                      '</td></tr>';
-                  }
-                }
-                geojsonPopupHtml += '</table>';
-              }
-              geojsonPopupHtml += '</div>';
-              popup = layer.bindPopup(geojsonPopupHtml, {
-                maxHeight: 300
-              });
-            }
-          }).getLayers()[0] as Layer;
-          this.map.addLayer(this.closestLayer);
-          if (popup) {
-            popup.openPopup(event.latlng);
-          }
+      this.LayerService.getClosestFeaturesForLayers(layers, event.latlng, this.getTileFromPoint(event.latlng)).then(features => {
+        if (this.closestLayer) {
+          this.map.removeLayer(this.closestLayer);
         }
-      );
+
+        if (!features.length) return;
+
+        let popup;
+        const layer = this.visibleGeoPackageLayers.find(layer => {
+          return layer.layerId === features[0].layerId && layer.table.name === features[0].gp_table;
+        });
+
+        this.closestLayer = geoJSON(features[0], {
+          pane: layer.pane,
+          onEachFeature(
+            feature: Feature<Geometry> & { gp_table: string; feature_count: number; coverage: number },
+            layer
+          ) {
+            let geojsonPopupHtml = '<div class="geojson-popup"><h6>' + feature.gp_table + '</h6>';
+            if (feature.coverage) {
+              geojsonPopupHtml += 'There are ' + feature.feature_count + ' features in this area.';
+            } else {
+              geojsonPopupHtml += '<table>';
+              for (const key in feature.properties) {
+                if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== Object(feature.properties[key])) {
+                  geojsonPopupHtml +=
+                    '<tr><td class="title" style="padding-right: 8px;">' +
+                    key +
+                    '</td><td class="text">' +
+                    feature.properties[key] +
+                    '</td></tr>';
+                }
+              }
+              geojsonPopupHtml += '</table>';
+            }
+            geojsonPopupHtml += '</div>';
+            popup = layer.bindPopup(geojsonPopupHtml, {
+              maxHeight: 300
+            });
+          }
+        }).getLayers()[0] as Layer;
+        this.map.addLayer(this.closestLayer);
+        if (popup) {
+          popup.openPopup(event.latlng);
+        }
+      });
     }
   }
 }

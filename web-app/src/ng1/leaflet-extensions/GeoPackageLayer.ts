@@ -50,7 +50,12 @@ export class GeoPackageLayer extends TileLayer {
   }
 
   setStyle(style: SimpleStyle): void {
-    this.style = Object.assign(this.style, style);
+    if (style) {
+      this.style = Object.assign(this.style, style);
+    } else {
+      this.style = {};
+    }
+
     this.redraw();
   }
 }

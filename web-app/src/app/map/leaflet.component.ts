@@ -100,8 +100,8 @@ export class LeafletComponent {
       this.map.fitBounds(bounds);
     } else if (layer.table && layer.table.bbox) {
       this.map.fitBounds([
-        [layer.table.bbox[0], layer.table.bbox[1]],
-        [layer.table.bbox[2], layer.table.bbox[3]]
+        [layer.table.bbox[1], layer.table.bbox[0]],
+        [layer.table.bbox[3], layer.table.bbox[2]]
       ]);
     }
   }

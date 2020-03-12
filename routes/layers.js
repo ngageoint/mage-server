@@ -252,7 +252,7 @@ module.exports = function(app, security) {
       };
 
       const style = {
-        stroke: req.query.stroke || '#OOOOOOFF',
+        stroke: req.query.stroke || '#000000FF',
         fill: req.query.fill || '#00000011',
         width: req.query.width || 1
       };
@@ -344,7 +344,7 @@ module.exports = function(app, security) {
 
       console.log('query width', req.query.width);
       const style = {
-        stroke: req.query.stroke || '#OOOOOOFF',
+        stroke: req.query.stroke || '#000000FF',
         fill: req.query.fill || '#00000011',
         width: req.query.width || 1
       };

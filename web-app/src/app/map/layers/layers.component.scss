@@ -54,6 +54,10 @@ mat-expansion-panel-header {
   padding: 0;
 }
 
-.mat-expansion-panel-header:not([aria-disabled=true]) {
+:host ::ng-deep.mat-expansion-panel-header[cdkdraghandle] {
   cursor: move;
+}
+
+:host ::ng-deep.mat-expansion-panel-body {
+  padding: 0 16px 16px;
 }
