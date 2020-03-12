@@ -89,6 +89,8 @@ module.exports = function(app, security) {
           });
         },
         function(user, done) {
+          req.device.registered = true;
+          req.device.userId = user._id;
           Device.createDevice(req.device)
             .then(device => done(null, user, device))
             .catch(err => done(err));
