@@ -160,7 +160,7 @@ The rest of the installation steps assume you are in the `<MAGE_ROOT>` directory
 
 ### Installing NPM dependencies
 
-You can install all server and web dependencies by using npm from the `<MAGE_ROOT>` directory:
+You can install all server dependencies by using npm from the `<MAGE_ROOT>` directory:
 ```bash
 $ npm install
 ```
@@ -213,14 +213,6 @@ Also consider that mongodb-migrations ensures that your migrations will only run
 so you will need to continuously be sure that any custom migrations are compatible with migrations new releases may
 introduce when you [upgrade](#upgrading-mage-server).
 
-### Web dependencies and build
-
-Initially you will need to pull the web app dependencies (via npm).   Make sure you run this again if you add any new
-[dependencies in the web client](public/package.json).
-```bash
-$ npm run build
-```
-
 ### MAGE environment settings
 
 MAGE environment configuration is loaded from a Node module, [environment/env.js](environment/env.js).  That module reads
@@ -262,15 +254,6 @@ For a full list of forever commands please refer to the [forever docs](https://g
 ### Running with [Docker](https://www.docker.com/what-docker)
 
 Refer to the [Docker README](docker/README.md) for details on running the MAGE server using Docker.
-
-### Debugging the web app
-
-If you are developing or debugging the web client it might be helpful to run a non-production build.  Open another terminal and navigate to the public directory from your MAGE root directory.
-```bash
-$ cd public
-$ npm run start
-```
-This will run a [webpack](https://webpack.js.org/) dev server that provides live reloading of code changes as well as a source map.
 
 #### Cloud Foundry deployment
 
@@ -346,8 +329,7 @@ MAGE plugins are separate node scripts located in the plugins folder.  For more 
 
 ## Web application
 
-The MAGE web application is built on the [AngularJS framework](https://angularjs.org/).  The application resides in the [`public`](public/)
-directory.  See the [MAGE Web Application README](public/README.md) for more information.
+Refer to the [Web Application README](web-app/README.md) for details on building and running the MAGE web application.
 
 ## Pull requests
 

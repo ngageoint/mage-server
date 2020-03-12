@@ -1,54 +1,42 @@
 const mongoose = require('mongoose'),
-  async = require('async'),
   path = require('path'),
   geopackage = require('../utilities/geopackage'),
-  environment = require('../environment/env'),
-  Layer = require('../models/layer');
+  environment = require('../environment/env');
 
 exports.id = 'make-layers-available';
 
-exports.up = function(done) {
+exports.up = async function(done) {
   console.log('\nUpdating all layers to have the state available');
 
-  async.waterfall([getLayers, migrateLayers], function(err) {
+  try {
+    await migrateLayers();
+    done();
+  } catch(err) {
+    console.log('Failed layer migration', err);
     done(err);
-  });
+  }
 };
 
-exports.down = function(done) {};
+exports.down = function(done) {
+  done();
+};
 
-function getLayers(callback) {
-  console.log('get layers');
-
+async function migrateLayers() {
   const LayerModel = mongoose.model('Layer');
-  LayerModel.find({})
-    .lean()
-    .exec(function(err, layers) {
-      callback(err, layers);
-    });
-}
+  const layers = await LayerModel.find({});
 
-function migrateLayers(layers, callback) {
-  console.log('migrate layers');
+  for (const layer of layers) {
+    if (layer.type === 'GeoPackage') {
+      try {
+        const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
+        const gp = await geopackage.open(geopackagePath);
+        layer.tables = geopackage.getTables(gp.geoPackage);
+      } catch (err) {
+        console.log('Error opening GeoPackage file, skipping', err);
+      }
+    }
 
-  async.eachSeries(
-    layers,
-    function(layer, done) {
-      Layer.Model.findById(layer._id)
-        .lean()
-        .exec(async function(err, layer) {
-          if (layer.type === 'GeoPackage') {
-            const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
-            const gp = await geopackage.open(geopackagePath);
-            layer.tables = geopackage.getTables(gp.geoPackage);
-          }
-          layer.state = 'available';
-          await Layer.update(layer._id, layer, { overwrite: true });
-          done();
-        });
-    },
-    function(err) {
-      callback(err);
-    },
-  );
+    layer.state = 'available';
+    await layer.save();
+  }
 }
