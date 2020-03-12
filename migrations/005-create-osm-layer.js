@@ -15,7 +15,7 @@ exports.up = async function(done) {
 };
 
 async function createOSMLayer(db) {
-  const id = await Counter.getNext('layers');
+  const id = await Counter.getNext('layer');
 
   var osm = {
     _id: id,
