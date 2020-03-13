@@ -37,7 +37,7 @@ class AdminLayerController {
     this.Layer.get({ id: this.$stateParams.layerId }, layer => {
       this.layer = layer;
 
-      if (this.layer.unavailable) {
+      if (this.layer.state !== 'available') {
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 1000);
       }
 
@@ -163,7 +163,7 @@ class AdminLayerController {
     this.Layer.get({ id: this.$stateParams.layerId }, layer => {
       this.layer = layer;
       this.updateUrlLayers();
-      if (layer.state === 'unavailable') {
+      if (this.layer.state !== 'available') {
         this.layer.processing = layer.processing;
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 5000);
       } else {
