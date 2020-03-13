@@ -12,7 +12,8 @@ module.exports = {
   },
   output: {
     path: __dirname + '/dist',
-    filename: '[name].js'
+    filename: '[name].js',
+    hashFunction: 'sha1'
   },
   module: {
     rules: [
