@@ -20,10 +20,8 @@ module.exports = {
 };
 
 async function open(file) {
-  console.log('Open GeoPackage');
   try {
     const geoPackage = await GeoPackageAPI.open(file);
-    console.log('Opened the GeoPackage: ', file);
     return {
       geoPackage: geoPackage,
     };
@@ -99,15 +97,12 @@ async function tile(layer, tableName, { stroke, width: lineWidth, fill }, { x, y
       if (!featureDao) return;
       const ft = new FeatureTile(featureDao, width, height);
 
-      console.log('GP stroke is', stroke);
       ft.setPointColor(stroke)
       ft.setLineColor(stroke);
       ft.setPolygonColor(stroke);
 
-      console.log('GP fill is', fill);
       ft.setPolygonFillColor(fill);
 
-      console.log('GP lineWidth is', lineWidth);
       ft.setPointRadius(lineWidth);
       ft.setPolygonStrokeWidth(lineWidth);
       ft.setLineStrokeWidth(lineWidth);

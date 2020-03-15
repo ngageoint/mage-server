@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MatSliderChange } from '@angular/material';
 import { LayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { trigger, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'layer-content',
@@ -36,8 +36,8 @@ export class LayerContentComponent {
       this.style = null;
     } else {
       this.style = {
-        stroke: "#FF0000FF",
-        fill: "#00FF0011",
+        stroke: "#000000FF",
+        fill: "#00000011",
         width: 1
       }
     }
