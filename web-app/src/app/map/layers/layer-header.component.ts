@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatCheckboxChange, MatRadioChange } from '@angular/material';
 import { LayerService } from './layer.service';
-import { state, transition, animate, style, trigger } from '@angular/animations';
+import { state, style, trigger } from '@angular/animations';
 
 @Component({
   selector: 'layer-header',
@@ -10,8 +10,7 @@ import { state, transition, animate, style, trigger } from '@angular/animations'
   animations: [
     trigger('expanded', [
       state('true', style({ transform: 'rotate(0)' })),
-      state('false', style({ transform: 'rotate(90deg)' })),
-      transition('* <=> *', animate('250ms ease-out'))
+      state('false', style({ transform: 'rotate(90deg)' }))
     ])
   ]
 })
@@ -34,7 +33,7 @@ export class LayerHeaderComponent {
   }
 
   radioChanged(event: MatRadioChange, layer: any): void {
-    this.layerService.toggle(layer, event.value);
+    this.layerService.toggle(layer, true);
   }
 
   zoom($event: MouseEvent, layer: any): void {
@@ -43,10 +42,7 @@ export class LayerHeaderComponent {
   }
 
   toggle(): void {
-    setTimeout(() => {
-      this.expanded = !this.expanded;
-    });
-
+    this.expanded = !this.expanded;
     this.onToggle.emit();
   }
 }

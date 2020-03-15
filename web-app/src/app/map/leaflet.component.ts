@@ -21,30 +21,26 @@ export class LeafletComponent {
 
   map: any;
   groups = {};
-  mageLayers = [];
-  baseLayers = [];
-  tileLayers = [];
-  featureLayers = [];
 
   constructor(layerServive: LayerService) {
     this.groups['base'] = {
       offset: LeafletComponent.BASE_PANE_Z_INDEX_OFFSET,
-      layers: this.baseLayers
+      layers: []
     };
 
     this.groups['MAGE'] = {
       offset: LeafletComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: this.mageLayers
+      layers: []
     };
 
     this.groups['tile'] = {
       offset: LeafletComponent.TILE_PANE_Z_INDEX_OFFSET,
-      layers: this.tileLayers
+      layers: []
     };
 
     this.groups['feature'] = {
       offset: LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET,
-      layers: this.featureLayers
+      layers: []
     };
 
     layerServive.toggle$.subscribe(event => this.layerTogged(event));
@@ -64,6 +60,15 @@ export class LeafletComponent {
     group.layers.push($event);
   }
 
+  removeLayer($event: any): void {
+    Object.values(this.groups).forEach((group: any) => {
+      group.layers = group.layers.filter(layer => {
+        const different = layer.layer !== $event.layer.layer;
+        return different;
+      });
+    });
+  }
+
   layerTogged(event: ToggleEvent): void {
     if (event.layer.base) {
       this.baseToggled(event);
@@ -73,7 +78,8 @@ export class LeafletComponent {
   }
 
   baseToggled(event: ToggleEvent): void {
-    const previousBaseLayer = this.baseLayers.find((layer: any) => layer.selected);
+    const baseLayers = this.groups['base'];
+    const previousBaseLayer = baseLayers.find((layer: any) => layer.selected);
     previousBaseLayer.selected = false;
     this.map.removeLayer(previousBaseLayer.layer);
 

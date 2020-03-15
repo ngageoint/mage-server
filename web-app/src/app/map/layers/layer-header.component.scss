@@ -21,3 +21,8 @@
   margin-right: 8px;
   pointer-events: all;
 }
+
+.item-action__icon {
+  transition: 250ms ease-out;
+  transform: rotate(0deg);
+}

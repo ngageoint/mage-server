@@ -1,6 +1,6 @@
 <div class="map-layers">
   <h4 class="header">MAGE</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y"  multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
+  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
     <ng-container *ngFor="let layer of mageLayers">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
         <mat-expansion-panel-header cdkDragHandle class="drag-handle" (click)="preventHeaderToggle($event, expansionPanel)">
@@ -13,7 +13,7 @@
   </mat-accordion>
 
   <div class="header">Base Layers</div>
-  <mat-accordion class="layer-list" displayMode="flat">
+  <mat-accordion class="layer-list" displayMode="flat" multi="true">
     <ng-container *ngFor="let layer of baseLayers">
         <mat-expansion-panel hideToggle #expansionPanel>
           <mat-expansion-panel-header class="">
@@ -26,8 +26,7 @@
   </mat-accordion>
 
   <h4 class="header" *ngIf="featureOverlays.length">Feature Overlays</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true"
-    (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
+  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
     <ng-container *ngFor="let layer of featureOverlays">
       <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
         <mat-expansion-panel-header cdkDragHandle>

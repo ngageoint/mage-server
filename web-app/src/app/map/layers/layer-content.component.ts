@@ -2,11 +2,23 @@ import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MatSliderChange } from '@angular/material';
 import { LayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'layer-content',
   templateUrl: './layer-content.component.html',
-  styleUrls: ['./layer-content.component.scss']
+  styleUrls: ['./layer-content.component.scss'],
+  animations: [
+    trigger('visibility', [
+      transition(':enter', [
+        style({ height: 0, opacity: 0 }),
+        animate('225ms', style({ height: '*', opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate('225ms', style({ height: 0, opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class LayerContentComponent {
   @Input() layer: any;

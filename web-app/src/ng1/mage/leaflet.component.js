@@ -34,7 +34,6 @@ class LeafletController {
     this.LayerService = LayerService;
 
     this.layers = {};
-    this.geoPackageLayers;
     this.temporalLayers = [];
     this.spiderfyState = null;
     this.currentLocation = null;
@@ -279,6 +278,9 @@ class LeafletController {
         this.map.removeLayer(layer.layer);
         delete layer.layer;
         delete this.layers[removed.layerId];
+        this.onRemoveLayer({
+          layer: layer
+        });
       }
     });
   }
@@ -326,12 +328,11 @@ class LeafletController {
         this.featurePanes.push(pane);
       }
 
-      const layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane);
-      const name = layerInfo.name + table.name;
-      this.layers[name] = layerInfo;
+      table.layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane);
+      this.layers[layerInfo.id + table.name] = table;
 
       this.onAddLayer({
-        layer: layer,
+        layer: table.layer,
         name: table.name,
         group: table.type === 'feature' ? 'feature' : 'tile'
       });
@@ -528,11 +529,39 @@ class LeafletController {
   }
 
   onLayerRemoved(layer) {
+    switch (layer.type) {
+      case 'GeoPackage':
+        this.removeGeoPackage(layer);
+        break;
+      default:
+        this.removeLayer(layer);
+    }
+  }
+
+  removeLayer(layer) {
     const layerInfo = this.layers[layer.name];
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer);
       delete this.layers[layer.name];
+      this.onRemoveLayer({
+        layer: layer
+      })
     }
+  }
+
+  removeGeoPackage(layer) {
+    layer.tables.forEach(table => {
+      const name = layer.id + table.name;
+      const layerInfo = this.layers[name];
+      if (layerInfo) {
+        this.map.removeLayer(table.layer);
+        delete this.layers[name];
+
+        this.onRemoveLayer({
+          layer: table
+        });
+      }
+    });
   }
 
   onHideFeed() {
@@ -643,7 +672,8 @@ export default {
   bindings: {
     onMapAvailable: '&',
     onAddObservation: '&',
-    onAddLayer: '&'
+    onAddLayer: '&',
+    onRemoveLayer: '&'
   },
   controller: LeafletController
 };

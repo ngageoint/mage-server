@@ -5,10 +5,10 @@
 <mat-sidenav-container class="map-container" hasBackdrop="false">
   <mat-sidenav #drawer mode="over" position="end" autoFocus="false">
     <map-layers-panel 
-      [mageLayers]="mageLayers" 
-      [baseLayers]="baseLayers" 
-      [tileOverlays]="tileLayers" 
-      [featureOverlays]="featureLayers"
+      [mageLayers]="groups['MAGE'].layers" 
+      [baseLayers]="groups['base'].layers" 
+      [tileOverlays]="groups['tile'].layers" 
+      [featureOverlays]="groups['feature'].layers"
       (onZoom)="zoom($event)"
       (onOpacity)="opacityChanged($event)"
       (onReorder)="reorder($event)">
@@ -19,7 +19,8 @@
     <leaflet 
       (onMapAvailable)="onMapAvailable($event)" 
       (onAddObservation)="onAddObservation.emit($event)"
-      (onAddLayer)="addLayer($event)" >
+      (onAddLayer)="addLayer($event)"
+      (onRemoveLayer)="removeLayer($event)">
     </leaflet>
   </mat-sidenav-content>
 

@@ -15,17 +15,13 @@
 <div *ngIf="layer.layer.type === 'GeoPackage'">
 
   <div class="style-actions">
-    <button mat-button color="primary" (click)="toggleStyle()" [ngClass]="{'style-override--remove': style}">
+    <button mat-button color="primary" (click)="toggleStyle()">
       <mat-icon>palette</mat-icon>{{style ? 'Reset To Default' : 'Override Style'}}
     </button>
-
-    <!-- <button class="style-override--remove" *ngIf="style" mat-button color="primary" (click)="removeStyle()">Clear Style</button>
-    <button mat-button *ngIf="!style" color="primary" (click)="overrideStyle()">Override Style</button> -->
   </div>
 
-  <div class="style" *ngIf="style">
-    <color-picker label="Stroke" [hexColor]="style.stroke" (onColorChanged)="colorChanged($event, 'stroke')">
-    </color-picker>
+  <div class="style" *ngIf="style" @visibility>
+    <color-picker label="Stroke" [hexColor]="style.stroke" (onColorChanged)="colorChanged($event, 'stroke')"></color-picker>
     <color-picker label="Fill" [hexColor]="style.fill" (onColorChanged)="colorChanged($event, 'fill')"></color-picker>
     <mat-form-field dense appearance="outline">
       <mat-label>Stroke Width</mat-label>

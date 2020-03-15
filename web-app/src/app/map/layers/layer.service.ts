@@ -38,7 +38,7 @@ export class LayerService {
   opacity$ = this.opacitySource.asObservable();
   style$ = this.styleSource.asObservable();
 
-  toggle(layer: any, value: number | boolean): void {
+  toggle(layer: any, value: boolean): void {
     this.toggleSource.next({
       layer: layer,
       value: value
