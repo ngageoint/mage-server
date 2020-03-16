@@ -14,6 +14,7 @@ class AdminUsersController {
     this.users = [];
     this.page = 0;
     this.itemsPerPage = 10;
+    this.numPages = 0;
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -24,8 +25,13 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.UserService.getAllUsers().then(users => {
-      this.users = users;
+    this.UserService.getUserCount().then(result => {
+      if(result && result.data && result.data.count) {
+        this.numPages = parseInt(result.data.count / this.itemsPerPage);
+        if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
+           this.numPages++;
+        }
+      }
     });
   }
 
