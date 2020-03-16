@@ -1,7 +1,8 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Inject } from '@angular/core';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
+import { MapService } from '../upgrade/ajs-upgraded-providers';
 
 @Component({
   selector: 'app-leaflet',
@@ -22,7 +23,7 @@ export class LeafletComponent {
   map: any;
   groups = {};
 
-  constructor(layerServive: LayerService) {
+  constructor(layerServive: LayerService, @Inject(MapService) private mapService: any) {
     this.groups['base'] = {
       offset: LeafletComponent.BASE_PANE_Z_INDEX_OFFSET,
       layers: []
@@ -54,7 +55,17 @@ export class LeafletComponent {
   }
 
   addLayer($event: any): void {
-    const group = this.groups[$event.group];
+    if (this.isSelected($event)) {
+      $event.selected = true;
+      const toggleEvent: ToggleEvent = {
+        layer: $event,
+        value: true
+      }
+      this.layerTogged(toggleEvent);
+    }
+
+    const groupName = this.getGroup($event);
+    const group = this.groups[groupName];
     $event.zIndex = group.offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
     $event.layer.pane.style.zIndex = $event.zIndex;
     group.layers.push($event);
@@ -78,13 +89,17 @@ export class LeafletComponent {
   }
 
   baseToggled(event: ToggleEvent): void {
-    const baseLayers = this.groups['base'];
+    const baseLayers = this.groups['base'].layers;
     const previousBaseLayer = baseLayers.find((layer: any) => layer.selected);
-    previousBaseLayer.selected = false;
-    this.map.removeLayer(previousBaseLayer.layer);
+    if (previousBaseLayer) {
+      previousBaseLayer.selected = false;
+      this.map.removeLayer(previousBaseLayer.layer);
+    }
 
     event.layer.selected = true;
     this.map.addLayer(event.layer.layer);
+
+    this.mapService.selectBaseLayer(event.layer);
   }
 
   overlayToggled(event: ToggleEvent): void {
@@ -127,5 +142,20 @@ export class LeafletComponent {
       layer.zIndex = offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1);
       layer.layer.pane.style.zIndex = layer.zIndex;
     });
+  }
+
+  private getGroup(layer): string {
+    switch (layer.type) {
+      case 'GeoPackage':
+        return layer.layer.table.type === 'tile' ? 'tile' : 'feature';
+      case 'Imagery':
+        return layer.base ? 'base' : 'tile';
+      case 'geojson':
+        return layer.group;
+    }
+  }
+
+  private isSelected(layer): boolean {
+    return layer.options && layer.options.selected;
   }
 }

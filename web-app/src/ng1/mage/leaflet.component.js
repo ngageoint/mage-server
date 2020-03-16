@@ -304,21 +304,20 @@ class LeafletController {
       if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
       layerInfo.layer = new L.TileLayer.WMS(layerInfo.url, options);
     }
-    this.layers[layerInfo.name] = layerInfo;
-
-    if (layerInfo.options && layerInfo.options.selected) {
-      layerInfo.layer.addTo(this.map);
-    }
 
     layerInfo.layer.pane = pane;
+    this.layers[layerInfo.name] = layerInfo;
 
-    this.onAddLayer({
-      layer: layerInfo.layer,
-      base: layerInfo.base,
-      name: layerInfo.name,
-      group: layerInfo.base ? 'base' : 'tile',
-      selected: layerInfo.options && layerInfo.options.selected
-    });
+    // TODO Map panel handle this
+    // if (layerInfo.options && layerInfo.options.selected) {
+    //   layerInfo.layer.addTo(this.map);
+    // }
+
+    // TODO check if layer panel can handle these
+    // layerInfo.group = layerInfo.base ? 'base' : 'tile';
+    // layerInfo.selected = layerInfo.options && layerInfo.options.selected
+
+    this.onAddLayer(layerInfo);
   }
 
   createGeoPackageLayer(layerInfo) {
@@ -332,9 +331,10 @@ class LeafletController {
       this.layers[layerInfo.id + table.name] = table;
 
       this.onAddLayer({
-        layer: table.layer,
+        type: 'GeoPackage',
         name: table.name,
-        group: table.type === 'feature' ? 'feature' : 'tile'
+        table: table,
+        layer: table.layer
       });
     });
   }
@@ -346,6 +346,7 @@ class LeafletController {
     const layerInfo = {
       type: 'geojson',
       name: data.name,
+      group: data.group,
       featureIdToLayer: {},
       options: data.options,
       pane: pane
@@ -375,17 +376,8 @@ class LeafletController {
       this.temporalLayers.push(layerInfo);
     }
 
-    if (data.options.selected) {
-      layerInfo.layer.addTo(this.map);
-    }
-
     if (!data.options.hidden) {
-      this.onAddLayer({
-        layer: layerInfo.layer,
-        name: data.name,
-        group: data.group,
-        selected: data.options.selected
-      });
+      this.onAddLayer(layerInfo);
     }
   }
 

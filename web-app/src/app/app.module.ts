@@ -60,6 +60,8 @@ import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 
+import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+
 @NgModule({
   declarations: [
     SwaggerComponent,
@@ -112,7 +114,9 @@ import { ColorPickerComponent } from './color-picker/color-picker.component';
     AlphaModule,
     CheckboardModule
   ],
-  providers: [],
+  providers: [
+    mapServiceProvider
+  ],
   bootstrap: [],
   entryComponents: [
     MatIcon,
