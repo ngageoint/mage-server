@@ -45,8 +45,8 @@ export class LayerContentComponent {
     this.layerService.style(this.layer, this.style);
   }
 
-  opacityChanged(event: MatSliderChange, layer: any): void {
-    this.layerService.opacity(layer, event.value / 100);
+  opacityChanged(event: MatSliderChange): void {
+    this.layerService.opacity(this.layer, event.value / 100);
   }
 
   colorChanged(event: ColorEvent, key: string): void {

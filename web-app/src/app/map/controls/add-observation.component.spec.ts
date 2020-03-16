@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddObservationComponent } from './add-observation.component';
-import { MatIconModule } from '@angular/material';
+import { MatIconModule, MatButtonModule } from '@angular/material';
 import { By } from '@angular/platform-browser';
 
 describe('AddObservationComponent', () => {
@@ -10,7 +10,7 @@ describe('AddObservationComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ MatIconModule ],
+      imports: [ MatIconModule, MatButtonModule ],
       declarations: [ AddObservationComponent ]
     })
     .compileComponents();
@@ -31,7 +31,6 @@ describe('AddObservationComponent', () => {
 
     const button = fixture.debugElement.query(By.css('button'));
     button.nativeElement.click();
-
     expect(component.onAddObservation.emit).toHaveBeenCalled();
   });
 });

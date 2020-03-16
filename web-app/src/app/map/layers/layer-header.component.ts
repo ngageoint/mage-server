@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { MatCheckboxChange, MatRadioChange } from '@angular/material';
+import { MatCheckboxChange } from '@angular/material';
 import { LayerService } from './layer.service';
 import { state, style, trigger } from '@angular/animations';
 
@@ -23,22 +23,22 @@ export class LayerHeaderComponent {
   
   constructor(private layerService: LayerService) {}
 
-  hasBounds(layer: any): boolean {
-    const mapLayer = layer.layer;
+  hasBounds(): boolean {
+    const mapLayer = this.layer.layer;
     return mapLayer.getBounds || (mapLayer.table && mapLayer.table.bbox);
   }
 
-  checkChanged(event: MatCheckboxChange, layer: any): void {
-    this.layerService.toggle(layer, event.checked);
+  checkChanged(event: MatCheckboxChange): void {
+    this.layerService.toggle(this.layer, event.checked);
   }
 
-  radioChanged(event: MatRadioChange, layer: any): void {
-    this.layerService.toggle(layer, true);
+  radioChanged(): void {
+    this.layerService.toggle(this.layer, true);
   }
 
-  zoom($event: MouseEvent, layer: any): void {
+  zoom($event: MouseEvent): void {
     $event.stopPropagation();
-    this.layerService.zoom(layer);
+    this.layerService.zoom(this.layer);
   }
 
   toggle(): void {

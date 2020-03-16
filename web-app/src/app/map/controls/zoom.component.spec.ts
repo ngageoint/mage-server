@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ZoomComponent, ZoomDirection } from './zoom.component';
-import { MatIconModule } from '@angular/material';
+import { MatIconModule, MatButtonModule } from '@angular/material';
 import { By } from '@angular/platform-browser';
 
 describe('ZoomComponent', () => {
@@ -10,7 +10,7 @@ describe('ZoomComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ MatIconModule ],
+      imports: [ MatIconModule, MatButtonModule ],
       declarations: [ ZoomComponent ]
     })
     .compileComponents();
