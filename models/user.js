@@ -277,7 +277,13 @@ exports.getUserByAuthenticationId = function(authenticationType, id, callback) {
   });
 };
 
-exports.count = function(callback) {
+exports.count = function(options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
+
   User.count({}, function(err, count) {
     callback(err, count);
   });

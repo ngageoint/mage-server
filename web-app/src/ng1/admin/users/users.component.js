@@ -25,13 +25,17 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.UserService.getUserCount().then(result => {
+    this.UserService.getUserCount({}).then(result => {
       if(result && result.data && result.data.count) {
         this.numPages = parseInt(result.data.count / this.itemsPerPage);
         if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
            this.numPages++;
         }
       }
+      
+      this.UserService.getAllUsers({page: this.page}).then(users => {
+        this.users = users;
+      });
     });
   }
 

@@ -62,8 +62,13 @@ User.prototype.logout = function(token, callback) {
   });
 };
 
-User.prototype.count = function(callback) {
-  UserModel.count(function(err, count) {
+User.prototype.count = function(options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
+  UserModel.count(options, callback, function(err, count) {
     callback(err, count);
   });
 };

@@ -216,8 +216,10 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return deferred.promise;
   }
 
-  function getUserCount() {
-    return $http.get('/api/users/count');
+  function getUserCount(options) {
+    options = options || {};
+
+    return $http.get('/api/users/count', {params: options});
   }
 
   var deferredUsers;
