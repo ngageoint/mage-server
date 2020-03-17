@@ -25,7 +25,9 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.UserService.getUserCount({}).then(result => {
+    let filter = { active: true};
+
+    this.UserService.getUserCount(filter).then(result => {
       if(result && result.data && result.data.count) {
         this.numPages = parseInt(result.data.count / this.itemsPerPage);
         if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {

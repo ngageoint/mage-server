@@ -223,7 +223,17 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res, next) {
-      new api.User().count(function(err, count) {
+      var filter = {};
+      if (req.query.active === 'true' || req.query.active === 'false') {
+        filter.active = req.query.active === 'true';
+      }
+
+      var populate = null;
+      if (req.query.populate) {
+        populate = req.query.populate.split(",");
+      }
+
+      new api.User().count({filter: filter, populate: populate}, function(err, count) {
         if (err) return next(err);
 
         res.json({count: count});
