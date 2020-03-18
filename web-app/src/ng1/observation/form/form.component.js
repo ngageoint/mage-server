@@ -148,6 +148,24 @@ class FormController {
 
   onGeometryEdit($event) {
     this.mask = $event.action === 'edit';
+
+    if ($event.action === 'edit') {
+      const geometry = $($event.source);
+      const container = $(this.$element.find(".observation-edit-content"));
+      const geometryOffset = geometry.position();
+
+      const geometryHeight = geometry.height();
+      const bottom = geometryHeight + geometryOffset.top;
+      if (bottom > container.height()) {
+        container.animate({ scrollTop: geometry.prop('offsetTop') - (container.height() - geometryHeight) }, 250);
+        return;
+      }
+
+      if (geometryOffset.top < 0) {
+        container.animate({ scrollTop: geometry.prop('offsetTop') - 8 }, 250);
+        return;
+      }
+    }
   }
 
   onGeometryChanged($event) {

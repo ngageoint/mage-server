@@ -41,7 +41,8 @@ class GeometryEditController {
 
     this.onFeatureEdit({
       $event: {
-        action: 'edit'
+        action: 'edit',
+        source: this.$element
       }
     });
   }
@@ -58,7 +59,8 @@ class GeometryEditController {
 
     this.onFeatureEdit({
       $event: {
-        action: 'none'
+        action: 'none',
+        source: this.$element
       }
     });
   }

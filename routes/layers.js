@@ -63,7 +63,7 @@ module.exports = function(app, security) {
     }
   }
 
-  async function setupGeoPackageProcessing(req, res, next) {
+  async function processGeoPackage(req, res, next) {
     const layer = req.layer;
     if (layer.type !== 'GeoPackage') {
       return next();
@@ -126,12 +126,46 @@ module.exports = function(app, security) {
           });
         }
       }
-      layer.save();
-      return next();
+      await layer.save();
     } catch (err) {
       gp.close();
       return res.status(400).send('cannot create layer, geopackage is not valid ' + err.toString());
     }
+
+    next();
+
+    // optimize after the layer is returned to the client
+    // geopackage.optimize returns a promise and is async
+    const layerStatusMap = {};
+    for (let i = 0; i < layer.processing.length; i++) {
+      layerStatusMap[layer.processing[i].layer] = i;
+    }
+    
+    let currentLayer;
+    geopackage
+      .optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
+        if (currentLayer && currentLayer !== progress.layer) {
+          const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
+          oldLayerStatus.complete = true;
+          currentLayer = progress.layer;
+        }
+
+        const layerStatus = layer.processing[layerStatusMap[progress.layer]];
+        layerStatus.count = progress.count;
+        layerStatus.total = progress.totalCount;
+        layerStatus.description = progress.description;
+        layer.save();
+      })
+      .then(() => {
+        layer.processing = undefined;
+        layer.state = 'available';
+        layer.save().then((layer) => {
+          console.log('GeoPackage optimized', layer);
+        })
+        .catch((err) => {
+          console.log('err', err);
+        });
+      });
   }
 
   function validateEventAccess(req, res, next) {
@@ -407,134 +441,89 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LAYER'),
     upload.single('geopackage'),
     validateLayerParams,
-    validateGeopackage,
     function(req, res, next) {
-      if (req.newLayer.type !== 'GeoPackage') {
-        req.newLayer.state = 'unavailable';
+      // If this has a GeoPackage proceed to the next route handler
+      if (req.file) {
+        return next();
       }
+      req.newLayer.state = 'available';
       new api.Layer()
         .create(req.newLayer)
         .then(layer => {
           req.layer = layer;
+            const response = layerXform.transform(layer, { path: req.getPath() });
+            return res.location(layer._id.toString()).json(response);
+        })
+        .catch(err => next(err));
+    }
+  );
+
+  // Create a new layer
+  app.post(
+    '/api/layers',
+    validateGeopackage,
+    function(req, res, next) {
+      new api.Layer()
+        .create(req.newLayer)
+        .then(layer => {
+          req.layer = layer;
+          if (req.layer.invalid) {
+            const response = layerXform.transform(layer, { path: req.getPath() });
+            return res.location(layer._id.toString()).json(response);
+          }
           return next();
         })
         .catch(err => next(err));
     },
-    function(req, res, next) {
-      const layer = req.layer;
-      if (layer.type !== 'GeoPackage' || !!req.layer.invalid) {
-        const response = layerXform.transform(layer, { path: req.getPath() });
-        return res.location(layer._id.toString()).json(response);
-      }
-      return next();
-    },
-    setupGeoPackageProcessing,
-    async function(req, res, next) {
+    processGeoPackage,
+    function(req, res) {
       const layer = req.layer;
       const response = layerXform.transform(layer, { path: req.getPath() });
       res.location(layer._id.toString()).json(response);
-      const layerStatusMap = {};
-      for (let i = 0; i < layer.processing.length; i++) {
-        layerStatusMap[layer.processing[i].layer] = i;
-      }
-      // optimize after the layer is returned to the client
-      let currentLayer;
-      await geopackage.optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
-        if (currentLayer && currentLayer !== progress.layer) {
-          const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
-          oldLayerStatus.complete = true;
-          currentLayer = progress.layer;
-        }
-
-        const layerStatus = layer.processing[layerStatusMap[progress.layer]];
-        layerStatus.count = progress.count;
-        layerStatus.total = progress.totalCount;
-        layerStatus.description = progress.description;
-        layer.save();
-      });
-      layer.processing = undefined;
-      layer.state = 'available';
-      layer.save();
-      console.log('GeoPackage optimized');
-    }
+    },
   );
 
-  app.put('/api/layers/:layerId/available', 
-    access.authorize('UPDATE_LAYER'), 
-    setupGeoPackageProcessing, 
+  app.put('/api/layers/:layerId/available',
+    access.authorize('UPDATE_LAYER'),
+    processGeoPackage,
     function(req, res) {
       const layer = req.layer;
       const response = layerXform.transform(layer, { path: req.getPath() });
       res.status(202).json(response);
-      const layerStatusMap = {};
-      for (let i = 0; i < layer.processing.length; i++) {
-        layerStatusMap[layer.processing[i].layer] = i;
+    }
+  );
+
+  app.put('/api/layers/:layerId', access.authorize('UPDATE_LAYER'), validateLayerParams, function(req, res, next) {
+    new api.Layer(req.layer.id)
+      .update(req.newLayer)
+      .then(layer => {
+        const response = layerXform.transform(layer, { path: req.getPath() });
+        res.json(response);
+      })
+      .catch(err => next(err));
+  });
+
+  app.post('/api/layers/wms/getcapabilities', function(req, res) {
+    request.get({ url: req.body.url + '?SERVICE=WMS&REQUEST=GetCapabilities', gzip: true }, function(
+      err,
+      response,
+      body,
+    ) {
+      if (err) {
+        return res.sendStatus(400);
       }
-      // optimize after the layer is returned to the client
-      let currentLayer;
-      geopackage
-        .optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
-          if (currentLayer && currentLayer !== progress.layer) {
-            const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
-            oldLayerStatus.complete = true;
-            currentLayer = progress.layer;
-          }
 
-          const layerStatus = layer.processing[layerStatusMap[progress.layer]];
-          layerStatus.count = progress.count;
-          layerStatus.total = progress.totalCount;
-          layerStatus.description = progress.description;
-          layer.save();
-        })
-        .then(() => {
-          layer.processing = undefined;
-          layer.state = 'available';
-          layer.save();
-          console.log('GeoPackage optimized');
-        });
-    }
-  );
+      const json = new WMSCapabilities(body, DOMParser).toJSON();
+      res.json(json);
+    });
+  });
 
-  app.put('/api/layers/:layerId',
-    access.authorize('UPDATE_LAYER'),
-    validateLayerParams, 
-    function(req, res, next) {
-      new api.Layer(req.layer.id)
-        .update(req.newLayer)
-        .then(layer => {
-          const response = layerXform.transform(layer, { path: req.getPath() });
-          res.json(response);
-        })
-        .catch(err => next(err));
-    }
-  );
-
-  app.post('/api/layers/wms/getcapabilities', 
-    function(req, res) {
-      request.get({ url: req.body.url + '?SERVICE=WMS&REQUEST=GetCapabilities', gzip: true }, function(
-        err,
-        response,
-        body
-      ) {
-        if (err) {
-          return res.sendStatus(400);
-        }
-
-        const json = new WMSCapabilities(body, DOMParser).toJSON();
-        res.json(json);
-      });
-    }
-  );
-
-  app.delete('/api/layers/:layerId', 
-    access.authorize('DELETE_LAYER'), 
-    function(req, res, next) {
-      new api.Layer()
-        .remove(req.layer)
-        .then(function() {
-          res.sendStatus(200);
-        })
-        .catch(err => next(err));
-    }
-  );
+  app.delete('/api/layers/:layerId', access.authorize('DELETE_LAYER'), function(req, res, next) {
+    new api.Layer()
+      .remove(req.layer)
+      .then(function() {
+        res.sendStatus(200);
+      })
+      .catch(err => next(err));
+  });
 };

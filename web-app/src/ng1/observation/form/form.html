@@ -13,7 +13,7 @@
     <div>{{$ctrl.error.message}}</div>
   </div>
   
-  <form name="observationForm" id="myForm" class="form" novalidate>
+  <form name="observationForm" id="myForm" class="observation-edit-content" ng-class="{'observation-edit-content--scroll-lock': $ctrl.mask}" novalidate>
     <div class="mdc-card observation-view-card observation-form-card">
       <date-edit field="$ctrl.form.timestampField" form-field="observationForm[$ctrl.form.timestampField.name]"></date-edit>
       <geometry-edit feature="$ctrl.geometryFeature" field="$ctrl.form.geometryField" on-feature-changed="$ctrl.onGeometryChanged($event)" on-feature-edit="$ctrl.onGeometryEdit($event)"></geometry-edit>

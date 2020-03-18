@@ -136,7 +136,7 @@
           </div>
 
         </div>
-        <div class="row" ng-show="$ctrl.layer.type == 'Feature'">
+        <div class="row" ng-if="$ctrl.layer.type == 'Feature'">
           <hr>
           <div class="col-md-12 col-xs-12">
             <div class="row" ng-if="$ctrl.layer.type === 'Feature' && $ctrl.hasLayerEditPermission">

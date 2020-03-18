@@ -65,15 +65,19 @@ function getTables(geoPackage) {
 }
 
 async function optimize(path, progress) {
-  const geoPackage = await GeoPackageAPI.open(path);
-  const featureTables = geoPackage.getFeatureTables();
-  let success = true;
-  for (let i = 0; i < featureTables.length; i++) {
-    const table = featureTables[i];
-    const featureDao = geoPackage.getFeatureDao(table);
-    success = success && (await featureDao.index(progress));
-  }
-  return Promise.resolve(success);
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      const geoPackage = await GeoPackageAPI.open(path);
+      const featureTables = geoPackage.getFeatureTables();
+      let success = true;
+      for (let i = 0; i < featureTables.length; i++) {
+        const table = featureTables[i];
+        const featureDao = geoPackage.getFeatureDao(table);
+        success = success && (await featureDao.index(progress));
+      }
+      resolve(success);
+    }, 0);
+  });
 }
 
 async function tile(layer, tableName, { stroke, width: lineWidth, fill }, { x, y, z }) {

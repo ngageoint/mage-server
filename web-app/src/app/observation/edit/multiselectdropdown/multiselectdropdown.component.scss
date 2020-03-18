@@ -1,8 +1,11 @@
 mat-form-field {
   width: 100%;
-  margin-top: 16px;
 }
 
 .select__choice--disabled {
   color: rgba($color: #000000, $alpha: .54)
+}
+
+:host ::ng-deep.mat-form-field-wrapper {
+  padding-bottom: 16px;
 }

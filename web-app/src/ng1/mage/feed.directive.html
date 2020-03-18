@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<feed-scroll-wrapper ng-if="newObservation" class="slide-left ng-animatable new-obs-card view-obs-card feed-card">
+<feed-scroll-wrapper ng-if="newObservation" class="slide-left view-obs-card ng-animatable">
   <observation-form form="newObservationForm" observation="newObservation" on-form-close="onFormClose()"></observation-form>
 </feed-scroll-wrapper>
 
@@ -25,7 +25,7 @@
     observation="viewObservation" 
     event="event"></observation-view>
 
-<feed-scroll-wrapper ng-if="editObservation" class="slide-left ng-animatable new-obs-card view-obs-card feed-card">
+<feed-scroll-wrapper ng-if="editObservation"  class="slide-left view-obs-card ng-animatable">
   <observation-form form="editForm" observation="editObservation" on-form-close="onFormClose()" on-observation-delete="onObservationDelete($event)"></observation-form>
 </feed-scroll-wrapper>
 
