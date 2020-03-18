@@ -1,155 +1,150 @@
-<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
-  <div class="mdc-top-app-bar__row">
-    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-      <button ng-click="closeObservationView()" class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">arrow_back</button>
-      <span class="mdc-top-app-bar__title">
-        <span>{{primaryFeedField.value}}</span>
-      </span>
-    </section>
-    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-      <button ng-if="canEdit" class="mdc-button mdc-card__action mdc-card__action--button"
-        ng-click="editObservation()">
-        <span class="mdc-button__label">Edit</span>
-      </button>
-    </section>
-  </div>
-</header>
+<mat-toolbar color="primary" ng-class="'observation-edit-toolbar'">
+  <mat-button mat-icon-button ng-click="closeObservationView()">
+    <mat-icon>arrow_back</mat-icon>
+  </mat-button>
+  <span class="observation-edit-toolbar__title">{{primaryFeedField.value}}</span>
 
-<div class="mdc-card observation-view-card">
-  <div class="observation-header">
-    <div class="observation-header-content">
-      <div class="observation-overline">
-        <div class="">
-          <span>{{observationUser.displayName}}</span>
-          <span class="">·</span>
-          <span class="">{{observation.properties.timestamp | moment}}</span>
+  <mat-button ng-if="canEdit" ng-click="editObservation()">EDIT</mat-button>
+</mat-toolbar>
+
+<div class="view-obs-content">
+  <div class="mdc-card observation-view-card">
+    <div class="observation-header">
+      <div class="observation-header-content">
+        <div class="observation-overline">
+          <div class="">
+            <span>{{observationUser.displayName}}</span>
+            <span class="">·</span>
+            <span class="">{{observation.properties.timestamp | moment}}</span>
+          </div>
         </div>
-      </div>
-  
-      <div ng-if="primaryFeedField.value">
-        <div class="observation-header-text">
-          <div ng-switch="primaryFeedField.field.type">
-            <div ng-switch-when="geometry">
-              {{primaryFeedField.value | geometry:5}}
-            </div>
-            <div ng-switch-default>
-              {{primaryFeedField.value}}
+    
+        <div ng-if="primaryFeedField.value">
+          <div class="observation-header-text">
+            <div ng-switch="primaryFeedField.field.type">
+              <div ng-switch-when="geometry">
+                {{primaryFeedField.value | geometry:5}}
+              </div>
+              <div ng-switch-default>
+                {{primaryFeedField.value}}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-  
-      <div ng-if="secondaryFeedField.value">
-        <div class="observation-subhead">
-          <span ng-switch="secondaryFeedField.field.type">
-            <span ng-switch-when="geometry">
-              {{secondaryFeedField.value | geometry:5}}
+    
+        <div ng-if="secondaryFeedField.value">
+          <div class="observation-subhead">
+            <span ng-switch="secondaryFeedField.field.type">
+              <span ng-switch-when="geometry">
+                {{secondaryFeedField.value | geometry:5}}
+              </span>
+              <span ng-switch-default>
+                {{secondaryFeedField.value}}
+              </span>
             </span>
-            <span ng-switch-default>
-              {{secondaryFeedField.value}}
-            </span>
-          </span>
+          </div>
         </div>
       </div>
-    </div>
-  
-    <div class="observation-thumbnail">
-      <img ng-src="{{observation.style.iconUrl}}" />
-    </div>
-  </div>
-
-  <div class="map-clip">
-    <div map-clip="observation"></div>
-  </div>
-
-  <div ng-if="observation.important" class="observation-supporting-text-container">
-    <span>
-      <i class="material-icons observation-action-important-active vertical-middle">flag</i>
-      <span class="observation-subhead">{{observationImportantUser.displayName}} flagged on {{observation.important.timestamp | moment}}</span>
-    </span>
-    <div ng-show="!importantEditor.isOpen">
-      {{observation.important.description}}
-    </div>
-  </div>
-  <div ng-show="importantEditor.isOpen" class="important-editor observation-supporting-text-container slide-animate">
-    <div class="mdc-text-field mdc-text-field--textarea mdc-text-field--fullwidth important-textarea">
-      <textarea id="fav-textarea" 
-        class="mdc-text-field__input" 
-        type="text" 
-        ng-model="importantEditor.description" 
-        value="{{importantEditor.description}}"></textarea>
-      <div class="mdc-notched-outline">
-        <div class="mdc-notched-outline__leading"></div>
-        <div class="mdc-notched-outline__notch">
-          <label for="fav-textarea" class="mdc-floating-label">Description</label>
-        </div>
-        <div class="mdc-notched-outline__trailing"></div>
+    
+      <div class="observation-thumbnail">
+        <img ng-src="{{observation.style.iconUrl}}" />
       </div>
     </div>
-    <div class="text-right top-gap">
-    <button class="mdc-button" ng-click="clearImportant()">
-      <span ng-if="observation.important">Remove</span>
-      <span ng-if="!observation.important">Cancel</span>
-    </button>
-    <button class="mdc-button mdc-button--raised" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Flag As Important'}}</button>
+
+    <div class="map-clip">
+      <div map-clip="observation"></div>
     </div>
-  </div>
-  <div class="mdc-card__actions">
-    <div class="mdc-card__action-buttons">
-      <button class="mdc-button  mdc-ripple-upgraded" ng-click="onObservationLocationClick()">
-        <span class="mdc-button__ripple"></span>
-        <i class="material-icons mdc-button__icon">my_location</i>
-        <span class="mdc-button__label">{{observation.geometry | geometry:5}}</span>
+
+    <div ng-if="observation.important" class="observation-supporting-text-container">
+      <span>
+        <i class="material-icons observation-action-important-active vertical-middle">flag</i>
+        <span class="observation-subhead">{{observationImportantUser.displayName}} flagged on {{observation.important.timestamp | moment}}</span>
+      </span>
+      <div ng-show="!importantEditor.isOpen">
+        {{observation.important.description}}
+      </div>
+    </div>
+    <div ng-show="importantEditor.isOpen" class="important-editor observation-supporting-text-container slide-animate">
+      <div class="mdc-text-field mdc-text-field--textarea mdc-text-field--fullwidth important-textarea">
+        <textarea id="fav-textarea" 
+          class="mdc-text-field__input" 
+          type="text" 
+          ng-model="importantEditor.description" 
+          value="{{importantEditor.description}}"></textarea>
+        <div class="mdc-notched-outline">
+          <div class="mdc-notched-outline__leading"></div>
+          <div class="mdc-notched-outline__notch">
+            <label for="fav-textarea" class="mdc-floating-label">Description</label>
+          </div>
+          <div class="mdc-notched-outline__trailing"></div>
+        </div>
+      </div>
+      <div class="text-right top-gap">
+      <button class="mdc-button" ng-click="clearImportant()">
+        <span ng-if="observation.important">Remove</span>
+        <span ng-if="!observation.important">Cancel</span>
       </button>
+      <button class="mdc-button mdc-button--raised" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Flag As Important'}}</button>
+      </div>
     </div>
-    <div class="mdc-card__action-icons">
-      <div class="mage-tooltip">
-        <span class="tooltiptext">{{canEditImportant && !observation.important ? 'Flag As Important' : 'Flagged as Important'}}</span>
-        <button ng-if="canEditImportant || observation.important"
-          ng-class="{'observation-action-important-active mdc-icon-button--on': observation.important}"
-          class="mdc-icon-button mdc-card__action mdc-card__action--icon"
-          aria-label="Flag as Important"
-          ng-click="onFlagAsImportant()">
-          <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">flag</i>
-          <i class="material-icons mdc-icon-button__icon">outlined_flag</i>
+    <div class="mdc-card__actions">
+      <div class="mdc-card__action-buttons">
+        <button class="mdc-button  mdc-ripple-upgraded" ng-click="onObservationLocationClick()">
+          <span class="mdc-button__ripple"></span>
+          <i class="material-icons mdc-button__icon">my_location</i>
+          <span class="mdc-button__label">{{observation.geometry | geometry:5}}</span>
         </button>
       </div>
-      <div class="mage-tooltip">
-        <span class="tooltiptext">Add to favorites</span>
-        <button 
-            ng-class="{'observation-action-favorite-active mdc-icon-button--on': isUserFavorite}"
-            ng-click="toggleFavorite()"
+      <div class="mdc-card__action-icons">
+        <div class="mage-tooltip">
+          <span class="tooltiptext">{{canEditImportant && !observation.important ? 'Flag As Important' : 'Flagged as Important'}}</span>
+          <button ng-if="canEditImportant || observation.important"
+            ng-class="{'observation-action-important-active mdc-icon-button--on': observation.important}"
             class="mdc-icon-button mdc-card__action mdc-card__action--icon"
-            aria-pressed="false"
-            aria-label="Add to favorites"
-            title="Add to favorites">
-          <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">favorite</i>
-          <i class="material-icons mdc-icon-button__icon">favorite_border</i>
-        </button>
-      </div>
-      <div class="mage-tooltip">
-        <span class="tooltiptext">Download</span>
-        <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon"
-          title="Download" 
-          ng-click="download()">save_alt</button>
+            aria-label="Flag as Important"
+            ng-click="onFlagAsImportant()">
+            <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">flag</i>
+            <i class="material-icons mdc-icon-button__icon">outlined_flag</i>
+          </button>
+        </div>
+        <div class="mage-tooltip">
+          <span class="tooltiptext">Add to favorites</span>
+          <button 
+              ng-class="{'observation-action-favorite-active mdc-icon-button--on': isUserFavorite}"
+              ng-click="toggleFavorite()"
+              class="mdc-icon-button mdc-card__action mdc-card__action--icon"
+              aria-pressed="false"
+              aria-label="Add to favorites"
+              title="Add to favorites">
+            <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">favorite</i>
+            <i class="material-icons mdc-icon-button__icon">favorite_border</i>
+          </button>
+        </div>
+        <div class="mage-tooltip">
+          <span class="tooltiptext">Download</span>
+          <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon"
+            title="Download" 
+            ng-click="download()">save_alt</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="mdc-card top-gap media-card" ng-if="observation.attachments && observation.attachments.length > 0">
-  <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1"
-    class="mdc-card__media observation-media media-tile">
-    <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false"></div>
-  </div>
-  <div class="attachments">
-    <div class="attachment media-tile" ng-repeat="attachment in observation.attachments track by attachment.id"
-      ng-if="!$first || (observation.attachments.length % 2 === 0)">
-      <div attachment="attachment" attachment-observation="observation" edit="false"></div>
+  <div class="mdc-card top-gap media-card" ng-if="observation.attachments && observation.attachments.length > 0">
+    <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1"
+      class="mdc-card__media observation-media media-tile">
+      <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false"></div>
+    </div>
+    <div class="attachments">
+      <div class="attachment media-tile" ng-repeat="attachment in observation.attachments track by attachment.id"
+        ng-if="!$first || (observation.attachments.length % 2 === 0)">
+        <div attachment="attachment" attachment-observation="observation" edit="false"></div>
+      </div>
     </div>
   </div>
+
+  <div class="top-gap" ng-repeat="form in observationForm.forms">
+    <observation-form-view form="form"></observation-form-view>
+  </div>
 </div>
 
-<div class="top-gap" ng-repeat="form in observationForm.forms">
-  <observation-form-view form="form"></observation-form-view>
-</div>
