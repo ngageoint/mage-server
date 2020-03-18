@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Observation view/edit header is sticky and will not scroll with content.
 
 ##### Bug Fixes
 * Add filter support to edit observation select/dropdown.
@@ -15,6 +16,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix WMS layer getcapabilites fetch request when creating new WMS layer.
 * Form create modal would sometimes generate an invalid random color.
 * Fix bug that could cause iOS GeoPackage downloads to hang.
+* Preserve line breaks and whitespace in textarea fields.
 
 ## [5.3.4](https://github.com/ngageoint/mage-server/releases/tag/5.3.3)
 
