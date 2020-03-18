@@ -1,0 +1,27 @@
+<div class="map-controls-right">
+  <map-control-layers (onLayerPanelToggle)="drawer.toggle()"></map-control-layers>
+</div>
+
+<mat-sidenav-container class="map-container" hasBackdrop="false">
+  <mat-sidenav #drawer mode="over" position="end" autoFocus="false">
+    <map-layers-panel 
+      [mageLayers]="groups['MAGE'].layers" 
+      [baseLayers]="groups['base'].layers" 
+      [tileOverlays]="groups['tile'].layers" 
+      [featureOverlays]="groups['feature'].layers"
+      (onZoom)="zoom($event)"
+      (onOpacity)="opacityChanged($event)"
+      (onReorder)="reorder($event)">
+    </map-layers-panel>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <leaflet 
+      (onMapAvailable)="onMapAvailable($event)" 
+      (onAddObservation)="onAddObservation.emit($event)"
+      (onAddLayer)="addLayer($event)"
+      (onRemoveLayer)="removeLayer($event)">
+    </leaflet>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

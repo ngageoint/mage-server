@@ -7,7 +7,6 @@ module.exports = {
   template: require('./observation-feed.component.html'),
   controller: ObservationFeedController,
   bindings: {
-    onCreateNewObservation: '&'
   }
 };
 

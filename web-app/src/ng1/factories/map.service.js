@@ -29,12 +29,6 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     createRasterLayer: createRasterLayer,
     createVectorLayer: createVectorLayer,
     createFeature: createFeature,
-    // removeFeature: removeFeature,
-    // updateFeature: updateFeature,
-    // updateShapeType: updateShapeType,
-    // edit: edit,
-    // create: create,
-    // updateIcon: updateIcon,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
@@ -78,6 +72,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     EventService.addLayersChangedListener(layersChangedListener);
 
     var observationLayer = {
+      id: 'observations',
       name: 'Observations',
       group: 'MAGE',
       type: 'geojson',
@@ -93,7 +88,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
         },
         popup: {
           html: function(observation) {
-            var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');
+            var el = angular.element('<div class="foo" observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');
             var compiled = $compile(el);
             var newScope = $rootScope.$new(true);
             newScope.observation = observation;
@@ -117,6 +112,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     service.createVectorLayer(observationLayer);
 
     var peopleLayer = {
+      id: 'people',
       name: 'People',
       group: 'MAGE',
       type: 'geojson',
@@ -131,7 +127,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
         popup: {
           html: function(location) {
             var user = usersById[location.userId];
-            var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)" user-zoom="onZoom(user)"></div>');
+            var el = angular.element('<div class="foo" location-popup="user" user-popup-info="onInfo(user)" user-zoom="onZoom(user)"></div>');
             var compiled = $compile(el);
             var newScope = $rootScope.$new(true);
             newScope.user = user;
@@ -325,50 +321,6 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
   function createFeature(feature, style, listeners) {
     if (delegate) return delegate.createFeature(feature, style, listeners);
   }
-
-  // function removeFeature(feature, featureId) {
-  //   layersChanged({
-  //     name: featureId,
-  //     removed: [feature]
-  //   });
-  // }
-
-  // function updateFeature(feature, featureId) {
-  //   layersChanged({
-  //     name: featureId,
-  //     updated: [feature]
-  //   });
-  // }
-
-  // function create(create) {
-  //   _.each(listeners, function(listener) {
-  //     if (_.isFunction(listener.onCreate)) {
-  //       listener.onCreate(create);
-  //     }
-  //   });
-  // }
-
-  // function edit(edit) {
-  //   _.each(listeners, function(listener) {
-  //     if (_.isFunction(listener.onEdit)) {
-  //       listener.onEdit(edit);
-  //     }
-  //   });
-  // }
-
-  // function updateIcon(marker, iconUrl) {
-  //   layersChanged({
-  //     id: marker.id,
-  //     updateIcon: [{id:marker.id, marker: marker, iconUrl:iconUrl}]
-  //   });
-  // }
-
-  // function updateShapeType(marker) {
-  //   layersChanged({
-  //     id: marker.id,
-  //     updateShapeType: [{id: marker.id, marker: marker}]
-  //   });
-  // }
 
   function addFeaturesToLayer(features, layerId) {
     var vectorLayer = vectorLayers[layerId];

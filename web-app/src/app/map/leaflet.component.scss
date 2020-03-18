@@ -1,0 +1,26 @@
+#map {
+  height: 100%;
+}
+
+:host ::ng-deep.map-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.map-controls-right {
+  position: absolute;
+  right: 0;
+  z-index: 1000;
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 16px;
+  margin-right: 16px;
+}
+
+mat-sidenav {
+  min-width: 350px;
+  max-width: 400px;
+}

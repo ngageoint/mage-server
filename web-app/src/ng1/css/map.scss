@@ -1,8 +1,6 @@
 @import "~leaflet/dist/leaflet.css";
 @import "~leaflet.markercluster/dist/MarkerCluster.css";
 @import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
-@import "~leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css";
-@import "~leaflet-control-geocoder/dist/Control.Geocoder.css";
 
 .leaflet-control-geocoder-icon {
   border-radius: 4px;
@@ -55,6 +53,10 @@
 
 @-ms-viewport {
 	width: device-width;
+}
+
+.geojson-popup {
+  margin: 16px;
 }
 
 .user-popup {
@@ -230,4 +232,28 @@
   font-size: 1.6em;
   background-image: none;
   line-height: unset;
+}
+
+.map-content {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-controls-left {
+  position: absolute;
+  z-index: 1000;
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+mat-drawer-content {
+  overflow: unset;
+}
+
+.mat-drawer-content {
+  overflow: hidden !important;
 }

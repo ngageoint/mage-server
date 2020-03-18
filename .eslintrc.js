@@ -35,7 +35,6 @@ module.exports =  {
       sourceType:  'module',  // Allows for the use of imports
     },
     "ignorePatterns": ["test/"],
-  
     rules: {
       "camelcase": "off",
       "@typescript-eslint/camelcase": ["error", { "properties": "never" }],

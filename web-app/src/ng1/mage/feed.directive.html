@@ -31,9 +31,7 @@
 
 <tab-list on-tab-switch="onTabSwitched(index)" tabs="tabs" class="tab-bg"></tab-list>
 <div class="observation-feed-container content content--active">
-  <observation-feed
-    ng-if="currentFeedPanel === 'observations'"
-    on-create-new-observation="createNewObservation()"></observation-feed>
+  <observation-feed ng-if="currentFeedPanel === 'observations'"></observation-feed>
 </div>
 
 <div class="people-feed-container content">

@@ -20,10 +20,8 @@ module.exports = {
 };
 
 async function open(file) {
-  console.log('Open GeoPackage');
   try {
     const geoPackage = await GeoPackageAPI.open(file);
-    console.log('Opened the GeoPackage: ', file);
     return {
       geoPackage: geoPackage,
     };
@@ -82,7 +80,7 @@ async function optimize(path, progress) {
   });
 }
 
-async function tile(layer, tableName, { x, y, z }) {
+async function tile(layer, tableName, { stroke, width: lineWidth, fill }, { x, y, z }) {
   const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
   await fs.stat(geopackagePath);
   const geopackage = await GeoPackageAPI.open(geopackagePath);
@@ -102,7 +100,19 @@ async function tile(layer, tableName, { x, y, z }) {
       const featureDao = geopackage.getFeatureDao(table.name);
       if (!featureDao) return;
       const ft = new FeatureTile(featureDao, width, height);
+
+      ft.setPointColor(stroke)
+      ft.setLineColor(stroke);
+      ft.setPolygonColor(stroke);
+
+      ft.setPolygonFillColor(fill);
+
+      ft.setPointRadius(lineWidth);
+      ft.setPolygonStrokeWidth(lineWidth);
+      ft.setLineStrokeWidth(lineWidth);
+
       ft.setMaxFeaturesPerTile(10000);
+
       const shadedFeaturesTile = new ShadedFeaturesTile();
       ft.setMaxFeaturesTileDraw(shadedFeaturesTile);
       tile = await ft.drawTile(x, y, z);
@@ -159,8 +169,11 @@ async function getClosestFeatures(layers, lat, lng, { x, y, z }) {
     const geopackage = await GeoPackageAPI.open(geopackagePath);
     const table = layer.tables.find(table => table.name === tableName);
     if (!table) throw new Error("Table '" + table + "' does not exist in GeoPackage");
-    const closestFeature = await GeoPackageAPI.getClosestFeatureInXYZTile(geopackage, table.name, x, y, z, lat, lng);
-    if (closestFeature) closestFeatures.push(closestFeature);
+    const closestFeature = await geopackage.getClosestFeatureInXYZTile(table.name, x, y, z, lat, lng);
+    if (closestFeature) {
+      closestFeature.layerId = layer._id;
+      closestFeatures.push(closestFeature);
+    }
   }
   closestFeatures.sort(function(first, second) {
     if (first.coverage && second.coverage) return 0;
