@@ -228,12 +228,7 @@ module.exports = function(app, security) {
         filter.active = req.query.active === 'true';
       }
 
-      var populate = null;
-      if (req.query.populate) {
-        populate = req.query.populate.split(",");
-      }
-
-      new api.User().count({filter: filter, populate: populate}, function(err, count) {
+      new api.User().count({filter: filter}, function(err, count) {
         if (err) return next(err);
 
         res.json({count: count});
