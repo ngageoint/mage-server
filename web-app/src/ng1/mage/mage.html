@@ -14,13 +14,15 @@
     ng-hide="$ctrl.hideFeed"
     news-feed
     event="$ctrl.filteredEvent"
-    on-toggle-feed="$ctrl.toggleFeed($event)"
+    add-observation="$ctrl.newObservation"
+    on-toggle-feed="$ctrl.onToggleFeed($event)"
     feed-observations-changed="$ctrl.feedChangedObservations"
     feed-users-changed="$ctrl.feedChangedUsers">
   </div>
 
   <div class="map">
-    <leaflet on-observation-create="$ctrl.onObservationCreate(latlng)" on-toggle-feed="$ctrl.toggleFeed($event)"></leaflet>
+    <map-leaflet (on-map-available)="$ctrl.onMapAvailable($event)" (on-add-observation)="$ctrl.onAddObservation($event)" (on-add-layer)="$ctrl.onAddLayer($event)" (on-remove-layer)="$ctrl.onRemoveLayer($event)"></map-leaflet>
+    <!-- <leaflet on-add-observation="$ctrl.onAddObservation($event)" on-toggle-feed="$ctrl.toggleFeed($event)"></leaflet> -->
   </div>
 
 </div>

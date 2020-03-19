@@ -26,7 +26,12 @@
             "aot": false,
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/leaflet/dist/images",
+                "output": "/"
+              }
             ],
             "styles": [
               "src/ng1/vendor/bootstrap/css/bootstrap.min.css",
@@ -37,6 +42,7 @@
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
+                "src",
                 "node_modules"
               ]
             },
@@ -114,6 +120,7 @@
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
+                "src",
                 "node_modules"
               ]
             },

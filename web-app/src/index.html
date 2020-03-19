@@ -6,10 +6,10 @@
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
 
-<body class="mdc-typography" ng-controller="NavController">
+<body class="mdc-typography" ng-controller="NavController as $ctrl">
   <banner ng-if="myself" class="banner" type="header"></banner>
-  <navbar myself="myself" ng-show="myself"></navbar>
-  <ui-view class="route-content"></ui-view>
+  <navbar myself="myself" ng-show="myself" on-feed-toggle="$ctrl.feedToggle()"></navbar>
+  <ui-view class="route-content" toggle-feed="$ctrl.toggleFeed"></ui-view>
   <banner ng-if="myself" class="banner" type="footer"></banner>
 </body>
 

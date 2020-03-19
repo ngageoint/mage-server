@@ -1,10 +1,16 @@
 .view-obs-card {
-  background-color: #E1E2E1;
   position:absolute;
   top:0;
   width: 100%;
   bottom: 0;
   z-index: 3;
+  background-color: #E1E2E1;
+}
+
+.view-obs-content {
+  position: absolute;
+  top: 64px;
+  bottom: 0;
   overflow-y: auto;
 }
 
@@ -25,7 +31,7 @@
 }
 
 .observation-form-card {
-  padding: 16px;
+  padding: 16px 16px 0 16px;
 }
 
 .media-card {
@@ -48,4 +54,8 @@
 
 .mage-field-title {
   color: rgba(0, 0, 0, 0.54)
+}
+
+.mage-field-textarea {
+  white-space: pre-wrap;
 }

@@ -37,11 +37,6 @@ class SetupController {
 
     this.passwordRequirements = {};
 
-    var localAuthenticationStrategy = this.api.authenticationStrategies.local;
-    if (localAuthenticationStrategy) {
-      this.passwordRequirements.minLength = localAuthenticationStrategy.passwordMinLength;
-    }
-
     this.form = {};
   }
 
@@ -52,6 +47,13 @@ class SetupController {
     this.deviceIdField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[3]);
     this.passwordStrengthProgress = new linearProgress.MDCLinearProgress(this._$element.find('.mdc-linear-progress')[0]);
     this.passwordConfirmField.useNativeValidation = false;
+  }
+
+  $onInit() {
+    const localAuthenticationStrategy = this.api.authenticationStrategies.local;
+    if (localAuthenticationStrategy) {
+      this.passwordRequirements.minLength = localAuthenticationStrategy.passwordMinLength;
+    }
   }
 
   onPasswordChange() {

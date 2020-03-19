@@ -1,5 +1,9 @@
 @import "./variables.scss";
 
+observation-form-edit {
+  display: block;
+}
+
 .feed {
   background: #E1E2E1;
   order: 1;
@@ -161,7 +165,6 @@
 }
 
 .feed-card-content {
-  position: relative;
   padding-bottom: 16px;
 }
 

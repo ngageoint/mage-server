@@ -1,0 +1,10 @@
+<div id="map" class="leaflet-map">
+  <div class="map-controls-left">
+    <map-control-zoom (on-zoom)="$ctrl.onZoom($event)"></map-control-zoom>
+    <map-control-search (on-search)="$ctrl.onSearch($event)" (on-search-clear)="$ctrl.onSearchClear($event)"></map-control-search>
+    <map-control-location (on-locate)="$ctrl.onLocate($event)" (on-broadcast)="$ctrl.onBroadcast($event)"></map-control-location>
+    <map-control-add-observation (on-add-observation)="$ctrl.onAddObservation({latLng: $ctrl.map.getCenter()})"></map-control-add-observation>
+  </div>
+</div>
+
+

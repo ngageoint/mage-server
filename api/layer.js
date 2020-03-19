@@ -24,8 +24,6 @@ class Layer {
 
   create(layer) {
     return CounterModel.getNext('layer').then(id => {
-      log.info('Got id for layer ' + id);
-
       switch (layer.type) {
       case 'Feature':
         return createFeatureLayer(id, layer);

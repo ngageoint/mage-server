@@ -13,12 +13,21 @@ import {
   MatButton,
   MatToolbar,
   MatSpinner,
-  MatFormField
+  MatFormField,
+  MatSidenav,
+  MatSidenavContent,
+  MatSidenavContainer,
 } from '@angular/material';
 
+import { ZoomComponent } from '../app/map/controls/zoom.component';
+import { SearchComponent } from '../app/map/controls/search.component';
+import { LocationComponent } from '../app/map/controls/location.component';
+import { AddObservationComponent } from '../app/map/controls/add-observation.component';
+import { LeafletComponent } from '../app/map/leaflet.component';
+
 import { ScrollWrapperComponent } from '../app/wrapper/scroll/feed-scroll.component';
-import { DropdownComponent } from '../../src/app/observation/edit/dropdown/dropdown.component';
-import { MultiSelectDropdownComponent } from '../../src/app/observation/edit/multiselectdropdown/multiselectdropdown.component';
+import { DropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
+import { MultiSelectDropdownComponent } from '../app/observation/edit/multiselectdropdown/multiselectdropdown.component';
 
 require('angular-minicolors');
 require('select2');
@@ -36,15 +45,26 @@ const app = angular.module('mage', [
   require('./auth/http-auth-interceptor')
 ]);
 
+// Downgraded Angular components 
 app
   .directive('matIcon', downgradeComponent({ component: MatIcon }))
   .directive('matButton', downgradeComponent({ component: MatButton }))
   .directive('matToolbar', downgradeComponent({ component: MatToolbar }))
   .directive('matSpinner', downgradeComponent({ component: MatSpinner }))
   .directive('matFormField', downgradeComponent({ component: MatFormField }))
+  .directive('matSidenav', downgradeComponent({ component: MatSidenav }))
+  .directive('matSidenavContent', downgradeComponent({ component: MatSidenavContent }))
+  .directive('matSidenavContainer', downgradeComponent({ component: MatSidenavContainer }))
   .directive('feedScrollWrapper', downgradeComponent({ component: ScrollWrapperComponent }))
   .directive('observationEditDropdown', downgradeComponent({ component: DropdownComponent }))
   .directive('observationEditMultiselectdropdown', downgradeComponent({ component: MultiSelectDropdownComponent }))
+  .directive('mapLeaflet', downgradeComponent({ component: LeafletComponent }))
+  .directive('mapControlZoom', downgradeComponent({ component: ZoomComponent }))
+  .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
+  .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
+  .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }));
+
+app
   .component('filterPanel', require('./filter/filter'))
   .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))

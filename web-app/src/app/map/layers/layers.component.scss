@@ -1,0 +1,63 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.header {
+  margin: 16px 0;
+  font: 400 16px/24px Roboto, "Helvetica Neue", sans-serif;
+  color: mat-color($app-primary);
+}
+
+.map-layers {
+  margin-top: 32px;
+  padding: 0 16px 16px;
+  background: FCFCFC;
+}
+
+.base-layers {
+  display: flex;
+  flex-direction: column;
+}
+
+.base-layer {
+  margin: 8px 16px;
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.layer-list.cdk-drop-list-dragging .layer-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+layer-item {
+  display: block;
+}
+
+.layer {
+  margin: 8px 16px;
+}
+
+mat-expansion-panel-header {
+  padding: 0;
+}
+
+:host ::ng-deep.mat-expansion-panel-header[cdkdraghandle] {
+  cursor: move;
+}
+
+:host ::ng-deep.mat-expansion-panel-body {
+  padding: 0 16px 16px;
+}

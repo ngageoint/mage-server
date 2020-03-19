@@ -1,0 +1,68 @@
+.search-control {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 32px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+}
+
+.search-field {
+  position: absolute;
+  top: -4px;
+  margin-left: 16px;
+}
+
+.active {
+  color: white;
+}
+
+mat-card {
+  padding: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+mat-form-field {
+  width: 100%;
+  min-width: 500px;
+}
+
+:host ::ng-deep.mat-form-field-wrapper {
+  padding-bottom: unset;
+}
+
+:host ::ng-deep.mat-form-field-infix {
+  margin-left: 8px;
+}
+
+:host ::ng-deep.mat-form-field-appearance-standard .mat-form-field-flex {
+  padding-top: 2px;
+}
+
+:host ::ng-deep.mat-form-field-underline {
+  bottom: 0;
+}
+
+mat-list {
+  max-height: 400px;
+  overflow-y: scroll;
+  max-width: 1000px;
+}
+
+mat-list-item {
+  cursor: pointer;
+}
+
+mat-list-item:hover {
+  background: rgba(0,0,0,.04);
+}
+
+:host ::ng-deep.mat-list-icon {
+    opacity: .60;
+}
+
+.mat-form-field .mat-spinner {
+  margin-right: 8px;
+}

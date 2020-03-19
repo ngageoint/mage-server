@@ -578,6 +578,14 @@ a {
   z-index: 4;
 }
 
+.map-container {
+  position: absolute !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
 .leaflet-map {
   position: absolute;
   width: 100%;
@@ -1378,7 +1386,6 @@ h4.image-delete {
 }
 
 .field {
-  /* padding-left: 7px; */
   font-size: 1.1em;
 }
 

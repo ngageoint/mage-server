@@ -3,7 +3,8 @@ var MDCMenuSurface = require('material-components-web').menuSurface.MDCMenuSurfa
 module.exports = {
   template: require('./navbar.component.html'),
   bindings: {
-    myself: '<'
+    myself: '<',
+    onFeedToggle: '&'
   },
   controller: NavbarController
 };
@@ -12,6 +13,10 @@ NavbarController.$inject = ['$element', '$state', '$transitions', 'UserService']
 
 function NavbarController($element, $state, $transitions, UserService) {
   var pollingMenu;
+
+  this.feed = {
+    visible: true
+  };
 
   this.$onInit = function() {
     this.state = $state.current.name;
@@ -31,5 +36,14 @@ function NavbarController($element, $state, $transitions, UserService) {
   this.logout = function() {
     UserService.logout();
   };
+
+  this.toggleFeed = function() {
+    this.feed.visible = !this.feed.visible;
+    this.onFeedToggle({
+        $event: {
+        visible: this.feed.visible
+      }
+    });
+  }
 
 }

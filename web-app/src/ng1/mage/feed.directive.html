@@ -8,8 +8,7 @@
   </div>
 </div>
 
-<!-- TODO this needs angular 8 scroll directive-->
-<feed-scroll-wrapper ng-if="newObservation">
+<feed-scroll-wrapper ng-if="newObservation" class="slide-left view-obs-card ng-animatable">
   <observation-form form="newObservationForm" observation="newObservation" on-form-close="onFormClose()"></observation-form>
 </feed-scroll-wrapper>
 
@@ -26,15 +25,13 @@
     observation="viewObservation" 
     event="event"></observation-view>
 
-<feed-scroll-wrapper ng-if="editObservation">
+<feed-scroll-wrapper ng-if="editObservation"  class="slide-left view-obs-card ng-animatable">
   <observation-form form="editForm" observation="editObservation" on-form-close="onFormClose()" on-observation-delete="onObservationDelete($event)"></observation-form>
 </feed-scroll-wrapper>
 
 <tab-list on-tab-switch="onTabSwitched(index)" tabs="tabs" class="tab-bg"></tab-list>
 <div class="observation-feed-container content content--active">
-  <observation-feed
-    ng-if="currentFeedPanel === 'observations'"
-    on-create-new-observation="createNewObservation()"></observation-feed>
+  <observation-feed ng-if="currentFeedPanel === 'observations'"></observation-feed>
 </div>
 
 <div class="people-feed-container content">
