@@ -71,8 +71,10 @@ class LeafletController {
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,
     // overlay map, etc, will be placed in its own map pane
-    this.BASE_LAYER_PANE = this.map.createPane('baseLayerPane'); // Create a map pane for our base layers
-    this.map.getPane('baseLayerPane').style.zIndex = 100 * 100;
+    this.BASE_LAYER_PANE = 'baseLayerPane'; // Create a map pane for our base layers
+    this.map.createPane(this.BASE_LAYER_PANE);
+    this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = 100 * 100;
+
     this.map.getPane('tilePane').style.zIndex = 200 * 100;
     this.map.getPane('overlayPane').style.zIndex = 400 * 100;
     this.map.getPane('shadowPane').style.zIndex = 500 * 100;
@@ -118,8 +120,6 @@ class LeafletController {
     this.geoPackageLayers = new GeoPackageLayers(
       this.map,
       this.layerControl,
-      this.TILE_LAYER_PANE,
-      this.FEA,
       this.LayerService,
       this.FilterService,
       this.LocalStorageService
@@ -287,7 +287,12 @@ class LeafletController {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
-    const pane = layerInfo.base ? this.BASE_LAYER_PANE : this.map.createPane(`pane-${layerInfo.id}`);
+    let pane = this.BASE_LAYER_PANE;
+    if (!layerInfo.base) {
+      pane = `pane-${layerInfo.id}`;
+      this.map.createPane(pane);
+    }
+
     let options = {};
     if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
       options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: pane };
@@ -308,21 +313,13 @@ class LeafletController {
     layerInfo.layer.pane = pane;
     this.layers[layerInfo.name] = layerInfo;
 
-    // TODO Map panel handle this
-    // if (layerInfo.options && layerInfo.options.selected) {
-    //   layerInfo.layer.addTo(this.map);
-    // }
-
-    // TODO check if layer panel can handle these
-    // layerInfo.group = layerInfo.base ? 'base' : 'tile';
-    // layerInfo.selected = layerInfo.options && layerInfo.options.selected
-
     this.onAddLayer(layerInfo);
   }
 
   createGeoPackageLayer(layerInfo) {
     layerInfo.tables.forEach(table => {
-      const pane = this.map.createPane(`pane-${layerInfo.id}-${table.name}`);
+      const pane = `pane-${layerInfo.id}-${table.name}`;
+      this.map.createPane(pane);
       if (table.type === 'feature') {
         this.featurePanes.push(pane);
       }
@@ -340,7 +337,8 @@ class LeafletController {
   }
 
   createGeoJsonLayer(data) {
-    const pane = this.map.createPane(`pane-${data.id}`);
+    const pane = `pane-${data.id}`;
+    this.map.createPane(pane);
     this.featurePanes.push(pane);
 
     const layerInfo = {
@@ -445,7 +443,7 @@ class LeafletController {
 
   onFeaturesChanged({ name, added = [], updated = [], removed = [] }) {
     const featureLayer = this.layers[name];
-    const pane = featureLayer.layer.getPane();
+    const pane = featureLayer.layer.pane;
     added.forEach(feature => {
       if (featureLayer.options.cluster) {
         featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
@@ -595,7 +593,10 @@ class LeafletController {
     let featureEdit = new MageFeatureEdit(this.map, feature, delegate);
 
     // TODO save feature pane opacitis
-    const featurePaneOpacities = this.featurePanes.map(pane => pane.style.opacity || 1);
+    const featurePaneOpacities = this.featurePanes.map(pane => {
+      const mapPane = this.map.getPanes()[pane];
+      return mapPane.style.opacity || 1
+    });
     this.setPaneOpacity(this.featurePanes, 0.5);
 
     const layer = this.layers['Observations'].featureIdToLayer[feature.id];
@@ -636,14 +637,16 @@ class LeafletController {
 
   setPaneOpacity(panes, opacityFactor) {
     panes.forEach(pane => {
-      const opacity = this.map.getPane(pane).style.opacity || 1;
-      this.map.getPane(pane).style.opacity = opacity * opacityFactor;
+      const mapPane = this.map.getPanes()[pane];
+      const opacity = mapPane.style.opacity || 1;
+      mapPane.style.opacity = opacity * opacityFactor;
     });
   }
 
   resetPaneOpacity(panes, opacities) {
     panes.forEach((pane, index) => {
-      this.map.getPane(pane).style.opacity = opacities[index];
+      const mapPane = this.map.getPanes()[pane];
+      mapPane.style.opacity = opacities[index];
     });
   }
 }
