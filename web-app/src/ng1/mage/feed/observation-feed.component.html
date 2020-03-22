@@ -45,26 +45,50 @@
 <div class="observation-card-background-container card-background-container">
   <div ng-if="!$ctrl.observationPages">
     <div ng-repeat="i in [].constructor(20) track by $index" class="mdc-card loading">
+
       <div class="placeholder-observation-card observation-card mdc-typography">
         <div class="mdc-card__primary-action">
           <div class="observation-header">
-            <div class="observation-thumbnail">
-              <i class="material-icons">place</i>
-            </div>
             <div class="observation-header-content">
+              <div class="observation-overline">
+                <div>
+                  <span class="observation-subhead">Display Name</span>
+                  <span>·</span>
+                  <span class="observation-subhead">JUL 11 2012 10:00 AM</span>
+                </div>
+              </div>
+        
               <div class="observation-header-text">
                 Primary Value
               </div>
-              <div class="observation-subhead ">
+      
+              <div class="observation-subhead">
                 Secondary Value
               </div>
-              <div class="observation-subhead ">
-                User Name
-              </div>
             </div>
-            <div class="observation-header-content-right">
-              <div class="observation-time user-subhead ">Time</div>
-              <div class="observation-time user-subhead ">Location</div>
+        
+            <div class="observation-thumbnail">
+              <i class="material-icons">place</i>
+            </div>
+          </div>
+        </div>
+
+        <div class="mdc-card__actions">
+          <div class="mdc-card__action-buttons">
+            <span class="mdc-button">
+              <i class="material-icons mdc-button__icon">my_location</i>
+              <span class="mdc-button__label">0.000000, 0.000000</span>
+            </span>
+          </div>
+          <div class="mdc-card__action-icons">
+            <div>
+              <span class="material-icons mdc-card__action mdc-card__action--icon">outlined_flag</span>
+            </div>
+            <div>
+              <span class="material-icons mdc-card__action mdc-card__action--icon">favorite_border</span>
+            </div>
+            <div>
+              <span class="material-icons mdc-card__action mdc-card__action--icon">save_alt</span>
             </div>
           </div>
         </div>
