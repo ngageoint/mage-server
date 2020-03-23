@@ -12,7 +12,7 @@
   </mat-slider>
 </div>
 
-<div *ngIf="layer.layer.type === 'GeoPackage'">
+<div *ngIf="layer.layer.type === 'GeoPackage' && layer.layer.table.type === 'feature'">
 
   <div class="style-actions">
     <button mat-button color="primary" (click)="toggleStyle()">
