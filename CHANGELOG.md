@@ -6,10 +6,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Improved map layers panel.  Drag and drop layers to change map z-index, change layer opacity, zoom to layer bounds, and style feature layers.
+* New Material Design Leaflet map buttons.
+* Added administrative settings to turn off user approval and device registration.
 * Observation view/edit header is sticky and will not scroll with content.
+* GeoPackage upgrade and optimizations.  Feature tiles are now created server side, reducing load on browser.
+* LDAP authentication support.
+* SAML authentication support.
 
 ##### Bug Fixes
-* Add filter support to edit observation select/dropdown.
+* Add filter support to edit observation select and multiselect fields.
 * Fix mobile web export.
 * Fix observation download bug.
 * Fix bug where unregistered devices were not shown on admin dashboard.
