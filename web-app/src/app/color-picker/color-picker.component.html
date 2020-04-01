@@ -13,7 +13,7 @@
 <mat-card *ngIf="showColorPicker">
   <div class="color">
     <div class="saturation">
-      <color-saturation [hsl]="hsl" [hsv]="hsv" [circle]="circle" (onChange)="handleValueChange($event)"></color-saturation>
+      <color-saturation [hsl]="hsl" [hsv]="hsv" (onChange)="handleValueChange($event)"></color-saturation>
     </div>
     <div class="color-controls">
       <div class="sliders">

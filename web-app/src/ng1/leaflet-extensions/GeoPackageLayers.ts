@@ -8,16 +8,12 @@ export default class GeoPackageLayers {
   constructor(
     public map: Map,
     public layerControl: any,
-    public tileLayerPane: string,
-    public featureLayerPane: string,
     public LayerService: any,
     public FilterService: any,
     public LocalStorageService: any
   ) {
     this.map = map;
     this.layerControl = layerControl;
-    this.tileLayerPane = tileLayerPane;
-    this.featureLayerPane = featureLayerPane;
     this.LayerService = LayerService;
     this.FilterService = FilterService;
     this.LocalStorageService = LocalStorageService;

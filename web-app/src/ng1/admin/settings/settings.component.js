@@ -1,7 +1,8 @@
 import _ from 'underscore';
 
 class AdminSettingsController {
-  constructor($timeout, Api, Settings, LocalStorageService, Event, Team) {
+  constructor($q, $timeout, Api, Settings, LocalStorageService, Event, Team) {
+    this.$q = $q;
     this.$timeout = $timeout;
     this.Api = Api;
     this.Settings = Settings;
@@ -11,28 +12,33 @@ class AdminSettingsController {
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
 
-    this.events = [];
+    // this.events = [];
+    this.events = [{
+      name: 'foo',
+      description: 'bar'
+    }];
+
     this.teams = [];
     this.strategies = [];
     this.authConfig = {};
     
     this.usersReqAdminChoices = [{
-      title: 'No',
-      description: 'New users do not require admin approval.',
-      value: false
-    },{
-      title: 'Yes',
-      description: 'New users require admin approval.',
+      title: 'Enabled',
+      description: 'New user accounts require admin approval.',
       value: true
+    },{
+        title: 'Disabled',
+        description: 'New user accounts do not require admin approval.',
+        value: false
     }];
     this.devicesReqAdminChoices = [{
-      title: 'No',
-      description: 'New devices do not require admin approval.',
-      value: false
-    },{
-      title: 'Yes',
+      title: 'Enabled',
       description: 'New devices require admin approval.',
       value: true
+    }, {
+      title: 'Disabled',
+      description: 'New devices do not require admin approval.',
+      value: false
     }];
 
     this.accountLock = {};
@@ -73,51 +79,50 @@ class AdminSettingsController {
   }
 
   $onInit() {
-    this.Api.get(api => {
+    this.$q.all({ 
+      api: this.Api.get().$promise, 
+      settings: this.Settings.query().$promise ,
+      teams: this.Team.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise,
+      events: this.Event.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise
+    })
+    .then(result => {
+      const api = result.api;
+
       this.authConfig = api.authenticationStrategies || {};
       this.pill = this.authConfig.local ? 'security' : 'banner';
-      
+
       let strategy = {};
-      for(strategy in this.authConfig) {
+      for (strategy in this.authConfig) {
         this.strategies.push(strategy);
       }
-    });
 
-    this.Settings.query(settings => {
-      this.settings = _.indexBy(settings, 'type');
-  
+      this.settings = _.indexBy(result.settings, 'type');
+
       this.banner = this.settings.banner ? this.settings.banner.settings : {};
       this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
       this.security = this.settings.security ? this.settings.security.settings : {};
-  
+
       if (!this.security.accountLock) {
         this.security.accountLock = {
           enabled: false
         };
       }
 
-      for (var i =0 ; i < this.strategies.length; i++) {
-        let strategy = this.strategies[i];
-        if(!this.security[strategy]) {
+      this.strategies.forEach(strategy => {
+        if (!this.security[strategy]) {
           this.security[strategy] = {
-            devicesReqAdmin: {enabled: true},
-            usersReqAdmin: {enabled: true},
+            devicesReqAdmin: { enabled: true },
+            usersReqAdmin: { enabled: true },
             newUserEvents: [],
             newUserTeams: []
           }
         }
-      }
-  
+      });
+
       this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
-    });
 
-    
-    this.Event.query({state: 'all',  populate: false, projection: JSON.stringify(this.projection)}, events => {
-      this.events = events;
-    });
-
-    this.Team.query({state: 'all',  populate: false, projection: JSON.stringify(this.projection)}, teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+      this.teams = _.reject(result.teams, team => { return team.teamEventId; });
+      this.events = result.events;
     });
   }
 
@@ -150,13 +155,12 @@ class AdminSettingsController {
       delete this.security.accountLock.max;
     }
 
-    for (var i =0 ; i < this.strategies.length; i++) {
-      var strategy = this.strategies[i];
+    this.strategies.forEach(strategy => {
       if (this.security[strategy].usersReqAdmin.enabled) {
         delete this.security[strategy].newUserEvents;
         delete this.security[strategy].newUserTeams;
       }
-    }
+    });
 
     this.Settings.update({type: 'security'}, this.security, () => {
       this.saved = true;
@@ -178,7 +182,7 @@ class AdminSettingsController {
   }
 }
 
-AdminSettingsController.$inject = ['$timeout', 'Api', 'Settings', 'LocalStorageService', 'Event', 'Team'];
+AdminSettingsController.$inject = ['$q', '$timeout', 'Api', 'Settings', 'LocalStorageService', 'Event', 'Team'];
 
 export default {
   template: require('./settings.html'),

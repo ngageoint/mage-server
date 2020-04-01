@@ -14,10 +14,10 @@ export interface ReorderEvent {
   styleUrls: ['./layers.component.scss']
 })
 export class LayersComponent {
-  @Input() mageLayers: [];
-  @Input() baseLayers: [];
-  @Input() tileOverlays: [];
-  @Input() featureOverlays: [];
+  @Input() mageLayers: [any];
+  @Input() baseLayers: [any];
+  @Input() tileOverlays: [any];
+  @Input() featureOverlays: [any];
 
   @Output() onReorder = new EventEmitter<ReorderEvent>();
 

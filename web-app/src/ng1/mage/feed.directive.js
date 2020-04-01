@@ -87,6 +87,7 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
   });
 
   $scope.$on('user:viewDone', function() {
+    MapService.deselectFeatureInLayer($scope.viewUser, 'People');
     $scope.viewUser = null;
   });
 

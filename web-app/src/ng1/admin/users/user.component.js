@@ -165,7 +165,7 @@ class AdminUserController {
   }
 
   gotoDevice(device) {
-    this.$state.go('admin.devices', { deviceId: device.id });
+    this.$state.go('admin.device', { deviceId: device.id });
   }
 
   pageLogin(url) {

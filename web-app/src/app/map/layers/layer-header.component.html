@@ -13,7 +13,7 @@
       color="primary" 
       [checked]="layer.selected" 
       (click)="$event.stopPropagation()"
-      (change)="radioChanged($event)">
+      (change)="radioChanged()">
     </mat-radio-button>
 
     <mat-label>{{ layer.name }}</mat-label>

@@ -67,7 +67,8 @@ export class LeafletComponent {
     const groupName = this.getGroup($event);
     const group = this.groups[groupName];
     $event.zIndex = group.offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
-    $event.layer.pane.style.zIndex = $event.zIndex;
+    const pane = this.map.getPanes()[$event.layer.pane];
+    pane.style.zIndex = $event.zIndex;
     group.layers.push($event);
   }
 
@@ -111,7 +112,8 @@ export class LeafletComponent {
   }
 
   opacityChanged(event: OpacityEvent): void {
-    event.layer.layer.pane.style.opacity = event.opacity;
+    const pane = this.map.getPanes()[event.layer.layer.pane];
+    pane.style.opacity = event.opacity;
   }
 
   zoom($event: ZoomEvent): void {
@@ -140,7 +142,8 @@ export class LeafletComponent {
 
     $event.layers.forEach((layer: any, index: number) => {
       layer.zIndex = offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1);
-      layer.layer.pane.style.zIndex = layer.zIndex;
+      const pane = this.map.getPanes()[layer.layer.pane];
+      pane.style.zIndex = layer.zIndex;
     });
   }
 

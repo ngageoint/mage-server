@@ -1,5 +1,5 @@
 <div class="search-control">
-  <button mat-mini-fab [color]="searchState === SearchState.ON ? 'primary' : 'basic'" matTooltip="Address / Place Name Search" matTooltipPosition="after" (click)="searchToggle($event)">
+  <button mat-mini-fab [color]="searchState === SearchState.ON ? 'primary' : 'basic'" matTooltip="Address / Place Name Search" matTooltipPosition="after" (click)="searchToggle()">
     <mat-icon color="primary" [ngClass]="{'active': searchState === SearchState.ON}">search</mat-icon>
   </button>
   <div [hidden]="searchState === SearchState.OFF">
