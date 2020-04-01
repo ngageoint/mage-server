@@ -283,6 +283,8 @@ exports.count = function(options, callback) {
     options = {};
   }
 
+  options = options || {};
+  var filter = options.filter || {};
 
   User.count({}, function(err, count) {
     callback(err, count);
