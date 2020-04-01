@@ -226,6 +226,8 @@ module.exports = function(app, security) {
       var filter = {};
       if (req.query.active === 'true' || req.query.active === 'false') {
         filter.active = req.query.active === 'true';
+      } else if (req.query.enabled === 'true' || req.query.enabled === 'false') {
+        filter.enabled = req.query.enabled === 'true';
       }
 
       new api.User().count({filter: filter}, function(err, count) {

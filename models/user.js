@@ -286,7 +286,7 @@ exports.count = function(options, callback) {
   options = options || {};
   var filter = options.filter || {};
 
-  User.count({}, function(err, count) {
+  User.count(filter, function(err, count) {
     callback(err, count);
   });
 };

@@ -15,6 +15,10 @@ class AdminUsersController {
     this.page = 0;
     this.itemsPerPage = 10;
     this.numPages = 0;
+
+    this.userStates = ['all', 'active', 'inactive', 'disabled'];
+    this.stateAndNumberOfPages = new Map();
+    this.pageByUsers = new Map();
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -25,19 +29,33 @@ class AdminUsersController {
   }
 
   $onInit() {
-    let filter = { active: true};
 
-    this.UserService.getUserCount(filter).then(result => {
-      if(result && result.data && result.data.count) {
-        this.numPages = parseInt(result.data.count / this.itemsPerPage);
-        if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
-           this.numPages++;
-        }
+    for(var i = 0; i < this.userStates.length; i++) {
+      let state = this.userStates[i];
+      let numPagesFilter = {};
+
+      if(state === 'active') {
+        numPagesFilter = {active: true};
+      } else if(state === 'inactive') {
+        numPagesFilter = {active: false};
+      } else if(state === 'disabled') {
+        numPagesFilter = {enabled: false}
       }
-      
-      this.UserService.getAllUsers({page: this.page}).then(users => {
-        this.users = users;
+
+      this.UserService.getUserCount(numPagesFilter).then(result => {
+        if(result && result.data && result.data.count) {
+          this.numPages = parseInt(result.data.count / this.itemsPerPage);
+          if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
+             this.numPages++;
+          }
+        }
+
+        this.stateAndNumberOfPages[state] = result.data.count;
       });
+    }
+
+    this.UserService.getAllUsers({page: this.page}).then(users => {
+      this.users = users;
     });
   }
 
