@@ -2,7 +2,7 @@
   position: sticky;
   display: flex;
   top: 0;
-  z-index: 1;
+  z-index: 10;
 }
 
 .observation-edit-toolbar__title {
@@ -24,6 +24,63 @@
 
 .observation-edit-content--scroll-lock {
   overflow-y: hidden;
+}
+
+.observation-edit-banner {
+  background: white;
+  border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  transition-property: max-height, opacity;
+  transition-duration: 250ms;
+}
+
+.observation-edit-banner.ng-enter,
+.observation-edit-banner.ng-leave.ng-leave-active {
+  max-height: 0;
+	opacity: 0;
+}
+
+.observation-edit-banner.ng-leave,
+.observation-edit-banner.ng-enter.ng-enter-active {
+  max-height: 500px;
+	opacity: 1;
+}
+
+.observation-edit-banner--content {
+  background: white;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.observation-edit-banner--content__text {
+  font-size: 1rem;
+  color: rgba($color: #000000, $alpha: .87);
+}
+
+.observation-edit-banner--content__text:first-letter {
+  text-transform: uppercase;
+}
+
+.observation-edit-banner--content mat-icon {
+  margin-left: 16px;
+  margin-right: 16px;
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: rgba(176,0,32, 0.87);
+}
+
+.observation-edit-banner--actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 8px;
+  margin-bottom: 8px;
 }
 
 .form-mask {
