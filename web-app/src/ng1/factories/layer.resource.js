@@ -47,7 +47,7 @@ function Layer($resource) {
           'Content-Type': 'application/json',
         },
         isArray: true,
-        url: '/api/layers/features',
+        url: '/api/events/:eventId/features',
       },
       count: {
         method: 'GET',

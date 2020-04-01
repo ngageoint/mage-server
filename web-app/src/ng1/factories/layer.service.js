@@ -1,8 +1,8 @@
 module.exports = LayerService;
 
-LayerService.$inject = ['$q', 'Layer', 'LocalStorageService'];
+LayerService.$inject = ['$q', 'Layer', 'FilterService', 'LocalStorageService'];
 
-function LayerService($q, Layer, LocalStorageService) {
+function LayerService($q, Layer, FilterService, LocalStorageService) {
   const service = {
     getLayersForEvent,
     uploadGeopackage,
@@ -23,7 +23,8 @@ function LayerService($q, Layer, LocalStorageService) {
 
   function getClosestFeaturesForLayers(layerIds, latlng, tile) {
     const deferred = $q.defer();
-    Layer.closestFeatureByLayer({ layerIds: layerIds, latlng: latlng, tile: tile }, function(features) {
+    const event = FilterService.getEvent();
+    Layer.closestFeatureByLayer({eventId: event.id}, { layerIds: layerIds, latlng: latlng, tile: tile }, function(features) {
       deferred.resolve(features);
     });
 

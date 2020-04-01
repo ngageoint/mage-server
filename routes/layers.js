@@ -221,9 +221,9 @@ module.exports = function(app, security) {
       });
   });
 
-  app.post('/api/layers/features',
-    // TODO Dan
-    // access.authorize('READ_LAYER_ALL'),
+  app.post('/api/events/:eventId/features',
+    passport.authenticate('bearer'),
+    validateEventAccess,
     async function(req, res, next) {
       const clientLayers = req.body.layerIds;
       const layerIdMap = {};
