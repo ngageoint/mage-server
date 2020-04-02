@@ -322,7 +322,7 @@ class AdminFormMapEditController {
       return field.name === this.form.variantField;
     });
 
-    if (!this.primaryField) {
+    if (!this.primaryField || this.primaryField.archived) {
       this.variants = [];
       this.form.primaryField = null;
       this.form.variantField = null;
@@ -365,9 +365,11 @@ class AdminFormMapEditController {
     this.unSavedChanges = true;
   }
 
-  symbologyFilter(otherFilterField) {
+  symbologyFilter(otherFilterField, currentFilterField) {
     return function(field) {
-      return !field.archived && field.type === 'dropdown' && (!otherFilterField || otherFilterField.name !== field.name);
+      return field.type === 'dropdown' && 
+        (!otherFilterField || otherFilterField.name !== field.name) && 
+        ((currentFilterField && field.name === currentFilterField.name) || !field.archived);
     };
   }
 

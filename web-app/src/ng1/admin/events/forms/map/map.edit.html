@@ -56,9 +56,14 @@
         <strong>Choose a field to be used for map symbology:</strong>
         <div class="row bottom-gap">
           <div class="col-md-2">
-            <select ng-model="$ctrl.form.primaryField" ng-change="$ctrl.primaryChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.variantField)" class="form-control">
-              <option value="">None</option>
-            </select>
+            <div class="field form-group">
+              <ui-select ng-model="$ctrl.form.primaryField" theme="bootstrap" on-select="$ctrl.primaryChanged()">
+                <ui-select-match allow-clear>{{$select.selected.title}}</ui-select-match>
+                <ui-select-choices ui-disable-choice="field.archived === true" repeat="field.name as field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.variantField, $ctrl.primaryField)">
+                  <div ng-bind-html="field.title | highlight: $select.search"></div>
+                </ui-select-choices>
+              </ui-select>
+            </div>
           </div>
         </div>
         <!-- TODO fix date/timestamp variants-->
@@ -98,9 +103,14 @@
           <strong>Choose a secondary field to be used for map symbology:</strong>
           <div class="row bottom-gap">
             <div class="col-md-2">
-              <select ng-model="$ctrl.form.variantField" ng-change="$ctrl.variantChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.primaryField)" class="form-control">
-                <option value="">None</option>
-              </select>
+              <div class="field form-group">
+                <ui-select ng-model="$ctrl.form.variantField" theme="bootstrap" on-select="$ctrl.variantChanged()">
+                  <ui-select-match allow-clear>{{$select.selected.title}}</ui-select-match>
+                  <ui-select-choices ui-disable-choice="field.archived === true" repeat="field.name as field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.primaryField, $ctrl.variantField)">
+                    <div ng-bind-html="field.title | highlight: $select.search"></div>
+                  </ui-select-choices>
+                </ui-select>
+              </div>
             </div>
           </div>
           <div ng-show="$ctrl.showNumberVariants" class="bottom-gap">
