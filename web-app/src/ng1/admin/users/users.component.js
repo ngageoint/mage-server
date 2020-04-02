@@ -17,7 +17,7 @@ class AdminUsersController {
     this.numPages = 0;
 
     this.userStates = ['all', 'active', 'inactive', 'disabled'];
-    this.stateAndNumberOfPages = new Map();
+    this.stateAndCount = new Map();
     this.pageByUsers = new Map();
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
@@ -44,19 +44,25 @@ class AdminUsersController {
 
       this.UserService.getUserCount(numPagesFilter).then(result => {
         if(result && result.data && result.data.count) {
+          this.stateAndCount[state] = result.data.count;
+
           this.numPages = parseInt(result.data.count / this.itemsPerPage);
           if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
              this.numPages++;
           }
+        } else {
+          this.stateAndCount[state] = 0;
         }
-
-        this.stateAndNumberOfPages[state] = result.data.count;
       });
     }
 
     this.UserService.getAllUsers({page: this.page}).then(users => {
       this.users = users;
     });
+  }
+
+  count(state) {
+    return this.stateAndCount[state];
   }
 
   _filterActive(user) {
@@ -66,10 +72,6 @@ class AdminUsersController {
     case 'inactive': return !user.active;
     case 'disabled': return !user.enabled;
     }
-  }
-
-  activeUsersCount(user) {
-    return user.active === true;
   }
 
   reset() {
