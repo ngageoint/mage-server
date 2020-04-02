@@ -319,8 +319,8 @@ exports.getUsers = function(options, callback) {
     query = query.populate(populate);
   }
 
-  let limit = Math.abs(options.itemsPerPage) || 10; 
-  let page = (Math.abs(options.page) || 1) - 1;
+  let limit = Math.abs(options.limit) || 10; 
+  let page = (Math.abs(options.start) || 1) - 1;
 
   query.limit(limit).skip(limit * page).exec(function(err, users) {
     callback(err, users);

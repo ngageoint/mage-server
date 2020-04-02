@@ -209,7 +209,17 @@ module.exports = function(app, security) {
         populate = req.query.populate.split(",");
       }
 
-      new api.User().getAll({filter: filter, populate: populate}, function (err, users) {
+      var limit = null;
+      if (req.query.limit) {
+        limit = req.query.limit;
+      }
+
+      var start = null;
+      if (req.query.start) {
+        start = req.query.start;
+      }
+
+      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start}, function (err, users) {
         if (err) return next(err);
 
         users = userTransformer.transform(users, {path: req.getRoot()});

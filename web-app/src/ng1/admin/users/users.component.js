@@ -72,25 +72,13 @@ class AdminUsersController {
       });
     }
 
-    this.UserService.getAllUsers({page: this.page}).then(users => {
+    this.UserService.getAllUsers({limit: this.itemsPerPage}).then(users => {
       this.users = users;
     });
   }
 
   count(state) {
     return this.stateAndData[state].userCount;
-  }
-
-  numPages(state) {
-    return this.stateAndData[state].numPages;
-  }
-
-  currentPage(state) {
-    return this.stateAndData[state].currentPage;
-  }
-
-  getUsers(state) {
-    return this.stateAndData[state].users;
   }
 
   _filterActive(user) {

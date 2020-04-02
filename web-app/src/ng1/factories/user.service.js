@@ -230,8 +230,16 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       deferredUsers = $q.defer();
 
       var parameters = {};
-      if (options && options.populate) {
-        parameters.populate = options.populate;
+      if (options) {
+        if(options.populate) {
+          parameters.populate = options.populate;
+        }
+        if(options.limit) {
+          parameters.limit = options.limit;
+        }
+        if(options.start) {
+          parameters.start = options.start;
+        }
       }
 
       $http.get('/api/users', {params: parameters})
