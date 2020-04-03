@@ -12,6 +12,15 @@ class AuthorizeController {
     this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
+  $onInit() {
+    this.showAuthorize = false;
+    this._UserService.authorize(this.strategy, this.user, false, { uid: this.uid }).success(data => {
+      this.onAuthorized();
+    }).error(() => {
+      this.showAuthorize = true;
+    });
+  }
+
   authorize() {
     this._UserService.authorize(this.strategy, this.user, false, {uid: this.uid}).success(data => {
       if (data.device.registered) {

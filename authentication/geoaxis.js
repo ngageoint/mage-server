@@ -1,6 +1,6 @@
-module.exports = function(app, passport, provisioning, strategyConfig) {
+module.exports = function (app, passport, provision, strategyConfig) {
 
-  var GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
+  const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
     , crypto = require('crypto')
     , User = require('../models/user')
     , Device = require('../models/device')
@@ -11,7 +11,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
 
   log.info('Configuring GeoAxis authentication');
 
-  let strategy = new GeoaxisStrategy({
+  const strategy = new GeoaxisStrategy({
     authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
     tokenURL: strategyConfig.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
     userProfileURL: strategyConfig.apiUrl + '/ms_oauth/resources/userprofile/me',
@@ -21,18 +21,18 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     passReqToCallback: true
   },
   function(req, accessToken, refreshToken, profile, done) {
-    let geoaxisUser = profile._json;
+    const geoaxisUser = profile._json;
     User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
       if (err) return done(err);
 
-      var email = geoaxisUser.email;
+      const email = geoaxisUser.email;
 
       if (!user) {
         // Create an account for the user
         Role.getRole('USER_ROLE', function(err, role) {
           if (err) return done(err);
 
-          var user = {
+          const user = {
             username: email,
             displayName: email.split("@")[0],
             email: email,
@@ -80,7 +80,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   }
 
   function authorizeUser(req, res, next) {
-    let token = req.param('access_token');
+    const token = req.param('access_token');
 
     if (req.user) {
       next();
@@ -93,7 +93,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
           return res.sendStatus(403);
         }
 
-        let geoaxisUser = profile._json;
+        const geoaxisUser = profile._json;
         User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
           if (err) return next(err);
 
@@ -108,19 +108,6 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     } else {
       return res.sendStatus(403);
     }
-  }
-
-  function authorizeDevice(req, res, next) {
-    provisioning.provision.check(provisioning.strategy, {uid: req.param('uid')}, function(err, device) {
-      if (err) return next(err);
-
-      if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        return res.sendStatus(403);
-      } else {
-        req.device = device;
-        next();
-      }
-    })(req, res, next);
   }
 
   app.get(
@@ -138,7 +125,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.post('/auth/geoaxis/devices',
     authorizeUser,
     function(req, res, next) {
-      var newDevice = {
+      const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
         registered: false,
@@ -166,13 +153,13 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.post(
     '/auth/geoaxis/authorize',
     authorizeUser,
-    authorizeDevice,
+    provision.check('geoaxis'),
     parseLoginMetadata,
     function(req, res, next) {
-      new api.User().login(req.user, req.device, req.loginOptions, function(err, token) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
         if (err) return next(err);
 
-        var api = Object.assign({}, config.api);
+        const api = Object.assign({}, config.api);
         api.authenticationStrategies['geoaxis'] = {
           url: api.authenticationStrategies['geoaxis'].url,
           type: api.authenticationStrategies['geoaxis'].type,
@@ -184,7 +171,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
 
         res.json({
           user: req.user,
-          device: req.device,
+          device: req.provisionedDevice,
           token: token.token,
           expirationDate: token.expirationDate ,
           api: api

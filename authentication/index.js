@@ -1,6 +1,6 @@
 module.exports = function(app, passport, provision, strategies) {
 
-  var BearerStrategy = require('passport-http-bearer').Strategy
+  const BearerStrategy = require('passport-http-bearer').Strategy
     , User = require('../models/user')
     , Token = require('../models/token');
 

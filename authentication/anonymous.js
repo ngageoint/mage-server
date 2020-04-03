@@ -1,6 +1,6 @@
 module.exports = function(passport) {
 
-  var AnonymousStrategy = require('passport-anonymous').Strategy;
+  const AnonymousStrategy = require('passport-anonymous').Strategy;
   passport.use(new AnonymousStrategy());
 
   return {

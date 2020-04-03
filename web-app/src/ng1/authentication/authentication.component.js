@@ -37,7 +37,7 @@ class AuthenticationController {
   }
 
   authorized() {
-    var disclaimer = this.api.disclaimer || {};
+    const disclaimer = this.api.disclaimer || {};
     if (!disclaimer.show) {
       this._authService.loginConfirmed();
       this._UserService.acceptDisclaimer();

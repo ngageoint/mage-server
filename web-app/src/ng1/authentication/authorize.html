@@ -1,4 +1,4 @@
-<form class="form" method="post" autocomplete="off" ng-submit="$ctrl.authorize()">
+<form ng-show="$ctrl.showAuthorize" class="form" method="post" autocomplete="off" ng-submit="$ctrl.authorize()">
   <h2>Enter your device ID to continue to MAGE</h2>
 
   <p class="top-gap">To access MAGE you will need to enter a device ID.  If you do not have a device ID please ask you MAGE administrator to provide you with one.</p>
@@ -22,15 +22,14 @@
     </div>
   </div>
   <div class="auth-button-container device-id-button-container">
-      <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Continue to MAGE</button>
+    <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Continue to MAGE</button>
   </div>
 
 </form>
 
 <div class="mdc-snackbar">
   <div class="mdc-snackbar__surface">
-    <div class="mdc-snackbar__label"
-          role="status">
+    <div class="mdc-snackbar__label" role="status">
       <h4>{{$ctrl.statusTitle}}</h4>
       {{$ctrl.statusMessage}}
     </div>

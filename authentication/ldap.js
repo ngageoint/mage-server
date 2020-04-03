@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provisioning, strategyConfig) {
+module.exports = function(app, passport, provision, strategyConfig) {
 
   const log = require('winston')
     , LdapStrategy = require('passport-ldapauth')
@@ -25,20 +25,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
 
     next();
   }
-
-  function authorizeDevice(req, res, next) {
-    provisioning.provision.check(provisioning.strategy, {uid: req.param('uid')}, function(err, device) {
-      if (err) return next(err);
-
-      if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        return res.sendStatus(403);
-      } else {
-        req.device = device;
-        next();
-      }
-    })(req, res, next);
-  }
-
+  
   const authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
     invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
@@ -71,7 +58,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
         Role.getRole('USER_ROLE', function(err, role) {
           if (err) return done(err);
 
-          var user = {
+          const user = {
             username: username,
             displayName: profile[strategyConfig.ldapDisplayNameField],
             email: profile[strategyConfig.ldapEmailField],
@@ -117,7 +104,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   );
 
   function authorizeUser(req, res, next) {
-    let token = req.param('access_token');
+    const token = req.param('access_token');
 
     if (req.user) {
       next();
@@ -135,7 +122,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.post('/auth/ldap/devices',
     authorizeUser,
     function(req, res, next) {
-      var newDevice = {
+      const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
         registered: false,
@@ -163,7 +150,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.post(
     '/auth/ldap/authorize',
     isAuthenticated,
-    authorizeDevice,
+    provision.check('ldap'),
     parseLoginMetadata,
     function(req, res, next) {
       new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
@@ -173,7 +160,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
           token: token.token,
           expirationDate: token.expirationDate,
           user: userTransformer.transform(req.user, {path: req.getRoot()}),
-          device: req.device,
+          device: req.provisionedDevice,
           api: config.api
         });
       });

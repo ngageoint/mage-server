@@ -1,6 +1,6 @@
-module.exports = function (app, passport, provisioning, googleStrategy) {
+module.exports = function (app, passport, provision, googleStrategy) {
 
-  var GoogleStrategy = require('passport-google-oauth20').Strategy
+  const GoogleStrategy = require('passport-google-oauth20').Strategy
     , User = require('../models/user')
     , Role = require('../models/role')
     , api = require('../api')
@@ -11,7 +11,7 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
 
   function parseLoginMetadata(req, res, next) {
 
-    var options = {};
+    const options = {};
     options.userAgent = req.headers['user-agent'];
     options.appVersion = req.param('appVersion');
 
@@ -25,19 +25,6 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
     }
 
     next();
-  }
-
-  function authorizeDevice(req, res, next) {
-    provisioning.provision.check(provisioning.strategy, { uid: req.param('uid') }, function (err, device) {
-      if (err) return next(err);
-
-      if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        return res.sendStatus(403);
-      } else {
-        req.device = device;
-        next();
-      }
-    })(req, res, next);
   }
 
   function authenticate(req, res, next) {
@@ -67,14 +54,14 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
         Role.getRole('USER_ROLE', function (err, role) {
           if (err) return done(err);
 
-          var email = null;
+          let email = null;
           profile.emails.forEach(function (e) {
             if (e.verified) {
               email = e.value;
             }
           });
 
-          var user = {
+          const user = {
             username: email,
             displayName: profile.name.givenName + ' ' + profile.name.familyName,
             email: email,
@@ -103,7 +90,7 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
   app.post(
     '/auth/google/authorize',
     isAuthenticated,
-    authorizeDevice,
+    provision.check('google'),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
@@ -113,7 +100,7 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
           token: token.token,
           expirationDate: token.expirationDate,
           user: userTransformer.transform(req.user, { path: req.getRoot() }),
-          device: req.device,
+          device: req.provisionedDevice,
           api: config.api
         });
       });
@@ -125,7 +112,7 @@ module.exports = function (app, passport, provisioning, googleStrategy) {
   app.get(
     '/auth/google/callback',
     authenticate,
-    function (req, res, next) {
+    function (req, res) {
       res.render('authentication', { host: req.getRoot(), success: true, login: { user: req.user } });
     }
   );
