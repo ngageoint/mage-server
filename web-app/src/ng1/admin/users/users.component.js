@@ -72,7 +72,7 @@ class AdminUsersController {
       });
     }
 
-    this.UserService.getAllUsers({limit: this.itemsPerPage}).then(users => {
+    this.UserService.getAllUsers({limit: this.itemsPerPage, forceRefresh: true}).then(users => {
       this.users = users;
     });
   }

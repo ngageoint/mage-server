@@ -219,8 +219,10 @@ module.exports = function(app, security) {
         start = req.query.start;
       }
 
-      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start}, function (err, users) {
+      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start}, function (err, users, pageInfo) {
         if (err) return next(err);
+
+        //TODO serialize pageInfo if not null
 
         users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);

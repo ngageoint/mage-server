@@ -65,6 +65,22 @@ var UserSchema = new Schema({
   }
 });
 
+class PageInfo {
+  constructor(users) {
+      this.links = {
+          base: '',
+          context: '',
+          next: '',
+          prev: '',
+          self: '' 
+      };
+      this.limit = 0;
+      this.users = users;
+      this.size = users.length;
+      this.start = 0;
+  }
+}
+
 UserSchema.method('validPassword', function(password, callback) {
   var user = this;
   if (user.authentication.type !== 'local') return callback(null, false);
@@ -319,11 +335,21 @@ exports.getUsers = function(options, callback) {
     query = query.populate(populate);
   }
 
+  var isPaging = options.limit != null && options.limit > 0;
   let limit = Math.abs(options.limit) || 10; 
   let page = (Math.abs(options.start) || 1) - 1;
 
+  //TODO If limit is passed, and page is not, then we need to do a count to determine 
+  //paging info
+
   query.limit(limit).skip(limit * page).exec(function(err, users) {
-    callback(err, users);
+
+    let pageInfo = null;
+    if(isPaging) {
+      pageInfo = new PageInfo(users);
+    }
+
+    callback(err, users, pageInfo);
   });
 };
 
