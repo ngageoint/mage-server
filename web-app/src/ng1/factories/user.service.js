@@ -302,8 +302,13 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
     var deferred = $q.defer();
 
-    getUserMap(options).then(function(userMap) {
-      deferred.resolve(_.values(userMap));
+    getUserMap(options).then(function(data) {
+      if(Object.prototype.toString.call(data) === '[object Array]'){
+        deferred.resolve(_.values(data));
+      } else{
+        deferred.resolve(data);
+      }
+     
     });
 
     return deferred.promise;
