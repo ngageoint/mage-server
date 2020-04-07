@@ -336,17 +336,37 @@ exports.getUsers = function(options, callback) {
   }
 
   var isPaging = options.limit != null && options.limit > 0;
-  let limit = Math.abs(options.limit) || 10; 
-  let page = (Math.abs(options.start) || 1) - 1;
+  var limit = Math.abs(options.limit) || 10; 
+  var page = (Math.abs(options.start) || 1) - 1;
 
   //TODO If limit is passed, and page is not, then we need to do a count to determine 
   //paging info
+  var count = 0;
 
   query.limit(limit).skip(limit * page).exec(function(err, users) {
 
     let pageInfo = null;
     if(isPaging) {
       pageInfo = new PageInfo(users);
+      pageInfo.start = page;
+      pageInfo.limit = limit;
+      
+      let estimatedNext = page + limit;
+      let next = 0;
+      if(estimatedNext > count) {
+        next = estimatedNext;
+      } else if (estimatedNext - count > 0){
+        //TODO verify this crap
+        next = estimatedNext - count;
+      }
+      
+      if(next > 0){
+        pageInfo.links.next = next;
+      }
+      
+      if(options.start != null && options.start > 0) {
+        pageInfo.links.prev = options.start - options.limit;
+      }
     }
 
     callback(err, users, pageInfo);

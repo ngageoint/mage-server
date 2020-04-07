@@ -222,10 +222,16 @@ module.exports = function(app, security) {
       new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start}, function (err, users, pageInfo) {
         if (err) return next(err);
 
-        //TODO serialize pageInfo if not null
+        let data = null;
 
-        users = userTransformer.transform(users, {path: req.getRoot()});
-        res.json(users);
+        if(pageInfo != null) {
+          data = pageInfo;
+          data.links.base = req.getRoot();
+        } else{
+          data = userTransformer.transform(users, {path: req.getRoot()});
+        }
+
+        res.json(data);
       });
     }
   );

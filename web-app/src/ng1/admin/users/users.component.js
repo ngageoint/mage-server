@@ -73,7 +73,7 @@ class AdminUsersController {
     }
 
     this.UserService.getAllUsers({limit: this.itemsPerPage, forceRefresh: true}).then(users => {
-      this.users = users;
+      this.users = users.users;
     });
   }
 

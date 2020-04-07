@@ -79,8 +79,8 @@ User.prototype.getAll = function(filter, callback) {
     filter = {};
   }
 
-  UserModel.getUsers(filter, function (err, users) {
-    callback(err, users);
+  UserModel.getUsers(filter, function (err, users, pageInfo) {
+    callback(err, users, pageInfo);
   });
 };
 
