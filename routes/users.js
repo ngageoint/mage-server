@@ -202,6 +202,8 @@ module.exports = function(app, security) {
       var filter = {};
       if (req.query.active === 'true' || req.query.active === 'false') {
         filter.active = req.query.active === 'true';
+      } else if (req.query.enabled === 'true' || req.query.enabled === 'false') {
+        filter.enabled = req.query.enabled === 'true';
       }
 
       var populate = null;
@@ -227,6 +229,7 @@ module.exports = function(app, security) {
         if(pageInfo != null) {
           data = pageInfo;
           data.links.base = req.getRoot();
+          data.users = userTransformer.transform(users, {path: req.getRoot()});
         } else{
           data = userTransformer.transform(users, {path: req.getRoot()});
         }

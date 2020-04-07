@@ -11,39 +11,30 @@ class AdminUsersController {
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
     this.search = '';
-    this.users = [];
     this.page = 0;
     this.itemsPerPage = 10;
     this.numPages = 0;
 
     this.stateAndData = new Map();
     this.stateAndData['all'] = {
-      filter: {},
+      filter: {limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
-      currentPage: 0,
-      numPages: 0,
-      users: []
+      pageInfo: {}
     };
     this.stateAndData['active'] = {
-      filter: {active: true},
+      filter: {active: true, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
-      currentPage: 0,
-      numPages: 0,
-      users: []
+      pageInfo: {}
     };
     this.stateAndData['inactive'] = {
-      filter: {active: false},
+      filter: {active: false, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
-      currentPage: 0,
-      numPages: 0,
-      users: []
+      pageInfo: {}
     };
     this.stateAndData['disabled'] = {
-      filter: {enabled: false},
+      filter: {enabled: false, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
-      currentPage: 0,
-      numPages: 0,
-      users: []
+      pageInfo: {}
     };
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
@@ -59,26 +50,24 @@ class AdminUsersController {
     for (const [key, value] of Object.entries(this.stateAndData)) {
 
       this.UserService.getUserCount(value.filter).then(result => {
-        
         if(result && result.data && result.data.count) {
           this.stateAndData[key].userCount = result.data.count;
-
-          let totalPages = parseInt(result.data.count / this.itemsPerPage);
-          if(result.data.count >= this.itemsPerPage && result.data.count % this.itemsPerPage !== 0) {
-            totalPages++;
-          }
-          this.stateAndData[key].numPages = totalPages;
         }
       });
-    }
 
-    this.UserService.getAllUsers({limit: this.itemsPerPage, forceRefresh: true}).then(pageInfo => {
-      this.users = pageInfo.users;
-    });
+      this.UserService.getAllUsers(value.filter).then(pageInfo => {
+        this.stateAndData[key].pageInfo = pageInfo;
+      });
+    }
+   
   }
 
   count(state) {
     return this.stateAndData[state].userCount;
+  }
+
+  users(state) {
+    return this.stateAndData[state].pageInfo.users;
   }
 
   _filterActive(user) {

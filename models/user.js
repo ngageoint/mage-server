@@ -320,9 +320,15 @@ exports.getUsers = function(options, callback) {
   if (filter.active === true) {
     conditions.active = true;
   }
-
-  if (filter.active === false) {
+  else if (filter.active === false) {
     conditions.active = false;
+  }
+  
+  if (filter.enabled === true) {
+    conditions.enabled = true;
+  }
+  else if (filter.enabled === false) {
+    conditions.enabled = false;
   }
 
   var populate = [];
@@ -339,9 +345,12 @@ exports.getUsers = function(options, callback) {
   var limit = Math.abs(options.limit) || 10; 
   var page = (Math.abs(options.start) || 1) - 1;
 
-  //TODO If limit is passed, and page is not, then we need to do a count to determine 
-  //paging info
   var count = 0;
+
+  if(isPaging && options.start == null) {
+    //TODO If limit is passed, and page is not, then we need to do a count to determine 
+    //paging info
+  }
 
   query.limit(limit).skip(limit * page).exec(function(err, users) {
 

@@ -222,12 +222,11 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return $http.get('/api/users/count', {params: options});
   }
 
-  var deferredUsers;
   function getUserMap(options) {
     options = options || {};
 
-    if (options.forceRefresh || !deferredUsers) {
-      deferredUsers = $q.defer();
+    if (options.forceRefresh) {
+      var deferredUsers = $q.defer();
 
       var parameters = {};
       if (options) {
@@ -240,6 +239,9 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
         if(options.start) {
           parameters.start = options.start;
         }
+
+        parameters.active = options.active;
+        parameters.enabled = options.enabled;
       }
 
       $http.get('/api/users', {params: parameters})
