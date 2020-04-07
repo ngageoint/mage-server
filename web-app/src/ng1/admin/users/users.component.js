@@ -17,22 +17,26 @@ class AdminUsersController {
 
     this.stateAndData = new Map();
     this.stateAndData['all'] = {
-      filter: {limit: this.itemsPerPage, forceRefresh: true},
+      countFilter: {},
+      userFilter: {limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['active'] = {
-      filter: {active: true, limit: this.itemsPerPage, forceRefresh: true},
+      countFilter: {active: true},
+      userFilter: {active: true, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['inactive'] = {
-      filter: {active: false, limit: this.itemsPerPage, forceRefresh: true},
+      countFilter: {active: false},
+      userFilter: {active: false, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['disabled'] = {
-      filter: {enabled: false, limit: this.itemsPerPage, forceRefresh: true},
+      countFilter: {enabled: false},
+      userFilter: {enabled: false, limit: this.itemsPerPage, forceRefresh: true},
       userCount: 0,
       pageInfo: {}
     };
@@ -49,13 +53,13 @@ class AdminUsersController {
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
 
-      this.UserService.getUserCount(value.filter).then(result => {
+      this.UserService.getUserCount(value.countFilter).then(result => {
         if(result && result.data && result.data.count) {
           this.stateAndData[key].userCount = result.data.count;
         }
       });
 
-      this.UserService.getAllUsers(value.filter).then(pageInfo => {
+      this.UserService.getAllUsers(value.userFilter).then(pageInfo => {
         this.stateAndData[key].pageInfo = pageInfo;
       });
     }
@@ -66,8 +70,30 @@ class AdminUsersController {
     return this.stateAndData[state].userCount;
   }
 
-  users(state) {
-    return this.stateAndData[state].pageInfo.users;
+  users() {
+    return this.stateAndData[this.filter].pageInfo.users;
+  }
+
+  hasNext() {
+    return this.stateAndData[this.filter].pageInfo.links.next != null && 
+    this.stateAndData[this.filter].pageInfo.links.next != "";
+  }
+
+  next() {
+    var filter = this.stateAndData[this.filter].userFilter;
+    filter.start = this.stateAndData[this.filter].pageInfo.links.next;
+    this.UserService.getAllUsers(filter).then(pageInfo => {
+      this.stateAndData[this.filter].pageInfo = pageInfo;
+    });
+  }
+
+  hasPrevious() {
+    return this.stateAndData[this.filter].pageInfo.links.prev != null && 
+    this.stateAndData[this.filter].pageInfo.links.prev != "";
+  }
+
+  previous() {
+
   }
 
   _filterActive(user) {

@@ -343,13 +343,15 @@ exports.getUsers = function(options, callback) {
 
   var isPaging = options.limit != null && options.limit > 0;
   var limit = Math.abs(options.limit) || 10; 
-  var page = (Math.abs(options.start) || 1) - 1;
+  var start = (Math.abs(options.start) || 0);
 
-  var count = 0;
+  var page = Math.ceil(start / limit);
+  var count = 13;
 
   if(isPaging && options.start == null) {
     //TODO If limit is passed, and page is not, then we need to do a count to determine 
     //paging info
+    count = 13;
   }
 
   query.limit(limit).skip(limit * page).exec(function(err, users) {
@@ -357,24 +359,17 @@ exports.getUsers = function(options, callback) {
     let pageInfo = null;
     if(isPaging) {
       pageInfo = new PageInfo(users);
-      pageInfo.start = page;
+      pageInfo.start = start;
       pageInfo.limit = limit;
       
-      let estimatedNext = page + limit;
-      let next = 0;
-      if(estimatedNext > count) {
-        next = estimatedNext;
-      } else if (estimatedNext - count > 0){
-        //TODO verify this crap
-        next = estimatedNext - count;
-      }
+      let estimatedNext = start + limit;
+
+      if(estimatedNext < count) {
+        pageInfo.links.next = estimatedNext;
+      } 
       
-      if(next > 0){
-        pageInfo.links.next = next;
-      }
-      
-      if(options.start != null && options.start > 0) {
-        pageInfo.links.prev = options.start - options.limit;
+      if(start > 0) {
+        pageInfo.links.prev = Math.abs(options.start - options.limit);
       }
     }
 

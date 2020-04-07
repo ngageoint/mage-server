@@ -47,7 +47,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users($ctrl.filter) | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users() | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
                 <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                   <div class="col-md-8">
@@ -69,11 +69,11 @@
           <div class="row">
             <div class="col-md-12">
               <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.page == 0}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                 </li>
-                <li ng-class="{'disabled': $ctrl.page >= ($ctrl.numPages) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.numPages) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                 </li>
               </ul>
             </div>
