@@ -342,40 +342,35 @@ exports.getUsers = function(options, callback) {
   }
 
   var isPaging = options.limit != null && options.limit > 0;
-  var limit = Math.abs(options.limit) || 10; 
-  var start = (Math.abs(options.start) || 0);
-
-  var page = Math.ceil(start / limit);
-  var count = 13;
-
-  if(isPaging && options.start == null) {
-    //TODO If limit is passed, and page is not, then we need to do a count to determine 
-    //paging info
-    count = 13;
+  if(isPaging) {
+    User.count(filter, function(err, count) {
+      var limit = Math.abs(options.limit) || 10; 
+      var start = (Math.abs(options.start) || 0);
+      var page = Math.ceil(start / limit);
+    
+      query.limit(limit).skip(limit * page).exec(function(err, users) {
+        let pageInfo = new PageInfo(users);
+        pageInfo.start = start;
+        pageInfo.limit = limit;
+          
+        let estimatedNext = start + limit;
+    
+        if(estimatedNext < count) {
+          pageInfo.links.next = estimatedNext;
+        } 
+          
+        if(start > 0) {
+          pageInfo.links.prev = Math.abs(options.start - options.limit);
+        }
+    
+        callback(err, users, pageInfo);
+      });
+    });
+  } else {
+    query.exec(function(err, users) {
+      callback(err, users, null);
+    });
   }
-
-  //TODO handle no paging
-  query.limit(limit).skip(limit * page).exec(function(err, users) {
-
-    let pageInfo = null;
-    if(isPaging) {
-      pageInfo = new PageInfo(users);
-      pageInfo.start = start;
-      pageInfo.limit = limit;
-      
-      let estimatedNext = start + limit;
-
-      if(estimatedNext < count) {
-        pageInfo.links.next = estimatedNext;
-      } 
-      
-      if(start > 0) {
-        pageInfo.links.prev = Math.abs(options.start - options.limit);
-      }
-    }
-
-    callback(err, users, pageInfo);
-  });
 };
 
 exports.createUser = async function(user, callback) {
