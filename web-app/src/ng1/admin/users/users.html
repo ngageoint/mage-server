@@ -69,10 +69,10 @@
           <div class="row">
             <div class="col-md-12">
               <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.hasPrevious() === false}">
+                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
                   <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                 </li>
-                <li ng-class="{'disabled': $ctrl.hasNext() === false}">
+                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
                   <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                 </li>
               </ul>

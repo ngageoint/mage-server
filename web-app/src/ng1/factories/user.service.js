@@ -222,36 +222,21 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return $http.get('/api/users/count', {params: options});
   }
 
+  var deferredUsers;
   function getUserMap(options) {
     options = options || {};
 
-    if (options.forceRefresh) {
-      var deferredUsers = $q.defer();
+    if (options.forceRefresh || !deferredUsers) {
+      deferredUsers = $q.defer();
 
       var parameters = {};
-      if (options) {
-        if(options.populate) {
-          parameters.populate = options.populate;
-        }
-        if(options.limit) {
-          parameters.limit = options.limit;
-        }
-        if(options.start) {
-          parameters.start = options.start;
-        }
-
-        parameters.active = options.active;
-        parameters.enabled = options.enabled;
+      if (options && options.populate) {
+        parameters.populate = options.populate;
       }
 
       $http.get('/api/users', {params: parameters})
-        .success(function(data) {
-          if(Object.prototype.toString.call(data) === '[object Array]'){
-            deferredUsers.resolve(_.indexBy(data, 'id'));
-          }else{
-            deferredUsers.resolve(data);
-          }
-          
+        .success(function(users) {
+          deferredUsers.resolve(_.indexBy(users, 'id'));
         });
     }
 
@@ -301,19 +286,34 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
   function getAllUsers(options) {
     options = options || {};
+    var deferredUsers = $q.defer();
 
-    var deferred = $q.defer();
-
-    getUserMap(options).then(function(data) {
-      if(Object.prototype.toString.call(data) === '[object Array]'){
-        deferred.resolve(_.values(data));
-      } else{
-        deferred.resolve(data);
+    var parameters = {};
+    if (options) {
+      if(options.populate) {          
+        parameters.populate = options.populate;
       }
-     
-    });
+      if(options.limit) {
+        parameters.limit = options.limit;
+      }
+      if(options.start) {
+        parameters.start = options.start;
+      }
 
-    return deferred.promise;
+      parameters.active = options.active;
+      parameters.enabled = options.enabled;
+    }
+
+    $http.get('/api/users', {params: parameters})
+      .success(function(data) {
+        if(Object.prototype.toString.call(data) === '[object Array]'){
+          deferredUsers.resolve(_.indexBy(data, 'id'));
+        }else{
+          deferredUsers.resolve(data);
+        }
+      });
+
+    return deferredUsers.promise;
   }
 
   function createUser(user, success, error, progress) {

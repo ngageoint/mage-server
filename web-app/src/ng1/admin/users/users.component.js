@@ -11,32 +11,30 @@ class AdminUsersController {
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
     this.search = '';
-    this.page = 0;
     this.itemsPerPage = 10;
-    this.numPages = 0;
 
     this.stateAndData = new Map();
     this.stateAndData['all'] = {
       countFilter: {},
-      userFilter: {limit: this.itemsPerPage, forceRefresh: true},
+      userFilter: {limit: this.itemsPerPage},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['active'] = {
       countFilter: {active: true},
-      userFilter: {active: true, limit: this.itemsPerPage, forceRefresh: true},
+      userFilter: {active: true, limit: this.itemsPerPage},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['inactive'] = {
       countFilter: {active: false},
-      userFilter: {active: false, limit: this.itemsPerPage, forceRefresh: true},
+      userFilter: {active: false, limit: this.itemsPerPage},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['disabled'] = {
       countFilter: {enabled: false},
-      userFilter: {enabled: false, limit: this.itemsPerPage, forceRefresh: true},
+      userFilter: {enabled: false, limit: this.itemsPerPage},
       userCount: 0,
       pageInfo: {}
     };
@@ -75,8 +73,14 @@ class AdminUsersController {
   }
 
   hasNext() {
-    return this.stateAndData[this.filter].pageInfo.links.next != null && 
-    this.stateAndData[this.filter].pageInfo.links.next !== "";
+    var status = false;
+
+    if(this.stateAndData[this.filter].pageInfo && this.stateAndData[this.filter].pageInfo.links) {
+      status = this.stateAndData[this.filter].pageInfo.links.next != null && 
+      this.stateAndData[this.filter].pageInfo.links.next !== "";
+    }
+
+    return status;
   }
 
   next() {
@@ -84,8 +88,14 @@ class AdminUsersController {
   }
 
   hasPrevious() {
-    return this.stateAndData[this.filter].pageInfo.links.prev != null && 
-    this.stateAndData[this.filter].pageInfo.links.prev !== "";
+    var status = false;
+
+    if(this.stateAndData[this.filter].pageInfo && this.stateAndData[this.filter].pageInfo.links) {
+      status = this.stateAndData[this.filter].pageInfo.links.prev != null && 
+      this.stateAndData[this.filter].pageInfo.links.prev !== "";
+    }
+
+    return status;
   }
 
   previous() {
