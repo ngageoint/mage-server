@@ -354,6 +354,7 @@ exports.getUsers = function(options, callback) {
     count = 13;
   }
 
+  //TODO handle no paging
   query.limit(limit).skip(limit * page).exec(function(err, users) {
 
     let pageInfo = null;

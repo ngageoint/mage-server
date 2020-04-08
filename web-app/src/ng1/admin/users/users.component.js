@@ -76,24 +76,28 @@ class AdminUsersController {
 
   hasNext() {
     return this.stateAndData[this.filter].pageInfo.links.next != null && 
-    this.stateAndData[this.filter].pageInfo.links.next != "";
+    this.stateAndData[this.filter].pageInfo.links.next !== "";
   }
 
   next() {
-    var filter = this.stateAndData[this.filter].userFilter;
-    filter.start = this.stateAndData[this.filter].pageInfo.links.next;
-    this.UserService.getAllUsers(filter).then(pageInfo => {
-      this.stateAndData[this.filter].pageInfo = pageInfo;
-    });
+    this.move(this.stateAndData[this.filter].pageInfo.links.next);
   }
 
   hasPrevious() {
     return this.stateAndData[this.filter].pageInfo.links.prev != null && 
-    this.stateAndData[this.filter].pageInfo.links.prev != "";
+    this.stateAndData[this.filter].pageInfo.links.prev !== "";
   }
 
   previous() {
+    this.move(this.stateAndData[this.filter].pageInfo.links.prev);
+  }
 
+  move(start) {
+    var filter = this.stateAndData[this.filter].userFilter;
+    filter.start = start;
+    this.UserService.getAllUsers(filter).then(pageInfo => {
+      this.stateAndData[this.filter].pageInfo = pageInfo;
+    });
   }
 
   _filterActive(user) {
