@@ -8,18 +8,20 @@ class AdminController {
     this.UserService = UserService;
     this.DeviceService = DeviceService;
 
+    this.inactiveUsers = {
+      length: 0
+    };
+
     this.setState();
   }
 
   $onInit() {
     this.currentAdminPanel = this.$stateParams.adminPanel || "";
 
-    this.UserService.getAllUsers().then(users => {
-      this.users = users.data || users;
-  
-      this.inactiveUsers = _.filter(this.users, user => {
-        return !user.active;
-      });
+    this.UserService.getUserCount({active: false}).then(result => {
+      if(result && result.data && result.data.count) {
+        this.inactiveUsers.length = result.data.count;
+      }
     });
 
     this.DeviceService.getAllDevices().then(devices => {
@@ -43,9 +45,7 @@ class AdminController {
   }
 
   userActivated($event) {
-    this.inactiveUsers = _.filter(this.inactiveUsers, inactiveUser => {
-      return inactiveUser.id !== $event.user.id;
-    });
+    this.inactiveUsers.length = this.inactiveUsers.length - 1;
   }
 
   deviceRegistered($event) {
