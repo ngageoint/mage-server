@@ -166,7 +166,12 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.saved = true;
+      var users = _.reject(this.stateAndData['inactive'].pageInfo.users, u => { return u.id === user.id; });
+      this.stateAndData['inactive'].pageInfo.users = users;
+      this.stateAndData['inactive'].userCount = this.stateAndData['inactive'].userCount -1;
+
+      this.stateAndData['active'].pageInfo.users.push(user);
+      this.stateAndData['active'].userCount = this.stateAndData['active'].userCount + 1;
 
       this.onUserActivated({
         $event: {
@@ -184,7 +189,11 @@ class AdminUsersController {
     $event.stopPropagation();
 
     user.enabled = true;
-    this.UserService.updateUser(user.id, user, () => {});
+    this.UserService.updateUser(user.id, user, () => {
+      var users = _.reject(this.stateAndData['disabled'].pageInfo.users, u => { return u.id === user.id; });
+      this.stateAndData['disabled'].pageInfo.users = users;
+      this.stateAndData['disabled'].userCount = this.stateAndData['disabled'].userCount -1;
+    });
   }
 }
 
