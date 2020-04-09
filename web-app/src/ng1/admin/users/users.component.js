@@ -155,8 +155,9 @@ class AdminUsersController {
     });
 
     modalInstance.result.then(user => {
-      this.user = null;
-      this.users = _.reject(this.users, u => { return u.id === user.id; });
+      var users = _.reject(this.stateAndData[this.filter].pageInfo.users, u => { return u.id === user.id; });
+      this.stateAndData[this.filter].pageInfo.users = users;
+      this.stateAndData[this.filter].userCount = this.stateAndData[this.filter].userCount -1;
     });
   }
 
