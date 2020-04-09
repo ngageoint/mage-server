@@ -21,7 +21,7 @@ class FormFeedController {
       checkbox: this.createCheckbox,
       numberfield: this.createNumberField,
       date: this.createDateField,
-      text: this.createTextField,
+      textfield: this.createTextField,
       textarea: this.createTextAreaField,
       password: this.createPasswordField,
       email: this.createEmailField,
@@ -63,7 +63,7 @@ class FormFeedController {
 
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
-        var modalInstance = this.$uibModal.open({
+        const modalInstance = this.$uibModal.open({
           component: 'adminEventFormEditUnsaved'
         });
   
@@ -77,6 +77,12 @@ class FormFeedController {
 
       return true;
     });
+  }
+
+  fieldFilter(feedField) {
+    return function (field) {
+      return (feedField && field.name === feedField) || !field.archived;
+    };
   }
 
   onFieldChanged() {
@@ -133,7 +139,7 @@ class FormFeedController {
   }
 
   createForm(formId) {
-    var form = {
+    const form = {
       formId: formId
     };
 
@@ -145,8 +151,8 @@ class FormFeedController {
   }
 
   createField(form, field) {
-    var createField = this.fieldFactory[field.type] || this.fieldFactory.createTextField;
-    createField(form, field);
+    const factory = this.fieldFactory[field.type] || this.fieldFactory.createTextField;
+    if (factory) factory(form, field);
   }
 
   createGeometryField(form, field) {

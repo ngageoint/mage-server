@@ -87,10 +87,13 @@ exports.getLogins = function(options, callback) {
 };
 
 exports.createLogin = function(user, device, callback) {
-  var create = {
-    userId: user._id,
-    deviceId: device._id
-  };
+  const create = {
+    userId: user._id
+  }
+
+  if (device) {
+    create.deviceId = device._id
+  }
 
   Login.create(create, function(err, login) {
     if (err) return callback(err);

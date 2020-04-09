@@ -11,7 +11,7 @@ const express = require("express")
   , env = require('./environment/env')
   , yaml = require('yaml');
 
-var app = express();
+const app = express();
 app.use(function(req, res, next) {
   req.getRoot = function() {
     return req.protocol + "://" + req.get('host');
@@ -77,20 +77,20 @@ app.use('/private',
   express.static(path.join(__dirname, 'private')));
 
 // Configure authentication
-var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
-var authentication = require('./authentication')(app, passport, provisioning, config.api.authenticationStrategies);
+const authentication = require('./authentication')(app, passport, provision, config.api.authenticationStrategies);
 
 // Configure routes
-require('./routes')(app, {authentication: authentication, provisioning: provisioning});
+require('./routes')(app, { authentication: authentication });
 
-app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use(function(err, req, res, next) { // Express requires a 4 parameter function callback, dont' remove unused next parameter
   if (process.env.NODE_ENV !== 'test') {
     log.error(err.message);
     log.error(err.stack);
   }
 
-  var status = err.status || 500;
-  var msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;
+  const status = err.status || 500;
+  let msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;
   if (err.name === 'ValidationError') {
     msg = {
       message: err.message,

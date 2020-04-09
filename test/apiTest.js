@@ -51,7 +51,6 @@ describe("api route tests", function() {
         var config = res.body;
         config.should.have.property('version');
         config.should.have.property('authenticationStrategies');
-        config.should.have.property('provision');
         config.should.have.property('disclaimer');
       })
       .end(done);

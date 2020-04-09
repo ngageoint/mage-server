@@ -1,5 +1,4 @@
 const mongoose = require('mongoose'),
-  waitForMongooseConnection = require('./utilities/waitForMongooseConnection'),
   fs = require('fs-extra'),
   environment = require('./environment/env'),
   log = require('./logger');
@@ -38,7 +37,7 @@ require('./migrate').runDatabaseMigrations()
   .then(() => {
     log.info('database initialized; loading plugins ...');
     
-    var plugins = require('./plugins');
+    const plugins = require('./plugins');
     plugins.initialize(app, function(err) {
       if (err) {
         throw err;

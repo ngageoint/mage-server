@@ -1,5 +1,15 @@
-function Strategy() {
+function Strategy(options, verify) {
+  if (typeof options === 'function') {
+    verify = options;
+    options = {};
+  }
+
+  if (!verify) throw new Error('uid provisioning strategy requires a verify function');
+
+  this.uidField = options.uidField || 'uid';
+
   this.name = 'none';
+  this.verify = verify;
 }
 
 Strategy.prototype.check = function(req, options, done) {
@@ -8,7 +18,9 @@ Strategy.prototype.check = function(req, options, done) {
     options = {};
   }
 
-  done(null, 'none');
+  const uid = options.uid || req.param(this.uidField);
+
+  this.verify(req, uid, done);
 };
 
 /**

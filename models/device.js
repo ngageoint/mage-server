@@ -1,13 +1,12 @@
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , async = require('async')
   , Observation = require('./observation')
   , User = require('./user')
   , Token = require('./token')
-  , Setting = require('../models/setting')
   , log = require('winston');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 function toLowerCase(field) {
   return field.toLowerCase();
@@ -15,7 +14,7 @@ function toLowerCase(field) {
 
 // Collection to hold users
 // TODO cascade delete from userId when user is deleted.
-var DeviceSchema = new Schema({
+const DeviceSchema = new Schema({
   uid: { type: String, required: true, unique: true, set: toLowerCase },
   description: { type: String, required: false },
   registered: { type: Boolean, required: true, default: false },
@@ -47,7 +46,7 @@ DeviceSchema.pre('findOneAndUpdate', function(next) {
 });
 
 DeviceSchema.pre('remove', function(next) {
-  var device = this;
+  const device = this;
 
   async.parallel({
     token: function(done) {
@@ -108,7 +107,7 @@ exports.getDeviceByUid = function(uid, { expand = {} } = {}) {
 };
 
 exports.getDevices = function({expand = {}, filter = {}} = {}) {
-  var condition = {};
+  const condition = {};
 
   if (filter.registered === true) {
     condition.registered = true;
@@ -140,31 +139,15 @@ exports.createDevice = async function(device) {
   const update = {
     name: device.name,
     description: device.description,
+    registered: device.registered,
     userId: device.userId,
     userAgent: device.userAgent,
     appVersion: device.appVersion
   };
 
-  const user = await User.getUserById(device.userId);
-  const authenticationType = user.authentication.type;
-
-  if (device.registered) {
-    update.registered = device.registered;
-  } else {
-    const securitySettings = await Setting.getSetting('security');
-    if (securitySettings && securitySettings.settings) {
-      const authSettings = securitySettings.settings[authenticationType] || {};
-      const devicesReqAdmin = authSettings.devicesReqAdmin || {};
-      const autoRegister = devicesReqAdmin.enabled === false;
-      if (autoRegister) {
-        log.info(`auto-register device ${device.uid} for auth type ${authenticationType}`)
-      }
-      update.registered = autoRegister;
-    }
-  }
   log.info(`creating new device ${device.uid} for user ${device.userId}`);
-  return await Device.findOneAndUpdate({ uid: device.uid }, update,
-    { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true });
+  const options = { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true };
+  return await Device.findOneAndUpdate({ uid: device.uid }, update, options);
 };
 
 exports.updateDevice = async function(id, update) {

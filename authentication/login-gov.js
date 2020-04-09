@@ -1,6 +1,6 @@
-module.exports = function(app, passport, provisioning) {
+module.exports = function(app, passport, provision) {
 
-  var fs = require('fs')
+  const fs = require('fs')
     , crypto = require('crypto')
     , pem2jwk = require('pem-jwk').pem2jwk
     , jose = require('node-jose')
@@ -15,13 +15,13 @@ module.exports = function(app, passport, provisioning) {
 
   Issuer.useRequest();
 
-  var strategyConfig = config.api.authenticationStrategies['login-gov'];
+  const strategyConfig = config.api.authenticationStrategies['login-gov'];
   log.info('Configuring login.gov authentication', strategyConfig);
-  let loginGov = {};
+  const loginGov = {};
 
-  var key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
-  var jwk = pem2jwk(key);
-  var keys = [jwk];
+  const key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
+  const jwk = pem2jwk(key);
+  const keys = [jwk];
 
   function getParams() {
     return {
@@ -35,7 +35,7 @@ module.exports = function(app, passport, provisioning) {
     };
   }
 
-  var client;
+  let client;
   Promise.all([
     jose.JWK.asKeyStore(keys),
     Issuer.discover(strategyConfig.url)
@@ -50,7 +50,7 @@ module.exports = function(app, passport, provisioning) {
 
     client.CLOCK_TOLERANCE = 10;
 
-    var params = getParams();
+    const params = getParams();
     passport.use('oidc-loa-1', new Strategy({client: client, params: params, passReqToCallback: true}, function(req, tokenset, userinfo, done) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
@@ -58,14 +58,14 @@ module.exports = function(app, passport, provisioning) {
       User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
         if (err) return done(err);
 
-        var email = userinfo.email;
+        const email = userinfo.email;
 
         if (!user) {
           // Create an account for the user
           Role.getRole('USER_ROLE', function(err, role) {
             if (err) return done(err);
 
-            var user = {
+            const user = {
               username: email,
               displayName: email.split("@")[0],
               email: email,
@@ -95,7 +95,7 @@ module.exports = function(app, passport, provisioning) {
   });
 
   function parseLoginMetadata(req, res, next) {
-    var options = {};
+    const options = {};
     options.userAgent = req.headers['user-agent'];
     options.appVersion = req.param('appVersion');
 
@@ -113,7 +113,7 @@ module.exports = function(app, passport, provisioning) {
   }
 
   function authorizeUser(req, res, next) {
-    var token = req.param('access_token');
+    const token = req.param('access_token');
 
     if (req.user) {
       // We have a session, user has already authenticated
@@ -144,19 +144,6 @@ module.exports = function(app, passport, provisioning) {
     }
   }
 
-  function authorizeDevice(req, res, next) {
-    provisioning.provision.check(provisioning.strategy, {uid: req.param('uid')}, function(err, device) {
-      if (err) return next(err);
-
-      if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        return res.sendStatus(403);
-      } else {
-        req.device = device;
-        next();
-      }
-    })(req, res, next);
-  }
-
   app.get(
     '/auth/login-gov/signin',
     function(req, res, next) {
@@ -172,7 +159,7 @@ module.exports = function(app, passport, provisioning) {
   app.post('/auth/login-gov/devices',
     authorizeUser,
     function(req, res, next) {
-      var newDevice = {
+      const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
         registered: false,
@@ -200,13 +187,13 @@ module.exports = function(app, passport, provisioning) {
   app.post(
     '/auth/login-gov/authorize',
     authorizeUser,
-    authorizeDevice,
+    provision.check('login-gov'),
     parseLoginMetadata,
     function(req, res, next) {
-      new api.User().login(req.user, req.device, req.loginOptions, function(err, token) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
         if (err) return next(err);
 
-        var api = Object.assign({}, config.api);
+        const api = Object.assign({}, config.api);
         api.authenticationStrategies['login-gov'] = {
           url: api.authenticationStrategies['login-gov'].url,
           type: api.authenticationStrategies['login-gov'].type,
@@ -218,7 +205,7 @@ module.exports = function(app, passport, provisioning) {
 
         res.json({
           user: req.user,
-          device: req.device,
+          device: req.provisionedDevice,
           token: token.token,
           expirationDate: token.expirationDate ,
           api: api

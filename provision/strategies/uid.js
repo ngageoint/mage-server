@@ -17,8 +17,7 @@ Strategy.prototype.check = function(req, options, done) {
     options = {};
   }
 
-  var uid = options.uid || req.param(this.uidField);
-
+  const uid = options.uid || req.param(this.uidField);
   if (!uid) {
     return done(new Error(options.badRequestMessage || 'Missing uid'));
   }

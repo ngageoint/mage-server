@@ -4,8 +4,7 @@ const request = require('supertest')
   , mongoose = require('mongoose')
   , app = require('../../express')
   , createToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , Setting = require('../../models/setting');
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
@@ -223,16 +222,17 @@ describe("device create tests", function() {
       .end(done);
   });
 
-  describe('auto-registration', function() {
-
-    afterEach(function() {
-      sinon.restore();
+  it('saves unregistered device', async function () {
+    const unregisteredDevice = new DeviceModel({
+      uid: 'test',
+      description: 'Some description',
+      userId: userId.toHexString(),
+      registered: false
     });
 
-    const userId = mongoose.Types.ObjectId();
-
     sinon.mock(UserOperations)
-      .expects('getUserById').withArgs(userId.toHexString())
+      .expects('getUserById')
+      .withArgs(userId.toHexString())
       .resolves(new UserModel({
         _id: userId,
         authentication: {
@@ -240,67 +240,46 @@ describe("device create tests", function() {
         }
       }));
 
-    const reqDevice = {
-      uid: '12345',
-      description: 'Some description',
-      userId: userId.toHexString()
-    };
+    const mockDeviceModel = sinon.mock(DeviceModel);
+    mockDeviceModel
+      .expects('findOneAndUpdate')
+      .withArgs({ uid: unregisteredDevice.uid }, sinon.match.hasNested('registered', false))
+      .resolves(unregisteredDevice);
 
-    const unregisteredDevice = new DeviceModel({
-      ...reqDevice,
-      _id: mongoose.Types.ObjectId(),
-      registered: false
-    })
+    const device = await DeviceOperations.createDevice(unregisteredDevice);
+    chai.assert(device.registered === false, 'Settings should auto-register device');
+  });
+
+  it('saves registered device', async function () {
+    const registeredDevice = new DeviceModel({
+      uid: 'test',
+      description: 'Some description',
+      userId: userId.toHexString(),
+      registered: true
+    });
+
+    sinon.mock(UserOperations)
+      .expects('getUserById')
+      .withArgs(userId.toHexString())
+      .resolves(new UserModel({
+        _id: userId,
+        authentication: {
+          type: 'local'
+        }
+      }));
 
     const mockDeviceModel = sinon.mock(DeviceModel);
     mockDeviceModel
-      .expects('findOneAndUpdate').withArgs({ uid: reqDevice.uid }, sinon.match.hasNested('registered', false))
-      .resolves(unregisteredDevice);
+      .expects('findOneAndUpdate')
+      // .withArgs({ uid: registeredDevice.uid }, sinon.match.hasNested('registered', true))
+      .resolves(registeredDevice);
 
-    sinon.mock(DeviceOperations).expects('createDevice').resolves(mockDeviceModel);
-
-    it('auto-registers a device if the security settings allow', async function() {
-      sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        _id: mongoose.Types.ObjectId(),
-        type: 'security',
-        settings: { 
-          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: false } } }
-      });
-
-      DeviceOperations.createDevice(mockDeviceModel)
-            .then(device => {chai.assert(device.registered == true, 'Settings should auto-register device');})
-            .catch(err => {chai.assert(false, 'Error creating device');});
-    });
-
-    it('does not auto-register a device if the security settings do not allow', async function() {
-      sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        _id: mongoose.Types.ObjectId(),
-        type: 'security',
-        settings: { 
-          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true } } }
-      });
-
-      DeviceOperations.createDevice(mockDeviceModel)
-            .then(device => {chai.assert(device.registered == false, 'Settings should NOT auto-register device');})
-            .catch(err => {chai.assert(false, 'Error creating device');});
-    });
-
-    it('does not auto-register a device if the security settings do not exist', async function() {
-      sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        _id: mongoose.Types.ObjectId(),
-        type: 'security',
-        settings: {  }
-      });
-
-      DeviceOperations.createDevice(mockDeviceModel)
-            .then(device => {chai.assert(device.registered == false, 'Settings do not exist, and should NOT auto-register device');})
-            .catch(err => {chai.assert(false, 'Error creating device');});
-    });
+    const device = await DeviceOperations.createDevice(new DeviceModel({
+      uid: 'test',
+      description: 'Some description',
+      userId: userId.toHexString(),
+      registered: false
+    }));
+    chai.assert(device.registered === true, 'Settings should auto-register device');
   });
 });

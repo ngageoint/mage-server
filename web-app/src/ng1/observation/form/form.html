@@ -1,5 +1,5 @@
 <div class="feed-card-content">
-  <mat-toolbar color="primary" ng-class="'observation-edit-toolbar observation-edit-toolbar__title'">
+  <mat-toolbar color="primary" ng-class="'observation-edit-toolbar observation-edit-toolbar__title mat-elevation-z4'">
     <mat-button mat-icon-button ng-click="$ctrl.cancelEdit()"><mat-icon>close</mat-icon></mat-button>
     <span ng-if="!$ctrl.isNewObservation" class="observation-edit-toolbar__title" >Edit Observation</span>
     <span ng-if="$ctrl.isNewObservation" class="observation-edit-toolbar__title">Create Observation</span>
@@ -7,13 +7,19 @@
     <mat-spinner ng-if="$ctrl.saving" diameter="20" ng-class="'observation-edit-toolbar__progress'"></mat-spinner>
     <mat-button ng-click="$ctrl.save()" ng-disabled="observationForm.$invalid || $ctrl.saving || $ctrl.mask">SAVE</mat-button>
   </mat-toolbar>
-
-  <div ng-if="$ctrl.error" class="alert alert-danger">
-    <div><strong>Failed To Save Observation</strong></div>
-    <div>{{$ctrl.error.message}}</div>
-  </div>
   
   <form name="observationForm" id="myForm" class="observation-edit-content" ng-class="{'observation-edit-content--scroll-lock': $ctrl.mask}" novalidate>
+    <div ng-if="$ctrl.error" class="observation-edit-banner ng-animatable">
+      <div class="observation-edit-banner--content">
+        <mat-icon class="observation-edit-banner--content__icon">error_outline</mat-icon>
+        <div class="observation-edit-banner--content__text">{{$ctrl.error.message}}.</div>
+      </div>
+
+      <div class="observation-edit-banner--actions">
+        <mat-button mat-button color="primary" ng-click="$ctrl.error = null;">OK</mat-button>
+      </div>
+    </div>
+
     <div class="mdc-card observation-view-card observation-form-card">
       <date-edit field="$ctrl.form.timestampField" form-field="observationForm[$ctrl.form.timestampField.name]"></date-edit>
       <geometry-edit feature="$ctrl.geometryFeature" field="$ctrl.form.geometryField" on-feature-changed="$ctrl.onGeometryChanged($event)" on-feature-edit="$ctrl.onGeometryEdit($event)"></geometry-edit>

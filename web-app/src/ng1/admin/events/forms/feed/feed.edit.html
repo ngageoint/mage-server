@@ -33,18 +33,28 @@
         <strong>Choose a primary field to be used in the feed:</strong>
         <div class="row bottom-gap">
           <div class="col-md-2">
-            <select ng-model="$ctrl.form.primaryFeedField" ng-change="$ctrl.onFieldChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields" class="form-control">
-              <option value="">None</option>
-            </select>
+            <div class="field form-group">
+              <ui-select ng-model="$ctrl.form.primaryFeedField" theme="bootstrap" on-select="$ctrl.onFieldChanged()">
+                <ui-select-match allow-clear>{{$select.selected.title}}</ui-select-match>
+                <ui-select-choices ui-disable-choice="field.archived === true" repeat="field.name as field in $ctrl.form.fields | filter: $ctrl.fieldFilter($ctrl.primaryFeedField)">
+                  <div ng-bind-html="field.title | highlight: $select.search"></div>
+                </ui-select-choices>
+              </ui-select>
+            </div>
           </div>
         </div>
 
         <strong>Choose a secondary field to be used in the feed:</strong>
         <div class="row bottom-gap">
           <div class="col-md-2">
-            <select ng-model="$ctrl.form.secondaryFeedField" ng-change="$ctrl.onFieldChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields" class="form-control">
-              <option value="">None</option>
-            </select>
+            <div class="field form-group">
+              <ui-select ng-model="$ctrl.form.secondaryFeedField" theme="bootstrap" on-select="$ctrl.onFieldChanged()">
+                <ui-select-match allow-clear>{{$select.selected.title}}</ui-select-match>
+                <ui-select-choices ui-disable-choice="field.archived === true" repeat="field.name as field in $ctrl.form.fields | filter: $ctrl.fieldFilter($ctrl.form.secondaryFeedField)">
+                  <div ng-bind-html="field.title | highlight: $select.search"></div>
+                </ui-select-choices>
+              </ui-select>
+            </div>
           </div>
         </div>
       </div>
@@ -54,7 +64,7 @@
   <div class="row top-gap-l">
     <div class="col-md-12">
       <h4>Sample Observation Feed</h4>
-      <div ng-repeat="observation in $ctrl.observations track by observation.id" observation-news-item="observation" event="$ctrl.event" selected-observation-form="$ctrl.form" container-element="side-bar"></div>
+      <div class="mdc-card" ng-repeat="observation in $ctrl.observations track by observation.id" observation-news-item="observation" event="$ctrl.event" selected-observation-form="$ctrl.form" container-element="side-bar"></div>
     </div>
   </div>
 </div>

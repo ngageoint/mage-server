@@ -4,7 +4,8 @@ var request = require('supertest')
   , moment = require('moment')
   , MockToken = require('../mockToken')
   , app = require('../../express')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , Setting = require('../../models/setting');
 
 require('../../models/token');
 var TokenModel = mongoose.model('Token');
@@ -57,6 +58,17 @@ describe("user authentication tests", function() {
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
+
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
+      .resolves({
+        _id: mongoose.Types.ObjectId(),
+        type: 'security',
+        settings: {
+          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true } }
+        }
+      });
 
     sinon.mock(UserModel.prototype)
       .expects('validPassword')
@@ -249,6 +261,18 @@ describe("user authentication tests", function() {
       .chain('exec')
       .yields(null, mockUser);
 
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
+      .resolves({
+        _id: mongoose.Types.ObjectId(),
+        type: 'security',
+        settings: {
+          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true } }
+        }
+      });
+
+
     sinon.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
@@ -275,7 +299,7 @@ describe("user authentication tests", function() {
         password: 'password',
         uid: '1'
       })
-      .expect(401)
+      .expect(403)
       .end(done);
   });
 
