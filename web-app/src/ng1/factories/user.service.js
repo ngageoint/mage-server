@@ -222,64 +222,20 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return $http.get('/api/users/count', {params: options});
   }
 
-  var deferredUsers;
-  function getUserMap(options) {
-    options = options || {};
-
-    if (options.forceRefresh || !deferredUsers) {
-      deferredUsers = $q.defer();
-
-      var parameters = {};
-      if (options && options.populate) {
-        parameters.populate = options.populate;
-      }
-
-      $http.get('/api/users', {params: parameters})
-        .success(function(users) {
-          deferredUsers.resolve(_.indexBy(users, 'id'));
-        });
-    }
-
-    return deferredUsers.promise;
-  }
-
   function getUser(id, options) {
     options = options || {};
 
     var deferred = $q.defer();
 
-    if (options.forceRefresh) {
-      var parameters = {};
-      if (options.populate) {
-        parameters.populate = options.populate;
-      }
-
-      // Go get user again
-      $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
-        // Grab my map of users without a refresh and update with new user
-        getUserMap().then(function(userMap) {
-          userMap[user.id] = user;
-          deferred.resolve(user);
-        });
-      });
-    } else {
-      getUserMap().then(function(userMap) {
-        if (!userMap[id]) {
-          // could be our cache of users is stale, lets check the server for this user
-          $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
-            // Grab my map of users without a refresh and update with new user
-            getUserMap().then(function(userMap) {
-              userMap[id] = user;
-              deferred.resolve(user);
-            }).error(function() {
-              deferred.resolve(null);
-            });
-          });
-        } else {
-          deferred.resolve(userMap[id]);
-        }
-      });
+    var parameters = {};
+    if (options.populate) {
+       parameters.populate = options.populate;
     }
+
+    // Go get user again
+     $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
+       deferred.resolve(user);
+    });
 
     return deferred.promise;
   }
@@ -322,10 +278,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       type: 'POST'
     }, function(user) {
       if (_.isFunction(success)) {
-        getUserMap().then(function(userMap) {
-          userMap[user.id] = user;
-          success(user);
-        });
+        success(user);
       }
     }, error, progress);
   }
@@ -336,10 +289,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       type: 'PUT'
     }, function(user) {
       if (_.isFunction(success)) {
-        getUserMap().then(function(userMap) {
-          userMap[user.id] = user;
-          success(user);
-        });
+        success(user);
       }
     }, error, progress);
   }
@@ -350,10 +300,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       type: 'PUT'
     }, function(user) {
       if (_.isFunction(success)) {
-        getUserMap().then(function(userMap) {
-          userMap[user.id] = user;
-          success(user);
-        });
+        success(user);
       }
     }, error, progress);
   }
@@ -363,10 +310,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
     $http.delete('/api/users/' + user.id)
       .success(function() {
-        getUserMap().then(function(userMap) {
-          delete userMap[user.id];
-          deferred.resolve();
-        });
+        deferred.resolve();
       });
 
     return deferred.promise;
