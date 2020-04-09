@@ -17,7 +17,7 @@
             <nav class="navbar navbar-default admin-dashboard-navbar">
               <div class="container-fluid">
                 <div class="navbar-header">
-                  <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{$ctrl.inactiveUsers.length}}</span></sup></a>
+                  <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{($ctrl.count('inactive'))}}</span></sup></a>
                 </div>
 
                 <form class="navbar-form navbar-left">
@@ -34,7 +34,7 @@
           <div class="col-sm-12">
             <div class="admin-table">
               <div class="well-item"
-                  ng-repeat="user in ($ctrl.filteredUsers = ($ctrl.inactiveUsers | user:['displayName','email']:userSearch)) | orderBy:'displayName' | offset: $ctrl.usersPage * $ctrl.usersPerPage | limitTo:$ctrl.usersPerPage" >
+                  ng-repeat="user in ($ctrl.filteredUsers = ($ctrl.users('inactive') | user:['displayName','email']:userSearch)) | orderBy:'displayName' | limitTo:$ctrl.usersPerPage" >
                 <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
                   <div class="col-md-12">
                     <div class="right-gap pull-left">
@@ -56,11 +56,11 @@
         <div class="row">
           <div class="col-md-12">
             <ul class="pager pull-right">
-              <li ng-class="{'disabled': $ctrl.usersPage == 0}">
-                <a href="javascript:void(0);" ng-click="$ctrl.usersPage == 0 || ($ctrl.usersPage=$ctrl.usersPage-1)">&larr; Previous User</a>
+              <li ng-class="{'disabled': $ctrl.hasPrevious('inactive') == false}">
+                <a href="javascript:void(0);" ng-click="$ctrl.previous('inactive')">&larr; Previous User</a>
               </li>
-              <li ng-class="{'disabled': $ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1}">
-                <a href="javascript:void(0);" ng-click="$ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1 || ($ctrl.usersPage=$ctrl.usersPage+1)">Next User&rarr;</a>
+              <li ng-class="{'disabled': $ctrl.hasNext('inactive') == false}">
+                <a href="javascript:void(0);" ng-click="$ctrl.next('inactive')">Next User&rarr;</a>
               </li>
             </ul>
           </div>

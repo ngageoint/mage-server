@@ -11,6 +11,15 @@ class AdminDashboardController {
     this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
+    this.usersPerPage = 10;
+
+    this.stateAndData = new Map();
+    this.stateAndData['inactive'] = {
+      countFilter: {active: false},
+      userFilter: {active: false, limit: this.usersPerPage},
+      userCount: 0,
+      pageInfo: {}
+    };
 
     // For some reason angular is not calling into filter function with correct context
     this.filterDevices = this._filterDevices.bind(this);
@@ -28,22 +37,23 @@ class AdminDashboardController {
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
-  
-    this.usersPerPage = 10;
-    this.usersPage = 0;
-    this.inactiveUsers = [];
-  
+    
     this.devicesPerPage = 10;
     this.devicesPage = 0;
     this.unregisteredDevices = [];
 
-    this._UserService.getAllUsers().then(users => {
-      this.users = users.data || users;
-  
-      this.inactiveUsers = _.filter(this.users, user => {
-        return !user.active;
+    for (const [key, value] of Object.entries(this.stateAndData)) {
+
+      this._UserService.getUserCount(value.countFilter).then(result => {
+        if(result && result.data && result.data.count) {
+          this.stateAndData[key].userCount = result.data.count;
+        }
       });
-    });
+
+      this._UserService.getAllUsers(value.userFilter).then(pageInfo => {
+        this.stateAndData[key].pageInfo = pageInfo;
+      });
+    }
 
     this._DeviceService.getAllDevices().then(devices => {
       this.devices = devices;
@@ -69,6 +79,52 @@ class AdminDashboardController {
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
       }
+    });
+  }
+
+  count(state) {
+    return this.stateAndData[state].userCount;
+  }
+
+  users(state) {
+    return this.stateAndData[state].pageInfo.users;
+  }
+
+  hasNext(state) {
+    var status = false;
+
+    if(this.stateAndData[state].pageInfo && this.stateAndData[state].pageInfo.links) {
+      status = this.stateAndData[state].pageInfo.links.next != null && 
+      this.stateAndData[state].pageInfo.links.next !== "";
+    }
+
+    return status;
+  }
+
+  next(state) {
+    this.move(this.stateAndData[state].pageInfo.links.next, state);
+  }
+
+  hasPrevious(state) {
+    var status = false;
+
+    if(this.stateAndData[state].pageInfo && this.stateAndData[state].pageInfo.links) {
+      status = this.stateAndData[state].pageInfo.links.prev != null && 
+      this.stateAndData[state].pageInfo.links.prev !== "";
+    }
+
+    return status;
+  }
+
+  previous(state) {
+    this.move(this.stateAndData[state].pageInfo.links.prev, state);
+  }
+
+  move(start, state) {
+    var filter = this.stateAndData[state].userFilter;
+    filter.start = start;
+    this._UserService.getAllUsers(filter).then(pageInfo => {
+      this.stateAndData[state].pageInfo = pageInfo;
     });
   }
 

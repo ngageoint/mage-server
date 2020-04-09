@@ -47,7 +47,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users() | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users() | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | limitTo:$ctrl.itemsPerPage" >
 
                 <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                   <div class="col-md-8">
