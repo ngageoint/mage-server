@@ -106,11 +106,16 @@ class MageController {
   }
 
   onAddObservation($event) {
-    if (this.hideFeed) {
-      this.showFeed();
-    }
+    // This is coming from Angular component, outside of AngularJS lifecycle
+    // need to run this code on next digest cycle.  Can remove $timeout when we no longer
+    // have a hybrid application
+    this.$timeout(() => {
+      if (this.hideFeed) {
+        this.showFeed();
+      }
 
-    this.newObservation = $event;
+      this.newObservation = $event;
+    });
   }
 
   onLocation(location) {

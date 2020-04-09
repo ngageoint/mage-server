@@ -48,7 +48,7 @@ import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
 import { DropdownComponent } from './observation/edit/dropdown/dropdown.component';
 import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
-import app from '../ng1/app.js';
+// import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
 import { HttpClientModule } from '@angular/common/http';
@@ -141,9 +141,6 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
   ]
 })
 export class AppModule {
-  constructor(private upgrade: UpgradeModule) {}
-
-  public ngDoBootstrap(): void {
-    this.upgrade.bootstrap(document.body, [app.name]);
-  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  public ngDoBootstrap(): void {}
 }
