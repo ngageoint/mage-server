@@ -73,6 +73,10 @@ function NewsFeedController($scope, $element, MapService, EventService, Observat
 
   };
 
+  $scope.cancelNewObservation = function() {
+    delete $scope.newObservationForms;
+  }
+
   $scope.$on('user:view', function(e, user) {
     $scope.viewUser = user;
     $scope.newObservation = null;
