@@ -10,7 +10,7 @@ class AdminUsersController {
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
-    this.search = '';
+    this.userSearch = '';
     this.itemsPerPage = 10;
 
     this.stateAndData = new Map();
@@ -120,7 +120,6 @@ class AdminUsersController {
   }
 
   reset() {
-    this.page = 0;
     this.filter = 'all';
     this.userSearch = '';
   }
