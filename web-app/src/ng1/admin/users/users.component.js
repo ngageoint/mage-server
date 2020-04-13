@@ -110,6 +110,20 @@ class AdminUsersController {
     });
   }
 
+  search() {
+    var results = [];
+
+    if(this.userSearch == '') {
+      results = this.users();
+    } else if (this.users().length == this.count(this.filter)){ 
+      results = this.users();
+    } else{
+        //TODO server search
+    }
+
+    return results;
+  }
+
   _filterActive(user) {
     switch (this.filter) {
     case 'all': return true;
