@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'feed-scroll-wrapper',
@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
   styleUrls: []
 })
 export class ScrollWrapperComponent {
-
+  @Input() mask: boolean;
 }

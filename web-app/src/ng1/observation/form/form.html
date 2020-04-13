@@ -8,55 +8,57 @@
     <mat-button ng-click="$ctrl.save()" ng-disabled="observationForm.$invalid || $ctrl.saving || $ctrl.mask">SAVE</mat-button>
   </mat-toolbar>
   
-  <form name="observationForm" id="myForm" class="observation-edit-content" ng-class="{'observation-edit-content--scroll-lock': $ctrl.mask}" novalidate>
-    <div ng-if="$ctrl.error" class="observation-edit-banner ng-animatable">
-      <div class="observation-edit-banner--content">
-        <mat-icon class="observation-edit-banner--content__icon">error_outline</mat-icon>
-        <div class="observation-edit-banner--content__text">{{$ctrl.error.message}}.</div>
-      </div>
-
-      <div class="observation-edit-banner--actions">
-        <mat-button mat-button color="primary" ng-click="$ctrl.error = null;">OK</mat-button>
-      </div>
-    </div>
-
-    <div class="mdc-card observation-view-card observation-form-card">
-      <date-edit field="$ctrl.form.timestampField" form-field="observationForm[$ctrl.form.timestampField.name]"></date-edit>
-      <geometry-edit feature="$ctrl.geometryFeature" field="$ctrl.form.geometryField" on-feature-changed="$ctrl.onGeometryChanged($event)" on-feature-edit="$ctrl.onGeometryEdit($event)"></geometry-edit>
-    </div>
-    <div ng-repeat="formDefinition in $ctrl.form.forms">
-      <observation-form-edit form-definition="formDefinition" form="observationForm" on-feature-edit="$ctrl.onGeometryEdit($event)" geometry-style="$ctrl.geometryFeature.style"></observation-form-edit>
-    </div>
-    <div class="top-gap" ng-if="$ctrl.preview !== true">
-      <div class="mdc-card top-gap media-card">
-        <div ng-if="$ctrl.observation.attachments && ($ctrl.observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
-          <div attachment="$ctrl.observation.attachments[0]" attachment-observation="$ctrl.observation" edit="true"></div>
+  <feed-scroll-wrapper [mask]="$ctrl.mask">
+    <form name="observationForm" id="myForm" novalidate>
+      <div ng-if="$ctrl.error" class="observation-edit-banner ng-animatable">
+        <div class="observation-edit-banner--content">
+          <mat-icon class="observation-edit-banner--content__icon">error_outline</mat-icon>
+          <div class="observation-edit-banner--content__text">{{$ctrl.error.message}}.</div>
         </div>
-        <div class="attachments">
-          <div class="attachment media-tile" ng-repeat="attachment in $ctrl.observation.attachments track by attachment.id" ng-if="!$first || ($ctrl.observation.attachments.length % 2 === 0)">
-            <div attachment="attachment" attachment-observation="$ctrl.observation" edit="true"></div>
+
+        <div class="observation-edit-banner--actions">
+          <mat-button mat-button color="primary" ng-click="$ctrl.error = null;">OK</mat-button>
+        </div>
+      </div>
+
+      <div class="mdc-card observation-view-card observation-form-card">
+        <date-edit field="$ctrl.form.timestampField" form-field="observationForm[$ctrl.form.timestampField.name]"></date-edit>
+        <geometry-edit feature="$ctrl.geometryFeature" field="$ctrl.form.geometryField" on-feature-changed="$ctrl.onGeometryChanged($event)" on-feature-edit="$ctrl.onGeometryEdit($event)"></geometry-edit>
+      </div>
+      <div ng-repeat="formDefinition in $ctrl.form.forms">
+        <observation-form-edit form-definition="formDefinition" form="observationForm" on-feature-edit="$ctrl.onGeometryEdit($event)" geometry-style="$ctrl.geometryFeature.style"></observation-form-edit>
+      </div>
+      <div class="top-gap" ng-if="$ctrl.preview !== true">
+        <div class="mdc-card top-gap media-card">
+          <div ng-if="$ctrl.observation.attachments && ($ctrl.observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
+            <div attachment="$ctrl.observation.attachments[0]" attachment-observation="$ctrl.observation" edit="true"></div>
+          </div>
+          <div class="attachments">
+            <div class="attachment media-tile" ng-repeat="attachment in $ctrl.observation.attachments track by attachment.id" ng-if="!$first || ($ctrl.observation.attachments.length % 2 === 0)">
+              <div attachment="attachment" attachment-observation="$ctrl.observation" edit="true"></div>
+            </div>
+          </div>
+          <div enctype="multipart/form-data" 
+            file-upload-grid
+            upload-id="id"
+            preview="true" 
+            upload-file-form-name="'attachment'" 
+            url="{{$ctrl.observation.url + '/attachments?access_token=' + $ctrl.getToken()}}" 
+            allow-upload="$ctrl.uploadAttachments" 
+            on-add=$ctrl.onAttachmentAdd($event)
+            on-remove=$ctrl.onAttachmentRemove($event)
+            on-upload="$ctrl.onAttachmentUploaded($event)"
+            on-error="$ctrl.onAttachmentError($event)">
           </div>
         </div>
-        <div enctype="multipart/form-data" 
-          file-upload-grid
-          upload-id="id"
-          preview="true" 
-          upload-file-form-name="'attachment'" 
-          url="{{$ctrl.observation.url + '/attachments?access_token=' + $ctrl.getToken()}}" 
-          allow-upload="$ctrl.uploadAttachments" 
-          on-add=$ctrl.onAttachmentAdd($event)
-          on-remove=$ctrl.onAttachmentRemove($event)
-          on-upload="$ctrl.onAttachmentUploaded($event)"
-          on-error="$ctrl.onAttachmentError($event)">
+        <div ng-if="$ctrl.observation.id && $ctrl.canDeleteObservation" class="delete-observation-button-container">
+          <button class="mdc-button delete-button delete-observation-button" ng-click="$ctrl.deleteObservation($ctrl.observation)">
+            Delete Observation
+          </button>
         </div>
       </div>
-      <div ng-if="$ctrl.observation.id && $ctrl.canDeleteObservation" class="delete-observation-button-container">
-        <button class="mdc-button delete-button delete-observation-button" ng-click="$ctrl.deleteObservation($ctrl.observation)">
-          Delete Observation
-        </button>
-      </div>
-    </div>
-  </form>
+    </form>
+  </feed-scroll-wrapper>
     
   <div ng-if="$ctrl.mask" class="form-mask ng-animatable"></div>
 </div>
