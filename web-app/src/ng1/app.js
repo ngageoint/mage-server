@@ -4,7 +4,7 @@ import mage from './mage/mage.component';
 import about from './about/about.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
-import  '@uirouter/angular-hybrid';
+import uiRouter from "@uirouter/angularjs";
 import { SwaggerComponent } from "../app/swagger/swagger.component";
 import { downgradeComponent } from '@angular/upgrade/static';
 
@@ -34,7 +34,7 @@ require('select2');
 
 const app = angular.module('mage', [
   require('angular-ui-bootstrap'),
-  'ui.router.upgrade',
+  uiRouter,
   require('ui-select'),
   'minicolors',
   require('angular-animate'),
@@ -104,9 +104,7 @@ require('./material-components');
 
 config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$urlServiceProvider', '$animateProvider'];
 
-function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServiceProvider, $animateProvider) {
-  $urlServiceProvider.deferIntercept();
-  
+function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServiceProvider, $animateProvider) {  
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
@@ -123,7 +121,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   function resolveAdmin() {
     return {
       user: ['$q', 'UserService', function($q, UserService) {
-        var deferred = $q.defer();
+        const deferred = $q.defer();
 
         UserService.getMyself().then(function(myself) {
           // TODO don't just check for these 2 roles, this should be permission based
@@ -163,7 +161,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
     component: 'landing',
     resolve: {
       api: ['$q', 'Api', function($q,  Api) {
-        var deferred = $q.defer();
+        const deferred = $q.defer();
         Api.get(function(api) {
           deferred.resolve(api);
         });
@@ -392,13 +390,13 @@ function run($rootScope, $uibModal, $templateCache, $state, Api) {
   $templateCache.put("observation/observation-important.html", require("./observation/observation-important.html"));
 
   $rootScope.$on('event:auth-loginRequired', function(e, response) {
-    var stateExceptions = ['landing'];
-    var requestExceptions = ['/api/users/myself/password'];
+    const stateExceptions = ['landing'];
+    const requestExceptions = ['/api/users/myself/password'];
     if (!$rootScope.loginDialogPresented && !_(stateExceptions).contains($state.current.name) && !_(requestExceptions).contains(response.config.url)) {
       $rootScope.loginDialogPresented = true;
       Api.get(function(api) {
-        var successful = false;
-        var options = {
+        let successful = false;
+        const options = {
           template: require('./authentication/signin-modal.html'),
           controller: ['$scope', '$uibModalInstance', 'authService', function ($scope, $uibModalInstance, authService) {
             $uibModalInstance.scope = $scope;
@@ -419,8 +417,8 @@ function run($rootScope, $uibModal, $templateCache, $state, Api) {
             };
           }]
         };
-        var modalInstance = $uibModal.open(options);
-        var modalClosed = function() {
+        let modalInstance = $uibModal.open(options);
+        const modalClosed = function() {
           if (!successful) {
             modalInstance = $uibModal.open(options);
             modalInstance.closed.then(modalClosed);
