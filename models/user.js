@@ -347,7 +347,7 @@ exports.getUsers = function(options, callback) {
       var limit = Math.abs(options.limit) || 10; 
       var start = (Math.abs(options.start) || 0);
       var page = Math.ceil(start / limit);
-      var sort = [['_id', 1], ['displayName',1]];
+      var sort = [['displayName',1], ['_id', 1]];
       if(options.sort){
         let tmp = options.sort;
         sort = [];
