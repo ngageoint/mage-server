@@ -221,7 +221,12 @@ module.exports = function(app, security) {
         start = req.query.start;
       }
 
-      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start}, function (err, users, pageInfo) {
+      var sort = null;
+      if(req.query.sort){
+        sort = req.query.sort;
+      }
+
+      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
         if (err) return next(err);
 
         let data = null;

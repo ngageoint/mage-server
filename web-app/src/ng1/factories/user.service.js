@@ -258,6 +258,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
       parameters.active = options.active;
       parameters.enabled = options.enabled;
+      parameters.sort = options.sort;
     }
 
     $http.get('/api/users', {params: parameters})

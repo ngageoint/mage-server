@@ -347,8 +347,19 @@ exports.getUsers = function(options, callback) {
       var limit = Math.abs(options.limit) || 10; 
       var start = (Math.abs(options.start) || 0);
       var page = Math.ceil(start / limit);
+      var sort = [['_id', 1], ['displayName',1]];
+      if(options.sort){
+        let tmp = options.sort;
+        sort = [];
+
+        for(let i =0; i < tmp.length; i++){
+          let field = tmp[i];
+          let item = [field, 1];
+          sort.push(item);
+        }
+      }
     
-      query.limit(limit).skip(limit * page).exec(function(err, users) {
+      query.sort(sort).limit(limit).skip(limit * page).exec(function(err, users) {
         let pageInfo = new PageInfo(users);
         pageInfo.start = start;
         pageInfo.limit = limit;
