@@ -38,6 +38,12 @@ class AdminUsersController {
       userCount: 0,
       pageInfo: {}
     };
+    this.stateAndData['search'] = {
+      countFilter: {},
+      userFilter: {or: {displayName: '', email: ''}},
+      userCount: 0,
+      pageInfo: {}
+    };
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -51,13 +57,17 @@ class AdminUsersController {
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
 
+      if(key == 'search') {
+        continue;
+      }
+
       this.UserService.getUserCount(value.countFilter).then(result => {
         if(result && result.data && result.data.count) {
           this.stateAndData[key].userCount = result.data.count;
         }
       });
 
-      this.UserService.getAllUsers(value.userFilter, value.sort).then(pageInfo => {
+      this.UserService.getAllUsers(value.userFilter).then(pageInfo => {
         this.stateAndData[key].pageInfo = pageInfo;
       });
     }
@@ -114,11 +124,21 @@ class AdminUsersController {
     var results = [];
 
     if(this.userSearch == '') {
+      //No search being performed
       results = this.users();
-    } else if (this.users().length == this.count(this.filter)){ 
+    } else if (this.users().length == this.count(this.filter)) { 
+      //Search is being performed, but the set of users is so 
+      //small, just do the search client side
       results = this.users();
-    } else{
-        //TODO server search
+    } else {
+      var filter = this.stateAndData[this.filter].userFilter;
+      filter.or = {};
+      filter.or.displayName = '/.*' + this.userSearch + '.*/';
+      filter.or.email = '/.*' + this.userSearch + '.*/';
+      this.UserService.getAllUsers(filter).then(pageInfo => {
+        this.stateAndData['search'].pageInfo = pageInfo;
+        results = this.stateAndData['search'].pageInfo.users;
+      });
     }
 
     return results;

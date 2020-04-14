@@ -340,6 +340,11 @@ exports.getUsers = function(options, callback) {
   if (populate.length) {
     query = query.populate(populate);
   }
+  if(options.or) {
+    let json = JSON.parse(options.or);
+    let orCondition = [json];
+    query = query.or(orCondition);
+  }
 
   var isPaging = options.limit != null && options.limit > 0;
   if(isPaging) {

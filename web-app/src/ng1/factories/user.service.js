@@ -255,6 +255,9 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       if(options.start) {
         parameters.start = options.start;
       }
+      if(options.or) {
+        parameters.or = options.or;
+      }
 
       parameters.active = options.active;
       parameters.enabled = options.enabled;

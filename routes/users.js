@@ -202,9 +202,15 @@ module.exports = function(app, security) {
       var filter = {};
       if (req.query.active === 'true' || req.query.active === 'false') {
         filter.active = req.query.active === 'true';
-      } else if (req.query.enabled === 'true' || req.query.enabled === 'false') {
+      } 
+      if (req.query.enabled === 'true' || req.query.enabled === 'false') {
         filter.enabled = req.query.enabled === 'true';
-      }
+      } 
+
+      var or = null;
+      if (req.query.or) {
+        or = req.query.or;
+      } 
 
       var populate = null;
       if (req.query.populate) {
@@ -226,7 +232,7 @@ module.exports = function(app, security) {
         sort = req.query.sort;
       }
 
-      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
+      new api.User().getAll({filter: filter, populate: populate, limit: limit, start: start, sort: sort, or: or}, function (err, users, pageInfo) {
         if (err) return next(err);
 
         let data = null;
