@@ -11,6 +11,7 @@ class AdminUsersController {
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
     this.userSearch = '';
+    this.previousSearch = '';
     this.itemsPerPage = 10;
 
     this.stateAndData = new Map();
@@ -130,7 +131,11 @@ class AdminUsersController {
       //Search is being performed, but the set of users is so 
       //small, just do the search client side
       results = this.users();
+    } else if (this.previousSearch != '' && this.previousSearch == this.userSearch) {
+      results = this.stateAndData['search'].pageInfo.users;
     } else {
+      this.previousSearch = this.userSearch;
+
       var filter = this.stateAndData[this.filter].userFilter;
       filter.or = {
         displayName: '.*' + this.userSearch + '.*',
