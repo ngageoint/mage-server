@@ -132,9 +132,10 @@ class AdminUsersController {
       results = this.users();
     } else {
       var filter = this.stateAndData[this.filter].userFilter;
-      filter.or = {};
-      filter.or.displayName = '/.*' + this.userSearch + '.*/';
-      filter.or.email = '/.*' + this.userSearch + '.*/';
+      filter.or = {
+        displayName: '.*' + this.userSearch + '.*',
+        email: '.*' + this.userSearch + '.*'
+      };
       this.UserService.getAllUsers(filter).then(pageInfo => {
         this.stateAndData['search'].pageInfo = pageInfo;
         results = this.stateAndData['search'].pageInfo.users;

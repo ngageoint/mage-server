@@ -342,7 +342,15 @@ exports.getUsers = function(options, callback) {
   }
   if(options.or) {
     let json = JSON.parse(options.or);
-    let orCondition = [json];
+
+    let orCondition = [];
+    for(let [key, value] of Object.entries(json)) {
+      let entry = {};
+      let regex = {"$regex": new RegExp(value), "$options": "i"};
+      entry[key] = regex;
+      orCondition.push(entry);
+    }
+   
     query = query.or(orCondition);
   }
 
