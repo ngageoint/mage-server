@@ -39,12 +39,7 @@ class AdminUsersController {
       userCount: 0,
       pageInfo: {}
     };
-    this.stateAndData['search'] = {
-      countFilter: {},
-      userFilter: {or: {displayName: '', email: ''}},
-      userCount: 0,
-      pageInfo: {}
-    };
+    this.stateAndData['search'] = {};
   
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -58,7 +53,7 @@ class AdminUsersController {
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
 
-      if(key == 'search') {
+      if(value.countFilter == null || value.userFilter == null) {
         continue;
       }
 
@@ -132,8 +127,10 @@ class AdminUsersController {
       //small, just do the search client side
       results = this.users();
     } else if (this.previousSearch != '' && this.previousSearch == this.userSearch) {
+      //No need to keep searching the same info over and over
       results = this.stateAndData['search'].pageInfo.users;
     } else {
+      //Perform the server side searching
       this.previousSearch = this.userSearch;
 
       var filter = this.stateAndData[this.filter].userFilter;
@@ -162,6 +159,8 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
+    this.previousSearch = '';
+    this.stateAndData['search'] = {};
   }
 
   newUser() {

@@ -357,6 +357,8 @@ exports.getUsers = function(options, callback) {
   var isPaging = options.limit != null && options.limit > 0;
   if(isPaging) {
     User.count(filter, function(err, count) {
+      if(err) return callback(err, null, null);
+
       var limit = Math.abs(options.limit) || 10; 
       var start = (Math.abs(options.start) || 0);
       var page = Math.ceil(start / limit);
@@ -373,6 +375,8 @@ exports.getUsers = function(options, callback) {
       }
     
       query.sort(sort).limit(limit).skip(limit * page).exec(function(err, users) {
+        if(err) return callback(err, users, null);
+
         let pageInfo = new PageInfo(users);
         pageInfo.start = start;
         pageInfo.limit = limit;
