@@ -46,10 +46,6 @@ class AdminDashboardController {
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
 
-      if(value.countFilter == null || value.userFilter == null) {
-        continue;
-      }
-
       this._UserService.getUserCount(value.countFilter).then(result => {
         if(result && result.data && result.data.count) {
           this.stateAndData[key].userCount = result.data.count;
@@ -92,10 +88,6 @@ class AdminDashboardController {
     return this.stateAndData[state].userCount;
   }
 
-  users(state) {
-    return this.stateAndData[state].pageInfo.users;
-  }
-
   hasNext(state) {
     var status = false;
 
@@ -132,6 +124,40 @@ class AdminDashboardController {
     this._UserService.getAllUsers(filter).then(pageInfo => {
       this.stateAndData[state].pageInfo = pageInfo;
     });
+  }
+
+  users(state) {
+
+    if (this.stateAndData[state].pageInfo.users.length == this.count(state)) { 
+      //Search may or may not be occuring, but the dataset is so small,
+      //we will just do client side filtering
+    } else if(this.previousSearch == '' && this.userSearch == '') {
+      //Not performing a seach
+    } else if(this.previousSearch != '' && this.userSearch == '') {
+      //Clearing out the search
+      this.previousSearch = '';
+      delete this.stateAndData[state].userFilter['or'];
+
+      this.UserService.getAllUsers(this.stateAndData[state].userFilter).then(pageInfo => {
+        this.stateAndData[state].pageInfo = pageInfo;
+      });
+    } else if (this.previousSearch == this.userSearch) {
+      //Search is being performed, no need to keep searching the same info over and over
+    } else {
+      //Perform the server side searching
+      this.previousSearch = this.userSearch;
+
+      var filter = this.stateAndData[state].userFilter;
+      filter.or = {
+        displayName: '.*' + this.userSearch + '.*',
+        email: '.*' + this.userSearch + '.*'
+      };
+      this.UserService.getAllUsers(filter).then(pageInfo => {
+        this.stateAndData[state].pageInfo = pageInfo;
+      });
+    }
+
+    return this.stateAndData[state].pageInfo.users;
   }
 
   iconClass(device) {
