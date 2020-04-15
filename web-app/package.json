@@ -28,6 +28,7 @@
     "build": "ng build --prod=true",
     "ng": "ng",
     "test": "ng test",
+    "test-headless": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "bundle-report": "webpack-bundle-analyzer dist/stats.json"
