@@ -82,9 +82,12 @@ function MapClipController($scope, $element, MapService, LocalStorageService) {
 
   $scope.$watch('feature.style.iconUrl', function() {
     if (!$scope.feature.geometry || !$scope.feature.style || !$scope.feature.style.iconUrl) return;
-    marker.setIcon(L.fixedWidthIcon({
-      iconUrl: $scope.feature.style.iconUrl
-    }));
+
+    if (marker) {
+      marker.setIcon(L.fixedWidthIcon({
+        iconUrl: $scope.feature.style.iconUrl
+      }));
+    }
   });
 
   function addObservation(feature) {

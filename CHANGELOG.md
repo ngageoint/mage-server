@@ -6,11 +6,20 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.3.5](https://github.com/ngageoint/mage-server/releases/tag/5.3.5)
+
+##### Features
+* Added administrative settings to enable automatic approval of new user accounts and devices.  If you are using a third party authentication strategy 
+  where user accounts have already been vetted, you can reduce the barrier to entry into MAGE by using this setting to automatically approve user accounts. 
+  In addition you can reduce the device admin approval barrier to entry by automatically approving all new devices.  Administrators can still
+  disable devices for any reason, therby removing access to MAGE for that device. 
 * Improved map layers panel.  Drag and drop layers to change map z-index, change layer opacity, zoom to layer bounds, and style feature layers.
-* New Material Design Leaflet map buttons.
-* Added administrative settings to turn off user approval and device registration.
-* Observation view/edit header is sticky and will not scroll with content.
 * GeoPackage upgrade and optimizations.  Feature tiles are now created server side, reducing load on browser.
+* Observation view/edit header is sticky and will not scroll with content.
+* New Material Design Leaflet map buttons.
 * LDAP authentication support.
 * SAML authentication support.
 
@@ -24,7 +33,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix bug that could cause iOS GeoPackage downloads to hang.
 * Preserve line breaks and whitespace in textarea fields.
 
-## [5.3.4](https://github.com/ngageoint/mage-server/releases/tag/5.3.3)
+## [5.3.4](https://github.com/ngageoint/mage-server/releases/tag/5.3.4)
 
 ##### Features
 

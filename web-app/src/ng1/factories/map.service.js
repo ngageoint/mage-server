@@ -174,7 +174,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
         FeatureService.getFeatureCollection(event, layer).then(function(featureCollection) {
           service.createVectorLayer({
             name: layer.name, // TODO need to track by id as well not just names
-            group: 'Static',
+            group: 'feature',
             type: 'geojson',
             geojson: featureCollection,
             options: {
