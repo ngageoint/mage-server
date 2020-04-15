@@ -244,27 +244,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     options = options || {};
     var deferredUsers = $q.defer();
 
-    var parameters = {};
-    if (options) {
-      if(options.populate) {          
-        parameters.populate = options.populate;
-      }
-      if(options.limit) {
-        parameters.limit = options.limit;
-      }
-      if(options.start) {
-        parameters.start = options.start;
-      }
-      if(options.or) {
-        parameters.or = options.or;
-      }
-
-      parameters.active = options.active;
-      parameters.enabled = options.enabled;
-      parameters.sort = options.sort;
-    }
-
-    $http.get('/api/users', {params: parameters})
+    $http.get('/api/users', {params: options})
       .success(function(data) {
         if(Object.prototype.toString.call(data) === '[object Array]'){
           deferredUsers.resolve(_.indexBy(data, 'id'));
