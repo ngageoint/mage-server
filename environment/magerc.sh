@@ -28,6 +28,8 @@ export MAGE_MONGO_POOL_SIZE=5
 export MAGE_MONGO_USER=
 # the password MAGE uses to authenticate to mongodb
 export MAGE_MONGO_PASSWORD=
+# (optional) the mongodb replica set name
+export MAGE_MONGO_REPLICA_SET=
 # the PEM text or path to the file containing the private key for 2-way SSL/x509 certificate authentication from the server to mongodb
 # when either of these values are present, they override MAGE_MONGO_USER, and MAGE will attempt to use mongodb x509 authentication
 # (https://docs.mongodb.com/v3.6/core/security-x.509/), rather than user/password authentication.  a literal value present in
