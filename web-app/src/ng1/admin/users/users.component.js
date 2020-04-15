@@ -39,8 +39,7 @@ class AdminUsersController {
       userCount: 0,
       pageInfo: {}
     };
-    this.stateAndData['search'] = {};
-  
+
     this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
     this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
@@ -52,10 +51,6 @@ class AdminUsersController {
   $onInit() {
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
-
-      if(value.countFilter == null || value.userFilter == null) {
-        continue;
-      }
 
       this.UserService.getUserCount(value.countFilter).then(result => {
         if(result && result.data && result.data.count) {
@@ -112,37 +107,38 @@ class AdminUsersController {
     });
   }
 
-  search() {
-    var results = [];
+  users() {
 
-    if(this.userSearch == '') {
+    if (this.stateAndData[this.filter].pageInfo.users.length == this.count(this.filter)) { 
+      //Search may or may not be occuring, but the dataset is so small,
+      //we will just do client side filtering
+    } else if(this.previousSearch == '' && this.userSearch == '') {
+      //Not performing a seach
+    } else if(this.previousSearch != '' && this.userSearch == '') {
+      //Clearing out the search
       this.previousSearch = '';
-      //No search being performed
-      results = this.stateAndData[this.filter].pageInfo.users;
-    } else if (this.stateAndData[this.filter].pageInfo.users.length == this.count(this.filter)) { 
-      //Search is being performed, but the set of users is so 
-      //small, just do the search client side
-      results = this.stateAndData[this.filter].pageInfo.users
+      delete this.stateAndData[this.filter].userFilter['or'];
+
+      this.UserService.getAllUsers(this.stateAndData[this.filter].userFilter).then(pageInfo => {
+        this.stateAndData[this.filter].pageInfo = pageInfo;
+      });
     } else if (this.previousSearch == this.userSearch) {
-      //No need to keep searching the same info over and over
-      results = this.stateAndData['search'].pageInfo.users;
+      //Search is being performed, no need to keep searching the same info over and over
     } else {
       //Perform the server side searching
       this.previousSearch = this.userSearch;
 
-      //"Clone" the filter since we will be modifying it with an "or" clause
-      var filter = JSON.parse(JSON.stringify(this.stateAndData[this.filter].userFilter));
+      var filter = this.stateAndData[this.filter].userFilter;
       filter.or = {
         displayName: '.*' + this.userSearch + '.*',
         email: '.*' + this.userSearch + '.*'
       };
       this.UserService.getAllUsers(filter).then(pageInfo => {
-        this.stateAndData['search'].pageInfo = pageInfo;
-        results = this.stateAndData['search'].pageInfo.users;
+        this.stateAndData[this.filter].pageInfo = pageInfo;
       });
     }
 
-    return results;
+    return this.stateAndData[this.filter].pageInfo.users;
   }
 
   _filterActive(user) {
@@ -157,8 +153,7 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.previousSearch = '';
-    this.stateAndData['search'] = {};
+    this.users();
   }
 
   newUser() {
