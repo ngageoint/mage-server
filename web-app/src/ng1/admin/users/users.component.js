@@ -74,10 +74,6 @@ class AdminUsersController {
     return this.stateAndData[state].userCount;
   }
 
-  users() {
-    return this.stateAndData[this.filter].pageInfo.users;
-  }
-
   hasNext() {
     var status = false;
 
@@ -120,20 +116,22 @@ class AdminUsersController {
     var results = [];
 
     if(this.userSearch == '') {
+      this.previousSearch = '';
       //No search being performed
-      results = this.users();
-    } else if (this.users().length == this.count(this.filter)) { 
+      results = this.stateAndData[this.filter].pageInfo.users;
+    } else if (this.stateAndData[this.filter].pageInfo.users.length == this.count(this.filter)) { 
       //Search is being performed, but the set of users is so 
       //small, just do the search client side
-      results = this.users();
-    } else if (this.previousSearch != '' && this.previousSearch == this.userSearch) {
+      results = this.stateAndData[this.filter].pageInfo.users
+    } else if (this.previousSearch == this.userSearch) {
       //No need to keep searching the same info over and over
       results = this.stateAndData['search'].pageInfo.users;
     } else {
       //Perform the server side searching
       this.previousSearch = this.userSearch;
 
-      var filter = this.stateAndData[this.filter].userFilter;
+      //"Clone" the filter since we will be modifying it with an "or" clause
+      var filter = JSON.parse(JSON.stringify(this.stateAndData[this.filter].userFilter));
       filter.or = {
         displayName: '.*' + this.userSearch + '.*',
         email: '.*' + this.userSearch + '.*'

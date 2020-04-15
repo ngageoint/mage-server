@@ -12,11 +12,13 @@ class AdminDashboardController {
     this._Event = Event;
     this._Layer = Layer;
     this.usersPerPage = 10;
+    this.userSearch = '';
+    this.previousSearch = '';
 
     this.stateAndData = new Map();
     this.stateAndData['inactive'] = {
       countFilter: {active: false},
-      userFilter: {active: false, limit: this.usersPerPage},
+      userFilter: {active: false, limit: this.usersPerPage, sort: {displayName: 1, _id: 1}},
       userCount: 0,
       pageInfo: {}
     };
@@ -43,6 +45,10 @@ class AdminDashboardController {
     this.unregisteredDevices = [];
 
     for (const [key, value] of Object.entries(this.stateAndData)) {
+
+      if(value.countFilter == null || value.userFilter == null) {
+        continue;
+      }
 
       this._UserService.getUserCount(value.countFilter).then(result => {
         if(result && result.data && result.data.count) {
