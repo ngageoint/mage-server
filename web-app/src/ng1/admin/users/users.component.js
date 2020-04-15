@@ -17,25 +17,25 @@ class AdminUsersController {
     this.stateAndData = new Map();
     this.stateAndData['all'] = {
       countFilter: {},
-      userFilter: {limit: this.itemsPerPage, sort: ['displayName', '_id']},
+      userFilter: {limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['active'] = {
       countFilter: {active: true},
-      userFilter: {active: true, limit: this.itemsPerPage, sort: ['displayName', '_id']},
+      userFilter: {active: true, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['inactive'] = {
       countFilter: {active: false},
-      userFilter: {active: false, limit: this.itemsPerPage, sort: ['displayName', '_id']},
+      userFilter: {active: false, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
       userCount: 0,
       pageInfo: {}
     };
     this.stateAndData['disabled'] = {
       countFilter: {enabled: false},
-      userFilter: {enabled: false, limit: this.itemsPerPage, sort: ['displayName', '_id']},
+      userFilter: {enabled: false, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
       userCount: 0,
       pageInfo: {}
     };

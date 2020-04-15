@@ -313,30 +313,17 @@ exports.getUsers = function(options, callback) {
     options = {};
   }
 
-  var conditions = {};
   options = options || {};
   var filter = options.filter || {};
 
-  if (filter.active === true) {
-    conditions.active = true;
-  }
-  else if (filter.active === false) {
-    conditions.active = false;
-  }
-  
-  if (filter.enabled === true) {
-    conditions.enabled = true;
-  }
-  else if (filter.enabled === false) {
-    conditions.enabled = false;
-  }
+  //TODO check this filter for anything malicious
 
   var populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     populate.push({path: 'roleId'});
   }
 
-  var query = User.find(conditions);
+  var query = User.find(filter);
   if (populate.length) {
     query = query.populate(populate);
   }
@@ -364,12 +351,11 @@ exports.getUsers = function(options, callback) {
       var page = Math.ceil(start / limit);
       var sort = [['displayName',1], ['_id', 1]];
       if(options.sort){
-        let tmp = options.sort;
+        let json = JSON.parse(options.sort);
         sort = [];
 
-        for(let i =0; i < tmp.length; i++){
-          let field = tmp[i];
-          let item = [field, 1];
+        for(let [key, value] of Object.entries(json)){
+          let item = [key, value];
           sort.push(item);
         }
       }
