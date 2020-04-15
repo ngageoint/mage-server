@@ -32,6 +32,7 @@ jobs:
         npm run test-headless
       env:
         CI: true
+        NODE_OPTIONS: "--max_old_space_size=4096"
     - name: Dump job context
       env:
         JOB_CONTEXT: ${{ toJson(matrix) }}
