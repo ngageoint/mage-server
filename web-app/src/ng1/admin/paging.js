@@ -91,6 +91,10 @@ export default class PagingHelper {
 
     users(state, userSearch) {
 
+        if(this.stateAndData[state].pageInfo == null || this.stateAndData[state].pageInfo.users == null) {
+            return [];
+        }
+
         if (this.stateAndData[state].pageInfo.users.length == this.count(state)) {
             //Search may or may not be occuring, but the dataset is so small,
             //we will just do client side filtering
@@ -120,7 +124,13 @@ export default class PagingHelper {
             });
         }
 
-        return this.stateAndData[state].pageInfo.users;
+        var users = [];
+
+        if(this.stateAndData[state].pageInfo && this.stateAndData[state].pageInfo.users) {
+            users = this.stateAndData[state].pageInfo.users;
+        }
+
+        return users;
     }
 
     activateUser(user) {
