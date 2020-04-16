@@ -126,8 +126,7 @@ class AdminDashboardController {
     user.active = true;
 
     this._UserService.updateUser(user.id, user, data => {
-      var users = this.stateAndData['inactive'].pageInfo.users;
-      this.stateAndData['inactive'].pageInfo.users = _.reject(users, function (u) { return u.id === data.id; });
+      this.pagingHelper.activateUser(user);
       this.onUserActivated({
         $event: {
           user: user
