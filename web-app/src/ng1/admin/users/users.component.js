@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import PagingHelper from '../paging'
 
 class AdminUsersController {
   constructor($uibModal, $state, $timeout, LocalStorageService, UserService) {
@@ -7,42 +8,16 @@ class AdminUsersController {
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
+    this.pagingHelper = new PagingHelper(UserService);
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
     this.userSearch = '';
-    this.previousSearch = '';
     this.itemsPerPage = 10;
 
-    this.stateAndData = new Map();
-    this.stateAndData['all'] = {
-      countFilter: {},
-      userFilter: {limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
-      userCount: 0,
-      pageInfo: {}
-    };
-    this.stateAndData['active'] = {
-      countFilter: {active: true},
-      userFilter: {active: true, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
-      userCount: 0,
-      pageInfo: {}
-    };
-    this.stateAndData['inactive'] = {
-      countFilter: {active: false},
-      userFilter: {active: false, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
-      userCount: 0,
-      pageInfo: {}
-    };
-    this.stateAndData['disabled'] = {
-      countFilter: {enabled: false},
-      userFilter: {enabled: false, limit: this.itemsPerPage, sort: {displayName: 1, _id: 1}},
-      userCount: 0,
-      pageInfo: {}
-    };
-
-    this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
-    this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
-    this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+    this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
+    this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
+    this.hasUserDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_USER');
 
     // For some reason angular is not calling into filter function with correct context
     this.filterActive = this._filterActive.bind(this);
@@ -50,103 +25,38 @@ class AdminUsersController {
 
   $onInit() {
 
-    for (const [key, value] of Object.entries(this.stateAndData)) {
-
-      this.UserService.getUserCount(value.countFilter).then(result => {
-        if(result && result.data && result.data.count) {
-          this.stateAndData[key].userCount = result.data.count;
-        }
-      });
-
-      this.UserService.getAllUsers(value.userFilter).then(pageInfo => {
-        this.stateAndData[key].pageInfo = pageInfo;
-      });
-    }
-   
   }
 
   count(state) {
-    return this.stateAndData[state].userCount;
+    return this.pagingHelper.count(state);
   }
 
   hasNext() {
-    var status = false;
-
-    if(this.stateAndData[this.filter].pageInfo && this.stateAndData[this.filter].pageInfo.links) {
-      status = this.stateAndData[this.filter].pageInfo.links.next != null && 
-      this.stateAndData[this.filter].pageInfo.links.next !== "";
-    }
-
-    return status;
+    return this.pagingHelper.hasNext(this.filter);
   }
 
   next() {
-    this.move(this.stateAndData[this.filter].pageInfo.links.next);
+    this.pagingHelper.next(this.filter);
   }
 
   hasPrevious() {
-    var status = false;
-
-    if(this.stateAndData[this.filter].pageInfo && this.stateAndData[this.filter].pageInfo.links) {
-      status = this.stateAndData[this.filter].pageInfo.links.prev != null && 
-      this.stateAndData[this.filter].pageInfo.links.prev !== "";
-    }
-
-    return status;
+    return this.pagingHelper.hasPrevious(this.filter);
   }
 
   previous() {
-    this.move(this.stateAndData[this.filter].pageInfo.links.prev);
-  }
-
-  move(start) {
-    var filter = this.stateAndData[this.filter].userFilter;
-    filter.start = start;
-    this.UserService.getAllUsers(filter).then(pageInfo => {
-      this.stateAndData[this.filter].pageInfo = pageInfo;
-    });
+    this.pagingHelper.previous(this.filter);
   }
 
   users() {
-
-    if (this.stateAndData[this.filter].pageInfo.users.length == this.count(this.filter)) { 
-      //Search may or may not be occuring, but the dataset is so small,
-      //we will just do client side filtering
-    } else if(this.previousSearch == '' && this.userSearch == '') {
-      //Not performing a seach
-    } else if(this.previousSearch != '' && this.userSearch == '') {
-      //Clearing out the search
-      this.previousSearch = '';
-      delete this.stateAndData[this.filter].userFilter['or'];
-
-      this.UserService.getAllUsers(this.stateAndData[this.filter].userFilter).then(pageInfo => {
-        this.stateAndData[this.filter].pageInfo = pageInfo;
-      });
-    } else if (this.previousSearch == this.userSearch) {
-      //Search is being performed, no need to keep searching the same info over and over
-    } else {
-      //Perform the server side searching
-      this.previousSearch = this.userSearch;
-
-      var filter = this.stateAndData[this.filter].userFilter;
-      filter.or = {
-        displayName: '.*' + this.userSearch + '.*',
-        email: '.*' + this.userSearch + '.*'
-      };
-      this.UserService.getAllUsers(filter).then(pageInfo => {
-        this.stateAndData[this.filter].pageInfo = pageInfo;
-      });
-    }
-
-    return this.stateAndData[this.filter].pageInfo.users;
+    return this.pagingHelper.users(this.filter, this.userSearch);
   }
 
   _filterActive(user) {
     switch (this.filter) {
-    case 'all': return true;
-    case 'active': return user.active;
-    case 'inactive': return !user.active;
-    case 'disabled': return !user.enabled;
+      case 'all': return true;
+      case 'active': return user.active;
+      case 'inactive': return !user.active;
+      case 'disabled': return !user.enabled;
     }
   }
 
@@ -188,7 +98,7 @@ class AdminUsersController {
     modalInstance.result.then(user => {
       var users = _.reject(this.stateAndData[this.filter].pageInfo.users, u => { return u.id === user.id; });
       this.stateAndData[this.filter].pageInfo.users = users;
-      this.stateAndData[this.filter].userCount = this.stateAndData[this.filter].userCount -1;
+      this.stateAndData[this.filter].userCount = this.stateAndData[this.filter].userCount - 1;
     });
   }
 
@@ -199,7 +109,7 @@ class AdminUsersController {
     this.UserService.updateUser(user.id, user, () => {
       var users = _.reject(this.stateAndData['inactive'].pageInfo.users, u => { return u.id === user.id; });
       this.stateAndData['inactive'].pageInfo.users = users;
-      this.stateAndData['inactive'].userCount = this.stateAndData['inactive'].userCount -1;
+      this.stateAndData['inactive'].userCount = this.stateAndData['inactive'].userCount - 1;
 
       this.stateAndData['active'].pageInfo.users.push(user);
       this.stateAndData['active'].userCount = this.stateAndData['active'].userCount + 1;
@@ -223,7 +133,7 @@ class AdminUsersController {
     this.UserService.updateUser(user.id, user, () => {
       var users = _.reject(this.stateAndData['disabled'].pageInfo.users, u => { return u.id === user.id; });
       this.stateAndData['disabled'].pageInfo.users = users;
-      this.stateAndData['disabled'].userCount = this.stateAndData['disabled'].userCount -1;
+      this.stateAndData['disabled'].userCount = this.stateAndData['disabled'].userCount - 1;
     });
   }
 }
