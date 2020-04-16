@@ -33,24 +33,31 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: npm install, build, and test
+      - name: Server test and build
         run: |
           npm install
           npm test
-          cd web-app
-          npm install
-          cd ..
-          npm run build-web
         env:
           CI: true
-      - name: Get the version
+      - name: Web test and build
+        run: |
+          cd web-app
+          npm install
+          npm run test-headless
+          npm run build
+        env:
+          CI: true
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: Version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      - name: Zip Folder
-        run: zip -r mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.zip .
+      - name: Archive
+        run:  |
+          cd ..
+          tar czf mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.tar.gz mage-server --transform s/mage-server/mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}/
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.zip
+          files: ../mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

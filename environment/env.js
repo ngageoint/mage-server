@@ -40,6 +40,7 @@ const appEnv = cfenv.getAppEnv({
           credentials: {
             url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
             poolSize: parseInt(process.env.MAGE_MONGO_POOL_SIZE) || 5,
+            replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
             ssl: process.env.MAGE_MONGO_SSL,
@@ -79,6 +80,7 @@ const environment = {
     options: {
       useMongoClient: true, // this can be removed after upgrading to mongoose 5+ http://mongoosejs.com/docs/connections.html#v5-changes
       poolSize: mongoConfig.poolSize,
+      replicaSet: mongoConfig.replicaSet,
       ssl: mongoSsl
     }
   }
