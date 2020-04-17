@@ -30,13 +30,6 @@ app.enable('trust proxy');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(function(req, res, next) {
-  req.getRoot = function() {
-    return req.protocol + "://" + req.get('host');
-  };
-  return next();
-});
-
 const secret = crypto.randomBytes(64).toString('hex');
 app.use(cookieSession({
   secret: secret,
