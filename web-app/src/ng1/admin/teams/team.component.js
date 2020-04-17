@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import PagingHelper from '../paging'
 
 class AdminTeamController {
   constructor($uibModal, $filter, $state, $stateParams, Team, Event, UserService) {
@@ -9,12 +10,12 @@ class AdminTeamController {
     this.Team = Team;
     this.Event = Event;
     this.UserService = UserService;
+    this.pagingHelper = new PagingHelper(UserService);
+    this.userState = 'all';
 
     this.permissions = [];
 
     this.edit = false;
-    this.usersPage = 0;
-    this.usersPerPage = 10;
   
     this.teamEvents = [];
     this.nonTeamEvents = [];
@@ -30,15 +31,12 @@ class AdminTeamController {
   }
 
   $onInit() {
-    this.UserService.getAllUsers().then(users => {
-      this.users = users;
-      this.usersIdMap = _.indexBy(users, 'id');
-  
+    this.UserService.getAllUsers().then(users => {        
       this.Team.get({id: this.$stateParams.teamId, populate: false}, team => {
         this.team = team;
         this.user = {};
         this.teamUsersById = _.indexBy(this.team.users, 'id');
-        this.nonUsers = _.filter(this.users, user => {
+        this.nonUsers = _.filter(users, user => {
           return !this.teamUsersById[user.id];
         });
   
@@ -65,6 +63,30 @@ class AdminTeamController {
         });
       });
     });
+  }
+
+  count() {
+    return this.pagingHelper.count(this.userState);
+  }
+
+  hasNext() {
+    return this.pagingHelper.hasNext(this.userState);
+  }
+
+  next() {
+    this.pagingHelper.next(this.userState);
+  }
+
+  hasPrevious() {
+    return this.pagingHelper.hasPrevious(this.userState);
+  }
+
+  previous() {
+    this.pagingHelper.previous(this.userState);
+  }
+
+  users() {
+    return this.pagingHelper.users(this.userState, this.userSearch);
   }
 
   editTeam(team) {

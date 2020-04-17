@@ -147,11 +147,11 @@
             <div class="row">
               <div class="col-md-12">
                 <ul class="pager pull-right">
-                  <li ng-class="{'disabled': $ctrl.usersPage == 0}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.usersPage == 0 || ($ctrl.usersPage=$ctrl.usersPage-1)">&larr; Previous</a>
+                  <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                   </li>
-                  <li ng-class="{'disabled': $ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1 || ($ctrl.usersPage=$ctrl.usersPage+1)">Next&rarr;</a>
+                  <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                   </li>
                 </ul>
               </div>
