@@ -1,8 +1,9 @@
-module.exports = function(app, passport, provision) {
+module.exports = function(app, passport, provision, strategyConfig, tokenService) {
 
   const log = require('winston')
     , moment = require('moment')
     , LocalStrategy = require('passport-local').Strategy
+    , TokenAssertion = require('./verification').TokenAssertion
     , User = require('../models/user')
     , Device = require('../models/device')
     , api = require('../api')
@@ -10,19 +11,10 @@ module.exports = function(app, passport, provision) {
     , userTransformer = require('../transformers/user');
 
   function parseLoginMetadata(req, _res, next) {
-    console.log('parse login metadata');
     req.loginOptions = {
       userAgent: req.headers['user-agent'],
       appVersion: req.param('appVersion')
     };
-
-    next();
-  }
-
-  function isAuthenticated(req, res, next) {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
 
     next();
   }
@@ -40,7 +32,6 @@ module.exports = function(app, passport, provision) {
         if (!user.active) {
           log.warn('Failed user login attempt: User ' + user.username + ' is not active');
           return done(null, false, { message: 'User account is not approved, please contact your MAGE administrator to approve your account.' });
-
         }
 
         if (!user.enabled) {
@@ -87,12 +78,9 @@ module.exports = function(app, passport, provision) {
       passport.authenticate('local', function(err, user, info = {}) {
         if (err) return next(err);
 
-        if (!user) {
-          return res.status(401).send(info.message);
-        }
+        if (!user) return res.status(401).send(info.message);
 
         req.user = user;
-        console.log('got user, next route');
         next();
       })(req, res, next);
     },
@@ -116,25 +104,38 @@ module.exports = function(app, passport, provision) {
       passport.authenticate('local', function(err, user, info = {}) {
         if (err) return next(err);
 
-        if (!user) {
-          return res.status(401).send(info.message);
-        }
+        if (!user) return res.status(401).send(info.message);
 
-        req.login(user, function(err) {
+        // DEPRECATED session authorization, remove req.login which creates session in next version
+        req.login(user, function (err) {
           if (err) return next(err);
 
-          res.json({
-            user: userTransformer.transform(req.user, {path: req.getRoot()})
+          tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+            .then(token => {
+              res.json({
+                token: token,
+                user: userTransformer.transform(user, { path: req.getRoot() })
+              });
+            }).catch(err => {
+              next(err);
+            });
+
           });
-        });
       })(req, res, next);
     }
   );
 
+  // DEPRECATED retain old routes as deprecated until next major version.
   // Create a new device
   // Any authenticated user can create a new device, the registered field will be set to false.
   app.post('/auth/local/devices',
-    isAuthenticated,
+    function(req, res, next) {
+      if (req.user) {
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    },
     function(req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
@@ -161,9 +162,22 @@ module.exports = function(app, passport, provision) {
     }
   );
 
+  // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/local/authorize',
-    isAuthenticated,
+    function (req, res, next) {
+      if (req.user) {
+        log.warn('session authorization is deprecated, please use jwt');
+        return next();
+      }
+
+      passport.authenticate('authorization', function (err, user, info = {}) {
+        if (!user) return res.status(401).send(info.message);
+
+        req.user = user;
+        next();
+      })(req, res, next);
+    },
     provision.check('local'),
     parseLoginMetadata,
     function(req, res, next) {

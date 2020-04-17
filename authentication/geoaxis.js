@@ -1,15 +1,51 @@
-module.exports = function (app, passport, provision, strategyConfig) {
+module.exports = function (app, passport, provision, strategyConfig, tokenService) {
 
   const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
-    , crypto = require('crypto')
     , User = require('../models/user')
     , Device = require('../models/device')
     , Role = require('../models/role')
+    , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
     , log = require('../logger');
 
   log.info('Configuring GeoAxis authentication');
+
+  function parseLoginMetadata(req, res, next) {
+    req.loginOptions = {
+      userAgent: req.header['user-agent'],
+      appVersion: req.param('appVersion')
+    };
+
+    next();
+  }
+
+  function authenticate(req, res, next) {
+    passport.authenticate('geoaxis', function (err, user, info = {}) {
+      if (err) return next(err);
+
+      req.user = user;
+
+      // For inactive or disabled accounts don't generate an authorization token
+      if (!user.active || !user.enabled) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
+        return next();
+      }
+
+      // DEPRECATED session authorization, remove req.login which creates session in next version
+      req.login(user, function (err) {
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            req.token = token;
+            req.user = user;
+            req.info = info;
+            next();
+          }).catch(err => {
+            next(err);
+          });
+      });
+    })(req, res, next);
+  }
 
   const strategy = new GeoaxisStrategy({
     authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
@@ -49,81 +85,38 @@ module.exports = function (app, passport, provision, strategyConfig) {
           });
         });
       } else if (!user.active) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
         return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account."} );
       } else {
-        return done(null, user, {access_token: accessToken});
+        return done(null, user);
       }
     });
   });
 
   passport.use('geoaxis', strategy);
 
-  app.get('/auth/geoaxis/signin', passport.authenticate('geoaxis'));
-
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.header['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
-
-  function authenticate(req, res, next) {
-    passport.authenticate('geoaxis', function(err, user, info = {}) {
-      if (err) return next(err);
-
-      req.info = info;
-
-      req.login(user, next);
-    })(req, res, next);
-  }
-
-  function authorizeUser(req, res, next) {
-    const token = req.param('access_token');
-
-    if (req.user) {
-      next();
-    } else if (token) {
-      log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
-
-      strategy.userProfile(token, function(err, profile) {
-        if (err) {
-          log.error('Not authenticated based on geoaxis access token', err);
-          return res.sendStatus(403);
-        }
-
-        const geoaxisUser = profile._json;
-        User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
-          if (err) return next(err);
-
-          if (!user || !user.active) {
-            return res.sendStatus(403);
-          }
-
-          req.user = user;
-          next();
-        });
-      });
-    } else {
-      return res.sendStatus(403);
-    }
-  }
-
   app.get(
-    '/auth/geoaxis/signup',
-    function(req, res, next) {
+    '/auth/geoaxis/signin',
+    function (req, res, next) {
       passport.authenticate('geoaxis', {
-        state: JSON.stringify({type: 'signup', id: crypto.randomBytes(32).toString('hex')})
+        state: req.query.state
       })(req, res, next);
     }
   );
 
+  // DEPRECATED, this will be removed in next major server version release
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
   app.post('/auth/geoaxis/devices',
-    authorizeUser,
+    function (req, res, next) {
+      // check user session
+      if (req.user) {
+        next();
+      } else {
+        return res.sendStatus(403);
+      }
+    },
     function(req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
@@ -150,9 +143,22 @@ module.exports = function (app, passport, provision, strategyConfig) {
     }
   );
 
+  // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/geoaxis/authorize',
-    authorizeUser,
+    function (req, res, next) {
+      if (req.user) {
+        log.warn('session authorization is deprecated, please use jwt');
+        return next();
+      }
+
+      passport.authenticate('authorization', function (err, user, info = {}) {
+        if (!user) return res.status(401).send(info.message);
+
+        req.user = user;
+        next();
+      })(req, res, next);
+    },
     provision.check('geoaxis'),
     parseLoginMetadata,
     function(req, res, next) {
@@ -173,7 +179,7 @@ module.exports = function (app, passport, provision, strategyConfig) {
           user: req.user,
           device: req.provisionedDevice,
           token: token.token,
-          expirationDate: token.expirationDate ,
+          expirationDate: token.expirationDate,
           api: api
         });
       });
@@ -185,8 +191,19 @@ module.exports = function (app, passport, provision, strategyConfig) {
   app.get(
     '/auth/geoaxis/callback',
     authenticate,
-    function(req, res) {
-      res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, oauth: { access_token: req.info.access_token}}});
+    function (req, res) {
+      if (req.query.state === 'mobile') {
+        let uri;
+        if (!req.user.active || !req.user.enabled) {
+          uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
+        } else {
+          uri = `mage://app/authentication?token=${req.token}`
+        }
+
+        res.render('geoaxis', { uri: uri });
+      } else {
+        res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+      }
     }
   );
 

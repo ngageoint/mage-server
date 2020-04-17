@@ -11,8 +11,13 @@ class OAuthSigninController {
   }
 
   signin() {
-    this.UserService.oauthSignin(this.strategy.name).then(authData => {
-      var user = authData.user;
+    this.UserService.idpSignin(this.strategy.name).then(({ user, token }) => {
+      if (!token || !user) {
+        this.statusTitle = 'Signin Failed';
+        this.statusMessage = 'There was a problem signing in, Please contact a MAGE administrator for assistance.';
+        this.snackbar.open();
+        return;
+      }
 
       // User has an account, but its not active
       if (!user.active) {
@@ -25,12 +30,13 @@ class OAuthSigninController {
       this.onSignin({
         $event: {
           user: user,
+          token: token,
           strategy: this.strategy.name
         }
       });
-    }, data => {
+    }, ({errorMessage}) => {
       this.statusTitle = 'Error signing in';
-      this.statusMessage = data.errorMessage;
+      this.statusMessage = errorMessage;
       this.snackbar.open();
     });
   }
@@ -39,7 +45,7 @@ class OAuthSigninController {
 OAuthSigninController.$inject = ['$element', 'UserService'];
 
 export default {
-  template: require('./oauth.signin.html'),
+  template: require('./idp.signin.html'),
   bindings: {
     strategy: '<',
     onSignin: '&'

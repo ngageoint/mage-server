@@ -14,7 +14,7 @@ class AuthorizeController {
 
   $onInit() {
     this.showAuthorize = false;
-    this._UserService.authorize(this.strategy, this.user, false, { uid: this.uid }).success(data => {
+    this._UserService.authorize(this.strategy, this.token, null).success(() => {
       this.onAuthorized();
     }).error(() => {
       this.showAuthorize = true;
@@ -22,7 +22,7 @@ class AuthorizeController {
   }
 
   authorize() {
-    this._UserService.authorize(this.strategy, this.user, false, {uid: this.uid}).success(data => {
+    this._UserService.authorize(this.token, this.uid).success(data => {
       if (data.device.registered) {
         this.onAuthorized({device: data});
       } else {
@@ -53,8 +53,9 @@ AuthorizeController.$inject = ['UserService', '$element'];
 export default {
   template: require('./authorize.html'),
   bindings: {
-    user: '<',
     strategy: '@',
+    token: '@',
+    user: '<',
     onCancel: '&',
     onAuthorized: '&'
   },

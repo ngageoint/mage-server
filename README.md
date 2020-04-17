@@ -234,36 +234,6 @@ connect to the database until a [configured timeout](#mage-environment-settings)
 The node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
 [localhost:4242](http://localhost:4242).
 
-#### HTTP vs. HTTPS
-
-**IMPORTANT:**  In order to access MAGE at the default HTTP URL above, you must explicitly set
-environment variable `MAGE_SESSION_COOKIE_SECURE=false` to relax the requirement of HTTPS
-for sending the authorization session cookie.  You can set this variable by prepending it to
-your startup command, e.g.,
-```
-$ MAGE_SESSION_COOKIE_SECURE=false node app.js
-```
-or by adding the variable to a `.profile` script or other similar mechanism of the user account
-that runs the MAGE server Node process.
-
-If you do not explicitly change this setting, MAGE will require an HTTPS connection to send the
-authorization cookie.  This behavior is by design to encourage you to use HTTPS to connect to
-your MAGE server and avoid sending authorization tokens over an insecure connection that could
-potentially be intercepted.
-
-If you are [unable to login](https://github.com/ngageoint/mage-server/issues/57) to your server
-after entering your device UID in the webapp login form, and the webapp appears unresponsive,
-the cause is probably that you are connecting over HTTP, and you have not explicitly allowed
-insecure cookies.
-
-This setting is intended for use only in a development environment, when the server is bound
-to `localhost`.  We **strongly urge** you never to allow insecure connections to a production
-MAGE server bound to a publicly-accessible IP address.
-
-You can start with the documentation of the [cookie library](https://www.npmjs.com/package/cookies#secure-cookies)
-MAGE uses for more details about requiring secure cookies as well as properly configuring MAGE
-behind a reverse proxy with TLS/HTTPS.
-
 ### Running with `forever`
 
 The best way to handle critical errors in Node.js is to let the node server crash immediately.  Upon crash the server

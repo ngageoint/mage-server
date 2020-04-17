@@ -31,7 +31,7 @@ let mockUser = new UserModel({
   }
 });
 
-async function createSession(agent) {
+async function authenticate() {
   userId = mongoose.Types.ObjectId();
   mockUser = new UserModel({
     _id: userId,
@@ -60,7 +60,8 @@ async function createSession(agent) {
     .expects('save')
     .resolves(mockUser);
 
-  return await agent
+  let jwt;
+  await request(app)
     .post('/auth/local/signin')
     .send({
       username: 'test',
@@ -68,16 +69,18 @@ async function createSession(agent) {
     })
     .expect(200)
     .expect(function (res) {
+      jwt = res.body.token;
       sinon.restore();
     });
+
+  return jwt; 
 }
 
 describe("device provision tests", function() {
-  let agent;
+  let jwt;
 
   beforeEach(async () => {
-    agent = request.agent(app);
-    await createSession(agent);
+    jwt = await authenticate();
   });
 
   afterEach(function() {
@@ -130,9 +133,10 @@ describe("device provision tests", function() {
       userId: userId.toHexString()
     };
 
-    agent
+    request(app)
       .post('/auth/local/authorize')
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .send(reqDevice)
       .expect(403)
       .end(done);
@@ -186,9 +190,10 @@ describe("device provision tests", function() {
       userId: userId.toHexString()
     };
 
-    agent
+    request(app)
       .post('/auth/local/authorize')
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .send(reqDevice)
       .expect(200)
       .expect(function (res) {
@@ -247,9 +252,10 @@ describe("device provision tests", function() {
       userId: userId.toHexString()
     };
 
-    agent
+    request(app)
       .post('/auth/local/authorize')
       .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
       .send(reqDevice)
       .expect(200)
       .expect(function (res) {

@@ -151,8 +151,6 @@ or an AWS [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbal
 reverse proxy, peform the following modifications to `docker-compose.yml`.
 1. Comment the `ports` block for the `mage-server` service to disallow
   connections directly to the Node.js server.
-1. Comment the `MAGE_SESSION_COOKIE_SECURE` entry in the `environment` block
-  of the `mage-server` service.
 1. Uncomment the block with the `mage-web-proxy` service key.
 
 For testing in a development environment, you can create a self-signed server
