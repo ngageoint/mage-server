@@ -12,6 +12,7 @@ class AdminTeamController {
     this.UserService = UserService;
     this.pagingHelper = new PagingHelper(UserService);
     this.userState = 'all';
+    this.usersPerPage = 10;
 
     this.permissions = [];
 
