@@ -31,8 +31,10 @@ export default class PagingHelper {
             userCount: 0,
             pageInfo: {}
         };
+        this.refresh();
+    }
 
-
+    refresh() {
         for (const [key, value] of Object.entries(this.stateAndData)) {
 
             this.UserService.getUserCount(value.countFilter).then(result => {

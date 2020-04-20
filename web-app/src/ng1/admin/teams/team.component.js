@@ -10,13 +10,13 @@ class AdminTeamController {
     this.Team = Team;
     this.Event = Event;
     this.UserService = UserService;
-    this.pagingHelper = new PagingHelper(UserService);
     this.userState = 'all';
     this.usersPerPage = 10;
     this.memberSearch = '';
 
     this.permissions = [];
 
+    this.pagingHelper = new PagingHelper(UserService);
     this.nonUsers = [];
     this.loadingUsers;
     this.noSearchResults;
@@ -41,6 +41,16 @@ class AdminTeamController {
       this.team = team;
       this.user = {};
       this.teamUsersById = _.indexBy(this.team.users, 'id');
+
+      let userIds = [];
+
+      for(var i = 0; i < this.team.users.length; i++) {
+        let user = this.team.users[i];
+        userIds.push(user.id);
+      }
+
+      this.pagingHelper.stateAndData[this.userState].userFilter.userIds = userIds;
+      this.pagingHelper.refresh();
 
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
