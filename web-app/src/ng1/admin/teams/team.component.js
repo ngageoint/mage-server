@@ -21,7 +21,6 @@ class AdminTeamController {
     this.loadingUsers;
     this.noSearchResults;
     
-
     this.edit = false;
 
     this.teamEvents = [];
