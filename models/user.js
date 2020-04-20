@@ -302,7 +302,7 @@ exports.count = function (options, callback) {
   options = options || {};
   var filter = options.filter || {};
 
-  appendUserIdFilter(filter);
+  appendUserIdFilter(filter, filter);
 
   User.count(filter, function (err, count) {
     callback(err, count);
@@ -315,20 +315,30 @@ exports.getUsers = function (options, callback) {
     options = {};
   }
 
+  var conditions = {};
   options = options || {};
   var filter = options.filter || {};
 
-  //TODO check this filter for anything malicious
+  if (filter.active) {
+    conditions.active = filter.active;
+  }
+  if (filter.enabled) {
+    conditions.enabled = filter.enabled;
+  }
+
+  appendUserIdFilter(filter, conditions);
+
+  var query = User.find(conditions);
 
   var populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     populate.push({ path: 'roleId' });
+    query = query.populate(populate);
   }
 
   var orCondition = [];
   if (filter.or) {
     let json = JSON.parse(filter.or);
-    delete filter.or;
 
     for (let [key, value] of Object.entries(json)) {
       let entry = {};
@@ -336,59 +346,12 @@ exports.getUsers = function (options, callback) {
       entry[key] = regex;
       orCondition.push(entry);
     }
-  }
-
-  appendUserIdFilter(filter);
-
-  var query = User.find(filter);
-  if (populate.length) {
-    query = query.populate(populate);
-  }
-
-  if (orCondition.length > 0) {
     query = query.or(orCondition);
   }
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    //TODO probably should not call count so often
-    User.count(query, function (err, count) {
-      if (err) return callback(err, null, null);
-
-      var sort = [['displayName', 1], ['_id', 1]];
-      if (options.sort) {
-        let json = JSON.parse(options.sort);
-        sort = [];
-
-        for (let [key, value] of Object.entries(json)) {
-          let item = [key, value];
-          sort.push(item);
-        }
-      }
-
-      var limit = Math.abs(options.limit) || 10;
-      var start = (Math.abs(options.start) || 0);
-      var page = Math.ceil(start / limit);
-      query.sort(sort).limit(limit).skip(limit * page).exec(function (err, users) {
-        if (err) return callback(err, users, null);
-
-        let pageInfo = new PageInfo(users);
-        pageInfo.start = start;
-        pageInfo.limit = limit;
-
-        let estimatedNext = start + limit;
-
-        if (estimatedNext < count) {
-          pageInfo.links.next = estimatedNext;
-        }
-
-        if (start > 0) {
-          pageInfo.links.prev = Math.abs(options.start - options.limit);
-        }
-
-        callback(err, users, pageInfo);
-      });
-    });
+    page(query, options, callback);
   } else {
     query.exec(function (err, users) {
       callback(err, users, null);
@@ -396,23 +359,64 @@ exports.getUsers = function (options, callback) {
   }
 };
 
-function appendUserIdFilter(filter) {
-  if(filter.userIds) {
+function appendUserIdFilter(filter, conditions) {
+  if (filter.userIds) {
     let userIds = filter.userIds;
     delete filter.userIds;
 
     let objectIds = [];
 
-    for(var i = 0; i < userIds.length; i++) {
+    for (var i = 0; i < userIds.length; i++) {
       let userId = userIds[i];
       objectIds.push(mongoose.Types.ObjectId(userId));
     }
 
-    filter._id = {
+    conditions._id = {
       $in: objectIds
     };
   }
 };
+
+function page(query, options, callback) {
+  //TODO probably should not call count so often
+  User.count(query, function (err, count) {
+    if (err) return callback(err, null, null);
+
+    var sort = [['displayName', 1], ['_id', 1]];
+    if (options.sort) {
+      let json = JSON.parse(options.sort);
+      sort = [];
+
+      for (let [key, value] of Object.entries(json)) {
+        let item = [key, value];
+        sort.push(item);
+      }
+    }
+
+    var limit = Math.abs(options.limit) || 10;
+    var start = (Math.abs(options.start) || 0);
+    var page = Math.ceil(start / limit);
+    query.sort(sort).limit(limit).skip(limit * page).exec(function (err, users) {
+      if (err) return callback(err, users, null);
+
+      let pageInfo = new PageInfo(users);
+      pageInfo.start = start;
+      pageInfo.limit = limit;
+
+      let estimatedNext = start + limit;
+
+      if (estimatedNext < count) {
+        pageInfo.links.next = estimatedNext;
+      }
+
+      if (start > 0) {
+        pageInfo.links.prev = Math.abs(options.start - options.limit);
+      }
+
+      callback(err, users, pageInfo);
+    });
+  });
+}
 
 exports.createUser = async function (user, callback) {
   var update = {
