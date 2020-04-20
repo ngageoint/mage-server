@@ -302,6 +302,8 @@ exports.count = function (options, callback) {
   options = options || {};
   var filter = options.filter || {};
 
+  appendUserIdFilter(filter);
+
   User.count(filter, function (err, count) {
     callback(err, count);
   });
@@ -336,21 +338,7 @@ exports.getUsers = function (options, callback) {
     }
   }
 
-  if(filter.userIds) {
-    let userIds = filter.userIds;
-    delete filter.userIds;
-
-    let objectIds = [];
-
-    for(var i = 0; i < userIds.length; i++) {
-      let userId = userIds[i];
-      objectIds.push(mongoose.Types.ObjectId(userId));
-    }
-
-    filter._id = {
-      $in: objectIds
-    };
-  }
+  appendUserIdFilter(filter);
 
   var query = User.find(filter);
   if (populate.length) {
@@ -405,6 +393,24 @@ exports.getUsers = function (options, callback) {
     query.exec(function (err, users) {
       callback(err, users, null);
     });
+  }
+};
+
+function appendUserIdFilter(filter) {
+  if(filter.userIds) {
+    let userIds = filter.userIds;
+    delete filter.userIds;
+
+    let objectIds = [];
+
+    for(var i = 0; i < userIds.length; i++) {
+      let userId = userIds[i];
+      objectIds.push(mongoose.Types.ObjectId(userId));
+    }
+
+    filter._id = {
+      $in: objectIds
+    };
   }
 };
 

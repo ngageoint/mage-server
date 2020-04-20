@@ -254,10 +254,14 @@ module.exports = function (app, security) {
     access.authorize('READ_USER'),
     function (req, res, next) {
       var filter = {};
-      if (req.query.active === 'true' || req.query.active === 'false') {
-        filter.active = req.query.active === 'true';
-      } else if (req.query.enabled === 'true' || req.query.enabled === 'false') {
-        filter.enabled = req.query.enabled === 'true';
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+            continue;
+          }
+          filter[key] = value;
+        }
       }
 
       new api.User().count({ filter: filter }, function (err, count) {

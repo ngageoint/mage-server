@@ -50,6 +50,7 @@ class AdminTeamController {
       }
 
       this.pagingHelper.stateAndData[this.userState].userFilter.userIds = userIds;
+      this.pagingHelper.stateAndData[this.userState].countFilter.userIds = userIds;
       this.pagingHelper.refresh();
 
       var myAccess = this.team.acl[this.UserService.myself.id];
