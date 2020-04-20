@@ -17,6 +17,11 @@ class AdminTeamController {
 
     this.permissions = [];
 
+    this.nonUsers = [];
+    this.loadingUsers;
+    this.noSearchResults;
+    
+
     this.edit = false;
 
     this.teamEvents = [];
@@ -161,9 +166,19 @@ class AdminTeamController {
     });
   }
 
-  getNonUser(searchString) {
-    //TODO implement
-    return null;
+  getNonUsers(searchString) {
+    this.loadingUsers = 'Loading Users...';
+
+    this.nonUsers = this.pagingHelper.users(this.userState, searchString);
+
+    this.loadingUsers = null;
+    if(searchString != '') {
+      this.noSearchResults = this.nonUsers.length == 0;
+    } else{
+      this.noSearchResults = null;
+    }
+    
+    return this.nonUsers;
   }
 }
 

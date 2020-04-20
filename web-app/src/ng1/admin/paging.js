@@ -82,7 +82,7 @@ export default class PagingHelper {
     }
 
     move(start, state) {
-        var filter = this.stateAndData[state].userFilter;
+        var filter = JSON.parse(JSON.stringify(this.stateAndData[state].userFilter));
         filter.start = start;
         this.UserService.getAllUsers(filter).then(pageInfo => {
             this.stateAndData[state].pageInfo = pageInfo;
