@@ -107,10 +107,7 @@ export default class PagingHelper {
             return [];
         }
 
-        if (this.stateAndData[state].pageInfo.users.length == this.count(state)) {
-            //Search may or may not be occuring, but the dataset is so small,
-            //we will just do client side filtering
-        } else if (this.previousSearch == '' && userSearch == '') {
+        if (this.previousSearch == '' && userSearch == '') {
             //Not performing a seach
         } else if (this.previousSearch != '' && userSearch == '') {
             //Clearing out the search
