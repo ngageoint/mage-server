@@ -81,12 +81,11 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <ui-select ng-model="$ctrl.user.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a user to add to team">{{$select.selected.displayName}}</ui-select-match>
-                      <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.nonUsers | orderBy: 'name' | filter: $select.search">
-                        <div ng-bind-html="user.displayName | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
+                    <input type="text" ng-model="asyncSelected" placeholder="Users" uib-typeahead="user for user in getNonUser($viewValue)" typeahead-loading="loadingUsers" typeahead-no-results="noResults" class="form-control">
+                    <i ng-show="loadingUsers" class="glyphicon glyphicon-refresh"></i>
+                    <div ng-show="noResults">
+                      <i class="glyphicon glyphicon-remove"></i> No Results Found
+                    </div>
                   </div>
                 </div>
 
@@ -111,7 +110,7 @@
 
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
-                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch">
+                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch" ng-model-options="{ debounce: 1000 }">
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">

@@ -13,16 +13,17 @@ class AdminTeamController {
     this.pagingHelper = new PagingHelper(UserService);
     this.userState = 'all';
     this.usersPerPage = 10;
+    this.memberSearch = '';
 
     this.permissions = [];
 
     this.edit = false;
-  
+
     this.teamEvents = [];
     this.nonTeamEvents = [];
     this.eventsPage = 0;
     this.eventsPerPage = 10;
-  
+
     this.team = {
       users: []
     };
@@ -32,35 +33,30 @@ class AdminTeamController {
   }
 
   $onInit() {
-    this.UserService.getAllUsers().then(users => {        
-      this.Team.get({id: this.$stateParams.teamId, populate: false}, team => {
-        this.team = team;
-        this.user = {};
-        this.teamUsersById = _.indexBy(this.team.users, 'id');
-        this.nonUsers = _.filter(users, user => {
-          return !this.teamUsersById[user.id];
+    this.Team.get({ id: this.$stateParams.teamId, populate: false }, team => {
+      this.team = team;
+      this.user = {};
+      this.teamUsersById = _.indexBy(this.team.users, 'id');
+
+      var myAccess = this.team.acl[this.UserService.myself.id];
+      var aclPermissions = myAccess ? myAccess.permissions : [];
+
+      this.hasReadPermission = _.contains(this.UserService.myself.role.permissions, 'READ_TEAM') || _.contains(aclPermissions, 'read');
+      this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
+      this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
+    });
+
+    this.Event.query(events => {
+      this.event = {};
+      this.teamEvents = _.filter(events, event => {
+        return _.some(event.teams, team => {
+          return this.team.id === team.id;
         });
-  
-        var myAccess = this.team.acl[this.UserService.myself.id];
-        var aclPermissions = myAccess ? myAccess.permissions : [];
-  
-        this.hasReadPermission = _.contains(this.UserService.myself.role.permissions, 'READ_TEAM') || _.contains(aclPermissions, 'read');
-        this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
-        this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
       });
-  
-      this.Event.query(events => {
-        this.event = {};
-        this.teamEvents = _.filter(events, event => {
-          return _.some(event.teams, team => {
-            return this.team.id === team.id;
-          });
-        });
-  
-        this.nonTeamEvents = _.reject(events, event => {
-          return _.some(event.teams, team => {
-            return this.team.id === team.id;
-          });
+
+      this.nonTeamEvents = _.reject(events, event => {
+        return _.some(event.teams, team => {
+          return this.team.id === team.id;
         });
       });
     });
@@ -87,7 +83,7 @@ class AdminTeamController {
   }
 
   users() {
-    return this.pagingHelper.users(this.userState, this.userSearch);
+    return this.pagingHelper.users(this.userState, this.memberSearch);
   }
 
   editTeam(team) {
@@ -97,13 +93,11 @@ class AdminTeamController {
   addUser(user) {
     this.user = {};
     this.team.users.push(user);
-    this.nonUsers = _.reject(this.nonUsers, u => { return user.id === u.id; });
 
     this.saveTeam(this.team);
   }
 
   removeUser(user) {
-    this.nonUsers.push(user);
     this.team.users = _.reject(this.team.users, u => { return user.id === u.id; });
 
     this.saveTeam(this.team);
@@ -135,7 +129,7 @@ class AdminTeamController {
   }
 
   addEventToTeam(event) {
-    this.Event.addTeam({id: event.id}, this.team, event => {
+    this.Event.addTeam({ id: event.id }, this.team, event => {
       this.teamEvents.push(event);
       this.nonTeamEvents = _.reject(this.nonTeamEvents, e => { return e.id === event.id; });
 
@@ -146,7 +140,7 @@ class AdminTeamController {
   removeEventFromTeam($event, event) {
     $event.stopPropagation();
 
-    this.Event.removeTeam({id: event.id, teamId: this.team.id}, event => {
+    this.Event.removeTeam({ id: event.id, teamId: this.team.id }, event => {
       this.teamEvents = _.reject(this.teamEvents, e => { return e.id === event.id; });
       this.nonTeamEvents.push(event);
     });
@@ -165,6 +159,11 @@ class AdminTeamController {
     modalInstance.result.then(() => {
       this.$state.go('admin.teams');
     });
+  }
+
+  getNonUser(searchString) {
+    //TODO implement
+    return null;
   }
 }
 
