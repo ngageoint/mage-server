@@ -88,7 +88,11 @@ class AdminTeamController {
   }
 
   users() {
-    return this.pagingHelper.users(this.userState, this.memberSearch);
+    return this.pagingHelper.users(this.userState);
+  }
+
+  search() {
+    this.pagingHelper.search(this.userState, this.memberSearch);
   }
 
   editTeam(team) {

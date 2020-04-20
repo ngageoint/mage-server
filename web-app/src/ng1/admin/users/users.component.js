@@ -48,7 +48,11 @@ class AdminUsersController {
   }
 
   users() {
-    return this.pagingHelper.users(this.filter, this.userSearch);
+    return this.pagingHelper.users(this.filter);
+  }
+
+  search() {
+    this.pagingHelper.search(this.filter, this.userSearch);
   }
 
   _filterActive(user) {
@@ -63,7 +67,7 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.users();
+    this.search();
   }
 
   newUser() {

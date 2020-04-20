@@ -21,7 +21,7 @@
       <form class="form">
         <div class="top-gap">
           <label>Search</label>
-          <input type="text" class="form-control" placeholder="name, email" ng-model="$ctrl.userSearch" ng-model-options="{ debounce: 1000 }">
+          <input type="text" class="form-control" placeholder="name, email" ng-model="$ctrl.userSearch" ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
         </div>
       </form>
       <hr>
@@ -47,7 +47,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users() | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="u in $ctrl.users() | orderBy:'displayName' | limitTo:$ctrl.itemsPerPage" >
 
                 <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                   <div class="col-md-8">

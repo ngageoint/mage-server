@@ -89,9 +89,19 @@ export default class PagingHelper {
         });
     }
 
-    users(state, userSearch) {
+    users(state) {
+        var users = [];
 
-        if(this.stateAndData[state].pageInfo == null || this.stateAndData[state].pageInfo.users == null) {
+        if (this.stateAndData[state].pageInfo && this.stateAndData[state].pageInfo.users) {
+            users = this.stateAndData[state].pageInfo.users;
+        }
+
+        return users;
+    }
+
+    search(state, userSearch) {
+
+        if (this.stateAndData[state].pageInfo == null || this.stateAndData[state].pageInfo.users == null) {
             return [];
         }
 
@@ -123,14 +133,6 @@ export default class PagingHelper {
                 this.stateAndData[state].pageInfo = pageInfo;
             });
         }
-
-        var users = [];
-
-        if(this.stateAndData[state].pageInfo && this.stateAndData[state].pageInfo.users) {
-            users = this.stateAndData[state].pageInfo.users;
-        }
-
-        return users;
     }
 
     activateUser(user) {
@@ -142,7 +144,7 @@ export default class PagingHelper {
         this.stateAndData['active'].userCount = this.stateAndData['active'].userCount + 1;
     }
 
-    enableUser(user){
+    enableUser(user) {
         var users = _.reject(this.stateAndData['disabled'].pageInfo.users, u => { return u.id === user.id; });
         this.stateAndData['disabled'].pageInfo.users = users;
         this.stateAndData['disabled'].userCount = this.stateAndData['disabled'].userCount - 1;
