@@ -323,28 +323,32 @@ exports.getUsers = function(options, callback) {
     populate.push({path: 'roleId'});
   }
 
-  var query = User.find(filter);
-  if (populate.length) {
-    query = query.populate(populate);
-  }
-  if(options.or) {
-    let json = JSON.parse(options.or);
+  var orCondition = [];
+  if(filter.or) {
+    let json = JSON.parse(filter.or);
+    delete filter.or;
 
-    let orCondition = [];
     for(let [key, value] of Object.entries(json)) {
       let entry = {};
       let regex = {"$regex": new RegExp(value), "$options": "i"};
       entry[key] = regex;
       orCondition.push(entry);
     }
-   
+  }
+
+  var query = User.find(filter);
+  if (populate.length) {
+    query = query.populate(populate);
+  }
+
+  if(orCondition.length > 0) {
     query = query.or(orCondition);
   }
 
   var isPaging = options.limit != null && options.limit > 0;
   if(isPaging) {
     //TODO probably should not call count so often
-    User.count(filter, function(err, count) {
+    User.count(query, function(err, count) {
       if(err) return callback(err, null, null);
 
       var sort = [['displayName',1], ['_id', 1]];

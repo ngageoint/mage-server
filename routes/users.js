@@ -203,16 +203,11 @@ module.exports = function (app, security) {
 
       if(req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'or' || key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
             continue;
           }
           filter[key] = value;
         }
-      }
-
-      var or = null;
-      if (req.query.or) {
-        or = req.query.or;
       }
 
       var populate = null;
@@ -235,7 +230,7 @@ module.exports = function (app, security) {
         sort = req.query.sort;
       }
 
-      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort, or: or }, function (err, users, pageInfo) {
+      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
         if (err) return next(err);
 
         let data = null;
