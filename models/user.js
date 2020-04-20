@@ -320,10 +320,10 @@ exports.getUsers = function (options, callback) {
   var filter = options.filter || {};
 
   if (filter.active) {
-    conditions.active = filter.active;
+    conditions.active = filter.active == 'true';
   }
   if (filter.enabled) {
-    conditions.enabled = filter.enabled;
+    conditions.enabled = filter.enabled == 'true';
   }
 
   appendUserIdFilter(filter, conditions);
@@ -362,8 +362,6 @@ exports.getUsers = function (options, callback) {
 function appendUserIdFilter(filter, conditions) {
   if (filter.userIds) {
     let userIds = filter.userIds;
-    delete filter.userIds;
-
     let objectIds = [];
 
     for (var i = 0; i < userIds.length; i++) {
