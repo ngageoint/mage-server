@@ -2,32 +2,34 @@ export default class PagingHelper {
     constructor(userService) {
         this.UserService = userService;
 
-        this.previousSearch = '';
         this.itemsPerPage = 10;
 
         this.stateAndData = new Map();
-
         this.stateAndData['all'] = {
             countFilter: {},
             userFilter: { limit: this.itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
             userCount: 0,
             pageInfo: {}
         };
         this.stateAndData['active'] = {
             countFilter: { active: true },
             userFilter: { active: true, limit: this.itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
             userCount: 0,
             pageInfo: {}
         };
         this.stateAndData['inactive'] = {
             countFilter: { active: false },
             userFilter: { active: false, limit: this.itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
             userCount: 0,
             pageInfo: {}
         };
         this.stateAndData['disabled'] = {
             countFilter: { enabled: false },
             userFilter: { enabled: false, limit: this.itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
             userCount: 0,
             pageInfo: {}
         };
@@ -107,21 +109,23 @@ export default class PagingHelper {
             return [];
         }
 
-        if (this.previousSearch == '' && userSearch == '') {
+        const previousSearch = this.stateAndData[state].searchFilter;
+
+        if (previousSearch == '' && userSearch == '') {
             //Not performing a seach
-        } else if (this.previousSearch != '' && userSearch == '') {
+        } else if (previousSearch != '' && userSearch == '') {
             //Clearing out the search
-            this.previousSearch = '';
+            this.stateAndData[state].searchFilter = '';
             delete this.stateAndData[state].userFilter['or'];
 
             this.UserService.getAllUsers(this.stateAndData[state].userFilter).then(pageInfo => {
                 this.stateAndData[state].pageInfo = pageInfo;
             });
-        } else if (this.previousSearch == userSearch) {
+        } else if (previousSearch == userSearch) {
             //Search is being performed, no need to keep searching the same info over and over
         } else {
             //Perform the server side searching
-            this.previousSearch = userSearch;
+            this.stateAndData[state].searchFilter = userSearch;
 
             var filter = this.stateAndData[state].userFilter;
             filter.or = {
