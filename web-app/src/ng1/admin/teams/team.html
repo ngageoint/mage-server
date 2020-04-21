@@ -81,10 +81,10 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <input type="text" ng-model="$ctrl.nonUsers" placeholder="Search" uib-typeahead="user for user in $ctrl.getNonUsers($viewValue) | orderBy:'displayName' | limitTo:$ctrl.usersPerPage" 
-                      typeahead-loading="$ctrl.loadingUsers" typeahead-no-results="$ctrl.noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
+                    <input type="text" ng-model="nonMemberSelected" placeholder="Search" uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)" 
+                      typeahead-loading="$ctrl.loadingUsers" typeahead-no-results="noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
                     <i ng-show="$ctrl.loadingUsers" class="glyphicon glyphicon-refresh"></i>
-                    <div ng-show="$ctrl.noSearchResults">
+                    <div ng-show="noSearchResults">
                       <i class="glyphicon glyphicon-remove"></i> No Results Found
                     </div>
                   </div>

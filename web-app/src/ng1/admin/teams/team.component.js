@@ -13,13 +13,14 @@ class AdminTeamController {
     this.userState = 'all';
     this.usersPerPage = 10;
     this.memberSearch = '';
+    this.nonMemberSearch = '';
 
     this.permissions = [];
 
+    this.loadingUsers = [];
+
     this.pagingHelper = new PagingHelper(UserService);
-    this.nonUsers = [];
-    this.loadingUsers;
-    this.noSearchResults;
+    this.nonMemberPagingHelper = new PagingHelper(UserService);
     
     this.edit = false;
 
@@ -105,6 +106,13 @@ class AdminTeamController {
     this.pagingHelper.search(this.userState, this.memberSearch);
   }
 
+  searchNonMembers(searchString) {
+    return this.nonMemberPagingHelper.search(this.userState, searchString).then(result => {
+      this.loadingUsers = this.nonMemberPagingHelper.users(this.userState);
+      return this.loadingUsers;
+    });
+  }
+
   editTeam(team) {
     this.$state.go('admin.editTeam', { teamId: team.id });
   }
@@ -178,21 +186,6 @@ class AdminTeamController {
     modalInstance.result.then(() => {
       this.$state.go('admin.teams');
     });
-  }
-
-  getNonUsers(searchString) {
-    this.loadingUsers = 'Loading Users...';
-
-    this.nonUsers = this.pagingHelper.users(this.userState, searchString);
-
-    this.loadingUsers = null;
-    if(searchString != '') {
-      this.noSearchResults = this.nonUsers.length == 0;
-    } else{
-      this.noSearchResults = null;
-    }
-    
-    return this.nonUsers;
   }
 }
 

@@ -106,23 +106,27 @@ export default class PagingHelper {
     search(state, userSearch) {
 
         if (this.stateAndData[state].pageInfo == null || this.stateAndData[state].pageInfo.users == null) {
-            return [];
+            return Promise.resolve([]);
         }
 
         const previousSearch = this.stateAndData[state].searchFilter;
 
+        var promise = null;
+
         if (previousSearch == '' && userSearch == '') {
             //Not performing a seach
+            promise = Promise.resolve([]);
         } else if (previousSearch != '' && userSearch == '') {
             //Clearing out the search
             this.stateAndData[state].searchFilter = '';
             delete this.stateAndData[state].userFilter['or'];
 
-            this.UserService.getAllUsers(this.stateAndData[state].userFilter).then(pageInfo => {
+            promise = this.UserService.getAllUsers(this.stateAndData[state].userFilter).then(pageInfo => {
                 this.stateAndData[state].pageInfo = pageInfo;
             });
         } else if (previousSearch == userSearch) {
             //Search is being performed, no need to keep searching the same info over and over
+            promise = Promise.resolve([]);
         } else {
             //Perform the server side searching
             this.stateAndData[state].searchFilter = userSearch;
@@ -132,10 +136,12 @@ export default class PagingHelper {
                 displayName: '.*' + userSearch + '.*',
                 email: '.*' + userSearch + '.*'
             };
-            this.UserService.getAllUsers(filter).then(pageInfo => {
+            promise = this.UserService.getAllUsers(filter).then(pageInfo => {
                 this.stateAndData[state].pageInfo = pageInfo;
             });
         }
+
+        return promise;
     }
 
     activateUser(user) {
