@@ -54,6 +54,8 @@ class AdminTeamController {
       this.pagingHelper.stateAndData[this.userState].countFilter.userIds = userIds;
       this.pagingHelper.refresh();
 
+      //TODO do a !in for the same user ids on the nonMemberPagingHelper
+
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
 
@@ -137,6 +139,9 @@ class AdminTeamController {
 
   saveTeam() {
     this.team.$save();
+
+    this.pagingHelper.refresh();
+    this.nonMemberPagingHelper.refresh();
   }
 
   hasPermission(permission) {
