@@ -43,18 +43,13 @@ class AdminTeamController {
       this.user = {};
       this.teamUsersById = _.indexBy(this.team.users, 'id');
 
-      let userIds = [];
-
-      for(var i = 0; i < this.team.users.length; i++) {
-        let user = this.team.users[i];
-        userIds.push(user.id);
-      }
-
-      this.pagingHelper.stateAndData[this.userState].userFilter.userIds = userIds;
-      this.pagingHelper.stateAndData[this.userState].countFilter.userIds = userIds;
+      this.pagingHelper.stateAndData[this.userState].userFilter.in = {userIds: Object.keys(this.teamUsersById)};
+      this.pagingHelper.stateAndData[this.userState].countFilter.in = {userIds: Object.keys(this.teamUsersById)};
       this.pagingHelper.refresh();
 
-      //TODO do a !in for the same user ids on the nonMemberPagingHelper
+      this.nonMemberPagingHelper.stateAndData[this.userState].userFilter.nin = {userIds: Object.keys(this.teamUsersById)};
+      this.nonMemberPagingHelper.stateAndData[this.userState].countFilter.nin = {userIds: Object.keys(this.teamUsersById)};
+      this.nonMemberPagingHelper.refresh();
 
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];

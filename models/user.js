@@ -361,18 +361,31 @@ function createQueryConditions(filter) {
     conditions.enabled = filter.enabled == 'true';
   }
 
-  if (filter.userIds) {
-    let userIds = filter.userIds;
-    let objectIds = [];
+  if (filter.in || filter.nin) {
+    var objectIds = [];
+    let json = {};
+    if (filter.in) {
+      json = JSON.parse(filter.in);
+    } else {
+      json = JSON.parse(filter.nin);
+    }
+
+    let userIds = json['userIds'];
 
     for (var i = 0; i < userIds.length; i++) {
       let userId = userIds[i];
       objectIds.push(mongoose.Types.ObjectId(userId));
     }
 
-    conditions._id = {
-      $in: objectIds
-    };
+    if (filter.in) {
+      conditions._id = {
+        $in: objectIds
+      };
+    } else {
+      conditions._id = {
+        $nin: objectIds
+      };
+    }
   }
 
   return conditions;
