@@ -302,9 +302,9 @@ exports.count = function (options, callback) {
   options = options || {};
   var filter = options.filter || {};
 
-  appendUserIdFilter(filter, filter);
+  var conditions = createQueryConditions(filter);
 
-  User.count(filter, function (err, count) {
+  User.count(conditions, function (err, count) {
     callback(err, count);
   });
 };
@@ -315,18 +315,10 @@ exports.getUsers = function (options, callback) {
     options = {};
   }
 
-  var conditions = {};
   options = options || {};
   var filter = options.filter || {};
 
-  if (filter.active) {
-    conditions.active = filter.active == 'true';
-  }
-  if (filter.enabled) {
-    conditions.enabled = filter.enabled == 'true';
-  }
-
-  appendUserIdFilter(filter, conditions);
+  var conditions = createQueryConditions(filter);
 
   var query = User.find(conditions);
 
@@ -359,7 +351,16 @@ exports.getUsers = function (options, callback) {
   }
 };
 
-function appendUserIdFilter(filter, conditions) {
+function createQueryConditions(filter) {
+  var conditions = {};
+
+  if (filter.active) {
+    conditions.active = filter.active == 'true';
+  }
+  if (filter.enabled) {
+    conditions.enabled = filter.enabled == 'true';
+  }
+
   if (filter.userIds) {
     let userIds = filter.userIds;
     let objectIds = [];
@@ -373,6 +374,8 @@ function appendUserIdFilter(filter, conditions) {
       $in: objectIds
     };
   }
+
+  return conditions;
 };
 
 function page(query, options, callback) {
