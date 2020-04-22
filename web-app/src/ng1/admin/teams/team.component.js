@@ -41,14 +41,13 @@ class AdminTeamController {
     this.Team.get({ id: this.$stateParams.teamId, populate: false }, team => {
       this.team = team;
       this.user = {};
-      this.teamUsersById = _.indexBy(this.team.users, 'id');
 
-      this.pagingHelper.stateAndData[this.userState].userFilter.in = {userIds: Object.keys(this.teamUsersById)};
-      this.pagingHelper.stateAndData[this.userState].countFilter.in = {userIds: Object.keys(this.teamUsersById)};
+      this.pagingHelper.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
+      this.pagingHelper.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
       this.pagingHelper.refresh();
 
-      this.nonMemberPagingHelper.stateAndData[this.userState].userFilter.nin = {userIds: Object.keys(this.teamUsersById)};
-      this.nonMemberPagingHelper.stateAndData[this.userState].countFilter.nin = {userIds: Object.keys(this.teamUsersById)};
+      this.nonMemberPagingHelper.stateAndData[this.userState].userFilter.nin = {userIds: this.team.userIds};
+      this.nonMemberPagingHelper.stateAndData[this.userState].countFilter.nin = {userIds: this.team.userIds};
       this.nonMemberPagingHelper.refresh();
 
       var myAccess = this.team.acl[this.UserService.myself.id];

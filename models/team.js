@@ -65,6 +65,13 @@ function transform(team, ret, options) {
   if (team.populated('userIds')) {
     ret.users = userTransformer.transform(ret.userIds, {path: options.path});
     delete ret.userIds;
+  } else {
+    let objectIdStrings = new Set();
+    for(var i = 0; i < ret.userIds.length; i++) {
+      let objectId = ret.userIds[i].toString();
+      objectIdStrings.add(objectId);
+    }
+    ret.userIds = Array.from(objectIdStrings);
   }
 
   // if read only permissions in team acl, then return users acl
@@ -129,7 +136,13 @@ exports.getTeamById = function(id, options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Team.findOne(conditions).populate('userIds').exec(callback);
+  var query = Team.findOne(conditions);
+
+  if(options.populate == null || options.populate == 'true') {
+    query = query.populate('userIds');
+  }
+
+  query.exec(callback);
 };
 
 exports.teamsForUserInEvent = function(user, event, callback) {
