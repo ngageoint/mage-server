@@ -22,7 +22,7 @@
         <div class="col-md-8">
           <ui-select ng-model="$ctrl.member.selected" theme="bootstrap">
             <ui-select-match placeholder="Search for a user">{{$select.selected.displayName}}</ui-select-match>
-            <ui-select-choices repeat="member in $ctrl.nonMembers | orderBy: 'displayName' | filter: $select.search">
+            <ui-select-choices repeat="member in $ctrl.users() | orderBy: 'displayName' | filter: $select.search">
               <div ng-bind-html="member.displayName | highlight: $select.search"></div>
             </ui-select-choices>
           </ui-select>

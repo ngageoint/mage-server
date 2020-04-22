@@ -46,8 +46,11 @@ class AdminTeamAccessController {
         });
       }
 
-      this.pagingHelper.stateAndData[this.userState].userFilter.in = { userIds: this.team.userIds };
-      this.pagingHelper.stateAndData[this.userState].countFilter.in = { userIds: this.team.userIds };
+      var aclIds = Object.keys(this.team.acl);
+      var allIds = aclIds.concat(this.team.userIds);
+
+      this.pagingHelper.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
+      this.pagingHelper.stateAndData[this.userState].countFilter.nin = { userIds: allIds };
       var promises = this.pagingHelper.refresh();
 
       for(var i = 0; i < promises.length; i++){
@@ -55,14 +58,15 @@ class AdminTeamAccessController {
 
         promise.then(key => {
           if(key == this.userState){
-            this.refreshMembers();
+            this.refreshMembers(this.team);
           }
         });
       }
     });
   }
 
-  refreshMembers() {
+  refreshMembers(team) {
+    this.team = team;
 
     this.aclMembers = _.map(this.team.acl, (access, userId) => {
       var member = _.pick(this.aclUsers().find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
