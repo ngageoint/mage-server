@@ -40,18 +40,25 @@ export default class PagingHelper {
     }
 
     refresh() {
+
+        var promises = [];
+
         for (const [key, value] of Object.entries(this.stateAndData)) {
 
-            this.UserService.getUserCount(value.countFilter).then(result => {
-                if (result && result.data && result.data.count) {
-                    this.stateAndData[key].userCount = result.data.count;
-                }
-            });
-
-            this.UserService.getAllUsers(value.userFilter).then(pageInfo => {
+            var promise = this.UserService.getUserCount(value.countFilter).then(result => {
+                return Promise.resolve(result.data.count);
+            }).then(count => {
+                this.stateAndData[key].userCount = count;
+                return this.UserService.getAllUsers(value.userFilter);
+            }).then((pageInfo => {
                 this.stateAndData[key].pageInfo = pageInfo;
-            });
+                return Promise.resolve(key);
+            }));
+
+            promises.push(promise);
         }
+
+        return promises;
     }
 
     count(state) {

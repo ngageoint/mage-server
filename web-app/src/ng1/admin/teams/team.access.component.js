@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import PagingHelper from '../paging'
 
 class AdminTeamAccessController {
   constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserService) {
@@ -9,7 +10,16 @@ class AdminTeamAccessController {
     this.TeamAccess = TeamAccess;
     this.UserService = UserService;
 
-    this.users = [];
+    this.team = null;
+    this.aclMembers = [];
+
+    this.userState = 'all';
+    this.usersPerPage = 10;
+    this.memberSearch = '';
+    this.pagingHelper = new PagingHelper(UserService, false);
+    this.aclPagingHelper = new PagingHelper(UserService, false);
+
+    this.owners = [];
     this.member = {
       role: 'GUEST'
     };
@@ -19,36 +29,87 @@ class AdminTeamAccessController {
   }
 
   $onInit() {
-    this.$q.all({users: this.UserService.getAllUsers(), team: this.Team.get({id: this.$stateParams.teamId, populate: false}).$promise}).then(result => {
-      this.users = result.users;
-  
-      this.refreshMembers(result.team);
+    this.$q.all({ team: this.Team.get({ id: this.$stateParams.teamId, populate: false }).$promise }).then(result => {
+      this.team = result.team;
+
+      this.aclPagingHelper.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.aclPagingHelper.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl)  };
+      var aclPromises = this.aclPagingHelper.refresh();
+
+      for(var i = 0; i < aclPromises.length; i++){
+        let promise = aclPromises[i];
+
+        promise.then(key => {
+          if(key == this.userState){
+            return;
+          }
+        });
+      }
+
+      this.pagingHelper.stateAndData[this.userState].userFilter.in = { userIds: this.team.userIds };
+      this.pagingHelper.stateAndData[this.userState].countFilter.in = { userIds: this.team.userIds };
+      var promises = this.pagingHelper.refresh();
+
+      for(var i = 0; i < promises.length; i++){
+        let promise = promises[i];
+
+        promise.then(key => {
+          if(key == this.userState){
+            this.refreshMembers();
+          }
+        });
+      }
     });
   }
 
-  refreshMembers(team) {
-    this.team = team;
+  refreshMembers() {
 
-    var usersById = _.indexBy(this.users, 'id');
-
-    this.teamMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+    this.aclMembers = _.map(this.team.acl, (access, userId) => {
+      var member = _.pick(this.aclUsers().find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
-    });
-
-    this.nonMembers = _.reject(this.users, user => {
-      return _.where(this.teamMembers, {id: user.id}).length > 0;
     });
 
     this.owners = this.getOwners();
   }
 
   getOwners() {
-    return _.filter(this.teamMembers, member => {
+    return _.filter(this.aclMembers, member => {
       return member.role === 'OWNER';
     });
+  }
+
+  count() {
+    return this.pagingHelper.count(this.userState);
+  }
+
+  hasNext() {
+    return this.pagingHelper.hasNext(this.userState);
+  }
+
+  next() {
+    this.pagingHelper.next(this.userState);
+  }
+
+  hasPrevious() {
+    return this.pagingHelper.hasPrevious(this.userState);
+  }
+
+  previous() {
+    this.pagingHelper.previous(this.userState);
+  }
+
+  users() {
+    return this.pagingHelper.users(this.userState);
+  }
+
+  aclUsers() {
+    return this.aclPagingHelper.users(this.userState);
+  }
+
+  search() {
+    this.pagingHelper.search(this.userState, this.memberSearch);
   }
 
   addMember(member, role) {
