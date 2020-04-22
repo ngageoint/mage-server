@@ -19,8 +19,8 @@ class AdminTeamController {
 
     this.loadingUsers = [];
 
-    this.pagingHelper = new PagingHelper(UserService);
-    this.nonMemberPagingHelper = new PagingHelper(UserService);
+    this.pagingHelper = new PagingHelper(UserService, false);
+    this.nonMemberPagingHelper = new PagingHelper(UserService, false);
     
     this.edit = false;
 

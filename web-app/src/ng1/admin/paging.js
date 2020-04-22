@@ -1,5 +1,5 @@
 export default class PagingHelper {
-    constructor(userService) {
+    constructor(userService, refresh = true) {
         this.UserService = userService;
 
         this.itemsPerPage = 10;
@@ -33,7 +33,10 @@ export default class PagingHelper {
             userCount: 0,
             pageInfo: {}
         };
-        this.refresh();
+
+        if (refresh) {
+            this.refresh();
+        }
     }
 
     refresh() {
