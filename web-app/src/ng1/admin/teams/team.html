@@ -81,8 +81,8 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <input type="text" ng-model="nonMemberSelected" placeholder="Search" uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)" 
-                      typeahead-loading="$ctrl.searchingUsers" typeahead-no-results="noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
+                    <input type="text" ng-model="$ctrl.nonMember" placeholder="Search" uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)" 
+                      typeahead-loading="$ctrl.searchedUsers" typeahead-no-results="noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
                     <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
                     <div ng-show="noSearchResults">
                       <i class="glyphicon glyphicon-remove"></i> No Results Found
@@ -94,7 +94,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addUser($ctrl.user.selected)" ng-disabled="$ctrl.user.selected == null"><i class="fa fa-plus"></i> Add User</button>
+                      <button class="btn btn-success" ng-click="$ctrl.addUser()" ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add User</button>
                     </div>
                 </div>
               </div>

@@ -17,7 +17,12 @@ class AdminTeamController {
 
     this.permissions = [];
 
-    this.searchingUsers = [];
+    //This is a user not in the team, that is populated 
+    //when a search is performed and a user is selected
+    this.nonMember = null;
+
+    //This is the list of users returned from a search
+    this.searchedUsers = [];
     this.isSearching = false;
 
     this.pagingHelper = new PagingHelper(UserService, false);
@@ -106,9 +111,9 @@ class AdminTeamController {
   searchNonMembers(searchString) {
     this.isSearching = true;
     return this.nonMemberPagingHelper.search(this.userState, searchString).then(result => {
-      this.searchingUsers = this.nonMemberPagingHelper.users(this.userState);
+      this.searchedUsers = this.nonMemberPagingHelper.users(this.userState);
       this.isSearching = false;
-      return this.searchingUsers;
+      return this.searchedUsers;
     });
   }
 
@@ -116,9 +121,9 @@ class AdminTeamController {
     this.$state.go('admin.editTeam', { teamId: team.id });
   }
 
-  addUser(user) {
-    this.user = {};
+  addUser() {
     this.team.users.push(user);
+    this.nonMember = null;
 
     this.saveTeam();
   }
