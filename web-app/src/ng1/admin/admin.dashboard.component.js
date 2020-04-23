@@ -85,7 +85,11 @@ class AdminDashboardController {
   }
 
   users(state) {
-    return this.pagingHelper.users(state, this.userSearch);
+    return this.pagingHelper.users(state);
+  }
+
+  search(state) {
+    this.pagingHelper.search(state, this.userSearch);
   }
 
   iconClass(device) {

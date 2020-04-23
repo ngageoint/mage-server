@@ -362,7 +362,6 @@ function createQueryConditions(filter) {
   }
 
   if (filter.in || filter.nin) {
-    var objectIds = [];
     let json = {};
     if (filter.in) {
       json = JSON.parse(filter.in);
@@ -370,8 +369,8 @@ function createQueryConditions(filter) {
       json = JSON.parse(filter.nin);
     }
 
-    let userIds = json['userIds'];
-
+    let userIds = json['userIds'] ? json['userIds'] : [];
+    var objectIds = [];
     for (var i = 0; i < userIds.length; i++) {
       let userId = userIds[i];
       objectIds.push(mongoose.Types.ObjectId(userId));

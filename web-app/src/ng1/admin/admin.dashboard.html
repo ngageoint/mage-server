@@ -20,9 +20,9 @@
                   <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{($ctrl.count('inactive'))}}</span></sup></a>
                 </div>
 
-                <form class="navbar-form navbar-left">
-                  <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search" ng-model="userSearch">
+                <form class="form">
+                  <div class="top-gap">
+                    <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.userSearch" ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search('inactive')">
                   </div>
                 </form>
               </div>
@@ -34,7 +34,7 @@
           <div class="col-sm-12">
             <div class="admin-table">
               <div class="well-item"
-                  ng-repeat="user in ($ctrl.filteredUsers = ($ctrl.users('inactive') | user:['displayName','email']:userSearch)) | orderBy:'displayName' | limitTo:$ctrl.usersPerPage" >
+                  ng-repeat="user in $ctrl.users('inactive') | orderBy:'displayName' | limitTo:$ctrl.usersPerPage" >
                 <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
                   <div class="col-md-12">
                     <div class="right-gap pull-left">
@@ -143,7 +143,7 @@
                 <div class="form-group">
                   <ui-select ng-model="$ctrl.user.selected" theme="bootstrap" on-select="$ctrl.filterLogins()" style="width: 300px;">
                     <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
-                    <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.users | orderBy: 'name' | filter: $select.search">
+                    <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.users('inactive') | orderBy: 'name' | filter: $select.search">
                       <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                     </ui-select-choices>
                   </ui-select>
