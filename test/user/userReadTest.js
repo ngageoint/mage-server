@@ -150,6 +150,52 @@ describe("user read tests", function() {
       .end(done);
   });
 
+  it('should get all enabled users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    sinon.mock(UserModel)
+      .expects('find')
+      .withArgs({ enabled: true })
+      .chain('exec')
+      .yields(null, [{
+        username: 'test1'
+      },{
+        username: 'test2'
+      }]);
+
+    request(app)
+      .get('/api/users')
+      .query({enabled: 'true'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+  it('should get all disabled users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    sinon.mock(UserModel)
+      .expects('find')
+      .withArgs({ enabled: false })
+      .chain('exec')
+      .yields(null, [{
+        username: 'test1'
+      },{
+        username: 'test2'
+      }]);
+
+    request(app)
+      .get('/api/users')
+      .query({enabled: 'false'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
   it('should get all users and populate role', function(done) {
     mockTokenWithPermission('READ_USER');
 
