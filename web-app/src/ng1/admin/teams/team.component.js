@@ -22,11 +22,11 @@ class AdminTeamController {
     this.nonMember = null;
 
     //This is the list of users returned from a search
-    this.searchedUsers = [];
+    this.nonMemberSearchResults = [];
     this.isSearching = false;
 
-    this.pagingHelper = new PagingHelper(UserService, false);
-    this.nonMemberPagingHelper = new PagingHelper(UserService, false);
+    this.memberPaging = new PagingHelper(UserService, false);
+    this.nonMemberPaging = new PagingHelper(UserService, false);
     
     this.edit = false;
 
@@ -48,13 +48,13 @@ class AdminTeamController {
       this.team = team;
       this.user = {};
 
-      this.pagingHelper.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
-      this.pagingHelper.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      this.pagingHelper.refresh();
+      this.memberPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
+      this.memberPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
+      this.memberPaging.refresh();
 
-      this.nonMemberPagingHelper.stateAndData[this.userState].userFilter.nin = {userIds: this.team.userIds};
-      this.nonMemberPagingHelper.stateAndData[this.userState].countFilter.nin = {userIds: this.team.userIds};
-      this.nonMemberPagingHelper.refresh();
+      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = {userIds: this.team.userIds};
+      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = {userIds: this.team.userIds};
+      this.nonMemberPaging.refresh();
 
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
@@ -81,39 +81,39 @@ class AdminTeamController {
   }
 
   count() {
-    return this.pagingHelper.count(this.userState);
+    return this.memberPaging.count(this.userState);
   }
 
   hasNext() {
-    return this.pagingHelper.hasNext(this.userState);
+    return this.memberPaging.hasNext(this.userState);
   }
 
   next() {
-    this.pagingHelper.next(this.userState);
+    this.memberPaging.next(this.userState);
   }
 
   hasPrevious() {
-    return this.pagingHelper.hasPrevious(this.userState);
+    return this.memberPaging.hasPrevious(this.userState);
   }
 
   previous() {
-    this.pagingHelper.previous(this.userState);
+    this.memberPaging.previous(this.userState);
   }
 
   users() {
-    return this.pagingHelper.users(this.userState);
+    return this.memberPaging.users(this.userState);
   }
 
   search() {
-    this.pagingHelper.search(this.userState, this.memberSearch);
+    this.memberPaging.search(this.userState, this.memberSearch);
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.nonMemberPagingHelper.search(this.userState, searchString).then(result => {
-      this.searchedUsers = this.nonMemberPagingHelper.users(this.userState);
+    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
+      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
       this.isSearching = false;
-      return this.searchedUsers;
+      return this.nonMemberSearchResults;
     });
   }
 
@@ -142,8 +142,8 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.pagingHelper.refresh();
-    this.nonMemberPagingHelper.refresh();
+    this.memberPaging.refresh();
+    this.nonMemberPaging.refresh();
   }
 
   hasPermission(permission) {

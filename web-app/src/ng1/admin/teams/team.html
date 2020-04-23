@@ -82,7 +82,7 @@
                 <div class="row">
                   <div class="col-md-12">
                     <input type="text" ng-model="$ctrl.nonMember" placeholder="Search" uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)" 
-                      typeahead-loading="$ctrl.searchedUsers" typeahead-no-results="noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
+                      typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }">
                     <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
                     <div ng-show="noSearchResults">
                       <i class="glyphicon glyphicon-remove"></i> No Results Found
