@@ -46,8 +46,8 @@ class AdminTeamAccessController {
         });
       }
 
-      var aclIds = Object.keys(this.team.acl);
-      var allIds = aclIds.concat(this.team.userIds);
+      let aclIds = Object.keys(this.team.acl);
+      let allIds = aclIds.concat(this.team.userIds);
 
       this.pagingHelper.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
       this.pagingHelper.stateAndData[this.userState].countFilter.nin = { userIds: allIds };

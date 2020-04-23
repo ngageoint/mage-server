@@ -17,7 +17,8 @@ class AdminTeamController {
 
     this.permissions = [];
 
-    this.loadingUsers = [];
+    this.searchingUsers = [];
+    this.isSearching = false;
 
     this.pagingHelper = new PagingHelper(UserService, false);
     this.nonMemberPagingHelper = new PagingHelper(UserService, false);
@@ -103,9 +104,11 @@ class AdminTeamController {
   }
 
   searchNonMembers(searchString) {
+    this.isSearching = true;
     return this.nonMemberPagingHelper.search(this.userState, searchString).then(result => {
-      this.loadingUsers = this.nonMemberPagingHelper.users(this.userState);
-      return this.loadingUsers;
+      this.searchingUsers = this.nonMemberPagingHelper.users(this.userState);
+      this.isSearching = false;
+      return this.searchingUsers;
     });
   }
 
@@ -117,13 +120,13 @@ class AdminTeamController {
     this.user = {};
     this.team.users.push(user);
 
-    this.saveTeam(this.team);
+    this.saveTeam();
   }
 
   removeUser(user) {
     this.team.users = _.reject(this.team.users, u => { return user.id === u.id; });
 
-    this.saveTeam(this.team);
+    this.saveTeam();
   }
 
   _filterEvents(event) {
