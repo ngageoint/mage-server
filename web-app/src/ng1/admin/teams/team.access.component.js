@@ -91,31 +91,31 @@ class AdminTeamAccessController {
   }
 
   count() {
-    return this.nonMemberPaging.count(this.userState);
+    return this.aclPagingHelper.count(this.userState);
   }
 
   hasNext() {
-    return this.nonMemberPaging.hasNext(this.userState);
+    return this.aclPagingHelper.hasNext(this.userState);
   }
 
   next() {
-    this.nonMemberPaging.next(this.userState);
+    this.aclPagingHelper.next(this.userState);
   }
 
   hasPrevious() {
-    return this.nonMemberPaging.hasPrevious(this.userState);
+    return this.aclPagingHelper.hasPrevious(this.userState);
   }
 
   previous() {
-    this.nonMemberPaging.previous(this.userState);
-  }
-
-  users() {
-    return this.nonMemberPaging.users(this.userState);
+    this.aclPagingHelper.previous(this.userState);
   }
 
   aclUsers() {
     return this.aclPagingHelper.users(this.userState);
+  }
+
+  search() {
+    this.aclPagingHelper.search(this.userState, this.memberSearch);
   }
 
   searchNonMembers(searchString) {

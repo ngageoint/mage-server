@@ -111,7 +111,7 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.activateUser(user);
+      this.pagingHelper.refresh();
 
       this.onUserActivated({
         $event: {
@@ -130,7 +130,7 @@ class AdminUsersController {
 
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.enableUser(user);
+      this.pagingHelper.refresh();
     });
   }
 }
