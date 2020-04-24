@@ -13,10 +13,16 @@ class AdminTeamAccessController {
     this.team = null;
     this.aclMembers = [];
 
+    this.nonMember = null;
+
+     //This is the list of users returned from a search
+     this.nonMemberSearchResults = [];
+     this.isSearching = false;
+
     this.userState = 'all';
     this.usersPerPage = 10;
     this.memberSearch = '';
-    this.pagingHelper = new PagingHelper(UserService, false);
+    this.nonMemberPaging = new PagingHelper(UserService, false);
     this.aclPagingHelper = new PagingHelper(UserService, false);
 
     this.owners = [];
@@ -49,9 +55,9 @@ class AdminTeamAccessController {
       let aclIds = Object.keys(this.team.acl);
       let allIds = aclIds.concat(this.team.userIds);
 
-      this.pagingHelper.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
-      this.pagingHelper.stateAndData[this.userState].countFilter.nin = { userIds: allIds };
-      var promises = this.pagingHelper.refresh();
+      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
+      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = { userIds: allIds };
+      var promises = this.nonMemberPaging.refresh();
 
       for(var i = 0; i < promises.length; i++){
         let promise = promises[i];
@@ -85,42 +91,47 @@ class AdminTeamAccessController {
   }
 
   count() {
-    return this.pagingHelper.count(this.userState);
+    return this.nonMemberPaging.count(this.userState);
   }
 
   hasNext() {
-    return this.pagingHelper.hasNext(this.userState);
+    return this.nonMemberPaging.hasNext(this.userState);
   }
 
   next() {
-    this.pagingHelper.next(this.userState);
+    this.nonMemberPaging.next(this.userState);
   }
 
   hasPrevious() {
-    return this.pagingHelper.hasPrevious(this.userState);
+    return this.nonMemberPaging.hasPrevious(this.userState);
   }
 
   previous() {
-    this.pagingHelper.previous(this.userState);
+    this.nonMemberPaging.previous(this.userState);
   }
 
   users() {
-    return this.pagingHelper.users(this.userState);
+    return this.nonMemberPaging.users(this.userState);
   }
 
   aclUsers() {
     return this.aclPagingHelper.users(this.userState);
   }
 
-  search() {
-    this.pagingHelper.search(this.userState, this.memberSearch);
+  searchNonMembers(searchString) {
+    this.isSearching = true;
+    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
+      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
+      this.isSearching = false;
+      return this.nonMemberSearchResults;
+    });
   }
 
-  addMember(member, role) {
+  addMember() {
     this.TeamAccess.update({
       teamId: this.team.id,
-      userId: member.id,
-      role: role
+      userId: this.nonMember.id,
+      role: this.nonMember.role
     }, team => {
       delete this.member.selected;
       this.refreshMembers(team);
