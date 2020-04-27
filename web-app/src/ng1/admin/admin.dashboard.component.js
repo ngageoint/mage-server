@@ -130,7 +130,7 @@ class AdminDashboardController {
     user.active = true;
 
     this._UserService.updateUser(user.id, user, data => {
-      this.pagingHelper.activateUser(user);
+      this.pagingHelper.refresh();
       this.onUserActivated({
         $event: {
           user: user

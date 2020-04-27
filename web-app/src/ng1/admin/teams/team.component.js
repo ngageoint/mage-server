@@ -122,14 +122,14 @@ class AdminTeamController {
   }
 
   addUser() {
-    this.team.users.push(user);
+    this.team.userIds.push(this.nonMember.id);
     this.nonMember = null;
 
     this.saveTeam();
   }
 
   removeUser(user) {
-    this.team.users = _.reject(this.team.users, u => { return user.id === u.id; });
+    this.team.userIds = _.reject(this.team.userIds, u => { return user.id === u; });
 
     this.saveTeam();
   }

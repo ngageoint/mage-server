@@ -26,9 +26,6 @@ class AdminTeamAccessController {
     this.aclPagingHelper = new PagingHelper(UserService, false);
 
     this.owners = [];
-    this.member = {
-      role: 'GUEST'
-    };
 
     // For some reason angular is not calling into filter function with correct context
     this.filterMembers = this._filterMembers.bind(this);
@@ -133,7 +130,8 @@ class AdminTeamAccessController {
       userId: this.nonMember.id,
       role: this.nonMember.role
     }, team => {
-      delete this.member.selected;
+      this.aclPagingHelper.refresh();
+      this.nonMemberPaging.refresh();
       this.refreshMembers(team);
     });
   }
@@ -143,6 +141,8 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
+      this.aclPagingHelper.refresh();
+      this.nonMemberPaging.refresh();
       this.refreshMembers(team);
     });
   }
@@ -153,6 +153,8 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
+      this.aclPagingHelper.refresh();
+      this.nonMemberPaging.refresh();
       this.refreshMembers(team);
     });
   }
