@@ -135,12 +135,13 @@
                 <div class="container-fluid">
                   <div class="navbar-header">
                     <a class="navbar-brand">Users/Teams <sup><span
-                          class="badge">{{$ctrl.filteredInEvent.length}}</span></sup></a>
+                          class="badge">{{$ctrl.count()}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
-                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch">
+                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch"
+                      ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
