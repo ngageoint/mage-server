@@ -143,7 +143,7 @@
                 <div class="form-group">
                   <ui-select ng-model="$ctrl.user.selected" theme="bootstrap" on-select="$ctrl.filterLogins()" style="width: 300px;">
                     <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
-                    <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.users('inactive') | orderBy: 'name' | filter: $select.search">
+                    <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.users('all') | orderBy: 'name' | filter: $select.search">
                       <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                     </ui-select-choices>
                   </ui-select>
