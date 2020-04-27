@@ -32,8 +32,15 @@ class AdminEventController {
   
     this.member = {};
 
+    this.userState = 'all';
     this.memberPaging = new PagingHelper(UserService, false);
     this.nonMemberPaging = new PagingHelper(UserService, false);
+
+    this.nonMember = null;
+
+    //This is the list of users returned from a search
+    this.nonMemberSearchResults = [];
+    this.isSearching = false;
   
     this.eventTeam;
 
@@ -65,11 +72,36 @@ class AdminEventController {
         }
       });
       var teamsInEvent = _.map(teamIdsInEvent, teamId => { return teamsById[teamId]; });
-  
-      var usersInEvent = _.filter(result.users, user => {
-        return _.findWhere(this.eventTeam.users, {id: user.id});
-      });
-  
+
+      this.memberPaging.stateAndData[this.userState].userFilter.in = {userIds: this.eventTeam.userIds};
+      this.memberPaging.stateAndData[this.userState].countFilter.in = {userIds: this.eventTeam.userIds};
+      var promises = this.memberPaging.refresh();
+
+      for(var i = 0; i < promises.length; i++){
+        let promise = promises[i];
+
+        promise.then(key => {
+          if(key == this.userState){
+            return;
+          }
+        });
+      }
+
+      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = {userIds: this.eventTeam.userIds};
+      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = {userIds: this.eventTeam.userIds};
+      promises = this.nonMemberPaging.refresh();
+
+      for(var i = 0; i < promises.length; i++){
+        let promise = promises[i];
+
+        promise.then(key => {
+          if(key == this.userState){
+            return;
+          }
+        });
+      }
+
+      /*
       this.eventMembers = _.map(usersInEvent.concat(teamsInEvent), item => { return this.normalize(item); });
   
       var teamsNotInEvent = _.filter(this.teams, team => {
@@ -79,6 +111,7 @@ class AdminEventController {
         return _.findWhere(this.eventTeam.users, {id: user.id});
       });
       this.eventNonMembers = _.map(usersNotInEvent.concat(teamsNotInEvent), item => { return this.normalize(item); });
+      */
   
       this.layer = {};
       this.eventLayers = _.chain(this.event.layerIds)
@@ -101,6 +134,35 @@ class AdminEventController {
     });
   }
 
+  members(){
+    return this.memberPaging.users(this.userState);
+  }
+
+  hasNext() {
+    return this.memberPaging.hasNext(this.userState);
+  }
+
+  next() {
+    this.memberPaging.next(this.userState);
+  }
+
+  hasPrevious() {
+    return this.memberPaging.hasPrevious(this.userState);
+  }
+
+  previous() {
+    this.memberPaging.previous(this.userState);
+  }
+
+  searchNonMembers(searchString) {
+    this.isSearching = true;
+    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
+      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
+      this.isSearching = false;
+      return this.nonMemberSearchResults;
+    });
+  }
+
   _filterMembers(item) {
     var filteredMembers = this.$filter('filter')([item], this.memberSearch);
     return filteredMembers && filteredMembers.length;
@@ -119,8 +181,8 @@ class AdminEventController {
     };
   }
 
-  addMember(member) {
-    member.type === 'user' ? this.addUser(member) : this.addTeam(member);
+  addMember() {
+    this.nonMember.type === 'user' ? this.addUser(this.nonMember) : this.addTeam(this.nonMember);
   }
 
   removeMember(member) {

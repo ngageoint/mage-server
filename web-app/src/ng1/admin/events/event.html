@@ -1,8 +1,5 @@
-<admin-event-form-create 
-  ng-show="$ctrl.formCreateOpen" 
-  open="$ctrl.formCreateOpen" 
-  on-form-create-close="$ctrl.onFormCreateClose(form)" 
-  event="$ctrl.event"/>
+<admin-event-form-create ng-show="$ctrl.formCreateOpen" open="$ctrl.formCreateOpen"
+  on-form-create-close="$ctrl.onFormCreateClose(form)" event="$ctrl.event" />
 
 <div class="admin-nav-gap">
   <div class="container-fluid">
@@ -23,15 +20,17 @@
         </div>
         <div class="col-md-4">
           <h2 ng-if="$ctrl.hasUpdatePermission">
-            <button class="btn btn-default pull-right" ng-click="$ctrl.editEvent($ctrl.event)"><i class="fa fa-edit"></i> Edit</button>
-            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.event)"><i class="fa fa-shield"></i> Access</button>
+            <button class="btn btn-default pull-right" ng-click="$ctrl.editEvent($ctrl.event)"><i
+                class="fa fa-edit"></i> Edit</button>
+            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.event)"><i
+                class="fa fa-shield"></i> Access</button>
           </h2>
         </div>
       </div>
       <hr>
 
       <div class="row top-gap-l">
-        <div class="col-sm-6" >
+        <div class="col-sm-6">
 
           <div class="row top-gap-l">
             <div class="col-md-3">
@@ -56,7 +55,8 @@
           <div class="card" ng-if="!$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
               <strong class="text-primary">Complete event</strong>
-              <p class="text-primary">Marking an event as complete will remove it as a selectable event.  The event is not destroyed and can be changed back to an active state at any time.</p>
+              <p class="text-primary">Marking an event as complete will remove it as a selectable event. The event is
+                not destroyed and can be changed back to an active state at any time.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.completeEvent($ctrl.event)">Complete</button>
             </div>
           </div>
@@ -64,7 +64,8 @@
           <div class="card" ng-if="$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
               <strong class="text-primary">Activate event</strong>
-              <p class="text-primary">Marking an event as active will show it as a selectable event on clients.  At that point users can contribute observations and locations to the event.</p>
+              <p class="text-primary">Marking an event as active will show it as a selectable event on clients. At that
+                point users can contribute observations and locations to the event.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.activateEvent($ctrl.event)">Activate</button>
             </div>
           </div>
@@ -72,8 +73,10 @@
           <div class="card top-gap" ng-if="$ctrl.hasDeletePermission">
             <div class="card-content">
               <strong class="text-danger">Delete event</strong>
-              <p class="text-danger">Deleting event will remove all event information including observation and location data. This cannot be undone, all event data will be unrecoverable.</p>
-              <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteEvent($ctrl.event)"> <i class="fa fa-trash-o"></i> Delete</button>
+              <p class="text-danger">Deleting event will remove all event information including observation and location
+                data. This cannot be undone, all event data will be unrecoverable.</p>
+              <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteEvent($ctrl.event)"> <i
+                  class="fa fa-trash-o"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -102,21 +105,25 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <ui-select ng-model="$ctrl.member.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a user/team to add to event"><i class="fa" ng-class="{user:'fa-user', team:'fa-users'}[$select.selected.type]"></i> {{$select.selected.name}}</ui-select-match>
-                      <ui-select-choices repeat="member in $ctrl.eventNonMembers | orderBy: 'name' | filter: $select.search">
-                        <span><i class="fa" ng-class="{user:'fa-user', team:'fa-users'}[member.type]"></i> </span><span ng-bind-html="member.name | highlight: $select.search"></span>
-                      </ui-select-choices>
-                    </ui-select>
+                    <input type="text" ng-model="$ctrl.nonMember" placeholder="Search"
+                      uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
+                      typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
+                      class="form-control" ng-model-options="{ debounce: 1000 }">
+                    <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
+                    <div ng-show="noSearchResults">
+                      <i class="glyphicon glyphicon-remove"></i> No Results Found
+                    </div>
                   </div>
                 </div>
 
                 <hr>
 
                 <div class="row">
-                    <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addMember($ctrl.member.selected)" ng-disabled="$ctrl.member.selected == null"><i class="fa fa-plus"></i> Add User/Team</button>
-                    </div>
+                  <div class="col-md-12">
+                    <button class="btn btn-success" ng-click="$ctrl.addMember()"
+                      ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add
+                      User/Team</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -127,7 +134,8 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Users/Teams <sup><span class="badge">{{$ctrl.filteredInEvent.length}}</span></sup></a>
+                    <a class="navbar-brand">Users/Teams <sup><span
+                          class="badge">{{$ctrl.filteredInEvent.length}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
@@ -136,7 +144,8 @@
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
-                    <button class="btn btn-default navbar-right" ng-click="$ctrl.editMembers = !$ctrl.editMembers">Edit</button>
+                    <button class="btn btn-default navbar-right"
+                      ng-click="$ctrl.editMembers = !$ctrl.editMembers">Edit</button>
                   </div>
                 </div>
               </nav>
@@ -147,16 +156,17 @@
             <div class="col-md-12">
               <div class="admin-table">
                 <div class="well-item"
-                    ng-repeat="member in ($ctrl.filteredInEvent = ($ctrl.eventMembers | filter:$ctrl.filterMembers)) | orderBy:'name' | offset: $ctrl.teamsPage*$ctrl.teamsPerPage | limitTo:$ctrl.teamsPerPage" >
+                  ng-repeat="member in $ctrl.members() | orderBy:'name' | limitTo:$ctrl.teamsPerPage">
                   <div class="row pointer" ng-click="$ctrl.gotoMember(member)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
                         <i class="fa" ng-class="{user:'fa-user', team:'fa-users'}[member.type]"></i>
                       </div>
-                      <span>{{member.name}}</span>
+                      <span>{{member.displayName}}</span>
 
                       <span class="pull-right" ng-show="$ctrl.editMembers">
-                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeMember(member)"><i class="fa fa-minus"></i></a>
+                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeMember(member)"><i
+                            class="fa fa-minus"></i></a>
                       </span>
                     </div>
                   </div>
@@ -172,11 +182,11 @@
           <div class="row">
             <div class="col-md-12">
               <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.teamsPage == 0}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.teamsPage == 0 || ($ctrl.teamsPage=$ctrl.teamsPage-1)">&larr; Previous</a>
+                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                 </li>
-                <li ng-class="{'disabled': $ctrl.teamsPage >= ($ctrl.filteredInEvent.length/$ctrl.teamsPerPage) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.teamsPage >= ($ctrl.filteredInEvent.length/$ctrl.teamsPerPage) - 1 || ($ctrl.teamsPage=$ctrl.teamsPage+1)">Next&rarr;</a>
+                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                 </li>
               </ul>
             </div>
@@ -203,7 +213,8 @@
                 <div class="row">
                   <div class="col-md-12">
                     <ui-select ng-model="$ctrl.layer.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a layer to add to event">{{$select.selected.name}}</ui-select-match>
+                      <ui-select-match placeholder="Select a layer to add to event">{{$select.selected.name}}
+                      </ui-select-match>
                       <ui-select-choices repeat="layer in $ctrl.nonLayers | orderBy: 'name' | filter: $select.search">
                         <div ng-bind-html="layer.name | highlight: $select.search"></div>
                       </ui-select-choices>
@@ -214,9 +225,10 @@
                 <hr>
 
                 <div class="row">
-                    <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addLayer($ctrl.layer.selected)" ng-disabled="$ctrl.layer.selected == null"><i class="fa fa-plus"></i> Add Layer</button>
-                    </div>
+                  <div class="col-md-12">
+                    <button class="btn btn-success" ng-click="$ctrl.addLayer($ctrl.layer.selected)"
+                      ng-disabled="$ctrl.layer.selected == null"><i class="fa fa-plus"></i> Add Layer</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,7 +239,8 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Layers <sup><span class="badge">{{$ctrl.filteredLayers.length}}</span></sup></a>
+                    <a class="navbar-brand">Layers <sup><span
+                          class="badge">{{$ctrl.filteredLayers.length}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
@@ -236,7 +249,8 @@
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
-                    <button class="btn btn-default navbar-right" ng-click="$ctrl.editLayers = !$ctrl.editLayers">Edit</button>
+                    <button class="btn btn-default navbar-right"
+                      ng-click="$ctrl.editLayers = !$ctrl.editLayers">Edit</button>
                   </div>
                 </div>
               </nav>
@@ -247,7 +261,7 @@
             <div class="col-sm-12">
               <div class="admin-table">
                 <div class="well-item"
-                    ng-repeat="layer in ($ctrl.filteredLayers = ($ctrl.eventLayers | filter:filterLayers)) | orderBy:'name' | offset: $ctrl.layersPage*$ctrl.layersPerPage | limitTo:$ctrl.layersPerPage" >
+                  ng-repeat="layer in ($ctrl.filteredLayers = ($ctrl.eventLayers | filter:filterLayers)) | orderBy:'name' | offset: $ctrl.layersPage*$ctrl.layersPerPage | limitTo:$ctrl.layersPerPage">
                   <div class="row pointer" ng-click="$ctrl.gotoLayer(layer)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
@@ -256,7 +270,8 @@
                       <span>{{layer.name}}</span>
 
                       <span class="pull-right" ng-show="$ctrl.editLayers">
-                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeLayer(layer)"><i class="fa fa-minus"></i></a>
+                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeLayer(layer)"><i
+                            class="fa fa-minus"></i></a>
                       </span>
                     </div>
                   </div>
@@ -273,10 +288,12 @@
             <div class="col-md-12">
               <ul class="pager pull-right">
                 <li ng-class="{'disabled': $ctrl.layersPage == 0}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.layersPage == 0 || ($ctrl.layersPage=$ctrl.layersPage-1)">&larr; Previous</a>
+                  <a href="javascript:void(0);"
+                    ng-click="$ctrl.layersPage == 0 || ($ctrl.layersPage=$ctrl.layersPage-1)">&larr; Previous</a>
                 </li>
                 <li ng-class="{'disabled': $ctrl.layersPage >= ($ctrl.filteredLayers.length/$ctrl.layersPerPage) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.layersPage >= ($ctrl.filteredLayers.length/$ctrl.layersPerPage) - 1 || ($ctrl.layersPage=$ctrl.layersPage+1)">Next&rarr;</a>
+                  <a href="javascript:void(0);"
+                    ng-click="$ctrl.layersPage >= ($ctrl.filteredLayers.length/$ctrl.layersPerPage) - 1 || ($ctrl.layersPage=$ctrl.layersPage+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>
@@ -284,54 +301,63 @@
         </div>
       </div>
       <hr>
-    <div class="row top-gap-l">
-      <div class="col-md-12">
-        <nav class="navbar navbar-default admin-dashboard-navbar">
-          <div class="container-fluid">
-            <div class="navbar-header">
-              <a class="navbar-brand">Forms</a>
-            </div>
-
-            <form class="navbar-form navbar-right">
-              <div class="form-group">
-                <button ng-hide="$ctrl.showArchivedForms" class="btn btn-default" ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Show Archived Forms</button>
-                <button ng-show="$ctrl.showArchivedForms" class="btn btn-default" ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Hide Archived Forms</button>
+      <div class="row top-gap-l">
+        <div class="col-md-12">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Forms</a>
               </div>
-            </form>
-          </div>
-        </nav>
-      </div>
-    </div>
 
-    <div class="row">
-      <div class="col-sm-12">
-        <div class="admin-table">
-          <div class="well-item" ng-repeat="form in $ctrl.event.forms | filter: (!$ctrl.showArchivedForms || '') && {archived: '!true'}" ng-click="$ctrl.editForm($ctrl.event, form)">
-            <div class="row pointer">
-              <div class="col-md-12">
-                <div class="right-gap pull-left">
-                  <i class="fa fa-file-text-o"></i>
+              <form class="navbar-form navbar-right">
+                <div class="form-group">
+                  <button ng-hide="$ctrl.showArchivedForms" class="btn btn-default"
+                    ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Show Archived Forms</button>
+                  <button ng-show="$ctrl.showArchivedForms" class="btn btn-default"
+                    ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Hide Archived Forms</button>
                 </div>
-                <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
-
-                <i class="pull-right fa fa-arrow-up clearfix" ng-if="!$first" ng-click="$ctrl.moveFormUp($event, form)" uib-tooltip="Move form up" tooltip-placement="right" tooltip-append-to-body="true"></i>
-                <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="$ctrl.moveFormDown($event, form)" uib-tooltip="Move form down" tooltip-placement="right" tooltip-append-to-body="true"></i>
-                <button class="btn btn-info btn-xs pull-right right-gap" ng-click="$ctrl.preview($event, form)">Preview</button>
-              </div>
+              </form>
             </div>
-            <div class="row" ng-if="form.description">
-              <div class="col-md-12">
-                <span class="muted">{{form.description}}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="well-item">
-            <button class="btn btn-success" ng-click="$ctrl.createForm($event, $ctrl.event)"><i class="fa fa-plus"></i> Create Form</button>
-          </div>
+          </nav>
         </div>
       </div>
 
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="admin-table">
+            <div class="well-item"
+              ng-repeat="form in $ctrl.event.forms | filter: (!$ctrl.showArchivedForms || '') && {archived: '!true'}"
+              ng-click="$ctrl.editForm($ctrl.event, form)">
+              <div class="row pointer">
+                <div class="col-md-12">
+                  <div class="right-gap pull-left">
+                    <i class="fa fa-file-text-o"></i>
+                  </div>
+                  <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
+
+                  <i class="pull-right fa fa-arrow-up clearfix" ng-if="!$first"
+                    ng-click="$ctrl.moveFormUp($event, form)" uib-tooltip="Move form up" tooltip-placement="right"
+                    tooltip-append-to-body="true"></i>
+                  <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="$ctrl.moveFormDown($event, form)"
+                    uib-tooltip="Move form down" tooltip-placement="right" tooltip-append-to-body="true"></i>
+                  <button class="btn btn-info btn-xs pull-right right-gap"
+                    ng-click="$ctrl.preview($event, form)">Preview</button>
+                </div>
+              </div>
+              <div class="row" ng-if="form.description">
+                <div class="col-md-12">
+                  <span class="muted">{{form.description}}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="well-item">
+              <button class="btn btn-success" ng-click="$ctrl.createForm($event, $ctrl.event)"><i
+                  class="fa fa-plus"></i> Create Form</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
