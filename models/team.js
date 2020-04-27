@@ -217,7 +217,12 @@ exports.getTeams = function(options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Team.find(conditions).populate('userIds').exec(function (err, teams) {
+  var query = Team.find(conditions);
+  if(options.populate == null || options.populate == 'true') {
+    query = query.populate('userIds');
+  }
+
+  query.exec(function (err, teams) {
     callback(err, teams);
   });
 };

@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import PagingHelper from '../paging'
 
 class AdminEventController {
   constructor($state, $stateParams, $filter, $q, $uibModal, LocalStorageService, UserService, Event, Team, Layer) {
@@ -30,6 +31,9 @@ class AdminEventController {
     this.layers = [];
   
     this.member = {};
+
+    this.memberPaging = new PagingHelper(UserService, false);
+    this.nonMemberPaging = new PagingHelper(UserService, false);
   
     this.eventTeam;
 
@@ -39,7 +43,7 @@ class AdminEventController {
   }
 
   $onInit() {
-    this.$q.all({users: this.UserService.getAllUsers(), teams: this.Team.query().$promise, layers: this.Layer.query().$promise, event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
+    this.$q.all({teams: this.Team.query({populate: false}).$promise, layers: this.Layer.query().$promise, event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
       this.teams = result.teams;
       let teamsById = _.indexBy(result.teams, 'id');
   

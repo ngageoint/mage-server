@@ -58,7 +58,7 @@ module.exports = function(app, security) {
     '/api/teams',
     determineReadAccess,
     function (req, res, next) {
-      Team.getTeams({access: req.access}, function (err, teams) {
+      Team.getTeams({access: req.access, populate: req.query.populate}, function (err, teams) {
         if (err) return next(err);
 
         res.json(teams.map(function(team) {
