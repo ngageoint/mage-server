@@ -14,7 +14,9 @@ class AdminDashboardController {
     this._Layer = Layer;
     this.usersPerPage = 10;
     this.userSearch = '';
-    this.pagingHelper = new PagingHelper(UserService);
+    this.userState = 'inactive';
+    this.inactiveUsersPaging = new PagingHelper(UserService, false);
+    this.inactiveUsers = [];
 
     // For some reason angular is not calling into filter function with correct context
     this.filterDevices = this._filterDevices.bind(this);
@@ -62,34 +64,40 @@ class AdminDashboardController {
         this.firstLogin = loginPage.logins[0];
       }
     });
+
+    Promise.all(this.inactiveUsersPaging.refresh()).then(states => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    });
   }
 
-  count(state) {
-    return this.pagingHelper.count(state);
+  count() {
+    return this.inactiveUsersPaging.count(this.userState);
   }
 
-  hasNext(state) {
-    return this.pagingHelper.hasNext(state);
+  hasNext() {
+    return this.inactiveUsersPaging.hasNext(this.userState);
   }
 
-  next(state) {
-    this.pagingHelper.next(state);
+  next() {
+    this.inactiveUsersPaging.next(this.userState).then(results => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    });
   }
 
-  hasPrevious(state) {
-    return this.pagingHelper.hasPrevious(state);
+  hasPrevious() {
+    return this.inactiveUsersPaging.hasPrevious(this.userState);
   }
 
-  previous(state) {
-    this.pagingHelper.previous(state);
+  previous() {
+    this.inactiveUsersPaging.previous(this.userState).then(results => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    });
   }
 
-  users(state) {
-    return this.pagingHelper.users(state);
-  }
-
-  search(state) {
-    this.pagingHelper.search(state, this.userSearch);
+  search() {
+    this.inactiveUsersPaging.search(this.userState, this.userSearch).then(results => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    });
   }
 
   iconClass(device) {
@@ -130,7 +138,7 @@ class AdminDashboardController {
     user.active = true;
 
     this._UserService.updateUser(user.id, user, data => {
-      this.pagingHelper.refresh();
+      this.inactiveUsersPaging.refresh();
       this.onUserActivated({
         $event: {
           user: user
