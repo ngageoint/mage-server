@@ -79,8 +79,7 @@ class AdminEventController {
 
       this.memberPaging.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
       this.memberPaging.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
-      var promises = this.memberPaging.refresh();
-      Promise.all(promises).then(values => {
+      Promise.all(this.memberPaging.refresh()).then(values => {
         this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
       });
 
