@@ -157,13 +157,13 @@
             <div class="col-md-12">
               <div class="admin-table">
                 <div class="well-item"
-                  ng-repeat="member in $ctrl.members() | orderBy:'name' | limitTo:$ctrl.teamsPerPage">
+                  ng-repeat="member in $ctrl.eventMembers | orderBy:'name' | limitTo:$ctrl.teamsPerPage">
                   <div class="row pointer" ng-click="$ctrl.gotoMember(member)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
                         <i class="fa" ng-class="{user:'fa-user', team:'fa-users'}[member.type]"></i>
                       </div>
-                      <span>{{member.displayName}}</span>
+                      <span>{{member.name}}</span>
 
                       <span class="pull-right" ng-show="$ctrl.editMembers">
                         <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeMember(member)"><i

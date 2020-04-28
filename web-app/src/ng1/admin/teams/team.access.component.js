@@ -37,34 +37,16 @@ class AdminTeamAccessController {
 
       this.aclPagingHelper.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
       this.aclPagingHelper.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl)  };
-      var aclPromises = this.aclPagingHelper.refresh();
-
-      for(var i = 0; i < aclPromises.length; i++){
-        let promise = aclPromises[i];
-
-        promise.then(key => {
-          if(key == this.userState){
-            return;
-          }
-        });
-      }
+      Promise.all(this.aclPagingHelper.refresh()).then(states => {
+        this.refreshMembers(this.team);
+      });
 
       let aclIds = Object.keys(this.team.acl);
       let allIds = aclIds.concat(this.team.userIds);
 
       this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
       this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = { userIds: allIds };
-      var promises = this.nonMemberPaging.refresh();
-
-      for(var i = 0; i < promises.length; i++){
-        let promise = promises[i];
-
-        promise.then(key => {
-          if(key == this.userState){
-            this.refreshMembers(this.team);
-          }
-        });
-      }
+      this.nonMemberPaging.refresh();
     });
   }
 
@@ -72,7 +54,7 @@ class AdminTeamAccessController {
     this.team = team;
 
     this.aclMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(this.aclUsers().find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick( this.aclPagingHelper.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -96,7 +78,9 @@ class AdminTeamAccessController {
   }
 
   next() {
-    this.aclPagingHelper.next(this.userState);
+    this.aclPagingHelper.next(this.userState).then(pageInfo => {
+      this.refreshMembers(this.team);
+    });
   }
 
   hasPrevious() {
@@ -104,11 +88,9 @@ class AdminTeamAccessController {
   }
 
   previous() {
-    this.aclPagingHelper.previous(this.userState);
-  }
-
-  aclUsers() {
-    return this.aclPagingHelper.users(this.userState);
+    this.aclPagingHelper.previous(this.userState).then(pageInfo => {
+      this.refreshMembers(this.team);
+    });
   }
 
   search() {
@@ -130,9 +112,11 @@ class AdminTeamAccessController {
       userId: this.nonMember.id,
       role: this.nonMember.role
     }, team => {
-      this.aclPagingHelper.refresh();
-      this.nonMemberPaging.refresh();
-      this.refreshMembers(team);
+      Promise.all(this.aclPagingHelper.refresh()).then(states => {
+        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+          this.refreshMembers(team);
+        })
+      });
     });
   }
 
@@ -141,9 +125,11 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
-      this.aclPagingHelper.refresh();
-      this.nonMemberPaging.refresh();
-      this.refreshMembers(team);
+      Promise.all(this.aclPagingHelper.refresh()).then(states => {
+        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+          this.refreshMembers(team);
+        })
+      });
     });
   }
 
@@ -153,9 +139,11 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
-      this.aclPagingHelper.refresh();
-      this.nonMemberPaging.refresh();
-      this.refreshMembers(team);
+      Promise.all(this.aclPagingHelper.refresh()).then(states => {
+        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+          this.refreshMembers(team);
+        })
+      });
     });
   }
 
