@@ -40,7 +40,8 @@
 
         <div class="col-md-2">
           <button class="btn btn-success" ng-click="$ctrl.addMember()"
-            ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add member to team</button>
+            ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add member to
+            team</button>
         </div>
       </div>
 
@@ -55,11 +56,12 @@
         <div class="container-fluid">
           <div class="navbar-header">
             <a class="navbar-brand">Existing Members <sup><span
-                  class="badge">{{$ctrl.filteredMembers.length}}</span></sup></a>
+                  class="badge">{{$ctrl.count()}}</span></sup></a>
           </div>
 
           <form class="navbar-form navbar-left">
-            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch ">
+            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch "
+              ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
           </form>
         </div>
       </nav>
@@ -69,8 +71,7 @@
   <div class="row">
     <div class="col-sm-12">
       <div class="admin-table">
-        <div class="well-item"
-          ng-repeat="member in $ctrl.aclMembers | orderBy:'displayName'">
+        <div class="well-item" ng-repeat="member in $ctrl.aclMembers | orderBy:'displayName'">
           <div class="row admin-event-member">
             <div class="col-md-10 pointer" ng-click="$ctrl.gotoUser(member)">
               <div class="admin-event-member">
@@ -84,13 +85,13 @@
 
             <div class="col-md-2">
 
-              <div ng-if="member.role === 'OWNER' || owners.length <= 1">
-                <div ng-if="owners.length <= 1 && member.role === 'OWNER'">
+              <div ng-if="member.role === 'OWNER' || $ctrl.owners.length <= 1">
+                <div ng-if="$ctrl.owners.length <= 1 && member.role === 'OWNER'">
                   <span class="muted pull-right">Owner</span>
                 </div>
               </div>
 
-              <div ng-if="member.role !== 'OWNER' || owners.length > 1">
+              <div ng-if="member.role !== 'OWNER' || $ctrl.owners.length > 1">
                 <div class="form-inline pull-right">
                   <select class="form-control right-gap" name="permissions" ng-model="member.role"
                     ng-change="$ctrl.updateRole(member, member.role)">

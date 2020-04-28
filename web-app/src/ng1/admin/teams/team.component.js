@@ -16,6 +16,7 @@ class AdminTeamController {
     this.nonMemberSearch = '';
 
     this.permissions = [];
+    this.members = [];
 
     //This is a user not in the team, that is populated 
     //when a search is performed and a user is selected
@@ -50,7 +51,9 @@ class AdminTeamController {
 
       this.memberPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
       this.memberPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      this.memberPaging.refresh();
+      Promise.all(this.memberPaging.refresh()).then(states => {
+        this.members = this.memberPaging.users(this.userState);
+      })
 
       this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = {userIds: this.team.userIds};
       this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = {userIds: this.team.userIds};
@@ -89,7 +92,9 @@ class AdminTeamController {
   }
 
   next() {
-    this.memberPaging.next(this.userState);
+    this.memberPaging.next(this.userState).then(data => {
+      this.members = this.memberPaging.users(this.userState);
+    });
   }
 
   hasPrevious() {
@@ -97,15 +102,15 @@ class AdminTeamController {
   }
 
   previous() {
-    this.memberPaging.previous(this.userState);
-  }
-
-  users() {
-    return this.memberPaging.users(this.userState);
+    this.memberPaging.previous(this.userState).then(data => {
+      this.members = this.memberPaging.users(this.userState);
+    });
   }
 
   search() {
-    this.memberPaging.search(this.userState, this.memberSearch);
+    this.memberPaging.search(this.userState, this.memberSearch).then(info => {
+      this.members = this.memberPaging.users(this.userState);
+    });
   }
 
   searchNonMembers(searchString) {

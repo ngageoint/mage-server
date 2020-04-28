@@ -26,9 +26,6 @@ class AdminTeamAccessController {
     this.aclPagingHelper = new PagingHelper(UserService, false);
 
     this.owners = [];
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterMembers = this._filterMembers.bind(this);
   }
 
   $onInit() {
@@ -60,11 +57,7 @@ class AdminTeamAccessController {
       return member;
     });
 
-    this.owners = this.getOwners();
-  }
-
-  getOwners() {
-    return _.filter(this.aclMembers, member => {
+    this.owners = _.filter(this.aclMembers, member => {
       return member.role === 'OWNER';
     });
   }
@@ -94,7 +87,9 @@ class AdminTeamAccessController {
   }
 
   search() {
-    this.aclPagingHelper.search(this.userState, this.memberSearch);
+    this.aclPagingHelper.search(this.userState, this.memberSearch).then(data => {
+      this.refreshMembers(this.team);
+    });
   }
 
   searchNonMembers(searchString) {
@@ -149,11 +144,6 @@ class AdminTeamAccessController {
 
   gotoUser(member) {
     this.$state.go('admin.users' + { userId: member.id });
-  }
-
-  _filterMembers(member) {
-    var filteredMembers = this.$filter('filter')([member], this.memberSearch);
-    return filteredMembers && filteredMembers.length;
   }
 }
 
