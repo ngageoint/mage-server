@@ -65,7 +65,7 @@ class AdminDashboardController {
       }
     });
 
-    Promise.all(this.inactiveUsersPaging.refresh()).then(states => {
+    this.inactiveUsersPaging.refresh().then(states => {
       this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
     });
   }

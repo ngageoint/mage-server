@@ -34,7 +34,7 @@ class AdminTeamAccessController {
 
       this.aclPagingHelper.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
       this.aclPagingHelper.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl)  };
-      Promise.all(this.aclPagingHelper.refresh()).then(states => {
+      this.aclPagingHelper.refresh().then(states => {
         this.refreshMembers(this.team);
       });
 
@@ -107,8 +107,8 @@ class AdminTeamAccessController {
       userId: this.nonMember.id,
       role: this.nonMember.role
     }, team => {
-      Promise.all(this.aclPagingHelper.refresh()).then(states => {
-        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+      this.aclPagingHelper.refresh().then(states => {
+        this.nonMemberPaging.refresh().then(states=> {
           this.refreshMembers(team);
         })
       });
@@ -120,8 +120,8 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
-      Promise.all(this.aclPagingHelper.refresh()).then(states => {
-        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+      this.aclPagingHelper.refresh().then(states => {
+        this.nonMemberPaging.refresh().then(states=> {
           this.refreshMembers(team);
         })
       });
@@ -134,8 +134,8 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
-      Promise.all(this.aclPagingHelper.refresh()).then(states => {
-        Promise.all(this.nonMemberPaging.refresh()).then(states=> {
+      this.aclPagingHelper.refresh().then(states => {
+        this.nonMemberPaging.refresh().then(states=> {
           this.refreshMembers(team);
         })
       });

@@ -79,13 +79,13 @@ class AdminEventController {
 
       this.memberPaging.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
       this.memberPaging.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
-      Promise.all(this.memberPaging.refresh()).then(values => {
+      this.memberPaging.refresh().then(values => {
         this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
       });
 
       this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = { userIds: this.eventTeam.userIds };
       this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = { userIds: this.eventTeam.userIds };
-      Promise.all(this.nonMemberPaging.refresh()).then(states => {
+      this.nonMemberPaging.refresh().then(states => {
         var usersNotInEvent = _.reject(result.users, user => {
           return _.findWhere(this.eventTeam.users, { id: user.id });
         });

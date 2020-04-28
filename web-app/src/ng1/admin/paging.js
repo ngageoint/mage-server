@@ -58,7 +58,7 @@ export default class PagingHelper {
             promises.push(promise);
         }
 
-        return promises;
+        return Promise.all(promises);
     }
 
     count(state) {

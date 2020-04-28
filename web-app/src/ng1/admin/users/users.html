@@ -10,11 +10,11 @@
   <div class="row">
     <div class="col-md-3">
       <ul class="nav nav-pills nav-stacked">
-        <li ng-click="$ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{($ctrl.count('all'))}}</span></a></li>
-        <li ng-click="$ctrl.filter='active'" ng-class="{active: $ctrl.filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{($ctrl.count('active'))}}</span></a></li>
-        <li ng-click="$ctrl.filter='inactive'" ng-class="{active: $ctrl.filter=='inactive'}"><a href="javascript:void(0);">Inactive <span class="badge pull-right">{{($ctrl.count('inactive'))}}</span></a></li>
+        <li ng-click="$ctrl.changeFilter('all')" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{($ctrl.count('all'))}}</span></a></li>
+        <li ng-click="$ctrl.changeFilter('active')" ng-class="{active: $ctrl.filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{($ctrl.count('active'))}}</span></a></li>
+        <li ng-click="$ctrl.changeFilter('inactive')" ng-class="{active: $ctrl.filter=='inactive'}"><a href="javascript:void(0);">Inactive <span class="badge pull-right">{{($ctrl.count('inactive'))}}</span></a></li>
         <!-- TODO only if local is enabled -->
-        <li ng-click="$ctrl.filter='disabled'" ng-class="{active: $ctrl.filter=='disabled'}"><a href="javascript:void(0);">Disabled <span class="badge pull-right">{{($ctrl.count('disabled'))}}</span></a></li>
+        <li ng-click="$ctrl.changeFilter('disabled')" ng-class="{active: $ctrl.filter=='disabled'}"><a href="javascript:void(0);">Disabled <span class="badge pull-right">{{($ctrl.count('disabled'))}}</span></a></li>
       </ul>
 
       <hr>
@@ -47,7 +47,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="u in $ctrl.users() | orderBy:'displayName' | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="u in $ctrl.users" >
 
                 <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                   <div class="col-md-8">

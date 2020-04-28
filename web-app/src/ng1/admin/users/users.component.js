@@ -8,12 +8,12 @@ class AdminUsersController {
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
-    this.pagingHelper = new PagingHelper(UserService);
+    this.pagingHelper = new PagingHelper(UserService, false);
+    this.users = [];
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
     this.userSearch = '';
-    this.itemsPerPage = 10;
 
     this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -24,7 +24,9 @@ class AdminUsersController {
   }
 
   $onInit() {
-
+    this.pagingHelper.refresh().then(states => {
+      this.users = this.pagingHelper.users(this.filter);
+    });
   }
 
   count(state) {
@@ -36,7 +38,9 @@ class AdminUsersController {
   }
 
   next() {
-    this.pagingHelper.next(this.filter);
+    this.pagingHelper.next(this.filter).then(data => {
+      this.users = this.pagingHelper.users(this.filter);
+    });
   }
 
   hasPrevious() {
@@ -44,15 +48,20 @@ class AdminUsersController {
   }
 
   previous() {
-    this.pagingHelper.previous(this.filter);
-  }
-
-  users() {
-    return this.pagingHelper.users(this.filter);
+    this.pagingHelper.previous(this.filter).then(data => {
+      this.users = this.pagingHelper.users(this.filter);
+    });
   }
 
   search() {
-    this.pagingHelper.search(this.filter, this.userSearch);
+    this.pagingHelper.search(this.filter, this.userSearch).then(data => {
+      this.users = this.pagingHelper.users(this.filter);
+    });
+  }
+
+  changeFilter(state) {
+    this.filter = state;
+    this.users = this.pagingHelper.users(this.filter);
   }
 
   _filterActive(user) {
@@ -67,7 +76,9 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.search();
+    this.pagingHelper.refresh().then(states => {
+      this.users = this.pagingHelper.users(this.filter);
+    });
   }
 
   newUser() {

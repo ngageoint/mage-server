@@ -51,7 +51,7 @@ class AdminTeamController {
 
       this.memberPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
       this.memberPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      Promise.all(this.memberPaging.refresh()).then(states => {
+      this.memberPaging.refresh().then(states => {
         this.members = this.memberPaging.users(this.userState);
       })
 
