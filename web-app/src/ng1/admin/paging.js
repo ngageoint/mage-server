@@ -77,7 +77,7 @@ export default class PagingHelper {
     }
 
     next(state) {
-        this.move(this.stateAndData[state].pageInfo.links.next, state);
+        return this.move(this.stateAndData[state].pageInfo.links.next, state);
     }
 
     hasPrevious(state) {
@@ -92,14 +92,15 @@ export default class PagingHelper {
     }
 
     previous(state) {
-        this.move(this.stateAndData[state].pageInfo.links.prev, state);
+        return this.move(this.stateAndData[state].pageInfo.links.prev, state);
     }
 
     move(start, state) {
         var filter = JSON.parse(JSON.stringify(this.stateAndData[state].userFilter));
         filter.start = start;
-        this.UserService.getAllUsers(filter).then(pageInfo => {
+        return this.UserService.getAllUsers(filter).then(pageInfo => {
             this.stateAndData[state].pageInfo = pageInfo;
+            return Promise.resolve(pageInfo);
         });
     }
 
