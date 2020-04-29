@@ -1,8 +1,7 @@
 import _ from 'underscore';
-import PagingHelper from '../paging'
 
 class AdminTeamAccessController {
-  constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserService) {
+  constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserService, UserPagingService) {
     this.$stateParams = $stateParams;
     this.$q = $q;
     this.$filter = $filter;
@@ -15,15 +14,14 @@ class AdminTeamAccessController {
 
     this.nonMember = null;
 
-     //This is the list of users returned from a search
-     this.nonMemberSearchResults = [];
-     this.isSearching = false;
+    //This is the list of users returned from a search
+    this.nonMemberSearchResults = [];
+    this.isSearching = false;
 
     this.userState = 'all';
-    this.usersPerPage = 10;
+    this.nonAclUserState = this.userState + '.nonacl';
     this.memberSearch = '';
-    this.nonMemberPaging = new PagingHelper(UserService, false);
-    this.aclPagingHelper = new PagingHelper(UserService, false);
+    this.userPaging = UserPagingService;
 
     this.owners = [];
   }
@@ -32,18 +30,19 @@ class AdminTeamAccessController {
     this.$q.all({ team: this.Team.get({ id: this.$stateParams.teamId, populate: false }).$promise }).then(result => {
       this.team = result.team;
 
-      this.aclPagingHelper.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
-      this.aclPagingHelper.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl)  };
-      this.aclPagingHelper.refresh().then(states => {
-        this.refreshMembers(this.team);
-      });
+      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
+      this.userPaging.stateAndData[this.nonAclUserState] = clone;
 
       let aclIds = Object.keys(this.team.acl);
       let allIds = aclIds.concat(this.team.userIds);
 
-      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = { userIds: allIds };
-      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = { userIds: allIds };
-      this.nonMemberPaging.refresh();
+      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.userPaging.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
+      this.userPaging.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(this.team);
+      });
     });
   }
 
@@ -51,7 +50,7 @@ class AdminTeamAccessController {
     this.team = team;
 
     this.aclMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick( this.aclPagingHelper.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick(this.userPaging.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -63,39 +62,39 @@ class AdminTeamAccessController {
   }
 
   count() {
-    return this.aclPagingHelper.count(this.userState);
+    return this.userPaging.count(this.userState);
   }
 
   hasNext() {
-    return this.aclPagingHelper.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState);
   }
 
   next() {
-    this.aclPagingHelper.next(this.userState).then(pageInfo => {
+    this.userPaging.next(this.userState).then(pageInfo => {
       this.refreshMembers(this.team);
     });
   }
 
   hasPrevious() {
-    return this.aclPagingHelper.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState);
   }
 
   previous() {
-    this.aclPagingHelper.previous(this.userState).then(pageInfo => {
+    this.userPaging.previous(this.userState).then(pageInfo => {
       this.refreshMembers(this.team);
     });
   }
 
   search() {
-    this.aclPagingHelper.search(this.userState, this.memberSearch).then(data => {
+    this.userPaging.search(this.userState, this.memberSearch).then(data => {
       this.refreshMembers(this.team);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
-      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
+    return this.userPaging.search(this.nonAclUserState, searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
@@ -107,10 +106,8 @@ class AdminTeamAccessController {
       userId: this.nonMember.id,
       role: this.nonMember.role
     }, team => {
-      this.aclPagingHelper.refresh().then(states => {
-        this.nonMemberPaging.refresh().then(states=> {
-          this.refreshMembers(team);
-        })
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(team);
       });
     });
   }
@@ -120,10 +117,8 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
-      this.aclPagingHelper.refresh().then(states => {
-        this.nonMemberPaging.refresh().then(states=> {
-          this.refreshMembers(team);
-        })
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(team);
       });
     });
   }
@@ -134,10 +129,8 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
-      this.aclPagingHelper.refresh().then(states => {
-        this.nonMemberPaging.refresh().then(states=> {
-          this.refreshMembers(team);
-        })
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(team);
       });
     });
   }
@@ -147,7 +140,7 @@ class AdminTeamAccessController {
   }
 }
 
-AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService'];
+AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./team.access.html'),
