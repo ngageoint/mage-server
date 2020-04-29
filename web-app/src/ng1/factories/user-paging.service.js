@@ -35,6 +35,7 @@ function UserPagingService(UserService, $q) {
     };
 
     var service = {
+        stateAndData,
         refresh,
         count,
         hasNext,
