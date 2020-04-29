@@ -1,8 +1,7 @@
 import _ from 'underscore';
-import PagingHelper from '../paging'
 
 class AdminEventController {
-  constructor($state, $stateParams, $filter, $q, $uibModal, LocalStorageService, UserService, Event, Team, Layer) {
+  constructor($state, $stateParams, $filter, $q, $uibModal, LocalStorageService, UserService, Event, Team, Layer, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$filter = $filter;
@@ -19,7 +18,6 @@ class AdminEventController {
 
     this.editTeams = false;
     this.teamsPage = 0;
-    this.teamsPerPage = 10;
     this.teamsInEvent = [];
     this.teamsNotInEvent = [];
 
@@ -36,8 +34,8 @@ class AdminEventController {
     this.member = {};
 
     this.userState = 'all';
-    this.memberPaging = new PagingHelper(UserService, false);
-    this.nonMemberPaging = new PagingHelper(UserService, false);
+    this.nonUserState = this.userState + '.nonMember';
+    this.userPaging = UserPagingService;
 
     this.nonMember = null;
 
@@ -77,20 +75,19 @@ class AdminEventController {
         return this.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
       });
 
-      this.memberPaging.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
-      this.memberPaging.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
-      this.memberPaging.refresh().then(values => {
-        this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
+      this.userPaging.stateAndData[this.nonUserState] = clone;
+
+      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
+      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
+      this.userPaging.stateAndData[this.nonUserState].userFilter.nin = { userIds: this.eventTeam.userIds };
+      this.userPaging.stateAndData[this.nonUserState].countFilter.nin = { userIds: this.eventTeam.userIds };
+      this.userPaging.refresh().then(() => {
+        this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+
+        this.eventNonMembers = _.map(this.userPaging.users(this.nonUserState).concat(this.teamsNotInEvent), item => { return this.normalize(item); });
       });
 
-      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = { userIds: this.eventTeam.userIds };
-      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = { userIds: this.eventTeam.userIds };
-      this.nonMemberPaging.refresh().then(states => {
-        var usersNotInEvent = _.reject(result.users, user => {
-          return _.findWhere(this.eventTeam.users, { id: user.id });
-        });
-        this.eventNonMembers = _.map(usersNotInEvent.concat(this.teamsNotInEvent), item => { return this.normalize(item); });
-      });
 
       this.layer = {};
       this.eventLayers = _.chain(this.event.layerIds)
@@ -115,39 +112,39 @@ class AdminEventController {
   }
 
   count() {
-    return this.memberPaging.count(this.userState);
+    return this.userPaging.count(this.userState);
   }
 
   hasNext() {
-    return this.memberPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState);
   }
 
   next() {
-    this.memberPaging.next(this.userState).then(pageInfo => {
-      this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.next(this.userState).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
   hasPrevious() {
-    return this.memberPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState);
   }
 
   previous() {
-    this.memberPaging.previous(this.userState).then(pageInfo => {
-      this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.previous(this.userState).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
   search() {
-     this.memberPaging.search(this.userState, this.memberSearch).then(data => {
-      this.eventMembers = _.map(this.memberPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+     this.userPaging.search(this.userState, this.memberSearch).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
      });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
-      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
+    return this.userPaging.search(this.nonUserState, searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonUserState);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
@@ -334,7 +331,7 @@ class AdminEventController {
   }
 }
 
-AdminEventController.$inject = ['$state', '$stateParams', '$filter', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'Event', 'Team', 'Layer'];
+AdminEventController.$inject = ['$state', '$stateParams', '$filter', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'Event', 'Team', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./event.html'),
