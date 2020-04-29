@@ -1,8 +1,7 @@
 import _ from 'underscore';
-import PagingHelper from '../paging'
 
 class AdminTeamController {
-  constructor($uibModal, $filter, $state, $stateParams, Team, Event, UserService) {
+  constructor($uibModal, $filter, $state, $stateParams, Team, Event, UserService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$stateParams = $stateParams;
@@ -11,7 +10,8 @@ class AdminTeamController {
     this.Event = Event;
     this.UserService = UserService;
     this.userState = 'all';
-    this.usersPerPage = 10;
+    this.userSearchState = this.userState + '.search';
+
     this.memberSearch = '';
     this.nonMemberSearch = '';
 
@@ -26,8 +26,7 @@ class AdminTeamController {
     this.nonMemberSearchResults = [];
     this.isSearching = false;
 
-    this.memberPaging = new PagingHelper(UserService, false);
-    this.nonMemberPaging = new PagingHelper(UserService, false);
+    this.userPaging = UserPagingService;
     
     this.edit = false;
 
@@ -49,15 +48,16 @@ class AdminTeamController {
       this.team = team;
       this.user = {};
 
-      this.memberPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
-      this.memberPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      this.memberPaging.refresh().then(states => {
-        this.members = this.memberPaging.users(this.userState);
-      })
+      let searchClone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
+      this.userPaging.stateAndData[this.userSearchState] = searchClone;
 
-      this.nonMemberPaging.stateAndData[this.userState].userFilter.nin = {userIds: this.team.userIds};
-      this.nonMemberPaging.stateAndData[this.userState].countFilter.nin = {userIds: this.team.userIds};
-      this.nonMemberPaging.refresh();
+      this.userPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
+      this.userPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
+      this.userPaging.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
+      this.userPaging.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
+      this.userPaging.refresh().then(() => {
+        this.members = this.userPaging.users(this.userState);
+      });
 
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
@@ -84,40 +84,44 @@ class AdminTeamController {
   }
 
   count() {
-    return this.memberPaging.count(this.userState);
+    return this.userPaging.count(this.userState);
   }
 
   hasNext() {
-    return this.memberPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState);
   }
 
   next() {
-    this.memberPaging.next(this.userState).then(data => {
-      this.members = this.memberPaging.users(this.userState);
+    this.userPaging.next(this.userState).then(() => {
+      this.members = this.userPaging.users(this.userState);
     });
   }
 
   hasPrevious() {
-    return this.memberPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState);
   }
 
   previous() {
-    this.memberPaging.previous(this.userState).then(data => {
-      this.members = this.memberPaging.users(this.userState);
+    this.userPaging.previous(this.userState).then(() => {
+      this.members = this.userPaging.users(this.userState);
     });
   }
 
   search() {
-    this.memberPaging.search(this.userState, this.memberSearch).then(info => {
-      this.members = this.memberPaging.users(this.userState);
+    this.userPaging.search(this.userState, this.memberSearch).then(() => {
+      this.members = this.userPaging.users(this.userState);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.nonMemberPaging.search(this.userState, searchString).then(result => {
-      this.nonMemberSearchResults = this.nonMemberPaging.users(this.userState);
+
+    return this.userPaging.search(this.userSearchState, searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.userSearchState);
       this.isSearching = false;
+  
+      this.userPaging.refresh();
+
       return this.nonMemberSearchResults;
     });
   }
@@ -147,8 +151,9 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.memberPaging.refresh();
-    this.nonMemberPaging.refresh();
+    this.userPaging.refresh().then(() => {
+      this.members = this.userPaging.users(this.userState);
+    });
   }
 
   hasPermission(permission) {
@@ -201,7 +206,7 @@ class AdminTeamController {
   }
 }
 
-AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', 'Team', 'Event', 'UserService'];
+AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', 'Team', 'Event', 'UserService', 'UserPagingService', 'UserPagingService'];
 
 export default {
   template: require('./team.html'),
