@@ -1,15 +1,14 @@
 import _ from 'underscore';
-import PagingHelper from '../paging'
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, $scope, LocalStorageService, UserService) {
+  constructor($uibModal, $state, $timeout, $scope, LocalStorageService, UserService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
     this.$scope = $scope;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
-    this.pagingHelper = new PagingHelper(UserService, false);
+    this.pagingHelper = UserPagingService;
     this.users = [];
 
     this.token = LocalStorageService.getToken();
@@ -154,7 +153,7 @@ class AdminUsersController {
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', '$scope', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', '$scope', 'LocalStorageService', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./users.html'),

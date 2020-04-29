@@ -1,9 +1,8 @@
 import _ from 'underscore';
 import moment from 'moment';
-import PagingHelper from './paging';
 
 class AdminDashboardController {
-  constructor($state, $filter, $scope, UserService, DeviceService, LoginService, Team, Event, Layer) {
+  constructor($state, $filter, $scope, UserService, DeviceService, LoginService, Team, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
     this.$scope = $scope;
@@ -16,7 +15,7 @@ class AdminDashboardController {
     this.usersPerPage = 10;
     this.userSearch = '';
     this.userState = 'inactive';
-    this.inactiveUsersPaging = new PagingHelper(UserService, false);
+    this.inactiveUsersPaging = UserPagingService;
     this.inactiveUsers = [];
 
     // For some reason angular is not calling into filter function with correct context
@@ -223,7 +222,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', '$scope', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
+AdminDashboardController.$inject = ['$state', '$filter', '$scope', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),
