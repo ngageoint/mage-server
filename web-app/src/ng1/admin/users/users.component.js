@@ -82,9 +82,7 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.pagingHelper.refresh().then(() => {
-      this.setUsers();
-    });
+    this.search();
   }
 
   newUser() {
