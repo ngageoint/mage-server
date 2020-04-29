@@ -2,10 +2,11 @@ import _ from 'underscore';
 import PagingHelper from '../paging'
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, LocalStorageService, UserService) {
+  constructor($uibModal, $state, $timeout, $scope, LocalStorageService, UserService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
+    this.$scope = $scope;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.pagingHelper = new PagingHelper(UserService, false);
@@ -24,9 +25,14 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.pagingHelper.refresh().then(states => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.refresh().then(() => {
+      this.setUsers();
     });
+  }
+
+  setUsers() {
+    this.users = this.pagingHelper.users(this.filter);
+    this.$scope.$apply();
   }
 
   count(state) {
@@ -38,8 +44,8 @@ class AdminUsersController {
   }
 
   next() {
-    this.pagingHelper.next(this.filter).then(data => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.next(this.filter).then(() => {
+      this.setUsers();
     });
   }
 
@@ -48,20 +54,20 @@ class AdminUsersController {
   }
 
   previous() {
-    this.pagingHelper.previous(this.filter).then(data => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.previous(this.filter).then(() => {
+      this.setUsers();
     });
   }
 
   search() {
-    this.pagingHelper.search(this.filter, this.userSearch).then(data => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.search(this.filter, this.userSearch).then(() => {
+      this.setUsers();
     });
   }
 
   changeFilter(state) {
     this.filter = state;
-    this.users = this.pagingHelper.users(this.filter);
+    this.setUsers();
   }
 
   _filterActive(user) {
@@ -76,8 +82,8 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.pagingHelper.refresh().then(states => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.refresh().then(() => {
+      this.setUsers();
     });
   }
 
@@ -110,10 +116,10 @@ class AdminUsersController {
       component: "adminUserDelete"
     });
 
-    modalInstance.result.then(user => {
-      var users = _.reject(this.stateAndData[this.filter].pageInfo.users, u => { return u.id === user.id; });
-      this.stateAndData[this.filter].pageInfo.users = users;
-      this.stateAndData[this.filter].userCount = this.stateAndData[this.filter].userCount - 1;
+    modalInstance.result.then(() => {
+      this.pagingHelper.refresh().then(() => {
+        this.setUsers();
+      });
     });
   }
 
@@ -122,7 +128,9 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh();
+      this.pagingHelper.refresh().then(() => {
+        this.setUsers();
+      });
 
       this.onUserActivated({
         $event: {
@@ -141,12 +149,14 @@ class AdminUsersController {
 
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh();
+      this.pagingHelper.refresh().then(() => {
+        this.setUsers();
+      });
     });
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', '$scope', 'LocalStorageService', 'UserService'];
 
 export default {
   template: require('./users.html'),

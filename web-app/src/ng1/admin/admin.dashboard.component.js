@@ -3,9 +3,10 @@ import moment from 'moment';
 import PagingHelper from './paging';
 
 class AdminDashboardController {
-  constructor($state, $filter, UserService, DeviceService, LoginService, Team, Event, Layer) {
+  constructor($state, $filter, $scope, UserService, DeviceService, LoginService, Team, Event, Layer) {
     this.$state = $state;
     this._$filter = $filter;
+    this.$scope = $scope;
     this._UserService = UserService;
     this._DeviceService = DeviceService;
     this._LoginService = LoginService;
@@ -65,9 +66,14 @@ class AdminDashboardController {
       }
     });
 
-    this.inactiveUsersPaging.refresh().then(states => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    this.inactiveUsersPaging.refresh().then(() => {
+      this.setUsers();
     });
+  }
+
+  setUsers() {
+    this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    this.$scope.$apply();
   }
 
   count() {
@@ -79,8 +85,8 @@ class AdminDashboardController {
   }
 
   next() {
-    this.inactiveUsersPaging.next(this.userState).then(results => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    this.inactiveUsersPaging.next(this.userState).then(() => {
+      this.setUsers();
     });
   }
 
@@ -89,14 +95,14 @@ class AdminDashboardController {
   }
 
   previous() {
-    this.inactiveUsersPaging.previous(this.userState).then(results => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    this.inactiveUsersPaging.previous(this.userState).then(() => {
+      this.setUsers();
     });
   }
 
   search() {
-    this.inactiveUsersPaging.search(this.userState, this.userSearch).then(results => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+    this.inactiveUsersPaging.search(this.userState, this.userSearch).then(() => {
+      this.setUsers();
     });
   }
 
@@ -138,7 +144,9 @@ class AdminDashboardController {
     user.active = true;
 
     this._UserService.updateUser(user.id, user, data => {
-      this.inactiveUsersPaging.refresh();
+      this.inactiveUsersPaging.refresh().then(() => {
+        this.setUsers();
+      });
       this.onUserActivated({
         $event: {
           user: user
@@ -215,7 +223,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
+AdminDashboardController.$inject = ['$state', '$filter', '$scope', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
 
 export default {
   template: require('./admin.dashboard.html'),

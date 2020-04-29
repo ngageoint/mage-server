@@ -36,7 +36,7 @@
           <div class="col-sm-12">
             <div class="admin-table">
               <div class="well-item"
-                ng-repeat="user in $ctrl.inactiveUsers | orderBy:'displayName' | limitTo:$ctrl.usersPerPage">
+                ng-repeat="user in $ctrl.inactiveUsers">
                 <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
                   <div class="col-md-12">
                     <div class="right-gap pull-left">
