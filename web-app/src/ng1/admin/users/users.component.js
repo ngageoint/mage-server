@@ -25,13 +25,9 @@ class AdminUsersController {
 
   $onInit() {
     this.pagingHelper.refresh().then(() => {
-      this.setUsers();
+      this.users = this.pagingHelper.users(this.filter);
+      this.$scope.$apply();
     });
-  }
-
-  setUsers() {
-    this.users = this.pagingHelper.users(this.filter);
-    this.$scope.$apply();
   }
 
   count(state) {
@@ -44,7 +40,7 @@ class AdminUsersController {
 
   next() {
     this.pagingHelper.next(this.filter).then(() => {
-      this.setUsers();
+      this.users = this.pagingHelper.users(this.filter);
     });
   }
 
@@ -54,19 +50,19 @@ class AdminUsersController {
 
   previous() {
     this.pagingHelper.previous(this.filter).then(() => {
-      this.setUsers();
+      this.users = this.pagingHelper.users(this.filter);
     });
   }
 
   search() {
     this.pagingHelper.search(this.filter, this.userSearch).then(() => {
-      this.setUsers();
+      this.users = this.pagingHelper.users(this.filter);
     });
   }
 
   changeFilter(state) {
     this.filter = state;
-    this.setUsers();
+    this.users = this.pagingHelper.users(this.filter);
   }
 
   _filterActive(user) {
@@ -115,7 +111,7 @@ class AdminUsersController {
 
     modalInstance.result.then(() => {
       this.pagingHelper.refresh().then(() => {
-        this.setUsers();
+        this.users = this.pagingHelper.users(this.filter);
       });
     });
   }
@@ -126,7 +122,7 @@ class AdminUsersController {
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh().then(() => {
-        this.setUsers();
+        this.users = this.pagingHelper.users(this.filter);
       });
 
       this.onUserActivated({
@@ -147,7 +143,7 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh().then(() => {
-        this.setUsers();
+        this.users = this.pagingHelper.users(this.filter);
       });
     });
   }

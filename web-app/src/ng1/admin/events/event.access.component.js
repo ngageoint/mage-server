@@ -1,18 +1,31 @@
 import _ from 'underscore';
 
 class AdminEventAccessController {
-  constructor($state, $stateParams, $q, $filter, Event, EventAccess, UserService) {
+  constructor($state, $stateParams, $q, $filter, $scope, Event, EventAccess, UserService, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
     this.$filter = $filter;
+    this.$scope = $scope;
     this.Event = Event;
     this.EventAccess = EventAccess;
     this.UserService = UserService;
 
-    this.users = [];
+    this.event = null;
+    this.aclMembers = [];
 
-    this.member = {};
+    this.nonMember = null;
+
+    //This is the list of users returned from a search
+    this.nonMemberSearchResults = [];
+    this.isSearching = false;
+
+    this.userState = 'all';
+    this.nonAclUserState = this.userState + '.nonacl';
+    this.memberSearch = '';
+    this.userPaging = UserPagingService;
+
+    this.owners = [];
   
     this.roles = [{
       name: 'GUEST',
@@ -33,14 +46,26 @@ class AdminEventAccessController {
   }
 
   $onInit() {
-    this.$q.all({users: this.UserService.getAllUsers(), event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
-      this.users = result.users;
-  
+    this.$q.all({event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {  
+      this.event = result.event;
       this.role = {
         selected: this.roles[0]
       };
   
-      this.refreshMembers(result.event);
+      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
+      this.userPaging.stateAndData[this.nonAclUserState] = clone;
+
+      let aclIds = Object.keys(this.event.acl);
+      let allIds = aclIds.concat(this.event.userIds);
+
+      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.event.acl) };
+      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.event.acl) };
+      this.userPaging.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
+      this.userPaging.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(this.event);
+        this.$scope.$apply();
+      });
     });
   }
 
@@ -52,28 +77,54 @@ class AdminEventAccessController {
   refreshMembers(event) {
     this.event = event;
 
-    var usersById = _.indexBy(this.users, 'id');
-
-    this.eventMembers = _.map(this.event.acl, (access, userId) => {
-      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+    this.aclMembers = _.map(this.event.acl, (access, userId) => {
+      var member = _.pick(this.userPaging.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
-      member.role = {
-        selected: _.find(this.roles, role => { return role.name === access.role; })
-      };
-
+      member.role = access.role;
       return member;
     });
 
-    this.nonMembers = _.reject(this.users, user => {
-      return _.where(this.eventMembers, {id: user.id}).length > 0;
+    this.owners = _.filter(this.aclMembers, member => {
+      return member.role === 'OWNER';
     });
-
-    this.owners = this.getOwners();
   }
 
-  getOwners() {
-    return _.filter(this.eventMembers, member => {
-      return member.role.selected.name === 'OWNER';
+  count() {
+    return this.userPaging.count(this.userState);
+  }
+
+  hasNext() {
+    return this.userPaging.hasNext(this.userState);
+  }
+
+  next() {
+    this.userPaging.next(this.userState).then(pageInfo => {
+      this.refreshMembers(this.team);
+    });
+  }
+
+  hasPrevious() {
+    return this.userPaging.hasPrevious(this.userState);
+  }
+
+  previous() {
+    this.userPaging.previous(this.userState).then(pageInfo => {
+      this.refreshMembers(this.team);
+    });
+  }
+
+  search() {
+    this.userPaging.search(this.userState, this.memberSearch).then(data => {
+      this.refreshMembers(this.team);
+    });
+  }
+
+  searchNonMembers(searchString) {
+    this.isSearching = true;
+    return this.userPaging.search(this.nonAclUserState, searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState);
+      this.isSearching = false;
+      return this.nonMemberSearchResults;
     });
   }
 
@@ -93,7 +144,9 @@ class AdminEventAccessController {
       eventId: this.event.id,
       userId: member.id
     }, event => {
-      this.refreshMembers(event);
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -103,7 +156,9 @@ class AdminEventAccessController {
       userId: member.id,
       role: role.name
     }, event => {
-      this.refreshMembers(event);
+      this.userPaging.refresh().then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -113,7 +168,7 @@ class AdminEventAccessController {
 
 }
 
-AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Event', 'EventAccess', 'UserService'];
+AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', '$scope', 'Event', 'EventAccess', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./event.access.html'),

@@ -1,11 +1,12 @@
 import _ from 'underscore';
 
 class AdminTeamController {
-  constructor($uibModal, $filter, $state, $stateParams, Team, Event, UserService, UserPagingService) {
+  constructor($uibModal, $filter, $state, $stateParams, $scope, Team, Event, UserService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$filter = $filter;
+    this.$scope = $scope;
     this.Team = Team;
     this.Event = Event;
     this.UserService = UserService;
@@ -57,6 +58,7 @@ class AdminTeamController {
       this.userPaging.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
       this.userPaging.refresh().then(() => {
         this.members = this.userPaging.users(this.userState);
+        this.$scope.$apply();
       });
 
       var myAccess = this.team.acl[this.UserService.myself.id];
@@ -206,7 +208,7 @@ class AdminTeamController {
   }
 }
 
-AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', 'Team', 'Event', 'UserService', 'UserPagingService', 'UserPagingService'];
+AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', '$scope', 'Team', 'Event', 'UserService', 'UserPagingService', 'UserPagingService'];
 
 export default {
   template: require('./team.html'),

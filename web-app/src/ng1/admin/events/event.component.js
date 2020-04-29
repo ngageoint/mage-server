@@ -1,11 +1,12 @@
 import _ from 'underscore';
 
 class AdminEventController {
-  constructor($state, $stateParams, $filter, $q, $uibModal, LocalStorageService, UserService, Event, Team, Layer, UserPagingService) {
+  constructor($state, $stateParams, $filter, $q, $uibModal, $scope, LocalStorageService, UserService, Event, Team, Layer, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$filter = $filter;
     this.$q = $q;
+    this.$scope = $scope;
     this.$uibModal = $uibModal;
     this.UserService = UserService;
     this.Event = Event;
@@ -86,6 +87,7 @@ class AdminEventController {
         this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
 
         this.eventNonMembers = _.map(this.userPaging.users(this.nonUserState).concat(this.teamsNotInEvent), item => { return this.normalize(item); });
+        this.$scope.$apply();
       });
 
 
@@ -331,7 +333,7 @@ class AdminEventController {
   }
 }
 
-AdminEventController.$inject = ['$state', '$stateParams', '$filter', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'Event', 'Team', 'Layer', 'UserPagingService'];
+AdminEventController.$inject = ['$state', '$stateParams', '$filter', '$q', '$uibModal', '$scope', 'LocalStorageService', 'UserService', 'Event', 'Team', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./event.html'),

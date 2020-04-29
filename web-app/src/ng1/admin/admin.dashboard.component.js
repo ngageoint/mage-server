@@ -66,13 +66,9 @@ class AdminDashboardController {
     });
 
     this.inactiveUsersPaging.refresh().then(() => {
-      this.setUsers();
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
+      this.$scope.$apply();
     });
-  }
-
-  setUsers() {
-    this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
-    this.$scope.$apply();
   }
 
   count() {
@@ -85,7 +81,7 @@ class AdminDashboardController {
 
   next() {
     this.inactiveUsersPaging.next(this.userState).then(() => {
-      this.setUsers();
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
     });
   }
 
@@ -95,13 +91,13 @@ class AdminDashboardController {
 
   previous() {
     this.inactiveUsersPaging.previous(this.userState).then(() => {
-      this.setUsers();
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
     });
   }
 
   search() {
     this.inactiveUsersPaging.search(this.userState, this.userSearch).then(() => {
-      this.setUsers();
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
     });
   }
 
@@ -144,7 +140,7 @@ class AdminDashboardController {
 
     this._UserService.updateUser(user.id, user, data => {
       this.inactiveUsersPaging.refresh().then(() => {
-        this.setUsers();
+        this.inactiveUsers = this.inactiveUsersPaging.users(this.userState);
       });
       this.onUserActivated({
         $event: {
