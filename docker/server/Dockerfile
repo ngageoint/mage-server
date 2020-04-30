@@ -1,6 +1,6 @@
 FROM node:10.17.0
 
-ARG MAGE_VER=5.3.1
+ARG MAGE_VER=5.3.5
 
 LABEL author="NGA"
 
@@ -29,7 +29,7 @@ WORKDIR ${MAGE_HOME}
 RUN rm -rf node_modules && \
     mkdir node_modules && \
     npm install && \
-    npm run build
+    npm run build-web
 
 VOLUME /var/lib/mage
 
