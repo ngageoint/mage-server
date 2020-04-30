@@ -40,8 +40,8 @@ class AdminUsersController {
   }
 
   next() {
-    this.pagingHelper.next(this.stateAndData[this.filter]).then(() => {
-      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+    this.pagingHelper.next(this.stateAndData[this.filter]).then(users => {
+      this.users = users;
     });
   }
 
@@ -50,14 +50,14 @@ class AdminUsersController {
   }
 
   previous() {
-    this.pagingHelper.previous(this.stateAndData[this.filter]).then(() => {
-      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+    this.pagingHelper.previous(this.stateAndData[this.filter]).then(users => {
+      this.users = users;
     });
   }
 
   search() {
-    this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(() => {
-      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+    this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(users => {
+      this.users = users;
     });
   }
 

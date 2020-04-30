@@ -114,7 +114,7 @@ function UserPagingService(UserService, $q) {
         filter.start = start;
         return UserService.getAllUsers(filter).then(pageInfo => {
             data.pageInfo = pageInfo;
-            return Promise.resolve(pageInfo);
+            return Promise.resolve(pageInfo.users);
         });
     }
 
@@ -140,7 +140,7 @@ function UserPagingService(UserService, $q) {
 
         if (previousSearch == '' && userSearch == '') {
             //Not performing a seach
-            promise = Promise.resolve([]);
+            promise = Promise.resolve(data.pageInfo.users);
         } else if (previousSearch != '' && userSearch == '') {
             //Clearing out the search
             data.searchFilter = '';
@@ -148,10 +148,11 @@ function UserPagingService(UserService, $q) {
 
             promise = UserService.getAllUsers(data.userFilter).then(pageInfo => {
                 data.pageInfo = pageInfo;
+                return Promise.resolve(data.pageInfo.users);
             });
         } else if (previousSearch == userSearch) {
             //Search is being performed, no need to keep searching the same info over and over
-            promise = Promise.resolve([]);
+            promise = Promise.resolve(data.pageInfo.users);
         } else {
             //Perform the server side searching
             data.searchFilter = userSearch;
@@ -163,6 +164,7 @@ function UserPagingService(UserService, $q) {
             };
             promise = UserService.getAllUsers(filter).then(pageInfo => {
                 data.pageInfo = pageInfo;
+                return Promise.resolve(data.pageInfo.users)
             });
         }
 
