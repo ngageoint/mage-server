@@ -24,6 +24,8 @@ class AdminTeamAccessController {
     this.memberSearch = '';
     this.userPaging = UserPagingService;
 
+    this.stateAndData = this.userPaging.constructDefault();
+
     this.owners = [];
   }
 
@@ -31,17 +33,17 @@ class AdminTeamAccessController {
     this.$q.all({ team: this.Team.get({ id: this.$stateParams.teamId, populate: false }).$promise }).then(result => {
       this.team = result.team;
 
-      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
-      this.userPaging.stateAndData[this.nonAclUserState] = clone;
+      let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      this.stateAndData[this.nonAclUserState] = clone;
 
       let aclIds = Object.keys(this.team.acl);
       let allIds = aclIds.concat(this.team.userIds);
 
-      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
-      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl) };
-      this.userPaging.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
-      this.userPaging.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
-      this.userPaging.refresh().then(() => {
+      this.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
+      this.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
+      this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.team);
         this.$scope.$apply();
       });
@@ -52,7 +54,7 @@ class AdminTeamAccessController {
     this.team = team;
 
     this.aclMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(this.userPaging.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick(this.userPaging.users(this.userState, this.stateAndData).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -64,39 +66,39 @@ class AdminTeamAccessController {
   }
 
   count() {
-    return this.userPaging.count(this.userState);
+    return this.userPaging.count(this.userState,this.stateAndData);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState,this.stateAndData);
   }
 
   next() {
-    this.userPaging.next(this.userState).then(pageInfo => {
+    this.userPaging.next(this.userState,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState,this.stateAndData);
   }
 
   previous() {
-    this.userPaging.previous(this.userState).then(pageInfo => {
+    this.userPaging.previous(this.userState,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   search() {
-    this.userPaging.search(this.userState, this.memberSearch).then(data => {
+    this.userPaging.search(this.userState, this.memberSearch,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.nonAclUserState, searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState);
+    return this.userPaging.search(this.nonAclUserState, searchString,this.stateAndData).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState,this.stateAndData);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
@@ -108,7 +110,7 @@ class AdminTeamAccessController {
       userId: this.nonMember.id,
       role: this.nonMember.role
     }, team => {
-      this.userPaging.refresh().then(() => {
+      this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
     });
@@ -119,7 +121,7 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
-      this.userPaging.refresh().then(() => {
+      this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
     });
@@ -131,7 +133,7 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
-      this.userPaging.refresh().then(() => {
+      this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
     });

@@ -37,6 +37,7 @@ class AdminEventController {
     this.userState = 'all';
     this.nonUserState = this.userState + '.nonMember';
     this.userPaging = UserPagingService;
+    this.stateAndData = this.userPaging.constructDefault();
 
     this.nonMember = null;
 
@@ -76,17 +77,17 @@ class AdminEventController {
         return this.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
       });
 
-      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
-      this.userPaging.stateAndData[this.nonUserState] = clone;
+      let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      this.stateAndData[this.nonUserState] = clone;
 
-      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
-      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
-      this.userPaging.stateAndData[this.nonUserState].userFilter.nin = { userIds: this.eventTeam.userIds };
-      this.userPaging.stateAndData[this.nonUserState].countFilter.nin = { userIds: this.eventTeam.userIds };
-      this.userPaging.refresh().then(() => {
-        this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+      this.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
+      this.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
+      this.stateAndData[this.nonUserState].userFilter.nin = { userIds: this.eventTeam.userIds };
+      this.stateAndData[this.nonUserState].countFilter.nin = { userIds: this.eventTeam.userIds };
+      this.userPaging.refresh(this.stateAndData).then(() => {
+        this.eventMembers = _.map(this.userPaging.users(this.userState,this.stateAndData).concat(this.teamsInEvent), item => { return this.normalize(item); });
 
-        this.eventNonMembers = _.map(this.userPaging.users(this.nonUserState).concat(this.teamsNotInEvent), item => { return this.normalize(item); });
+        this.eventNonMembers = _.map(this.userPaging.users(this.nonUserState,this.stateAndData).concat(this.teamsNotInEvent), item => { return this.normalize(item); });
         this.$scope.$apply();
       });
 
@@ -114,39 +115,39 @@ class AdminEventController {
   }
 
   count() {
-    return this.userPaging.count(this.userState);
+    return this.userPaging.count(this.userState,this.stateAndData);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState,this.stateAndData);
   }
 
   next() {
-    this.userPaging.next(this.userState).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.next(this.userState,this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState,this.stateAndData).concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState,this.stateAndData);
   }
 
   previous() {
-    this.userPaging.previous(this.userState).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.previous(this.userState,this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState,this.stateAndData).concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
   search() {
-     this.userPaging.search(this.userState, this.memberSearch).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.userState).concat(this.teamsInEvent), item => { return this.normalize(item); });
+     this.userPaging.search(this.userState, this.memberSearch,this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.userPaging.users(this.userState,this.stateAndData).concat(this.teamsInEvent), item => { return this.normalize(item); });
      });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.nonUserState, searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.nonUserState);
+    return this.userPaging.search(this.nonUserState, searchString,this.stateAndData).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonUserState,this.stateAndData);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });

@@ -10,6 +10,7 @@ class AdminUsersController {
     this.UserService = UserService;
     this.pagingHelper = UserPagingService;
     this.users = [];
+    this.stateAndData = this.pagingHelper.constructDefault();
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
@@ -24,45 +25,45 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.pagingHelper.refresh().then(() => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.refresh(this.stateAndData).then(() => {
+      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
       this.$scope.$apply();
     });
   }
 
   count(state) {
-    return this.pagingHelper.count(state);
+    return this.pagingHelper.count(state, this.stateAndData);
   }
 
   hasNext() {
-    return this.pagingHelper.hasNext(this.filter);
+    return this.pagingHelper.hasNext(this.filter, this.stateAndData);
   }
 
   next() {
-    this.pagingHelper.next(this.filter).then(() => {
-      this.users = this.pagingHelper.users(this.filter);
+    this.pagingHelper.next(this.filter, this.stateAndData).then(() => {
+      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
     });
   }
 
   hasPrevious() {
-    return this.pagingHelper.hasPrevious(this.filter);
+    return this.pagingHelper.hasPrevious(this.filter, this.stateAndData);
   }
 
   previous() {
     this.pagingHelper.previous(this.filter).then(() => {
-      this.users = this.pagingHelper.users(this.filter);
+      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
     });
   }
 
   search() {
     this.pagingHelper.search(this.filter, this.userSearch).then(() => {
-      this.users = this.pagingHelper.users(this.filter);
+      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
     });
   }
 
   changeFilter(state) {
     this.filter = state;
-    this.users = this.pagingHelper.users(this.filter);
+    this.users = this.pagingHelper.users(this.filter, this.stateAndData);
   }
 
   _filterActive(user) {
@@ -110,8 +111,8 @@ class AdminUsersController {
     });
 
     modalInstance.result.then(() => {
-      this.pagingHelper.refresh().then(() => {
-        this.users = this.pagingHelper.users(this.filter);
+      this.pagingHelper.refresh(this.stateAndData).then(() => {
+        this.users = this.pagingHelper.users(this.filter, this.stateAndData);
       });
     });
   }
@@ -121,8 +122,8 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh().then(() => {
-        this.users = this.pagingHelper.users(this.filter);
+      this.pagingHelper.refresh(this.stateAndData).then(() => {
+        this.users = this.pagingHelper.users(this.filter,this.stateAndData);
       });
 
       this.onUserActivated({
@@ -142,8 +143,8 @@ class AdminUsersController {
 
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh().then(() => {
-        this.users = this.pagingHelper.users(this.filter);
+      this.pagingHelper.refresh(this.stateAndData).then(() => {
+        this.users = this.pagingHelper.users(this.filter, this.stateAndData);
       });
     });
   }

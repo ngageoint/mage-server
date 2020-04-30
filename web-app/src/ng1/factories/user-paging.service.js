@@ -3,39 +3,9 @@ module.exports = UserPagingService;
 UserPagingService.$inject = ['UserService', '$q'];
 
 function UserPagingService(UserService, $q) {
-    var itemsPerPage = 10;
-    var stateAndData = new Map();
-    stateAndData['all'] = {
-        countFilter: {},
-        userFilter: { limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-        searchFilter: '',
-        userCount: 0,
-        pageInfo: {}
-    };
-    stateAndData['active'] = {
-        countFilter: { active: true },
-        userFilter: { active: true, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-        searchFilter: '',
-        userCount: 0,
-        pageInfo: {}
-    };
-    stateAndData['inactive'] = {
-        countFilter: { active: false },
-        userFilter: { active: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-        searchFilter: '',
-        userCount: 0,
-        pageInfo: {}
-    };
-    stateAndData['disabled'] = {
-        countFilter: { enabled: false },
-        userFilter: { enabled: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-        searchFilter: '',
-        userCount: 0,
-        pageInfo: {}
-    };
 
     var service = {
-        stateAndData,
+        constructDefault,
         refresh,
         count,
         hasNext,
@@ -48,7 +18,42 @@ function UserPagingService(UserService, $q) {
 
     return service;
 
-    function refresh() {
+    function constructDefault() {
+        var itemsPerPage = 10;
+        var stateAndData = new Map();
+        stateAndData['all'] = {
+            countFilter: {},
+            userFilter: { limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
+            userCount: 0,
+            pageInfo: {}
+        };
+        stateAndData['active'] = {
+            countFilter: { active: true },
+            userFilter: { active: true, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
+            userCount: 0,
+            pageInfo: {}
+        };
+        stateAndData['inactive'] = {
+            countFilter: { active: false },
+            userFilter: { active: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
+            userCount: 0,
+            pageInfo: {}
+        };
+        stateAndData['disabled'] = {
+            countFilter: { enabled: false },
+            userFilter: { enabled: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
+            searchFilter: '',
+            userCount: 0,
+            pageInfo: {}
+        };
+
+        return stateAndData;
+    }
+
+    function refresh(stateAndData) {
 
         var promises = [];
 
@@ -70,11 +75,11 @@ function UserPagingService(UserService, $q) {
         return Promise.all(promises);
     }
 
-    function count(state) {
+    function count(state, stateAndData) {
         return stateAndData[state].userCount;
     }
 
-    function hasNext(state) {
+    function hasNext(state, stateAndData) {
         var status = false;
 
         if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.links) {
@@ -85,11 +90,11 @@ function UserPagingService(UserService, $q) {
         return status;
     }
 
-    function next(state) {
-        return move(stateAndData[state].pageInfo.links.next, state);
+    function next(state, stateAndData) {
+        return move(stateAndData[state].pageInfo.links.next, state, stateAndData);
     }
 
-    function hasPrevious(state) {
+    function hasPrevious(state, stateAndData) {
         var status = false;
 
         if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.links) {
@@ -100,11 +105,11 @@ function UserPagingService(UserService, $q) {
         return status;
     }
 
-    function previous(state) {
-        return move(stateAndData[state].pageInfo.links.prev, state);
+    function previous(state, stateAndData) {
+        return move(stateAndData[state].pageInfo.links.prev, state, stateAndData);
     }
 
-    function move(start, state) {
+    function move(start, state, stateAndData) {
         var filter = JSON.parse(JSON.stringify(stateAndData[state].userFilter));
         filter.start = start;
         return UserService.getAllUsers(filter).then(pageInfo => {
@@ -113,7 +118,7 @@ function UserPagingService(UserService, $q) {
         });
     }
 
-    function users(state) {
+    function users(state, stateAndData) {
         var users = [];
 
         if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.users) {
@@ -123,7 +128,7 @@ function UserPagingService(UserService, $q) {
         return users;
     }
 
-    function search(state, userSearch) {
+    function search(state, userSearch, stateAndData) {
 
         if (stateAndData[state].pageInfo == null || stateAndData[state].pageInfo.users == null) {
             return Promise.resolve([]);

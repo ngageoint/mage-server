@@ -10,8 +10,12 @@ class AdminTeamController {
     this.Team = Team;
     this.Event = Event;
     this.UserService = UserService;
+    this.userPaging = UserPagingService;
+
     this.userState = 'all';
     this.userSearchState = this.userState + '.search';
+
+    this.stateAndData = this.userPaging.constructDefault();
 
     this.memberSearch = '';
     this.nonMemberSearch = '';
@@ -26,8 +30,6 @@ class AdminTeamController {
     //This is the list of users returned from a search
     this.nonMemberSearchResults = [];
     this.isSearching = false;
-
-    this.userPaging = UserPagingService;
     
     this.edit = false;
 
@@ -49,15 +51,15 @@ class AdminTeamController {
       this.team = team;
       this.user = {};
 
-      let searchClone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
-      this.userPaging.stateAndData[this.userSearchState] = searchClone;
+      let searchClone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      this.stateAndData[this.userSearchState] = searchClone;
 
-      this.userPaging.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
-      this.userPaging.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      this.userPaging.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
-      this.userPaging.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
-      this.userPaging.refresh().then(() => {
-        this.members = this.userPaging.users(this.userState);
+      this.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
+      this.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
+      this.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
+      this.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
+      this.userPaging.refresh(this.stateAndData).then(() => {
+        this.members = this.userPaging.users(this.userState, this.stateAndData);
         this.$scope.$apply();
       });
 
@@ -86,40 +88,40 @@ class AdminTeamController {
   }
 
   count() {
-    return this.userPaging.count(this.userState);
+    return this.userPaging.count(this.userState, this.stateAndData);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState, this.stateAndData);
   }
 
   next() {
-    this.userPaging.next(this.userState).then(() => {
-      this.members = this.userPaging.users(this.userState);
+    this.userPaging.next(this.userState, this.stateAndData).then(() => {
+      this.members = this.userPaging.users(this.userState, this.stateAndData);
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState, this.stateAndData);
   }
 
   previous() {
-    this.userPaging.previous(this.userState).then(() => {
-      this.members = this.userPaging.users(this.userState);
+    this.userPaging.previous(this.userState, this.stateAndData).then(() => {
+      this.members = this.userPaging.users(this.userState, this.stateAndData);
     });
   }
 
   search() {
-    this.userPaging.search(this.userState, this.memberSearch).then(() => {
-      this.members = this.userPaging.users(this.userState);
+    this.userPaging.search(this.userState, this.memberSearch, this.stateAndData).then(() => {
+      this.members = this.userPaging.users(this.userState, this.stateAndData);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
 
-    return this.userPaging.search(this.userSearchState, searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.userSearchState);
+    return this.userPaging.search(this.userSearchState, searchString, this.stateAndData).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.userSearchState, this.stateAndData);
       this.isSearching = false;
   
       this.userPaging.refresh();
@@ -153,8 +155,8 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.userPaging.refresh().then(() => {
-      this.members = this.userPaging.users(this.userState);
+    this.userPaging.refresh(this.stateAndData).then(() => {
+      this.members = this.userPaging.users(this.userState, this.stateAndData);
     });
   }
 

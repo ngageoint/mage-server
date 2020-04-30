@@ -24,6 +24,7 @@ class AdminEventAccessController {
     this.nonAclUserState = this.userState + '.nonacl';
     this.memberSearch = '';
     this.userPaging = UserPagingService;
+    this.stateAndData = this.userPaging.constructDefault();
 
     this.owners = [];
   
@@ -52,17 +53,17 @@ class AdminEventAccessController {
         selected: this.roles[0]
       };
   
-      let clone = JSON.parse(JSON.stringify(this.userPaging.stateAndData[this.userState]));
-      this.userPaging.stateAndData[this.nonAclUserState] = clone;
+      let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      this.stateAndData[this.nonAclUserState] = clone;
 
       let aclIds = Object.keys(this.event.acl);
       let allIds = aclIds.concat(this.event.userIds);
 
-      this.userPaging.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.event.acl) };
-      this.userPaging.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.event.acl) };
-      this.userPaging.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
-      this.userPaging.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
-      this.userPaging.refresh().then(() => {
+      this.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.event.acl) };
+      this.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.event.acl) };
+      this.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
+      this.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
+      this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.event);
         this.$scope.$apply();
       });
@@ -78,7 +79,7 @@ class AdminEventAccessController {
     this.event = event;
 
     this.aclMembers = _.map(this.event.acl, (access, userId) => {
-      var member = _.pick(this.userPaging.users(this.userState).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick(this.userPaging.users(this.userState,this.stateAndData).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -90,39 +91,39 @@ class AdminEventAccessController {
   }
 
   count() {
-    return this.userPaging.count(this.userState);
+    return this.userPaging.count(this.userState,this.stateAndData);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState);
+    return this.userPaging.hasNext(this.userState,this.stateAndData);
   }
 
   next() {
-    this.userPaging.next(this.userState).then(pageInfo => {
+    this.userPaging.next(this.userState,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState);
+    return this.userPaging.hasPrevious(this.userState,this.stateAndData);
   }
 
   previous() {
-    this.userPaging.previous(this.userState).then(pageInfo => {
+    this.userPaging.previous(this.userState,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   search() {
-    this.userPaging.search(this.userState, this.memberSearch).then(data => {
+    this.userPaging.search(this.userState, this.memberSearch,this.stateAndData).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.nonAclUserState, searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState);
+    return this.userPaging.search(this.nonAclUserState, searchString,this.stateAndData).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState,this.stateAndData);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
