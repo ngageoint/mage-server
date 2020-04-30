@@ -1,14 +1,16 @@
 import _ from 'underscore';
+import {NgZone} from '@angular/core';
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, $scope, LocalStorageService, UserService, UserPagingService) {
+  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
-    this.$scope = $scope;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.pagingHelper = UserPagingService;
+    this.ngZ = new NgZone({ enableLongStackTrace: false });
+    
     this.users = [];
     this.stateAndData = this.pagingHelper.constructDefault();
 
@@ -25,9 +27,11 @@ class AdminUsersController {
   }
 
   $onInit() {
+
     this.pagingHelper.refresh(this.stateAndData).then(() => {
-      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
-      this.$scope.$apply();
+      this.ngZ.run(() => {
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+      });
     });
   }
 
@@ -41,7 +45,9 @@ class AdminUsersController {
 
   next() {
     this.pagingHelper.next(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
+      this.ngZ.run(() => {
+        this.users = users;
+      });
     });
   }
 
@@ -51,19 +57,23 @@ class AdminUsersController {
 
   previous() {
     this.pagingHelper.previous(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
+      this.ngZ.run(() => {
+        this.users = users;
+      });
     });
   }
 
   search() {
     this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(users => {
-      this.users = users;
+      this.ngZ.run(() => {
+        this.users = users;
+      });
     });
   }
 
   changeFilter(state) {
     this.filter = state;
-    this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+    this.search();
   }
 
   _filterActive(user) {
@@ -112,7 +122,9 @@ class AdminUsersController {
 
     modalInstance.result.then(() => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        this.ngZ.run(() => {
+          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        });
       });
     });
   }
@@ -123,7 +135,9 @@ class AdminUsersController {
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        this.ngZ.run(() => {
+          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        });
       });
 
       this.onUserActivated({
@@ -144,13 +158,15 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        this.ngZ.run(() => {
+          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+        });
       });
     });
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', '$scope', 'LocalStorageService', 'UserService', 'UserPagingService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./users.html'),
