@@ -59,20 +59,16 @@ function UserPagingService(UserService, $q) {
 
         for (const [key, value] of Object.entries(stateAndData)) {
 
-            var promise = UserService.getUserCount(value.countFilter).then(result => {
-                return Promise.resolve(result.data.count);
-            }).then(count => {
-                stateAndData[key].userCount = count;
-                return UserService.getAllUsers(value.userFilter);
-            }).then((pageInfo => {
-                stateAndData[key].pageInfo = pageInfo;
-                return Promise.resolve(key);
-            }));
+            var promise = $q.all({ count: UserService.getUserCount(value.countFilter), pageInfo: UserService.getAllUsers(value.userFilter) }).then(result => {
+                stateAndData[key].userCount = result.count.data.count;
+                stateAndData[key].pageInfo = result.pageInfo;
+                $q.resolve(key);
+            });
 
             promises.push(promise);
         }
 
-        return Promise.all(promises);
+        return $q.all(promises);
     }
 
     function count(data) {
@@ -99,7 +95,7 @@ function UserPagingService(UserService, $q) {
 
         if (data.pageInfo && data.pageInfo.links) {
             status = data.pageInfo.links.prev != null &&
-            data.pageInfo.links.prev !== "";
+                data.pageInfo.links.prev !== "";
         }
 
         return status;
@@ -114,7 +110,7 @@ function UserPagingService(UserService, $q) {
         filter.start = start;
         return UserService.getAllUsers(filter).then(pageInfo => {
             data.pageInfo = pageInfo;
-            return Promise.resolve(pageInfo.users);
+            return $q.resolve(pageInfo.users);
         });
     }
 
@@ -131,7 +127,7 @@ function UserPagingService(UserService, $q) {
     function search(data, userSearch) {
 
         if (data.pageInfo == null || data.pageInfo.users == null) {
-            return Promise.resolve([]);
+            return $q.resolve([]);
         }
 
         const previousSearch = data.searchFilter;
@@ -140,7 +136,7 @@ function UserPagingService(UserService, $q) {
 
         if (previousSearch == '' && userSearch == '') {
             //Not performing a seach
-            promise = Promise.resolve(data.pageInfo.users);
+            promise = $q.resolve(data.pageInfo.users);
         } else if (previousSearch != '' && userSearch == '') {
             //Clearing out the search
             data.searchFilter = '';
@@ -148,11 +144,11 @@ function UserPagingService(UserService, $q) {
 
             promise = UserService.getAllUsers(data.userFilter).then(pageInfo => {
                 data.pageInfo = pageInfo;
-                return Promise.resolve(data.pageInfo.users);
+                return $q.resolve(data.pageInfo.users);
             });
         } else if (previousSearch == userSearch) {
             //Search is being performed, no need to keep searching the same info over and over
-            promise = Promise.resolve(data.pageInfo.users);
+            promise = $q.resolve(data.pageInfo.users);
         } else {
             //Perform the server side searching
             data.searchFilter = userSearch;
@@ -164,7 +160,7 @@ function UserPagingService(UserService, $q) {
             };
             promise = UserService.getAllUsers(filter).then(pageInfo => {
                 data.pageInfo = pageInfo;
-                return Promise.resolve(data.pageInfo.users)
+                return $q.resolve(data.pageInfo.users)
             });
         }
 
