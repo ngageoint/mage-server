@@ -82,8 +82,8 @@ class AdminDashboardController {
   }
 
   next() {
-    this.inactiveUsersPaging.next(this.stateAndData[this.userState]).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
+    this.inactiveUsersPaging.next(this.stateAndData[this.userState]).then(users => {
+      this.inactiveUsers = users;
     });
   }
 
@@ -92,14 +92,14 @@ class AdminDashboardController {
   }
 
   previous() {
-    this.inactiveUsersPaging.previous(this.stateAndData[this.userState]).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
+    this.inactiveUsersPaging.previous(this.stateAndData[this.userState]).then(users => {
+      this.inactiveUsers = users;
     });
   }
 
   search() {
-    this.inactiveUsersPaging.search(this.stateAndData[this.userState], this.userSearc).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
+    this.inactiveUsersPaging.search(this.stateAndData[this.userState], this.userSearch).then(users => {
+      this.inactiveUsers = users;
     });
   }
 

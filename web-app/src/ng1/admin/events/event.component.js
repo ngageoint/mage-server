@@ -123,8 +123,8 @@ class AdminEventController {
   }
 
   next() {
-    this.userPaging.next(this.stateAndData[this.userState]).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.next(this.stateAndData[this.userState]).then(users => {
+      this.eventMembers = _.map(users.concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
@@ -133,21 +133,21 @@ class AdminEventController {
   }
 
   previous() {
-    this.userPaging.previous(this.stateAndData[this.userState]).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { return this.normalize(item); });
+    this.userPaging.previous(this.stateAndData[this.userState]).then(users => {
+      this.eventMembers = _.map(users.concat(this.teamsInEvent), item => { return this.normalize(item); });
     });
   }
 
   search() {
-     this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
-      this.eventMembers = _.map(this.userPaging.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { return this.normalize(item); });
+     this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
+      this.eventMembers = _.map(users.concat(this.teamsInEvent), item => { return this.normalize(item); });
      });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.stateAndData[this.nonUserState], searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.stateAndData[this.nonUserState]);
+    return this.userPaging.search(this.stateAndData[this.nonUserState], searchString).then(users => {
+      this.nonMemberSearchResults = users;
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });

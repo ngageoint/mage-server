@@ -122,8 +122,8 @@ class AdminEventAccessController {
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.stateAndData[this.nonAclUserState], searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.stateAndData[this.nonAclUserState]);
+    return this.userPaging.search(this.stateAndData[this.nonAclUserState], searchString).then(users => {
+      this.nonMemberSearchResults = users;
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });

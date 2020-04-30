@@ -96,8 +96,8 @@ class AdminTeamController {
   }
 
   next() {
-    this.userPaging.next(this.stateAndData[this.userState]).then(() => {
-      this.members = this.userPaging.users(this.stateAndData[this.userState]);
+    this.userPaging.next(this.stateAndData[this.userState]).then(users => {
+      this.members = users;
     });
   }
 
@@ -106,22 +106,22 @@ class AdminTeamController {
   }
 
   previous() {
-    this.userPaging.previous(this.stateAndData[this.userState]).then(() => {
-      this.members = this.userPaging.users(this.stateAndData[this.userState]);
+    this.userPaging.previous(this.stateAndData[this.userState]).then(users => {
+      this.members = users;
     });
   }
 
   search() {
-    this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
-      this.members = this.userPaging.users(this.stateAndData[this.userState]);
+    this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
+      this.members = users;
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
 
-    return this.userPaging.search(this.stateAndData[this.userSearchState], searchString).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.stateAndData[this.userSearchState]);
+    return this.userPaging.search(this.stateAndData[this.userSearchState], searchString).then(users => {
+      this.nonMemberSearchResults = users;
       this.isSearching = false;
   
       return this.nonMemberSearchResults;
@@ -153,7 +153,7 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.userPaging.refresh(this.stateAndData[this.userState]).then(() => {
+    this.userPaging.refresh(this.stateAndData).then(() => {
       this.members = this.userPaging.users(this.stateAndData[this.userState]);
     });
   }
