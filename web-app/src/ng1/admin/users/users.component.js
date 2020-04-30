@@ -26,44 +26,44 @@ class AdminUsersController {
 
   $onInit() {
     this.pagingHelper.refresh(this.stateAndData).then(() => {
-      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       this.$scope.$apply();
     });
   }
 
   count(state) {
-    return this.pagingHelper.count(state, this.stateAndData);
+    return this.pagingHelper.count(this.stateAndData[state]);
   }
 
   hasNext() {
-    return this.pagingHelper.hasNext(this.filter, this.stateAndData);
+    return this.pagingHelper.hasNext(this.stateAndData[this.filter]);
   }
 
   next() {
-    this.pagingHelper.next(this.filter, this.stateAndData).then(() => {
-      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+    this.pagingHelper.next(this.stateAndData[this.filter]).then(() => {
+      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
     });
   }
 
   hasPrevious() {
-    return this.pagingHelper.hasPrevious(this.filter, this.stateAndData);
+    return this.pagingHelper.hasPrevious(this.stateAndData[this.filter]);
   }
 
   previous() {
-    this.pagingHelper.previous(this.filter).then(() => {
-      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+    this.pagingHelper.previous(this.stateAndData[this.filter]).then(() => {
+      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
     });
   }
 
   search() {
-    this.pagingHelper.search(this.filter, this.userSearch).then(() => {
-      this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+    this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(() => {
+      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
     });
   }
 
   changeFilter(state) {
     this.filter = state;
-    this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+    this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
   }
 
   _filterActive(user) {
@@ -112,7 +112,7 @@ class AdminUsersController {
 
     modalInstance.result.then(() => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
     });
   }
@@ -123,7 +123,7 @@ class AdminUsersController {
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.filter,this.stateAndData);
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
 
       this.onUserActivated({
@@ -144,7 +144,7 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.filter, this.stateAndData);
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
     });
   }

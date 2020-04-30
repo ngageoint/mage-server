@@ -59,7 +59,7 @@ class AdminTeamController {
       this.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
       this.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
       this.userPaging.refresh(this.stateAndData).then(() => {
-        this.members = this.userPaging.users(this.userState, this.stateAndData);
+        this.members = this.userPaging.users(this.stateAndData[this.userState]);
         this.$scope.$apply();
       });
 
@@ -88,44 +88,42 @@ class AdminTeamController {
   }
 
   count() {
-    return this.userPaging.count(this.userState, this.stateAndData);
+    return this.userPaging.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState, this.stateAndData);
+    return this.userPaging.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.userPaging.next(this.userState, this.stateAndData).then(() => {
-      this.members = this.userPaging.users(this.userState, this.stateAndData);
+    this.userPaging.next(this.stateAndData[this.userState]).then(() => {
+      this.members = this.userPaging.users(this.stateAndData[this.userState]);
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState, this.stateAndData);
+    return this.userPaging.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.userPaging.previous(this.userState, this.stateAndData).then(() => {
-      this.members = this.userPaging.users(this.userState, this.stateAndData);
+    this.userPaging.previous(this.stateAndData[this.userState]).then(() => {
+      this.members = this.userPaging.users(this.stateAndData[this.userState]);
     });
   }
 
   search() {
-    this.userPaging.search(this.userState, this.memberSearch, this.stateAndData).then(() => {
-      this.members = this.userPaging.users(this.userState, this.stateAndData);
+    this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
+      this.members = this.userPaging.users(this.stateAndData[this.userState]);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
 
-    return this.userPaging.search(this.userSearchState, searchString, this.stateAndData).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.userSearchState, this.stateAndData);
+    return this.userPaging.search(this.stateAndData[this.userSearchState], searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.stateAndData[this.userSearchState]);
       this.isSearching = false;
   
-      this.userPaging.refresh();
-
       return this.nonMemberSearchResults;
     });
   }
@@ -155,8 +153,8 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.userPaging.refresh(this.stateAndData).then(() => {
-      this.members = this.userPaging.users(this.userState, this.stateAndData);
+    this.userPaging.refresh(this.stateAndData[this.userState]).then(() => {
+      this.members = this.userPaging.users(this.stateAndData[this.userState]);
     });
   }
 

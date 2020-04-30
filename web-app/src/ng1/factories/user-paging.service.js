@@ -75,66 +75,66 @@ function UserPagingService(UserService, $q) {
         return Promise.all(promises);
     }
 
-    function count(state, stateAndData) {
-        return stateAndData[state].userCount;
+    function count(data) {
+        return data.userCount;
     }
 
-    function hasNext(state, stateAndData) {
+    function hasNext(data) {
         var status = false;
 
-        if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.links) {
-            status = stateAndData[state].pageInfo.links.next != null &&
-                stateAndData[state].pageInfo.links.next !== "";
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.next != null &&
+                data.pageInfo.links.next !== "";
         }
 
         return status;
     }
 
-    function next(state, stateAndData) {
-        return move(stateAndData[state].pageInfo.links.next, state, stateAndData);
+    function next(data) {
+        return move(data.pageInfo.links.next, data);
     }
 
-    function hasPrevious(state, stateAndData) {
+    function hasPrevious(data) {
         var status = false;
 
-        if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.links) {
-            status = stateAndData[state].pageInfo.links.prev != null &&
-                stateAndData[state].pageInfo.links.prev !== "";
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.prev != null &&
+            data.pageInfo.links.prev !== "";
         }
 
         return status;
     }
 
-    function previous(state, stateAndData) {
-        return move(stateAndData[state].pageInfo.links.prev, state, stateAndData);
+    function previous(data) {
+        return move(data.pageInfo.links.prev, data);
     }
 
-    function move(start, state, stateAndData) {
-        var filter = JSON.parse(JSON.stringify(stateAndData[state].userFilter));
+    function move(start, data) {
+        var filter = JSON.parse(JSON.stringify(data.userFilter));
         filter.start = start;
         return UserService.getAllUsers(filter).then(pageInfo => {
-            stateAndData[state].pageInfo = pageInfo;
+            data.pageInfo = pageInfo;
             return Promise.resolve(pageInfo);
         });
     }
 
-    function users(state, stateAndData) {
+    function users(data) {
         var users = [];
 
-        if (stateAndData[state].pageInfo && stateAndData[state].pageInfo.users) {
-            users = stateAndData[state].pageInfo.users;
+        if (data.pageInfo && data.pageInfo.users) {
+            users = data.pageInfo.users;
         }
 
         return users;
     }
 
-    function search(state, userSearch, stateAndData) {
+    function search(data, userSearch) {
 
-        if (stateAndData[state].pageInfo == null || stateAndData[state].pageInfo.users == null) {
+        if (data.pageInfo == null || data.pageInfo.users == null) {
             return Promise.resolve([]);
         }
 
-        const previousSearch = stateAndData[state].searchFilter;
+        const previousSearch = data.searchFilter;
 
         var promise = null;
 
@@ -143,26 +143,26 @@ function UserPagingService(UserService, $q) {
             promise = Promise.resolve([]);
         } else if (previousSearch != '' && userSearch == '') {
             //Clearing out the search
-            stateAndData[state].searchFilter = '';
-            delete stateAndData[state].userFilter['or'];
+            data.searchFilter = '';
+            delete data.userFilter['or'];
 
-            promise = UserService.getAllUsers(stateAndData[state].userFilter).then(pageInfo => {
-                stateAndData[state].pageInfo = pageInfo;
+            promise = UserService.getAllUsers(data.userFilter).then(pageInfo => {
+                data.pageInfo = pageInfo;
             });
         } else if (previousSearch == userSearch) {
             //Search is being performed, no need to keep searching the same info over and over
             promise = Promise.resolve([]);
         } else {
             //Perform the server side searching
-            stateAndData[state].searchFilter = userSearch;
+            data.searchFilter = userSearch;
 
-            var filter = stateAndData[state].userFilter;
+            var filter = data.userFilter;
             filter.or = {
                 displayName: '.*' + userSearch + '.*',
                 email: '.*' + userSearch + '.*'
             };
             promise = UserService.getAllUsers(filter).then(pageInfo => {
-                stateAndData[state].pageInfo = pageInfo;
+                data.pageInfo = pageInfo;
             });
         }
 

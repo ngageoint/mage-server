@@ -68,38 +68,38 @@ class AdminDashboardController {
     });
 
     this.inactiveUsersPaging.refresh(this.stateAndData).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState,this.stateAndData);
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
       this.$scope.$apply();
     });
   }
 
   count() {
-    return this.inactiveUsersPaging.count(this.userState,this.stateAndData);
+    return this.inactiveUsersPaging.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.inactiveUsersPaging.hasNext(this.userState,this.stateAndData);
+    return this.inactiveUsersPaging.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.inactiveUsersPaging.next(this.userState,this.stateAndData).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState,this.stateAndData);
+    this.inactiveUsersPaging.next(this.stateAndData[this.userState]).then(() => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
     });
   }
 
   hasPrevious() {
-    return this.inactiveUsersPaging.hasPrevious(this.userState,this.stateAndData);
+    return this.inactiveUsersPaging.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.inactiveUsersPaging.previous(this.userState,this.stateAndData).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState,this.stateAndData);
+    this.inactiveUsersPaging.previous(this.stateAndData[this.userState]).then(() => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
     });
   }
 
   search() {
-    this.inactiveUsersPaging.search(this.userState, this.userSearch,this.stateAndData).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.userState,this.stateAndData);
+    this.inactiveUsersPaging.search(this.stateAndData[this.userState], this.userSearc).then(() => {
+      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
     });
   }
 
@@ -142,7 +142,7 @@ class AdminDashboardController {
 
     this._UserService.updateUser(user.id, user, data => {
       this.inactiveUsersPaging.refresh(this.stateAndData).then(() => {
-        this.inactiveUsers = this.inactiveUsersPaging.users(this.userState,this.stateAndData);
+        this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
       });
       this.onUserActivated({
         $event: {

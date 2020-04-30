@@ -54,7 +54,7 @@ class AdminTeamAccessController {
     this.team = team;
 
     this.aclMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(this.userPaging.users(this.userState, this.stateAndData).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick(this.userPaging.users(this.stateAndData[this.userState]).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -66,39 +66,39 @@ class AdminTeamAccessController {
   }
 
   count() {
-    return this.userPaging.count(this.userState,this.stateAndData);
+    return this.userPaging.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.userState,this.stateAndData);
+    return this.userPaging.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.userPaging.next(this.userState,this.stateAndData).then(() => {
+    this.userPaging.next(this.stateAndData[this.stateAndData[this.userState]]).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.userState,this.stateAndData);
+    return this.userPaging.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.userPaging.previous(this.userState,this.stateAndData).then(() => {
+    this.userPaging.previous(this.stateAndData[this.userState]).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   search() {
-    this.userPaging.search(this.userState, this.memberSearch,this.stateAndData).then(() => {
+    this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
       this.refreshMembers(this.team);
     });
   }
 
   searchNonMembers(searchString) {
     this.isSearching = true;
-    return this.userPaging.search(this.nonAclUserState, searchString,this.stateAndData).then(() => {
-      this.nonMemberSearchResults = this.userPaging.users(this.nonAclUserState,this.stateAndData);
+    return this.userPaging.search(this.stateAndData[this.nonAclUserState], searchString).then(() => {
+      this.nonMemberSearchResults = this.userPaging.users(this.stateAndData[this.nonAclUserState]);
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
