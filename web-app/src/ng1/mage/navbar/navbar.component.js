@@ -12,7 +12,9 @@ module.exports = {
 NavbarController.$inject = ['$element', '$state', '$transitions', 'UserService'];
 
 function NavbarController($element, $state, $transitions, UserService) {
-  var pollingMenu;
+  let pollingMenu;
+
+  this.hasAdminPermission = false;
 
   this.feed = {
     visible: true
@@ -24,6 +26,12 @@ function NavbarController($element, $state, $transitions, UserService) {
       this.state = transition.to().name;
     });
   };
+
+  this.$onChanges = function(changes) {
+    if (changes.myself) {
+      this.hasAdminPermission = UserService.amAdmin;
+    }
+  }
 
   this.$postLink = function() {
   };

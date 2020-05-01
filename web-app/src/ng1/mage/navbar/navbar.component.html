@@ -23,7 +23,7 @@
         </button>
         <span class="tooltiptext">My Profile</span>
       </div>
-      <div class="mage-tooltip">
+      <div class="mage-tooltip" ng-if="$ctrl.hasAdminPermission">
         <button class="material-icons mdc-icon-button"
           aria-label="Admin" 
           data-tooltip="Admin" 

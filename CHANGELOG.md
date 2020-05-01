@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Layer panel now properly removes layers when switching events.
+* Hide admin icon in navbar for non admin users.
 * Docker build now works with Angular CLI
 
 ## [5.3.5](https://github.com/ngageoint/mage-server/releases/tag/5.3.5)
