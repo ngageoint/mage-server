@@ -2,6 +2,7 @@ module.exports = function(app, security) {
   const api = require('../api')
     , log = require('winston')
     , Role = require('../models/role')
+    , Setting = require('../models/setting')
     , Event = require('../models/event')
     , access = require('../access')
     , fs = require('fs-extra')
@@ -26,9 +27,9 @@ module.exports = function(app, security) {
     };
   }
 
-  function getDefaultRole(req, res, next) {
+  function defaultRole(req, res, next) {
     Role.getRole('USER_ROLE', function(err, role) {
-      req.role = role;
+      req.newUser.roleId = role._id;
       next();
     });
   }
@@ -132,6 +133,26 @@ module.exports = function(app, security) {
     next();
   }
 
+  function setDefaults(req, res, next) {
+    const authenticationType = req.newUser.authentication.type;
+
+    req.newUser.active = false;
+    Setting.getSetting('security').then((security = {}) => {
+      const settings = security.settings || {};
+      if (settings[authenticationType]) {
+        const requireAdminActivation = settings[authenticationType].usersReqAdmin;
+        if (requireAdminActivation) {
+          req.newUser.active = !requireAdminActivation.enabled;
+        }
+
+        req.defaultTeams = settings[authenticationType].newUserTeams;
+        req.defaultEvents = settings[authenticationType].newUserEvents;
+      }
+
+      next();
+    });
+  }
+
   // Create a new user (ADMIN)
   // If authentication for admin fails go to next route and
   // create user as non-admin, roles will be empty
@@ -159,7 +180,7 @@ module.exports = function(app, security) {
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().create(req.newUser, {avatar, icon}, function(err, newUser) {
+      new api.User().create(req.newUser, { avatar, icon }, function(err, newUser) {
         if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -172,13 +193,12 @@ module.exports = function(app, security) {
   // Anyone can create a new user, but the new user will not be active
   app.post(
     '/api/users',
-    getDefaultRole,
     validateUser,
+    defaultRole,
+    setDefaults,
     function(req, res, next) {
-      req.newUser.active = false;
-      req.newUser.roleId = req.role._id;
-
-      new api.User().create(req.newUser, {}, function(err, newUser) {
+      const { defaultTeams, defaultEvents } = req;
+      new api.User().create(req.newUser, { defaultTeams, defaultEvents }, function(err, newUser) {
         if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});

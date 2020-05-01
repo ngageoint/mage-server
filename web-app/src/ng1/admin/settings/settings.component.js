@@ -87,6 +87,8 @@ class AdminSettingsController {
     })
     .then(result => {
       const api = result.api;
+      this.teams = _.reject(result.teams, team => { return team.teamEventId; });
+      this.events = result.events;
 
       this.authConfig = api.authenticationStrategies || {};
       this.pill = this.authConfig.local ? 'security' : 'banner';
@@ -116,13 +118,19 @@ class AdminSettingsController {
             newUserEvents: [],
             newUserTeams: []
           }
+        } else {
+          // Remove any teams and events that no longer exist
+          this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
+            return this.teams.some(team => team.id === id)
+          });
+
+          this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
+            return this.events.some(event => event.id === id)
+          });
         }
       });
 
       this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
-
-      this.teams = _.reject(result.teams, team => { return team.teamEventId; });
-      this.events = result.events;
     });
   }
 

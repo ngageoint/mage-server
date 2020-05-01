@@ -316,8 +316,8 @@ exports.getUsers = function(options, callback) {
   });
 };
 
-exports.createUser = async function(user, callback) {
-  var update = {
+exports.createUser = function(user, callback) {
+  const update = {
     username: user.username,
     displayName: user.displayName,
     email: user.email,
@@ -329,63 +329,13 @@ exports.createUser = async function(user, callback) {
     authentication: user.authentication
   };
 
-  //e.g. local, ldap, etc
-  var authenticationType = user.authentication.type;
-
-  log.info("Reading security settings");
-  let securitySettings = await Setting.getSetting('security');
-  var newUserEvents;
-  var newUserTeams;
-  if(securitySettings && securitySettings.settings) {
-    if(securitySettings.settings[authenticationType]) {
-      let usersReqAdmin = securitySettings.settings[authenticationType].usersReqAdmin;
-      if(usersReqAdmin) {
-        log.info("Admin approval required to activate new users is: " + usersReqAdmin.enabled);
-        update.active = !usersReqAdmin.enabled;
-      }
-      newUserEvents = securitySettings.settings[authenticationType].newUserEvents;
-      newUserTeams = securitySettings.settings[authenticationType].newUserTeams;
-    }
-  }
-
-  log.info("Creating new user " + update.username);
-  var newUser = await User.create(update, function(err, user) {
+  User.create(update, function(err, user) {
     if (err) return callback(err);
 
     user.populate('roleId', function(err, user) {
       callback(err, user);
     });
   });
-
-  //We have to wait for the user to be created before we can add them to an event and/or team.
-  if(newUser && newUser.active) {
-    if(newUserEvents && Array.isArray(newUserEvents)){
-      for(i = 0; i < newUserEvents.length; i++) {
-        await addUserToTeamByEventId(newUserEvents[i], newUser);
-      }
-    }
-
-    if(newUserTeams && Array.isArray(newUserTeams)) {
-      for (var i = 0; i < newUserTeams.length; i++) {
-        Team.addUser({_id: mongoose.Types.ObjectId(newUserTeams[i])}, newUser, function(err, team) {
-          //TODO implement
-        });
-      }
-    }
-  }
-};
-
-async function addUserToTeamByEventId(eventId, user) {
-  log.debug("Attempting to locate team with the event id of " + eventId);
-  var team = await Team.getTeamByEventId(eventId);
-
-  if (team) {
-    log.info("Adding " + user.username + " to event team " + team.name);
-    await Team.addUserWithPromise(team, user);
-  } else {
-    log.error("Failed to find team with eventId " + eventId
-    +". User " + user.username + " was not added to any event.");
-  }
 };
 
 exports.updateUser = function(user, callback) {

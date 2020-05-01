@@ -69,6 +69,7 @@ describe("user create tests", function() {
 
     sinon.mock(UserModel)
       .expects('create')
+      .withArgs(sinon.match.has('active', true))
       .yields(null, mockUser);
 
     sinon.mock(mockUser)
@@ -155,6 +156,7 @@ describe("user create tests", function() {
 
     sinon.mock(UserModel)
       .expects('create')
+      .withArgs(sinon.match.has('active', false))
       .yields(null, mockUser);
 
     request(app)
