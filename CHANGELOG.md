@@ -9,7 +9,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Added support in configuration/environment for MongoDB replica sets.
 
 ##### Bug Fixes
-* Docer build now works with Angular CLI
+* Layer panel now properly removes layers when switching events.
+* Docker build now works with Angular CLI
 
 ## [5.3.5](https://github.com/ngageoint/mage-server/releases/tag/5.3.5)
 

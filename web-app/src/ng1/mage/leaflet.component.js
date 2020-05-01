@@ -336,23 +336,15 @@ class LeafletController {
     });
   }
 
-  createGeoJsonLayer(data) {
-    const pane = `pane-${data.id}`;
+  createGeoJsonLayer(layerInfo) {
+    const pane = `pane-${layerInfo.id}`;
     this.map.createPane(pane);
     this.featurePanes.push(pane);
 
-    const layerInfo = {
-      type: 'geojson',
-      name: data.name,
-      group: data.group,
-      featureIdToLayer: {},
-      options: data.options,
-      pane: pane
-    };
+    layerInfo.featureIdToLayer = {};
+    const geojson = this.createGeoJsonForLayer(layerInfo.geojson, layerInfo, pane);
 
-    const geojson = this.createGeoJsonForLayer(data.geojson, layerInfo, pane);
-
-    if (data.options.cluster) {
+    if (layerInfo.options.cluster) {
       layerInfo.layer = L.markerClusterGroup({
         pane: pane,
         clusterPane: pane
@@ -368,13 +360,13 @@ class LeafletController {
     }
 
     layerInfo.layer.pane = pane;
-    this.layers[data.name] = layerInfo;
+    this.layers[layerInfo.name] = layerInfo;
 
-    if (data.options.temporal) {
+    if (layerInfo.options.temporal) {
       this.temporalLayers.push(layerInfo);
     }
 
-    if (!data.options.hidden) {
+    if (!layerInfo.options.hidden) {
       this.onAddLayer(layerInfo);
     }
   }
