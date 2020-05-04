@@ -1,11 +1,11 @@
 import _ from 'underscore';
 
 class AdminTeamAccessController {
-  constructor($state, $stateParams, $q, $filter, $scope, Team, TeamAccess, UserService, UserPagingService) {
+  constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserService, UserPagingService) {
+    this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
     this.$filter = $filter;
-    this.$scope = $scope;
     this.Team = Team;
     this.TeamAccess = TeamAccess;
     this.UserService = UserService;
@@ -45,7 +45,6 @@ class AdminTeamAccessController {
       this.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
       this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.team);
-        this.$scope.$apply();
       });
     });
   }
@@ -144,7 +143,7 @@ class AdminTeamAccessController {
   }
 }
 
-AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', '$scope', 'Team', 'TeamAccess', 'UserService', 'UserPagingService'];
+AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./team.access.html'),

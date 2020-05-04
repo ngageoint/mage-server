@@ -2,10 +2,9 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDashboardController {
-  constructor($state, $filter, $scope, UserService, DeviceService, LoginService, Team, Event, Layer, UserPagingService) {
+  constructor($state, $filter, UserService, DeviceService, LoginService, Team, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
-    this.$scope = $scope;
     this._UserService = UserService;
     this._DeviceService = DeviceService;
     this._LoginService = LoginService;
@@ -19,6 +18,7 @@ class AdminDashboardController {
     this.inactiveUsers = [];
     this.isSearching = false;
     this.stateAndData = this.userPagingService.constructDefault();
+    this.loginSearchResults = [];
 
     // For some reason angular is not calling into filter function with correct context
     this.filterDevices = this._filterDevices.bind(this);
@@ -26,7 +26,7 @@ class AdminDashboardController {
 
   $onInit() {
     this.filter = {};
-    this.user = {};
+    this.user = null;
     this.device = {};
     this.login = {
       startDateOpened: false,
@@ -69,7 +69,6 @@ class AdminDashboardController {
 
     this.userPagingService.refresh(this.stateAndData).then(() => {
       this.inactiveUsers = this.userPagingService.users(this.stateAndData[this.userState]);
-      this.$scope.$apply();
     });
   }
 
@@ -100,6 +99,17 @@ class AdminDashboardController {
   search() {
     this.userPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
       this.inactiveUsers = users;
+    });
+  }
+
+  searchLogins(searchString) {
+    this.isSearching = true;
+
+    return this.userPagingService.search(this.stateAndData['all'], searchString).then(users => {
+      this.loginSearchResults = users;
+      this.isSearching = false;
+  
+      return this.loginSearchResults;
     });
   }
 
@@ -182,8 +192,8 @@ class AdminDashboardController {
     });
   }
 
-  filterLogins() {
-    this.filter.user = this.user.selected;
+  filterLogins(item, model, label, event) {
+    this.filter.user = this.user;
     this.filter.device = this.device.selected;
     this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
@@ -220,7 +230,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', '$scope', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
+AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),

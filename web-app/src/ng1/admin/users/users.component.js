@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import {NgZone} from '@angular/core';
+import { NgZone } from '@angular/core';
 
 class AdminUsersController {
   constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
@@ -9,8 +9,8 @@ class AdminUsersController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.pagingHelper = UserPagingService;
-    this.ngZ = new NgZone({ enableLongStackTrace: false });
-    
+    //this.ngZ = new NgZone({ enableLongStackTrace: false });
+
     this.users = [];
     this.stateAndData = this.pagingHelper.constructDefault();
 
@@ -27,16 +27,13 @@ class AdminUsersController {
   }
 
   $onInit() {
-
     this.pagingHelper.refresh(this.stateAndData).then(() => {
-      this.ngZ.run(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
-      });
+      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
     });
   }
 
   count(state) {
-    return this.pagingHelper.count(this.stateAndData[state]);
+    return this.stateAndData[state].userCount;
   }
 
   hasNext() {
@@ -45,9 +42,7 @@ class AdminUsersController {
 
   next() {
     this.pagingHelper.next(this.stateAndData[this.filter]).then(users => {
-      this.ngZ.run(() => {
-        this.users = users;
-      });
+      this.users = users;
     });
   }
 
@@ -57,17 +52,13 @@ class AdminUsersController {
 
   previous() {
     this.pagingHelper.previous(this.stateAndData[this.filter]).then(users => {
-      this.ngZ.run(() => {
-        this.users = users;
-      });
+      this.users = users;
     });
   }
 
   search() {
     this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(users => {
-      this.ngZ.run(() => {
-        this.users = users;
-      });
+      this.users = users;
     });
   }
 
@@ -122,9 +113,7 @@ class AdminUsersController {
 
     modalInstance.result.then(() => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.ngZ.run(() => {
-          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
-        });
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
     });
   }
@@ -135,9 +124,7 @@ class AdminUsersController {
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.ngZ.run(() => {
-          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
-        });
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
 
       this.onUserActivated({
@@ -158,9 +145,7 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.ngZ.run(() => {
-          this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
-        });
+        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
       });
     });
   }

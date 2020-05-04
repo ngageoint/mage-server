@@ -1,12 +1,11 @@
 import _ from 'underscore';
 
 class AdminEventAccessController {
-  constructor($state, $stateParams, $q, $filter, $scope, Event, EventAccess, UserService, UserPagingService) {
+  constructor($state, $stateParams, $q, $filter, Event, EventAccess, UserService, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
     this.$filter = $filter;
-    this.$scope = $scope;
     this.Event = Event;
     this.EventAccess = EventAccess;
     this.UserService = UserService;
@@ -65,7 +64,6 @@ class AdminEventAccessController {
       this.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
       this.userPaging.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.event);
-        this.$scope.$apply();
       });
     });
   }
@@ -169,7 +167,7 @@ class AdminEventAccessController {
 
 }
 
-AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', '$scope', 'Event', 'EventAccess', 'UserService', 'UserPagingService'];
+AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Event', 'EventAccess', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./event.access.html'),
