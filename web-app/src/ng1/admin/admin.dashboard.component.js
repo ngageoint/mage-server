@@ -12,13 +12,13 @@ class AdminDashboardController {
     this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
-    this.usersPerPage = 10;
+    this.userPagingService = UserPagingService;
+
     this.userSearch = '';
     this.userState = 'inactive';
-    this.inactiveUsersPaging = UserPagingService;
     this.inactiveUsers = [];
-
-    this.stateAndData = this.inactiveUsersPaging.constructDefault();
+    this.isSearching = false;
+    this.stateAndData = this.userPagingService.constructDefault();
 
     // For some reason angular is not calling into filter function with correct context
     this.filterDevices = this._filterDevices.bind(this);
@@ -67,38 +67,38 @@ class AdminDashboardController {
       }
     });
 
-    this.inactiveUsersPaging.refresh(this.stateAndData).then(() => {
-      this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
+    this.userPagingService.refresh(this.stateAndData).then(() => {
+      this.inactiveUsers = this.userPagingService.users(this.stateAndData[this.userState]);
       this.$scope.$apply();
     });
   }
 
   count() {
-    return this.inactiveUsersPaging.count(this.stateAndData[this.userState]);
+    return this.userPagingService.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.inactiveUsersPaging.hasNext(this.stateAndData[this.userState]);
+    return this.userPagingService.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.inactiveUsersPaging.next(this.stateAndData[this.userState]).then(users => {
+    this.userPagingService.next(this.stateAndData[this.userState]).then(users => {
       this.inactiveUsers = users;
     });
   }
 
   hasPrevious() {
-    return this.inactiveUsersPaging.hasPrevious(this.stateAndData[this.userState]);
+    return this.userPagingService.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.inactiveUsersPaging.previous(this.stateAndData[this.userState]).then(users => {
+    this.userPagingService.previous(this.stateAndData[this.userState]).then(users => {
       this.inactiveUsers = users;
     });
   }
 
   search() {
-    this.inactiveUsersPaging.search(this.stateAndData[this.userState], this.userSearch).then(users => {
+    this.userPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
       this.inactiveUsers = users;
     });
   }
@@ -141,8 +141,8 @@ class AdminDashboardController {
     user.active = true;
 
     this._UserService.updateUser(user.id, user, data => {
-      this.inactiveUsersPaging.refresh(this.stateAndData).then(() => {
-        this.inactiveUsers = this.inactiveUsersPaging.users(this.stateAndData[this.userState]);
+      this.userPagingService.refresh(this.stateAndData).then(() => {
+        this.inactiveUsers = this.userPagingService.users(this.stateAndData[this.userState]);
       });
       this.onUserActivated({
         $event: {

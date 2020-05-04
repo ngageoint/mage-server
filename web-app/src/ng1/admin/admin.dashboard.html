@@ -156,7 +156,7 @@
                     <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}
                     </ui-select-match>
                     <ui-select-choices group-by="groupLayerByType"
-                      repeat="user in $ctrl.users('all') | orderBy: 'name' | filter: $select.search">
+                      repeat="user in $ctrl.inactiveUsers">
                       <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                     </ui-select-choices>
                   </ui-select>
