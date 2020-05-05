@@ -19,7 +19,8 @@
       <form class="form">
         <div class="form-group">
           <label>Search</label>
-          <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch" ng-change="$ctrl.page=0">
+          <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch" 
+          ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
         </div>
       </form>
       <hr>
@@ -44,7 +45,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="d in ($ctrl.filteredDevices = ($ctrl.devices | filter:$ctrl.filterDevices)) | filter:$ctrl.filterRegistered | orderBy:'uid' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="d in $ctrl.searchResults | filter:$ctrl.filterRegistered | orderBy:'uid' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
               <div class="pointer" ng-click="$ctrl.gotoDevice(d)">
                 <div class="admin-device-container">
