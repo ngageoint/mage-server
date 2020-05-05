@@ -2,13 +2,14 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDeviceController {
-  constructor($uibModal, $state, $stateParams, LocalStorageService, DeviceService, UserService, LoginService) {
+  constructor($uibModal, $state, $stateParams, LocalStorageService, DeviceService, UserService, LoginService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.DeviceService = DeviceService;
     this.UserService = UserService;
     this.LoginService = LoginService;
+    this.userPagingService = UserPagingService;
     
     this.token = LocalStorageService.getToken();
 
@@ -19,7 +20,7 @@ class AdminDeviceController {
       device: {id: $stateParams.deviceId}
     };
 
-    this.user = {};
+    this.user = null;
     this.login = {
       startDateOpened: false,
       endDateOpened: false
@@ -28,15 +29,15 @@ class AdminDeviceController {
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
+
+    this.isSearching = false;
+    this.stateAndData = this.userPagingService.constructDefault();
+    this.loginSearchResults = [];
   }
 
   $onInit() {
     this.DeviceService.getDevice(this.$stateParams.deviceId).then(device => {
       this.device = device;
-    });
-
-    this.UserService.getAllUsers().then(users => {
-      this.users = users;
     });
   
     this.LoginService.query({filter: this.$stateParamsfilter, limit: this.loginResultsLimit}).success(loginPage => {
@@ -44,6 +45,19 @@ class AdminDeviceController {
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
       }
+    });
+
+    this.userPagingService.refresh(this.stateAndData);
+  }
+
+  searchLogins(searchString) {
+    this.isSearching = true;
+
+    return this.userPagingService.search(this.stateAndData['all'], searchString).then(users => {
+      this.loginSearchResults = users;
+      this.isSearching = false;
+  
+      return this.loginSearchResults;
     });
   }
 
@@ -122,14 +136,15 @@ class AdminDeviceController {
     });
   }
 
-  filterLogins() {
-    this.filter.user = this.user.selected;
+  filterLogins(item, model, label, event) {
+    this.filter.user = this.user;
+    this.filter.device = this.device.selected;
     this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
 
-    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this._LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
       this.showNext = loginPage.logins.length !== 0;
       this.showPrevious = false;
       this.loginPage = loginPage;
@@ -159,7 +174,7 @@ class AdminDeviceController {
   }
 }
 
-AdminDeviceController.$inject = ['$uibModal', '$state', '$stateParams', 'LocalStorageService', 'DeviceService', 'UserService', 'LoginService'];
+AdminDeviceController.$inject = ['$uibModal', '$state', '$stateParams', 'LocalStorageService', 'DeviceService', 'UserService', 'LoginService', 'UserPagingService'];
 
 export default {
   template: require('./device.html'),
