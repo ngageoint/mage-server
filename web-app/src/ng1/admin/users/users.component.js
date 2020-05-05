@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import { NgZone } from '@angular/core';
 
 class AdminUsersController {
   constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
@@ -8,11 +7,10 @@ class AdminUsersController {
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
-    this.pagingHelper = UserPagingService;
-    //this.ngZ = new NgZone({ enableLongStackTrace: false });
+    this.UserPagingService = UserPagingService;
 
     this.users = [];
-    this.stateAndData = this.pagingHelper.constructDefault();
+    this.stateAndData = this.UserPagingService.constructDefault();
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
@@ -21,14 +19,11 @@ class AdminUsersController {
     this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
     this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
     this.hasUserDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_USER');
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterActive = this._filterActive.bind(this);
   }
 
   $onInit() {
-    this.pagingHelper.refresh(this.stateAndData).then(() => {
-      this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
   }
 
@@ -37,27 +32,27 @@ class AdminUsersController {
   }
 
   hasNext() {
-    return this.pagingHelper.hasNext(this.stateAndData[this.filter]);
+    return this.UserPagingService.hasNext(this.stateAndData[this.filter]);
   }
 
   next() {
-    this.pagingHelper.next(this.stateAndData[this.filter]).then(users => {
+    this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
       this.users = users;
     });
   }
 
   hasPrevious() {
-    return this.pagingHelper.hasPrevious(this.stateAndData[this.filter]);
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.filter]);
   }
 
   previous() {
-    this.pagingHelper.previous(this.stateAndData[this.filter]).then(users => {
+    this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
       this.users = users;
     });
   }
 
   search() {
-    this.pagingHelper.search(this.stateAndData[this.filter], this.userSearch).then(users => {
+    this.UserPagingService.search(this.stateAndData[this.filter], this.userSearch).then(users => {
       this.users = users;
     });
   }
@@ -65,15 +60,6 @@ class AdminUsersController {
   changeFilter(state) {
     this.filter = state;
     this.search();
-  }
-
-  _filterActive(user) {
-    switch (this.filter) {
-      case 'all': return true;
-      case 'active': return user.active;
-      case 'inactive': return !user.active;
-      case 'disabled': return !user.enabled;
-    }
   }
 
   reset() {
@@ -112,8 +98,8 @@ class AdminUsersController {
     });
 
     modalInstance.result.then(() => {
-      this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
       });
     });
   }
@@ -123,8 +109,8 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
       });
 
       this.onUserActivated({
@@ -144,8 +130,8 @@ class AdminUsersController {
 
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.pagingHelper.refresh(this.stateAndData).then(() => {
-        this.users = this.pagingHelper.users(this.stateAndData[this.filter]);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
       });
     });
   }
