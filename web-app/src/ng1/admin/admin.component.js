@@ -1,16 +1,16 @@
 import _ from 'underscore';
 
 class AdminController {
-  constructor($state, $stateParams, $transitions, UserService, DeviceService) {
+  constructor($state, $stateParams, $transitions, UserPagingService, DeviceService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$transitions = $transitions;
-    this.UserService = UserService;
+    this.UserPagingService = UserPagingService;
     this.DeviceService = DeviceService;
 
-    this.inactiveUsers = {
-      length: 0
-    };
+    this.userState = 'inactive';
+    this.inactiveUsers = [];
+    this.stateAndData = this.UserPagingService.constructDefault();
 
     this.setState();
   }
@@ -18,10 +18,12 @@ class AdminController {
   $onInit() {
     this.currentAdminPanel = this.$stateParams.adminPanel || "";
 
-    this.UserService.getUserCount({active: false}).then(result => {
-      if(result && result.data && result.data.count) {
-        this.inactiveUsers.length = result.data.count;
-      }
+    this.stateAndData.delete('all');
+    this.stateAndData.delete('active');
+    this.stateAndData.delete('disabled');
+
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
 
     this.DeviceService.getAllDevices().then(devices => {
@@ -45,7 +47,9 @@ class AdminController {
   }
 
   userActivated($event) {
-    this.inactiveUsers.length = this.inactiveUsers.length - 1;
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
+    });
   }
 
   deviceRegistered($event) {
@@ -59,7 +63,7 @@ class AdminController {
   }
 }
 
-AdminController.$inject = ['$state', '$stateParams', '$transitions', 'UserService', 'DeviceService'];
+AdminController.$inject = ['$state', '$stateParams', '$transitions', 'UserPagingService', 'DeviceService'];
 
 export default {
   template: require('./admin.html'),
