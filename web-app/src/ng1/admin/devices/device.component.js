@@ -9,7 +9,7 @@ class AdminDeviceController {
     this.DeviceService = DeviceService;
     this.UserService = UserService;
     this.LoginService = LoginService;
-    this.userPagingService = UserPagingService;
+    this.UserPagingService = UserPagingService;
     
     this.token = LocalStorageService.getToken();
 
@@ -31,7 +31,7 @@ class AdminDeviceController {
     this.showNext = true;
 
     this.isSearching = false;
-    this.stateAndData = this.userPagingService.constructDefault();
+    this.stateAndData = this.UserPagingService.constructDefault();
     this.loginSearchResults = [];
   }
 
@@ -47,13 +47,13 @@ class AdminDeviceController {
       }
     });
 
-    this.userPagingService.refresh(this.stateAndData);
+    this.UserPagingService.refresh(this.stateAndData);
   }
 
   searchLogins(searchString) {
     this.isSearching = true;
 
-    return this.userPagingService.search(this.stateAndData['all'], searchString).then(users => {
+    return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
       this.isSearching = false;
   
