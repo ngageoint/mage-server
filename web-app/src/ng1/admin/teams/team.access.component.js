@@ -1,14 +1,12 @@
 import _ from 'underscore';
 
 class AdminTeamAccessController {
-  constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserService, UserPagingService) {
+  constructor($state, $stateParams, $q, Team, TeamAccess, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
-    this.$filter = $filter;
     this.Team = Team;
     this.TeamAccess = TeamAccess;
-    this.UserService = UserService;
     this.UserPagingService = UserPagingService;
 
     this.team = null;
@@ -142,7 +140,7 @@ class AdminTeamAccessController {
   }
 }
 
-AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService', 'UserPagingService'];
+AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', 'Team', 'TeamAccess', 'UserPagingService'];
 
 export default {
   template: require('./team.access.html'),
