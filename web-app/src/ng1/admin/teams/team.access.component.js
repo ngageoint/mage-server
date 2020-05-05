@@ -25,7 +25,7 @@ class AdminTeamAccessController {
     this.userState = 'all';
     this.nonAclUserState = this.userState + '.nonacl';
     this.memberSearch = '';
-    
+
     this.stateAndData = this.UserPagingService.constructDefault();
 
     this.owners = [];
@@ -38,12 +38,9 @@ class AdminTeamAccessController {
       let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonAclUserState] = clone;
 
-      let aclIds = Object.keys(this.team.acl);
-      let allIds = aclIds.concat(this.team.userIds);
-
       this.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
       this.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl) };
-      
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.team);
       });
@@ -110,6 +107,7 @@ class AdminTeamAccessController {
       userId: member.id,
       role: role
     }, team => {
+      delete this.member.selected;
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });

@@ -20,7 +20,7 @@
 
       <div class="row">
         <div class="col-md-8">
-          <input type="text" ng-model="$ctrl.nonMember.displayName" placeholder="Search for a user"
+          <input type="text" ng-model="$ctrl.nonMember.selected" placeholder="Search for a user"
             uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
             typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults" class="form-control"
             ng-model-options="{ debounce: 1000 }">
@@ -40,7 +40,7 @@
 
         <div class="col-md-2">
           <button class="btn btn-success" ng-click="$ctrl.addMember()"
-            ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add member to
+            ng-disabled="($ctrl.nonMember.selected == null || $ctrl.nonMember.selected == '')"><i class="fa fa-plus"></i> Add member to
             team</button>
         </div>
       </div>
