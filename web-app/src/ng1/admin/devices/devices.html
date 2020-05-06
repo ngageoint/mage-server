@@ -76,8 +76,8 @@
                 <li ng-class="{'disabled': $ctrl.page == 0}">
                   <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
                 </li>
-                <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                <li ng-class="{'disabled': $ctrl.page >= ($ctrl.devices.length/$ctrl.itemsPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.devices.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>
