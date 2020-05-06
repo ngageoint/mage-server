@@ -47,12 +47,18 @@ class AdminDevicesController {
 
     this.UserPagingService.search(this.stateAndData[this.userState], this.deviceSearch).then(users => {
       var filteredUsers = this.$filter('user')(users, ['displayName', 'email'], this.deviceSearch);
-      
+
       this.searchResults = _.filter(this.devices, device => {
         return _.some(filteredUsers, filteredUser => {
           if (device.user.id === filteredUser.id) return true;
         });
       });
+
+      if(this.searchResults.length > 0){
+        return this.searchResults;
+      } else{
+        this.searchResults = this.$filter('filter')(this.devices, this.deviceSearch);
+      }
     });
   }
 
