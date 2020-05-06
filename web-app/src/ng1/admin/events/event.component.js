@@ -145,7 +145,7 @@ class AdminEventController {
   searchNonMembers(searchString) {
     this.isSearching = true;
     return this.UserPagingService.search(this.stateAndData[this.nonMemberUserState], searchString).then(users => {
-      this.nonMemberSearchResults = users;
+      this.nonMemberSearchResults = _.map(users, item => { return this.normalize(item); });
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
@@ -165,8 +165,8 @@ class AdminEventController {
     };
   }
 
-  addMember(member) {
-    member.type === 'user' ? this.addUser(member) : this.addTeam(member);
+  addMember() {
+    this.nonMember.type === 'user' ? this.addUser(this.nonMember) : this.addTeam(this.nonMember);
   }
 
   removeMember(member) {
