@@ -9,12 +9,12 @@ class AdminTeamController {
     this.Team = Team;
     this.Event = Event;
     this.UserService = UserService;
-    this.userPaging = UserPagingService;
+    this.UserPagingService = UserPagingService;
 
     this.userState = 'all';
     this.userSearchState = this.userState + '.search';
 
-    this.stateAndData = this.userPaging.constructDefault();
+    this.stateAndData = this.UserPagingService.constructDefault();
 
     this.memberSearch = '';
     this.nonMemberSearch = '';
@@ -48,7 +48,6 @@ class AdminTeamController {
   $onInit() {
     this.Team.get({ id: this.$stateParams.teamId, populate: false }, team => {
       this.team = team;
-      this.user = {};
 
       let searchClone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.userSearchState] = searchClone;
@@ -57,8 +56,8 @@ class AdminTeamController {
       this.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
       this.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
       this.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
-      this.userPaging.refresh(this.stateAndData).then(() => {
-        this.members = this.userPaging.users(this.stateAndData[this.userState]);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.members = this.UserPagingService.users(this.stateAndData[this.userState]);
       });
 
       var myAccess = this.team.acl[this.UserService.myself.id];
@@ -86,31 +85,31 @@ class AdminTeamController {
   }
 
   count() {
-    return this.userPaging.count(this.stateAndData[this.userState]);
+    return this.UserPagingService.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.userPaging.hasNext(this.stateAndData[this.userState]);
+    return this.UserPagingService.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.userPaging.next(this.stateAndData[this.userState]).then(users => {
+    this.UserPagingService.next(this.stateAndData[this.userState]).then(users => {
       this.members = users;
     });
   }
 
   hasPrevious() {
-    return this.userPaging.hasPrevious(this.stateAndData[this.userState]);
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.userPaging.previous(this.stateAndData[this.userState]).then(users => {
+    this.UserPagingService.previous(this.stateAndData[this.userState]).then(users => {
       this.members = users;
     });
   }
 
   search() {
-    this.userPaging.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
+    this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
       this.members = users;
     });
   }
@@ -118,7 +117,7 @@ class AdminTeamController {
   searchNonMembers(searchString) {
     this.isSearching = true;
 
-    return this.userPaging.search(this.stateAndData[this.userSearchState], searchString).then(users => {
+    return this.UserPagingService.search(this.stateAndData[this.userSearchState], searchString).then(users => {
       this.nonMemberSearchResults = users;
       this.isSearching = false;
   
@@ -151,8 +150,8 @@ class AdminTeamController {
   saveTeam() {
     this.team.$save();
 
-    this.userPaging.refresh(this.stateAndData).then(() => {
-      this.members = this.userPaging.users(this.stateAndData[this.userState]);
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.members = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
   }
 
@@ -206,7 +205,7 @@ class AdminTeamController {
   }
 }
 
-AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', 'Team', 'Event', 'UserService', 'UserPagingService', 'UserPagingService'];
+AdminTeamController.$inject = ['$uibModal', '$filter', '$state', '$stateParams', 'Team', 'Event', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./team.html'),
