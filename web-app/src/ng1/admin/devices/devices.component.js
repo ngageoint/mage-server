@@ -47,18 +47,13 @@ class AdminDevicesController {
 
     this.UserPagingService.search(this.stateAndData[this.userState], this.deviceSearch).then(users => {
       var filteredUsers = this.$filter('user')(users, ['displayName', 'email'], this.deviceSearch);
-      let matches = [];
-      for (var i = 0; i < this.devices.length; i++) {
-        var device = this.devices[i];
-        var deviceMatches = _.some(filteredUsers, filteredUser => {
+      
+      this.searchResults = _.filter(this.devices, device => {
+        return _.some(filteredUsers, filteredUser => {
           if (device.user.id === filteredUser.id) return true;
         });
-        if (deviceMatches) {
-          matches.push(device);
-        }
-      }
-      this.searchResults = matches;
-    })
+      });
+    });
   }
 
   _filterRegistered(device) {
