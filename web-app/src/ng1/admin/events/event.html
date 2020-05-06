@@ -107,7 +107,7 @@
                   <div class="col-md-12">
                     <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user/team to add to event"
                       uib-typeahead="user as user.name for user in $ctrl.searchNonMembers($viewValue)"
-                      typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
+                      typeahead-loading="$ctrl.isSearching" typeahead-no-results="noSearchResults"
                       class="form-control" ng-model-options="{ debounce: 1000 }">
                     <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
                     <div ng-show="noSearchResults">

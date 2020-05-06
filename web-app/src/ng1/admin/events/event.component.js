@@ -188,7 +188,7 @@ class AdminEventController {
     this.eventMembers.push(user);
     this.eventNonMembers = _.reject(this.eventNonMembers, item => { return item.id === user.id; });
 
-    this.eventTeam.users.push({id: user.id});
+    this.eventTeam.userIds.push(user.id);
     this.eventTeam.$save(() => {
       this.event.$get({populate: false});
     });
@@ -198,7 +198,7 @@ class AdminEventController {
     this.eventMembers = _.reject(this.eventMembers, item => { return item.id === user.id; });
     this.eventNonMembers.push(user);
 
-    this.eventTeam.users = _.reject(this.eventTeam.users, u => { return user.id === u.id; });
+    this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return id === u.id; });
     this.eventTeam.$save(() => {
       this.event.$get({populate: false});
     });

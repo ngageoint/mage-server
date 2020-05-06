@@ -33,7 +33,8 @@ module.exports = function(app, security) {
     req.teamParam = {
       name: name,
       description: req.param('description'),
-      users: req.param('users')
+      users: req.param('users'),
+      userIds: req.param('userIds')
     };
 
     next();
@@ -100,6 +101,7 @@ module.exports = function(app, security) {
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description) update.description = req.teamParam.description;
       if (req.teamParam.users) update.users = req.teamParam.users;
+      if (req.teamParam.userIds) update.userIds = req.teamParam.userIds;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
         if (err) return next(err);
