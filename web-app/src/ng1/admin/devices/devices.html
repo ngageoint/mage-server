@@ -10,9 +10,9 @@
   <div class="row">
     <div class="col-md-3">
       <ul class="nav nav-pills nav-stacked">
-        <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.filteredDevices.length}}</span></a></li>
-        <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: true}).length}}</span></a></li>
-        <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: !true}).length}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.devices.length}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.devices | filter:{registered: true}).length}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.devices | filter:{registered: !true}).length}}</span></a></li>
       </ul>
 
       <hr>
