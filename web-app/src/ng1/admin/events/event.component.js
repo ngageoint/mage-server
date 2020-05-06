@@ -16,65 +16,80 @@ class AdminEventController {
     this.token = LocalStorageService.getToken();
 
     this.showArchivedForms = false;
-
+  
     this.editTeams = false;
+    this.eventMembers = [];
     this.teamsPage = 0;
-    this.teamsInEvent = [];
-    this.teamsNotInEvent = [];
-
+    this.teamsPerPage = 10;
+  
     this.editLayers = false;
     this.eventLayers = [];
     this.layersPage = 0;
     this.layersPerPage = 10;
-
+  
     this.teams = [];
     this.layers = [];
-    this.eventMembers = [];
-    this.eventNonMembers = [];
+  
+    this.nonMember = null;
+  
+    this.eventTeam;
 
-    this.member = {};
+    this.eventNonMembers = [];
 
     this.userState = 'all';
     this.nonMemberUserState = this.userState + '.nonMember';
     this.stateAndData = this.UserPagingService.constructDefault();
-
-    this.nonMember = null;
-
-    //This is the list of users returned from a search
-    this.nonMemberSearchResults = [];
-    this.isSearching = false;
-
-    this.eventTeam;
 
     // For some reason angular is not calling into filter function with correct context
     this.filterLayers = this._filterLayers.bind(this);
   }
 
   $onInit() {
-    this.$q.all({ teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({ id: this.$stateParams.eventId, populate: false }).$promise }).then(result => {
+    this.$q.all({teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
       this.teams = result.teams;
       let teamsById = _.indexBy(result.teams, 'id');
-
+  
       this.layers = result.layers;
       let layersById = _.indexBy(result.layers, 'id');
-
+  
       this.event = result.event;
-
+  
       var eventTeamId = _.find(this.event.teamIds, teamId => {
         if (teamsById[teamId]) {
           return teamsById[teamId].teamEventId === this.event.id;
         }
       });
       this.eventTeam = teamsById[eventTeamId];
+  
       var teamIdsInEvent = _.filter(this.event.teamIds, teamId => {
         if (teamsById[teamId]) {
           return teamsById[teamId].teamEventId !== this.event.id;
         }
       });
-      this.teamsInEvent = _.map(teamIdsInEvent, teamId => { return teamsById[teamId]; });
-      this.teamsNotInEvent = _.filter(this.teams, team => {
+      var teamsInEvent = _.map(teamIdsInEvent, teamId => { return teamsById[teamId]; });
+  
+      var teamsNotInEvent = _.filter(this.teams, team => {
         return this.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
       });
+  
+      this.layer = {};
+      this.eventLayers = _.chain(this.event.layerIds)
+        .filter(layerId => {
+          return layersById[layerId]; })
+        .map(layerId => {
+          return layersById[layerId];
+        }).value();
+  
+      this.nonLayers = _.filter(this.layers, layer => {
+        return this.event.layerIds.indexOf(layer.id) === -1;
+      });
+  
+      var myAccess = this.event.acl[this.UserService.myself.id];
+      var aclPermissions = myAccess ? myAccess.permissions : [];
+  
+      this.hasReadPermission = _.contains(this.UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
+      this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
+      this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
 
       let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonMemberUserState] = clone;
@@ -84,31 +99,9 @@ class AdminEventController {
       this.stateAndData[this.nonMemberUserState].userFilter.nin = { userIds: this.eventTeam.userIds };
       this.stateAndData[this.nonMemberUserState].countFilter.nin = { userIds: this.eventTeam.userIds };
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { return this.normalize(item); });
-
-        this.eventNonMembers = _.map(this.UserPagingService.users(this.stateAndData[this.nonMemberUserState]).concat(this.teamsNotInEvent), item => { return this.normalize(item); });
+        this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(teamsInEvent), item => { return this.normalize(item); });
+        this.eventNonMembers = _.map(this.UserPagingService.users(this.stateAndData[this.nonMemberUserState]).concat(teamsNotInEvent), item => { return this.normalize(item); });
       });
-
-
-      this.layer = {};
-      this.eventLayers = _.chain(this.event.layerIds)
-        .filter(layerId => {
-          return layersById[layerId];
-        })
-        .map(layerId => {
-          return layersById[layerId];
-        }).value();
-
-      this.nonLayers = _.filter(this.layers, layer => {
-        return this.event.layerIds.indexOf(layer.id) === -1;
-      });
-
-      var myAccess = this.event.acl[this.UserService.myself.id];
-      var aclPermissions = myAccess ? myAccess.permissions : [];
-
-      this.hasReadPermission = _.contains(this.UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
-      this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
-      this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
     });
   }
 
@@ -174,30 +167,30 @@ class AdminEventController {
   }
 
   addTeam(team) {
-    this.member = {};
+    this.nonMember = null;
     this.event.teamIds.push(team.id);
     this.eventMembers.push(team);
     this.eventNonMembers = _.reject(this.eventNonMembers, item => { return item.id === team.id; });
 
-    this.Event.addTeam({ id: this.event.id }, team);
+    this.Event.addTeam({id: this.event.id}, team);
   }
 
   removeTeam(team) {
-    this.event.teamIds = _.reject(this.event.teamIds, teamId => { return teamId === team.id; });
+    this.event.teamIds = _.reject(this.event.teamIds, teamId => {return teamId === team.id; });
     this.eventMembers = _.reject(this.eventMembers, item => { return item.id === team.id; });
     this.eventNonMembers.push(team);
 
-    this.Event.removeTeam({ id: this.event.id, teamId: team.id });
+    this.Event.removeTeam({id: this.event.id, teamId: team.id});
   }
 
   addUser(user) {
-    this.member = {};
+    this.nonMember = null;
     this.eventMembers.push(user);
     this.eventNonMembers = _.reject(this.eventNonMembers, item => { return item.id === user.id; });
 
-    this.eventTeam.users.push({ id: user.id });
+    this.eventTeam.users.push({id: user.id});
     this.eventTeam.$save(() => {
-      this.event.$get({ populate: false });
+      this.event.$get({populate: false});
     });
   }
 
@@ -207,7 +200,7 @@ class AdminEventController {
 
     this.eventTeam.users = _.reject(this.eventTeam.users, u => { return user.id === u.id; });
     this.eventTeam.$save(() => {
-      this.event.$get({ populate: false });
+      this.event.$get({populate: false});
     });
   }
 

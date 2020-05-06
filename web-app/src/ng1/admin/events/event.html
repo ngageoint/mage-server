@@ -105,7 +105,7 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <input type="text" ng-model="$ctrl.nonMember" placeholder="Search"
+                    <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user/team to add to event"
                       uib-typeahead="user as user.name for user in $ctrl.searchNonMembers($viewValue)"
                       typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
                       class="form-control" ng-model-options="{ debounce: 1000 }">
