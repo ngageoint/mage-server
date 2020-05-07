@@ -15,9 +15,9 @@ class PageInfo {
   }
 }
 
-function pageUsers(query, options, callback) {
+function pageUsers(countQuery, query, options, callback) {
   //TODO probably should not call count so often
-  User.count(query, function (err, count) {
+  countQuery.count(function (err, count) {
     if (err) return callback(err, null, null);
 
     var sort = [['displayName', 1], ['_id', 1]];

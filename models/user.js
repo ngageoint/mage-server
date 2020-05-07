@@ -305,6 +305,7 @@ exports.getUsers = function (options, callback) {
   var conditions = createQueryConditions(filter);
 
   var query = User.find(conditions);
+  var countQuery = User.find(conditions);
 
   var populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
@@ -323,11 +324,12 @@ exports.getUsers = function (options, callback) {
       orCondition.push(entry);
     }
     query = query.or(orCondition);
+    countQuery = countQuery.or(orConditions);
   }
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    Paging.pageUsers(query, options, callback);
+    Paging.pageUsers(countQuery, query, options, callback);
   } else {
     query.exec(function (err, users) {
       callback(err, users, null);
