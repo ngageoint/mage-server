@@ -135,7 +135,8 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
       }],
       users: ['UserService', function(UserService) {
         // Pull fresh set of users from server before admin page
-        return UserService.getAllUsers({forceRefresh: true, populate: 'roleId'});
+        //TODO just remove this
+        return Promise.resolve();
       }],
       devices: ['DeviceService', function(DeviceService) {
         // Pull fresh set of users from server before admin page
