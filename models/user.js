@@ -370,11 +370,7 @@ function createQueryConditions(filter) {
     }
 
     let userIds = json['userIds'] ? json['userIds'] : [];
-    var objectIds = [];
-    for (var i = 0; i < userIds.length; i++) {
-      let userId = userIds[i];
-      objectIds.push(mongoose.Types.ObjectId(userId));
-    }
+    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
 
     if (filter.in) {
       conditions._id = {
