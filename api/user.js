@@ -3,6 +3,7 @@ var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')
+  , TeamModel = require('../models/team')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -89,7 +90,7 @@ User.prototype.getById = function(id, callback) {
 };
 
 User.prototype.create = function(user, options, callback) {
-  var operations = [];
+  const operations = [];
 
   operations.push(function(done) {
     UserModel.createUser(user, function(err, newUser) {
@@ -99,7 +100,7 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.avatar) {
     operations.push(function(newUser, done) {
-      var avatar = avatarPath(newUser._id, newUser, options.avatar);
+      const avatar = avatarPath(newUser._id, newUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, function(err) {
         if (err) {
           return done(err);
@@ -118,7 +119,7 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
     operations.push(function(newUser, done) {
-      var icon = iconPath(newUser._id, newUser, options.icon);
+      const icon = iconPath(newUser._id, newUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, function(err) {
         if (err) {
           return done(err);
@@ -132,6 +133,34 @@ User.prototype.create = function(user, options, callback) {
         newUser.icon.color = options.icon.color;
 
         done(null, newUser);
+      });
+    });
+  }
+
+  if (options.defaultTeams && Array.isArray(options.defaultTeams)) {
+    operations.push(function (newUser, done) {
+      async.each(options.defaultTeams, function (team, done) {
+        TeamModel.addUser({ _id: team }, newUser, () => {
+          done();
+        });
+      }, function(err) {
+        done(null, newUser);
+      });
+    });
+  }
+
+  if (options.defaultEvents && Array.isArray(options.defaultEvents)) {
+    operations.push(function (newUser, done) {
+      async.each(options.defaultEvents, function (event, done) {
+        TeamModel.getTeamForEvent({_id: event}, function(err, team) {
+          if (err || !team) return done();
+
+          TeamModel.addUser(team, newUser, () => {
+            done();
+          });
+        });
+      }, function(err) {
+          done(null, newUser);
       });
     });
   }
