@@ -324,7 +324,7 @@ exports.getUsers = function (options, callback) {
       orCondition.push(entry);
     }
     query = query.or(orCondition);
-    countQuery = countQuery.or(orConditions);
+    countQuery = countQuery.or(orCondition);
   }
 
   var isPaging = options.limit != null && options.limit > 0;
