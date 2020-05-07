@@ -10,7 +10,7 @@ var mongoose = require('mongoose')
   , Observation = require('./observation')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
-  , log = require('winston');
+  , Paging = require('../utilities/paging');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -64,22 +64,6 @@ var UserSchema = new Schema({
     updatedAt: 'lastUpdated'
   }
 });
-
-class PageInfo {
-  constructor(users) {
-    this.links = {
-      base: '',
-      context: '',
-      next: '',
-      prev: '',
-      self: ''
-    };
-    this.limit = 0;
-    this.users = users;
-    this.size = users.length;
-    this.start = 0;
-  }
-}
 
 UserSchema.method('validPassword', function (password, callback) {
   var user = this;
@@ -343,7 +327,7 @@ exports.getUsers = function (options, callback) {
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    page(query, options, callback);
+    Paging.pageUsers(query, options, callback);
   } else {
     query.exec(function (err, users) {
       callback(err, users, null);
@@ -385,47 +369,6 @@ function createQueryConditions(filter) {
 
   return conditions;
 };
-
-function page(query, options, callback) {
-  //TODO probably should not call count so often
-  User.count(query, function (err, count) {
-    if (err) return callback(err, null, null);
-
-    var sort = [['displayName', 1], ['_id', 1]];
-    if (options.sort) {
-      let json = JSON.parse(options.sort);
-      sort = [];
-
-      for (let [key, value] of Object.entries(json)) {
-        let item = [key, value];
-        sort.push(item);
-      }
-    }
-
-    var limit = Math.abs(options.limit) || 10;
-    var start = (Math.abs(options.start) || 0);
-    var page = Math.ceil(start / limit);
-    query.sort(sort).limit(limit).skip(limit * page).exec(function (err, users) {
-      if (err) return callback(err, users, null);
-
-      let pageInfo = new PageInfo(users);
-      pageInfo.start = start;
-      pageInfo.limit = limit;
-
-      let estimatedNext = start + limit;
-
-      if (estimatedNext < count) {
-        pageInfo.links.next = estimatedNext;
-      }
-
-      if (start > 0) {
-        pageInfo.links.prev = Math.abs(options.start - options.limit);
-      }
-
-      callback(err, users, pageInfo);
-    });
-  });
-}
 
 exports.createUser = function(user, callback) {
   const update = {
