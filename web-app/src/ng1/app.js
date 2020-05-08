@@ -132,15 +132,6 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
         });
 
         return deferred.promise;
-      }],
-      users: ['UserService', function(UserService) {
-        // Pull fresh set of users from server before admin page
-        //TODO just remove this
-        return Promise.resolve();
-      }],
-      devices: ['DeviceService', function(DeviceService) {
-        // Pull fresh set of users from server before admin page
-        return DeviceService.getAllDevices({forceRefresh: true});
       }]
     };
   }
