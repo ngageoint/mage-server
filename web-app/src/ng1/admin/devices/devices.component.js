@@ -17,7 +17,7 @@ class AdminDevicesController {
     this.itemsPerPage = 10;
 
     this.userState = 'all';
-    this.stateAndData = this.UserPagingService.constructDefault();
+    this.userStateAndData = this.UserPagingService.constructDefault();
     this.searchResults = [];
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
@@ -34,18 +34,18 @@ class AdminDevicesController {
       this.searchResults = devices;
     });
 
-    this.stateAndData.delete('active');
-    this.stateAndData.delete('inactive');
-    this.stateAndData.delete('disabled');
+    this.userStateAndData.delete('active');
+    this.userStateAndData.delete('inactive');
+    this.userStateAndData.delete('disabled');
 
-    this.UserPagingService.refresh(this.stateAndData);
+    this.UserPagingService.refresh(this.userStateAndData);
   }
 
   search() {
     this.page = 0;
     this.searchResults = [];
 
-    this.UserPagingService.search(this.stateAndData[this.userState], this.deviceSearch).then(users => {
+    this.UserPagingService.search(this.userStateAndData[this.userState], this.deviceSearch).then(users => {
       var filteredUsers = this.$filter('user')(users, ['displayName', 'email'], this.deviceSearch);
 
       this.searchResults = _.filter(this.devices, device => {
