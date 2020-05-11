@@ -1,5 +1,3 @@
-var User = require('../models/user')
-
 class PageInfo {
   constructor() {
     this.links = {
@@ -16,11 +14,18 @@ class PageInfo {
 }
 
 function pageUsers(countQuery, query, options, callback) {
+  page(countQuery, query, options, callback, 'users');
+}
+function pageDevices(countQuery, query, options, callback) {
+  page(countQuery, query, options, callback, 'devices');
+}
+
+function page(countQuery, query, options, callback, dataKey) {
   //TODO probably should not call count so often
   countQuery.count(function (err, count) {
     if (err) return callback(err, null, null);
 
-    var sort = [['displayName', 1], ['_id', 1]];
+    var sort = [['_id', 1]];
     if (options.sort) {
       let json = JSON.parse(options.sort);
       sort = [];
@@ -34,14 +39,14 @@ function pageUsers(countQuery, query, options, callback) {
     var limit = Math.abs(options.limit) || 10;
     var start = (Math.abs(options.start) || 0);
     var page = Math.ceil(start / limit);
-    query.sort(sort).limit(limit).skip(limit * page).exec(function (err, users) {
-      if (err) return callback(err, users, null);
+    query.sort(sort).limit(limit).skip(limit * page).exec(function (err, data) {
+      if (err) return callback(err, data, null);
 
       let pageInfo = new PageInfo();
       pageInfo.start = start;
       pageInfo.limit = limit;
-      pageInfo.users = users;
-      pageInfo.size = users.size;
+      pageInfo[dataKey] = data;
+      pageInfo.size = data.size;
 
       let estimatedNext = start + limit;
 
@@ -53,11 +58,12 @@ function pageUsers(countQuery, query, options, callback) {
         pageInfo.links.prev = Math.abs(options.start - options.limit);
       }
 
-      callback(err, users, pageInfo);
+      callback(err, data, pageInfo);
     });
   });
 }
 
 module.exports = {
-  pageUsers
+  pageUsers,
+  pageDevices
 };

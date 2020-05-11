@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
   , Observation = require('./observation')
   , User = require('./user')
   , Token = require('./token')
-  , log = require('winston');
+  , log = require('winston')
+  , Paging = require('../utilities/paging');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
