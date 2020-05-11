@@ -127,8 +127,45 @@ exports.getDevices = function({expand = {}, filter = {}} = {}) {
   return query.exec();
 };
 
-exports.count = function() {
-  return Device.count({}).exec();
+exports.count = function(options) {
+  options = options || {};
+  var filter = options.filter || {};
+
+  var conditions = createQueryConditions(filter);
+
+  return Device.count(conditions, {}).exec();
+};
+
+function createQueryConditions(filter) {
+  var conditions = {};
+
+  if (filter.registered) {
+    conditions.registered = filter.registered == 'true';
+  }
+
+  if (filter.in || filter.nin) {
+    let json = {};
+    if (filter.in) {
+      json = JSON.parse(filter.in);
+    } else {
+      json = JSON.parse(filter.nin);
+    }
+
+    let userIds = json['userIds'] ? json['userIds'] : [];
+    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+
+    if (filter.in) {
+      conditions._id = {
+        $in: objectIds
+      };
+    } else {
+      conditions._id = {
+        $nin: objectIds
+      };
+    }
+  }
+
+  return conditions;
 };
 
 exports.createDevice = async function(device) {
