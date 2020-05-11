@@ -26,9 +26,13 @@ function DeviceService($http, $q, $httpParamSerializer) {
   function getAllDevices(options) {
     options = options || {};
 
+    if(!options.expand) {
+      options.expand = 'user';
+    }
+
     var deferred = $q.defer();
 
-    $http.get('/api/devices', { params: { expand: 'user' } })
+    $http.get('/api/devices', { params: options })
       .success(function (devices) {
         deferred.resolve(devices);
       });
