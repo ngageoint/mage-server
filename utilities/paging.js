@@ -16,8 +16,8 @@ class PageInfo {
 function pageUsers(countQuery, query, options, callback) {
   page(countQuery, query, options, callback, 'users');
 }
-function pageDevices(countQuery, query, options, callback) {
-  page(countQuery, query, options, callback, 'devices');
+function pageDevices(countQuery, query, options) {
+  return page(countQuery, query, options, null, 'devices');
 }
 
 function page(countQuery, query, options, callback, dataKey) {
@@ -58,7 +58,11 @@ function page(countQuery, query, options, callback, dataKey) {
         pageInfo.links.prev = Math.abs(options.start - options.limit);
       }
 
-      callback(err, data, pageInfo);
+      if(callback) {
+        callback(err, data, pageInfo);
+      } else{
+        return Promise.resolve(pageInfo);
+      }
     });
   });
 }

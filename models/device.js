@@ -138,7 +138,7 @@ exports.getDevices = function(options) {
     if(filter.or) {
       countQuery.or(orCondition);
     }
-    return Paging.pageDevices(countQuery, query, options, {});
+    return Paging.pageDevices(countQuery, query, options);
   } else {
     return query.exec();
   }
