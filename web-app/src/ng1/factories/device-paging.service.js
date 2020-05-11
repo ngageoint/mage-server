@@ -5,7 +5,15 @@ DevicePagingService.$inject = ['DeviceService', '$q'];
 function DevicePagingService(DeviceService, $q) {
 
     var service = {
-        constructDefault
+        constructDefault,
+        refresh,
+        count,
+        hasNext,
+        next,
+        hasPrevious,
+        previous,
+        devices,
+        search
     };
 
     return service;
@@ -36,5 +44,119 @@ function DevicePagingService(DeviceService, $q) {
         };
 
         return stateAndData;
+    }
+
+    function refresh(stateAndData) {
+
+        var promises = [];
+
+        for (const [key, value] of Object.entries(stateAndData)) {
+
+            var promise = $q.all({ count: DeviceService.count(value.countFilter), pageInfo: DeviceService.getAllDevices(value.deviceFilter) }).then(result => {
+                stateAndData[key].deviceCount = result.count.data.count;
+                stateAndData[key].pageInfo = result.pageInfo;
+                $q.resolve(key);
+            });
+
+            promises.push(promise);
+        }
+
+        return $q.all(promises);
+    }
+
+    function count(data) {
+        return data.deviceCount;
+    }
+
+    function hasNext(data) {
+        var status = false;
+
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.next != null &&
+                data.pageInfo.links.next !== "";
+        }
+
+        return status;
+    }
+
+    function next(data) {
+        return move(data.pageInfo.links.next, data);
+    }
+
+    function hasPrevious(data) {
+        var status = false;
+
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.prev != null &&
+                data.pageInfo.links.prev !== "";
+        }
+
+        return status;
+    }
+
+    function previous(data) {
+        return move(data.pageInfo.links.prev, data);
+    }
+
+    function move(start, data) {
+        var filter = JSON.parse(JSON.stringify(data.deviceFilter));
+        filter.start = start;
+        return DeviceService.getAllDevices(filter).then(pageInfo => {
+            data.pageInfo = pageInfo;
+            return $q.resolve(pageInfo.devices);
+        });
+    }
+
+    function devices(data) {
+        var devices = [];
+
+        if (data.pageInfo && data.pageInfo.devices) {
+            devices = data.pageInfo.devices;
+        }
+
+        return devices;
+    }
+
+    function search(data, deviceSearch) {
+
+        if (data.pageInfo == null || data.pageInfo.devices == null) {
+            return $q.resolve([]);
+        }
+
+        const previousSearch = data.searchFilter;
+
+        var promise = null;
+
+        if (previousSearch == '' && deviceSearch == '') {
+            //Not performing a seach
+            promise = $q.resolve(data.pageInfo.devices);
+        } else if (previousSearch != '' && deviceSearch == '') {
+            //Clearing out the search
+            data.searchFilter = '';
+            delete data.deviceFilter['or'];
+
+            promise = DeviceService.getAllDevices(data.deviceFilter).then(pageInfo => {
+                data.pageInfo = pageInfo;
+                return $q.resolve(data.pageInfo.devices);
+            });
+        } else if (previousSearch == deviceSearch) {
+            //Search is being performed, no need to keep searching the same info over and over
+            promise = $q.resolve(data.pageInfo.devices);
+        } else {
+            //Perform the server side searching
+            data.searchFilter = deviceSearch;
+
+            var filter = data.deviceFilter;
+            filter.or = {
+                displayName: '.*' + deviceSearch + '.*',
+                email: '.*' + deviceSearch + '.*'
+            };
+            promise = DeviceService.getAllDevices(filter).then(pageInfo => {
+                data.pageInfo = pageInfo;
+                return $q.resolve(data.pageInfo.devices)
+            });
+        }
+
+        return promise;
     }
 }
