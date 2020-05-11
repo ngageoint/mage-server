@@ -127,7 +127,18 @@ DeviceResource.prototype.create = function(req, res, next) {
 };
 
 DeviceResource.prototype.count = function (req, res, next) {
-  Device.count()
+  var filter = {};
+
+  if(req.query) {
+    for (let [key, value] of Object.entries(req.query)) {
+      if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+        continue;
+      }
+      filter[key] = value;
+    }
+  }
+
+  Device.count({ filter: filter })
     .then(count => res.json({count: count}))
     .catch(err => next(err));
 };
