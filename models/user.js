@@ -302,7 +302,7 @@ exports.getUsers = function (options, callback) {
   options = options || {};
   var filter = options.filter || {};
 
-  var conditions = createQueryConditions(filter);
+  const conditions = createQueryConditions(filter);
 
   var query = User.find(conditions);
 
@@ -322,14 +322,14 @@ exports.getUsers = function (options, callback) {
       entry[key] = regex;
       orCondition.push(entry);
     }
-    query = query.or(orCondition);
+    query.or(orCondition);
   }
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
     var countQuery = User.find(conditions);
     if(filter.or) {
-      countQuery = countQuery.or(orCondition);
+      countQuery.or(orCondition);
     }
     Paging.pageUsers(countQuery, query, options, callback);
   } else {

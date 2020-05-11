@@ -107,24 +107,41 @@ exports.getDeviceByUid = function(uid, { expand = {} } = {}) {
   return query.exec();
 };
 
-exports.getDevices = function({expand = {}, filter = {}} = {}) {
-  const condition = {};
+exports.getDevices = function(options) {
+  options = options || {};
+  var filter = options.filter || {};
 
-  if (filter.registered === true) {
-    condition.registered = true;
-  }
+  const conditions = createQueryConditions(filter);
 
-  if (filter.registered === false) {
-    condition.registered = false;
-  }
+  const query = Device.find(conditions);
 
-  const query = Device.find(condition);
-
-  if (expand.user) {
+  if (options.expand.user) {
     query.populate('userId');
   }
 
-  return query.exec();
+  var orCondition = [];
+  if (filter.or) {
+    let json = JSON.parse(filter.or);
+
+    for (let [key, value] of Object.entries(json)) {
+      let entry = {};
+      let regex = { "$regex": new RegExp(value), "$options": "i" };
+      entry[key] = regex;
+      orCondition.push(entry);
+    }
+    query.or(orCondition);
+  }
+
+  var isPaging = options.limit != null && options.limit > 0;
+  if (isPaging) {
+    var countQuery = User.find(conditions);
+    if(filter.or) {
+      countQuery.or(orCondition);
+    }
+    return Paging.pageDevices(countQuery, query, options, {});
+  } else {
+    return query.exec();
+  }
 };
 
 exports.count = function(options) {
