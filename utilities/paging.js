@@ -14,17 +14,18 @@ class PageInfo {
 }
 
 function pageUsers(countQuery, query, options, callback) {
-  page(countQuery, query, options, callback, 'users');
+  page(countQuery, query, options, 'users').then(pageInfo => {
+    callback(null, pageInfo.users, pageInfo);
+  }).catch(err => {
+    callback(err, null, null);
+  });
 }
 function pageDevices(countQuery, query, options) {
-  return page(countQuery, query, options, null, 'devices');
+  return page(countQuery, query, options, 'devices');
 }
 
-function page(countQuery, query, options, callback, dataKey) {
-  //TODO probably should not call count so often
-  countQuery.count(function (err, count) {
-    if (err) return callback(err, null, null);
-
+function page(countQuery, query, options, dataKey) {
+  return countQuery.count().then(count => {
     var sort = [['_id', 1]];
     if (options.sort) {
       let json = JSON.parse(options.sort);
@@ -39,9 +40,8 @@ function page(countQuery, query, options, callback, dataKey) {
     var limit = Math.abs(options.limit) || 10;
     var start = (Math.abs(options.start) || 0);
     var page = Math.ceil(start / limit);
-    query.sort(sort).limit(limit).skip(limit * page).exec(function (err, data) {
-      if (err) return callback(err, data, null);
 
+    return query.sort(sort).limit(limit).skip(limit * page).exec().then(data => {
       let pageInfo = new PageInfo();
       pageInfo.start = start;
       pageInfo.limit = limit;
@@ -58,11 +58,7 @@ function page(countQuery, query, options, callback, dataKey) {
         pageInfo.links.prev = Math.abs(options.start - options.limit);
       }
 
-      if(callback) {
-        callback(err, data, pageInfo);
-      } else{
-        return Promise.resolve(pageInfo);
-      }
+      return Promise.resolve(pageInfo);
     });
   });
 }
