@@ -13,11 +13,8 @@ class AdminDevicesController {
 
     this.filter = "all"; // possible values all, registered, unregistered
     this.devices = [];
-    this.page = 0;
-    this.itemsPerPage = 10;
 
-    this.deviceStateAndData = this.DevicePagingService.constructDefault();
-    this.searchResults = [];
+    this.stateAndData = this.DevicePagingService.constructDefault();
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
     this.hasDeviceEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
@@ -28,25 +25,38 @@ class AdminDevicesController {
   }
 
   $onInit() {
-    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
-      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
-      this.searchResults = this.devices;
+    this.DevicePagingService.refresh(this.stateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+    });
+  }
+
+  count(state) {
+    return this.stateAndData[state].deviceCount;
+  }
+
+  hasNext() {
+    return this.DevicePagingService.hasNext(this.stateAndData[this.filter]);
+  }
+
+  next() {
+    this.DevicePagingService.next(this.stateAndData[this.filter]).then(devices => {
+      this.devices = devices;
+    });
+  }
+
+  hasPrevious() {
+    return this.DevicePagingService.hasPrevious(this.stateAndData[this.filter]);
+  }
+
+  previous() {
+    this.DevicePagingService.previous(this.stateAndData[this.filter]).then(devices => {
+      this.devices = devices;
     });
   }
 
   search() {
-    this.page = 0;
-    this.searchResults = [];
-
-    this.DevicePagingService.search(this.deviceStateAndData[this.filter], this.deviceSearch).then(devices => {
+    this.DevicePagingService.search(this.stateAndData[this.filter], this.deviceSearch).then(devices => {
       this.devices = devices;
-      var filteredUsers = this.$filter('filter')(this.devices, this.deviceSearch);
-
-      this.searchResults = _.filter(this.devices, device => {
-        return _.some(filteredUsers, filteredUser => {
-          if (device.user.id === filteredUser.id) return true;
-        });
-      });
     });
   }
 
@@ -77,10 +87,9 @@ class AdminDevicesController {
   }
 
   reset() {
-    this.page = 0;
     this.filter = 'all';
     this.deviceSearch = '';
-    this.searchResults = this.devices;
+    this.search();
   }
 
   newDevice() {
@@ -101,7 +110,9 @@ class AdminDevicesController {
 
     device.registered = true;
     this.DeviceService.updateDevice(device).then(() => {
-      this.saved = true;
+      this.DevicePagingService.refresh(this.stateAndData).then(() => {
+        this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+      });
       this.onDeviceRegistered({
         $event: {
           device: device
@@ -124,8 +135,10 @@ class AdminDevicesController {
       component: "adminDeviceDelete"
     });
 
-    modalInstance.result.then(device => {
-      this.devices = _.reject(this.devices, function (d) { return d.id === device.id; });
+    modalInstance.result.then(() => {
+      this.DevicePagingService.refresh(this.stateAndData).then(() => {
+        this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+      });
     });
   }
 }

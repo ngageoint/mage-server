@@ -10,16 +10,16 @@
   <div class="row">
     <div class="col-md-3">
       <ul class="nav nav-pills nav-stacked">
-        <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.devices.length}}</span></a></li>
-        <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.devices | filter:{registered: true}).length}}</span></a></li>
-        <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.devices | filter:{registered: !true}).length}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{($ctrl.count('all'))}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.count('registered'))}}</span></a></li>
+        <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.count('unregistered'))}}</span></a></li>
       </ul>
 
       <hr>
       <form class="form">
         <div class="form-group">
           <label>Search</label>
-          <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch" 
+          <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch"
           ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
         </div>
       </form>
@@ -45,7 +45,7 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item"
-                ng-repeat="d in $ctrl.searchResults | filter:$ctrl.filterRegistered | orderBy:'uid' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
+                ng-repeat="d in $ctrl.devices">
 
               <div class="pointer" ng-click="$ctrl.gotoDevice(d)">
                 <div class="admin-device-container">
@@ -73,11 +73,11 @@
           <div class="row">
             <div class="col-md-12">
               <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.page == 0}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                 </li>
-                <li ng-class="{'disabled': $ctrl.page >= ($ctrl.devices.length/$ctrl.itemsPerPage) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.devices.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                 </li>
               </ul>
             </div>
