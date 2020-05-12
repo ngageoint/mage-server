@@ -2,7 +2,7 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminUserController {
-  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
+  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DevicePagingService, Team) {
     this.$q = $q;
     this.$state = $state;
     this.$uibModal = $uibModal;
@@ -10,7 +10,7 @@ class AdminUserController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.LoginService = LoginService;
-    this.DeviceService = DeviceService;
+    this.DevicePagingService = DevicePagingService;
     this.Team = Team;
 
     this.userTeams = [];
@@ -33,6 +33,12 @@ class AdminUserController {
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
+
+    this.stateAndData = this.DevicePagingService.constructDefault();
+    this.deviceState = 'all';
+    this.loginSearchResults = [];
+    this.isSearching = false;
+    this.device = null;
   }
 
   $onInit() {
@@ -77,8 +83,11 @@ class AdminUserController {
       }
     });
 
-    this.DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
+    delete this.stateAndData['registered'];
+    delete this.stateAndData['unregistered'];
+
+    this.DevicePagingService.refresh(this.stateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.stateAndData[this.deviceState]);
     });
   }
 
@@ -178,8 +187,19 @@ class AdminUserController {
     });
   }
 
+  searchLogins(searchString) {
+    this.isSearching = true;
+
+    return this.DevicePagingService.search(this.stateAndData['all'], searchString).then(devices => {
+      this.loginSearchResults = devices;
+      this.isSearching = false;
+  
+      return this.loginSearchResults;
+    });
+  }
+
   filterLogins() {
-    this.filter.device = this.device.selected;
+    this.filter.device = this.device;
     this.ilter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.endDate = moment(this.login.endDate).endOf('day').toDate();
@@ -215,7 +235,7 @@ class AdminUserController {
   }
 }
 
-AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
+AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DevicePagingService', 'Team'];
 
 export default {
   template: require('./user.html'),

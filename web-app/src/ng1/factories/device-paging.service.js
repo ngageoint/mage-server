@@ -148,8 +148,8 @@ function DevicePagingService(DeviceService, $q) {
 
             var filter = data.deviceFilter;
             filter.or = {
-                displayName: '.*' + deviceSearch + '.*',
-                email: '.*' + deviceSearch + '.*'
+                userAgent: '.*' + deviceSearch + '.*',
+                description: '.*' + deviceSearch + '.*'
             };
             promise = DeviceService.getAllDevices(filter).then(pageInfo => {
                 data.pageInfo = pageInfo;
