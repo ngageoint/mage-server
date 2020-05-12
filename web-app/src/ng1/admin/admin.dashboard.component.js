@@ -90,6 +90,10 @@ class AdminDashboardController {
     });
   }
 
+  deviceCount() {
+    return this._DevicePagingService.count(this.deviceStateAndData[this.deviceState]);
+  }
+
   hasNextDevice() {
     return this._DevicePagingService.hasNext(this.deviceStateAndData[this.deviceState]);
   }
@@ -198,7 +202,9 @@ class AdminDashboardController {
 
     device.registered = true;
     this._DeviceService.updateDevice(device).then(device => {
-      this.unregisteredDevices = _.reject(this.unregisteredDevices, function (d) { return d.id === device.id; });
+      this._DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+        this.unregisteredDevices = this._DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+      });
       this.onDeviceEnabled({
         $event: {
           user: device
@@ -218,7 +224,7 @@ class AdminDashboardController {
     });
   }
 
-  filterLogins(item, model, label, event) {
+  filterLogins() {
     this.filter.user = this.user;
     this.filter.device = this.device;
     this.filter.startDate = this.login.startDate;
