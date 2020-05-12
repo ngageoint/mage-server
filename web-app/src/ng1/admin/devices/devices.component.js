@@ -1,13 +1,12 @@
 import _ from 'underscore';
 
 class AdminDevicesController {
-  constructor($uibModal, $filter, $state, LocalStorageService, DeviceService, UserService, DevicePagingService) {
+  constructor($uibModal, LocalStorageService, DeviceService, UserService, DevicePagingService, UserPagingService) {
     this.$uibModal = $uibModal;
-    this.$filter = $filter;
-    this.$state = $state;
     this.DeviceService = DeviceService;
     this.UserService = UserService;
     this.DevicePagingService = DevicePagingService;
+    this.UserPagingService = UserPagingService;
 
     this.token = LocalStorageService.getToken();
 
@@ -15,19 +14,19 @@ class AdminDevicesController {
     this.devices = [];
 
     this.stateAndData = this.DevicePagingService.constructDefault();
+    this.userStateAndData = this.UserPagingService.constructDefault();
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
     this.hasDeviceEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
     this.hasDeviceDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_DEVICE');
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterRegistered = this._filterRegistered.bind(this);
   }
 
   $onInit() {
     this.DevicePagingService.refresh(this.stateAndData).then(() => {
       this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
     });
+
+    this.UserPagingService.refresh(this.userStateAndData);
   }
 
   count(state) {
@@ -56,16 +55,18 @@ class AdminDevicesController {
 
   search() {
     this.DevicePagingService.search(this.stateAndData[this.filter], this.deviceSearch).then(devices => {
-      this.devices = devices;
+      if(devices.length == 0) {
+        this.UserPagingService.search(this.userStateAndData['all'], this.deviceSearch).then(users => {
+          this.devices = _.filter(this.devices, device => {
+            return _.some(users, user => {
+              if (device.userId === user.id) return true;
+            });
+          });
+        });
+      } else{
+        this.devices = devices;
+      }
     });
-  }
-
-  _filterRegistered(device) {
-    switch (this.filter) {
-      case 'all': return true;
-      case 'registered': return device.registered;
-      case 'unregistered': return !device.registered;
-    }
   }
 
   iconClass(device) {
@@ -143,7 +144,7 @@ class AdminDevicesController {
   }
 }
 
-AdminDevicesController.$inject = ['$uibModal', '$filter', '$state', 'LocalStorageService', 'DeviceService', 'UserService', 'DevicePagingService'];
+AdminDevicesController.$inject = ['$uibModal', 'LocalStorageService', 'DeviceService', 'UserService', 'DevicePagingService', 'UserPagingService'];
 
 export default {
   template: require('./devices.html'),
