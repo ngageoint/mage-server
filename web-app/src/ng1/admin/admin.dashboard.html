@@ -81,7 +81,8 @@
 
                 <form class="navbar-form navbar-left">
                   <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search" ng-model="deviceSearch">
+                    <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.deviceSearch"
+                      ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.deviceSearch()">
                   </div>
                 </form>
               </div>
@@ -92,7 +93,7 @@
           <div class="col-sm-12">
             <div class="admin-table">
               <div class="well-item"
-                ng-repeat="d in ($ctrl.filteredDevices = ($ctrl.unregisteredDevices | filter:$ctrl.filterDevices)) | orderBy:'uid' | offset: devicesPage*devicesPerPage | limitTo:devicesPerPage">
+                ng-repeat="d in $ctrl.unregisteredDevices">
                 <div class="row pointer" ng-click="$ctrl.gotoDevice(d)">
                   <div class="col-md-12">
                     <div class="right-gap pull-left">
@@ -115,17 +116,14 @@
         <div class="row">
           <div class="col-md-12">
             <ul class="pager pull-right">
-              <li ng-class="{'disabled': $ctrl.devicesPage == 0}">
-                <a href="javascript:void(0);"
-                  ng-click="$ctrl.devicesPage == 0 || ($ctrl.devicesPage=$ctrl.devicesPage-1)">&larr; Previous
-                  Device</a>
-              </li>
-              <li ng-class="{'disabled': $ctrl.devicesPage >= ($ctrl.filteredDevices.length/$ctrl.devicesPerPage) - 1}">
-                <a href="javascript:void(0);"
-                  ng-click="$ctrl.devicesPage >= ($ctrl.filteredDevices.length/$ctrl.devicesPerPage) - 1 || ($ctrl.devicesPage=$ctrl.devicesPage+1)">Next
-                  Device&rarr;</a>
-              </li>
-            </ul>
+              <ul class="pager pull-right">
+                <li ng-class="{'disabled': $ctrl.hasPreviousDevice() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous Device</a>
+                </li>
+                <li ng-class="{'disabled': $ctrl.hasNextDevice() == false}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next Device&rarr;</a>
+                </li>
+              </ul>
           </div>
         </div>
       </div>

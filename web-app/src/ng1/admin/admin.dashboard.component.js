@@ -90,9 +90,35 @@ class AdminDashboardController {
     });
   }
 
+  hasNextDevice() {
+    return this._DevicePagingService.hasNext(this.deviceStateAndData[this.deviceState]);
+  }
+
+  nextDevice() {
+    this._DevicePagingService.next(this.deviceStateAndData[this.deviceState]).then(devices => {
+      this.unregisteredDevices = devices;
+    });
+  }
+
+  hasPreviousDevice() {
+    return this._DevicePagingService.hasPrevious(this.deviceStateAndData[this.deviceState]);
+  }
+
+  previousDevice() {
+    this._DevicePagingService.previous(this.deviceStateAndData[this.deviceState]).then(devices => {
+      this.unregisteredDevices = devices;
+    });
+  }
+
   search() {
     this.UserPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
       this.inactiveUsers = users;
+    });
+  }
+
+  searchDevices() {
+    this._DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
+      this.unregisteredDevices = devices;
     });
   }
 
