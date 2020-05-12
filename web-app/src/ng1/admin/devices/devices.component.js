@@ -11,6 +11,7 @@ class AdminDevicesController {
     this.token = LocalStorageService.getToken();
 
     this.filter = "all"; // possible values all, registered, unregistered
+    this.deviceSearch = '';
     this.devices = [];
 
     this.stateAndData = this.DevicePagingService.constructDefault();
@@ -85,6 +86,11 @@ class AdminDevicesController {
     }
 
     return device.iconClass;
+  }
+
+  changeFilter(state) {
+    this.filter = state;
+    this.search();
   }
 
   reset() {
