@@ -134,7 +134,7 @@ exports.getDevices = function(options) {
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    var countQuery = User.find(conditions);
+    var countQuery = Device.find(conditions);
     if(filter.or) {
       countQuery.or(orCondition);
     }
@@ -150,7 +150,7 @@ exports.count = function(options) {
 
   var conditions = createQueryConditions(filter);
 
-  return Device.count(conditions, {}).exec();
+  return Device.count(conditions).exec();
 };
 
 function createQueryConditions(filter) {
@@ -168,8 +168,8 @@ function createQueryConditions(filter) {
       json = JSON.parse(filter.nin);
     }
 
-    let userIds = json['userIds'] ? json['userIds'] : [];
-    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+    let deviceIds = json['deviceIds'] ? json['deviceIds'] : [];
+    var objectIds = deviceIds.map(function(id) { return mongoose.Types.ObjectId(id); });
 
     if (filter.in) {
       conditions._id = {

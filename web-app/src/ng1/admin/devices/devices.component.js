@@ -1,13 +1,13 @@
 import _ from 'underscore';
 
 class AdminDevicesController {
-  constructor($uibModal, $filter, $state, LocalStorageService, DeviceService, UserService, UserPagingService) {
+  constructor($uibModal, $filter, $state, LocalStorageService, DeviceService, UserService, DevicePagingService) {
     this.$uibModal = $uibModal;
     this.$filter = $filter;
     this.$state = $state;
     this.DeviceService = DeviceService;
     this.UserService = UserService;
-    this.UserPagingService = UserPagingService;
+    this.DevicePagingService = DevicePagingService;
 
     this.token = LocalStorageService.getToken();
 
@@ -16,8 +16,7 @@ class AdminDevicesController {
     this.page = 0;
     this.itemsPerPage = 10;
 
-    this.userState = 'all';
-    this.userStateAndData = this.UserPagingService.constructDefault();
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.searchResults = [];
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
@@ -29,36 +28,25 @@ class AdminDevicesController {
   }
 
   $onInit() {
-    this.DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
-      this.searchResults = devices;
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
+      this.searchResults = this.devices;
     });
-
-    this.userStateAndData.delete('active');
-    this.userStateAndData.delete('inactive');
-    this.userStateAndData.delete('disabled');
-
-    this.UserPagingService.refresh(this.userStateAndData);
   }
 
   search() {
     this.page = 0;
     this.searchResults = [];
 
-    this.UserPagingService.search(this.userStateAndData[this.userState], this.deviceSearch).then(users => {
-      var filteredUsers = this.$filter('user')(users, ['displayName', 'email'], this.deviceSearch);
+    this.DevicePagingService.search(this.deviceStateAndData[this.filter], this.deviceSearch).then(devices => {
+      this.devices = devices;
+      var filteredUsers = this.$filter('filter')(this.devices, this.deviceSearch);
 
       this.searchResults = _.filter(this.devices, device => {
         return _.some(filteredUsers, filteredUser => {
           if (device.user.id === filteredUser.id) return true;
         });
       });
-
-      if(this.searchResults.length > 0){
-        return this.searchResults;
-      } else{
-        this.searchResults = this.$filter('filter')(this.devices, this.deviceSearch);
-      }
     });
   }
 
@@ -142,7 +130,7 @@ class AdminDevicesController {
   }
 }
 
-AdminDevicesController.$inject = ['$uibModal', '$filter', '$state', 'LocalStorageService', 'DeviceService', 'UserService', 'UserPagingService'];
+AdminDevicesController.$inject = ['$uibModal', '$filter', '$state', 'LocalStorageService', 'DeviceService', 'UserService', 'DevicePagingService'];
 
 export default {
   template: require('./devices.html'),
