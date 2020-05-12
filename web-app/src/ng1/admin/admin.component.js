@@ -1,16 +1,20 @@
 import _ from 'underscore';
 
 class AdminController {
-  constructor($state, $stateParams, $transitions, UserPagingService, DeviceService) {
+  constructor($state, $stateParams, $transitions, UserPagingService, DevicePagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$transitions = $transitions;
     this.UserPagingService = UserPagingService;
-    this.DeviceService = DeviceService;
+    this.DevicePagingService = DevicePagingService;
 
     this.userState = 'inactive';
     this.inactiveUsers = [];
     this.stateAndData = this.UserPagingService.constructDefault();
+
+    this.deviceState = 'unregistered';
+    this.unregisteredDevices = [];
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
 
     this.setState();
   }
@@ -26,11 +30,11 @@ class AdminController {
       this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
 
-    this.DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
-      this.unregisteredDevices = _.filter(devices, device => {
-        return !device.registered;
-      });
+    this.deviceStateAndData.delete('all');
+    this.deviceStateAndData.delete('registered');
+
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
 
     this.$transitions.onSuccess({}, () => {
@@ -53,17 +57,19 @@ class AdminController {
   }
 
   deviceRegistered($event) {
-    this.unregisteredDevices = _.filter(this.unregisteredDevices, unregisteredDevice => {
-      return unregisteredDevice.id !== $event.device.id;
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
   }
 
   deviceUnregistered($event) {
-    this.unregisteredDevices.push($event.device);
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+    });
   }
 }
 
-AdminController.$inject = ['$state', '$stateParams', '$transitions', 'UserPagingService', 'DeviceService'];
+AdminController.$inject = ['$state', '$stateParams', '$transitions', 'UserPagingService', 'DevicePagingService'];
 
 export default {
   template: require('./admin.html'),
