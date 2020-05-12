@@ -2,32 +2,33 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDashboardController {
-  constructor($state, $filter, UserService, DeviceService, LoginService, Team, Event, Layer, UserPagingService) {
+  constructor($state, $filter, UserService, DevicePagingService, LoginService, Team, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
     this._UserService = UserService;
-    this._DeviceService = DeviceService;
+    this._DevicePagingService = DevicePagingService;
     this._LoginService = LoginService;
     this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
-    this.userPagingService = UserPagingService;
+    this.UserPagingService = UserPagingService;
 
     this.userSearch = '';
     this.userState = 'inactive';
     this.inactiveUsers = [];
     this.isSearching = false;
-    this.stateAndData = this.userPagingService.constructDefault();
+    this.stateAndData = this.UserPagingService.constructDefault();
     this.loginSearchResults = [];
 
-    // For some reason angular is not calling into filter function with correct context
-    this.filterDevices = this._filterDevices.bind(this);
+    this.deviceStateAndData = this._DevicePagingService.constructDefault();
+    this.deviceState = 'unregistered';
+    this.unregisteredDevices = [];
   }
 
   $onInit() {
     this.filter = {};
     this.user = null;
-    this.device = {};
+    this.device = null;
     this.login = {
       startDateOpened: false,
       endDateOpened: false
@@ -37,15 +38,8 @@ class AdminDashboardController {
     this.showPrevious = false;
     this.showNext = true;
 
-    this.devicesPerPage = 10;
-    this.devicesPage = 0;
-    this.unregisteredDevices = [];
-
-    this._DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
-      this.unregisteredDevices = _.filter(devices, device => {
-        return !device.registered;
-      });
+    this._DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this._DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
 
     this._Team.query(teams => {
@@ -67,48 +61,59 @@ class AdminDashboardController {
       }
     });
 
-    this.userPagingService.refresh(this.stateAndData).then(() => {
-      this.inactiveUsers = this.userPagingService.users(this.stateAndData[this.userState]);
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
   }
 
   count() {
-    return this.userPagingService.count(this.stateAndData[this.userState]);
+    return this.UserPagingService.count(this.stateAndData[this.userState]);
   }
 
   hasNext() {
-    return this.userPagingService.hasNext(this.stateAndData[this.userState]);
+    return this.UserPagingService.hasNext(this.stateAndData[this.userState]);
   }
 
   next() {
-    this.userPagingService.next(this.stateAndData[this.userState]).then(users => {
+    this.UserPagingService.next(this.stateAndData[this.userState]).then(users => {
       this.inactiveUsers = users;
     });
   }
 
   hasPrevious() {
-    return this.userPagingService.hasPrevious(this.stateAndData[this.userState]);
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.userState]);
   }
 
   previous() {
-    this.userPagingService.previous(this.stateAndData[this.userState]).then(users => {
+    this.UserPagingService.previous(this.stateAndData[this.userState]).then(users => {
       this.inactiveUsers = users;
     });
   }
 
   search() {
-    this.userPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
+    this.UserPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
       this.inactiveUsers = users;
     });
   }
 
-  searchLogins(searchString) {
+  searchLoginsAgainstUsers(searchString) {
     this.isSearching = true;
 
-    return this.userPagingService.search(this.stateAndData['all'], searchString).then(users => {
+    return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
       this.isSearching = false;
-  
+
+      return this.loginSearchResults;
+    });
+  }
+
+  searchLoginsAgainstDevices(searchString) {
+    this.isSearching = true;
+
+    return this._DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
+      this.loginSearchResults = devices;
+      this.isSearching = false;
+
       return this.loginSearchResults;
     });
   }
@@ -150,9 +155,9 @@ class AdminDashboardController {
 
     user.active = true;
 
-    this._UserService.updateUser(user.id, user, data => {
-      this.userPagingService.refresh(this.stateAndData).then(() => {
-        this.inactiveUsers = this.userPagingService.users(this.stateAndData[this.userState]);
+    this._UserService.updateUser(user.id, user, () => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
       });
       this.onUserActivated({
         $event: {
@@ -176,11 +181,6 @@ class AdminDashboardController {
     });
   }
 
-  _filterDevices(device) {
-    var filteredDevices = this._$filter('filter')([device], this.deviceSearch);
-    return filteredDevices && filteredDevices.length;
-  }
-
   pageLogin(url) {
     this._LoginService.query({ url: url, filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
 
@@ -194,7 +194,7 @@ class AdminDashboardController {
 
   filterLogins(item, model, label, event) {
     this.filter.user = this.user;
-    this.filter.device = this.device.selected;
+    this.filter.device = this.device;
     this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();
@@ -230,7 +230,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
+AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DevicePagingService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),
