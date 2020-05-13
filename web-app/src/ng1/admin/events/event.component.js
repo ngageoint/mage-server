@@ -19,15 +19,12 @@ class AdminEventController {
   
     this.editTeams = false;
     this.eventMembers = [];
-    this.teamsPage = 0;
-    this.teamsPerPage = 10;
   
     this.editLayers = false;
     this.eventLayers = [];
     this.layersPage = 0;
     this.layersPerPage = 10;
   
-    this.teams = [];
     this.layers = [];
   
     this.nonMember = null;
@@ -44,7 +41,6 @@ class AdminEventController {
 
   $onInit() {
     this.$q.all({teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
-      this.teams = result.teams;
       let teamsById = _.indexBy(result.teams, 'id');
   
       this.layers = result.layers;
@@ -66,7 +62,7 @@ class AdminEventController {
       });
       this.teamsInEvent = _.map(teamIdsInEvent, teamId => { return teamsById[teamId]; });
 
-      this.teamsNotInEvent = _.filter(this.teams, team => {
+      this.teamsNotInEvent = _.filter(result.teams, team => {
         return this.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
       });
   
@@ -174,34 +170,54 @@ class AdminEventController {
   addTeam(team) {
     this.nonMember = null;
     this.event.teamIds.push(team.id);
-    this.eventMembers.push(team);
+    this.teamsInEvent.push(team);
+    //TODO
+    this.teamsNotInEvent;
 
     this.Event.addTeam({id: this.event.id}, team);
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
+        return this.normalize(item); 
+      });
+    });
   }
 
   removeTeam(team) {
     this.event.teamIds = _.reject(this.event.teamIds, teamId => {return teamId === team.id; });
-    this.eventMembers = _.reject(this.eventMembers, item => { return item.id === team.id; });
+    this.teamsNotInEvent.push(team);
+    //TODO
+    this.teamsInEvent;
 
     this.Event.removeTeam({id: this.event.id, teamId: team.id});
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
+        return this.normalize(item); 
+      });
+    });
   }
 
   addUser(user) {
     this.nonMember = null;
-    this.eventMembers.push(user);
-
     this.eventTeam.userIds.push(user.id);
     this.eventTeam.$save(() => {
       this.event.$get({populate: false});
     });
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
+        return this.normalize(item); 
+      });
+    });
   }
 
   removeUser(user) {
-    this.eventMembers = _.reject(this.eventMembers, item => { return item.id === user.id; });
-
     this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return id === u.id; });
     this.eventTeam.$save(() => {
       this.event.$get({populate: false});
+    });
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
+        return this.normalize(item); 
+      });
     });
   }
 
