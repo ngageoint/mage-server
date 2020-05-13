@@ -80,6 +80,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
       options: {
         selected: true,
         cluster: true,
+        showAccuracy: true,
         style: function() {
           return {};
         },

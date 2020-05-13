@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Added observation location accuracy.
 * Added support in configuration/environment for MongoDB replica sets.
 
 ##### Bug Fixes

@@ -19,16 +19,23 @@
     <div class="user-view-name-row mdc-typography--headline4">
       {{user.displayName}}
     </div>
-    <div class="user-view-divider-row mdc-list-divider">
-    </div>
+
+    <div class="user-view-divider-row mdc-list-divider"></div>
+
     <a class="user-view-row" href="javascript:void()" ng-click="onUserLocationClick(user)">
       <div class="user-view-icon user-view-location-icon">
         <i class="material-icons">my_location</i>
       </div>
       <div class="user-view-row-text" >
-        {{user.location.geometry | geometry:5}}
+        <span>{{user.location.geometry | geometry:5}}</span>
       </div>
+      <span class="user-view-location-accuracy">
+        <span class=" location-accuracy--provider">{{user.location.properties.provider}} </span>
+        <span>&#177;</span>
+        <span> {{user.location.properties.accuracy}}m</span>
+      </span>
     </a>
+
     <a class="user-view-row" ng-href="tel:{{user.phones[0].number}}" ng-if="user.phones.length">
       <div class="user-view-icon user-view-phone-icon">
         <i class="material-icons">phone</i>

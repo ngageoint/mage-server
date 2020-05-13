@@ -1,8 +1,10 @@
 var L = require('leaflet');
 
-L.LocationMarker = L.Marker.extend({
+L.LocationMarker = L.Layer.extend({
   initialize: function (latlng, options) {
-    L.Marker.prototype.initialize.call(this, latlng);
+    L.setOptions(this, options);
+
+    this._group = L.featureGroup();
 
     this._accuracyCircle = L.circle(latlng, 0, {
       clickable: false,
@@ -23,40 +25,37 @@ L.LocationMarker = L.Marker.extend({
       radius: 5,
       pane: options.pane
     });
-
-    var group = [this._accuracyCircle, this._locationMarker];
+    this._locationMarker.addEventParent(this);
+    this._group.addLayer(this._locationMarker)
 
     if (options.iconUrl) {
-      this._iconMarker = L.marker(latlng, {
+      this._iconMarker = L.fixedWidthMarker(latlng, {
         pane: options.pane,
-        clickable: true,
-        icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
+        iconUrl: options.iconUrl,
+        iconWidth: 42
       });
 
-      L.DomEvent.on(this._locationMarker, 'click', function() {
-        this._iconMarker.openPopup();
-      }, this);
-
-      group.push(this._iconMarker);
+      this._iconMarker.addEventParent(this);
+      this._group.addLayer(this._iconMarker);
     }
 
-    this._location = L.layerGroup(group);
+    this.on('popupopen', () => {
+      this._accuracyCircle.setRadius(this.options.accuracy);
+      this._group.addLayer(this._accuracyCircle);
+    });
+
+    this.on('popupclose', () => {
+      this._group.removeLayer(this._accuracyCircle);
+    });
   },
 
-  addTo: function (map) {
-    map.addLayer(this._location);
-    return this;
-  },
-
-  onAdd: function (map) {
+  onAdd: function(map) {
     this._map = map;
-    map.addLayer(this._location);
-
-    L.DomEvent.on(this._locationMarker, 'click', this._onMouseClick, this);
+    map.addLayer(this._group);
   },
 
-  onRemove: function (map) {
-    map.removeLayer(this._location);
+  onRemove: function(map) {
+    map.removeLayer(this._group);
   },
 
   getLatLng: function() {
@@ -66,13 +65,16 @@ L.LocationMarker = L.Marker.extend({
   setLatLng: function (latlng) {
     this._accuracyCircle.setLatLng(latlng);
     this._locationMarker.setLatLng(latlng);
-    if (this._iconMarker) this._iconMarker.setLatLng(latlng);
-
-    return L.Marker.prototype.setLatLng.call(this, latlng);
+    if (this._iconMarker) {
+      this._iconMarker.setLatLng(latlng);
+    }
   },
 
   setAccuracy: function (accuracy) {
-    this._accuracyCircle.setRadius(accuracy ? accuracy : 0);
+    if (accuracy != null) {
+      this._accuracyCircle.setRadius(accuracy);
+    }
+
     return this;
   },
 
@@ -83,30 +85,12 @@ L.LocationMarker = L.Marker.extend({
   setColor: function(color) {
     if (this._accuracyCircle.options.color === color) return this;
 
-    var style = {color: color, fillColor: color};
+    const style = {color: color, fillColor: color};
     this._accuracyCircle.setStyle(style);
     this._locationMarker.setStyle(style);
 
     return this;
-  },
-
-  _onMouseClick: function (e) {
-    var wasDragged = this.dragging && this.dragging.moved();
-
-    if (this.hasEventListeners(e.type) || wasDragged) {
-      L.DomEvent.stopPropagation(e);
-    }
-
-    if (wasDragged) { return; }
-
-    if ((!this.dragging || !this.dragging._enabled) && this._map.dragging && this._map.dragging.moved()) { return; }
-
-    this.fire(e.type, {
-      originalEvent: e,
-      latlng: this._latlng
-    });
   }
-
 });
 
 L.locationMarker = function (latlng, options) {

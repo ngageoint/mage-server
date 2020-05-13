@@ -3,28 +3,36 @@ var L = require('leaflet');
 L.FixedWidthIcon = L.DivIcon.extend({
   options: {
     className: 'mage-icon',
-    iconSize: null
+    iconSize: null,
+    iconWidth: 35
+  },
+
+  initialize: function(options) {
+    L.setOptions(this, options);
   },
 
   createIcon: function() {
-    var div = L.DivIcon.prototype.createIcon.call(this);
+    const div = L.DivIcon.prototype.createIcon.call(this);
+    div.style["margin-left"] = (this.options.iconWidth / -2) + 'px';
 
-    var self = this;
-    var s = document.createElement('img');
-    s.className = "mage-icon-image";
-    s.src = this.options.iconUrl;
+    const img = document.createElement('img');
+
+    img.className = "mage-icon-image";
+    img.style.width = this.options.iconWidth + 'px';
+
+    img.src = this.options.iconUrl;
     if (this.options.iconUrl) {
-      s.src = this.options.iconUrl;
+      img.src = this.options.iconUrl;
     } else {
-      s.src = 'images/marker-icon.png';
+      img.src = 'images/marker-icon.png';
     }
-    $(s).on('load', function() {
-      if (self.options.onIconLoad) self.options.onIconLoad(self);
+    $(img).on('load', () => {
+      if (this.options.onIconLoad) this.options.onIconLoad(this);
     });
 
-    div.appendChild(s);
+    div.appendChild(img);
     if (this.options.tooltip) {
-      var tooltip = L.DomUtil.create('div', 'marker-tooltip');
+      const tooltip = L.DomUtil.create('div', 'marker-tooltip');
       tooltip.innerHTML = '<b>Edit Observation</b><div>Drag this marker to re-position</div>';
       div.insertBefore(tooltip, div.firstChild);
     }
