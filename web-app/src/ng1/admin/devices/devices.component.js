@@ -60,7 +60,7 @@ class AdminDevicesController {
         this.UserPagingService.search(this.userStateAndData['all'], this.deviceSearch).then(users => {
           this.devices = _.filter(this.devices, device => {
             return _.some(users, user => {
-              if (device.userId === user.id) return true;
+              if (device.user.id === user.id) return true;
             });
           });
         });
