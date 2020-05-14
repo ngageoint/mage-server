@@ -1,8 +1,9 @@
 import _ from 'underscore';
 
 class AdminDevicesController {
-  constructor($uibModal, LocalStorageService, DeviceService, UserService, DevicePagingService, UserPagingService) {
+  constructor($uibModal, $state, LocalStorageService, DeviceService, UserService, DevicePagingService, UserPagingService) {
     this.$uibModal = $uibModal;
+    this.$state = $state;
     this.DeviceService = DeviceService;
     this.UserService = UserService;
     this.DevicePagingService = DevicePagingService;
@@ -150,7 +151,7 @@ class AdminDevicesController {
   }
 }
 
-AdminDevicesController.$inject = ['$uibModal', 'LocalStorageService', 'DeviceService', 'UserService', 'DevicePagingService', 'UserPagingService'];
+AdminDevicesController.$inject = ['$uibModal', '$state', 'LocalStorageService', 'DeviceService', 'UserService', 'DevicePagingService', 'UserPagingService'];
 
 export default {
   template: require('./devices.html'),

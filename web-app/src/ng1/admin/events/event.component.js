@@ -17,7 +17,6 @@ class AdminEventController {
 
     this.showArchivedForms = false;
   
-    this.editTeams = false;
     this.eventMembers = [];
   
     this.editLayers = false;
@@ -171,8 +170,7 @@ class AdminEventController {
     this.nonMember = null;
     this.event.teamIds.push(team.id);
     this.teamsInEvent.push(team);
-    //TODO
-    this.teamsNotInEvent;
+    this.teamsNotInEvent = _.reject(this.teamsNotInEvent, teamId => {return teamId === team.id; });
 
     this.Event.addTeam({id: this.event.id}, team);
     this.UserPagingService.refresh(this.stateAndData).then(() => {
@@ -185,8 +183,7 @@ class AdminEventController {
   removeTeam(team) {
     this.event.teamIds = _.reject(this.event.teamIds, teamId => {return teamId === team.id; });
     this.teamsNotInEvent.push(team);
-    //TODO
-    this.teamsInEvent;
+    this.teamsInEvent =_.reject(this.teamsInEvent, teamId => {return teamId === team.id; });
 
     this.Event.removeTeam({id: this.event.id, teamId: team.id});
     this.UserPagingService.refresh(this.stateAndData).then(() => {
@@ -210,7 +207,7 @@ class AdminEventController {
   }
 
   removeUser(user) {
-    this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return id === u.id; });
+    this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return user.id === u.id; });
     this.eventTeam.$save(() => {
       this.event.$get({populate: false});
     });
