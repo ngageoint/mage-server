@@ -28,6 +28,9 @@ class AdminDevicesController {
       this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
     });
 
+    delete this.userStateAndData['active'];
+    delete this.userStateAndData['inactive'];
+    delete this.userStateAndData['disabled'];
     this.UserPagingService.refresh(this.userStateAndData);
   }
 
