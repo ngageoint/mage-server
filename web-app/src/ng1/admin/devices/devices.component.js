@@ -103,6 +103,7 @@ class AdminDevicesController {
   reset() {
     this.filter = 'all';
     this.deviceSearch = '';
+    this.stateAndData = this.DevicePagingService.constructDefault();
     this.DevicePagingService.refresh(this.stateAndData).then(() => {
       this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
     });

@@ -65,6 +65,7 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
+    this.stateAndData = this.UserPagingService.constructDefault();
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
