@@ -20,9 +20,11 @@ class AdminDashboardController {
     this.stateAndData = this.UserPagingService.constructDefault();
     this.loginSearchResults = [];
 
+    this.isSearchingDevices = false;
     this.deviceStateAndData = this._DevicePagingService.constructDefault();
     this.deviceState = 'unregistered';
     this.unregisteredDevices = [];
+    this.loginDeviceSearchResults = [];
   }
 
   $onInit() {
@@ -138,13 +140,13 @@ class AdminDashboardController {
   }
 
   searchLoginsAgainstDevices(searchString) {
-    this.isSearching = true;
+    this.isSearchingDevices = true;
 
     return this._DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
-      this.loginSearchResults = devices;
-      this.isSearching = false;
+      this.loginDeviceSearchResults = devices;
+      this.isSearchingDevices = false;
 
-      return this.loginSearchResults;
+      return this.loginDeviceSearchResults;
     });
   }
 
