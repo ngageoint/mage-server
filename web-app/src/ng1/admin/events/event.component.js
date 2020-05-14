@@ -18,6 +18,7 @@ class AdminEventController {
     this.showArchivedForms = false;
   
     this.eventMembers = [];
+    this.teamsInEvent = [];
   
     this.editLayers = false;
     this.eventLayers = [];

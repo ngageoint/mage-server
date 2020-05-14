@@ -52,8 +52,8 @@ class AdminUserController {
   
       this.userTeams = _.chain(result.teams)
         .filter(team => {
-          return _.some(team.users, user => {
-            return this.user.id === user.id;
+          return _.some(team.userIds, id => {
+            return this.user.id === id;
           });
         })
         .value();
@@ -68,8 +68,8 @@ class AdminUserController {
       }
   
       teams = teams.reject(team => {
-        return _.some(team.users, user => {
-          return this.user.id === user.id;
+        return _.some(team.userIds, id => {
+          return this.user.id === id;
         });
       });
   
