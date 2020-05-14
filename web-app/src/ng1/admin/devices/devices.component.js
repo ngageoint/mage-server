@@ -57,7 +57,7 @@ class AdminDevicesController {
 
   search() {
     this.DevicePagingService.search(this.stateAndData[this.filter], this.deviceSearch).then(devices => {
-      if(devices.length == 0) {
+      if(devices.length == 0 && this.deviceSearch != '') {
         this.UserPagingService.search(this.userStateAndData['all'], this.deviceSearch).then(users => {
           this.devices = _.filter(this.devices, device => {
             return _.some(users, user => {
