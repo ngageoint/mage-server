@@ -33,7 +33,16 @@
 }
 
 .observation-form-card {
-  padding: 16px 16px 0 16px;
+  padding: 0 16px 16px 16px;
+}
+
+.observation-favorite {
+  margin-left: 8px;
+}
+
+.observation-favorite--text {
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
 }
 
 .media-card {
@@ -55,9 +64,32 @@
 }
 
 .mage-field-title {
-  color: rgba(0, 0, 0, 0.54)
+  color: rgba(0, 0, 0, 0.54);
 }
 
 .mage-field-textarea {
   white-space: pre-wrap;
+}
+
+.action-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.2);
+  width: 100%;
+}
+
+.location-accuracy {
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.0178571429em;
+  text-decoration: inherit;
+  text-transform: inherit;
+  opacity: .6;
+}
+
+.location-accuracy--provider {
+  text-transform: uppercase;
 }

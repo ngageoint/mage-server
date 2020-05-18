@@ -393,21 +393,13 @@ class LeafletController {
             });
           }
         }
-        if (layerInfo.options.showAccuracy) {
-          layer.on('popupopen', function() {
-            layer.setAccuracy(layer.feature.properties.accuracy);
-          });
-          layer.on('popupclose', function() {
-            layer.setAccuracy(null);
-          });
-        }
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: (feature, latlng) => {
         if (layerInfo.options.temporal) {
-          // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker class
           const temporalOptions = {
             pane: pane,
+            accuracy: feature.properties.accuracy,
             color: this.colorForFeature(feature, layerInfo.options.temporal)
           };
           if (feature.style && feature.style.iconUrl) {
@@ -416,13 +408,14 @@ class LeafletController {
           return L.locationMarker(latlng, temporalOptions);
         } else {
           const options = {
-            pane: pane
+            pane: pane,
+            accuracy: feature.properties.accuracy
           };
           if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl;
           }
           options.tooltip = editMode;
-          return L.fixedWidthMarker(latlng, options);
+          return L.observationMarker(latlng, options);
         }
       },
       style: function(feature) {

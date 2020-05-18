@@ -2,80 +2,37 @@ var L = require('leaflet');
 
 L.LocationMarker.include({
   openPopup: function () {
-    if (this._iconMarker) {
-      this._iconMarker.openPopup();
-    } else {
-      this._locationMarker.openPopup();
-    }
-
+    this._getMarker().openPopup()
     return this;
   },
 
   closePopup: function () {
-    if (this._iconMarker) {
-      this._iconMarker.closePopup();
-    } else {
-      this._locationMarker.closePopup();
-    }
-
+    this._getMarker().closePopup();
     return this;
   },
 
   togglePopup: function () {
-    if (this._iconMarker) {
-      this._iconMarker.togglePopup();
-    } else {
-      this._locationMarker.togglePopup();
-    }
-
+    this._getMarker().togglePopup();
     return this;
   },
 
   getPopup:function() {
-    if (this._iconMarker) {
-      return this._iconMarker._popup;
-    } else {
-      return this._locationMarker._popup;
-    }
+    return this._getMarker()._popup;
   },
 
-  bindPopup: function (content, options) {
-    options = options || {};
-    if (this._iconMarker) {
-      options.offset = [0, -33];
-      this._iconMarker.bindPopup(content, options);
-      this._popup = this._iconMarker._popup;
-
-      this._iconMarker.on({
-        popupclose: function(e) {
-          this.fire(e.type, e.popup);
-        },
-        popupopen: function(e) {
-          this.fire(e.type, e.popup);
-        }
-      }, this);
-
-    } else {
-      this._locationMarker.bindPopup(content, options);
-      this._popup = this._locationMarker._popup;
-
-      this._locationMarker.on({
-        popupclose: function(e) {
-          this.fire(e.type, e.popup);
-        },
-        popupopen: function(e) {
-          this.fire(e.type, e.popup);
-        }
-      }, this);
-    }
-
+  bindPopup: function (popup) {
+    this._getMarker().bindPopup(popup);
     return this;
   },
 
   unbindPopup: function () {
-    this._locationMarker.unbindPopup();
-    this._iconMarker.unbindPopup();
-
+    this._getMarker().unbindPopup(popup);
     return this;
+  },
+
+  _getMarker: function() {
+    return this._iconMarker ?
+      this._iconMarker :
+      this._locationMarker;
   }
 });

@@ -90,13 +90,28 @@
       <button class="mdc-button mdc-button--raised" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Flag As Important'}}</button>
       </div>
     </div>
+
     <div class="mdc-card__actions">
       <div class="mdc-card__action-buttons">
-        <button class="mdc-button  mdc-ripple-upgraded" ng-click="onObservationLocationClick()">
+        <button class="mdc-button mdc-ripple-upgraded" ng-click="onObservationLocationClick()">
           <span class="mdc-button__ripple"></span>
           <i class="material-icons mdc-button__icon">my_location</i>
           <span class="mdc-button__label">{{observation.geometry | geometry:5}}</span>
         </button>
+        <span class="location-accuracy" ng-if="observation.properties.provider && observation.properties.provider !== 'manual'">
+          <span class="location-accuracy--provider">{{observation.properties.provider}} </span>
+          <span>&#177;</span>
+          <span> {{observation.properties.accuracy}}m</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="action-divider"></div>
+
+    <div class="mdc-card__actions">
+      <div ng-if="observation.favoriteUserIds.length" class="observation-favorite">
+        <span class="mdc-typography--body2">{{observation.favoriteUserIds.length}}</span>
+        <span class="mdc-typography--body2 observation-favorite--text">{{observation.favoriteUserIds.length === 1 ? "favorite": "favorites"}}</span>
       </div>
       <div class="mdc-card__action-icons">
         <div ng-if="canEditImportant"  class="mage-tooltip">
