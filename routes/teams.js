@@ -111,7 +111,18 @@ module.exports = function(app, security) {
     '/api/teams/count',
     determineReadAccess,
     function(req, res, next) {
-      Team.count({access: req.access}, function(err, count) {
+      var filter = {};
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
+            continue;
+          }
+          filter[key] = value;
+        }
+      }
+
+      Team.count({access: req.access, filter: filter }, function(err, count) {
         if (err) return next(err);
 
         res.json({count: count});
