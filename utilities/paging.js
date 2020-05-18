@@ -20,8 +20,17 @@ function pageUsers(countQuery, query, options, callback) {
     callback(err, null, null);
   });
 }
+
 function pageDevices(countQuery, query, options) {
   return page(countQuery, query, options, 'devices');
+}
+
+function pageTeams(countQuery, query, options, callback) {
+  page(countQuery, query, options, 'teams').then(pageInfo => {
+    callback(null, pageInfo.users, pageInfo);
+  }).catch(err => {
+    callback(err, null, null);
+  });
 }
 
 function page(countQuery, query, options, dataKey) {
@@ -65,5 +74,6 @@ function page(countQuery, query, options, dataKey) {
 
 module.exports = {
   pageUsers,
-  pageDevices
+  pageDevices,
+  pageTeams
 };

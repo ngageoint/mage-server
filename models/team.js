@@ -188,6 +188,8 @@ exports.getTeams = function(options, callback) {
     options = {};
   }
 
+  var filter = options.filter || {};
+
   var conditions = {};
   if (options.teamIds) {
     conditions._id = {
@@ -222,9 +224,31 @@ exports.getTeams = function(options, callback) {
     query = query.populate('userIds');
   }
 
-  query.exec(function (err, teams) {
-    callback(err, teams);
-  });
+  var orCondition = [];
+  if (filter.or) {
+    let json = JSON.parse(filter.or);
+
+    for (let [key, value] of Object.entries(json)) {
+      let entry = {};
+      let regex = { "$regex": new RegExp(value), "$options": "i" };
+      entry[key] = regex;
+      orCondition.push(entry);
+    }
+    query.or(orCondition);
+  }
+
+  var isPaging = options.limit != null && options.limit > 0;
+  if (isPaging) {
+    var countQuery = Team.find(conditions);
+    if(filter.or) {
+      countQuery.or(orCondition);
+    }
+    Paging.pageTeams(countQuery, query, options, callback);
+  } else {
+    Team.find(conditions).populate('userIds').exec(function (err, teams) {
+      callback(err, teams);
+    });
+  }
 };
 
 exports.createTeam = function(team, user, callback) {
