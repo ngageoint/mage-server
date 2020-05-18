@@ -2,13 +2,12 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDashboardController {
-  constructor($state, $filter, UserService, DevicePagingService, LoginService, Team, Event, Layer, UserPagingService) {
+  constructor($state, $filter, UserService, DevicePagingService, LoginService, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
     this._UserService = UserService;
     this._DevicePagingService = DevicePagingService;
     this._LoginService = LoginService;
-    this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
     this.UserPagingService = UserPagingService;
@@ -42,10 +41,6 @@ class AdminDashboardController {
 
     this._DevicePagingService.refresh(this.deviceStateAndData).then(() => {
       this.unregisteredDevices = this._DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
-    });
-
-    this._Team.query(teams => {
-      this.teamCount = _.reject(teams, team => { return team.teamEventId; }).length;
     });
 
     this._Event.count(data => {
@@ -264,7 +259,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DevicePagingService', 'LoginService', 'Team', 'Event', 'Layer', 'UserPagingService'];
+AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DevicePagingService', 'LoginService', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),
