@@ -246,7 +246,7 @@ exports.getTeams = function(options, callback) {
     }
     Paging.pageTeams(countQuery, query, options, callback);
   } else {
-    Team.find(conditions).populate('userIds').exec(function (err, teams) {
+    query.exec(function (err, teams) {
       callback(err, teams);
     });
   }
