@@ -42,6 +42,8 @@ class AdminUserController {
     this.userTeamStateAndData = this.TeamPagingService.constructDefault();
     this.userTeamState = 'all';
     this.userTeamSearch = '';
+
+    this.nonTeamStateAndData = this.TeamPagingService.constructDefault();
   }
 
   $onInit() {
@@ -51,6 +53,12 @@ class AdminUserController {
 
       this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
         this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
+      });
+
+      this.nonTeamStateAndData[this.userTeamState].teamFilter.nin = { userIds: [user.id]};
+
+      this.TeamPagingService.refresh(this.nonTeamStateAndData).then(() => {
+        this.nonTeams = this.TeamPagingService.teams(this.nonTeamStateAndData[this.userTeamState]);
       });
     });
 
