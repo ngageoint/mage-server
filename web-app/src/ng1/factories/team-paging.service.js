@@ -23,7 +23,7 @@ function TeamPagingService(Team, $q) {
         var stateAndData = new Map();
         stateAndData['all'] = {
             countFilter: {},
-            teamFilter: { limit: itemsPerPage, sort: { name: 1, _id: 1 } },
+            teamFilter: { populate: false, limit: itemsPerPage, sort: { name: 1, _id: 1 } },
             searchFilter: '',
             teamCount: 0,
             pageInfo: {}

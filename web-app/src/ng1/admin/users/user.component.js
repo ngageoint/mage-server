@@ -2,7 +2,7 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminUserController {
-  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DevicePagingService, Team) {
+  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DevicePagingService, Team, TeamPagingService) {
     this.$q = $q;
     this.$state = $state;
     this.$uibModal = $uibModal;
@@ -12,11 +12,10 @@ class AdminUserController {
     this.LoginService = LoginService;
     this.DevicePagingService = DevicePagingService;
     this.Team = Team;
+    this.TeamPagingService = TeamPagingService;
 
     this.userTeams = [];
     this.nonTeams = [];
-    this.teamsPage = 0;
-    this.teamsPerPage = 10;
 
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
     this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
@@ -38,18 +37,22 @@ class AdminUserController {
     this.loginSearchResults = [];
     this.isSearchingDevices = false;
     this.device = null;
+
+    this.userTeamStateAndData = this.TeamPagingService.constructDefault();
+    this.userTeamState = 'all';
+    this.userTeamSearch = '';
   }
 
   $onInit() {
     this.$q.all({
       user: this.UserService.getUser(this.$stateParams.userId),
-      teams: this.Team.query({populate: false}).$promise}
+      keys: this.TeamPagingService.refresh(this.userTeamStateAndData)}
     ).then(result => {
       this.user = result.user;  
-      this.teams = result.teams;
+      let teams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
       this.team = {};
   
-      this.userTeams = _.chain(result.teams)
+      this.userTeams = _.chain(teams)
         .filter(team => {
           return _.some(team.userIds, id => {
             return this.user.id === id;
@@ -57,7 +60,7 @@ class AdminUserController {
         })
         .value();
   
-      var teams = _.chain(this.teams);
+      teams = _.chain(teams);
       if (!_.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM')) {
         // filter teams based on acl
         teams = teams.filter(team => {
@@ -87,6 +90,32 @@ class AdminUserController {
 
     this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
       this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+    });
+  }
+
+  hasNextUserTeam() {
+    return this.TeamPagingService.hasNext(this.userTeamStateAndData[this.userTeamState]);
+  }
+
+  nextUserTeam() {
+    this.TeamPagingService.next(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+      this.userTeams = teams;
+    });
+  }
+
+  hasPreviousUserTeam() {
+    return this.TeamPagingService.hasPrevious(this.userTeamStateAndData[this.userTeamState]);
+  }
+
+  previousUserTeam() {
+    this.TeamPagingService.previous(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+      this.userTeams = teams;
+    });
+  }
+
+  searchUserTeam() {
+    this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch).then(teams => {
+      this.userTeams = teams;
     });
   }
 
@@ -234,7 +263,7 @@ class AdminUserController {
   }
 }
 
-AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DevicePagingService', 'Team'];
+AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DevicePagingService', 'Team', 'TeamPagingService'];
 
 export default {
   template: require('./user.html'),

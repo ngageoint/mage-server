@@ -178,7 +178,8 @@
 
                     <form class="navbar-form navbar-left">
                       <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search" ng-model="teamSearch">
+                        <input type="text" class="form-control" placeholder="team name, description" ng-model="$ctrl.userTeamSearch"
+            ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.searchUserTeam()">
                       </div>
                     </form>
                     <div class="navbar-form navbar-right right-gap-s">
@@ -193,7 +194,7 @@
               <div class="col-sm-12">
                 <div class="admin-table">
                   <div class="well-item"
-                      ng-repeat="team in ($ctrl.filteredTeams = ($ctrl.userTeams | filter:filterTeams)) | orderBy:'name' | offset: teamsPage*teamsPerPage | limitTo:teamsPerPage" >
+                      ng-repeat="team in $ctrl.userTeams" >
                     <div class="row pointer" ng-click="$ctrl.gotoTeam(team)">
                       <div class="col-md-12">
                         <div class="right-gap pull-left">
@@ -218,11 +219,11 @@
             <div class="row">
               <div class="col-md-12">
                 <ul class="pager pull-right">
-                  <li ng-class="{'disabled': $ctrl.teamsPage == 0}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.teamsPage == 0 || ($ctrl.teamsPage=$ctrl.teamsPage-1)">&larr; Previous</a>
+                  <li ng-class="{'disabled': $ctrl.hasPreviousUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.previousUserTeam()">&larr; Previous</a>
                   </li>
-                  <li ng-class="{'disabled': $ctrl.teamsPage >= ($ctrl.filteredTeams.length/$ctrl.teamsPerPage) - 1}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.teamsPage >= ($ctrl.filteredTeams.length/$ctrl.teamsPerPage) - 1 || ($ctrl.teamsPage=$ctrl.teamsPage+1)">Next&rarr;</a>
+                  <li ng-class="{'disabled': $ctrl.hasNextUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.nextUserTeam()">Next&rarr;</a>
                   </li>
                 </ul>
               </div>
