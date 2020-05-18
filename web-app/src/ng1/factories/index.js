@@ -35,4 +35,5 @@ angular.module('mage')
   .factory('Settings', require('./settings.resource'))
   .factory('PollingService', require('./polling.service'))
   .factory('UserPagingService', require('./user-paging.service'))
-  .factory('DevicePagingService', require('./device-paging.service'));
+  .factory('DevicePagingService', require('./device-paging.service'))
+  .factory('TeamPagingService', require('./team-paging.service'));

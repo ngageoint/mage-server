@@ -1,12 +1,13 @@
 import _ from 'underscore';
 
 class AdminTeamsController {
-  constructor($state, $uibModal, $filter, Team, UserService) {
+  constructor($state, $uibModal, $filter, Team, UserService, TeamPagingService) {
     this.$state = $state;
     this.$uibModal = $uibModal;
     this.$filter = $filter;
     this.Team = Team;
     this.UserService = UserService;
+    this.TeamPagingService = TeamPagingService;
 
     this.teamSearch = '';
     this.teams = [];
@@ -84,7 +85,7 @@ class AdminTeamsController {
   }
 }
 
-AdminTeamsController.$inject = ['$state', '$uibModal', '$filter', 'Team', 'UserService'];
+AdminTeamsController.$inject = ['$state', '$uibModal', '$filter', 'Team', 'UserService', 'TeamPagingService'];
 
 export default {
   template: require('./teams.html'),

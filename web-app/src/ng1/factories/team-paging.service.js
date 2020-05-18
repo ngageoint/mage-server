@@ -146,4 +146,3 @@ function TeamPagingService(Team, $q) {
         return promise;
     }
 }
-}
