@@ -5,6 +5,7 @@ TeamPagingService.$inject = ['Team', '$q'];
 function TeamPagingService(Team, $q) {
 
     var service = {
+        constructDefault,
         refresh,
         count,
         hasNext,
@@ -16,4 +17,133 @@ function TeamPagingService(Team, $q) {
     };
 
     return service;
+
+    function constructDefault() {
+        var itemsPerPage = 10;
+        var stateAndData = new Map();
+        stateAndData['all'] = {
+            countFilter: {},
+            teamFilter: { limit: itemsPerPage, sort: { name: 1, _id: 1 } },
+            searchFilter: '',
+            teamCount: 0,
+            pageInfo: {}
+        };
+
+        return stateAndData;
+    }
+
+    function refresh(stateAndData) {
+
+        var promises = [];
+
+        for (const [key, value] of Object.entries(stateAndData)) {
+
+            var promise = $q.all({ count: Team.count(value.countFilter), pageInfo: Team.query(value.teamFilter) }).then(result => {
+                stateAndData[key].teamCount = result.count.data.count;
+                stateAndData[key].pageInfo = result.pageInfo;
+                $q.resolve(key);
+            });
+
+            promises.push(promise);
+        }
+
+        return $q.all(promises);
+    }
+
+    function count(data) {
+        return data.teamCount;
+    }
+
+    function hasNext(data) {
+        var status = false;
+
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.next != null &&
+                data.pageInfo.links.next !== "";
+        }
+
+        return status;
+    }
+
+    function next(data) {
+        return move(data.pageInfo.links.next, data);
+    }
+
+    function hasPrevious(data) {
+        var status = false;
+
+        if (data.pageInfo && data.pageInfo.links) {
+            status = data.pageInfo.links.prev != null &&
+                data.pageInfo.links.prev !== "";
+        }
+
+        return status;
+    }
+
+    function previous(data) {
+        return move(data.pageInfo.links.prev, data);
+    }
+
+    function move(start, data) {
+        var filter = JSON.parse(JSON.stringify(data.dataFilter));
+        filter.start = start;
+        return Team.query(filter).then(pageInfo => {
+            data.pageInfo = pageInfo;
+            return $q.resolve(pageInfo.teams);
+        });
+    }
+
+    function teams(data) {
+        var teams = [];
+
+        if (data.pageInfo && data.pageInfo.teams) {
+            teams = data.pageInfo.teams;
+        }
+
+        return teams;
+    }
+
+    function search(data, teamSearch) {
+
+        if (data.pageInfo == null || data.pageInfo.teams == null) {
+            return $q.resolve([]);
+        }
+
+        const previousSearch = data.searchFilter;
+
+        var promise = null;
+
+        if (previousSearch == '' && teamSearch == '') {
+            //Not performing a seach
+            promise = $q.resolve(data.pageInfo.teams);
+        } else if (previousSearch != '' && teamSearch == '') {
+            //Clearing out the search
+            data.searchFilter = '';
+            delete data.teamFilter['or'];
+
+            promise = Team.query(data.teamFilter).then(pageInfo => {
+                data.pageInfo = pageInfo;
+                return $q.resolve(data.pageInfo.teams);
+            });
+        } else if (previousSearch == teamSearch) {
+            //Search is being performed, no need to keep searching the same info over and over
+            promise = $q.resolve(data.pageInfo.teams);
+        } else {
+            //Perform the server side searching
+            data.searchFilter = teamSearch;
+
+            var filter = data.teamFilter;
+            filter.or = {
+                name: '.*' + teamSearch + '.*',
+                description: '.*' + teamSearch + '.*'
+            };
+            promise = Team.query(filter).then(pageInfo => {
+                data.pageInfo = pageInfo;
+                return $q.resolve(data.pageInfo.teams);
+            });
+        }
+
+        return promise;
+    }
+}
 }
