@@ -30,9 +30,43 @@ class AdminTeamsController {
     return filteredTeams && filteredTeams.length;
   }
 
+  count(state) {
+    return this.stateAndData[state].teamCount;
+  }
+
+  hasNext() {
+    return this.TeamPagingService.hasNext(this.stateAndData[this.filter]);
+  }
+
+  next() {
+    this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
+  }
+
+  hasPrevious() {
+    return this.TeamPagingService.hasPrevious(this.stateAndData[this.filter]);
+  }
+
+  previous() {
+    this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
+  }
+
+  search() {
+    this.TeamPagingService.search(this.stateAndData[this.filter], this.teamSearch).then(teams => {
+      this.teams = teams;
+    });
+  }
+
   reset() {
-    this.page = 0;
     this.teamSearch = '';
+    this.stateAndData = this.TeamPagingService.constructDefault();
+    this.TeamPagingService.refresh(this.stateAndData).then(() => {
+      let allTeams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
+      this.teams = _.reject(allTeams, team => { return team.teamEventId; });
+    });
   }
 
   newTeam() {

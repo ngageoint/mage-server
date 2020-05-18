@@ -122,7 +122,7 @@ function TeamPagingService(Team, $q) {
             delete data.teamFilter['or'];
 
             promise = Team.query(data.teamFilter).then(pageInfo => {
-                data.pageInfo = pageInfo;
+                data.pageInfo = pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);
             });
         } else if (previousSearch == teamSearch) {
@@ -138,7 +138,7 @@ function TeamPagingService(Team, $q) {
                 description: '.*' + teamSearch + '.*'
             };
             promise = Team.query(filter).then(pageInfo => {
-                data.pageInfo = pageInfo;
+                data.pageInfo = pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);
             });
         }
