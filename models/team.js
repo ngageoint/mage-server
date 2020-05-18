@@ -1,7 +1,8 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
-  , userTransformer = require('../transformers/user');
+  , userTransformer = require('../transformers/user')
+  , Paging = require('../utilities/paging');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;

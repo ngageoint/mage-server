@@ -9,18 +9,19 @@ class AdminTeamsController {
     this.UserService = UserService;
     this.TeamPagingService = TeamPagingService;
 
+    this.filter = 'all';
     this.teamSearch = '';
     this.teams = [];
-    this.page = 0;
-    this.itemsPerPage = 10;
+    this.stateAndData = this.TeamPagingService.constructDefault();
 
     // For some reason angular is not calling into filter function with correct context
     this.filterTeams = this._filterTeams.bind(this);
   }
 
   $onInit() {
-    this.Team.query(teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+    this.TeamPagingService.refresh(this.stateAndData).then(() => {
+      let allTeams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
+      this.teams = _.reject(allTeams, team => { return team.teamEventId; });
     });
   }
 

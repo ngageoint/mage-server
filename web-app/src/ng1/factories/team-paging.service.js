@@ -38,9 +38,9 @@ function TeamPagingService(Team, $q) {
 
         for (const [key, value] of Object.entries(stateAndData)) {
 
-            var promise = $q.all({ count: Team.count(value.countFilter), pageInfo: Team.query(value.teamFilter) }).then(result => {
-                stateAndData[key].teamCount = result.count.data.count;
-                stateAndData[key].pageInfo = result.pageInfo;
+            var promise = $q.all({ count: Team.count(value.countFilter).$promise, pageInfo: Team.query(value.teamFilter).$promise }).then(result => {
+                stateAndData[key].teamCount = result.count.count;
+                stateAndData[key].pageInfo = result.pageInfo[0];
                 $q.resolve(key);
             });
 

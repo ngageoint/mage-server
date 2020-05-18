@@ -27,7 +27,7 @@ function pageDevices(countQuery, query, options) {
 
 function pageTeams(countQuery, query, options, callback) {
   page(countQuery, query, options, 'teams').then(pageInfo => {
-    callback(null, pageInfo.users, pageInfo);
+    callback(null, pageInfo.teams, pageInfo);
   }).catch(err => {
     callback(err, null, null);
   });

@@ -85,7 +85,8 @@ module.exports = function(app, security) {
         sort = req.query.sort;
       }
 
-      Team.getTeams({access: req.access, populate: req.query.populate, filter: filter, limit: limit, start: start, sort: sort}, function (err, teams, pageInfo) {
+      Team.getTeams({access: req.access, populate: req.query.populate, filter: filter, limit: limit, start: start, sort: sort}, 
+        function (err, teams, pageInfo) {
         if (err) return next(err);
 
         let data = null;
@@ -96,6 +97,7 @@ module.exports = function(app, security) {
           data.teams = teams.map(function(team) {
             return team.toObject({access: req.access, path: req.getRoot()});
           });
+          data = [data];
         } else {
           data = teams.map(function(team) {
             return team.toObject({access: req.access, path: req.getRoot()});
