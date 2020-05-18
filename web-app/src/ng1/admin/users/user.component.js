@@ -25,7 +25,6 @@ class AdminUserController {
       user: {id: $stateParams.userId}
     };
 
-    this.device = {};
     this.login = {
       startDateOpened: false,
       endDateOpened: false
@@ -34,10 +33,10 @@ class AdminUserController {
     this.showPrevious = false;
     this.showNext = true;
 
-    this.stateAndData = this.DevicePagingService.constructDefault();
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.deviceState = 'all';
     this.loginSearchResults = [];
-    this.isSearching = false;
+    this.isSearchingDevices = false;
     this.device = null;
   }
 
@@ -83,11 +82,11 @@ class AdminUserController {
       }
     });
 
-    delete this.stateAndData['registered'];
-    delete this.stateAndData['unregistered'];
+    delete this.deviceStateAndData['registered'];
+    delete this.deviceStateAndData['unregistered'];
 
-    this.DevicePagingService.refresh(this.stateAndData).then(() => {
-      this.devices = this.DevicePagingService.devices(this.stateAndData[this.deviceState]);
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
   }
 
@@ -188,11 +187,11 @@ class AdminUserController {
   }
 
   searchLogins(searchString) {
-    this.isSearching = true;
+    this.isSearchingDevices = true;
 
-    return this.DevicePagingService.search(this.stateAndData['all'], searchString).then(devices => {
+    return this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], searchString).then(devices => {
       this.loginSearchResults = devices;
-      this.isSearching = false;
+      this.isSearchingDevices = false;
   
       return this.loginSearchResults;
     });
