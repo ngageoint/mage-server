@@ -16,6 +16,7 @@ class AdminUserController {
 
     this.userTeams = [];
     this.nonTeams = [];
+    this.team = {};
 
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
     this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
@@ -44,45 +45,13 @@ class AdminUserController {
   }
 
   $onInit() {
-    this.$q.all({
-      user: this.UserService.getUser(this.$stateParams.userId),
-      keys: this.TeamPagingService.refresh(this.userTeamStateAndData)}
-    ).then(result => {
-      this.user = result.user;  
-      let teams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
-      this.team = {};
-  
-      this.userTeams = _.chain(teams)
-        .filter(team => {
-          return _.some(team.userIds, id => {
-            return this.user.id === id;
-          });
-        })
-        .value();
-  
-      teams = _.chain(teams);
-      if (!_.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM')) {
-        // filter teams based on acl
-        teams = teams.filter(team => {
-          var permissions = team.acl[this.UserService.myself.id] ? team.acl[this.UserService.myself.id].permissions : [];
-          return _.contains(permissions, 'update');
-        });
-      }
-  
-      teams = teams.reject(team => {
-        return _.some(team.userIds, id => {
-          return this.user.id === id;
-        });
-      });
-  
-      this.nonTeams = teams.value();
-    });
+    this.UserService.getUser(this.$stateParams.userId).then(user => {
+      this.user = user;  
+      this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
 
-    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
-      this.loginPage = loginPage;
-      if (loginPage.logins.length) {
-        this.firstLogin = loginPage.logins[0];
-      }
+      this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
+        this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
+      });
     });
 
     delete this.deviceStateAndData['registered'];

@@ -191,7 +191,7 @@ exports.getTeams = function(options, callback) {
 
   var filter = options.filter || {};
 
-  var conditions = {};
+  var conditions = createQueryConditions(filter);
   if (options.teamIds) {
     conditions._id = {
       $in: options.teamIds
@@ -250,6 +250,34 @@ exports.getTeams = function(options, callback) {
       callback(err, teams);
     });
   }
+};
+
+function createQueryConditions(filter) {
+  var conditions = {};
+
+  if (filter.in || filter.nin) {
+    let json = {};
+    if (filter.in) {
+      json = JSON.parse(filter.in);
+    } else {
+      json = JSON.parse(filter.nin);
+    }
+
+    let userIds = json['userIds'] ? json['userIds'] : [];
+    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+
+    if (filter.in) {
+      conditions.userIds = {
+        $in: objectIds
+      };
+    } else {
+      conditions.userIds = {
+        $nin: objectIds
+      };
+    }
+  }
+
+  return conditions;
 };
 
 exports.createTeam = function(team, user, callback) {
