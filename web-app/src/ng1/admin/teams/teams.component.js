@@ -13,9 +13,6 @@ class AdminTeamsController {
     this.teamSearch = '';
     this.teams = [];
     this.stateAndData = this.TeamPagingService.constructDefault();
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterTeams = this._filterTeams.bind(this);
   }
 
   $onInit() {
@@ -23,11 +20,6 @@ class AdminTeamsController {
       let allTeams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
       this.teams = _.reject(allTeams, team => { return team.teamEventId; });
     });
-  }
-
-  _filterTeams(team) {
-    var filteredTeams = this.$filter('filter')([team], this.teamSearch);
-    return filteredTeams && filteredTeams.length;
   }
 
   count(state) {
@@ -40,7 +32,7 @@ class AdminTeamsController {
 
   next() {
     this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
-      this.teams = teams;
+      this.teams = _.reject(teams, team => { return team.teamEventId; });
     });
   }
 
@@ -50,13 +42,13 @@ class AdminTeamsController {
 
   previous() {
     this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
-      this.teams = teams;
+      this.teams = _.reject(teams, team => { return team.teamEventId; });
     });
   }
 
   search() {
     this.TeamPagingService.search(this.stateAndData[this.filter], this.teamSearch).then(teams => {
-      this.teams = teams;
+      this.teams = _.reject(teams, team => { return team.teamEventId; });
     });
   }
 

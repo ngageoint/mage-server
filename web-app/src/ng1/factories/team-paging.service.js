@@ -87,9 +87,9 @@ function TeamPagingService(Team, $q) {
     function move(start, data) {
         var filter = JSON.parse(JSON.stringify(data.dataFilter));
         filter.start = start;
-        return Team.query(filter).then(pageInfo => {
-            data.pageInfo = pageInfo;
-            return $q.resolve(pageInfo.teams);
+        return $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
+            data.pageInfo = result.pageInfo[0];
+            $q.resolve(pageInfo.teams);
         });
     }
 
@@ -121,8 +121,8 @@ function TeamPagingService(Team, $q) {
             data.searchFilter = '';
             delete data.teamFilter['or'];
 
-            promise = Team.query(data.teamFilter).then(pageInfo => {
-                data.pageInfo = pageInfo[0];
+            promise = $q.all({pageInfo: Team.query(data.teamFilter).$promise }).then(result => {
+                data.pageInfo = result.pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);
             });
         } else if (previousSearch == teamSearch) {
@@ -137,8 +137,8 @@ function TeamPagingService(Team, $q) {
                 name: '.*' + teamSearch + '.*',
                 description: '.*' + teamSearch + '.*'
             };
-            promise = Team.query(filter).then(pageInfo => {
-                data.pageInfo = pageInfo[0];
+            promise = $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
+                data.pageInfo = result.pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);
             });
         }
