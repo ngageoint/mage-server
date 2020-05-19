@@ -10,7 +10,9 @@ var mongoose = require('mongoose')
   , Observation = require('./observation')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
-  , Paging = require('../utilities/paging');
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
+
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -340,7 +342,7 @@ exports.getUsers = function (options, callback) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = {};
+  var conditions = FilterParser.parse(filter);
 
   if (filter.active) {
     conditions.active = filter.active == 'true';
@@ -348,29 +350,7 @@ function createQueryConditions(filter) {
   if (filter.enabled) {
     conditions.enabled = filter.enabled == 'true';
   }
-
-  if (filter.in || filter.nin) {
-    let json = {};
-    if (filter.in) {
-      json = JSON.parse(filter.in);
-    } else {
-      json = JSON.parse(filter.nin);
-    }
-
-    let userIds = json['userIds'] ? json['userIds'] : [];
-    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
-
-    if (filter.in) {
-      conditions._id = {
-        $in: objectIds
-      };
-    } else {
-      conditions._id = {
-        $nin: objectIds
-      };
-    }
-  }
-
+  
   return conditions;
 };
 

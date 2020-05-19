@@ -4,7 +4,9 @@ const mongoose = require('mongoose')
   , User = require('./user')
   , Token = require('./token')
   , log = require('winston')
-  , Paging = require('../utilities/paging');
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
+
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
@@ -154,32 +156,10 @@ exports.count = function(options) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = {};
+  var conditions = FilterParser.parse(filter);
 
   if (filter.registered) {
     conditions.registered = filter.registered == 'true';
-  }
-
-  if (filter.in || filter.nin) {
-    let json = {};
-    if (filter.in) {
-      json = JSON.parse(filter.in);
-    } else {
-      json = JSON.parse(filter.nin);
-    }
-
-    let deviceIds = json['deviceIds'] ? json['deviceIds'] : [];
-    var objectIds = deviceIds.map(function(id) { return mongoose.Types.ObjectId(id); });
-
-    if (filter.in) {
-      conditions._id = {
-        $in: objectIds
-      };
-    } else {
-      conditions._id = {
-        $nin: objectIds
-      };
-    }
   }
 
   return conditions;
