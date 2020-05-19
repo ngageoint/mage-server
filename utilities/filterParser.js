@@ -3,33 +3,45 @@ const mongoose = require('mongoose');
 function parse(filter) {
     var conditions = {};
 
-    if (filter.in || filter.nin) {
-        let json = {};
-        if (filter.in) {
-            json = JSON.parse(filter.in);
-        } else {
-            json = JSON.parse(filter.nin);
-        }
-
-        let userIds = json['userIds'] ? json['userIds'] : [];
-        var objectIds = userIds.map(function (id) { return mongoose.Types.ObjectId(id); });
-
-        if (filter.in) {
-            conditions.userIds = {
-                $in: objectIds
-            };
-        } else {
-            conditions.userIds = {
-                $nin: objectIds
-            };
+    if (filter.in) {
+        var objectIds = toObjectIds(filter.in);
+        conditions.userIds = {
+            $in: objectIds
         }
     }
-
+    if (filter.nin) {
+        var objectIds = toObjectIds(filter.nin);
+        conditions.userIds = {
+            $nin: objectIds
+        };
+    }
     if (filter.e) {
         conditions.teamEventId = null;
     }
 
     return conditions;
+}
+
+function toObjectIds(operation) {
+    var json = operation;
+
+    try {
+        json = JSON.parse(operation);
+    } catch (e) {
+
+    }
+
+    var objectIds = [];
+    Object.keys(json).forEach(function (key) {
+        var value = json[key];
+        if (Array.isArray(value)) {
+            objectIds = value.map(function (id) { return mongoose.Types.ObjectId(id); });
+        } else {
+            objectIds = [mongoose.Types.ObjectId(value)];
+        }
+    });
+
+    return objectIds;
 }
 
 module.exports = {
