@@ -85,7 +85,7 @@ function TeamPagingService(Team, $q) {
     }
 
     function move(start, data) {
-        var filter = JSON.parse(JSON.stringify(data.dataFilter));
+        var filter = JSON.parse(JSON.stringify(data.teamFilter));
         filter.start = start;
         return $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
             data.pageInfo = result.pageInfo[0];
