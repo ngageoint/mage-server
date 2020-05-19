@@ -277,6 +277,10 @@ function createQueryConditions(filter) {
     }
   }
 
+  if(filter.e) {
+    conditions.teamEventId = null;
+  }
+
   return conditions;
 };
 

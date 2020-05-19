@@ -17,8 +17,7 @@ class AdminTeamsController {
 
   $onInit() {
     this.TeamPagingService.refresh(this.stateAndData).then(() => {
-      let allTeams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
-      this.teams = _.reject(allTeams, team => { return team.teamEventId; });
+      this.teams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
     });
   }
 
@@ -32,7 +31,7 @@ class AdminTeamsController {
 
   next() {
     this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+      this.teams = teams;
     });
   }
 
@@ -42,13 +41,13 @@ class AdminTeamsController {
 
   previous() {
     this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+      this.teams = teams;
     });
   }
 
   search() {
     this.TeamPagingService.search(this.stateAndData[this.filter], this.teamSearch).then(teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+      this.teams = teams;
     });
   }
 
@@ -56,8 +55,7 @@ class AdminTeamsController {
     this.teamSearch = '';
     this.stateAndData = this.TeamPagingService.constructDefault();
     this.TeamPagingService.refresh(this.stateAndData).then(() => {
-      let allTeams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
-      this.teams = _.reject(allTeams, team => { return team.teamEventId; });
+      this.teams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
     });
   }
 
