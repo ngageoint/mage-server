@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 function parse(filter) {
     var conditions = {};
 
