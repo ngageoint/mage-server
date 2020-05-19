@@ -16,16 +16,15 @@ describe("Filter Parser Tests", function () {
         const objectId = mongoose.Types.ObjectId('578df3efb618f5141202a196');
         let filter = { 
             "in": { 
-                "objectIds": objectId.toString() 
+                "testIds": objectId.toString() 
             } 
         };
 
         const conditions = FilterParser.parse(filter);
         expect(conditions).to.not.be.null;
-        expect(conditions).to.not.be.empty;
-        expect(conditions.userIds).to.not.be.empty;
+        expect(conditions.testIds).to.not.be.empty;
 
-        let condition = conditions.userIds;
+        let condition = conditions.testIds;
         let generatedId = condition.$in[0];
         expect(generatedId.toString()).to.equal(objectId.toString());
 
@@ -36,16 +35,15 @@ describe("Filter Parser Tests", function () {
         const objectId = mongoose.Types.ObjectId('578df3efb618f5141202a196');
         let filter = { 
             "nin": { 
-                "objectIds": objectId.toString() 
+                "testIds": objectId.toString() 
             } 
         };
 
         const conditions = FilterParser.parse(filter);
         expect(conditions).to.not.be.null;
-        expect(conditions).to.not.be.empty;
-        expect(conditions.userIds).to.not.be.empty;
+        expect(conditions.testIds).to.not.be.empty;
 
-        let condition = conditions.userIds;
+        let condition = conditions.testIds;
         let generatedId = condition.$nin[0];
         expect(generatedId.toString()).to.equal(objectId.toString());
 

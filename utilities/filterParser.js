@@ -4,16 +4,20 @@ function parse(filter) {
     var conditions = {};
 
     if (filter.in) {
-        var objectIds = toObjectIds(filter.in);
-        conditions.userIds = {
-            $in: objectIds
+        let objectIds = toObjectIds(filter.in);
+        for(const [key, value] of objectIds) {
+            conditions[key] = {
+                $in: value
+            }
         }
     }
     if (filter.nin) {
-        var objectIds = toObjectIds(filter.nin);
-        conditions.userIds = {
-            $nin: objectIds
-        };
+        let objectIds = toObjectIds(filter.nin);
+        for(const [key, value] of objectIds){
+            conditions[key] = {
+                $nin: value
+            }
+        }
     }
     if (filter.e) {
         conditions.teamEventId = null;
@@ -31,14 +35,19 @@ function toObjectIds(operation) {
 
     }
 
-    var objectIds = [];
+    const objectIds = new Map();
+
     Object.keys(json).forEach(function (key) {
         var value = json[key];
+
+        let ids = [];
         if (Array.isArray(value)) {
-            objectIds = value.map(function (id) { return mongoose.Types.ObjectId(id); });
+            ids = value.map(function (id) { return mongoose.Types.ObjectId(id); });
         } else {
-            objectIds = [mongoose.Types.ObjectId(value)];
+            ids = [mongoose.Types.ObjectId(value)];
         }
+
+        objectIds.set(key, ids);
     });
 
     return objectIds;
