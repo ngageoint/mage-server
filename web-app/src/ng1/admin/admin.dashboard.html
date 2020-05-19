@@ -151,10 +151,10 @@
                 <div class="form-group">
                   <input type="text" ng-model="$ctrl.user" placeholder="Filter on user"
                       uib-typeahead="user as user.displayName for user in $ctrl.searchLoginsAgainstUsers($viewValue)"
-                      typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noSearchResults"
+                      typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noUserSearchResults"
                       class="form-control" ng-model-options="{ debounce: 1000 }" typeahead-on-select='$ctrl.filterLogins()'>
                     <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
-                    <div ng-show="noSearchResults">
+                    <div ng-show="noUserSearchResults">
                       <i class="glyphicon glyphicon-remove"></i> No Results Found
                     </div>
                 </div>
@@ -163,10 +163,10 @@
                   <div class="form-group">
                     <input type="text" ng-model="$ctrl.device" placeholder="Filter on devices"
                         uib-typeahead="device as device.userAgent for device in $ctrl.searchLoginsAgainstDevices($viewValue)"
-                        typeahead-loading="$ctrl.loginDeviceSearchResults" typeahead-no-results="noSearchResults"
+                        typeahead-loading="$ctrl.loginDeviceSearchResults" typeahead-no-results="noDeviceSearchResults"
                         class="form-control" ng-model-options="{ debounce: 1000 }" typeahead-on-select='$ctrl.filterLogins()'>
                       <i ng-show="$ctrl.isSearchingDevices == true" class="glyphicon glyphicon-refresh"></i>
-                      <div ng-show="noSearchResults">
+                      <div ng-show="noDeviceSearchResults">
                         <i class="glyphicon glyphicon-remove"></i> No Results Found
                       </div>
                   </div>
