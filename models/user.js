@@ -342,7 +342,29 @@ exports.getUsers = function (options, callback) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = FilterParser.parse(filter);
+  var conditions = {};
+
+  if (filter.in || filter.nin) {
+    let json = {};
+    if (filter.in) {
+      json = JSON.parse(filter.in);
+    } else {
+      json = JSON.parse(filter.nin);
+    }
+
+    let userIds = json['userIds'] ? json['userIds'] : [];
+    var objectIds = userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+
+    if (filter.in) {
+      conditions._id = {
+        $in: objectIds
+      };
+    } else {
+      conditions._id = {
+        $nin: objectIds
+      };
+    }
+  }
 
   if (filter.active) {
     conditions.active = filter.active == 'true';
