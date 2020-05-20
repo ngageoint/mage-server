@@ -4,7 +4,8 @@ const mongoose = require('mongoose')
   , User = require('./user')
   , Token = require('./token')
   , log = require('winston')
-  , Paging = require('../utilities/paging');
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;

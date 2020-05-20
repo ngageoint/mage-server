@@ -2,7 +2,8 @@ var mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
   , userTransformer = require('../transformers/user')
-  , Paging = require('../utilities/paging');
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
