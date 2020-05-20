@@ -50,4 +50,25 @@ describe("Filter Parser Tests", function () {
         done();
     });
 
+    it('Test NIN filter parsing', function (done) {
+        let filter = { 
+            "e": { 
+                "equalToNull": null,
+                "equalTo4": 4 
+            } 
+        };
+
+        const conditions = FilterParser.parse(filter);
+        expect(conditions).to.not.be.null;
+
+        let nullCondition = conditions.equalToNull;
+        expect(nullCondition).to.be.null;
+
+        let equalTo4Condition = conditions.equalTo4;
+        expect(equalTo4Condition).to.not.be.null;
+        expect(equalTo4Condition).to.equal(4);
+
+        done();
+    });
+
 });

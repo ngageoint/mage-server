@@ -20,7 +20,10 @@ function parse(filter) {
         }
     }
     if (filter.e) {
-        conditions.teamEventId = null;
+        Object.keys(filter.e).forEach(function (key) {
+            var value = filter.e[key];
+            conditions[key] = value;
+        });
     }
 
     return conditions;
