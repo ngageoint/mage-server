@@ -52,10 +52,14 @@ class AdminTeamController {
       let searchClone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.userSearchState] = searchClone;
 
-      this.stateAndData[this.userState].userFilter.in = {userIds: this.team.userIds};
-      this.stateAndData[this.userState].countFilter.in = {userIds: this.team.userIds};
-      this.stateAndData[this.userSearchState].userFilter.nin = {userIds: this.team.userIds};
-      this.stateAndData[this.userSearchState].countFilter.nin = {userIds: this.team.userIds};
+      delete this.stateAndData['active'];
+      delete this.stateAndData['inactive'];
+      delete this.stateAndData['disabled'];
+
+      this.stateAndData[this.userState].userFilter.in = {_id: this.team.userIds};
+      this.stateAndData[this.userState].countFilter.in = {_id: this.team.userIds};
+      this.stateAndData[this.userSearchState].userFilter.nin = {_id: this.team.userIds};
+      this.stateAndData[this.userSearchState].countFilter.nin = {_id: this.team.userIds};
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.members = this.UserPagingService.users(this.stateAndData[this.userState]);
       });

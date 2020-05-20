@@ -53,10 +53,10 @@ class AdminEventAccessController {
       let aclIds = Object.keys(result.event.acl);
       let allIds = aclIds.concat(result.event.userIds);
 
-      this.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(result.event.acl) };
-      this.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(result.event.acl) };
-      this.stateAndData[this.nonAclUserState].userFilter.nin = { userIds: allIds };
-      this.stateAndData[this.nonAclUserState].countFilter.nin = { userIds: allIds };
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(result.event.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(result.event.acl) };
+      this.stateAndData[this.nonAclUserState].userFilter.nin = { _id: allIds };
+      this.stateAndData[this.nonAclUserState].countFilter.nin = { _id: allIds };
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(result.event);
       });

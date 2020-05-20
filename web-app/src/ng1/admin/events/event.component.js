@@ -91,10 +91,10 @@ class AdminEventController {
       delete this.stateAndData['inactive'];
       delete this.stateAndData['disabled'];
 
-      this.stateAndData[this.userState].userFilter.in = { userIds: this.eventTeam.userIds };
-      this.stateAndData[this.userState].countFilter.in = { userIds: this.eventTeam.userIds };
-      this.stateAndData[this.nonMemberUserState].userFilter.nin = { userIds: this.eventTeam.userIds };
-      this.stateAndData[this.nonMemberUserState].countFilter.nin = { userIds: this.eventTeam.userIds };
+      this.stateAndData[this.userState].userFilter.in = { _id: this.eventTeam.userIds };
+      this.stateAndData[this.userState].countFilter.in = { _id: this.eventTeam.userIds };
+      this.stateAndData[this.nonMemberUserState].userFilter.nin = { _id: this.eventTeam.userIds };
+      this.stateAndData[this.nonMemberUserState].countFilter.nin = { _id: this.eventTeam.userIds };
       
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 

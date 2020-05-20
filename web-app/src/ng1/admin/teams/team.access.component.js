@@ -36,8 +36,8 @@ class AdminTeamAccessController {
       let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonAclUserState] = clone;
 
-      this.stateAndData[this.userState].userFilter.in = { userIds: Object.keys(this.team.acl) };
-      this.stateAndData[this.userState].countFilter.in = { userIds: Object.keys(this.team.acl) };
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(this.team.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(this.team.acl) };
 
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(this.team);
