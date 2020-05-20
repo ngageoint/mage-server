@@ -154,29 +154,7 @@ exports.count = function(options) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = {};
-
-  if (filter.in || filter.nin) {
-    let json = {};
-    if (filter.in) {
-      json = JSON.parse(filter.in);
-    } else {
-      json = JSON.parse(filter.nin);
-    }
-
-    let deviceIds = json['deviceIds'] ? json['deviceIds'] : [];
-    var objectIds = deviceIds.map(function(id) { return mongoose.Types.ObjectId(id); });
-
-    if (filter.in) {
-      conditions._id = {
-        $in: objectIds
-      };
-    } else {
-      conditions._id = {
-        $nin: objectIds
-      };
-    }
-  }
+  var conditions = FilterParser.parse(filter);
 
   if (filter.registered) {
     conditions.registered = filter.registered == 'true';
