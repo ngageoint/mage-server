@@ -20,8 +20,16 @@ function parse(filter) {
         }
     }
     if (filter.e) {
-        Object.keys(filter.e).forEach(function (key) {
-            var value = filter.e[key];
+        var json = filter.e;
+
+        try {
+            json = JSON.parse(filter.e);
+        } catch (e) {
+    
+        }
+
+        Object.keys(json).forEach(function (key) {
+            var value = json[key];
             conditions[key] = value;
         });
     }
