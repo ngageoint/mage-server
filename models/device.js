@@ -120,25 +120,9 @@ exports.getDevices = function(options) {
     query.populate('userId');
   }
 
-  var orCondition = [];
-  if (filter.or) {
-    let json = JSON.parse(filter.or);
-
-    for (let [key, value] of Object.entries(json)) {
-      let entry = {};
-      let regex = { "$regex": new RegExp(value), "$options": "i" };
-      entry[key] = regex;
-      orCondition.push(entry);
-    }
-    query.or(orCondition);
-  }
-
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
     var countQuery = Device.find(conditions);
-    if(filter.or) {
-      countQuery.or(orCondition);
-    }
     return Paging.pageDevices(countQuery, query, options);
   } else {
     return query.exec();

@@ -4,37 +4,65 @@ function parse(filter) {
     var conditions = {};
 
     if (filter.in) {
-        let objectIds = toObjectIds(filter.in);
-        for(const [key, value] of objectIds) {
-            conditions[key] = {
-                $in: value
-            }
-        }
+        handleIn(filter, conditions);
     }
     if (filter.nin) {
-        let objectIds = toObjectIds(filter.nin);
-        for(const [key, value] of objectIds){
-            conditions[key] = {
-                $nin: value
-            }
-        }
+        handleNin(filter, conditions);
     }
     if (filter.e) {
-        var json = filter.e;
-
-        try {
-            json = JSON.parse(filter.e);
-        } catch (e) {
-    
-        }
-
-        Object.keys(json).forEach(function (key) {
-            var value = json[key];
-            conditions[key] = value;
-        });
+        handleEquals(filter, conditions);
+    }
+    if (filter.or) {
+        handleOr(filter, conditions);
     }
 
     return conditions;
+}
+
+function handleIn(filter, conditions) {
+    let objectIds = toObjectIds(filter.in);
+    for (const [key, value] of objectIds) {
+        conditions[key] = {
+            $in: value
+        }
+    }
+}
+
+function handleNin(filter, conditions) {
+    let objectIds = toObjectIds(filter.nin);
+    for (const [key, value] of objectIds) {
+        conditions[key] = {
+            $nin: value
+        }
+    }
+}
+
+function handleEquals(filter, conditions) {
+    var json = filter.e;
+
+    try {
+        json = JSON.parse(filter.e);
+    } catch (e) {
+
+    }
+
+    Object.keys(json).forEach(function (key) {
+        var value = json[key];
+        conditions[key] = value;
+    });
+}
+
+function handleOr(filter, conditions) {
+    let json = JSON.parse(filter.or);
+
+    var orCondition = [];
+    for (let [key, value] of Object.entries(json)) {
+        let entry = {};
+        let regex = { "$regex": new RegExp(value), "$options": "i" };
+        entry[key] = regex;
+        orCondition.push(entry);
+    }
+    conditions['$or'] = orCondition;
 }
 
 function toObjectIds(operation) {

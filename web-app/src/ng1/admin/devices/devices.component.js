@@ -15,7 +15,7 @@ class AdminDevicesController {
     this.deviceSearch = '';
     this.devices = [];
 
-    this.stateAndData = this.DevicePagingService.constructDefault();
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.userStateAndData = this.UserPagingService.constructDefault();
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
@@ -24,8 +24,8 @@ class AdminDevicesController {
   }
 
   $onInit() {
-    this.DevicePagingService.refresh(this.stateAndData).then(() => {
-      this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
     });
 
     delete this.userStateAndData['active'];
@@ -35,36 +35,37 @@ class AdminDevicesController {
   }
 
   count(state) {
-    return this.stateAndData[state].deviceCount;
+    return this.deviceStateAndData[state].deviceCount;
   }
 
   hasNext() {
-    return this.DevicePagingService.hasNext(this.stateAndData[this.filter]);
+    return this.DevicePagingService.hasNext(this.deviceStateAndData[this.filter]);
   }
 
   next() {
-    this.DevicePagingService.next(this.stateAndData[this.filter]).then(devices => {
+    this.DevicePagingService.next(this.deviceStateAndData[this.filter]).then(devices => {
       this.devices = devices;
     });
   }
 
   hasPrevious() {
-    return this.DevicePagingService.hasPrevious(this.stateAndData[this.filter]);
+    return this.DevicePagingService.hasPrevious(this.deviceStateAndData[this.filter]);
   }
 
   previous() {
-    this.DevicePagingService.previous(this.stateAndData[this.filter]).then(devices => {
+    this.DevicePagingService.previous(this.deviceStateAndData[this.filter]).then(devices => {
       this.devices = devices;
     });
   }
 
   search() {
-    this.DevicePagingService.search(this.stateAndData[this.filter], this.deviceSearch).then(devices => {
+    this.DevicePagingService.search(this.deviceStateAndData[this.filter], this.deviceSearch).then(devices => {
       if(devices.length > 0) {
         this.devices = devices;
       } else {
+
         //Need to do a user search, so grab all the devices specific to the filter and not the search
-        this.DevicePagingService.search(this.stateAndData[this.filter], '').then(devices => {
+        this.DevicePagingService.search(this.deviceStateAndData[this.filter], '').then(devices => {
           this.UserPagingService.search(this.userStateAndData['all'], this.deviceSearch).then(users => {
             this.devices = _.filter(devices, device => {
               return _.some(users, user => {
@@ -73,6 +74,7 @@ class AdminDevicesController {
             });
           });
         });
+        
       }
     });
   }
@@ -103,9 +105,9 @@ class AdminDevicesController {
   reset() {
     this.filter = 'all';
     this.deviceSearch = '';
-    this.stateAndData = this.DevicePagingService.constructDefault();
-    this.DevicePagingService.refresh(this.stateAndData).then(() => {
-      this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
     });
   }
 
@@ -127,8 +129,8 @@ class AdminDevicesController {
 
     device.registered = true;
     this.DeviceService.updateDevice(device).then(() => {
-      this.DevicePagingService.refresh(this.stateAndData).then(() => {
-        this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+      this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+        this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
       });
       this.onDeviceRegistered({
         $event: {
@@ -153,8 +155,8 @@ class AdminDevicesController {
     });
 
     modalInstance.result.then(() => {
-      this.DevicePagingService.refresh(this.stateAndData).then(() => {
-        this.devices = this.DevicePagingService.devices(this.stateAndData[this.filter]);
+      this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+        this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
       });
     });
   }
