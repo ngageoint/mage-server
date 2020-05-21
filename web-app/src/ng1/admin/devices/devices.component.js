@@ -16,7 +16,6 @@ class AdminDevicesController {
     this.devices = [];
 
     this.deviceStateAndData = this.DevicePagingService.constructDefault();
-    this.userStateAndData = this.UserPagingService.constructDefault();
 
     this.hasDeviceCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
     this.hasDeviceEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
@@ -27,11 +26,6 @@ class AdminDevicesController {
     this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
       this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.filter]);
     });
-
-    delete this.userStateAndData['active'];
-    delete this.userStateAndData['inactive'];
-    delete this.userStateAndData['disabled'];
-    this.UserPagingService.refresh(this.userStateAndData);
   }
 
   count(state) {
@@ -63,18 +57,9 @@ class AdminDevicesController {
       if(devices.length > 0) {
         this.devices = devices;
       } else {
-
-        //Need to do a user search, so grab all the devices specific to the filter and not the search
-        this.DevicePagingService.search(this.deviceStateAndData[this.filter], '').then(devices => {
-          this.UserPagingService.search(this.userStateAndData['all'], this.deviceSearch).then(users => {
-            this.devices = _.filter(devices, device => {
-              return _.some(users, user => {
-                if (device.user.id === user.id) return true;
-              });
-            });
-          });
+        this.DevicePagingService.search(this.deviceStateAndData[this.filter], this.deviceSearch, this.deviceSearch).then(devices => {
+          this.devices = devices;
         });
-        
       }
     });
   }

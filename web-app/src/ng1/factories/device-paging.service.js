@@ -117,7 +117,7 @@ function DevicePagingService(DeviceService, $q) {
         return devices;
     }
 
-    function search(data, deviceSearch) {
+    function search(data, deviceSearch, userSearch) {
 
         if (data.pageInfo == null || data.pageInfo.devices == null) {
             return $q.resolve([]);
@@ -139,7 +139,7 @@ function DevicePagingService(DeviceService, $q) {
                 data.pageInfo = pageInfo;
                 return $q.resolve(data.pageInfo.devices);
             });
-        } else if (previousSearch == deviceSearch) {
+        } else if (previousSearch == deviceSearch && userSearch == null) {
             //Search is being performed, no need to keep searching the same info over and over
             promise = $q.resolve(data.pageInfo.devices);
         } else {
@@ -147,10 +147,19 @@ function DevicePagingService(DeviceService, $q) {
             data.searchFilter = deviceSearch;
 
             var filter = data.deviceFilter;
-            filter.or = {
-                userAgent: '.*' + deviceSearch + '.*',
-                description: '.*' + deviceSearch + '.*'
-            };
+            if (userSearch == null) {
+                filter.or = {
+                    userAgent: '.*' + deviceSearch + '.*',
+                    description: '.*' + deviceSearch + '.*'
+                };
+            } else {
+                filter.or = {
+                    displayName: '.*' + userSearch + '.*',
+                    email: '.*' + userSearch + '.*'
+                };
+                filter.expand = 'user';
+            }
+
             promise = DeviceService.getAllDevices(filter).then(pageInfo => {
                 data.pageInfo = pageInfo;
                 return $q.resolve(data.pageInfo.devices)

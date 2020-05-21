@@ -23,13 +23,13 @@ const DeviceSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   userAgent: { type: String, required: false },
   appVersion: { type: String, required: false }
-},{
+}, {
   versionKey: false
 });
 
-DeviceSchema.path('userId').validate(function(userId, done) {
-  User.getUserById(userId, function(err, user) {
-    if (err || !user)  {
+DeviceSchema.path('userId').validate(function (userId, done) {
+  User.getUserById(userId, function (err, user) {
+    if (err || !user) {
       done(false);
     } else {
       done(true);
@@ -37,9 +37,9 @@ DeviceSchema.path('userId').validate(function(userId, done) {
   });
 }, 'Invalid POC user, user does not exist');
 
-DeviceSchema.pre('findOneAndUpdate', function(next) {
+DeviceSchema.pre('findOneAndUpdate', function (next) {
   if (this.getUpdate().registered === false) {
-    Token.removeTokenForDevice({_id: this.getQuery()._id}, function(err) {
+    Token.removeTokenForDevice({ _id: this.getQuery()._id }, function (err) {
       next(err);
     });
   } else {
@@ -47,24 +47,24 @@ DeviceSchema.pre('findOneAndUpdate', function(next) {
   }
 });
 
-DeviceSchema.pre('remove', function(next) {
+DeviceSchema.pre('remove', function (next) {
   const device = this;
 
   async.parallel({
-    token: function(done) {
-      Token.removeTokenForDevice(device, function(err) {
+    token: function (done) {
+      Token.removeTokenForDevice(device, function (err) {
         done(err);
       });
     },
-    observation: function(done) {
-      Observation.removeDevice(device, function(err) {
+    observation: function (done) {
+      Observation.removeDevice(device, function (err) {
         done(err);
       });
     }
   },
-  function(err) {
-    next(err);
-  });
+    function (err) {
+      next(err);
+    });
 });
 
 function transform(device, ret) {
@@ -86,7 +86,7 @@ DeviceSchema.set("toJSON", {
 const Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
 
-exports.getDeviceById = function(id, options) {
+exports.getDeviceById = function (id, options) {
   options = options || {};
 
   const query = Device.findById(id);
@@ -98,7 +98,7 @@ exports.getDeviceById = function(id, options) {
   return query.exec();
 };
 
-exports.getDeviceByUid = function(uid, { expand = {} } = {}) {
+exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
   const query = Device.findOne({ uid: uid.toLowerCase() });
 
   if (expand.user) {
@@ -108,16 +108,32 @@ exports.getDeviceByUid = function(uid, { expand = {} } = {}) {
   return query.exec();
 };
 
-exports.getDevices = function(options) {
+exports.getDevices = function (options) {
   options = options || {};
   var filter = options.filter || {};
 
-  const conditions = createQueryConditions(filter);
+  var conditions = createQueryConditions(filter);
 
-  const query = Device.find(conditions);
+  var query = Device.find(conditions);
 
   if (options.expand.user) {
-    query.populate('userId');
+    if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered 
+      || conditions.userId || conditions.userAgent || conditions.appVersion) {
+      query.populate('userId');
+    } else {
+      query = Device.find({});
+      query.populate({
+        path: 'userId',
+        match: conditions
+      });
+      conditions = {};
+    }
+  } else {
+    //TODO is this minimum enough??
+    query.populate({
+      path: 'userId',
+      select: 'displayName'
+    });
   }
 
   var isPaging = options.limit != null && options.limit > 0;
@@ -129,7 +145,7 @@ exports.getDevices = function(options) {
   }
 };
 
-exports.count = function(options) {
+exports.count = function (options) {
   options = options || {};
   var filter = options.filter || {};
 
@@ -148,7 +164,7 @@ function createQueryConditions(filter) {
   return conditions;
 };
 
-exports.createDevice = async function(device) {
+exports.createDevice = async function (device) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
@@ -168,17 +184,17 @@ exports.createDevice = async function(device) {
   return await Device.findOneAndUpdate({ uid: device.uid }, update, options);
 };
 
-exports.updateDevice = async function(id, update) {
+exports.updateDevice = async function (id, update) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
   if (update.uid) {
     update.uid = update.uid.toLowerCase();
   }
-  return await Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true});
+  return await Device.findByIdAndUpdate(id, update, { new: true, setDefaultsOnInsert: true, runValidators: true });
 };
 
-exports.deleteDevice = function(id) {
+exports.deleteDevice = function (id) {
   return Device.findById(id).exec()
     .then(device => {
       return device ? device.remove() : Promise.resolve(device);
