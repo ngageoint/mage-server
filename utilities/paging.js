@@ -22,7 +22,20 @@ function pageUsers(countQuery, query, options, callback) {
 }
 
 function pageDevices(countQuery, query, options) {
-  return page(countQuery, query, options, 'devices');
+  return page(countQuery, query, options, 'devices', deviceFilter);
+}
+
+function deviceFilter(data) {
+  var filteredData = [];
+
+  for (var i = 0; i < data.length; i++) {
+    let record = data[i];
+    if (record.userId != null) {
+      filteredData.push(record);
+    }
+  }
+
+  return filteredData;
 }
 
 function pageTeams(countQuery, query, options, callback) {
@@ -33,7 +46,7 @@ function pageTeams(countQuery, query, options, callback) {
   });
 }
 
-function page(countQuery, query, options, dataKey) {
+function page(countQuery, query, options, dataKey, filterFunction) {
   return countQuery.count().then(count => {
     var sort = [['_id', 1]];
     if (options.sort) {
@@ -51,11 +64,17 @@ function page(countQuery, query, options, dataKey) {
     var page = Math.ceil(start / limit);
 
     return query.sort(sort).limit(limit).skip(limit * page).exec().then(data => {
+
+      var filteredData = data;
+      if (filterFunction) {
+        filteredData = filterFunction(data);
+      }
+
       let pageInfo = new PageInfo();
       pageInfo.start = start;
       pageInfo.limit = limit;
-      pageInfo[dataKey] = data;
-      pageInfo.size = data.size;
+      pageInfo[dataKey] = filteredData;
+      pageInfo.size = filteredData.size;
 
       let estimatedNext = start + limit;
 

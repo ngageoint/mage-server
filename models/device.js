@@ -110,7 +110,7 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
 
 exports.getDevices = function (options) {
   options = options || {};
-  var filter = options.filter || {};
+  const filter = options.filter || {};
 
   var conditions = createQueryConditions(filter);
 
@@ -119,8 +119,10 @@ exports.getDevices = function (options) {
   if (options.expand.user) {
     if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered 
       || conditions.userId || conditions.userAgent || conditions.appVersion) {
+        //This is a query against devices
       query.populate('userId');
     } else {
+      //This is a query against users
       query = Device.find({});
       query.populate({
         path: 'userId',
@@ -136,9 +138,9 @@ exports.getDevices = function (options) {
     });
   }
 
-  var isPaging = options.limit != null && options.limit > 0;
+  const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    var countQuery = Device.find(conditions);
+    const countQuery = Device.find(conditions);
     return Paging.pageDevices(countQuery, query, options);
   } else {
     return query.exec();
