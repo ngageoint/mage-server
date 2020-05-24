@@ -57,6 +57,10 @@ $ source ~/.bashrc
 
 #### Install [Node.js](https://nodejs.org/) with Node Version Manager
 
+package.json requires node versions
+
+>= 8.x <= 10.x
+
 ```bash
 $ nvm install --lts
 $ node --version
@@ -155,6 +159,8 @@ $ mkdir /opt/mage
 $ cd /opt/mage
 $ git clone https://github.com/ngageoint/mage-server.git /opt/mage
 ```
+
+You should chown /opt/mage to your normal user on linux/osx. I didn't need root to run it.
 
 The rest of the installation steps assume you are in the `<MAGE_ROOT>` directory, .e.g. `/opt/mage`.
 
