@@ -77,8 +77,12 @@ class AdminDeviceEditController {
     this.error = false;
 
     var device = this.device;
-    if (device.user.id) {
-      device.userId = device.user.id;
+    if (this.poc != null) {
+      device.userId = this.poc.id;
+    } else{
+      this.saving = false;
+      this.error = "Missing Point of Contact";
+      return;
     }
 
     if (device.id) {
@@ -87,6 +91,7 @@ class AdminDeviceEditController {
       }, response => {
         this.saving = false;
         this.error = response.responseText;
+        this.poc = null;
       });
     } else {
       this.DeviceService.createDevice(device).then(newDevice => {
@@ -94,6 +99,7 @@ class AdminDeviceEditController {
       }, response => {
         this.saving = false;
         this.error = response.responseText;
+        this.poc = null;
       });
     }
   }
