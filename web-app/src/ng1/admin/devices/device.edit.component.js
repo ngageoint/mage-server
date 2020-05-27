@@ -79,10 +79,6 @@ class AdminDeviceEditController {
     var device = this.device;
     if (this.poc != null) {
       device.userId = this.poc.id;
-    } else{
-      this.saving = false;
-      this.error = "Missing Point of Contact";
-      return;
     }
 
     if (device.id) {
