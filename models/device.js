@@ -116,19 +116,26 @@ exports.getDevices = function (options) {
 
   var query = Device.find(conditions);
 
+  var countQuery = null;
+  var searchUsers = false;
   if (options.expand.user) {
     if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered 
       || conditions.userId || conditions.userAgent || conditions.appVersion) {
         //This is a query against devices
       query.populate('userId');
     } else {
+      searchUsers = true;
       //This is a query against users
       query = Device.find({});
       query.populate({
         path: 'userId',
         match: conditions
       });
-      conditions = {};
+      countQuery = Device.find({});
+      countQuery.populate({
+        path: 'userId',
+        match: conditions
+      });
     }
   } else {
     //TODO is this minimum enough??
@@ -140,8 +147,11 @@ exports.getDevices = function (options) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    const countQuery = Device.find(conditions);
-    return Paging.pageDevices(countQuery, query, options);
+    if(countQuery == null) {
+      countQuery = Device.find(conditions);
+    }
+   
+    return Paging.pageDevices(countQuery, query, options, searchUsers);
   } else {
     return query.exec();
   }

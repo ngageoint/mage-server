@@ -21,8 +21,11 @@ function pageUsers(countQuery, query, options, callback) {
   });
 }
 
-function pageDevices(countQuery, query, options) {
-  return page(countQuery, query, options, 'devices', deviceFilter);
+function pageDevices(countQuery, query, options, searchUsers) {
+  if(searchUsers) {
+    return page(countQuery, query, options, 'devices', deviceFilter);
+  }
+  return page(countQuery, query, options, 'devices');
 }
 
 function deviceFilter(data) {
