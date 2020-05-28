@@ -1,3 +1,5 @@
+const User = require("../models/user.js");
+
 class PageInfo {
   constructor() {
     this.links = {
@@ -21,24 +23,11 @@ function pageUsers(countQuery, query, options, callback) {
   });
 }
 
-function pageDevices(countQuery, query, options, searchUsers) {
-  if(searchUsers) {
-    return page(countQuery, query, options, 'devices', deviceFilter);
+function pageDevices(countQuery, query, options, conditions) {
+  if (conditions) {
+    return aggregateDevicesAndUsers(options, conditions);
   }
   return page(countQuery, query, options, 'devices');
-}
-
-function deviceFilter(data) {
-  var filteredData = [];
-
-  for (var i = 0; i < data.length; i++) {
-    let record = data[i];
-    if (record.userId != null) {
-      filteredData.push(record);
-    }
-  }
-
-  return filteredData;
 }
 
 function pageTeams(countQuery, query, options, callback) {
@@ -49,7 +38,7 @@ function pageTeams(countQuery, query, options, callback) {
   });
 }
 
-function page(countQuery, query, options, dataKey, filterFunction) {
+function page(countQuery, query, options, dataKey) {
   return countQuery.count().then(count => {
     var sort = [['_id', 1]];
     if (options.sort) {
@@ -67,30 +56,55 @@ function page(countQuery, query, options, dataKey, filterFunction) {
     var page = Math.ceil(start / limit);
 
     return query.sort(sort).limit(limit).skip(limit * page).exec().then(data => {
-
-      var filteredData = data;
-      if (filterFunction) {
-        filteredData = filterFunction(data);
-      }
-
-      let pageInfo = new PageInfo();
-      pageInfo.start = start;
-      pageInfo.limit = limit;
-      pageInfo[dataKey] = filteredData;
-      pageInfo.size = filteredData.size;
-
-      let estimatedNext = start + limit;
-
-      if (estimatedNext < count) {
-        pageInfo.links.next = estimatedNext;
-      }
-
-      if (start > 0) {
-        pageInfo.links.prev = Math.abs(options.start - options.limit);
-      }
-
-      return Promise.resolve(pageInfo);
+      return createPageInfo(data, dataKey, options, count);
     });
+  });
+}
+
+function createPageInfo(data, dataKey, options, count) {
+  const limit = Math.abs(options.limit) || 10;
+  const start = (Math.abs(options.start) || 0);
+
+  let pageInfo = new PageInfo();
+  pageInfo.start = start;
+  pageInfo.limit = limit;
+  pageInfo[dataKey] = data;
+  pageInfo.size = data.length;
+
+  const estimatedNext = start + limit;
+
+  if (estimatedNext < count) {
+    pageInfo.links.next = estimatedNext;
+  }
+
+  if (start > 0) {
+    pageInfo.links.prev = Math.abs(options.start - options.limit);
+  }
+
+  return Promise.resolve(pageInfo);
+}
+
+function aggregateDevicesAndUsers(options, conditions) {
+  let aggregate = User.Model.aggregate([{$match:conditions}, {$lookup:{from:"devices",localField:"_id",foreignField:"userId",as:"devices"}}]);
+  return aggregate.exec().then(data => {
+    //TODO count
+    var devices = [];
+    data.forEach(function(record, index, array) {
+      record.devices.forEach(function(device, idx, arr) {
+        if(device.userId) {
+          let miniUser = {
+            _id: device.userId,
+            displayName: record.displayName
+          }
+          delete device.userId;
+          device.user = miniUser;
+        }
+        
+        devices.push(device);
+      });
+    });
+    
+    return createPageInfo(devices, 'devices', options, devices.length);
   });
 }
 
