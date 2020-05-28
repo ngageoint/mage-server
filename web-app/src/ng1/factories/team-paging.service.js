@@ -89,7 +89,7 @@ function TeamPagingService(Team, $q) {
         filter.start = start;
         return $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
             data.pageInfo = result.pageInfo[0];
-            $q.resolve(pageInfo.teams);
+            return $q.resolve(data.pageInfo.teams);
         });
     }
 
