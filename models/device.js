@@ -115,8 +115,8 @@ exports.getDevices = function (options) {
   var conditions = createQueryConditions(filter);
 
   var query = Device.find(conditions);
-  var countQuery = Device.find(conditions);
   
+  var isUserQuery = false;
   if (options.expand.user) {
     if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered
       || conditions.userId || conditions.userAgent || conditions.appVersion) {
@@ -132,7 +132,7 @@ exports.getDevices = function (options) {
           $lookup: { from: "devices", localField: "_id", foreignField: "userId", as: "devices" }
         }
       ]);
-      countQuery = null;
+      isUserQuery = true;
     }
   } else {
     //TODO is this minimum enough??
@@ -144,6 +144,10 @@ exports.getDevices = function (options) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
+    var countQuery =  null;
+    if(!isUserQuery) {
+      countQuery = Device.find(conditions);
+    }
     return Paging.pageDevices(countQuery, query, options, conditions);
   } else {
     return query.exec();
