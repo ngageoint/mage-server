@@ -150,7 +150,8 @@ function DevicePagingService(DeviceService, $q) {
             if (userSearch == null) {
                 filter.or = {
                     userAgent: '.*' + deviceSearch + '.*',
-                    description: '.*' + deviceSearch + '.*'
+                    description: '.*' + deviceSearch + '.*',
+                    uid:  '.*' + deviceSearch + '.*'
                 };
             } else {
                 filter.or = {
