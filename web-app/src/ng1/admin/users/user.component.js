@@ -62,6 +62,13 @@ class AdminUserController {
       });
     });
 
+    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+      this.loginPage = loginPage;
+      if (loginPage.logins.length) {
+        this.firstLogin = loginPage.logins[0];
+      }
+    });
+
     delete this.deviceStateAndData['registered'];
     delete this.deviceStateAndData['unregistered'];
 
