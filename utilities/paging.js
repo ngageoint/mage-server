@@ -97,6 +97,8 @@ function aggregateDevicesAndUsers(options, conditions) {
             displayName: record.displayName
           }
           delete device.userId;
+          device.id = device._id;
+          delete device._id;
           device.user = miniUser;
         }
         
