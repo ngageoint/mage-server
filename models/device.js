@@ -115,16 +115,24 @@ exports.getDevices = function (options) {
   var conditions = createQueryConditions(filter);
 
   var query = Device.find(conditions);
-
-  var searchUsers = false;
+  var countQuery = Device.find(conditions);
+  
   if (options.expand.user) {
-    if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered 
+    if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered
       || conditions.userId || conditions.userAgent || conditions.appVersion) {
-        //This is a query against devices
+      //This is a query against devices
       query.populate('userId');
     } else {
       //This is a query against users
-      searchUsers = true;
+      query = User.Model.aggregate([
+        {
+          $match: conditions
+        },
+        {
+          $lookup: { from: "devices", localField: "_id", foreignField: "userId", as: "devices" }
+        }
+      ]);
+      countQuery = null;
     }
   } else {
     //TODO is this minimum enough??
@@ -136,11 +144,7 @@ exports.getDevices = function (options) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    if(!searchUsers) {
-      return Paging.pageDevices(Device.find(conditions), query, options, null);
-    } 
-    
-    return Paging.pageDevices(null, null, options, conditions);
+    return Paging.pageDevices(countQuery, query, options, conditions);
   } else {
     return query.exec();
   }
