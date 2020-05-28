@@ -117,6 +117,13 @@ function DevicePagingService(DeviceService, $q) {
         return devices;
     }
 
+    /**
+     * Search against devices or users
+     * 
+     * @param {*} data 
+     * @param {*} deviceSearch 
+     * @param {*} userSearch leave null to search for devices
+     */
     function search(data, deviceSearch, userSearch) {
 
         if (data.pageInfo == null || data.pageInfo.devices == null) {
@@ -134,6 +141,7 @@ function DevicePagingService(DeviceService, $q) {
             //Clearing out the search
             data.searchFilter = '';
             delete data.deviceFilter['or'];
+            delete data.deviceFilter['expand'];
 
             promise = DeviceService.getAllDevices(data.deviceFilter).then(pageInfo => {
                 data.pageInfo = pageInfo;
