@@ -48,4 +48,34 @@ describe("Paging Tests", function () {
         let options = { limit: '10' };
         Paging.pageUsers(countQuery, query, options, spy);
     });
+
+    it('Test page no results', function (done) {
+        var countQuery = new mongoose.Query();
+        sinon.stub(countQuery, 'count');
+        countQuery.count.returns(Promise.resolve(0));
+
+    
+        var query = new mongoose.Query();
+        sinon.stub(query, 'sort').returns({
+            limit: sinon.stub().returnsThis(),
+            skip: sinon.stub().returnsThis(),
+            exec: sinon.stub().resolves([])
+        });
+
+        var callback = function (error, users, pageInfo) {
+            expect(error).to.be.null;
+            expect(users).to.not.be.null;
+            expect(users.length).to.equal(0);
+            expect(pageInfo).to.not.be.null;
+            expect(pageInfo.limit).to.equal(10);
+            expect(pageInfo.size).to.equal(0);
+            expect(pageInfo.links).to.not.be.null;
+            expect(pageInfo.links.next).to.be.null;
+            expect(pageInfo.links.prev).to.be.null;
+            done();
+        };
+        let spy = sinon.spy(callback);
+        let options = { limit: '10' };
+        Paging.pageUsers(countQuery, query, options, spy);
+    });
 })
