@@ -5,8 +5,8 @@ class PageInfo {
     this.links = {
       base: '',
       context: '',
-      next: '',
-      prev: '',
+      next: null,
+      prev: null,
       self: ''
     };
     this.limit = 0;

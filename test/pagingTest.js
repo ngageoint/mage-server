@@ -18,11 +18,9 @@ describe("Paging Tests", function () {
     });
 
     it('Test page users', function (done) {
-        var callback = sinon.fake();
-
         var countQuery = new mongoose.Query();
         sinon.stub(countQuery, 'count');
-        countQuery.count.returns(Promise.resolve(10));
+        countQuery.count.returns(Promise.resolve(1));
 
         let user0 = {
             _id: '0'
@@ -40,10 +38,14 @@ describe("Paging Tests", function () {
             expect(users).to.not.be.null;
             expect(users.length).to.equal(1);
             expect(pageInfo).to.not.be.null;
+            expect(pageInfo.limit).to.equal(10);
+            expect(pageInfo.size).to.equal(1);
+            expect(pageInfo.links).to.not.be.null;
+            expect(pageInfo.links.next).to.be.null;
             done();
         };
         let spy = sinon.spy(callback);
-        let options = { limit: '1' };
+        let options = { limit: '10' };
         Paging.pageUsers(countQuery, query, options, spy);
     });
 })
