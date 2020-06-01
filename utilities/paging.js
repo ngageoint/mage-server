@@ -1,4 +1,6 @@
-const User = require("../models/user.js");
+const User = require("../models/user.js"),
+      Device = require("../models/device.js"),
+FilterParser = require("./filterParser.js");
 
 class PageInfo {
   constructor() {
@@ -25,7 +27,7 @@ function pageUsers(countQuery, query, options, callback) {
 
 function pageDevices(countQuery, query, options, conditions) {
   if (countQuery == null) {
-    return aggregateAndPage(query, options, conditions);
+    return queryUsersAndPage(query, options, conditions);
   }
   return countAndPage(countQuery, query, options, 'devices');
 }
@@ -124,6 +126,32 @@ function convertUserDeviceRecords(data) {
   });
 
   return devices;
+}
+
+async function queryUsersAndPage(query, options, conditions) {
+  const count = await User.Model.count(conditions);
+  var userQuery = User.Model.find(conditions, "_id");
+  return userQuery.exec().then(data => {
+    let ids = [];
+    for(var i =0; i < data.length; i++) {
+      let user = data[i];
+      ids.push(user.id);
+    }
+    let deviceOptions = {
+      filter: {
+        in: {
+          userId: ids
+        }
+      }
+    };
+
+    delete options.sort;
+
+    let deviceConditions = FilterParser.parse(deviceOptions.filter);
+    let deviceQuery = Device.Model.find(deviceConditions);
+    deviceQuery.populate('userId');
+    return page(count, deviceQuery, options, 'devices');
+  });
 }
 
 module.exports = {
