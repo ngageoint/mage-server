@@ -149,12 +149,14 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <ui-select ng-model="$ctrl.team.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-                      <ui-select-choices repeat="team in $ctrl.nonTeams | orderBy: 'name' | filter: $select.search">
-                        <span><i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i> </span><span ng-bind-html="team.name | highlight: $select.search"></span>
-                      </ui-select-choices>
-                    </ui-select>
+                    <input type="text" ng-model="$ctrl.nonUserTeam" placeholder="Search"
+                    uib-typeahead="team as team.name for team in $ctrl.searchNonUserTeams($viewValue)"
+                    typeahead-loading="$ctrl.nonUserTeamSearchResults" typeahead-no-results="noSearchResults"
+                    class="form-control" ng-model-options="{ debounce: 1000 }">
+                  <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
+                  <div ng-show="noSearchResults">
+                    <i class="glyphicon glyphicon-remove"></i> No Results Found
+                  </div>
                   </div>
                 </div>
 
@@ -162,7 +164,8 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addUserToTeam($ctrl.team.selected)" ng-disabled="$ctrl.team.selected == null"><i class="fa fa-plus"></i> Add To Team</button>
+                      <button class="btn btn-success" ng-click="$ctrl.addUserToTeam()"
+                      ng-disabled="($ctrl.nonUserTeam == null || $ctrl.nonUserTeam == '')"><i class="fa fa-plus"></i> Add To Team</button>
                     </div>
                 </div>
               </div>

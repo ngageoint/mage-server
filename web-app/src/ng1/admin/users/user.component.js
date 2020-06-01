@@ -15,7 +15,6 @@ class AdminUserController {
     this.TeamPagingService = TeamPagingService;
 
     this.userTeams = [];
-    this.nonTeams = [];
     this.team = {};
 
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
@@ -42,23 +41,26 @@ class AdminUserController {
     this.userTeamStateAndData = this.TeamPagingService.constructDefault();
     this.userTeamState = 'all';
     this.userTeamSearch = '';
+    this.nonUserTeamSearchState = this.userTeamState + '.search';
+    this.nonUserTeamSearch = '';
 
-    this.nonTeamStateAndData = this.TeamPagingService.constructDefault();
+
+    this.nonUserTeam = null;
+    this.nonUserTeamSearchResults = [];
+    this.isSearching = false;
   }
 
   $onInit() {
     this.UserService.getUser(this.$stateParams.userId).then(user => {
       this.user = user;  
+      let searchClone = JSON.parse(JSON.stringify(this.userTeamStateAndData[this.userTeamState]));
+      this.userTeamStateAndData[this.nonUserTeamSearchState] = searchClone;
+
       this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
+      this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.nin = { userIds: [user.id]};
 
       this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
         this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
-      });
-
-      this.nonTeamStateAndData[this.userTeamState].teamFilter.nin = { userIds: [user.id]};
-
-      this.TeamPagingService.refresh(this.nonTeamStateAndData).then(() => {
-        this.nonTeams = this.TeamPagingService.teams(this.nonTeamStateAndData[this.userTeamState]);
       });
     });
 
@@ -100,6 +102,18 @@ class AdminUserController {
   searchUserTeam() {
     this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch).then(teams => {
       this.userTeams = teams;
+    });
+  }
+
+
+  searchNonUserTeams(searchString) {
+    this.isSearching = true;
+
+    return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString).then(teams => {
+      this.nonUserTeamSearchResults = teams;
+      this.isSearching = false;
+  
+      return this.nonUserTeamSearchResults;
     });
   }
 
