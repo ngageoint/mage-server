@@ -144,7 +144,7 @@ class AdminDeviceController {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
 
-    this._LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
+    this.LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
       this.showNext = loginPage.logins.length !== 0;
       this.showPrevious = false;
       this.loginPage = loginPage;
