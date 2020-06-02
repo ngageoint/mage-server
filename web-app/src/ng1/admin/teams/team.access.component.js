@@ -136,7 +136,7 @@ class AdminTeamAccessController {
   }
 
   gotoUser(member) {
-    this.$state.go('admin.users' + { userId: member.id });
+    this.$state.go('admin.user', { userId: member.id });
   }
 }
 
