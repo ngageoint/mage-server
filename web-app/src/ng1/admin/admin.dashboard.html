@@ -17,8 +17,7 @@
             <nav class="navbar navbar-default admin-dashboard-navbar">
               <div class="container-fluid">
                 <div class="navbar-header">
-                  <a class="navbar-brand">Inactive users <sup><span
-                        class="badge badge-accent">{{$ctrl.count()}}</span></sup></a>
+                  <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{$ctrl.count()}}</span></sup></a>
                 </div>
 
                 <form class="form">
@@ -75,8 +74,7 @@
             <nav class="navbar navbar-default admin-dashboard-navbar">
               <div class="container-fluid">
                 <div class="navbar-header">
-                  <a class="navbar-brand">Unregistered devices <sup><span
-                        class="badge badge-accent">{{$ctrl.deviceCount()}}</span></sup></a>
+                  <a class="navbar-brand">Unregistered devices <sup><span class="badge badge-accent">{{$ctrl.deviceCount()}}</span></sup></a>
                 </div>
 
                 <form class="navbar-form navbar-left">
@@ -161,7 +159,7 @@
 
                 <div class="form-group">
                   <div class="form-group">
-                    <input type="text" ng-model="$ctrl.device" placeholder="Filter on devices"
+                    <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
                         uib-typeahead="device as device.userAgent for device in $ctrl.searchLoginsAgainstDevices($viewValue)"
                         typeahead-loading="$ctrl.loginDeviceSearchResults" typeahead-no-results="noDeviceSearchResults"
                         class="form-control" ng-model-options="{ debounce: 1000 }" typeahead-on-select='$ctrl.filterLogins()'>
