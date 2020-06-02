@@ -50,7 +50,7 @@ describe("Filter Parser Tests", function () {
         done();
     });
 
-    it('Test NIN filter parsing', function (done) {
+    it('Test Equals filter parsing', function (done) {
         let filter = { 
             "e": { 
                 "equalToNull": null,
