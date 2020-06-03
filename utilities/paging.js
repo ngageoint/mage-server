@@ -130,8 +130,7 @@ function convertUserDeviceRecords(data) {
 
 async function queryUsersAndDevicesThenPage(options, conditions) {
   const count = await User.Model.count(conditions);
-  var userQuery = User.Model.find(conditions, "_id");
-  return userQuery.exec().then(data => {
+  return User.Model.find(conditions, "_id").exec().then(data => {
     let ids = [];
     for(var i =0; i < data.length; i++) {
       let user = data[i];

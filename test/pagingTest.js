@@ -5,7 +5,9 @@ var Paging = require('../utilities/paging.js'),
     sinon = require('sinon'),
     sinonChai = require('sinon-chai'),
     expect = require("chai").expect,
-    mongoose = require('mongoose');
+    mongoose = require('mongoose'),
+    User = require('../models/user.js'),
+    Device = require('../models/device.js');
 
 require('sinon-mongoose');
 
@@ -25,7 +27,7 @@ describe("Paging Tests", function () {
         let user0 = {
             _id: '0'
         };
-    
+
         var query = new mongoose.Query();
         sinon.stub(query, 'sort').returns({
             limit: sinon.stub().returnsThis(),
@@ -54,7 +56,7 @@ describe("Paging Tests", function () {
         sinon.stub(countQuery, 'count');
         countQuery.count.returns(Promise.resolve(0));
 
-    
+
         var query = new mongoose.Query();
         sinon.stub(query, 'sort').returns({
             limit: sinon.stub().returnsThis(),
@@ -102,6 +104,54 @@ describe("Paging Tests", function () {
             expect(pageInfo.size).to.equal(1);
             expect(pageInfo.devices).to.not.be.null;
             expect(pageInfo.devices).to.have.lengthOf(1);
+            done();
+        });
+    });
+
+    it('Test page devices against users', function (done) {
+        sinon.mock(User.Model)
+            .expects('count')
+            .returns(5);
+
+        var mockUsers = [{
+            _id: 'id1',
+            username: 'test1'
+        }, {
+            _id: 'id2',
+            username: 'test2'
+        }];
+
+        sinon.mock(User.Model)
+            .expects('find')
+            .chain('exec')
+            .returns(Promise.resolve(mockUsers));
+
+        var mockDevices = [{
+            _id: 'id0',
+            description: 'test0'
+        }, {
+            _id: 'id1',
+            description: 'test1'
+        }];
+
+        var query = new mongoose.Query();
+        sinon.stub(query, 'sort').returns({
+            limit: sinon.stub().returnsThis(),
+            skip: sinon.stub().returnsThis(),
+            exec: sinon.stub().resolves(mockDevices)
+        });
+
+        sinon.mock(Device.Model)
+            .expects('find')
+            .returns(query);
+
+        let conditions = {};
+        let options = { limit: '10' };
+        Paging.pageDevices(null, null, options, conditions).then(pageInfo => {
+            expect(pageInfo).to.not.be.null;
+            expect(pageInfo.size).to.equal(2);
+            expect(pageInfo.devices).to.not.be.null;
+            expect(pageInfo.devices).to.have.lengthOf(2);
             done();
         });
     });
