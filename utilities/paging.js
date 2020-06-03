@@ -27,7 +27,7 @@ function pageUsers(countQuery, query, options, callback) {
 
 function pageDevices(countQuery, query, options, conditions) {
   if (countQuery == null) {
-    return queryUsersAndPage(query, options, conditions);
+    return queryUsersAndDevicesThenPage(options, conditions);
   }
   return countAndPage(countQuery, query, options, 'devices');
 }
@@ -128,7 +128,7 @@ function convertUserDeviceRecords(data) {
   return devices;
 }
 
-async function queryUsersAndPage(query, options, conditions) {
+async function queryUsersAndDevicesThenPage(options, conditions) {
   const count = await User.Model.count(conditions);
   var userQuery = User.Model.find(conditions, "_id");
   return userQuery.exec().then(data => {
