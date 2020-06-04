@@ -62,7 +62,9 @@ app
   .directive('mapControlZoom', downgradeComponent({ component: ZoomComponent }))
   .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
-  .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }));
+  .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
+  .directive('swagger', downgradeComponent({ component: SwaggerComponent }));
+
 
 app
   .component('filterPanel', require('./filter/filter'))
@@ -148,7 +150,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   $stateProvider.state({
     name: 'swagger',
     url: '/swagger',
-    component: SwaggerComponent,
+    component: 'swagger',
     resolve: resolveLogin()
   });
 
