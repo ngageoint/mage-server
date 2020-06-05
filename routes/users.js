@@ -258,7 +258,7 @@ module.exports = function (app, security) {
         if (pageInfo != null) {
           data = pageInfo;
           data.links.base = req.getRoot();
-          data.links.self = req.getRoot() + req.url;
+          data.links.self = req.getPath();
           data.users = userTransformer.transform(users, { path: req.getRoot() });
         } else {
           data = userTransformer.transform(users, { path: req.getRoot() });
