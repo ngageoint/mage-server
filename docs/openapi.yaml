@@ -192,12 +192,12 @@ paths:
             type: boolean
         - in: query
           name: start
-          description: First record.
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
           schema:
             type: integer
         - in: query
           name: limit
-          description: Maximum number of records.
+          description: Used with pagination.  Maximum number of records to return. 
           schema:
             type: integer
         - in: query

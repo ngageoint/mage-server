@@ -94,6 +94,7 @@ module.exports = function(app, security) {
         if (pageInfo != null) {
           data = pageInfo;
           data.links.base = req.getRoot();
+          data.links.self = req.getRoot() + req.url;
           data.teams = teams.map(function(team) {
             return team.toObject({access: req.access, path: req.getRoot()});
           });

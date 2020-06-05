@@ -194,6 +194,7 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
       if(!Array.isArray(result)) {
         //This is paging
         data.links.base = req.getRoot();
+        data.links.self = req.getRoot() + req.url;
       }
       res.json(data);
     })
