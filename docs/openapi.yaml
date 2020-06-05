@@ -191,6 +191,16 @@ paths:
           schema:
             type: boolean
         - in: query
+          name: start
+          description: First record.
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Maximum number of records.
+          schema:
+            type: integer
+        - in: query
           name: populate
           description: >
             Pre-populate the given relation keys in the result user documents.
