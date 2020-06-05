@@ -7,6 +7,7 @@ module.exports = function (app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
+    , pageInfoTransformer = require('../transformers/pageinfo.js')
     , { default: upload } = require('../upload')
     , passport = security.authentication.passport;
 
@@ -256,9 +257,7 @@ module.exports = function (app, security) {
         let data = null;
 
         if (pageInfo != null) {
-          data = pageInfo;
-          data.links.base = req.getRoot();
-          data.links.self = req.getPath();
+          data = pageInfoTransformer.transform(pageInfo, req);
           data.users = userTransformer.transform(users, { path: req.getRoot() });
         } else {
           data = userTransformer.transform(users, { path: req.getRoot() });

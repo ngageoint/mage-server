@@ -1,6 +1,7 @@
 const log = require('winston');
 const Device = require('../models/device');
 const access = require('../access');
+const pageInfoTransformer = require('../transformers/pageinfo.js');
 
 function DeviceResource() {}
 
@@ -192,9 +193,7 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
       let data = result;
 
       if(!Array.isArray(result)) {
-        //This is paging
-        data.links.base = req.getRoot();
-        data.links.self = req.getPath();
+        data = pageInfoTransformer.transform(data, req);
       }
       res.json(data);
     })
