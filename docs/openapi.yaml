@@ -178,6 +178,7 @@ paths:
       tags: [ User ]
       description: >
         Return an array of all users.  The client must have `READ_USER` permission.
+      summary: Get an array of users.
       operationId: getUsers
       parameters:
         - in: query
@@ -236,6 +237,7 @@ paths:
       description: >
         Return the number of users in the database.  The client must
         have `READ_USER` permission.
+      summary: Count the number of users in the database.
       operationId: getUserCount
       parameters:
         - in: query
@@ -461,6 +463,7 @@ paths:
       description: >
         Return an array of all the device documents in the database.  The
         requesting client must have `READ_DEVICE` permission.
+      summary: Get all the device documents in the database.
       operationId: getDevices
       parameters:
         - in: query
@@ -513,6 +516,7 @@ paths:
         - Device
       operationId: getDeviceCount
       description: Return the number of devices in the database.
+      summary: Count the number of devices in the database.
       parameters:
         - in: query
           name: registered
