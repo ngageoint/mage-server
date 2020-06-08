@@ -2,15 +2,16 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDashboardController {
-  constructor($state, $filter, UserService, DevicePagingService, LoginService, Event, Layer, UserPagingService) {
+  constructor($state, $filter, UserService, DeviceService, DevicePagingService, LoginService, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
     this._UserService = UserService;
-    this._DevicePagingService = DevicePagingService;
+    this._DeviceService = DeviceService;
     this._LoginService = LoginService;
     this._Event = Event;
     this._Layer = Layer;
     this.UserPagingService = UserPagingService;
+    this.DevicePagingService = DevicePagingService;
 
     this.userSearch = '';
     this.userState = 'inactive';
@@ -20,7 +21,7 @@ class AdminDashboardController {
     this.loginSearchResults = [];
 
     this.isSearchingDevices = false;
-    this.deviceStateAndData = this._DevicePagingService.constructDefault();
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.deviceState = 'unregistered';
     this.deviceSearch = '';
     this.unregisteredDevices = [];
@@ -40,8 +41,8 @@ class AdminDashboardController {
     this.showPrevious = false;
     this.showNext = true;
 
-    this._DevicePagingService.refresh(this.deviceStateAndData).then(() => {
-      this.unregisteredDevices = this._DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
 
     this._Event.count(data => {
@@ -89,25 +90,25 @@ class AdminDashboardController {
   }
 
   deviceCount() {
-    return this._DevicePagingService.count(this.deviceStateAndData[this.deviceState]);
+    return this.DevicePagingService.count(this.deviceStateAndData[this.deviceState]);
   }
 
   hasNextDevice() {
-    return this._DevicePagingService.hasNext(this.deviceStateAndData[this.deviceState]);
+    return this.DevicePagingService.hasNext(this.deviceStateAndData[this.deviceState]);
   }
 
   nextDevice() {
-    this._DevicePagingService.next(this.deviceStateAndData[this.deviceState]).then(devices => {
+    this.DevicePagingService.next(this.deviceStateAndData[this.deviceState]).then(devices => {
       this.unregisteredDevices = devices;
     });
   }
 
   hasPreviousDevice() {
-    return this._DevicePagingService.hasPrevious(this.deviceStateAndData[this.deviceState]);
+    return this.DevicePagingService.hasPrevious(this.deviceStateAndData[this.deviceState]);
   }
 
   previousDevice() {
-    this._DevicePagingService.previous(this.deviceStateAndData[this.deviceState]).then(devices => {
+    this.DevicePagingService.previous(this.deviceStateAndData[this.deviceState]).then(devices => {
       this.unregisteredDevices = devices;
     });
   }
@@ -119,7 +120,7 @@ class AdminDashboardController {
   }
 
   searchDevices() {
-    this._DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
+    this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
       this.unregisteredDevices = devices;
     });
   }
@@ -138,7 +139,7 @@ class AdminDashboardController {
   searchLoginsAgainstDevices(searchString) {
     this.isSearchingDevices = true;
 
-    return this._DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
+    return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
       this.loginDeviceSearchResults = devices;
       this.isSearchingDevices = false;
 
@@ -200,8 +201,8 @@ class AdminDashboardController {
 
     device.registered = true;
     this._DeviceService.updateDevice(device).then(device => {
-      this._DevicePagingService.refresh(this.deviceStateAndData).then(() => {
-        this.unregisteredDevices = this._DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+      this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+        this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
       });
       this.onDeviceEnabled({
         $event: {
@@ -260,7 +261,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DevicePagingService', 'LoginService', 'Event', 'Layer', 'UserPagingService'];
+AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'DevicePagingService', 'LoginService', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),
