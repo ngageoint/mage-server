@@ -209,8 +209,11 @@ paths:
                 type: object
                 required:
                   - displayName
+                  - _id
                 properties:
                   displayName:
+                    type: string
+                  _id:
                     type: string
         - in: query
           name: populate
@@ -455,6 +458,31 @@ paths:
           name: registered
           description: Return only registered or unregistered devices.
           schema: { $ref: '#/components/schemas/Device/properties/registered' }
+        - in: query
+          name: start
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Used with pagination.  Maximum number of records to return. 
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - userAgent
+                  - _id
+                properties:
+                  userAgent:
+                    type: string
+                  _id:
+                    type: string
         - in: query
           name: expand
           description: >
