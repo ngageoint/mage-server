@@ -596,6 +596,32 @@ paths:
         Return all the teams.  The requesting client must have `READ_TEAM`
         permission.
       operationId: getTeams
+      parameters:
+        - in: query
+          name: start
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Used with pagination.  Maximum number of records to return. 
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - name
+                  - _id
+                properties:
+                  name:
+                    type: string
+                  _id:
+                    type: string
       responses:
         200:
           description: Success - an array of team documents
