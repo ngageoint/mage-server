@@ -513,6 +513,11 @@ paths:
         - Device
       operationId: getDeviceCount
       description: Return the number of devices in the database.
+      parameters:
+        - in: query
+          name: registered
+          schema:
+            type: boolean
       responses:
         200:
           description: Success - return the device count
