@@ -22,6 +22,7 @@ class AdminDashboardController {
     this.isSearchingDevices = false;
     this.deviceStateAndData = this._DevicePagingService.constructDefault();
     this.deviceState = 'unregistered';
+    this.deviceSearch = '';
     this.unregisteredDevices = [];
     this.loginDeviceSearchResults = [];
   }
