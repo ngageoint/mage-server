@@ -201,6 +201,18 @@ paths:
           schema:
             type: integer
         - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - displayName
+                properties:
+                  displayName:
+                    type: string
+        - in: query
           name: populate
           description: >
             Pre-populate the given relation keys in the result user documents.
