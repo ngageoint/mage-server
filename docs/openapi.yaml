@@ -237,6 +237,15 @@ paths:
         Return the number of users in the database.  The client must
         have `READ_USER` permission.
       operationId: getUserCount
+      parameters:
+        - in: query
+          name: active
+          schema:
+            type: boolean
+        - in: query
+          name: enabled
+          schema:
+            type: boolean
       responses:
         200:
           description: A successful request
