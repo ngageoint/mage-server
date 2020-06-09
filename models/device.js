@@ -123,6 +123,7 @@ exports.getDevices = function (options) {
       //This is a query against devices
       query.populate('userId');
     } else {
+      delete conditions.registered;
       //This is a query against users
       query = User.Model.aggregate([
         {

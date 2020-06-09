@@ -121,7 +121,13 @@ class AdminDashboardController {
 
   searchDevices() {
     this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
-      this.unregisteredDevices = devices;
+      if(devices.length > 0) {
+        this.unregisteredDevices = devices;
+      } else {
+        this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch, this.deviceSearch).then(devices => {
+          this.unregisteredDevices = devices;
+        });
+      }
     });
   }
 
