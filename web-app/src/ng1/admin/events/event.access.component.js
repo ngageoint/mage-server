@@ -13,8 +13,6 @@ class AdminEventAccessController {
 
     this.eventMembers = [];
 
-    this.nonMember = null;
-
     //This is the list of users returned from a search
     this.nonMemberSearchResults = [];
     this.isSearching = false;
@@ -37,15 +35,16 @@ class AdminEventAccessController {
       description: 'Read, Update and Delete access to this event.'
     }];
 
+    this.nonMember = {
+      role: this.roles[0]
+    };
+
     // For some reason angular is not calling into filter function with correct context
     this.filterMembers = this._filterMembers.bind(this);  
   }
 
   $onInit() {
     this.$q.all({event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {  
-      this.role = {
-        selected: this.roles[0]
-      };
   
       let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonAclUserState] = clone;
@@ -134,14 +133,16 @@ class AdminEventAccessController {
     });
   }
 
-  addMember(member, role) {
+  addMember() {
     this.EventAccess.update({
       eventId: this.event.id,
-      userId: member.id,
-      role: role.name
+      userId: this.nonMember.selected.id,
+      role: this.nonMember.role.name
     }, event => {
-      this.nonMember = null;
-      this.refreshMembers(event);
+      delete this.nonMember.selected;
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -150,7 +151,7 @@ class AdminEventAccessController {
       eventId: this.event.id,
       userId: member.id
     }, event => {
-      this.UserPagingService.refresh().then(() => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(event);
       });
     });
@@ -162,7 +163,7 @@ class AdminEventAccessController {
       userId: member.id,
       role: role.name
     }, event => {
-      this.UserPagingService.refresh().then(() => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(event);
       });
     });

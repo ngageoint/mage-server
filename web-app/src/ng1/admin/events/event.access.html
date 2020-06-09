@@ -20,7 +20,7 @@
 
       <div class="row">
         <div class="col-md-6">
-          <input type="text" ng-model="$ctrl.nonMember" placeholder="Search"
+          <input type="text" ng-model="$ctrl.nonMember.selected" placeholder="Search for a user"
             uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
             typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults" class="form-control"
             ng-model-options="{ debounce: 1000 }">
@@ -31,7 +31,7 @@
         </div>
 
         <div class="col-md-4">
-          <ui-select ng-model="$ctrl.role.selected" theme="bootstrap">
+          <ui-select ng-model="$ctrl.nonMember.role" theme="bootstrap">
             <ui-select-match placeholder="Select a role to give to user">{{$select.selected.title}}</ui-select-match>
             <ui-select-choices repeat="role in $ctrl.roles">
               <div ng-bind-html="role.title"></div>
@@ -42,7 +42,7 @@
 
         <div class="col-md-2">
           <button class="btn btn-success" ng-click="$ctrl.addMember()"
-            ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i>  Add member to event</button>
+            ng-disabled="($ctrl.nonMember.selected == null || $ctrl.nonMember.selected == '')"><i class="fa fa-plus"></i>  Add member to event</button>
         </div>
       </div>
 
