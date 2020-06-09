@@ -84,51 +84,12 @@ function page(count, query, options, dataKey, dataConverter) {
   });
 }
 
-function aggregateAndPage(query, options, conditions) {
-
-  let countAggregate = User.Model.aggregate([
-    {
-      $match: conditions
-    },
-    {
-      $count: "count"
-    }
-  ]);
-
-  return countAggregate.exec().then(count => {
-    let userCount = 0;
-
-    count.forEach(function (record, index, array) {
-      userCount += record.count;
-    });
-
-    return page(userCount, query, options, 'devices', convertUserDeviceRecords);
-  });
-}
-
-function convertUserDeviceRecords(data) {
-  var devices = [];
-  data.forEach(function (record, index, array) {
-    record.devices.forEach(function (device, idx, arr) {
-      if (device.userId) {
-        let miniUser = {
-          _id: device.userId,
-          displayName: record.displayName
-        }
-        delete device.userId;
-        device.id = device._id;
-        delete device._id;
-        device.user = miniUser;
-      }
-
-      devices.push(device);
-    });
-  });
-
-  return devices;
-}
-
 async function queryUsersAndDevicesThenPage(options, conditions) {
+  var registered = null;
+  if(conditions.registered != null) {
+    registered = conditions.registered;
+    delete conditions.registered;
+  }
   const count = await User.Model.count(conditions);
   return User.Model.find(conditions, "_id").exec().then(data => {
     let ids = [];
@@ -147,6 +108,9 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
     delete options.sort;
 
     let deviceConditions = FilterParser.parse(deviceOptions.filter);
+    if(registered != null) {
+      deviceConditions.registered = registered;
+    }
     let deviceQuery = Device.Model.find(deviceConditions);
     deviceQuery.populate('userId');
     return page(count, deviceQuery, options, 'devices');

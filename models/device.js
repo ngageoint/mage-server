@@ -118,21 +118,11 @@ exports.getDevices = function (options) {
   
   var isUserQuery = false;
   if (options.expand.user) {
-    if (Object.keys(conditions).length == 0 || conditions.description || conditions.registered
-      || conditions.userId || conditions.userAgent || conditions.appVersion) {
+    if (filter != null && !filter.user) {
       //This is a query against devices
       query.populate('userId');
     } else {
-      delete conditions.registered;
-      //This is a query against users
-      query = User.Model.aggregate([
-        {
-          $match: conditions
-        },
-        {
-          $lookup: { from: "devices", localField: "_id", foreignField: "userId", as: "devices" }
-        }
-      ]);
+      query = null;
       isUserQuery = true;
     }
   } else {

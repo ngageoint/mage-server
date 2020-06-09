@@ -142,6 +142,7 @@ function DevicePagingService(DeviceService, $q) {
             data.searchFilter = '';
             delete data.deviceFilter['or'];
             delete data.deviceFilter['expand'];
+            delete data.deviceFilter['user'];
 
             promise = DeviceService.getAllDevices(data.deviceFilter).then(pageInfo => {
                 data.pageInfo = pageInfo;
@@ -167,6 +168,7 @@ function DevicePagingService(DeviceService, $q) {
                     email: '.*' + userSearch + '.*'
                 };
                 filter.expand = 'user';
+                filter.user = true;
             }
 
             promise = DeviceService.getAllDevices(filter).then(pageInfo => {
