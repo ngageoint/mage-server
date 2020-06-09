@@ -11,7 +11,7 @@ class AdminEventAccessController {
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
 
-    this.aclMembers = [];
+    this.eventMembers = [];
 
     this.nonMember = null;
 
@@ -36,6 +36,9 @@ class AdminEventAccessController {
       title: 'Owner',
       description: 'Read, Update and Delete access to this event.'
     }];
+
+    // For some reason angular is not calling into filter function with correct context
+    this.filterMembers = this._filterMembers.bind(this);  
   }
 
   $onInit() {
@@ -63,20 +66,32 @@ class AdminEventAccessController {
     });
   }
 
+  _filterMembers(member) {
+    var filteredMembers = this.$filter('filter')([member], this.memberSearch);
+    return filteredMembers && filteredMembers.length;
+  }
+
   refreshMembers(event) {
     this.event = event;
 
-    this.aclMembers = _.map(this.event.acl, (access, userId) => {
-      var member = _.pick(this.UserPagingService.users(this.stateAndData[this.userState]).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+    var usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
+
+    this.eventMembers = _.map(this.event.acl, (access, userId) => {
+      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = {
         selected: _.find(this.roles, role => { return role.name === access.role; })
       };
+
       return member;
     });
 
-    this.owners = _.filter(this.aclMembers, member => {
-      return member.role === 'OWNER';
+    this.owners = this.getOwners();
+  }
+
+  getOwners() {
+    return _.filter(this.eventMembers, member => {
+      return member.role.selected.name === 'OWNER';
     });
   }
 
@@ -90,7 +105,7 @@ class AdminEventAccessController {
 
   next() {
     this.UserPagingService.next(this.stateAndData[this.userState]).then(() => {
-      this.refreshMembers(this.team);
+      this.refreshMembers(this.event);
     });
   }
 
@@ -100,13 +115,13 @@ class AdminEventAccessController {
 
   previous() {
     this.UserPagingService.previous(this.stateAndData[this.userState]).then(() => {
-      this.refreshMembers(this.team);
+      this.refreshMembers(this.event);
     });
   }
 
   search() {
     this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
-      this.refreshMembers(this.team);
+      this.refreshMembers(this.event);
     });
   }
 
@@ -125,7 +140,7 @@ class AdminEventAccessController {
       userId: member.id,
       role: role.name
     }, event => {
-      delete this.member.selected;
+      this.nonMember = null;
       this.refreshMembers(event);
     });
   }

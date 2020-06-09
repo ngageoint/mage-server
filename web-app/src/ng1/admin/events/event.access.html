@@ -74,8 +74,7 @@
   <div class="row">
     <div class="col-sm-12">
       <div class="admin-table">
-        <div class="well-item"
-          ng-repeat="member in $ctrl.aclMembers">
+        <div class="well-item" ng-repeat="member in ($ctrl.filteredMembers = ($ctrl.eventMembers | filter:$ctrl.filterMembers)) | orderBy:'displayName'" >
           <div class="row admin-event-member">
 
             <div class="col-md-8 pointer" ng-click="$ctrl.gotoUser(member)">
