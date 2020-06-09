@@ -109,13 +109,13 @@ class AdminTeamAccessController {
     });
   }
 
-  addMember(member, role) {
+  addMember() {
     this.TeamAccess.update({
       teamId: this.team.id,
-      userId: member.id,
-      role: role
+      userId: this.nonMember.selected.id,
+      role: this.nonMember.role
     }, team => {
-      delete this.member.selected;
+      delete this.nonMember.selected;
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
