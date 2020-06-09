@@ -1,16 +1,17 @@
 import _ from 'underscore';
 
 class AdminTeamAccessController {
-  constructor($state, $stateParams, $q, Team, TeamAccess, UserPagingService) {
+  constructor($state, $stateParams, $q, $filter, Team, TeamAccess, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
+    this.$filter = $filter;
     this.Team = Team;
     this.TeamAccess = TeamAccess;
     this.UserPagingService = UserPagingService;
 
     this.team = null;
-    this.aclMembers = [];
+    this.teamMembers = [];
 
     this.nonMember = {
       role: 'GUEST'
@@ -27,6 +28,9 @@ class AdminTeamAccessController {
     this.stateAndData = this.UserPagingService.constructDefault();
 
     this.owners = [];
+
+    // For some reason angular is not calling into filter function with correct context
+    this.filterMembers = this._filterMembers.bind(this);
   }
 
   $onInit() {
@@ -48,14 +52,20 @@ class AdminTeamAccessController {
   refreshMembers(team) {
     this.team = team;
 
-    this.aclMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(this.UserPagingService.users(this.stateAndData[this.userState]).find(user => user.id == userId), 'displayName', 'avatarUrl', 'lastUpdated');
+    var usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
+
+    this.teamMembers = _.map(this.team.acl, (access, userId) => {
+      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
     });
 
-    this.owners = _.filter(this.aclMembers, member => {
+    this.owners = this.getOwners();
+  }
+
+  getOwners() {
+    return _.filter(this.teamMembers, member => {
       return member.role === 'OWNER';
     });
   }
@@ -138,9 +148,14 @@ class AdminTeamAccessController {
   gotoUser(member) {
     this.$state.go('admin.user', { userId: member.id });
   }
+
+  _filterMembers(member) {
+    var filteredMembers = this.$filter('filter')([member], this.memberSearch);
+    return filteredMembers && filteredMembers.length;
+  }
 }
 
-AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', 'Team', 'TeamAccess', 'UserPagingService'];
+AdminTeamAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserPagingService'];
 
 export default {
   template: require('./team.access.html'),
