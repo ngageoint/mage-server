@@ -51,6 +51,64 @@ describe("Paging Tests", function () {
         Paging.pageUsers(countQuery, query, options, spy);
     });
 
+    it('Test page to end', function (done) {
+        var countQuery = new mongoose.Query();
+        sinon.stub(countQuery, 'count');
+        countQuery.count.returns(Promise.resolve(2));
+
+        let user0 = {
+            _id: '0'
+        };
+        let user1 = {
+            _id: '1'
+        };
+
+        var query = new mongoose.Query();
+        sinon.stub(query, 'sort').returns({
+            limit: sinon.stub().returnsThis(),
+            skip: sinon.stub().returnsThis(),
+            exec: sinon.stub().resolves([user0])
+        });
+
+        var query1 = new mongoose.Query();
+        sinon.stub(query1, 'sort').returns({
+            limit: sinon.stub().returnsThis(),
+            skip: sinon.stub().returnsThis(),
+            exec: sinon.stub().resolves([user1])
+        });
+
+        var callback = function (error, users, pageInfo) {
+            expect(error).to.be.null;
+            expect(users).to.not.be.null;
+            expect(users.length).to.equal(1);
+            expect(pageInfo).to.not.be.null;
+            expect(pageInfo.limit).to.equal(1);
+            expect(pageInfo.size).to.equal(1);
+            expect(pageInfo.links).to.not.be.null;
+            expect(pageInfo.links.next).to.not.be.null;
+
+            let spy = sinon.spy(callback1);
+            let options = { limit: '1', start: pageInfo.links.next };
+            Paging.pageUsers(countQuery, query1, options, spy);
+        };
+        var callback1 = function (error, users, pageInfo) {
+            expect(error).to.be.null;
+            expect(users).to.not.be.null;
+            expect(users.length).to.equal(1);
+            expect(pageInfo).to.not.be.null;
+            expect(pageInfo.limit).to.equal(1);
+            expect(pageInfo.size).to.equal(1);
+            expect(pageInfo.links).to.not.be.null;
+            expect(pageInfo.links.next).to.be.null;
+            expect(pageInfo.links.prev).to.not.be.null;
+            done();
+        };
+
+        let spy = sinon.spy(callback);
+        let options = { limit: '1' };
+        Paging.pageUsers(countQuery, query, options, spy);
+    });
+
     it('Test page no results', function (done) {
         var countQuery = new mongoose.Query();
         sinon.stub(countQuery, 'count');
