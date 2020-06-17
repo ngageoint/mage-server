@@ -197,7 +197,7 @@ class AdminUserController {
   }
 
   gotoTeam(team) {
-    this.$state.go('admin.teams', { teamId: team.id });
+    this.$state.go('admin.team', { teamId: team.id });
   }
 
   gotoDevice(device) {
