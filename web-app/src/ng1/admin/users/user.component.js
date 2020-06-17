@@ -58,6 +58,7 @@ class AdminUserController {
 
       this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
       this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.nin = { userIds: [user.id]};
+      delete this.userTeamStateAndData[this.userTeamState].teamFilter.e;
       delete this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.e;
 
       this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
