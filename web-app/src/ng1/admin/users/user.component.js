@@ -142,12 +142,10 @@ class AdminUserController {
     this.$state.go('admin.editUser', { userId: user.id });
   }
 
-  addUserToTeam(team) {
-    this.Team.addUser({id: team.id}, this.user, team => {
+  addUserToTeam() {
+    this.Team.addUser({id: this.nonUserTeam.id}, this.user, team => {
       this.userTeams.push(team);
-      this.nonTeams = _.reject(this.nonTeams, t => { return t.id === team.id; });
-
-      this.team = {};
+      this.nonUserTeam = null;
     });
   }
 
@@ -156,7 +154,6 @@ class AdminUserController {
 
     this.Team.removeUser({id: team.id, userId: this.user.id}, team => {
       this.userTeams = _.reject(this.userTeams, t => { return t.id === team.id; });
-      this.nonTeams.push(team);
     });
   }
 
