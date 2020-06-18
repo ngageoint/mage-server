@@ -102,7 +102,7 @@ class AdminUserController {
   }
 
   searchUserTeam() {
-    this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch).then(teams => {
+    this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch, true).then(teams => {
       this.userTeams = teams;
     });
   }
@@ -111,7 +111,7 @@ class AdminUserController {
   searchNonUserTeams(searchString) {
     this.isSearching = true;
 
-    return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString).then(teams => {
+    return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
       this.nonUserTeamSearchResults = teams;
       this.isSearching = false;
   

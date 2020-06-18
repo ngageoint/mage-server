@@ -103,7 +103,7 @@ function TeamPagingService(Team, $q) {
         return teams;
     }
 
-    function search(data, teamSearch) {
+    function search(data, teamSearch, nameSearchOnly) {
 
         if (data.pageInfo == null || data.pageInfo.teams == null) {
             return $q.resolve([]);
@@ -133,10 +133,17 @@ function TeamPagingService(Team, $q) {
             data.searchFilter = teamSearch;
 
             var filter = data.teamFilter;
-            filter.or = {
-                name: '.*' + teamSearch + '.*',
-                description: '.*' + teamSearch + '.*'
-            };
+            if(nameSearchOnly) {
+                filter.or = {
+                    name: '.*' + teamSearch + '.*'
+                };
+            } else{
+                filter.or = {
+                    name: '.*' + teamSearch + '.*',
+                    description: '.*' + teamSearch + '.*'
+                };
+            }
+           
             promise = $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
                 data.pageInfo = result.pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);
