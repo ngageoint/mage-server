@@ -82,8 +82,12 @@ describe("Filter Parser Tests", function () {
         const conditions = FilterParser.parse(filter);
         expect(conditions).to.not.be.null;
 
-        let or = conditions.or;
+        let or = conditions.$or;
         expect(or).to.not.be.null;
+        expect(or).to.be.an('array');
+        expect(or).to.have.lengthOf(1);
+        expect(or[0].email).to.not.be.null;
+        expect(or[0].email.$regex).to.not.be.null;
 
         done();
     });
