@@ -53,7 +53,13 @@ function handleEquals(filter, conditions) {
 }
 
 function handleOr(filter, conditions) {
-    let json = JSON.parse(filter.or);
+    var json = filter.or;
+
+    try {
+        json = JSON.parse(filter.or);
+    } catch (e) {
+
+    }
 
     var orCondition = [];
     for (let [key, value] of Object.entries(json)) {

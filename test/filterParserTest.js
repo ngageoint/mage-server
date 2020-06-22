@@ -71,4 +71,21 @@ describe("Filter Parser Tests", function () {
         done();
     });
 
+    it('Test OR filter parsing', function (done) {
+        const userSearch = 'caci';
+        let filter = { 
+            "or": { 
+                email: '.*' + userSearch + '.*'
+            } 
+        };
+
+        const conditions = FilterParser.parse(filter);
+        expect(conditions).to.not.be.null;
+
+        let or = conditions.or;
+        expect(or).to.not.be.null;
+
+        done();
+    });
+
 });
