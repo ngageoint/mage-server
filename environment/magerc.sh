@@ -4,8 +4,6 @@
 export MAGE_ADDRESS=0.0.0.0
 # the port on which the web server will listen for connections
 export MAGE_PORT=4242
-# indicates whether the mage session cookie used during authentication is only to be sent over HTTPS
-export MAGE_SESSION_COOKIE_SECURE=true
 # directory where mage stores user icons and avatars
 export MAGE_USER_DIR=/var/lib/mage/users
 # directory where mage stores map symbology icons

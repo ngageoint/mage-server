@@ -6,14 +6,12 @@ UserService.$inject = ['$rootScope', '$q', '$http', '$httpParamSerializer', '$lo
 
 function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $state, $window, LocalStorageService) {
 
-  var service = {
+  const service = {
     myself: null,
     amAdmin: false,
     signup,
     signin,
-    googleSignin,
-    googleSignup,
-    oauthSignin,
+    idpSignin,
     ldapSignin,
     authorize,
     acceptDisclaimer,
@@ -44,41 +42,15 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     }, success, error, progress);
   }
 
-  function googleSignup(user, success, error, progress) {
-    saveUser(user, {
-      url: '/auth/google/signup',
-      type: 'POST'
-    }, success, error, progress);
-  }
-
-  function googleSignin(data) {
-    var oldUsername = service.myself && service.myself.username || null;
-
-    data.appVersion = 'Web Client';
-    var promise = $http.post('/auth/google/signin', $httpParamSerializer(data), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      ignoreAuthModule:true
-    });
-
-    promise.success(function(data) {
-      setUser(data.user);
-      LocalStorageService.setToken(data.token);
-      $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
-    });
-
-    return promise;
-  }
-
   function ldapSignin(data) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
     data.appVersion = 'Web Client';
     $http.post('/auth/ldap/signin', data, {
       headers: {"Content-Type": "application/json"},
       ignoreAuthModule:true
     }).then(function(response) {
-      deferred.resolve({user: response.data.user});
+      deferred.resolve(response.data);
     }).catch(function(response) {
       deferred.reject(response);
     });
@@ -86,18 +58,11 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return deferred.promise;
   }
 
-  function oauthSignin(strategy) {
-    var deferred = $q.defer();
+  function idpSignin(strategy) {
+    const deferred = $q.defer();
 
-    var windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
-    var windowTop = window.screenTop ? window.screenTop : window.screenY;
-
-    var left = windowLeft + (window.innerWidth / 2) - (300);
-    var top = windowTop + (window.innerHeight / 2) - (300);
-    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
-
-    var url = "/auth/" + strategy + "/signin";
-    var authWindow = $window.open(url, "", strWindowFeatures);
+    const url = "/auth/" + strategy + "/signin";
+    const authWindow = $window.open(url, "_blank");
 
     function onMessage(event) {
       $window.removeEventListener('message', onMessage, false);
@@ -106,7 +71,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
         return;
       }
 
-      deferred.resolve({success: event.data.success, user: event.data.user, oauth: event.data.oauth});
+      deferred.resolve(event.data);
 
       authWindow.close();
     }
@@ -116,15 +81,17 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return deferred.promise;
   }
 
-  function authorize(strategy, user, newUser, authData) {
-    var data = {
-      access_token: authData.access_token,
-      uid: authData.uid,
+  function authorize(token, uid, newUser = false) {
+    const params = {
+      uid: uid,
       appVersion: 'Web Client'
     };
 
-    var promise = $http.post('/auth/' + strategy + '/authorize', $httpParamSerializer(data), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    const promise = $http.post('/auth/token?createDevice=false', $httpParamSerializer(params), {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
       ignoreAuthModule:true
     });
 
@@ -145,14 +112,14 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
   }
 
   function signin(data) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
     data.appVersion = 'Web Client';
     $http.post('/auth/local/signin', $httpParamSerializer(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
     }).then(function(response) {
-      deferred.resolve({user: response.data.user});
+      deferred.resolve(response.data);
     }).catch(function(response) {
       deferred.reject(response);
     });

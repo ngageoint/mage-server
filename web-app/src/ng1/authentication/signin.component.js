@@ -17,8 +17,6 @@ class SigninController {
       strategy.name = name;
       return strategy;
     });
-
-    console.log('strats', this.thirdPartyStrategies);
   }
 
   localStrategyFilter(_strategy, name) {
@@ -26,7 +24,7 @@ class SigninController {
   }
 
   signin($event) {
-    this.onSignin({ user: $event.user, strategy: $event.strategy });
+    this.onSignin({$event});
   }
 }
 

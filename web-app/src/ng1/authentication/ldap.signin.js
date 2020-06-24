@@ -29,6 +29,7 @@ class LdapSigninController {
       this.onSignin({
         $event: {
           user: user,
+          token: response.token, 
           strategy: this.strategy.name
         }
       });

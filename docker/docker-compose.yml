@@ -39,8 +39,6 @@ services:
     environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
       MAGE_TOKEN_EXPIRATION: "2419200"
-      # Comment this when running the mage-web-proxy with TLS connections below.
-      MAGE_SESSION_COOKIE_SECURE: "false"
 
   # Uncomment the following block to enable the TLS reverse proxy.  You will
   # also need to generate the key and certificate as the README describes.
