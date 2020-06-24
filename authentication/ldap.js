@@ -1,10 +1,11 @@
-module.exports = function(app, passport, provision, strategyConfig) {
+module.exports = function(app, passport, provision, strategyConfig, tokenService) {
 
-  const log = require('winston')
-    , LdapStrategy = require('passport-ldapauth')
+  const LdapStrategy = require('passport-ldapauth')
+    , log = require('winston')
     , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
+    , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user');
@@ -17,15 +18,6 @@ module.exports = function(app, passport, provision, strategyConfig) {
 
     next();
   }
-
-  function isAuthenticated(req, res, next) {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
-
-    next();
-  }
-  
   const authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
     invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
@@ -47,8 +39,6 @@ module.exports = function(app, passport, provision, strategyConfig) {
     }
   },
   function(profile, done) {
-    console.log('Successful active directory login profile is', profile);
-
     const username = profile[strategyConfig.ldapUsernameField];
     User.getUserByAuthenticationId('ldap', username, function(err, user) {
       if (err) return done(err);
@@ -71,11 +61,13 @@ module.exports = function(app, passport, provision, strategyConfig) {
           };
 
           User.createUser(user, function(err, newUser) {
-            return done(err, newUser);
+            if (newUser.active) {
+              done(err, newUser);
+            } else {
+              return done(null, newUser, { status: 403 });
+            }
           });
         });
-      } else if (!user.active) {
-        return done(null, user, { message: 'User account is not approved, please contact your MAGE administrator to approve your account.'});
       } else {
         return done(null, user);
       }
@@ -92,35 +84,46 @@ module.exports = function(app, passport, provision, strategyConfig) {
           return res.status(401).send(info.message);
         }
 
+        if (!user.active) {
+          return res.status(info.status || 401).send('User account is not approved, please contact your MAGE administrator to approve your account.');
+        }
+
+        if (!user.enabled) {
+          log.warn('Failed user login attempt: User ' + user.username + ' account is disabled.');
+          return res.status(401).send('Your account has been disabled, please contact a MAGE administrator for assistance.')
+        }
+
+        // DEPRECATED session authorization, remove req.login which creates session in next version
         req.login(user, function(err) {
           if (err) return next(err);
 
-          res.json({
-            user: userTransformer.transform(req.user, {path: req.getRoot()})
-          });
+          tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+            .then(token => {
+              res.json({
+                user: userTransformer.transform(req.user, { path: req.getRoot() }),
+                token: token
+              });
+            }).catch(err => {
+              next(err);
+            });
         });
       })(req, res, next);
     }
   );
-
-  function authorizeUser(req, res, next) {
-    const token = req.param('access_token');
-
-    if (req.user) {
-      next();
-    } else if (token) {
-      log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
-      next(new Error("Not supported"));
-    } else {
-      return res.sendStatus(403);
-    }
-  }
  
+  // DEPRECATED, this will be removed in next major server version release
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
   app.post('/auth/ldap/devices',
-    authorizeUser,
+    function(req, res, next) {
+      // check user session
+      if (req.user) {
+        next();
+      } else {
+        return res.sendStatus(403);
+      }
+    },
     function(req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
@@ -147,9 +150,22 @@ module.exports = function(app, passport, provision, strategyConfig) {
     }
   );
 
+  // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/ldap/authorize',
-    isAuthenticated,
+    function (req, res, next) {
+      if (req.user) {
+        log.warn('session authorization is deprecated, please use jwt');
+        return next();
+      }
+
+      passport.authenticate('authorization', function (err, user, info = {}) {
+        if (!user) return res.status(401).send(info.message);
+
+        req.user = user;
+        next();
+      })(req, res, next);
+    },
     provision.check('ldap'),
     parseLoginMetadata,
     function(req, res, next) {

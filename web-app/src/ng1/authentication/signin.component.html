@@ -6,7 +6,7 @@
     strategy="$ctrl.localAuthenticationStrategy" 
     hide-signup="$ctrl.hideSignup" 
     on-signup="$ctrl.onSignup({strategy: $ctrl.localAuthenticationStrategy})" 
-    on-signin="$ctrl.onSignin($event)"></local-signin>
+    on-signin="$ctrl.signin($event)"></local-signin>
   <div ng-if=" $ctrl.localAuthenticationStrategy && $ctrl.thirdPartyStrategies.length">
     <div class="or-container">
       <hr class="or-hr">
@@ -16,9 +16,9 @@
   <div ng-repeat="strategy in $ctrl.thirdPartyStrategies">
     <div ng-class="{'bottom-gap': $index < $ctrl.thirdPartyStrategies.length - 1}">
       <ng-switch on="strategy.type">
-        <oauth-signin ng-switch-when="oauth" strategy="strategy" on-signin="$ctrl.onSignin($event)"></oauth-signin>
-        <oauth-signin ng-switch-when="saml" strategy="strategy" on-signin="$ctrl.onSignin($event)"></oauth-signin>
-        <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="$ctrl.onSignin($event)"></ldap-signin>
+        <idp-signin ng-switch-when="oauth" strategy="strategy" on-signin="$ctrl.signin($event)"></idp-signin>
+        <idp-signin ng-switch-when="saml" strategy="strategy" on-signin="$ctrl.signin($event)"></idp-signin>
+        <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="$ctrl.signin($event)"></ldap-signin>
       </ng-switch>
     </div>
   </div>

@@ -52,9 +52,10 @@ class AuthenticationController {
     this.onSuccess();
   }
 
-  onSignin(user, strategy) {
-    this.user = user;
-    this.strategy = strategy;
+  onSignin($event) {
+    this.user = $event.user;
+    this.token = $event.token;
+    this.strategy = $event.strategy;
     this.action = 'authorize-device';
   }
 }

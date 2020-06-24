@@ -220,7 +220,7 @@ module.exports = function(app, passport, provision) {
     '/auth/login-gov/callback/loa-1',
     authenticate,
     function(req, res) {
-      res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, oauth: { access_token: req.info.access_token}}});
+      res.render('authentication', { host: req.getRoot(), login: {user: req.user, oauth: { access_token: req.info.access_token}}});
     }
   );
 

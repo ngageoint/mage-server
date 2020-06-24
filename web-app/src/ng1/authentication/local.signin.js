@@ -16,7 +16,11 @@ class LocalSigninController {
   signin() {
     this._UserService.signin({username: this.username, password: this.password}).then(response => {
       this.onSignin({
-        $event: { user: response.user, strategy: this.strategy.name }
+        $event: { 
+          user: response.user, 
+          token: response.token, 
+          strategy: this.strategy.name 
+        }
       });
     }, response => {
       this.showStatus = true;

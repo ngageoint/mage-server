@@ -1,31 +1,20 @@
-module.exports = function (app, passport, provision, strategyConfig) {
+module.exports = function (app, passport, provision, strategyConfig, tokenService) {
 
-  const log = require('winston')
-    , SamlStrategy = require('passport-saml').Strategy
+  const SamlStrategy = require('passport-saml').Strategy
+    , log = require('winston')
     , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
+    , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user');
-
-  const MAGE_SAML_SP_INITIATION_STATE = 'initiator=mage';
-  strategyConfig.options.additionalParams = strategyConfig.options.additionalParams || {};
-  strategyConfig.options.additionalParams.RelayState = MAGE_SAML_SP_INITIATION_STATE;
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
       userAgent: req.headers['user-agent'],
       appVersion: req.param('appVersion')
     };
-
-    next();
-  }
-
-  function isAuthenticated(req, res, next) {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
 
     next();
   }
@@ -64,36 +53,59 @@ module.exports = function (app, passport, provision, strategyConfig) {
     });
   }));
 
-  app.get('/auth/saml/signin', passport.authenticate('saml'));
+  app.get(
+    '/auth/saml/signin',
+    function (req, res, next) {
+      const state = {
+        initiator: 'mage',
+        client: req.query.state
+      };
+
+      passport.authenticate('saml', {
+        additionalParams: { RelayState: JSON.stringify(state) }
+      })(req, res, next);
+    }
+  );
 
   function authenticate(req, res, next) {
     passport.authenticate('saml', function (err, user, info = {}) {
       if (err) return next(err);
 
-      req.info = info;
+      req.user = user;
+      
+      // For inactive or disabled accounts don't generate an authorization token
+      if (!user.active || !user.enabled) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
+        return next();
+      }
 
-      req.login(user, next);
+      // DEPRECATED session authorization, remove req.login which creates session in next version
+      req.login(user, function (err) {
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            req.token = token;
+            req.user = user;
+            req.info = info
+            next();
+          }).catch(err => {
+            next(err);
+          });
+      });
     })(req, res, next);
   }
 
-  function authorizeUser(req, res, next) {
-    const token = req.param('access_token');
-
-    if (req.user) {
-      next();
-    } else if (token) {
-      log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
-      next(new Error("Not supported"));
-    } else {
-      return res.sendStatus(403);
-    }
-  }
-
+  // DEPRECATED retain old routes as deprecated until next major version.
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
   app.post('/auth/saml/devices',
-    authorizeUser,
+    function (req, res, next) {
+      if (req.user) {
+        next();
+      } else {
+        res.sendStatus(401);
+      }
+    },
     function (req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
@@ -119,10 +131,23 @@ module.exports = function (app, passport, provision, strategyConfig) {
         .catch(err => next(err));
     }
   );
-
+  
+  // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/saml/authorize',
-    isAuthenticated,
+    function (req, res, next) {
+      if (req.user) {
+        log.warn('session authorization is deprecated, please use jwt');
+        return next();
+      }
+
+      passport.authenticate('authorization', function (err, user, info = {}) {
+        if (!user) return res.status(401).send(info.message);
+
+        req.user = user;
+        next();
+      })(req, res, next);
+    },
     provision.check('saml'),
     parseLoginMetadata,
     function (req, res, next) {
@@ -146,8 +171,21 @@ module.exports = function (app, passport, provision, strategyConfig) {
     strategyConfig.options.callbackPath,
     authenticate,
     function (req, res) {
-      if (req.body.RelayState === MAGE_SAML_SP_INITIATION_STATE) {
-        res.render('authentication', { host: req.getRoot(), success: true, login: { user: req.user } });
+      const state = JSON.parse(req.body.RelayState) || {};
+
+      if (state.initiator === 'mage') {
+        if (state.client === 'mobile') {
+          let uri;
+          if (!req.user.active || !req.user.enabled) {
+            uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
+          } else {
+            uri = `mage://app/authentication?token=${req.token}`
+          }
+
+          res.redirect(uri);
+        } else {
+          res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+        }
       } else {
         const url = req.user.active ? '/#/signin?strategy=saml&action=authorize-device' : '/#/signin?action=inactive-account';
         res.redirect(url);

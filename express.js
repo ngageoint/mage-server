@@ -24,12 +24,6 @@ app.use(function(req, res, next) {
   return next();
 });
 
-app.set('config', config);
-app.enable('trust proxy');
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
-
 const secret = crypto.randomBytes(64).toString('hex');
 app.use(cookieSession({
   secret: secret,
@@ -39,15 +33,21 @@ app.use(cookieSession({
   sameSite: true
 }));
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
   done(null, user._id);
 });
 
-passport.deserializeUser(function(id, done) {
-  new api.User().getById(id, function(err, user) {
+passport.deserializeUser(function (id, done) {
+  new api.User().getById(id, function (err, user) {
     done(err, user);
   });
 });
+
+app.set('config', config);
+app.enable('trust proxy');
+
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
 
 app.use(require('body-parser')({
   limit: '16mb',
@@ -68,7 +68,7 @@ app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 app.use('/private',
   passport.authenticate('bearer'),
   express.static(path.join(__dirname, 'private')));
-
+  
 // Configure authentication
 const authentication = require('./authentication')(app, passport, provision, config.api.authenticationStrategies);
 

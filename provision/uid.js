@@ -10,7 +10,10 @@ module.exports = function(provision) {
     log.info(`Provision device ${uid} with UidStrategy`);
 
     Device.getDeviceByUid(uid).then(device => {
-      if (!device) {
+      if (!device && req.query.createDevice === 'false') {
+        log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
+        return done(null, false, { message: 'Device ID is invalid, please check your device ID, and try again.' });
+      } else if (!device) {
         log.info("Device " + uid + " does not exist. Checking request parameters to see if device can be created.");
         const newDevice = {
           uid: req.param('uid'),
@@ -34,7 +37,7 @@ module.exports = function(provision) {
         }).catch(err => done(err));
       } else if (!device.registered) {
         log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
-        return done(null, false);
+        return done(null, false, { message: 'Your device has been registered.  \nAn administrator has been notified to approve this device.'});
       }
 
       done(null, device);

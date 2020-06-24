@@ -34,7 +34,7 @@ Provision.prototype.check = function(type, options, callback) {
     let strategy;
     try {
       const security = await Setting.getSetting('security') || { settings: {} };
-      const localAuthentication = security.settings[type] || {}; // TODO cannot just use local here right?
+      const localAuthentication = security.settings[type] || {};
       const localDeviceSettings = localAuthentication.devicesReqAdmin || {};
       strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
     } catch (err) {
@@ -44,14 +44,14 @@ Provision.prototype.check = function(type, options, callback) {
     const provision = strategies[strategy];
     if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
 
-    provision.check(req, options, function(err, device) {
+    provision.check(req, options, function(err, device, info = {}) {
       if (err) return next(err);
 
       req.provisionedDevice = device;
 
       if (callback) return callback(null, device);
 
-      if (!device || !device.registered) return res.sendStatus(403);
+      if (!device || !device.registered) return res.status(403).send(info.message);
 
       next();
     });
