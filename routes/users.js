@@ -1,4 +1,4 @@
-module.exports = function(app, security) {
+module.exports = function (app, security) {
   const api = require('../api')
     , log = require('winston')
     , Role = require('../models/role')
@@ -7,7 +7,8 @@ module.exports = function(app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
-    , {default: upload} = require('../upload')
+    , pageInfoTransformer = require('../transformers/pageinfo.js')
+    , { default: upload } = require('../upload')
     , passport = security.authentication.passport;
 
   const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
@@ -17,8 +18,8 @@ module.exports = function(app, security) {
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   function isAuthenticated(strategy) {
-    return function(req, res, next) {
-      passport.authenticate(strategy, function(err, user) {
+    return function (req, res, next) {
+      passport.authenticate(strategy, function (err, user) {
         if (err) return next(err);
         if (user) req.user = user;
         next();
@@ -159,10 +160,10 @@ module.exports = function(app, security) {
   app.post(
     '/api/users',
     isAuthenticated('bearer'),
-    upload.fields([{name: 'avatar'}, {name: 'icon'}]),
+    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     validateUser,
     parseIconUpload,
-    function(req, res, next) {
+    function (req, res, next) {
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
       if (!access.userHasPermission(req.user, 'CREATE_USER')) {
@@ -183,7 +184,7 @@ module.exports = function(app, security) {
       new api.User().create(req.newUser, { avatar, icon }, function(err, newUser) {
         if (err) return next(err);
 
-        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
+        newUser = userTransformer.transform(newUser, { path: req.getRoot() });
         res.json(newUser);
       });
     }
@@ -201,7 +202,7 @@ module.exports = function(app, security) {
       new api.User().create(req.newUser, { defaultTeams, defaultEvents }, function(err, newUser) {
         if (err) return next(err);
 
-        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
+        newUser = userTransformer.transform(newUser, { path: req.getRoot() });
         res.json(newUser);
       });
     }
@@ -218,10 +219,16 @@ module.exports = function(app, security) {
     '/api/users',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res, next) {
+    function (req, res, next) {
       var filter = {};
-      if (req.query.active === 'true' || req.query.active === 'false') {
-        filter.active = req.query.active === 'true';
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+            continue;
+          }
+          filter[key] = value;
+        }
       }
 
       var populate = null;
@@ -229,11 +236,34 @@ module.exports = function(app, security) {
         populate = req.query.populate.split(",");
       }
 
-      new api.User().getAll({filter: filter, populate: populate}, function (err, users) {
+      var limit = null;
+      if (req.query.limit) {
+        limit = req.query.limit;
+      }
+
+      var start = null;
+      if (req.query.start) {
+        start = req.query.start;
+      }
+
+      var sort = null;
+      if (req.query.sort) {
+        sort = req.query.sort;
+      }
+
+      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
         if (err) return next(err);
 
-        users = userTransformer.transform(users, {path: req.getRoot()});
-        res.json(users);
+        let data = null;
+
+        if (pageInfo != null) {
+          data = pageInfoTransformer.transform(pageInfo, req);
+          data.users = userTransformer.transform(users, { path: req.getRoot() });
+        } else {
+          data = userTransformer.transform(users, { path: req.getRoot() });
+        }
+
+        res.json(data);
       });
     }
   );
@@ -242,11 +272,22 @@ module.exports = function(app, security) {
     '/api/users/count',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res, next) {
-      new api.User().count(function(err, count) {
+    function (req, res, next) {
+      var filter = {};
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+            continue;
+          }
+          filter[key] = value;
+        }
+      }
+
+      new api.User().count({ filter: filter }, function (err, count) {
         if (err) return next(err);
 
-        res.json({count: count});
+        res.json({ count: count });
       });
     }
   );
@@ -255,8 +296,8 @@ module.exports = function(app, security) {
   app.get(
     '/api/users/myself',
     passport.authenticate('bearer'),
-    function(req, res) {
-      var user = userTransformer.transform(req.user, {path: req.getRoot()});
+    function (req, res) {
+      var user = userTransformer.transform(req.user, { path: req.getRoot() });
       res.json(user);
     }
   );
@@ -267,7 +308,7 @@ module.exports = function(app, security) {
     '/api/users/myself',
     passport.authenticate('bearer'),
     upload.single('avatar'),
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName')) req.user.displayName = req.param('displayName');
       if (req.param('email')) req.user.email = req.param('email');
@@ -280,10 +321,10 @@ module.exports = function(app, security) {
         }];
       }
 
-      new api.User().update(req.user, {avatar: req.file}, function(err, updatedUser) {
+      new api.User().update(req.user, { avatar: req.file }, function (err, updatedUser) {
         if (err) return next(err);
 
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
         res.json(updatedUser);
       });
     }
@@ -292,7 +333,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself/password',
     passport.authenticate('local'),
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.status(400).send('User does not use local authentication');
       }
@@ -314,7 +355,7 @@ module.exports = function(app, security) {
         type: 'local',
         password: password
       };
-      new api.User().update(req.user, function(err, updatedUser) {
+      new api.User().update(req.user, function (err, updatedUser) {
         if (err) {
           return next(err);
         }
@@ -328,13 +369,13 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself/status',
     passport.authenticate('bearer'),
-    function(req, res) {
+    function (req, res) {
       var status = req.param('status');
       if (!status) return res.status(400).send("Missing required parameter 'status'");
       req.user.status = status;
 
-      new api.User().update(req.user, function(err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+      new api.User().update(req.user, function (err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
         res.json(updatedUser);
       });
     }
@@ -344,10 +385,10 @@ module.exports = function(app, security) {
   app.delete(
     '/api/users/myself/status',
     passport.authenticate('bearer'),
-    function(req, res) {
+    function (req, res) {
       req.user.status = undefined;
-      new api.User().update(req.user, function(err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+      new api.User().update(req.user, function (err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
         res.json(updatedUser);
       });
     }
@@ -358,8 +399,8 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res) {
-      var user = userTransformer.transform(req.userParam, {path: req.getRoot()});
+    function (req, res) {
+      var user = userTransformer.transform(req.userParam, { path: req.getRoot() });
       res.json(user);
     }
   );
@@ -369,9 +410,9 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_USER'),
-    upload.fields([{name: 'avatar'}, {name: 'icon'}]),
+    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
-    function(req, res, next) {
+    function (req, res, next) {
       const user = req.userParam;
 
       if (req.param('username')) user.username = req.param('username');
@@ -402,7 +443,7 @@ module.exports = function(app, security) {
       }
 
       const password = req.param('password');
-      if (password && user.authentication.type === 'local')  {
+      if (password && user.authentication.type === 'local') {
         const confirm = req.param('passwordconfirm');
         if (!confirm) {
           return res.status(400).send(`Invalid user document: missing required parameter 'passwordconfirm'`)
@@ -423,10 +464,10 @@ module.exports = function(app, security) {
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().update(user, {avatar, icon}, function(err, updatedUser) {
+      new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
         if (err) return next(err);
 
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
         res.json(updatedUser);
       });
     }
@@ -437,8 +478,8 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('DELETE_USER'),
-    function(req, res, next) {
-      new api.User().delete(req.userParam, function(err) {
+    function (req, res, next) {
+      new api.User().delete(req.userParam, function (err) {
         if (err) return next(err);
 
         res.sendStatus(204);
@@ -451,19 +492,19 @@ module.exports = function(app, security) {
     '/api/users/:userId/:content(avatar|icon)',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res, next) {
-      new api.User()[req.params.content](req.userParam, function(err, content) {
+    function (req, res, next) {
+      new api.User()[req.params.content](req.userParam, function (err, content) {
         if (err) return next(err);
 
         if (!content) return res.sendStatus(404);
 
         var stream = fs.createReadStream(content.path);
-        stream.on('open', function() {
+        stream.on('open', function () {
           res.type(content.contentType);
           res.header('Content-Length', content.size);
           stream.pipe(res);
         });
-        stream.on('error', function() {
+        stream.on('error', function () {
           res.sendStatus(404);
         });
       });
@@ -473,17 +514,17 @@ module.exports = function(app, security) {
   app.post(
     '/api/users/:userId/events/:eventId/recent',
     passport.authenticate('bearer'),
-    function(req, res, next) {
+    function (req, res, next) {
       if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
         next();
       } else {
-        Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
+        Event.userHasEventPermission(req.event, req.user._id, 'read', function (err, hasPermission) {
           hasPermission ? next() : res.sendStatus(403);
         });
       }
     },
-    function(req, res, next) {
-      new api.User().addRecentEvent(req.user, req.event, function(err, user) {
+    function (req, res, next) {
+      new api.User().addRecentEvent(req.user, req.event, function (err, user) {
         if (err) return next(err);
 
         res.json(user);
@@ -495,10 +536,10 @@ module.exports = function(app, security) {
   app.post(
     '/api/logout',
     isAuthenticated('bearer'),
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.user) {
         log.info('logout w/ user', req.user._id.toString());
-        new api.User().logout(req.token, function(err) {
+        new api.User().logout(req.token, function (err) {
           if (err) return next(err);
           res.status(200).send('successfully logged out');
         });

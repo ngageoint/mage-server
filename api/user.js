@@ -61,8 +61,13 @@ User.prototype.logout = function(token, callback) {
   });
 };
 
-User.prototype.count = function(callback) {
-  UserModel.count(function(err, count) {
+User.prototype.count = function(options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
+  UserModel.count(options, callback, function(err, count) {
     callback(err, count);
   });
 };
@@ -73,8 +78,8 @@ User.prototype.getAll = function(filter, callback) {
     filter = {};
   }
 
-  UserModel.getUsers(filter, function (err, users) {
-    callback(err, users);
+  UserModel.getUsers(filter, function (err, users, pageInfo) {
+    callback(err, users, pageInfo);
   });
 };
 

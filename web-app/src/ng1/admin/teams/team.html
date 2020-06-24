@@ -17,8 +17,10 @@
         </div>
         <div class="col-md-4">
           <h2 ng-if="$ctrl.hasUpdatePermission">
-            <button class="btn btn-default pull-right" ng-click="$ctrl.editTeam($ctrl.team)"><i class="fa fa-edit"></i> Edit</button>
-            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.team)"><i class="fa fa-shield"></i> Access</button>
+            <button class="btn btn-default pull-right" ng-click="$ctrl.editTeam($ctrl.team)"><i class="fa fa-edit"></i>
+              Edit</button>
+            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.team)"><i
+                class="fa fa-shield"></i> Access</button>
           </h2>
         </div>
       </div>
@@ -51,8 +53,10 @@
           <div class="card">
             <div class="card-content">
               <strong class="text-danger">Delete team</strong>
-              <p class="text-danger">Deleting team will remove all team information including. This cannot be undone, users within team will not be deleted.</p>
-              <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteTeam($ctrl.team)"> <i class="fa fa-trash-o"></i> Delete</button>
+              <p class="text-danger">Deleting team will remove all team information including. This cannot be undone,
+                users within team will not be deleted.</p>
+              <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteTeam($ctrl.team)"> <i
+                  class="fa fa-trash-o"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -81,21 +85,25 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <ui-select ng-model="$ctrl.user.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a user to add to team">{{$select.selected.displayName}}</ui-select-match>
-                      <ui-select-choices group-by="groupLayerByType" repeat="user in $ctrl.nonUsers | orderBy: 'name' | filter: $select.search">
-                        <div ng-bind-html="user.displayName | highlight: $select.search"></div>
-                      </ui-select-choices>
-                    </ui-select>
+                    <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user to add to team"
+                      uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
+                      typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
+                      class="form-control" ng-model-options="{ debounce: 1000 }">
+                    <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
+                    <div ng-show="noSearchResults">
+                      <i class="glyphicon glyphicon-remove"></i> No Results Found
+                    </div>
                   </div>
                 </div>
 
                 <hr>
 
                 <div class="row">
-                    <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addUser($ctrl.user.selected)" ng-disabled="$ctrl.user.selected == null"><i class="fa fa-plus"></i> Add User</button>
-                    </div>
+                  <div class="col-md-12">
+                    <button class="btn btn-success" ng-click="$ctrl.addUser()"
+                      ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add
+                      User</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -106,12 +114,13 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Users <sup><span class="badge">{{$ctrl.filteredUsers.length}}</span></sup></a>
+                    <a class="navbar-brand">Users <sup><span class="badge">{{$ctrl.count()}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
-                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch">
+                      <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch"
+                        ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
@@ -126,7 +135,7 @@
             <div class="col-sm-12">
               <div class="admin-table">
                 <div class="well-item"
-                    ng-repeat="user in ($ctrl.filteredUsers = ($ctrl.team.users | user:['displayName','email']:$ctrl.memberSearch)) | orderBy:'displayName' | offset: $ctrl.usersPage*$ctrl.usersPerPage | limitTo:$ctrl.usersPerPage" >
+                  ng-repeat="user in $ctrl.members">
                   <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
@@ -137,7 +146,8 @@
                       </span>
 
                       <span class="pull-right" ng-show="$ctrl.edit">
-                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeUser(user)"><i class="fa fa-minus"></i></a>
+                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeUser(user)"><i
+                            class="fa fa-minus"></i></a>
                       </span>
                     </div>
                   </div>
@@ -147,11 +157,11 @@
             <div class="row">
               <div class="col-md-12">
                 <ul class="pager pull-right">
-                  <li ng-class="{'disabled': $ctrl.usersPage == 0}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.usersPage == 0 || ($ctrl.usersPage=$ctrl.usersPage-1)">&larr; Previous</a>
+                  <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
                   </li>
-                  <li ng-class="{'disabled': $ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.usersPage >= ($ctrl.filteredUsers.length/$ctrl.usersPerPage) - 1 || ($ctrl.usersPage=$ctrl.usersPage+1)">Next&rarr;</a>
+                  <li ng-class="{'disabled': $ctrl.hasNext() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
                   </li>
                 </ul>
               </div>
@@ -190,9 +200,10 @@
               <hr>
 
               <div class="row">
-                  <div class="col-md-12">
-                    <button class="btn btn-success" ng-click="$ctrl.addEventToTeam($ctrl.event.selected)" ng-disabled="$ctrl.event.selected == null"><i class="fa fa-plus"></i> Add Event</button>
-                  </div>
+                <div class="col-md-12">
+                  <button class="btn btn-success" ng-click="$ctrl.addEventToTeam($ctrl.event.selected)"
+                    ng-disabled="$ctrl.event.selected == null"><i class="fa fa-plus"></i> Add Event</button>
+                </div>
               </div>
             </div>
           </div>
@@ -202,7 +213,8 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Events for {{$ctrl.team.name}} <sup><span class="badge">{{$ctrl.filteredEvents.length}}</span></sup></a>
+                    <a class="navbar-brand">Events for {{$ctrl.team.name}} <sup><span
+                          class="badge">{{$ctrl.filteredEvents.length}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
@@ -211,7 +223,8 @@
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s">
-                    <button class="btn btn-default navbar-right" ng-click="$ctrl.editEvent = !$ctrl.editEvent">Edit</button>
+                    <button class="btn btn-default navbar-right"
+                      ng-click="$ctrl.editEvent = !$ctrl.editEvent">Edit</button>
                   </div>
                 </div>
               </nav>
@@ -222,12 +235,13 @@
             <div class="col-sm-12">
               <div class="admin-table">
                 <div class="well-item"
-                    ng-repeat="e in ($ctrl.filteredEvents = ($ctrl.teamEvents | filter:$ctrl.filterEvents)) | orderBy:'name' | offset: $ctrl.eventsPage*$ctrl.eventsPerPage | limitTo:$ctrl.eventsPerPage" >
+                  ng-repeat="e in ($ctrl.filteredEvents = ($ctrl.teamEvents | filter:$ctrl.filterEvents)) | orderBy:'name' | offset: $ctrl.eventsPage*$ctrl.eventsPerPage | limitTo:$ctrl.eventsPerPage">
                   <div class="row pointer" ng-click="$ctrl.gotoEvent(e)">
                     <div class="col-md-12">
                       <span class="pull-right" ng-show="$ctrl.editEvent">
                         <!-- TODO Don't let them remove a team from an event they don't have access to -->
-                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeEventFromTeam($event, e)"><i class="fa fa-minus"></i></a>
+                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeEventFromTeam($event, e)"><i
+                            class="fa fa-minus"></i></a>
                       </span>
 
                       <div class="right-gap pull-left">
@@ -245,10 +259,12 @@
             <div class="col-md-12">
               <ul class="pager pull-right">
                 <li ng-class="{'disabled': $ctrl.eventsPage == 0}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.eventsPage == 0 || ($ctrl.eventsPage=$ctrl.eventsPage-1)">&larr; Previous</a>
+                  <a href="javascript:void(0);"
+                    ng-click="$ctrl.eventsPage == 0 || ($ctrl.eventsPage=$ctrl.eventsPage-1)">&larr; Previous</a>
                 </li>
                 <li ng-class="{'disabled': $ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1 || ($ctrl.eventsPage=$ctrl.eventsPage+1)">Next&rarr;</a>
+                  <a href="javascript:void(0);"
+                    ng-click="$ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1 || ($ctrl.eventsPage=$ctrl.eventsPage+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>

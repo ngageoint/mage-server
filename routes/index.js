@@ -80,7 +80,13 @@ module.exports = function(app, security) {
 
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
-    Team.getTeamById(teamId, function(err, team) {
+    var options = {};
+    if(req.query) {
+      for (let [key, value] of Object.entries(req.query)) {
+        options[key] = value;
+      }
+    }
+    Team.getTeamById(teamId, options, function(err, team) {
       if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();

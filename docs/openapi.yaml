@@ -178,6 +178,7 @@ paths:
       tags: [ User ]
       description: >
         Return an array of all users.  The client must have `READ_USER` permission.
+      summary: Get an array of users.
       operationId: getUsers
       parameters:
         - in: query
@@ -185,6 +186,36 @@ paths:
           description: Return only active or inactive users.
           schema:
             type: boolean
+        - in: query
+          name: enabled
+          description: Return only enabled or disabled users.
+          schema:
+            type: boolean
+        - in: query
+          name: start
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Used with pagination.  Maximum number of records to return. 
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - displayName
+                  - _id
+                properties:
+                  displayName:
+                    type: string
+                  _id:
+                    type: string
         - in: query
           name: populate
           description: >
@@ -206,7 +237,17 @@ paths:
       description: >
         Return the number of users in the database.  The client must
         have `READ_USER` permission.
+      summary: Count the number of users in the database.
       operationId: getUserCount
+      parameters:
+        - in: query
+          name: active
+          schema:
+            type: boolean
+        - in: query
+          name: enabled
+          schema:
+            type: boolean
       responses:
         200:
           description: A successful request
@@ -422,12 +463,38 @@ paths:
       description: >
         Return an array of all the device documents in the database.  The
         requesting client must have `READ_DEVICE` permission.
+      summary: Get all the device documents in the database.
       operationId: getDevices
       parameters:
         - in: query
           name: registered
           description: Return only registered or unregistered devices.
           schema: { $ref: '#/components/schemas/Device/properties/registered' }
+        - in: query
+          name: start
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Used with pagination.  Maximum number of records to return. 
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - userAgent
+                  - _id
+                properties:
+                  userAgent:
+                    type: string
+                  _id:
+                    type: string
         - in: query
           name: expand
           description: >
@@ -449,6 +516,12 @@ paths:
         - Device
       operationId: getDeviceCount
       description: Return the number of devices in the database.
+      summary: Count the number of devices in the database.
+      parameters:
+        - in: query
+          name: registered
+          schema:
+            type: boolean
       responses:
         200:
           description: Success - return the device count
@@ -527,6 +600,32 @@ paths:
         Return all the teams.  The requesting client must have `READ_TEAM`
         permission.
       operationId: getTeams
+      parameters:
+        - in: query
+          name: start
+          description: Used with pagination.  Indicates the record number to start (leave blank for initial set of results).
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          description: Used with pagination.  Maximum number of records to return. 
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
+          content:
+            application/json:  
+              schema:
+                type: object
+                required:
+                  - name
+                  - _id
+                properties:
+                  name:
+                    type: string
+                  _id:
+                    type: string
       responses:
         200:
           description: Success - an array of team documents

@@ -2,58 +2,47 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminDashboardController {
-  constructor($state, $filter, UserService, DeviceService, LoginService, Team, Event, Layer) {
+  constructor($state, $filter, UserService, DeviceService, DevicePagingService, LoginService, Event, Layer, UserPagingService) {
     this.$state = $state;
     this._$filter = $filter;
     this._UserService = UserService;
     this._DeviceService = DeviceService;
     this._LoginService = LoginService;
-    this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
+    this.UserPagingService = UserPagingService;
+    this.DevicePagingService = DevicePagingService;
 
-    // For some reason angular is not calling into filter function with correct context
-    this.filterDevices = this._filterDevices.bind(this);
+    this.userSearch = '';
+    this.userState = 'inactive';
+    this.inactiveUsers = [];
+    this.isSearching = false;
+    this.stateAndData = this.UserPagingService.constructDefault();
+    this.loginSearchResults = [];
+
+    this.isSearchingDevices = false;
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
+    this.deviceState = 'unregistered';
+    this.deviceSearch = '';
+    this.unregisteredDevices = [];
+    this.loginDeviceSearchResults = [];
   }
 
   $onInit() {
     this.filter = {};
-    this.user = {};
-    this.device = {};
+    this.user = null;
+    this.device = null;
     this.login = {
       startDateOpened: false,
       endDateOpened: false
     };
-  
+
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
-  
-    this.usersPerPage = 10;
-    this.usersPage = 0;
-    this.inactiveUsers = [];
-  
-    this.devicesPerPage = 10;
-    this.devicesPage = 0;
-    this.unregisteredDevices = [];
 
-    this._UserService.getAllUsers().then(users => {
-      this.users = users.data || users;
-  
-      this.inactiveUsers = _.filter(this.users, user => {
-        return !user.active;
-      });
-    });
-
-    this._DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
-      this.unregisteredDevices = _.filter(devices, device => {
-        return !device.registered;
-      });
-    });
-
-    this._Team.query(teams => {
-      this.teamCount = _.reject(teams, team => { return team.teamEventId; }).length;
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });
 
     this._Event.count(data => {
@@ -64,11 +53,103 @@ class AdminDashboardController {
       this.layerCount = data.count;
     });
 
-    this._LoginService.query({limit: this.loginResultsLimit}).success(loginPage => {
+    this._LoginService.query({ limit: this.loginResultsLimit }).success(loginPage => {
       this.loginPage = loginPage;
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
       }
+    });
+
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
+    });
+  }
+
+  count() {
+    return this.UserPagingService.count(this.stateAndData[this.userState]);
+  }
+
+  hasNext() {
+    return this.UserPagingService.hasNext(this.stateAndData[this.userState]);
+  }
+
+  next() {
+    this.UserPagingService.next(this.stateAndData[this.userState]).then(users => {
+      this.inactiveUsers = users;
+    });
+  }
+
+  hasPrevious() {
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.userState]);
+  }
+
+  previous() {
+    this.UserPagingService.previous(this.stateAndData[this.userState]).then(users => {
+      this.inactiveUsers = users;
+    });
+  }
+
+  deviceCount() {
+    return this.DevicePagingService.count(this.deviceStateAndData[this.deviceState]);
+  }
+
+  hasNextDevice() {
+    return this.DevicePagingService.hasNext(this.deviceStateAndData[this.deviceState]);
+  }
+
+  nextDevice() {
+    this.DevicePagingService.next(this.deviceStateAndData[this.deviceState]).then(devices => {
+      this.unregisteredDevices = devices;
+    });
+  }
+
+  hasPreviousDevice() {
+    return this.DevicePagingService.hasPrevious(this.deviceStateAndData[this.deviceState]);
+  }
+
+  previousDevice() {
+    this.DevicePagingService.previous(this.deviceStateAndData[this.deviceState]).then(devices => {
+      this.unregisteredDevices = devices;
+    });
+  }
+
+  search() {
+    this.UserPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
+      this.inactiveUsers = users;
+    });
+  }
+
+  searchDevices() {
+    this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
+      if(devices.length > 0) {
+        this.unregisteredDevices = devices;
+      } else {
+        this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch, this.deviceSearch).then(devices => {
+          this.unregisteredDevices = devices;
+        });
+      }
+    });
+  }
+
+  searchLoginsAgainstUsers(searchString) {
+    this.isSearching = true;
+
+    return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
+      this.loginSearchResults = users;
+      this.isSearching = false;
+
+      return this.loginSearchResults;
+    });
+  }
+
+  searchLoginsAgainstDevices(searchString) {
+    this.isSearchingDevices = true;
+
+    return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
+      this.loginDeviceSearchResults = devices;
+      this.isSearchingDevices = false;
+
+      return this.loginDeviceSearchResults;
     });
   }
 
@@ -83,7 +164,7 @@ class AdminDashboardController {
       device.iconClass = 'fa-desktop admin-desktop-icon-xs';
     } else if (userAgent.toLowerCase().indexOf("android") !== -1) {
       device.iconClass = 'fa-android admin-android-icon-xs';
-    } else if(userAgent.toLowerCase().indexOf("ios") !== -1) {
+    } else if (userAgent.toLowerCase().indexOf("ios") !== -1) {
       device.iconClass = 'fa-apple admin-apple-icon-xs';
     } else {
       device.iconClass = 'fa-mobile admin-generic-icon-xs';
@@ -109,8 +190,10 @@ class AdminDashboardController {
 
     user.active = true;
 
-    this._UserService.updateUser(user.id, user, data => {
-      this.inactiveUsers = _.reject(this.inactiveUsers, function(u) { return u.id === data.id; });
+    this._UserService.updateUser(user.id, user, () => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
+      });
       this.onUserActivated({
         $event: {
           user: user
@@ -124,7 +207,9 @@ class AdminDashboardController {
 
     device.registered = true;
     this._DeviceService.updateDevice(device).then(device => {
-      this.unregisteredDevices = _.reject(this.unregisteredDevices, function(d) { return d.id === device.id; });
+      this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+        this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+      });
       this.onDeviceEnabled({
         $event: {
           user: device
@@ -133,13 +218,8 @@ class AdminDashboardController {
     });
   }
 
-  _filterDevices(device) {
-    var filteredDevices = this._$filter('filter')([device], this.deviceSearch);
-    return filteredDevices && filteredDevices.length;
-  }
-
   pageLogin(url) {
-    this._LoginService.query({url: url, filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this._LoginService.query({ url: url, filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
 
       if (loginPage.logins.length) {
         this.loginPage = loginPage;
@@ -150,14 +230,14 @@ class AdminDashboardController {
   }
 
   filterLogins() {
-    this.filter.user = this.user.selected;
-    this.filter.device = this.device.selected;
+    this.filter.user = this.user;
+    this.filter.device = this.device;
     this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
 
-    this._LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this._LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
       this.showNext = loginPage.logins.length !== 0;
       this.showPrevious = false;
       this.loginPage = loginPage;
@@ -178,7 +258,7 @@ class AdminDashboardController {
     this.login.endDateOpened = true;
   }
 
-  dateFilterChanged() {  
+  dateFilterChanged() {
     this.filterLogins();
   }
 
@@ -187,7 +267,7 @@ class AdminDashboardController {
   }
 }
 
-AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
+AdminDashboardController.$inject = ['$state', '$filter', 'UserService', 'DeviceService', 'DevicePagingService', 'LoginService', 'Event', 'Layer', 'UserPagingService'];
 
 export default {
   template: require('./admin.dashboard.html'),

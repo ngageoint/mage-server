@@ -20,16 +20,18 @@
 
       <div class="row">
         <div class="col-md-8">
-          <ui-select ng-model="$ctrl.member.selected" theme="bootstrap">
-            <ui-select-match placeholder="Search for a user">{{$select.selected.displayName}}</ui-select-match>
-            <ui-select-choices repeat="member in $ctrl.nonMembers | orderBy: 'displayName' | filter: $select.search">
-              <div ng-bind-html="member.displayName | highlight: $select.search"></div>
-            </ui-select-choices>
-          </ui-select>
+          <input type="text" ng-model="$ctrl.nonMember.selected" placeholder="Search for a user"
+            uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
+            typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults" class="form-control"
+            ng-model-options="{ debounce: 1000 }">
+          <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
+          <div ng-show="noSearchResults">
+            <i class="glyphicon glyphicon-remove"></i> No Results Found
+          </div>
         </div>
 
         <div class="col-md-2">
-          <select class="form-control" name="permissions" ng-model="$ctrl.member.role">
+          <select class="form-control" name="permissions" ng-model="$ctrl.nonMember.role">
             <option value="OWNER">Owner</option>
             <option value="MANAGER">Manager</option>
             <option value="GUEST">Guest</option>
@@ -37,7 +39,9 @@
         </div>
 
         <div class="col-md-2">
-          <button class="btn btn-success" ng-click="$ctrl.addMember($ctrl.member.selected, $ctrl.member.role)" ng-disabled="$ctrl.member.selected == null"><i class="fa fa-plus"></i> Add member to team</button>
+          <button class="btn btn-success" ng-click="$ctrl.addMember()"
+            ng-disabled="($ctrl.nonMember.selected == null || $ctrl.nonMember.selected == '')"><i class="fa fa-plus"></i> Add member to
+            team</button>
         </div>
       </div>
 
@@ -51,11 +55,13 @@
       <nav class="navbar navbar-default admin-dashboard-navbar">
         <div class="container-fluid">
           <div class="navbar-header">
-            <a class="navbar-brand">Existing Members <sup><span class="badge">{{$ctrl.filteredMembers.length}}</span></sup></a>
+            <a class="navbar-brand">Existing Members <sup><span
+                  class="badge">{{$ctrl.count()}}</span></sup></a>
           </div>
 
           <form class="navbar-form navbar-left">
-            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch ">
+            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch "
+              ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
           </form>
         </div>
       </nav>
@@ -79,21 +85,23 @@
 
             <div class="col-md-2">
 
-              <div ng-if="member.role === 'OWNER' || owners.length <= 1">
-                <div ng-if="owners.length <= 1 && member.role === 'OWNER'">
+              <div ng-if="member.role === 'OWNER' || $ctrl.owners.length <= 1">
+                <div ng-if="$ctrl.owners.length <= 1 && member.role === 'OWNER'">
                   <span class="muted pull-right">Owner</span>
                 </div>
               </div>
 
-              <div ng-if="member.role !== 'OWNER' || owners.length > 1">
+              <div ng-if="member.role !== 'OWNER' || $ctrl.owners.length > 1">
                 <div class="form-inline pull-right">
-                  <select class="form-control right-gap" name="permissions" ng-model="member.role" ng-change="$ctrl.updateRole(member, member.role)">
+                  <select class="form-control right-gap" name="permissions" ng-model="member.role"
+                    ng-change="$ctrl.updateRole(member, member.role)">
                     <option value="OWNER">Owner</option>
                     <option value="MANAGER">Manager</option>
                     <option value="GUEST">Guest</option>
                   </select>
 
-                  <button class="btn btn-danger" ng-click="$ctrl.removeMember(member)"><i class="fa fa-trash"></i></button>
+                  <button class="btn btn-danger" ng-click="$ctrl.removeMember(member)"><i
+                      class="fa fa-trash"></i></button>
                 </div>
               </div>
 

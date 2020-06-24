@@ -1,36 +1,62 @@
 import _ from 'underscore';
 
 class AdminTeamsController {
-  constructor($state, $uibModal, $filter, Team, UserService) {
+  constructor($state, $uibModal, $filter, Team, UserService, TeamPagingService) {
     this.$state = $state;
     this.$uibModal = $uibModal;
     this.$filter = $filter;
     this.Team = Team;
     this.UserService = UserService;
+    this.TeamPagingService = TeamPagingService;
 
+    this.filter = 'all';
     this.teamSearch = '';
     this.teams = [];
-    this.page = 0;
-    this.itemsPerPage = 10;
-
-    // For some reason angular is not calling into filter function with correct context
-    this.filterTeams = this._filterTeams.bind(this);
+    this.stateAndData = this.TeamPagingService.constructDefault();
   }
 
   $onInit() {
-    this.Team.query(teams => {
-      this.teams = _.reject(teams, team => { return team.teamEventId; });
+    this.TeamPagingService.refresh(this.stateAndData).then(() => {
+      this.teams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
     });
   }
 
-  _filterTeams(team) {
-    var filteredTeams = this.$filter('filter')([team], this.teamSearch);
-    return filteredTeams && filteredTeams.length;
+  count(state) {
+    return this.stateAndData[state].teamCount;
+  }
+
+  hasNext() {
+    return this.TeamPagingService.hasNext(this.stateAndData[this.filter]);
+  }
+
+  next() {
+    this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
+  }
+
+  hasPrevious() {
+    return this.TeamPagingService.hasPrevious(this.stateAndData[this.filter]);
+  }
+
+  previous() {
+    this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
+  }
+
+  search() {
+    this.TeamPagingService.search(this.stateAndData[this.filter], this.teamSearch).then(teams => {
+      this.teams = teams;
+    });
   }
 
   reset() {
-    this.page = 0;
     this.teamSearch = '';
+    this.stateAndData = this.TeamPagingService.constructDefault();
+    this.TeamPagingService.refresh(this.stateAndData).then(() => {
+      this.teams = this.TeamPagingService.teams(this.stateAndData[this.filter]);
+    });
   }
 
   newTeam() {
@@ -84,7 +110,7 @@ class AdminTeamsController {
   }
 }
 
-AdminTeamsController.$inject = ['$state', '$uibModal', '$filter', 'Team', 'UserService'];
+AdminTeamsController.$inject = ['$state', '$uibModal', '$filter', 'Team', 'UserService', 'TeamPagingService'];
 
 export default {
   template: require('./teams.html'),

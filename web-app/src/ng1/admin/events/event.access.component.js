@@ -1,7 +1,7 @@
 import _ from 'underscore';
 
 class AdminEventAccessController {
-  constructor($state, $stateParams, $q, $filter, Event, EventAccess, UserService) {
+  constructor($state, $stateParams, $q, $filter, Event, EventAccess, UserService, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$q = $q;
@@ -9,10 +9,17 @@ class AdminEventAccessController {
     this.Event = Event;
     this.EventAccess = EventAccess;
     this.UserService = UserService;
+    this.UserPagingService = UserPagingService;
 
-    this.users = [];
+    this.eventMembers = [];
 
-    this.member = {};
+    //This is the list of users returned from a search
+    this.nonMemberSearchResults = [];
+    this.isSearching = false;
+    this.userState = 'all';
+    this.nonAclUserState = this.userState + '.nonacl';
+    this.memberSearch = '';
+    this.stateAndData = this.UserPagingService.constructDefault();
   
     this.roles = [{
       name: 'GUEST',
@@ -28,19 +35,33 @@ class AdminEventAccessController {
       description: 'Read, Update and Delete access to this event.'
     }];
 
+    this.nonMember = {
+      role: this.roles[0]
+    };
+
     // For some reason angular is not calling into filter function with correct context
     this.filterMembers = this._filterMembers.bind(this);  
   }
 
   $onInit() {
-    this.$q.all({users: this.UserService.getAllUsers(), event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
-      this.users = result.users;
+    this.$q.all({event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {  
   
-      this.role = {
-        selected: this.roles[0]
-      };
-  
-      this.refreshMembers(result.event);
+      let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      this.stateAndData[this.nonAclUserState] = clone;
+      delete this.stateAndData['active'];
+      delete this.stateAndData['inactive'];
+      delete this.stateAndData['disabled'];
+
+      let aclIds = Object.keys(result.event.acl);
+      let allIds = aclIds.concat(result.event.userIds);
+
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(result.event.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(result.event.acl) };
+      this.stateAndData[this.nonAclUserState].userFilter.nin = { _id: allIds };
+      this.stateAndData[this.nonAclUserState].countFilter.nin = { _id: allIds };
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.refreshMembers(result.event);
+      });
     });
   }
 
@@ -52,7 +73,7 @@ class AdminEventAccessController {
   refreshMembers(event) {
     this.event = event;
 
-    var usersById = _.indexBy(this.users, 'id');
+    var usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
 
     this.eventMembers = _.map(this.event.acl, (access, userId) => {
       var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
@@ -64,10 +85,6 @@ class AdminEventAccessController {
       return member;
     });
 
-    this.nonMembers = _.reject(this.users, user => {
-      return _.where(this.eventMembers, {id: user.id}).length > 0;
-    });
-
     this.owners = this.getOwners();
   }
 
@@ -77,14 +94,55 @@ class AdminEventAccessController {
     });
   }
 
-  addMember(member, role) {
+  count() {
+    return this.UserPagingService.count(this.stateAndData[this.userState]);
+  }
+
+  hasNext() {
+    return this.UserPagingService.hasNext(this.stateAndData[this.userState]);
+  }
+
+  next() {
+    this.UserPagingService.next(this.stateAndData[this.userState]).then(() => {
+      this.refreshMembers(this.event);
+    });
+  }
+
+  hasPrevious() {
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.userState]);
+  }
+
+  previous() {
+    this.UserPagingService.previous(this.stateAndData[this.userState]).then(() => {
+      this.refreshMembers(this.event);
+    });
+  }
+
+  search() {
+    this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(() => {
+      this.refreshMembers(this.event);
+    });
+  }
+
+  searchNonMembers(searchString) {
+    this.isSearching = true;
+    return this.UserPagingService.search(this.stateAndData[this.nonAclUserState], searchString).then(users => {
+      this.nonMemberSearchResults = users;
+      this.isSearching = false;
+      return this.nonMemberSearchResults;
+    });
+  }
+
+  addMember() {
     this.EventAccess.update({
       eventId: this.event.id,
-      userId: member.id,
-      role: role.name
+      userId: this.nonMember.selected.id,
+      role: this.nonMember.role.name
     }, event => {
-      delete this.member.selected;
-      this.refreshMembers(event);
+      delete this.nonMember.selected;
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -93,7 +151,9 @@ class AdminEventAccessController {
       eventId: this.event.id,
       userId: member.id
     }, event => {
-      this.refreshMembers(event);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -103,7 +163,9 @@ class AdminEventAccessController {
       userId: member.id,
       role: role.name
     }, event => {
-      this.refreshMembers(event);
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.refreshMembers(event);
+      });
     });
   }
 
@@ -113,7 +175,7 @@ class AdminEventAccessController {
 
 }
 
-AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Event', 'EventAccess', 'UserService'];
+AdminEventAccessController.$inject = ['$state', '$stateParams', '$q', '$filter', 'Event', 'EventAccess', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./event.access.html'),

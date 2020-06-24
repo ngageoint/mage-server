@@ -1,7 +1,9 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
-  , userTransformer = require('../transformers/user');
+  , userTransformer = require('../transformers/user')
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -65,6 +67,13 @@ function transform(team, ret, options) {
   if (team.populated('userIds')) {
     ret.users = userTransformer.transform(ret.userIds, {path: options.path});
     delete ret.userIds;
+  } else {
+    let objectIdStrings = new Set();
+    for(var i = 0; i < ret.userIds.length; i++) {
+      let objectId = ret.userIds[i].toString();
+      objectIdStrings.add(objectId);
+    }
+    ret.userIds = Array.from(objectIdStrings);
   }
 
   // if read only permissions in team acl, then return users acl
@@ -129,7 +138,13 @@ exports.getTeamById = function(id, options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Team.findOne(conditions).populate('userIds').exec(callback);
+  var query = Team.findOne(conditions);
+
+  if(options.populate == null || options.populate == 'true') {
+    query = query.populate('userIds');
+  }
+
+  query.exec(callback);
 };
 
 exports.teamsForUserInEvent = function(user, event, callback) {
@@ -175,7 +190,9 @@ exports.getTeams = function(options, callback) {
     options = {};
   }
 
-  var conditions = {};
+  var filter = options.filter || {};
+
+  var conditions = createQueryConditions(filter);
   if (options.teamIds) {
     conditions._id = {
       $in: options.teamIds
@@ -204,9 +221,26 @@ exports.getTeams = function(options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Team.find(conditions).populate('userIds').exec(function (err, teams) {
-    callback(err, teams);
-  });
+  var query = Team.find(conditions);
+  if(options.populate == null || options.populate == 'true') {
+    query = query.populate('userIds');
+  }
+
+  var isPaging = options.limit != null && options.limit > 0;
+  if (isPaging) {
+    var countQuery = Team.find(conditions);
+    Paging.pageTeams(countQuery, query, options, callback);
+  } else {
+    query.exec(function (err, teams) {
+      callback(err, teams);
+    });
+  }
+};
+
+function createQueryConditions(filter) {
+  var conditions = FilterParser.parse(filter);
+
+  return conditions;
 };
 
 exports.createTeam = function(team, user, callback) {
@@ -267,6 +301,9 @@ exports.getTeamForEvent = function (event, callback) {
 exports.updateTeam = function(id, update, callback) {
   if (update.users) {
     update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
+  } else if (update.userIds) {
+    let objectIds = update.userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+    update.userIds = objectIds;
   }
 
   Team.findByIdAndUpdate(id, update, {new: true, populate: 'userIds'}, callback);

@@ -149,12 +149,14 @@
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
-                    <ui-select ng-model="$ctrl.team.selected" theme="bootstrap">
-                      <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-                      <ui-select-choices repeat="team in $ctrl.nonTeams | orderBy: 'name' | filter: $select.search">
-                        <span><i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i> </span><span ng-bind-html="team.name | highlight: $select.search"></span>
-                      </ui-select-choices>
-                    </ui-select>
+                    <input type="text" ng-model="$ctrl.nonUserTeam" placeholder="Search for a team"
+                    uib-typeahead="team as team.name for team in $ctrl.searchNonUserTeams($viewValue)"
+                    typeahead-loading="$ctrl.nonUserTeamSearchResults" typeahead-no-results="noSearchResults"
+                    class="form-control" ng-model-options="{ debounce: 1000 }">
+                  <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
+                  <div ng-show="noSearchResults">
+                    <i class="glyphicon glyphicon-remove"></i> No Results Found
+                  </div>
                   </div>
                 </div>
 
@@ -162,7 +164,8 @@
 
                 <div class="row">
                     <div class="col-md-12">
-                      <button class="btn btn-success" ng-click="$ctrl.addUserToTeam($ctrl.team.selected)" ng-disabled="$ctrl.team.selected == null"><i class="fa fa-plus"></i> Add To Team</button>
+                      <button class="btn btn-success" ng-click="$ctrl.addUserToTeam()"
+                      ng-disabled="($ctrl.nonUserTeam == null || $ctrl.nonUserTeam == '')"><i class="fa fa-plus"></i> Add To Team</button>
                     </div>
                 </div>
               </div>
@@ -178,7 +181,8 @@
 
                     <form class="navbar-form navbar-left">
                       <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search" ng-model="teamSearch">
+                        <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.userTeamSearch"
+            ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.searchUserTeam()">
                       </div>
                     </form>
                     <div class="navbar-form navbar-right right-gap-s">
@@ -193,7 +197,7 @@
               <div class="col-sm-12">
                 <div class="admin-table">
                   <div class="well-item"
-                      ng-repeat="team in ($ctrl.filteredTeams = ($ctrl.userTeams | filter:filterTeams)) | orderBy:'name' | offset: teamsPage*teamsPerPage | limitTo:teamsPerPage" >
+                      ng-repeat="team in $ctrl.userTeams" >
                     <div class="row pointer" ng-click="$ctrl.gotoTeam(team)">
                       <div class="col-md-12">
                         <div class="right-gap pull-left">
@@ -218,11 +222,11 @@
             <div class="row">
               <div class="col-md-12">
                 <ul class="pager pull-right">
-                  <li ng-class="{'disabled': $ctrl.teamsPage == 0}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.teamsPage == 0 || ($ctrl.teamsPage=$ctrl.teamsPage-1)">&larr; Previous</a>
+                  <li ng-class="{'disabled': $ctrl.hasPreviousUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.previousUserTeam()">&larr; Previous</a>
                   </li>
-                  <li ng-class="{'disabled': $ctrl.teamsPage >= ($ctrl.filteredTeams.length/$ctrl.teamsPerPage) - 1}">
-                    <a href="javascript:void(0);" ng-click="$ctrl.teamsPage >= ($ctrl.filteredTeams.length/$ctrl.teamsPerPage) - 1 || ($ctrl.teamsPage=$ctrl.teamsPage+1)">Next&rarr;</a>
+                  <li ng-class="{'disabled': $ctrl.hasNextUserTeam() == false}">
+                    <a href="javascript:void(0);" ng-click="$ctrl.nextUserTeam()">Next&rarr;</a>
                   </li>
                 </ul>
               </div>
@@ -248,15 +252,14 @@
                 <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
                   <form class="navbar-form navbar-left fixed-width-navbar">
                     <div class="form-group">
-                      <ui-select ng-model="$ctrl.device.selected" theme="bootstrap" on-select="$ctrl.filterLogins()" style="width: 330px;">
-                        <ui-select-match allow-clear placeholder="Filter on device">{{$select.selected.uid}}</ui-select-match>
-                        <ui-select-choices group-by="groupLayerByType" repeat="device in $ctrl.devices | orderBy: 'uid' | filter: $select.search">
-                          <div ng-bind-html="device.uid | highlight: $select.search"></div>
-                          <small class="muted">
-                            <span ng-bind-html="''+device.uid | highlight: $select.search"></span>
-                          </small>
-                        </ui-select-choices>
-                      </ui-select>
+                      <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
+                      uib-typeahead="device as device.id for device in $ctrl.searchLogins($viewValue)"
+                      typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noDeviceSearchResults"
+                      class="form-control" ng-model-options="{ debounce: 1000 }" typeahead-on-select='$ctrl.filterLogins()'>
+                    <i ng-show="$ctrl.isSearchingDevices == true" class="glyphicon glyphicon-refresh"></i>
+                    <div ng-show="noDeviceSearchResults">
+                      <i class="glyphicon glyphicon-remove"></i> No Results Found
+                    </div>
                     </div>
                     <div class="form-group">
                       <div class="input-group">

@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
   var Team = require('../models/team')
     , access = require('../access')
+    , pageInfoTransformer = require('../transformers/pageinfo.js')
     , passport = security.authentication.passport;
 
   app.all('/api/teams*', passport.authenticate('bearer'));
@@ -33,7 +34,8 @@ module.exports = function(app, security) {
     req.teamParam = {
       name: name,
       description: req.param('description'),
-      users: req.param('users')
+      users: req.param('users'),
+      userIds: req.param('userIds')
     };
 
     next();
@@ -58,12 +60,51 @@ module.exports = function(app, security) {
     '/api/teams',
     determineReadAccess,
     function (req, res, next) {
-      Team.getTeams({access: req.access}, function (err, teams) {
+      var filter = {};
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
+            continue;
+          }
+          filter[key] = value;
+        }
+      }
+
+      var limit = null;
+      if (req.query.limit) {
+        limit = req.query.limit;
+      }
+
+      var start = null;
+      if (req.query.start) {
+        start = req.query.start;
+      }
+
+      var sort = null;
+      if (req.query.sort) {
+        sort = req.query.sort;
+      }
+
+      Team.getTeams({access: req.access, populate: req.query.populate, filter: filter, limit: limit, start: start, sort: sort}, 
+        function (err, teams, pageInfo) {
         if (err) return next(err);
 
-        res.json(teams.map(function(team) {
-          return team.toObject({access: req.access, path: req.getRoot()});
-        }));
+        let data = null;
+
+        if (pageInfo != null) {
+          data = pageInfoTransformer.transform(pageInfo, req);
+          data.teams = teams.map(function(team) {
+            return team.toObject({access: req.access, path: req.getRoot()});
+          });
+          data = [data];
+        } else {
+          data = teams.map(function(team) {
+            return team.toObject({access: req.access, path: req.getRoot()});
+          });
+        }
+
+        res.json(data);
       });
     }
   );
@@ -72,7 +113,18 @@ module.exports = function(app, security) {
     '/api/teams/count',
     determineReadAccess,
     function(req, res, next) {
-      Team.count({access: req.access}, function(err, count) {
+      var filter = {};
+
+      if(req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
+            continue;
+          }
+          filter[key] = value;
+        }
+      }
+
+      Team.count({access: req.access, filter: filter }, function(err, count) {
         if (err) return next(err);
 
         res.json({count: count});
@@ -100,6 +152,7 @@ module.exports = function(app, security) {
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description) update.description = req.teamParam.description;
       if (req.teamParam.users) update.users = req.teamParam.users;
+      if (req.teamParam.userIds) update.userIds = req.teamParam.userIds;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
         if (err) return next(err);

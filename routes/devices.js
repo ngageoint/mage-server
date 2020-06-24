@@ -1,6 +1,7 @@
 const log = require('winston');
 const Device = require('../models/device');
 const access = require('../access');
+const pageInfoTransformer = require('../transformers/pageinfo.js');
 
 function DeviceResource() {}
 
@@ -127,7 +128,18 @@ DeviceResource.prototype.create = function(req, res, next) {
 };
 
 DeviceResource.prototype.count = function (req, res, next) {
-  Device.count()
+  var filter = {};
+
+  if(req.query) {
+    for (let [key, value] of Object.entries(req.query)) {
+      if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+        continue;
+      }
+      filter[key] = value;
+    }
+  }
+
+  Device.count({ filter: filter })
     .then(count => res.json({count: count}))
     .catch(err => next(err));
 };
@@ -143,8 +155,14 @@ DeviceResource.prototype.count = function (req, res, next) {
  */
 DeviceResource.prototype.getDevices = function (req, res, next) {
   var filter = {};
-  if (req.query.registered === 'true' || req.query.registered === 'false') {
-    filter.registered = req.query.registered === 'true';
+ 
+  if(req.query) {
+    for (let [key, value] of Object.entries(req.query)) {
+      if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+        continue;
+      }
+      filter[key] = value;
+    }
   }
 
   var expand = {};
@@ -155,8 +173,30 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
     }
   }
 
-  Device.getDevices({filter: filter, expand: expand})
-    .then(devices => res.json(devices))
+  var limit = null;
+  if (req.query.limit) {
+    limit = req.query.limit;
+  }
+
+  var start = null;
+  if (req.query.start) {
+    start = req.query.start;
+  }
+
+  var sort = null;
+  if (req.query.sort) {
+    sort = req.query.sort;
+  }
+
+  Device.getDevices({filter: filter, expand: expand, limit: limit, start: start, sort: sort})
+    .then(result => {
+      let data = result;
+
+      if(!Array.isArray(result)) {
+        data = pageInfoTransformer.transform(data, req);
+      }
+      res.json(data);
+    })
     .catch(err => next(err));
 };
 

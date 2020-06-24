@@ -126,6 +126,11 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
         const deferred = $q.defer();
 
         UserService.getMyself().then(function(myself) {
+          if(myself == null){
+            deferred.reject();
+            return;
+          }
+
           // TODO don't just check for these 2 roles, this should be permission based
           // Important when doing this the admin page also has to be permission based
           // and only show what each user can see.
@@ -134,14 +139,6 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
         });
 
         return deferred.promise;
-      }],
-      users: ['UserService', function(UserService) {
-        // Pull fresh set of users from server before admin page
-        return UserService.getAllUsers({forceRefresh: true, populate: 'roleId'});
-      }],
-      devices: ['DeviceService', function(DeviceService) {
-        // Pull fresh set of users from server before admin page
-        return DeviceService.getAllDevices({forceRefresh: true});
       }]
     };
   }

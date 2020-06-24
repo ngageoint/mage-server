@@ -10,7 +10,9 @@ var mongoose = require('mongoose')
   , Observation = require('./observation')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
-  , log = require('winston');
+  , Paging = require('../utilities/paging')
+  , FilterParser = require('../utilities/filterParser');
+
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -18,7 +20,7 @@ var Schema = mongoose.Schema;
 var PhoneSchema = new Schema({
   type: { type: String, required: true },
   number: { type: String, required: true }
-},{
+}, {
   versionKey: false,
   _id: false
 });
@@ -27,7 +29,7 @@ var PhoneSchema = new Schema({
 var UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
   displayName: { type: String, required: true },
-  email: {type: String, required: false },
+  email: { type: String, required: false },
   phones: [PhoneSchema],
   avatar: {
     contentType: { type: String, required: false },
@@ -46,7 +48,7 @@ var UserSchema = new Schema({
   enabled: { type: Boolean, default: true, required: true },
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
-  recentEventIds: [{type: Number, ref: 'Event'}],
+  recentEventIds: [{ type: Number, ref: 'Event' }],
   authentication: {
     type: { type: String, required: false },
     id: { type: String, required: false },
@@ -58,14 +60,14 @@ var UserSchema = new Schema({
       numberOfTimesLocked: { type: Number, default: 0 }
     }
   }
-},{
+}, {
   versionKey: false,
   timestamps: {
     updatedAt: 'lastUpdated'
   }
 });
 
-UserSchema.method('validPassword', function(password, callback) {
+UserSchema.method('validPassword', function (password, callback) {
   var user = this;
   if (user.authentication.type !== 'local') return callback(null, false);
 
@@ -74,10 +76,10 @@ UserSchema.method('validPassword', function(password, callback) {
 
 // Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   var user = this;
   user.username = user.username.toLowerCase();
-  this.model('User').findOne({username: user.username}, function(err, possibleDuplicate) {
+  this.model('User').findOne({ username: user.username }, function (err, possibleDuplicate) {
     if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
@@ -91,7 +93,7 @@ UserSchema.pre('save', function(next) {
 });
 
 // Encrypt password before save
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   var user = this;
 
   // only hash the password if it has been modified (or is new)
@@ -101,17 +103,17 @@ UserSchema.pre('save', function(next) {
 
   var self = this;
   async.waterfall([
-    function(done) {
+    function (done) {
       self.constructor.findById(user._id, done);
     },
-    function(existingUser, done) {
+    function (existingUser, done) {
       if (!existingUser) {
         // Creating new user, don't check previous password
         return done();
       }
 
       // Verify that the new password is different from the existing password
-      hasher.validPassword(user.authentication.password, existingUser.authentication.password, function(err, isValid) {
+      hasher.validPassword(user.authentication.password, existingUser.authentication.password, function (err, isValid) {
         if (err) return done(err);
 
         if (isValid) {
@@ -122,24 +124,24 @@ UserSchema.pre('save', function(next) {
         done(err);
       });
     },
-    function(done) {
+    function (done) {
       // Finally hash the password
-      hasher.hashPassword(user.authentication.password, function(err, hashedPassword) {
+      hasher.hashPassword(user.authentication.password, function (err, hashedPassword) {
         if (err) return next(err);
 
         user.authentication.password = hashedPassword;
         done();
       });
     }
-  ], function(err) {
+  ], function (err) {
     return next(err);
   });
 });
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   var user = this;
   if (user.active === false || user.enabled === false) {
-    Token.removeTokensForUser(user, function(err) {
+    Token.removeTokensForUser(user, function (err) {
       next(err);
     });
   } else {
@@ -147,7 +149,7 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-UserSchema.post('save', function(err, user, next) {
+UserSchema.post('save', function (err, user, next) {
   if (err.name === 'MongoError' && err.code === 11000) {
     err = new Error('username already exists');
     err.status = 400;
@@ -157,7 +159,7 @@ UserSchema.post('save', function(err, user, next) {
 });
 
 // Remove Token if password changed
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   var user = this;
 
   // only hash the password if it has been modified (or is new)
@@ -165,48 +167,48 @@ UserSchema.pre('save', function(next) {
     return next();
   }
 
-  Token.removeTokensForUser(user, function(err) {
+  Token.removeTokensForUser(user, function (err) {
     if (err) return next(err);
 
     next();
   });
 });
 
-UserSchema.pre('remove', function(next) {
+UserSchema.pre('remove', function (next) {
   var user = this;
 
   async.parallel({
-    location: function(done) {
+    location: function (done) {
       Location.removeLocationsForUser(user, done);
     },
-    cappedlocation: function(done) {
+    cappedlocation: function (done) {
       CappedLocation.removeLocationsForUser(user, done);
     },
-    token: function(done) {
+    token: function (done) {
       Token.removeTokensForUser(user, done);
     },
-    login: function(done) {
+    login: function (done) {
       Login.removeLoginsForUser(user, done);
     },
-    observation: function(done) {
+    observation: function (done) {
       Observation.removeUser(user, done);
     },
-    eventAcl: function(done) {
-      Event.removeUserFromAllAcls(user, function(err) {
+    eventAcl: function (done) {
+      Event.removeUserFromAllAcls(user, function (err) {
         done(err);
       });
     },
-    teamAcl: function(done) {
+    teamAcl: function (done) {
       Team.removeUserFromAllAcls(user, done);
     }
   },
-  function(err) {
-    next(err);
-  });
+    function (err) {
+      next(err);
+    });
 });
 
 // eslint-disable-next-line complexity
-var transform = function(user, ret, options) {
+var transform = function (user, ret, options) {
   if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
@@ -251,7 +253,7 @@ exports.transform = transform;
 var User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
-exports.getUserById = function(id, callback) {
+exports.getUserById = function (id, callback) {
   let result = User.findById(id).populate('roleId');
   if (typeof callback === 'function') {
     result = result.then(
@@ -265,55 +267,75 @@ exports.getUserById = function(id, callback) {
   return result;
 };
 
-exports.getUserByUsername = function(username, callback) {
-  User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
+exports.getUserByUsername = function (username, callback) {
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').exec(function (err, user) {
     callback(err, user);
   });
 };
 
-exports.getUserByAuthenticationId = function(authenticationType, id, callback) {
-  User.findOne({'authentication.type': authenticationType, 'authentication.id': id}).populate('roleId').exec(function(err, user) {
+exports.getUserByAuthenticationId = function (authenticationType, id, callback) {
+  User.findOne({ 'authentication.type': authenticationType, 'authentication.id': id }).populate('roleId').exec(function (err, user) {
     callback(err, user);
   });
 };
 
-exports.count = function(callback) {
-  User.count({}, function(err, count) {
-    callback(err, count);
-  });
-};
-
-exports.getUsers = function(options, callback) {
+exports.count = function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
-  var conditions = {};
   options = options || {};
   var filter = options.filter || {};
 
-  if (filter.active === true) {
-    conditions.active = true;
+  var conditions = createQueryConditions(filter);
+
+  User.count(conditions, function (err, count) {
+    callback(err, count);
+  });
+};
+
+exports.getUsers = function (options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
   }
 
-  if (filter.active === false) {
-    conditions.active = false;
-  }
+  options = options || {};
+  var filter = options.filter || {};
+
+  const conditions = createQueryConditions(filter);
+
+  var query = User.find(conditions);
 
   var populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
-    populate.push({path: 'roleId'});
-  }
-
-  var query = User.find(conditions);
-  if (populate.length) {
+    populate.push({ path: 'roleId' });
     query = query.populate(populate);
   }
 
-  query.exec(function(err, users) {
-    callback(err, users);
-  });
+  var isPaging = options.limit != null && options.limit > 0;
+  if (isPaging) {
+    var countQuery = User.find(conditions);
+    Paging.pageUsers(countQuery, query, options, callback);
+  } else {
+    query.exec(function (err, users) {
+      callback(err, users, null);
+    });
+  }
+};
+
+function createQueryConditions(filter) {
+  var conditions = FilterParser.parse(filter);
+
+  if (filter.active) {
+    conditions.active = filter.active == 'true';
+  }
+  if (filter.enabled) {
+    conditions.enabled = filter.enabled == 'true';
+  }
+  
+  return conditions;
 };
 
 exports.createUser = function(user, callback) {
@@ -332,32 +354,32 @@ exports.createUser = function(user, callback) {
   User.create(update, function(err, user) {
     if (err) return callback(err);
 
-    user.populate('roleId', function(err, user) {
+    user.populate('roleId', function (err, user) {
       callback(err, user);
     });
   });
 };
 
-exports.updateUser = function(user, callback) {
-  user.save(function(err, user) {
+exports.updateUser = function (user, callback) {
+  user.save(function (err, user) {
     if (err) return callback(err);
 
-    user.populate('roleId', function(err, user) {
+    user.populate('roleId', function (err, user) {
       callback(err, user);
     });
   });
 };
 
-exports.deleteUser = function(user, callback) {
-  user.remove(function(err, removedUser) {
+exports.deleteUser = function (user, callback) {
+  user.remove(function (err, removedUser) {
     callback(err, removedUser);
   });
 };
 
-exports.invalidLogin = function(user) {
+exports.invalidLogin = function (user) {
   return Setting.getSetting('security')
-    .then((securitySettings = {settings: {accountLock: {}}}) => {
-      let {enabled, max, interval, threshold} = securitySettings.settings.accountLock;
+    .then((securitySettings = { settings: { accountLock: {} } }) => {
+      let { enabled, max, interval, threshold } = securitySettings.settings.accountLock;
       if (!enabled) return Promise.resolve(user);
 
       let security = user.authentication.security;
@@ -384,46 +406,46 @@ exports.invalidLogin = function(user) {
     });
 };
 
-exports.validLogin = function(user) {
+exports.validLogin = function (user) {
   user.authentication.security = {};
   return user.save();
 };
 
-exports.setStatusForUser = function(user, status, callback) {
+exports.setStatusForUser = function (user, status, callback) {
   var update = { status: status };
-  User.findByIdAndUpdate(user._id, update, {new: true}, function(err, user) {
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
-exports.setRoleForUser = function(user, role, callback) {
+exports.setRoleForUser = function (user, role, callback) {
   var update = { role: role };
-  User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
-exports.removeRolesForUser = function(user, callback) {
+exports.removeRolesForUser = function (user, callback) {
   var update = { roles: [] };
-  User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
+  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
-exports.removeRoleFromUsers = function(role, callback) {
-  User.update({role: role._id}, {roles: undefined}, function(err, number) {
+exports.removeRoleFromUsers = function (role, callback) {
+  User.update({ role: role._id }, { roles: undefined }, function (err, number) {
     callback(err, number);
   });
 };
 
-exports.addRecentEventForUser = function(user, event, callback) {
+exports.addRecentEventForUser = function (user, event, callback) {
   let eventIds = Array.from(user.recentEventIds);
 
   // push new event onto front of the list
   eventIds.unshift(event._id);
 
   // remove duplicates
-  eventIds = eventIds.filter(function(eventId, index) {
+  eventIds = eventIds.filter(function (eventId, index) {
     return eventIds.indexOf(eventId) === index;
   });
 
@@ -432,17 +454,17 @@ exports.addRecentEventForUser = function(user, event, callback) {
     eventIds = eventIds.slice(0, 5);
   }
 
-  User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, {new: true}, function(err, user) {
+  User.findByIdAndUpdate(user._id, { recentEventIds: eventIds }, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
-exports.removeRecentEventForUsers = function(event, callback) {
+exports.removeRecentEventForUsers = function (event, callback) {
   var update = {
     $pull: { recentEventIds: event._id }
   };
 
-  User.update({}, update, {multi: true}, function(err) {
+  User.update({}, update, { multi: true }, function (err) {
     callback(err);
   });
 };

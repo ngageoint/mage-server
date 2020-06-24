@@ -1,26 +1,48 @@
 import angular from 'angular';
   
 class AdminDeviceEditController {
-  constructor($state, $stateParams, LocalStorageService, DeviceService, UserService) {
+  constructor($state, $stateParams, LocalStorageService, DeviceService, UserPagingService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.DeviceService = DeviceService;
-    this.UserService = UserService;
+    this.UserPagingService = UserPagingService;
 
     this.token = LocalStorageService.getToken();
+
+    this.userState = 'all';
+    this.isSearching = false;
+    this.stateAndData = this.UserPagingService.constructDefault();
+    this.pocs = [];
+    this.poc = null;
   }
 
   $onInit() {
     if (this.$stateParams.deviceId) {
       this.DeviceService.getDevice(this.$stateParams.deviceId).then(device => {
         this.device = angular.copy(device);
+        this.poc = this.device.user;
       });
     } else {
       this.device = {};
     }
 
-    this.UserService.getAllUsers().then(users => {
-      this.users = users;
+    this.stateAndData.delete('active');
+    this.stateAndData.delete('inactive');
+    this.stateAndData.delete('disabled');
+
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.pocs = this.UserPagingService.users(this.stateAndData[this.userState]);
+    });
+  }
+
+  searchPocs(searchString) {
+    this.isSearching = true;
+
+    return this.UserPagingService.search(this.stateAndData[this.userState], searchString).then(users => {
+      this.pocs = users;
+      this.isSearching = false;
+  
+      return this.pocs;
     });
   }
 
@@ -55,8 +77,8 @@ class AdminDeviceEditController {
     this.error = false;
 
     var device = this.device;
-    if (device.user.id) {
-      device.userId = device.user.id;
+    if (this.poc != null) {
+      device.userId = this.poc.id;
     }
 
     if (device.id) {
@@ -65,6 +87,7 @@ class AdminDeviceEditController {
       }, response => {
         this.saving = false;
         this.error = response.responseText;
+        this.poc = null;
       });
     } else {
       this.DeviceService.createDevice(device).then(newDevice => {
@@ -72,12 +95,13 @@ class AdminDeviceEditController {
       }, response => {
         this.saving = false;
         this.error = response.responseText;
+        this.poc = null;
       });
     }
   }
 }
 
-AdminDeviceEditController.$inject = ['$state', '$stateParams', 'LocalStorageService', 'DeviceService', 'UserService'];
+AdminDeviceEditController.$inject = ['$state', '$stateParams', 'LocalStorageService', 'DeviceService', 'UserPagingService'];
 
 export default {
   template: require('./device.edit.html'),

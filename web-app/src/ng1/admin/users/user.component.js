@@ -2,7 +2,7 @@ import _ from 'underscore';
 import moment from 'moment';
 
 class AdminUserController {
-  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
+  constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DevicePagingService, Team, TeamPagingService) {
     this.$q = $q;
     this.$state = $state;
     this.$uibModal = $uibModal;
@@ -10,13 +10,12 @@ class AdminUserController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.LoginService = LoginService;
-    this.DeviceService = DeviceService;
+    this.DevicePagingService = DevicePagingService;
     this.Team = Team;
+    this.TeamPagingService = TeamPagingService;
 
     this.userTeams = [];
-    this.nonTeams = [];
-    this.teamsPage = 0;
-    this.teamsPerPage = 10;
+    this.team = {};
 
     this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
     this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
@@ -25,7 +24,6 @@ class AdminUserController {
       user: {id: $stateParams.userId}
     };
 
-    this.device = {};
     this.login = {
       startDateOpened: false,
       endDateOpened: false
@@ -33,41 +31,39 @@ class AdminUserController {
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
+
+    this.deviceStateAndData = this.DevicePagingService.constructDefault();
+    this.deviceState = 'all';
+    this.loginSearchResults = [];
+    this.isSearchingDevices = false;
+    this.device = null;
+
+    this.userTeamStateAndData = this.TeamPagingService.constructDefault();
+    this.userTeamState = 'all';
+    this.userTeamSearch = '';
+    this.nonUserTeamSearchState = this.userTeamState + '.search';
+    this.nonUserTeamSearch = '';
+
+
+    this.nonUserTeam = null;
+    this.nonUserTeamSearchResults = [];
+    this.isSearching = false;
   }
 
   $onInit() {
-    this.$q.all({
-      user: this.UserService.getUser(this.$stateParams.userId),
-      teams: this.Team.query({populate: false}).$promise}
-    ).then(result => {
-      this.user = result.user;  
-      this.teams = result.teams;
-      this.team = {};
-  
-      this.userTeams = _.chain(result.teams)
-        .filter(team => {
-          return _.some(team.users, user => {
-            return this.user.id === user.id;
-          });
-        })
-        .value();
-  
-      var teams = _.chain(this.teams);
-      if (!_.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM')) {
-        // filter teams based on acl
-        teams = teams.filter(team => {
-          var permissions = team.acl[this.UserService.myself.id] ? team.acl[this.UserService.myself.id].permissions : [];
-          return _.contains(permissions, 'update');
-        });
-      }
-  
-      teams = teams.reject(team => {
-        return _.some(team.users, user => {
-          return this.user.id === user.id;
-        });
+    this.UserService.getUser(this.$stateParams.userId).then(user => {
+      this.user = user;  
+      let searchClone = JSON.parse(JSON.stringify(this.userTeamStateAndData[this.userTeamState]));
+      this.userTeamStateAndData[this.nonUserTeamSearchState] = searchClone;
+
+      this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
+      this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.nin = { userIds: [user.id]};
+      delete this.userTeamStateAndData[this.userTeamState].teamFilter.e;
+      delete this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.e;
+
+      this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
+        this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
       });
-  
-      this.nonTeams = teams.value();
     });
 
     this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
@@ -77,8 +73,49 @@ class AdminUserController {
       }
     });
 
-    this.DeviceService.getAllDevices().then(devices => {
-      this.devices = devices;
+    delete this.deviceStateAndData['registered'];
+    delete this.deviceStateAndData['unregistered'];
+
+    this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
+      this.devices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
+    });
+  }
+
+  hasNextUserTeam() {
+    return this.TeamPagingService.hasNext(this.userTeamStateAndData[this.userTeamState]);
+  }
+
+  nextUserTeam() {
+    this.TeamPagingService.next(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+      this.userTeams = teams;
+    });
+  }
+
+  hasPreviousUserTeam() {
+    return this.TeamPagingService.hasPrevious(this.userTeamStateAndData[this.userTeamState]);
+  }
+
+  previousUserTeam() {
+    this.TeamPagingService.previous(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+      this.userTeams = teams;
+    });
+  }
+
+  searchUserTeam() {
+    this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch, true).then(teams => {
+      this.userTeams = teams;
+    });
+  }
+
+
+  searchNonUserTeams(searchString) {
+    this.isSearching = true;
+
+    return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
+      this.nonUserTeamSearchResults = teams;
+      this.isSearching = false;
+  
+      return this.nonUserTeamSearchResults;
     });
   }
 
@@ -106,12 +143,10 @@ class AdminUserController {
     this.$state.go('admin.editUser', { userId: user.id });
   }
 
-  addUserToTeam(team) {
-    this.Team.addUser({id: team.id}, this.user, team => {
+  addUserToTeam() {
+    this.Team.addUser({id: this.nonUserTeam.id}, this.user, team => {
       this.userTeams.push(team);
-      this.nonTeams = _.reject(this.nonTeams, t => { return t.id === team.id; });
-
-      this.team = {};
+      this.nonUserTeam = null;
     });
   }
 
@@ -120,7 +155,6 @@ class AdminUserController {
 
     this.Team.removeUser({id: team.id, userId: this.user.id}, team => {
       this.userTeams = _.reject(this.userTeams, t => { return t.id === team.id; });
-      this.nonTeams.push(team);
     });
   }
 
@@ -161,7 +195,7 @@ class AdminUserController {
   }
 
   gotoTeam(team) {
-    this.$state.go('admin.teams', { teamId: team.id });
+    this.$state.go('admin.team', { teamId: team.id });
   }
 
   gotoDevice(device) {
@@ -178,8 +212,19 @@ class AdminUserController {
     });
   }
 
+  searchLogins(searchString) {
+    this.isSearchingDevices = true;
+
+    return this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], searchString).then(devices => {
+      this.loginSearchResults = devices;
+      this.isSearchingDevices = false;
+  
+      return this.loginSearchResults;
+    });
+  }
+
   filterLogins() {
-    this.filter.device = this.device.selected;
+    this.filter.device = this.device;
     this.ilter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.endDate = moment(this.login.endDate).endOf('day').toDate();
@@ -215,7 +260,7 @@ class AdminUserController {
   }
 }
 
-AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
+AdminUserController.$inject = ['$uibModal', '$state', '$stateParams', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DevicePagingService', 'Team', 'TeamPagingService'];
 
 export default {
   template: require('./user.html'),

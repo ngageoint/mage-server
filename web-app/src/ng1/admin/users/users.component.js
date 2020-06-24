@@ -1,51 +1,74 @@
 import _ from 'underscore';
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, LocalStorageService, UserService) {
+  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
+    this.UserPagingService = UserPagingService;
+
+    this.users = [];
+    this.stateAndData = this.UserPagingService.constructDefault();
 
     this.token = LocalStorageService.getToken();
     this.filter = "all"; // possible values all, active, inactive
-    this.search = '';
-    this.users = [];
-    this.page = 0;
-    this.itemsPerPage = 10;
-  
-    this.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
-    this.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
-    this.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+    this.userSearch = '';
 
-    // For some reason angular is not calling into filter function with correct context
-    this.filterActive = this._filterActive.bind(this);
+    this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
+    this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
+    this.hasUserDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_USER');
   }
 
   $onInit() {
-    this.UserService.getAllUsers().then(users => {
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+    });
+  }
+
+  count(state) {
+    return this.stateAndData[state].userCount;
+  }
+
+  hasNext() {
+    return this.UserPagingService.hasNext(this.stateAndData[this.filter]);
+  }
+
+  next() {
+    this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
       this.users = users;
     });
   }
 
-  _filterActive(user) {
-    switch (this.filter) {
-    case 'all': return true;
-    case 'active': return user.active;
-    case 'inactive': return !user.active;
-    case 'disabled': return !user.enabled;
-    }
+  hasPrevious() {
+    return this.UserPagingService.hasPrevious(this.stateAndData[this.filter]);
   }
 
-  activeUsersCount(user) {
-    return user.active === true;
+  previous() {
+    this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
+      this.users = users;
+    });
+  }
+
+  search() {
+    this.UserPagingService.search(this.stateAndData[this.filter], this.userSearch).then(users => {
+      this.users = users;
+    });
+  }
+
+  changeFilter(state) {
+    this.filter = state;
+    this.search();
   }
 
   reset() {
-    this.page = 0;
     this.filter = 'all';
     this.userSearch = '';
+    this.stateAndData = this.UserPagingService.constructDefault();
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+    });
   }
 
   newUser() {
@@ -77,9 +100,10 @@ class AdminUsersController {
       component: "adminUserDelete"
     });
 
-    modalInstance.result.then(user => {
-      this.user = null;
-      this.users = _.reject(this.users, u => { return u.id === user.id; });
+    modalInstance.result.then(() => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+      });
     });
   }
 
@@ -88,7 +112,9 @@ class AdminUsersController {
 
     user.active = true;
     this.UserService.updateUser(user.id, user, () => {
-      this.saved = true;
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+      });
 
       this.onUserActivated({
         $event: {
@@ -106,11 +132,15 @@ class AdminUsersController {
     $event.stopPropagation();
 
     user.enabled = true;
-    this.UserService.updateUser(user.id, user, () => {});
+    this.UserService.updateUser(user.id, user, () => {
+      this.UserPagingService.refresh(this.stateAndData).then(() => {
+        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+      });
+    });
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./users.html'),
