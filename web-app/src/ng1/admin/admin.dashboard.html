@@ -20,8 +20,8 @@
                   <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{$ctrl.count()}}</span></sup></a>
                 </div>
 
-                <form class="form">
-                  <div class="top-gap">
+                <form class="navbar-form navbar-left">
+                  <div class="form-group">
                     <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.userSearch"
                       ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                   </div>
