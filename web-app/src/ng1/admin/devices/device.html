@@ -137,13 +137,8 @@
                   <div class="form-group">
                     <input type="text" ng-model="$ctrl.user" placeholder="Filter on user"
                       uib-typeahead="user as user.displayName for user in $ctrl.searchLogins($viewValue)"
-                      typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noSearchResults"
                       class="form-control" ng-model-options="{ debounce: 1000 }"
                       typeahead-on-select='$ctrl.filterLogins()'>
-                    <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
-                    <div ng-show="noSearchResults">
-                      <i class="glyphicon glyphicon-remove"></i> No Results Found
-                    </div>
                   </div>
                   <div class="form-group">
                     <div class="input-group">

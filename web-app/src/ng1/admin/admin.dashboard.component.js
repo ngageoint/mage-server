@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 import moment from 'moment';
 
@@ -16,11 +18,9 @@ class AdminDashboardController {
     this.userSearch = '';
     this.userState = 'inactive';
     this.inactiveUsers = [];
-    this.isSearching = false;
     this.stateAndData = this.UserPagingService.constructDefault();
     this.loginSearchResults = [];
 
-    this.isSearchingDevices = false;
     this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.deviceState = 'unregistered';
     this.deviceSearch = '';
@@ -121,7 +121,7 @@ class AdminDashboardController {
 
   searchDevices() {
     this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch).then(devices => {
-      if(devices.length > 0) {
+      if (devices.length > 0) {
         this.unregisteredDevices = devices;
       } else {
         this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], this.deviceSearch, this.deviceSearch).then(devices => {
@@ -132,22 +132,30 @@ class AdminDashboardController {
   }
 
   searchLoginsAgainstUsers(searchString) {
-    this.isSearching = true;
-
     return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
-      this.isSearching = false;
+
+      if (this.loginSearchResults.length == 0) {
+        const noUser = {
+          displayName: "No Results Found"
+        }
+        this.loginSearchResults.push(noUser);
+      }
 
       return this.loginSearchResults;
     });
   }
 
   searchLoginsAgainstDevices(searchString) {
-    this.isSearchingDevices = true;
-
     return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
       this.loginDeviceSearchResults = devices;
-      this.isSearchingDevices = false;
+
+      if (this.loginDeviceSearchResults.length == 0) {
+        const noDevice = {
+          userAgent: "No Results Found"
+        }
+        this.loginDeviceSearchResults.push(noDevice);
+      }
 
       return this.loginDeviceSearchResults;
     });

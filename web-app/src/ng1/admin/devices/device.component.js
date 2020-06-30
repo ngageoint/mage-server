@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 import moment from 'moment';
 
@@ -55,6 +57,14 @@ class AdminDeviceController {
 
     return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
+
+      if(this.loginSearchResults.length == 0) {
+        let noUser = {
+          displayName: "No Results Found"
+        };
+        this.loginSearchResults.push(noUser);
+      }
+
       this.isSearching = false;
   
       return this.loginSearchResults;
@@ -66,7 +76,7 @@ class AdminDeviceController {
 
     if (device.iconClass) return device.iconClass;
 
-    var userAgent = device.userAgent || "";
+    let userAgent = device.userAgent || "";
 
     if (device.appVersion === 'Web Client') {
       device.iconClass = 'fa-desktop admin-desktop-icon';
@@ -90,7 +100,7 @@ class AdminDeviceController {
   }
 
   deleteDevice(device) {
-    var modalInstance = this.$uibModal.open({
+    let modalInstance = this.$uibModal.open({
       resolve: {
         device: () => {
           return device;

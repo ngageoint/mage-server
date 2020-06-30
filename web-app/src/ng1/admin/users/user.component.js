@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 import moment from 'moment';
 
@@ -113,6 +115,14 @@ class AdminUserController {
 
     return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
       this.nonUserTeamSearchResults = teams;
+
+      if(this.nonUserTeamSearchResults.length == 0) {
+        const noTeam = {
+          name: "No Results Found"
+        };
+        this.nonUserTeamSearchResults.push(noTeam);
+      }
+
       this.isSearching = false;
   
       return this.nonUserTeamSearchResults;
@@ -218,6 +228,13 @@ class AdminUserController {
     return this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], searchString).then(devices => {
       this.loginSearchResults = devices;
       this.isSearchingDevices = false;
+
+      if(this.loginSearchResults.length == 0){
+        const noDevice = {
+          userAgent: "No Results Found"
+        };
+        this.loginSearchResults.push(noDevice);
+      }
   
       return this.loginSearchResults;
     });

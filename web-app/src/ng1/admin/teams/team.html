@@ -89,10 +89,6 @@
                       uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
                       typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
                       class="form-control" ng-model-options="{ debounce: 1000 }">
-                    <i ng-show="$ctrl.isSearching == true" class="glyphicon glyphicon-refresh"></i>
-                    <div ng-show="noSearchResults">
-                      <i class="glyphicon glyphicon-remove"></i> No Results Found
-                    </div>
                   </div>
                 </div>
 
@@ -101,7 +97,7 @@
                 <div class="row">
                   <div class="col-md-12">
                     <button class="btn btn-success" ng-click="$ctrl.addUser()"
-                      ng-disabled="($ctrl.nonMember == null || $ctrl.nonMember == '')"><i class="fa fa-plus"></i> Add
+                      ng-disabled="($ctrl.nonMember == null || !$ctrl.nonMember.id)"><i class="fa fa-plus"></i> Add
                       User</button>
                   </div>
                 </div>

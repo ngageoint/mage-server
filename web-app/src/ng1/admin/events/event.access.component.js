@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 
 class AdminEventAccessController {
@@ -66,17 +68,17 @@ class AdminEventAccessController {
   }
 
   _filterMembers(member) {
-    var filteredMembers = this.$filter('filter')([member], this.memberSearch);
+    let filteredMembers = this.$filter('filter')([member], this.memberSearch);
     return filteredMembers && filteredMembers.length;
   }
 
   refreshMembers(event) {
     this.event = event;
 
-    var usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
+    let usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
 
     this.eventMembers = _.map(this.event.acl, (access, userId) => {
-      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+      let member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = {
         selected: _.find(this.roles, role => { return role.name === access.role; })
@@ -128,6 +130,14 @@ class AdminEventAccessController {
     this.isSearching = true;
     return this.UserPagingService.search(this.stateAndData[this.nonAclUserState], searchString).then(users => {
       this.nonMemberSearchResults = users;
+
+      if(this.nonMemberSearchResults.length == 0) {
+        let noMember = {
+          displayName: "No Results Found"
+        };
+        this.nonMemberSearchResults.push(noMember);
+      }
+
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
