@@ -90,12 +90,22 @@ paths:
         200:
           description: logout response
    
-  /auth/local/signin:
+  /auth/{authenticationStrategy}/signin:
     post:
-      tags: [ Local Authentication & Authorization ]
+      tags: [ Authentication & Authorization ]
       summary: Authentication 
-      description: Authenticate a user using a local strategy. 
+      description: Authenticate a user using a given strategy. 
       operationId: authenticate
+      security:
+        []
+      parameters:
+        - name: authenticationStrategy
+          in: path
+          description: Authentication strategy.  Given authentication strategy must be enabled in config.js
+          required: true
+          schema:
+            type: string
+            enum: [ local, ldap, saml, geoaxis, google ]
       requestBody:
         required: true
         content:
@@ -106,13 +116,18 @@ paths:
       responses:
         200:
           description: Successfully signed in.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Authentication' }
 
-  /auth/local/authorize:
+  /auth/token:
     post:
-      tags: [ Local Authentication & Authorization  ]
-      summary: Authorization and device creation
-      description: Authorize a user using a local strategy.  A device may also be created via this method.
+      tags: [ Authentication & Authorization  ]
+      summary: Device Authorization
+      description: Authorize a device.  If device does not exist, it may also be created via this method.
       operationId: authorize
+      security:
+        - authenticationToken: []
       parameters:
         - name: uid
           in: query
@@ -140,7 +155,7 @@ paths:
             schema: { $ref: '#/components/schemas/DeviceIn' }
       responses:
         200:
-          description: Successfuly provisioned device. If this was a new device, then it was successfuly created and auto-registration is turned on.
+          description: Successful device authorization, MAGE api token is returned.
         401:
           description:  User is not authorized.  Typically this means you need to authenticate `/auth/local/signin`.
         403:
@@ -2195,10 +2210,17 @@ paths:
           description: export response
 components:
   securitySchemes:
+    authenticationToken:
+      type: http
+      description: >
+        Token generated after successful authentication.  The client will exchange 
+        this token with an approved device for and API token.
+      scheme: bearer
+      bearerFormat: JWT
     mageToken:
       type: http
       description: >
-        MAGE generates an authentication token when a client authenticates
+        MAGE generates an API token when a client authenticates
         initially.  The client can use the token for subsequent requests until
         it expires.
       scheme: bearer
@@ -2369,6 +2391,16 @@ components:
       oneOf:
         - { type: object, required: [ password, passwordconfirm ] }
         - { type: object, not: { type: object, required: [ password, passwordconfirm ] } }
+    Authentication:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/UserRef'
+        token:
+          type: string
     AuthStatus:
       type: object
       required:
