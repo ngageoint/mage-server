@@ -20,7 +20,7 @@
     <p ng-if="$ctrl.helperText" class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent mdc-text-field-helper-text--validation-msg">{{$ctrl.helperText}}</p>
   </div>
 
-  <div ng-style="{width: $ctrl.width}" class="mdc-menu-surface dropdown-menu">
+  <div ng-style="{width: $ctrl.width}" class="mdc-menu-surface typeahead-dropdown-menu">
     <ul class="mdc-list" role="menu">
       <li
         ng-repeat="option in $ctrl.filteredOptions()"

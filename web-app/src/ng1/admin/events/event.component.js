@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 
 class AdminEventController {
@@ -16,19 +18,19 @@ class AdminEventController {
     this.token = LocalStorageService.getToken();
 
     this.showArchivedForms = false;
-  
+
     this.eventMembers = [];
     this.teamsInEvent = [];
-  
+
     this.editLayers = false;
     this.eventLayers = [];
     this.layersPage = 0;
     this.layersPerPage = 10;
-  
+
     this.layers = [];
-  
+
     this.nonMember = null;
-  
+
     this.eventTeam;
 
     this.userState = 'all';
@@ -40,22 +42,22 @@ class AdminEventController {
   }
 
   $onInit() {
-    this.$q.all({teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {
+    this.$q.all({ teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({ id: this.$stateParams.eventId, populate: false }).$promise }).then(result => {
       let teamsById = _.indexBy(result.teams, 'id');
-  
+
       this.layers = result.layers;
       let layersById = _.indexBy(result.layers, 'id');
-  
+
       this.event = result.event;
-  
+
       var eventTeamId = _.find(this.event.teamIds, teamId => {
         if (teamsById[teamId]) {
           return teamsById[teamId].teamEventId === this.event.id;
         }
       });
       this.eventTeam = teamsById[eventTeamId];
-  
-      var teamIdsInEvent = _.filter(this.event.teamIds, teamId => {
+
+      const teamIdsInEvent = _.filter(this.event.teamIds, teamId => {
         if (teamsById[teamId]) {
           return teamsById[teamId].teamEventId !== this.event.id;
         }
@@ -65,22 +67,23 @@ class AdminEventController {
       this.teamsNotInEvent = _.filter(result.teams, team => {
         return this.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
       });
-  
+
       this.layer = {};
       this.eventLayers = _.chain(this.event.layerIds)
         .filter(layerId => {
-          return layersById[layerId]; })
+          return layersById[layerId];
+        })
         .map(layerId => {
           return layersById[layerId];
         }).value();
-  
+
       this.nonLayers = _.filter(this.layers, layer => {
         return this.event.layerIds.indexOf(layer.id) === -1;
       });
-  
-      var myAccess = this.event.acl[this.UserService.myself.id];
-      var aclPermissions = myAccess ? myAccess.permissions : [];
-  
+
+      const myAccess = this.event.acl[this.UserService.myself.id];
+      const aclPermissions = myAccess ? myAccess.permissions : [];
+
       this.hasReadPermission = _.contains(this.UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
       this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
       this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
@@ -95,10 +98,10 @@ class AdminEventController {
       this.stateAndData[this.userState].countFilter.in = { _id: this.eventTeam.userIds };
       this.stateAndData[this.nonMemberUserState].userFilter.nin = { _id: this.eventTeam.userIds };
       this.stateAndData[this.nonMemberUserState].countFilter.nin = { _id: this.eventTeam.userIds };
-      
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
-          return this.normalize(item); 
+        this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
+          return this.normalize(item);
         });
       });
     });
@@ -129,10 +132,10 @@ class AdminEventController {
   }
 
   search() {
-     this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
+    this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
       let filteredTeams = this.$filter('filter')(this.teamsInEvent, this.memberSearch);
       this.eventMembers = _.map(users.concat(filteredTeams), item => { return this.normalize(item); });
-     });
+    });
   }
 
   searchNonMembers(searchString) {
@@ -140,13 +143,21 @@ class AdminEventController {
     return this.UserPagingService.search(this.stateAndData[this.nonMemberUserState], searchString).then(users => {
       let filteredTeams = this.$filter('filter')(this.teamsNotInEvent, searchString);
       this.nonMemberSearchResults = _.map(users.concat(filteredTeams), item => { return this.normalize(item); });
+
+      if (this.nonMemberSearchResults.length == 0) {
+        const noData = {
+          name: "No Results Found"
+        };
+        this.nonMemberSearchResults.push(noData);
+      }
+
       this.isSearching = false;
       return this.nonMemberSearchResults;
     });
   }
 
   _filterLayers(layer) {
-    var filteredLayers = this.$filter('filter')([layer], this.layerSearch);
+    const filteredLayers = this.$filter('filter')([layer], this.layerSearch);
     return filteredLayers && filteredLayers.length;
   }
 
@@ -171,25 +182,25 @@ class AdminEventController {
     this.nonMember = null;
     this.event.teamIds.push(team.id);
     this.teamsInEvent.push(team);
-    this.teamsNotInEvent = _.reject(this.teamsNotInEvent, teamId => {return teamId === team.id; });
+    this.teamsNotInEvent = _.reject(this.teamsNotInEvent, teamId => { return teamId === team.id; });
 
-    this.Event.addTeam({id: this.event.id}, team);
+    this.Event.addTeam({ id: this.event.id }, team);
     this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
-        return this.normalize(item); 
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
+        return this.normalize(item);
       });
     });
   }
 
   removeTeam(team) {
-    this.event.teamIds = _.reject(this.event.teamIds, teamId => {return teamId === team.id; });
+    this.event.teamIds = _.reject(this.event.teamIds, teamId => { return teamId === team.id; });
     this.teamsNotInEvent.push(team);
-    this.teamsInEvent =_.reject(this.teamsInEvent, teamId => {return teamId === team.id; });
+    this.teamsInEvent = _.reject(this.teamsInEvent, teamId => { return teamId === team.id; });
 
-    this.Event.removeTeam({id: this.event.id, teamId: team.id});
+    this.Event.removeTeam({ id: this.event.id, teamId: team.id });
     this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
-        return this.normalize(item); 
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
+        return this.normalize(item);
       });
     });
   }
@@ -198,11 +209,11 @@ class AdminEventController {
     this.nonMember = null;
     this.eventTeam.userIds.push(user.id);
     this.eventTeam.$save(() => {
-      this.event.$get({populate: false});
+      this.event.$get({ populate: false });
     });
     this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
-        return this.normalize(item); 
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
+        return this.normalize(item);
       });
     });
   }
@@ -210,11 +221,11 @@ class AdminEventController {
   removeUser(user) {
     this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return user.id === u.id; });
     this.eventTeam.$save(() => {
-      this.event.$get({populate: false});
+      this.event.$get({ populate: false });
     });
     this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => { 
-        return this.normalize(item); 
+      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
+        return this.normalize(item);
       });
     });
   }
@@ -290,10 +301,10 @@ class AdminEventController {
   moveFormUp($event, form) {
     $event.stopPropagation();
 
-    var forms = this.event.forms;
+    let forms = this.event.forms;
 
-    var from = forms.indexOf(form);
-    var to = from - 1;
+    let from = forms.indexOf(form);
+    let to = from - 1;
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();
@@ -302,10 +313,10 @@ class AdminEventController {
   moveFormDown($event, form) {
     $event.stopPropagation();
 
-    var forms = this.event.forms;
+    let forms = this.event.forms;
 
-    var from = forms.indexOf(form);
-    var to = from + 1;
+    let from = forms.indexOf(form);
+    let to = from + 1;
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();
@@ -325,7 +336,7 @@ class AdminEventController {
   }
 
   deleteEvent() {
-    var modalInstance = this.$uibModal.open({
+    let modalInstance = this.$uibModal.open({
       resolve: {
         event: () => {
           return this.event;

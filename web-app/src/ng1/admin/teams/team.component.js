@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 
 class AdminTeamController {
@@ -123,6 +125,14 @@ class AdminTeamController {
 
     return this.UserPagingService.search(this.stateAndData[this.userSearchState], searchString).then(users => {
       this.nonMemberSearchResults = users;
+
+      if(this.nonMemberSearchResults.length == 0) {
+        const noUser = {
+          displayName: "No Results Found"
+        };
+        this.nonMemberSearchResults.push(noUser);
+      }
+
       this.isSearching = false;
   
       return this.nonMemberSearchResults;
