@@ -1,3 +1,5 @@
+"use strict";
+
 import _ from 'underscore';
 
 class AdminSettingsController {
@@ -21,15 +23,15 @@ class AdminSettingsController {
     this.teams = [];
     this.strategies = [];
     this.authConfig = {};
-    
+
     this.usersReqAdminChoices = [{
       title: 'Enabled',
       description: 'New user accounts require admin approval.',
       value: true
-    },{
-        title: 'Disabled',
-        description: 'New user accounts do not require admin approval.',
-        value: false
+    }, {
+      title: 'Disabled',
+      description: 'New user accounts do not require admin approval.',
+      value: false
     }];
     this.devicesReqAdminChoices = [{
       title: 'Enabled',
@@ -46,23 +48,23 @@ class AdminSettingsController {
       title: 'Off',
       description: 'Do not lock MAGE user accounts.',
       value: false
-    },{
+    }, {
       title: 'On',
       description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
       value: true
     }];
-  
+
     this.maxLock = {};
     this.maxLockChoices = [{
       title: 'Off',
       description: 'Do not disable MAGE user accounts.',
       value: false
-    },{
+    }, {
       title: 'On',
       description: 'Disable MAGE user accounts after account has been locked defined number of times.',
       value: true
     }];
-  
+
     this.minicolorSettings = {
       position: 'bottom right',
       control: 'wheel'
@@ -79,63 +81,71 @@ class AdminSettingsController {
   }
 
   $onInit() {
-    this.$q.all({ 
-      api: this.Api.get().$promise, 
-      settings: this.Settings.query().$promise ,
+    this.$q.all({
+      api: this.Api.get().$promise,
+      settings: this.Settings.query().$promise,
       teams: this.Team.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise,
       events: this.Event.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise
     })
-    .then(result => {
-      const api = result.api;
-      this.teams = _.reject(result.teams, team => { return team.teamEventId; });
-      this.events = result.events;
+      .then(result => {
+        const api = result.api;
+        this.teams = _.reject(result.teams, team => { return team.teamEventId; });
+        this.events = result.events;
 
-      this.authConfig = api.authenticationStrategies || {};
-      this.pill = this.authConfig.local ? 'security' : 'banner';
+        this.authConfig = api.authenticationStrategies || {};
+        this.pill = this.authConfig.local ? 'security' : 'banner';
 
-      let strategy = {};
-      for (strategy in this.authConfig) {
-        this.strategies.push(strategy);
-      }
-
-      this.settings = _.indexBy(result.settings, 'type');
-
-      this.banner = this.settings.banner ? this.settings.banner.settings : {};
-      this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
-      this.security = this.settings.security ? this.settings.security.settings : {};
-
-      if (!this.security.accountLock) {
-        this.security.accountLock = {
-          enabled: false
-        };
-      }
-
-      this.strategies.forEach(strategy => {
-        if (!this.security[strategy]) {
-          this.security[strategy] = {
-            devicesReqAdmin: { enabled: true },
-            usersReqAdmin: { enabled: true },
-            newUserEvents: [],
-            newUserTeams: []
-          }
-        } else {
-          // Remove any teams and events that no longer exist
-          this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
-            return this.teams.some(team => team.id === id)
-          });
-
-          this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
-            return this.events.some(event => event.id === id)
-          });
+        let strategy = {};
+        for (strategy in this.authConfig) {
+          this.strategies.push(strategy);
         }
-      });
 
-      this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
-    });
+        this.settings = _.indexBy(result.settings, 'type');
+
+        this.banner = this.settings.banner ? this.settings.banner.settings : {};
+        this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
+        this.security = this.settings.security ? this.settings.security.settings : {};
+
+        if (!this.security.accountLock) {
+          this.security.accountLock = {
+            enabled: false
+          };
+        }
+
+        this.strategies.forEach(strategy => {
+          if (!this.security[strategy]) {
+            this.security[strategy] = {
+              devicesReqAdmin: { enabled: true },
+              usersReqAdmin: { enabled: true },
+              newUserEvents: [],
+              newUserTeams: []
+            }
+          } else {
+            if (this.security[strategy].newUserTeams) {
+              // Remove any teams and events that no longer exist
+              this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
+                return this.teams.some(team => team.id === id)
+              });
+            } else {
+              this.security[strategy].newUserTeams = [];
+            }
+
+            if (this.security[strategy].newUserEvents) {
+              this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
+                return this.events.some(event => event.id === id)
+              });
+            } else {
+              this.security[strategy].newUserEvents = [];
+            }
+          }
+        });
+
+        this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
+      });
   }
 
   saveBanner() {
-    this.Settings.update({type: 'banner'}, this.banner, () => {
+    this.Settings.update({ type: 'banner' }, this.banner, () => {
       this.saved = true;
       this.saving = false;
       this.saveStatus = 'Banner successfully saved';
@@ -147,7 +157,7 @@ class AdminSettingsController {
   }
 
   saveDisclaimer() {
-    this.Settings.update({type: 'disclaimer'}, this.disclaimer, () => {
+    this.Settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
       this.saved = true;
       this.saving = false;
       this.saveStatus = 'Disclaimer successfully saved';
@@ -170,7 +180,7 @@ class AdminSettingsController {
       }
     });
 
-    this.Settings.update({type: 'security'}, this.security, () => {
+    this.Settings.update({ type: 'security' }, this.security, () => {
       this.saved = true;
       this.saving = false;
       this.saveStatus = 'Security settings successfully saved.';
