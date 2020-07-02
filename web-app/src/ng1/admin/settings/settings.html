@@ -14,13 +14,16 @@
       <div class="row">
         <div class="col-md-3">
           <ul class="nav nav-pills nav-stacked">
-            <li ng-class="{active: $ctrl.pill === 'security'}"><a ng-click="$ctrl.pill = 'security'" href="javascript:void(0);">Security</a></li>
+            <li ng-class="{active: $ctrl.pill === 'security'}"><a ng-click="$ctrl.pill = 'security'"
+                href="javascript:void(0);">Security</a></li>
           </ul>
           <ul class="nav nav-pills nav-stacked">
-            <li ng-class="{active: $ctrl.pill === 'banner'}"><a ng-click="$ctrl.pill = 'banner'" href="javascript:void(0);">Banner</a></li>
+            <li ng-class="{active: $ctrl.pill === 'banner'}"><a ng-click="$ctrl.pill = 'banner'"
+                href="javascript:void(0);">Banner</a></li>
           </ul>
           <ul class="nav nav-pills nav-stacked">
-            <li ng-class="{active: $ctrl.pill === 'disclaimer'}"><a ng-click="$ctrl.pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
+            <li ng-class="{active: $ctrl.pill === 'disclaimer'}"><a ng-click="$ctrl.pill = 'disclaimer'"
+                href="javascript:void(0);">Disclaimer</a></li>
           </ul>
         </div>
 
@@ -39,7 +42,7 @@
                             <h3>{{strategy.toUpperCase()}} Authentication</h3>
                             <hr>
                           </div>
-                        </div>                
+                        </div>
 
                         <div class="row">
                           <div class="col-sm-12">
@@ -47,12 +50,14 @@
                               <label class="control-label" for="type">New User Accounts Require Admin Approval</label>
                               <ui-select ng-model="$ctrl.security[strategy].usersReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                                <ui-select-choices repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
+                                <ui-select-choices
+                                  repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
                                   <div ng-bind-html="usersReqAdminChoice.title"></div>
                                   <small ng-bind-html="usersReqAdminChoice.description"></small>
                                 </ui-select-choices>
                               </ui-select>
-                              <p class="help-block">If disabled, new user accounts do <b>NOT</b> require admin approval to access MAGE.</p>
+                              <p class="help-block">If disabled, new user accounts do <b>NOT</b> require admin approval
+                                to access MAGE.</p>
                             </div>
                           </div>
                         </div>
@@ -72,7 +77,8 @@
                                 <ui-select-no-choice>
                                   There are no events...
                                 </ui-select-no-choice>
-                                <p class="help-block">When new users are created, this is the event that they will be added to by default.</p>
+                                <p class="help-block">When new users are created, this is the event that they will be
+                                  added to by default.</p>
                               </div>
                             </div>
                           </div>
@@ -90,34 +96,37 @@
                                 <ui-select-no-choice>
                                   There are no teams...
                                 </ui-select-no-choice>
-                                <p class="help-block">When new users are created, this is the team that they will be added to by default.</p>
+                                <p class="help-block">When new users are created, this is the team that they will be
+                                  added to by default.</p>
                               </div>
                             </div>
                           </div>
                         </div>
-      
+
                         <div class="row">
-                            <div class="col-sm-12">
-                              <div class="form-group">
-                                <label class="control-label" for="type">New Devices Require Admin Approval</label>
-                                <ui-select ng-model="$ctrl.security[strategy].devicesReqAdmin.enabled" theme="bootstrap">
-                                  <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                                  <ui-select-choices repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
-                                    <div ng-bind-html="devicesReqAdminChoice.title"></div>
-                                    <small ng-bind-html="devicesReqAdminChoice.description"></small>
-                                  </ui-select-choices>
-                                </ui-select>
-                                <p class="help-block">If disabled, new devices do <b>NOT</b> require admin approval to access MAGE.</p>
-                              </div>
+                          <div class="col-sm-12">
+                            <div class="form-group">
+                              <label class="control-label" for="type">New Devices Require Admin Approval</label>
+                              <ui-select ng-model="$ctrl.security[strategy].devicesReqAdmin.enabled" theme="bootstrap">
+                                <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                <ui-select-choices
+                                  repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">
+                                  <div ng-bind-html="devicesReqAdminChoice.title"></div>
+                                  <small ng-bind-html="devicesReqAdminChoice.description"></small>
+                                </ui-select-choices>
+                              </ui-select>
+                              <p class="help-block">If disabled, new devices do <b>NOT</b> require admin approval to
+                                access MAGE.</p>
                             </div>
                           </div>
+                        </div>
                       </div>
-                    </div>    
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="row" ng-show="$ctrl.authConfig.local">
+              <div class="row bottom-gap-l" ng-show="$ctrl.authConfig.local">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">
@@ -134,12 +143,14 @@
                             <label class="control-label" for="type">Enabled</label>
                             <ui-select ng-model="$ctrl.security.accountLock.enabled" theme="bootstrap">
                               <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                              <ui-select-choices repeat="accountLockChoice.value as accountLockChoice in $ctrl.accountLockChoices">
+                              <ui-select-choices
+                                repeat="accountLockChoice.value as accountLockChoice in $ctrl.accountLockChoices">
                                 <div ng-bind-html="accountLockChoice.title"></div>
                                 <small ng-bind-html="accountLockChoice.description"></small>
                               </ui-select-choices>
                             </ui-select>
-                            <p class="help-block">MAGE can lock user accounts after a number of invalid login attempts for a certain amount of time.</p>
+                            <p class="help-block">MAGE can lock user accounts after a number of invalid login attempts
+                              for a certain amount of time.</p>
                           </div>
                         </div>
                       </div>
@@ -150,7 +161,8 @@
                             <label class="control-label" for="type">Account Lockout Threshold</label>
                             <div class="form-group">
                               <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
-                              <p class="help-block">Number of invalid login attempts, after which the users account will be locked.</p>
+                              <p class="help-block">Number of invalid login attempts, after which the users account will
+                                be locked.</p>
                             </div>
 
                           </div>
@@ -160,8 +172,10 @@
                           <div class="col-sm-12">
                             <label class="control-label" for="type">Account Lockout Interval (Seconds)</label>
                             <div class="form-group">
-                              <input type="number" ng-model="$ctrl.security.accountLock.interval" class="form-control"></input>
-                              <p class="help-block">Amount of time in seconds a users account will remain locked after reaching number of invalid login attempts.</p>
+                              <input type="number" ng-model="$ctrl.security.accountLock.interval"
+                                class="form-control"></input>
+                              <p class="help-block">Amount of time in seconds a users account will remain locked after
+                                reaching number of invalid login attempts.</p>
                             </div>
                           </div>
                         </div>
@@ -172,12 +186,14 @@
                               <label class="control-label" for="type">Enable Max Lockout</label>
                               <ui-select ng-model="$ctrl.maxLock.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                                <ui-select-choices repeat="maxLockChoice.value as maxLockChoice in $ctrl.maxLockChoices">
+                                <ui-select-choices
+                                  repeat="maxLockChoice.value as maxLockChoice in $ctrl.maxLockChoices">
                                   <div ng-bind-html="maxLockChoice.title"></div>
                                   <small ng-bind-html="maxLockChoice.description"></small>
                                 </ui-select-choices>
                               </ui-select>
-                              <p class="help-block">MAGE can disable user accounts if a user locks their account a certain number of times.</p>
+                              <p class="help-block">MAGE can disable user accounts if a user locks their account a
+                                certain number of times.</p>
                             </div>
                           </div>
                         </div>
@@ -186,8 +202,11 @@
                           <div class="col-sm-12">
                             <label class="control-label" for="type">Max Lockout Threshold</label>
                             <div class="form-group">
-                              <input type="number" ng-model="$ctrl.security.accountLock.max" class="form-control"></input>
-                              <p class="help-block">Number of times a user account can be locked before it is disabled. Disabled accounts must be re-enabled by an admin. If left blank this feature is disabled.</p>
+                              <input type="number" ng-model="$ctrl.security.accountLock.max"
+                                class="form-control"></input>
+                              <p class="help-block">Number of times a user account can be locked before it is disabled.
+                                Disabled accounts must be re-enabled by an admin. If left blank this feature is
+                                disabled.</p>
                             </div>
                           </div>
                         </div>
@@ -199,13 +218,137 @@
                 </div>
               </div>
 
+              <div class="row" ng-show="$ctrl.authConfig.local">
+                <div class="col-sm-11">
+                  <div class="card">
+                    <div class="card-content">
+                      <div class="row">
+                        <div class="col-md-12 bottom-gap">
+                          <h3>Password Policies</h3>
+                          <hr>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-12 bottom-gap">
+                          <h4>Minimum Password Requirements for User Accounts:</h4>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <label class="control-label" for="type">
+                              <input type="checkbox" ng-model="checkboxModel.minChar">
+                              Minimum Characters
+                          </label>
+                          <div class="form-group" ng-show="checkboxModel.minChar == true">
+                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
+                            <p class="help-block">Minimum number of characters required.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                          <div class="col-sm-12">
+                            <label class="control-label" for="type">
+                                <input type="checkbox" ng-model="checkboxModel.maxConChar">
+                                Maximum Consecutive Characters
+                            </label>
+                            <div class="form-group" ng-show="checkboxModel.maxConChar == true">
+                              <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
+                              <p class="help-block">Maximum number of consecutive characters.</p>
+                            </div>
+                          </div>
+                        </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <label class="control-label" for="type">
+                              <input type="checkbox" ng-model="checkboxModel.lowLetter">
+                              Lowercase Letters
+                          </label>
+                          <div class="form-group" ng-show="checkboxModel.lowLetter == true">
+                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
+                            <p class="help-block">Number of lowercase letters required.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <label class="control-label" for="type">
+                              <input type="checkbox" ng-model="checkboxModel.highLetter">
+                              Uppercase Letters
+                          </label>
+                          <div class="form-group" ng-show="checkboxModel.highLetter == true">
+                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
+                              class="form-control"></input>
+                            <p class="help-block">Number of uppercase letters required.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <label class="control-label" for="type">
+                              <input type="checkbox" ng-model="checkboxModel.numbers">
+                              Minimum Numbers
+                          </label>
+                          <div class="form-group" ng-show="checkboxModel.numbers == true">
+                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
+                              class="form-control"></input>
+                            <p class="help-block">Minimum amount of numbers required.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <label class="control-label" for="type">
+                              <input type="checkbox" ng-model="checkboxModel.specialChar">
+                              Special Characters
+                          </label>
+                          <div class="form-group" ng-show="checkboxModel.specialChar == true">
+                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
+                              class="form-control"></input>
+                            <p class="help-block">Number of special characters required.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row top-gap">
+                          <div class="col-md-12 bottom-gap">
+                            <h4>User Password Policies:</h4>
+                          </div>
+                        </div>
+  
+                        <div class="row">
+                          <div class="col-sm-12">
+                            <label class="control-label" for="type">
+                                <input type="checkbox" ng-model="checkboxModel.maxPassUsed">
+                                Previous Password Usage
+                            </label>
+                            <div class="form-group" ng-show="checkboxModel.maxPassUsed == true">
+                              <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
+                              <p class="help-block">Number of previous passwords that cannot be used.</p>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="row top-gap-l">
                 <div class="col-sm-2">
-                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveSecurity()"> <i class="fa fa-check"></i> Save</a>
+                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveSecurity()"> <i
+                      class="fa fa-check"></i> Save</a>
                 </div>
                 <div class="col-sm-9">
-                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">{{$ctrl.saveStatus}}</div>
-                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">{{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">
+                    {{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">
+                    {{$ctrl.saveStatus}}</div>
                 </div>
               </div>
             </form>
@@ -217,7 +360,8 @@
               <div class="row">
                 <div class="col-sm-11 col-sm-offset-1">
                   <span class="help-block">
-                    MAGE can add a header and footer to all views.  Below you can specify whether or not you want a header and/or footer, text, text color and background color.
+                    MAGE can add a header and footer to all views. Below you can specify whether or not you want a
+                    header and/or footer, text, text color and background color.
                   </span>
                 </div>
               </div>
@@ -238,7 +382,8 @@
                 <div class="col-sm-11 col-sm-offset-1">
                   <label class="control-label" for="type">Header Text</label>
                   <div class="form-group">
-                    <input type="text" placeholder="Header text" ng-model="$ctrl.banner.headerText" class="form-control" ng-disabled="!$ctrl.banner.showHeader">
+                    <input type="text" placeholder="Header text" ng-model="$ctrl.banner.headerText" class="form-control"
+                      ng-disabled="!$ctrl.banner.showHeader">
                   </div>
                 </div>
               </div>
@@ -247,7 +392,8 @@
                 <div class="col-sm-4 col-sm-offset-1">
                   <label>Header Text Color</label>
                   <div class="form-group">
-                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" ng-model="$ctrl.banner.headerTextColor"></div>
+                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text"
+                        ng-model="$ctrl.banner.headerTextColor"></div>
                   </div>
                 </div>
               </div>
@@ -256,7 +402,8 @@
                 <div class="col-sm-4 col-sm-offset-1">
                   <label>Header Background Color</label>
                   <div class="form-group">
-                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" ng-model="$ctrl.banner.headerBackgroundColor"></div>
+                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text"
+                        ng-model="$ctrl.banner.headerBackgroundColor"></div>
                   </div>
                 </div>
               </div>
@@ -277,7 +424,8 @@
                 <div class="col-sm-11 col-sm-offset-1">
                   <label class="control-label" for="type">Footer Text</label>
                   <div class="form-group">
-                    <input type="text" placeholder="Footer text" ng-model="$ctrl.banner.footerText" class="form-control" ng-disabled="!$ctrl.banner.showFooter">
+                    <input type="text" placeholder="Footer text" ng-model="$ctrl.banner.footerText" class="form-control"
+                      ng-disabled="!$ctrl.banner.showFooter">
                   </div>
                 </div>
               </div>
@@ -286,7 +434,8 @@
                 <div class="col-sm-4 col-sm-offset-1">
                   <label class="control-label">Footer Text Color</label>
                   <div class="form-group">
-                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" ng-model="$ctrl.banner.footerTextColor"></div>
+                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text"
+                        ng-model="$ctrl.banner.footerTextColor"></div>
                   </div>
                 </div>
               </div>
@@ -295,18 +444,22 @@
                 <div class="col-sm-4 col-sm-offset-1">
                   <label>Footer Background Color</label>
                   <div class="form-group">
-                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" ng-model="$ctrl.banner.footerBackgroundColor"></div>
+                    <div><input minicolors="$ctrl.minicolorSettings" class="form-control" type="text"
+                        ng-model="$ctrl.banner.footerBackgroundColor"></div>
                   </div>
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-sm-2 col-sm-offset-1">
-                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveBanner()"> <i class="fa fa-check"></i> Save</a>
+                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveBanner()"> <i
+                      class="fa fa-check"></i> Save</a>
                 </div>
                 <div class="col-sm-9">
-                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">{{$ctrl.saveStatus}}</div>
-                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">{{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">
+                    {{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">
+                    {{$ctrl.saveStatus}}</div>
                 </div>
               </div>
             </form>
@@ -318,7 +471,8 @@
               <div class="row">
                 <div class="col-sm-11 col-sm-offset-1">
                   <span class="help-block">
-                    MAGE can present a disclaimer after login.  If the disclaimer is shown users will have to accept to continue into MAGE.  The disclaimer will be shown on all clients, i.e. Android, iOS, and the Web.
+                    MAGE can present a disclaimer after login. If the disclaimer is shown users will have to accept to
+                    continue into MAGE. The disclaimer will be shown on all clients, i.e. Android, iOS, and the Web.
                   </span>
                 </div>
               </div>
@@ -339,7 +493,8 @@
                 <div class="col-sm-11 col-sm-offset-1">
                   <label class="control-label" for="type">Disclaimer Title</label>
                   <div class="form-group">
-                    <input type="text" placeholder="Disclaimer title" ng-model="$ctrl.disclaimer.title" class="form-control" ng-disabled="!$ctrl.disclaimer.show">
+                    <input type="text" placeholder="Disclaimer title" ng-model="$ctrl.disclaimer.title"
+                      class="form-control" ng-disabled="!$ctrl.disclaimer.show">
                   </div>
                 </div>
               </div>
@@ -348,18 +503,22 @@
                 <div class="col-sm-11 col-sm-offset-1">
                   <label class="control-label" for="type">Disclaimer Text</label>
                   <div class="form-group">
-                    <textarea placeholder="Disclaimer text" ng-model="$ctrl.disclaimer.text" class="form-control" ng-disabled="!$ctrl.disclaimer.show"></textarea>
+                    <textarea placeholder="Disclaimer text" ng-model="$ctrl.disclaimer.text" class="form-control"
+                      ng-disabled="!$ctrl.disclaimer.show"></textarea>
                   </div>
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-sm-2 col-sm-offset-1">
-                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveDisclaimer()"> <i class="fa fa-check"></i> Save</a>
+                  <a class="btn btn-success" ng-class="{'disabled': $ctrl.saving}" ng-click="$ctrl.saveDisclaimer()"> <i
+                      class="fa fa-check"></i> Save</a>
                 </div>
                 <div class="col-sm-9">
-                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">{{$ctrl.saveStatus}}</div>
-                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">{{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-success" ng-class="{'in': $ctrl.saved, 'out': !$ctrl.saved}">
+                    {{$ctrl.saveStatus}}</div>
+                  <div class="fade alert alert-error" ng-class="{'in': $ctrl.error, 'out': !$ctrl.error}">
+                    {{$ctrl.saveStatus}}</div>
                 </div>
               </div>
             </form>
