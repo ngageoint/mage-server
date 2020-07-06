@@ -14,7 +14,6 @@ class AdminSettingsController {
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
 
-    // this.events = [];
     this.events = [{
       name: 'foo',
       description: 'bar'

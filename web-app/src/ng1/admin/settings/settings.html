@@ -241,7 +241,7 @@
                               <input type="checkbox" ng-model="checkboxModel.minChar">
                               Minimum Characters
                           </label>
-                          <div class="form-group" ng-show="checkboxModel.minChar == true">
+                          <div class="form-group">
                             <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
                             <p class="help-block">Minimum number of characters required.</p>
                           </div>
@@ -254,7 +254,7 @@
                                 <input type="checkbox" ng-model="checkboxModel.maxConChar">
                                 Maximum Consecutive Characters
                             </label>
-                            <div class="form-group" ng-show="checkboxModel.maxConChar == true">
+                            <div class="form-group">
                               <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
                               <p class="help-block">Maximum number of consecutive characters.</p>
                             </div>
@@ -267,7 +267,7 @@
                               <input type="checkbox" ng-model="checkboxModel.lowLetter">
                               Lowercase Letters
                           </label>
-                          <div class="form-group" ng-show="checkboxModel.lowLetter == true">
+                          <div class="form-group">
                             <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
                             <p class="help-block">Number of lowercase letters required.</p>
                           </div>
@@ -280,7 +280,7 @@
                               <input type="checkbox" ng-model="checkboxModel.highLetter">
                               Uppercase Letters
                           </label>
-                          <div class="form-group" ng-show="checkboxModel.highLetter == true">
+                          <div class="form-group">
                             <input type="number" ng-model="$ctrl.security.accountLock.interval"
                               class="form-control"></input>
                             <p class="help-block">Number of uppercase letters required.</p>
@@ -294,7 +294,7 @@
                               <input type="checkbox" ng-model="checkboxModel.numbers">
                               Minimum Numbers
                           </label>
-                          <div class="form-group" ng-show="checkboxModel.numbers == true">
+                          <div class="form-group">
                             <input type="number" ng-model="$ctrl.security.accountLock.interval"
                               class="form-control"></input>
                             <p class="help-block">Minimum amount of numbers required.</p>
@@ -308,7 +308,7 @@
                               <input type="checkbox" ng-model="checkboxModel.specialChar">
                               Special Characters
                           </label>
-                          <div class="form-group" ng-show="checkboxModel.specialChar == true">
+                          <div class="form-group">
                             <input type="number" ng-model="$ctrl.security.accountLock.interval"
                               class="form-control"></input>
                             <p class="help-block">Number of special characters required.</p>
@@ -328,7 +328,7 @@
                                 <input type="checkbox" ng-model="checkboxModel.maxPassUsed">
                                 Previous Password Usage
                             </label>
-                            <div class="form-group" ng-show="checkboxModel.maxPassUsed == true">
+                            <div class="form-group">
                               <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
                               <p class="help-block">Number of previous passwords that cannot be used.</p>
                             </div>
