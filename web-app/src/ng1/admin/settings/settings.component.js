@@ -78,7 +78,7 @@ class AdminSettingsController {
       footerBackgroundColor: 'FFFFFF'
     };
 
-    this.passwordSettings = {
+    this.passwordPolicySettings = {
       minCharsEnabled: false,
       minChars: 0,
       maxConCharsEnabled: false,
