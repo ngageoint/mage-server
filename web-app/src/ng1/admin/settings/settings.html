@@ -237,82 +237,61 @@
 
                       <div class="row">
                         <div class="col-sm-12">
+                          <input type="checkbox" ng-model="checkboxModel.minChar"/>
+                          <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                           <label class="control-label" for="type">
-                              <input type="checkbox" ng-model="checkboxModel.minChar">
                               Minimum Characters
                           </label>
-                          <div class="form-group">
-                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
-                            <p class="help-block">Minimum number of characters required.</p>
-                          </div>
                         </div>
                       </div>
 
                       <div class="row">
                           <div class="col-sm-12">
+                            <input type="checkbox" ng-model="checkboxModel.maxConChar"/>
+                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                             <label class="control-label" for="type">
-                                <input type="checkbox" ng-model="checkboxModel.maxConChar">
                                 Maximum Consecutive Characters
                             </label>
-                            <div class="form-group">
-                              <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
-                              <p class="help-block">Maximum number of consecutive characters.</p>
-                            </div>
                           </div>
                         </div>
 
                       <div class="row">
                         <div class="col-sm-12">
+                          <input type="checkbox" ng-model="checkboxModel.lowLetter"/>
+                          <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                           <label class="control-label" for="type">
-                              <input type="checkbox" ng-model="checkboxModel.lowLetter">
                               Lowercase Letters
                           </label>
-                          <div class="form-group">
-                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
-                            <p class="help-block">Number of lowercase letters required.</p>
-                          </div>
                         </div>
                       </div>
 
                       <div class="row">
                         <div class="col-sm-12">
+                          <input type="checkbox" ng-model="checkboxModel.highLetter"/>
+                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
                           <label class="control-label" for="type">
-                              <input type="checkbox" ng-model="checkboxModel.highLetter">
                               Uppercase Letters
                           </label>
-                          <div class="form-group">
-                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
-                              class="form-control"></input>
-                            <p class="help-block">Number of uppercase letters required.</p>
-                          </div>
                         </div>
                       </div>
 
                       <div class="row">
                         <div class="col-sm-12">
+                          <input type="checkbox" ng-model="checkboxModel.numbers"/>
+                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
                           <label class="control-label" for="type">
-                              <input type="checkbox" ng-model="checkboxModel.numbers">
-                              Minimum Numbers
+                              Numbers
                           </label>
-                          <div class="form-group">
-                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
-                              class="form-control"></input>
-                            <p class="help-block">Minimum amount of numbers required.</p>
-                          </div>
                         </div>
                       </div>
 
                       <div class="row">
                         <div class="col-sm-12">
+                          <input type="checkbox" ng-model="checkboxModel.specialChar"/>
+                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
                           <label class="control-label" for="type">
-                              <input type="checkbox" ng-model="checkboxModel.specialChar">
                               Special Characters
                           </label>
-                          <div class="form-group">
-                            <input type="number" ng-model="$ctrl.security.accountLock.interval"
-                              class="form-control"></input>
-                            <p class="help-block">Number of special characters required.</p>
-                          </div>
                         </div>
                       </div>
 
@@ -324,14 +303,20 @@
   
                         <div class="row">
                           <div class="col-sm-12">
+                            <input type="checkbox" ng-model="checkboxModel.maxPassUsed"/>
+                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                             <label class="control-label" for="type">
-                                <input type="checkbox" ng-model="checkboxModel.maxPassUsed">
-                                Previous Password Usage
+                                Last Passwords Should Not Be Used
                             </label>
-                            <div class="form-group">
-                              <input type="number" ng-model="$ctrl.security.accountLock.threshold" class="form-control">
-                              <p class="help-block">Number of previous passwords that cannot be used.</p>
-                            </div>
+                          </div>
+                        </div>
+                        <div class="row" ng-show="checkboxModel.maxPassUsed == true">
+                          <div class="col-sm-12">
+                            <input type="checkbox" ng-model="checkboxModel.restrictSpecialChars"/>
+                            <label class="control-label" for="type">
+                                Restrict To These Special Characters
+                            </label>
+                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                           </div>
                         </div>
                     </div>
