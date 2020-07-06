@@ -237,8 +237,8 @@
 
                       <div class="row">
                         <div class="col-sm-12">
-                          <input type="checkbox" ng-model="checkboxModel.minChar"/>
-                          <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
+                          <input type="checkbox" ng-model="$ctrl.passwordSettings.minCharsEnabled"/>
+                          <input type="number" ng-model="$ctrl.passwordSettings.minChars" min="0"/>
                           <label class="control-label" for="type">
                               Minimum Characters
                           </label>
@@ -247,8 +247,8 @@
 
                       <div class="row">
                           <div class="col-sm-12">
-                            <input type="checkbox" ng-model="checkboxModel.maxConChar"/>
-                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
+                            <input type="checkbox" ng-model="$ctrl.passwordSettings.maxConCharsEnabled"/>
+                            <input type="number" ng-model="$ctrl.passwordSettings.maxConChars" min="0"/>
                             <label class="control-label" for="type">
                                 Maximum Consecutive Characters
                             </label>
@@ -257,8 +257,8 @@
 
                       <div class="row">
                         <div class="col-sm-12">
-                          <input type="checkbox" ng-model="checkboxModel.lowLetter"/>
-                          <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
+                          <input type="checkbox" ng-model="$ctrl.passwordSettings.lowLettersEnabled"/>
+                          <input type="number" ng-model="$ctrl.passwordSettings.lowLetters" min="0"/>
                           <label class="control-label" for="type">
                               Lowercase Letters
                           </label>
@@ -267,8 +267,8 @@
 
                       <div class="row">
                         <div class="col-sm-12">
-                          <input type="checkbox" ng-model="checkboxModel.highLetter"/>
-                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
+                          <input type="checkbox" ng-model="$ctrl.passwordSettings.highLettersEnabled"/>
+                          <input type="number" ng-model="$ctrl.passwordSettings.highLetters" min="0"/>
                           <label class="control-label" for="type">
                               Uppercase Letters
                           </label>
@@ -277,8 +277,8 @@
 
                       <div class="row">
                         <div class="col-sm-12">
-                          <input type="checkbox" ng-model="checkboxModel.numbers"/>
-                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
+                          <input type="checkbox" ng-model="$ctrl.passwordSettings.numbersEnabled"/>
+                          <input type="number" ng-model="$ctrl.passwordSettings.numbers" min="0"/>
                           <label class="control-label" for="type">
                               Numbers
                           </label>
@@ -287,13 +287,22 @@
 
                       <div class="row">
                         <div class="col-sm-12">
-                          <input type="checkbox" ng-model="checkboxModel.specialChar"/>
-                          <input type="number" ng-model="$ctrl.security.accountLock.interval" min="0"/>
+                          <input type="checkbox" ng-model="$ctrl.passwordSettings.specialCharsEnabled"/>
+                          <input type="number" ng-model="$ctrl.passwordSettings.specialChars" min="0"/>
                           <label class="control-label" for="type">
                               Special Characters
                           </label>
                         </div>
                       </div>
+                      <div class="row" ng-show="$ctrl.passwordSettings.specialCharsEnabled == true">
+                          <div class="col-sm-12">
+                            <input type="checkbox" ng-model="$ctrl.passwordSettings.restrictSpecialCharsEnabled"/>
+                            <label class="control-label" for="type">
+                                Restrict To These Special Characters
+                            </label>
+                            <input type="text" ng-model="$ctrl.passwordSettings.restrictSpecialChars" min="0"/>
+                          </div>
+                        </div>
 
                       <div class="row top-gap">
                           <div class="col-md-12 bottom-gap">
@@ -303,20 +312,11 @@
   
                         <div class="row">
                           <div class="col-sm-12">
-                            <input type="checkbox" ng-model="checkboxModel.maxPassUsed"/>
-                            <input type="number" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
+                            <input type="checkbox" ng-model="$ctrl.passwordSettings.lastNumPassEnabled"/>
+                            <input type="number" ng-model="$ctrl.passwordSettings.lastNumPass" min="0"/>
                             <label class="control-label" for="type">
                                 Last Passwords Should Not Be Used
                             </label>
-                          </div>
-                        </div>
-                        <div class="row" ng-show="checkboxModel.maxPassUsed == true">
-                          <div class="col-sm-12">
-                            <input type="checkbox" ng-model="checkboxModel.restrictSpecialChars"/>
-                            <label class="control-label" for="type">
-                                Restrict To These Special Characters
-                            </label>
-                            <input type="text" ng-model="$ctrl.security.accountLock.threshold" min="0"/>
                           </div>
                         </div>
                     </div>

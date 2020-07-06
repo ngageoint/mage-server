@@ -77,6 +77,25 @@ class AdminSettingsController {
       footerTextColor: '#000000',
       footerBackgroundColor: 'FFFFFF'
     };
+
+    this.passwordSettings = {
+      minCharsEnabled: false,
+      minChars: 0,
+      maxConCharsEnabled: false,
+      maxConChars: 0,
+      lowLettersEnabled: false,
+      lowLetters: 0,
+      highLettersEnabled: false,
+      highLetters: 0,
+      numbersEnabled: false,
+      numbers: 0,
+      specialCharsEnabled: false,
+      specialChars: 0,
+      restrictSpecialCharsEnabled: false,
+      restrictSpecialChars: "",
+      lastNumPassEnabled: false,
+      lastNumPass: 0
+    }
   }
 
   $onInit() {
