@@ -327,7 +327,8 @@
                       <div class="row">
                         <div class="col-sm-12">
                           <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.lastNumPassEnabled" />
-                          <input type="number" id="lastNumPass" ng-model="$ctrl.passwordPolicySettings.lastNumPass"
+                          <input type="number" ng-disabled="$ctrl.passwordPolicySettings.lastNumPassEnabled == false" 
+                            id="lastNumPass" ng-model="$ctrl.passwordPolicySettings.lastNumPass"
                             min="0" required />
                           <label for="lastNumPass">
                             Last Passwords Should Not Be Used

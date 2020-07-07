@@ -159,6 +159,9 @@ class AdminSettingsController {
         });
 
         this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
+        if(this.security.passwordPolicy) {
+          this.passwordPolicySettings = this.security.passwordPolicy;
+        }
       });
   }
 
@@ -190,6 +193,8 @@ class AdminSettingsController {
     if (!this.maxLock.enabled) {
       delete this.security.accountLock.max;
     }
+
+    this.security.passwordPolicy = this.passwordPolicySettings;
 
     this.strategies.forEach(strategy => {
       if (this.security[strategy].usersReqAdmin.enabled) {
