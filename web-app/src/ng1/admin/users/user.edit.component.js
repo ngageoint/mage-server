@@ -217,10 +217,17 @@ class AdminUserEditController {
   }
   
   passwordChanged(password) {
-    const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
-    this.passwordStrengthScore = score + 1;
-    this.passwordStrengthType = this.passwordStrengthMap[score].type;
-    this.passwordStrength = this.passwordStrengthMap[score].text;
+    if(password && password.length > 0) {
+      const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
+      this.passwordStrengthScore = score + 1;
+      this.passwordStrengthType = this.passwordStrengthMap[score].type;
+      this.passwordStrength = this.passwordStrengthMap[score].text;
+    } else {
+      this.passwordStrengthScore = 0;
+      this.passwordStrengthType = null;
+      this.passwordStrength = null;
+    }
+   
   }
 
   updatePassword(form) {
