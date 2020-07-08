@@ -1,9 +1,12 @@
+"use strict";
+
 import _ from 'underscore';
 import angular from 'angular';
 import zxcvbn from 'zxcvbn';
 
 class AdminUserEditController {
-  constructor($state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService) {
+  constructor($q, $state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService, Settings) {
+    this.$q = $q;
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$timeout = $timeout;
@@ -11,6 +14,7 @@ class AdminUserEditController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserIconService = UserIconService;
+    this.Settings = Settings;
 
     this.token = LocalStorageService.getToken();
     this.roles = [];
@@ -43,7 +47,11 @@ class AdminUserEditController {
   }
 
   $onInit() {
-    this.Api.get(api =>  {
+    this.$q.all({
+      api: this.Api.get().$promise,
+      settings: this.Settings.query().$promise
+    }).then(result => {
+      const api = result.api;
       var authenticationStrategies = api.authenticationStrategies || {};
       if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
         this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
@@ -232,7 +240,7 @@ class AdminUserEditController {
   }
 }
 
-AdminUserEditController.$inject = ['$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
+AdminUserEditController.$inject = ['$q', '$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService', 'Settings'];
 
 export default {
   template: require('./user.edit.html'),
