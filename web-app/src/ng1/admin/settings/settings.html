@@ -229,10 +229,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.minCharsEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.minCharsEnabled" />
                                 <input type="number" id="minChars"
-                                  ng-disabled="$ctrl.passwordPolicySettings.minCharsEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.minChars" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.minCharsEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0" required />
                                 <label for="minChars">
                                   Minimum Characters
                                 </label>
@@ -241,10 +241,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.maxConCharsEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled" />
                                 <input type="number" id="maxConChars"
-                                  ng-disabled="$ctrl.passwordPolicySettings.maxConCharsEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.maxConChars" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0" required />
                                 <label for="maxConChars">
                                   Maximum Consecutive Characters
                                 </label>
@@ -253,10 +253,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.lowLettersEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled" />
                                 <input type="number" id="lowLetters"
-                                  ng-disabled="$ctrl.passwordPolicySettings.lowLettersEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.lowLetters" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0" required />
                                 <label for="lowLetters">
                                   Lowercase Letters
                                 </label>
@@ -265,10 +265,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.highLettersEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.highLettersEnabled" />
                                 <input type="number" id="highLetters"
-                                  ng-disabled="$ctrl.passwordPolicySettings.highLettersEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.highLetters" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.highLettersEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0" required />
                                 <label for="highLetters">
                                   Uppercase Letters
                                 </label>
@@ -277,10 +277,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.numbersEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.numbersEnabled" />
                                 <input type="number" id="numbers"
-                                  ng-disabled="$ctrl.passwordPolicySettings.numbersEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.numbers" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.numbersEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0" required />
                                 <label for="numbers">
                                   Numbers
                                 </label>
@@ -289,25 +289,25 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.specialCharsEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled" />
                                 <input type="number" id="specialChars"
-                                  ng-disabled="$ctrl.passwordPolicySettings.specialCharsEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.specialChars" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0" required />
                                 <label for="specialChars">
                                   Special Characters
                                 </label>
                               </div>
                             </div>
-                            <div class="row" ng-show="$ctrl.passwordPolicySettings.specialCharsEnabled == true">
+                            <div class="row" ng-show="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == true">
                               <div class="col-sm-12">
                                 <input type="checkbox"
-                                  ng-model="$ctrl.passwordPolicySettings.restrictSpecialCharsEnabled" />
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled" />
                                 <label for="restrictSpecialChars">
                                   Restrict To These Special Characters:
                                 </label>
                                 <input type="text" id="restrictSpecialChars"
-                                  ng-disabled="$ctrl.passwordPolicySettings.restrictSpecialCharsEnabled == false"
-                                  ng-model="$ctrl.passwordPolicySettings.restrictSpecialChars" min="0" required />
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled == false"
+                                  ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0" required />
                               </div>
                             </div>
 
@@ -319,10 +319,10 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <input type="checkbox" ng-model="$ctrl.passwordPolicySettings.lastNumPassEnabled" />
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.lastNumPassEnabled" />
                                 <input type="number"
-                                  ng-disabled="$ctrl.passwordPolicySettings.lastNumPassEnabled == false"
-                                  id="lastNumPass" ng-model="$ctrl.passwordPolicySettings.lastNumPass" min="0"
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.lastNumPassEnabled == false"
+                                  id="lastNumPass" ng-model="$ctrl.security[strategy].passwordPolicy.lastNumPass" min="0"
                                   required />
                                 <label for="lastNumPass">
                                   Last Passwords Should Not Be Used
