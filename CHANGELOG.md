@@ -15,6 +15,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * New users created by admin should default to 'active'.
 * Docker build now works with Angular CLI
 * Fixed swagger page.
+* Date/Time fields honor required attribute on client.
 
 ## [5.3.5](https://github.com/ngageoint/mage-server/releases/tag/5.3.5)
 
