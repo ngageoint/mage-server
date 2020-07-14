@@ -7,6 +7,7 @@ module.exports = {
   bindings: {
     date: '<',
     fieldName: '@',
+    required: '<',
     onDatePicked: '&'
   },
   controller: DateTimeController
