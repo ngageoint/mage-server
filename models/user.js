@@ -103,7 +103,13 @@ UserSchema.pre('save', function (next) {
 
   PasswordValidator.validate(user.authentication.type, user.authentication.password).then(isValid => {
     //TODO check if is valid
-    next();
+    let err = null;
+    if(!isValid) {
+      err = new Error('Password does not match password policies');
+      err.status = 400;
+    }
+
+    next(err);
   });
 });
 
