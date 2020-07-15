@@ -5,7 +5,7 @@ import angular from 'angular';
 import zxcvbn from 'zxcvbn';
 
 class AdminUserEditController {
-  constructor($q, $state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService, Settings) {
+  constructor($q, $state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService) {
     this.$q = $q;
     this.$state = $state;
     this.$stateParams = $stateParams;
@@ -14,7 +14,6 @@ class AdminUserEditController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserIconService = UserIconService;
-    this.Settings = Settings;
 
     this.token = LocalStorageService.getToken();
     this.roles = [];
@@ -44,24 +43,21 @@ class AdminUserEditController {
         text: 'Excellent'
       }
     };
-
-    this.passwordPolicySettings;
+    this.passwordStatus = {
+      status: null,
+      msg: null
+    };
   }
 
   $onInit() {
     this.$q.all({
-      api: this.Api.get().$promise,
-      settings: this.Settings.query().$promise
+      api: this.Api.get().$promise
     }).then(result => {
       const api = result.api;
       const authenticationStrategies = api.authenticationStrategies || {};
       if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
         this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
       }
-
-      const settings = _.indexBy(result.settings, 'type');
-      const securitySettings = settings.security ? settings.security.settings : {};
-      this.passwordPolicySettings = securitySettings.passwordPolicy;
     });
 
     this.UserService.getRoles().success(roles => {
@@ -241,19 +237,26 @@ class AdminUserEditController {
     };
 
     this.UserService.updateUser(this.user.id, user, () => {
-      this.user.password = "";
-      this.user.passwordconfirm = "";
-      form.$setPristine(true);
-      this.passwordStatus = {status: 'success', msg: "Password successfully updated."};
+      this.$timeout(() => {
+        this.passwordStrengthScore = 0;
+        this.passwordStrengthType = null;
+        this.passwordStrength = null;
+        this.user.password = "";
+        this.user.passwordconfirm = "";
+        form.$setPristine(true);
+        this.passwordStatus.status = 'success';
+        this.passwordStatus.msg = "Password successfully updated.";
+      });
     }, data => {
       this.$timeout(() => {
-        this.passwordStatus = {status: "danger", msg: data.responseText};
+        this.passwordStatus.status = "danger";
+        this.passwordStatus.msg = data.responseText;
       });
     });
   }
 }
 
-AdminUserEditController.$inject = ['$q', '$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService', 'Settings'];
+AdminUserEditController.$inject = ['$q', '$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
 
 export default {
   template: require('./user.edit.html'),

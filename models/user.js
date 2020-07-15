@@ -11,8 +11,7 @@ var mongoose = require('mongoose')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
   , Paging = require('../utilities/paging')
-  , FilterParser = require('../utilities/filterParser')
-  , PasswordValidator = require('../utilities/passwordValidator');
+  , FilterParser = require('../utilities/filterParser');
 
 
 // Creates a new Mongoose Schema object
@@ -72,16 +71,13 @@ UserSchema.method('validPassword', function (password, callback) {
   var user = this;
   if (user.authentication.type !== 'local') return callback(null, false);
 
-  PasswordValidator.validate(user.authentication.type, password).then(isValid => {
-    //TODO
-    hasher.validPassword(password, user.authentication.password, callback);
-  });
+  hasher.validPassword(password, user.authentication.password, callback);
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
 UserSchema.pre('save', function (next) {
-  const user = this;
+  var user = this;
   user.username = user.username.toLowerCase();
   this.model('User').findOne({ username: user.username }, function (err, possibleDuplicate) {
     if (err) return next(err);
@@ -105,18 +101,8 @@ UserSchema.pre('save', function (next) {
     return next();
   }
 
-  const self = this;
+  var self = this;
   async.waterfall([
-    function(done) {
-      PasswordValidator.validate(user.authentication.type, user.authentication.password).then(isValid => {
-        let err = null;
-        if (!isValid) {
-          err = new Error('TODO');
-          err.status = 400;
-        }
-        done(err);
-      });
-    },
     function (done) {
       self.constructor.findById(user._id, done);
     },
