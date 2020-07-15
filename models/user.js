@@ -11,7 +11,8 @@ var mongoose = require('mongoose')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
   , Paging = require('../utilities/paging')
-  , FilterParser = require('../utilities/filterParser');
+  , FilterParser = require('../utilities/filterParser')
+  , PasswordValidator = require('../utilities/passwordValidator');
 
 
 // Creates a new Mongoose Schema object
@@ -88,6 +89,20 @@ UserSchema.pre('save', function (next) {
       return next(error);
     }
 
+    next();
+  });
+});
+
+//Validate password against password policies
+UserSchema.pre('save', function (next) {
+  const user = this;
+  // only hash the password if it has been modified (or is new)
+  if (user.authentication.type !== 'local' || !user.isModified('authentication.password')) {
+    return next();
+  }
+
+  PasswordValidator.validate(user.authentication.type, user.authentication.password).then(isValid => {
+    //TODO check if is valid
     next();
   });
 });
