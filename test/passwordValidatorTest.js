@@ -119,9 +119,9 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "aBcDe").then(isValid => {
+        PasswordValidator.validate("test", "aBcD").then(isValid => {
             expect(isValid).to.equal(true);
-            PasswordValidator.validate("test", "ABCDE1234a").then(isValid => {
+            PasswordValidator.validate("test", "ABCDE1234f").then(isValid => {
                 expect(isValid).to.equal(false);
                 done();
             });
@@ -141,6 +141,45 @@ describe("Password Validator Tests", function () {
         }));
 
         PasswordValidator.validate("test", "abc").then(isValid => {
+            expect(isValid).to.equal(true);
+            done();
+        });
+    });
+
+    it('Test minimum number of uppercase characters', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        highLetters: 2,
+                        highLettersEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "aBcD").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "abcde1234F").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test minimum number of uppercase characters disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        highLetters: 10,
+                        highLettersEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ABC").then(isValid => {
             expect(isValid).to.equal(true);
             done();
         });
