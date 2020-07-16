@@ -50,6 +50,8 @@ function validateMaximumConsecutiveCharacters(passwordPolicy, password) {
 
             if (a.match(/[a-z]/i)) {
                 conCount++;
+            } else {
+                conCount = 0;
             }
 
             if (conCount > passwordPolicy.maxConChars) {

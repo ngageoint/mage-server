@@ -68,7 +68,7 @@ describe("Password Validator Tests", function () {
         });
     });
 
-    it('Test maximum character count', function (done) {
+    it('Test maximum consecutive character count', function (done) {
         sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
             settings: {
                 test: {
@@ -82,14 +82,14 @@ describe("Password Validator Tests", function () {
 
         PasswordValidator.validate("test", "ab123").then(isValid => {
             expect(isValid).to.equal(true);
-            PasswordValidator.validate("test", "abc123").then(isValid => {
+            PasswordValidator.validate("test", "ab123abc").then(isValid => {
                 expect(isValid).to.equal(false);
                 done();
             });
         });
     });
 
-    it('Test maximum character count disabled', function (done) {
+    it('Test maximum consecutive character count disabled', function (done) {
         sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
             settings: {
                 test: {
