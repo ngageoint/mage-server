@@ -106,4 +106,43 @@ describe("Password Validator Tests", function () {
             done();
         });
     });
+
+    it('Test minimum number of lowercase characters', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        lowLetters: 2,
+                        lowLettersEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "aBcDe").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "ABCDE1234a").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test minimum number of lowercase characters disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        lowLetters: 10,
+                        lowLettersEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "abc").then(isValid => {
+            expect(isValid).to.equal(true);
+            done();
+        });
+    });
 });
