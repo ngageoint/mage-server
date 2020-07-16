@@ -15,14 +15,14 @@ describe("Password Validator Tests", function () {
         sinon.restore();
     });
 
-    it('Test missing strategy', function (done) {
+    it('Test null strategy', function (done) {
         PasswordValidator.validate(null, "password").then(isValid => {
             expect(isValid).to.equal(false);
             done();
         });
     });
 
-    it('Test missing password', function (done) {
+    it('Test null password', function (done) {
         PasswordValidator.validate("local", null).then(isValid => {
             expect(isValid).to.equal(false);
             done();
@@ -42,6 +42,66 @@ describe("Password Validator Tests", function () {
         }));
 
         PasswordValidator.validate("test", "ABC").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "ab").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test minimum characters disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        minChars: 3,
+                        minCharsEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "a").then(isValid => {
+            expect(isValid).to.equal(true);
+            done();
+        });
+    });
+
+    it('Test maximum character count', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        maxConChars: 2,
+                        maxConCharsEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ab123").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "abc123").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test maximum character count disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        maxConChars: 1,
+                        maxConCharsEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "abc").then(isValid => {
             expect(isValid).to.equal(true);
             done();
         });

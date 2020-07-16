@@ -16,6 +16,7 @@ function validate(strategy, password) {
         }
 
         let isValid = validateMinimumCharacters(passwordPolicy, password);
+        isValid = isValid && validateMaximumConsecutiveCharacters(passwordPolicy, password);
 
         return Promise.resolve(isValid);
     });
@@ -28,7 +29,7 @@ function validateMinimumCharacters(passwordPolicy, password) {
         let passwordCount = 0;
         for (let i = 0; i < lowerPass.length; i++) {
             let a = lowerPass[i];
-            
+
             if (a.match(/[a-z]/i)) {
                 passwordCount++;
             }
@@ -41,6 +42,20 @@ function validateMinimumCharacters(passwordPolicy, password) {
 function validateMaximumConsecutiveCharacters(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.maxConCharsEnabled) {
+        const lowerPass = password.toLowerCase();
+        let conCount = 0;
+        for (let i = 0; i < lowerPass.length; i++) {
+            let a = lowerPass[i];
+
+            if (a.match(/[a-z]/i)) {
+                conCount++;
+            }
+
+            if (conCount > passwordPolicy.maxConChars) {
+                isValid = false;
+                break;
+            }
+        }
     }
     return isValid;
 }
