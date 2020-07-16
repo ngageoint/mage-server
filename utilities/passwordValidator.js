@@ -24,8 +24,16 @@ function validate(strategy, password) {
 function validateMinimumCharacters(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.minCharsEnabled) {
-        const charCount = password.match(/,/g) || 0;
-        isValid = charCount >= passwordPolicy.minChars;
+        const lowerPass = password.toLowerCase();
+        let passwordCount = 0;
+        for (let i = 0; i < lowerPass.length; i++) {
+            let a = lowerPass[i];
+            
+            if (a.match(/[a-z]/i)) {
+                passwordCount++;
+            }
+        }
+        isValid = passwordCount >= passwordPolicy.minChars;
     }
     return isValid;
 }
