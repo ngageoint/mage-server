@@ -223,4 +223,43 @@ describe("Password Validator Tests", function () {
             done();
         });
     });
+
+    it('Test minimum number of special characters', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        specialChars: 2,
+                        specialCharsEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "abc$@").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "abc&").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test minimum number of special characters disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        specialChars: 10,
+                        specialCharsEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "abc$@").then(isValid => {
+            expect(isValid).to.equal(true);
+            done();
+        });
+    });
 });
