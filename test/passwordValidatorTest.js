@@ -184,4 +184,43 @@ describe("Password Validator Tests", function () {
             done();
         });
     });
+
+    it('Test minimum number of numbers', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        numbers: 2,
+                        numbersEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "aBcD12").then(isValid => {
+            expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "abcde1F").then(isValid => {
+                expect(isValid).to.equal(false);
+                done();
+            });
+        });
+    });
+
+    it('Test minimum number of numbers disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        numbers: 10,
+                        numbersEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ABC1").then(isValid => {
+            expect(isValid).to.equal(true);
+            done();
+        });
+    });
 });

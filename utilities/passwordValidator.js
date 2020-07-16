@@ -19,6 +19,7 @@ function validate(strategy, password) {
         isValid = isValid && validateMaximumConsecutiveCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumLowercaseCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumUppercaseCharacters(passwordPolicy, password);
+        isValid = isValid && validateMinimumNumbers(passwordPolicy, password);
 
         return Promise.resolve(isValid);
     });
@@ -95,6 +96,15 @@ function validateMinimumUppercaseCharacters(passwordPolicy, password) {
 function validateMinimumNumbers(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.numbersEnabled) {
+        let passwordCount = 0;
+        for (let i = 0; i < password.length; i++) {
+            let a = password[i];
+
+            if (a.match(/[0-9]/)) {
+                passwordCount++;
+            }
+        }
+        isValid = passwordCount >= passwordPolicy.numbers;
     }
     return isValid;
 }
