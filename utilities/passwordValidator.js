@@ -20,6 +20,7 @@ function validate(strategy, password) {
         isValid = isValid && validateMinimumLowercaseCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumUppercaseCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumNumbers(passwordPolicy, password);
+        isValid = isValid && validateMinimumSpecialCharacters(passwordPolicy, password);
 
         return Promise.resolve(isValid);
     });
@@ -114,6 +115,23 @@ function validateMinimumNumbers(passwordPolicy, password) {
 function validateMinimumSpecialCharacters(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.specialCharsEnabled) {
+        let regex = null;
+        if (passwordPolicy.restrictSpecialCharsEnabled) {
+            regex = new RegExp(passwordPolicy.restrictSpecialChars);
+        } else {
+            //TODO missing some special characters
+            regex = new RegExp('~!@#$%^&*(),.?":{}|<>_-');
+        }
+
+        let specialCharCount = 0;
+        for (let i = 0; i < password.length; i++) {
+            let a = password[i];
+
+            if (a.match(regex)) {
+                specialCharCount++;
+            }
+        }
+        isValid = specialCharCount >= passwordPolicy.specialChars;
     }
     return isValid;
 }
