@@ -119,8 +119,7 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
         if (passwordPolicy.restrictSpecialCharsEnabled) {
             regex = new RegExp('[' + passwordPolicy.restrictSpecialChars + ']');
         } else {
-            //TODO missing some special characters
-            regex = new RegExp('[~!@#$%^&*(),.?":{}|<>_-]');
+            regex = new RegExp('[~!@#$%^&*(),.?":{}|<>_=;-]');
         }
 
         let specialCharCount = 0;
