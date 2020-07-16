@@ -1,5 +1,5 @@
 var Setting = require('../models/setting')
-  , log = require('winston');
+    , log = require('winston');
 
 function validate(strategy, password) {
     if (!strategy || !password) {
@@ -10,37 +10,59 @@ function validate(strategy, password) {
     return Setting.getSetting("security").then(securitySettings => {
         const passwordPolicy = securitySettings.settings[strategy].passwordPolicy;
 
-        if(!passwordPolicy) {
+        if (!passwordPolicy) {
             log.debug('No password policy is defined for the strategy named: ' + strategy);
             return Promise.resolve(true);
         }
 
-        return Promise.resolve(true);
+        let isValid = validateMinimumCharacters(passwordPolicy, password);
+
+        return Promise.resolve(isValid);
     });
 }
 
 function validateMinimumCharacters(passwordPolicy, password) {
-
+    let isValid = true;
+    if (passwordPolicy.minCharsEnabled) {
+        const charCount = password.match(/,/g) || 0;
+        isValid = charCount >= passwordPolicy.minChars;
+    }
+    return isValid;
 }
 
 function validateMaximumConsecutiveCharacters(passwordPolicy, password) {
-    
+    let isValid = true;
+    if (passwordPolicy.maxConCharsEnabled) {
+    }
+    return isValid;
 }
 
 function validateMinimumLowercaseCharacters(passwordPolicy, password) {
-    
+    let isValid = true;
+    if (passwordPolicy.lowLettersEnabled) {
+    }
+    return isValid;
 }
 
 function validateMinimumUppercaseCharacters(passwordPolicy, password) {
-    
+    let isValid = true;
+    if (passwordPolicy.highLettersEnabled) {
+    }
+    return isValid;
 }
 
 function validateMinimumNumbers(passwordPolicy, password) {
-    
+    let isValid = true;
+    if (passwordPolicy.numbersEnabled) {
+    }
+    return isValid;
 }
 
 function validateMinimumSpecialCharacters(passwordPolicy, password) {
-    
+    let isValid = true;
+    if (passwordPolicy.specialCharsEnabled) {
+    }
+    return isValid;
 }
 
 module.exports = {
