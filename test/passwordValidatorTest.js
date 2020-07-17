@@ -291,6 +291,10 @@ describe("Password Validator Tests", function () {
 
         PasswordValidator.validate("test", "abc$@").then(isValid => {
             expect(isValid).to.equal(false);
+        }).then(() => {
+            PasswordValidator.validate("test", "abc$$$$$").then(isValid => {
+                expect(isValid).to.equal(true);
+            });
         }).finally(() => {
             done();
         });
