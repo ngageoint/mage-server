@@ -280,7 +280,7 @@ describe("Password Validator Tests", function () {
             settings: {
                 test: {
                     passwordPolicy: {
-                        specialChars: 2,
+                        specialChars: 1,
                         specialCharsEnabled: true,
                         restrictSpecialChars: '$',
                         restrictSpecialCharsEnabled: true
@@ -290,8 +290,7 @@ describe("Password Validator Tests", function () {
         }));
 
         PasswordValidator.validate("test", "abc$@").then(isValid => {
-            //TODO fix this test
-            //expect(isValid).to.equal(false);
+            expect(isValid).to.equal(false);
         }).finally(() => {
             done();
         });

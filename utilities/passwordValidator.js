@@ -1,6 +1,8 @@
 var Setting = require('../models/setting')
     , log = require('winston');
 
+const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
+
 function validate(strategy, password) {
     if (!strategy || !password) {
         log.warn('strategy or password is missing');
@@ -116,16 +118,22 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.specialCharsEnabled) {
         let regex = null;
+        let nonAllowedRegex = null;
         if (passwordPolicy.restrictSpecialCharsEnabled) {
-            //TODO don't allow other special characters???
+            nonAllowedRegex = new RegExp('[' + createRestrictedRegex(passwordPolicy.restrictSpecialChars) + ']');
             regex = new RegExp('[' + passwordPolicy.restrictSpecialChars + ']');
         } else {
-            regex = new RegExp('[~!@#$%^&*(),.?":{}|<>_=;-]');
+            regex = new RegExp('[' + SPECIAL_CHARS + ']');
         }
 
         let specialCharCount = 0;
         for (let i = 0; i < password.length; i++) {
             let a = password[i];
+
+            if(nonAllowedRegex && a.match(nonAllowedRegex)) {
+                specialCharCount = -1;
+                break;
+            }
 
             if (a.match(regex)) {
                 specialCharCount++;
@@ -134,6 +142,20 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
         isValid = specialCharCount >= passwordPolicy.specialChars;
     }
     return isValid;
+}
+
+function createRestrictedRegex(restrictedChars) {
+    let nonAllowedRegex = '';
+
+    for(let i =0; i < SPECIAL_CHARS.length; i++) {
+        let specialChar = SPECIAL_CHARS[i];
+
+        if(!restrictedChars.includes(specialChar)) {
+            nonAllowedRegex += specialChar;
+        }
+    }
+
+    return nonAllowedRegex;
 }
 
 module.exports = {
