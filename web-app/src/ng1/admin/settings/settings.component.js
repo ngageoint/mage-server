@@ -160,10 +160,33 @@ class AdminSettingsController {
           if(!this.security[strategy].passwordPolicy) {
             this.security[strategy].passwordPolicy = this.defaultPasswordPolicySettings;
           }
+          this.buildPasswordHelp(strategy);
         });
 
         this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
       });
+  }
+
+  buildPasswordHelp(strategy) {
+    if(this.security[strategy].passwordPolicy.customizeHelpText) {
+      return;
+    }
+
+    this.security[strategy].passwordPolicy.helpText = 'Password must contain the following: \n'
+
+    for (const key in this.security[strategy].passwordPolicy) {
+
+      if(key == 'helpText' || key.endsWith('Enabled')) {
+        continue;
+      }
+
+      let enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
+
+      if(enabled) {
+        let value = this.security[strategy].passwordPolicy[key];
+        this.security[strategy].passwordPolicy.helpText += '\t ' + key  + ': ' + value + '\n';
+      }
+    }
   }
 
   saveBanner() {

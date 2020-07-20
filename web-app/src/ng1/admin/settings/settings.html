@@ -332,7 +332,7 @@
                               <div class="col-sm-12">              
                                 <div class="checkbox">
                                   <label>
-                                    <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.showHelpText"> 
+                                    <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.customizeHelpText"> 
                                       Customize password help message
                                   </label>
                                 </div>
@@ -342,7 +342,7 @@
                               <div class="col-sm-12">
                                 <div class="form-group">
                                   <textarea placeholder="Password Policy Help" ng-model="$ctrl.security[strategy].passwordPolicy.helpText" 
-                                    class="form-control" ng-disabled="!$ctrl.security[strategy].passwordPolicy.showHelpText">
+                                    class="form-control" ng-disabled="!$ctrl.security[strategy].passwordPolicy.customizeHelpText">
                                   </textarea>
                                 </div>
                               </div>
