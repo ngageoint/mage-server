@@ -96,6 +96,15 @@ class AdminSettingsController {
       lastNumPassEnabled: false,
       lastNumPass: 0
     }
+
+    this.passwordPolicyHelpText = {
+      minChars: 'Must contain at least # characters',
+      maxConChars: 'A maximum of # consecutive characters are allowed',
+      lowLetters: 'A minimum of # lowercase characters are required',
+      highLetters: 'A minimum of # uppercase characters are required',
+      numbers: 'Must contain at least # numbers',
+      specialChars: 'Must contain at least # special characters'
+    }
   }
 
   $onInit() {
@@ -184,7 +193,11 @@ class AdminSettingsController {
 
       if(enabled) {
         let value = this.security[strategy].passwordPolicy[key];
-        this.security[strategy].passwordPolicy.helpText += '\t ' + key  + ': ' + value + '\n';
+        let msg = this.passwordPolicyHelpText[key];
+        if(msg) {
+          let subbedMsg = msg.replace('#' , value);
+          this.security[strategy].passwordPolicy.helpText += '\t '  + subbedMsg + '\n';
+        }
       }
     }
   }
