@@ -19,19 +19,6 @@ const TokenAssertion = {
 
 class TokenGenerateError extends Error {
 
-  subject;
-
-  /**
-   * the expected value of the `assertion` key in the payload
-   */
-  assertion;
-  /**
-   * number of seconds the token should have been valid
-   */
-  secondsToLive;
-
-  cause;
-
   constructor(subject, assertion, secondsToLive, cause) {
     super();
     this.name = 'TokenVerificationError';
@@ -48,21 +35,6 @@ class TokenGenerateError extends Error {
 }
 
 class TokenVerificationError extends Error {
-
- reason;
-  /**
-   * the expected subject, assertion, and any other expected data
-   */
- expected;
-  /**
-   * the encoded token string
-   */
- token;
-  /**
-   * the decoded payload of the token
-   */
- decoded;
-
   /**
    * @param reason why the verification failed
    * @param subject the expected subject
