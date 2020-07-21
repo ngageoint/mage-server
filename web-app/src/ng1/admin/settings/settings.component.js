@@ -98,12 +98,12 @@ class AdminSettingsController {
     }
 
     this.passwordPolicyHelpText = {
-      minChars: 'Must contain at least # characters',
-      maxConChars: 'A maximum of # consecutive characters are allowed',
-      lowLetters: 'A minimum of # lowercase characters are required',
-      highLetters: 'A minimum of # uppercase characters are required',
-      numbers: 'Must contain at least # numbers',
-      specialChars: 'Must contain at least # special characters'
+      minChars: 'At least # characters',
+      maxConChars: 'A maximum of # consecutive characters',
+      lowLetters: 'A minimum of # lowercase characters',
+      highLetters: 'A minimum of # uppercase characters',
+      numbers: 'At least # numbers',
+      specialChars: 'At least # special characters'
     }
   }
 

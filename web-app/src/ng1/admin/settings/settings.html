@@ -332,7 +332,8 @@
                               <div class="col-sm-12">              
                                 <div class="checkbox">
                                   <label>
-                                    <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.customizeHelpText"> 
+                                    <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.customizeHelpText" 
+                                      ng-click="$ctrl.buildPasswordHelp(strategy)"> 
                                       Customize password help message
                                   </label>
                                 </div>
