@@ -16,15 +16,15 @@ describe("Password Validator Tests", function () {
     });
 
     it('Test null strategy', function (done) {
-        PasswordValidator.validate(null, "password").then(isValid => {
-            expect(isValid).to.equal(false);
+        PasswordValidator.validate(null, "password").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(false);
             done();
         });
     });
 
     it('Test null password', function (done) {
-        PasswordValidator.validate("local", null).then(isValid => {
-            expect(isValid).to.equal(false);
+        PasswordValidator.validate("local", null).then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(false);
             done();
         });
     });
@@ -41,11 +41,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "ABC").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "ABC").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "ab").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "ab").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -64,8 +64,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "a").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "a").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -82,11 +82,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "ab123").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "ab123").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "ab123abc").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "ab123abc").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -105,8 +105,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "abc").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "abc").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -123,11 +123,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "aBcD").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "aBcD").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "ABCDE1234f").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "ABCDE1234f").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -146,8 +146,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "abc").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "abc").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -164,11 +164,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "aBcD").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "aBcD").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "abcde1234F").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "abcde1234F").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -187,8 +187,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "ABC").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "ABC").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -205,11 +205,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "aBcD12").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "aBcD12").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "abcde1F").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "abcde1F").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -228,8 +228,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "ABC1").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "ABC1").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -246,11 +246,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "abc$@").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "abc$@").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
         }).then(() => {
-            PasswordValidator.validate("test", "abc&").then(isValid => {
-                expect(isValid).to.equal(false);
+            PasswordValidator.validate("test", "abc&").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
             });
         }).finally(() => {
             done();
@@ -269,8 +269,8 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "abc$@").then(isValid => {
-            expect(isValid).to.equal(true);
+        PasswordValidator.validate("test", "abc$@").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
             done();
         });
     });
@@ -289,11 +289,11 @@ describe("Password Validator Tests", function () {
             }
         }));
 
-        PasswordValidator.validate("test", "abc$@").then(isValid => {
-            expect(isValid).to.equal(false);
+        PasswordValidator.validate("test", "abc$@").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(false);
         }).then(() => {
-            PasswordValidator.validate("test", "abc$$$$$").then(isValid => {
-                expect(isValid).to.equal(true);
+            PasswordValidator.validate("test", "abc$$$$$").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(true);
             });
         }).finally(() => {
             done();

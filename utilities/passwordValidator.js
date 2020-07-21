@@ -4,9 +4,16 @@ var Setting = require('../models/setting')
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
 
 function validate(strategy, password) {
+    let validationStatus = {
+        isValid: true,
+        msg: ""
+    };
+
     if (!strategy || !password) {
         log.warn('strategy or password is missing');
-        return Promise.resolve(false);
+        validationStatus.isValid = false;
+        validationStatus.msg = "Password or strategy is missing";
+        return Promise.resolve(validationStatus);
     }
 
     return Setting.getSetting("security").then(securitySettings => {
@@ -14,7 +21,7 @@ function validate(strategy, password) {
 
         if (!passwordPolicy) {
             log.debug('No password policy is defined for the strategy named: ' + strategy);
-            return Promise.resolve(true);
+            return Promise.resolve(validationStatus);
         }
 
         let isValid = validateMinimumCharacters(passwordPolicy, password);
@@ -24,7 +31,13 @@ function validate(strategy, password) {
         isValid = isValid && validateMinimumNumbers(passwordPolicy, password);
         isValid = isValid && validateMinimumSpecialCharacters(passwordPolicy, password);
 
-        return Promise.resolve(isValid);
+        validationStatus.isValid = isValid;
+
+        if (!isValid) {
+            validationStatus.msg = passwordPolicy.helpText;
+        }
+
+        return Promise.resolve(validationStatus);
     });
 }
 
@@ -130,7 +143,7 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
         for (let i = 0; i < password.length; i++) {
             let a = password[i];
 
-            if(nonAllowedRegex && a.match(nonAllowedRegex)) {
+            if (nonAllowedRegex && a.match(nonAllowedRegex)) {
                 specialCharCount = -1;
                 break;
             }
@@ -147,10 +160,10 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
 function createRestrictedRegex(restrictedChars) {
     let nonAllowedRegex = '';
 
-    for(let i =0; i < SPECIAL_CHARS.length; i++) {
+    for (let i = 0; i < SPECIAL_CHARS.length; i++) {
         let specialChar = SPECIAL_CHARS[i];
 
-        if(!restrictedChars.includes(specialChar)) {
+        if (!restrictedChars.includes(specialChar)) {
             nonAllowedRegex += specialChar;
         }
     }
