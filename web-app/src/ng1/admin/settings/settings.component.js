@@ -94,16 +94,16 @@ class AdminSettingsController {
       restrictSpecialCharsEnabled: false,
       restrictSpecialChars: "",
       lastNumPassEnabled: false,
-      lastNumPass: 0
-    }
-
-    this.passwordPolicyHelpText = {
-      minChars: 'At least # characters',
-      maxConChars: 'A maximum of # consecutive characters',
-      lowLetters: 'A minimum of # lowercase characters',
-      highLetters: 'A minimum of # uppercase characters',
-      numbers: 'At least # numbers',
-      specialChars: 'At least # special characters'
+      lastNumPass: 0,
+      helpText: null,
+      helpTextTemplate: {
+        minChars: 'At least # characters',
+        maxConChars: 'A maximum of # consecutive characters',
+        lowLetters: 'A minimum of # lowercase characters',
+        highLetters: 'A minimum of # uppercase characters',
+        numbers: 'At least # numbers',
+        specialChars: 'At least # special characters'
+      }
     }
   }
 
@@ -166,9 +166,14 @@ class AdminSettingsController {
             }
           }
 
-          if(!this.security[strategy].passwordPolicy) {
+          if (!this.security[strategy].passwordPolicy) {
             this.security[strategy].passwordPolicy = this.defaultPasswordPolicySettings;
           }
+
+          if(!this.security[strategy].passwordPolicy.helpTextTemplate) {
+            this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
+          }
+
           this.buildPasswordHelp(strategy);
         });
 
@@ -177,7 +182,7 @@ class AdminSettingsController {
   }
 
   buildPasswordHelp(strategy) {
-    if(this.security[strategy].passwordPolicy.customizeHelpText) {
+    if (this.security[strategy].passwordPolicy.customizeHelpText) {
       return;
     }
 
@@ -185,18 +190,18 @@ class AdminSettingsController {
 
     for (const key in this.security[strategy].passwordPolicy) {
 
-      if(key == 'helpText' || key.endsWith('Enabled')) {
+      if (key == 'helpText' || key == 'helpTextTemplate' || key.endsWith('Enabled')) {
         continue;
       }
 
       let enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
 
-      if(enabled) {
+      if (enabled) {
         let value = this.security[strategy].passwordPolicy[key];
-        let msg = this.passwordPolicyHelpText[key];
-        if(msg) {
-          let subbedMsg = msg.replace('#' , value);
-          this.security[strategy].passwordPolicy.helpText += '\t '  + subbedMsg + '\n';
+        let msg = this.security[strategy].passwordPolicy.helpTextTemplate[key];
+        if (msg) {
+          let subbedMsg = msg.replace('#', value);
+          this.security[strategy].passwordPolicy.helpText += '\t ' + subbedMsg + '\n';
         }
       }
     }
