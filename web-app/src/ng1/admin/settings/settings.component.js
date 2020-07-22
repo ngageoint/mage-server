@@ -193,7 +193,7 @@ class AdminSettingsController {
         return false;
       }
       return true;
-    })
+    });
 
     let passwordText = "";
     for (let i = 0; i < filtered.length; i++) {
