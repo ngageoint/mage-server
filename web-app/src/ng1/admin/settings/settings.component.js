@@ -97,12 +97,12 @@ class AdminSettingsController {
       lastNumPass: 0,
       helpText: null,
       helpTextTemplate: {
-        minChars: 'At least # characters',
-        maxConChars: 'A maximum of # consecutive characters',
-        lowLetters: 'A minimum of # lowercase characters',
-        highLetters: 'A minimum of # uppercase characters',
-        numbers: 'At least # numbers',
-        specialChars: 'At least # special characters'
+        minChars: 'at least # characters',
+        maxConChars: 'a maximum of # consecutive characters',
+        lowLetters: 'a minimum of # lowercase characters',
+        highLetters: 'a minimum of # uppercase characters',
+        numbers: 'at least # numbers',
+        specialChars: 'at least # special characters'
       }
     }
   }
@@ -170,9 +170,7 @@ class AdminSettingsController {
             this.security[strategy].passwordPolicy = this.defaultPasswordPolicySettings;
           }
 
-          if(!this.security[strategy].passwordPolicy.helpTextTemplate) {
-            this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
-          }
+          this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
 
           this.buildPasswordHelp(strategy);
         });
@@ -186,13 +184,20 @@ class AdminSettingsController {
       return;
     }
 
-    this.security[strategy].passwordPolicy.helpText = 'Password must contain the following: \n'
+    this.security[strategy].passwordPolicy.helpText = 'Your password is invalid and must contain '
 
-    for (const key in this.security[strategy].passwordPolicy) {
-
-      if (key == 'helpText' || key == 'helpTextTemplate' || key.endsWith('Enabled')) {
-        continue;
+    const originalKeys = Object.keys(this.security[strategy].passwordPolicy);
+    const filtered = originalKeys.filter(function (value, index, arr) {
+      if (value == 'helpText' || value == 'helpTextTemplate' || value == 'customizeHelpText'
+        || value == 'lastNumPass' || value == 'restrictSpecialChars' || value.endsWith('Enabled')) {
+        return false;
       }
+      return true;
+    })
+
+    let passwordText = "";
+    for (let i = 0; i < filtered.length; i++) {
+      const key = filtered[i];
 
       const enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
 
@@ -201,10 +206,17 @@ class AdminSettingsController {
         const msg = this.security[strategy].passwordPolicy.helpTextTemplate[key];
         if (msg) {
           const subbedMsg = msg.replace('#', value);
-          this.security[strategy].passwordPolicy.helpText += '\t ' + subbedMsg + '\n';
+
+          passwordText += subbedMsg;
+          passwordText += ', ';
         }
       }
     }
+
+    //Remove the last comma.  Tricky to do in the loop since we don't know ahead 
+    //of time if things are enabled.
+    passwordText = passwordText.substring(0, passwordText.length - 2);
+    this.security[strategy].passwordPolicy.helpText += passwordText;
   }
 
   saveBanner() {
