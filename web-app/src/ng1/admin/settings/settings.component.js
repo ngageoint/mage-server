@@ -194,13 +194,13 @@ class AdminSettingsController {
         continue;
       }
 
-      let enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
+      const enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
 
       if (enabled) {
-        let value = this.security[strategy].passwordPolicy[key];
-        let msg = this.security[strategy].passwordPolicy.helpTextTemplate[key];
+        const value = this.security[strategy].passwordPolicy[key];
+        const msg = this.security[strategy].passwordPolicy.helpTextTemplate[key];
         if (msg) {
-          let subbedMsg = msg.replace('#', value);
+          const subbedMsg = msg.replace('#', value);
           this.security[strategy].passwordPolicy.helpText += '\t ' + subbedMsg + '\n';
         }
       }
