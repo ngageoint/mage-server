@@ -95,8 +95,6 @@ class AdminSettingsController {
       specialChars: 0,
       restrictSpecialCharsEnabled: false,
       restrictSpecialChars: "",
-      lastNumPassEnabled: false,
-      lastNumPass: 0,
       passwordMinLength: 0,
       passwordMinLengthEnabled: false,
       helpText: null,
@@ -106,7 +104,8 @@ class AdminSettingsController {
         lowLetters: 'a minimum of # lowercase characters',
         highLetters: 'a minimum of # uppercase characters',
         numbers: 'at least # numbers',
-        specialChars: 'at least # special characters'
+        specialChars: 'at least # special characters', 
+        passwordMinLength: 'length must be greater than or equal to #'
       }
     }
   }
