@@ -5,8 +5,6 @@ function build(passwordPolicy) {
         return;
     }
 
-    passwordPolicy.helpText = 'Your password is invalid and must contain '
-
     const originalKeys = Object.keys(passwordPolicy);
     const filtered = originalKeys.filter(function (value, index, arr) {
         if (value == 'helpText' || value == 'helpTextTemplate' || value == 'customizeHelpText'
@@ -36,6 +34,7 @@ function build(passwordPolicy) {
         }
     }
 
+    passwordPolicy.helpText = 'Your password is invalid and must contain ';
     passwordPolicy.helpText += fixSentenceStructure(passwordText, commaCount);
 }
 
