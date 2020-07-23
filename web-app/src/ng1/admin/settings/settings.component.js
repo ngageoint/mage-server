@@ -2,6 +2,8 @@
 
 import _ from 'underscore';
 
+var PasswordHelpBuilder = require('./passwordHelpBuilder');
+
 class AdminSettingsController {
   constructor($q, $timeout, Api, Settings, LocalStorageService, Event, Team) {
     this.$q = $q;
@@ -180,43 +182,7 @@ class AdminSettingsController {
   }
 
   buildPasswordHelp(strategy) {
-    if (this.security[strategy].passwordPolicy.customizeHelpText) {
-      return;
-    }
-
-    this.security[strategy].passwordPolicy.helpText = 'Your password is invalid and must contain '
-
-    const originalKeys = Object.keys(this.security[strategy].passwordPolicy);
-    const filtered = originalKeys.filter(function (value, index, arr) {
-      if (value == 'helpText' || value == 'helpTextTemplate' || value == 'customizeHelpText'
-        || value == 'lastNumPass' || value == 'restrictSpecialChars' || value.endsWith('Enabled')) {
-        return false;
-      }
-      return true;
-    });
-
-    let passwordText = "";
-    for (let i = 0; i < filtered.length; i++) {
-      const key = filtered[i];
-
-      const enabled = this.security[strategy].passwordPolicy[key + 'Enabled'];
-
-      if (enabled) {
-        const value = this.security[strategy].passwordPolicy[key];
-        const msg = this.security[strategy].passwordPolicy.helpTextTemplate[key];
-        if (msg) {
-          const subbedMsg = msg.replace('#', value);
-
-          passwordText += subbedMsg;
-          passwordText += ', ';
-        }
-      }
-    }
-
-    //Remove the last comma.  Tricky to do in the loop since we don't know ahead 
-    //of time if things are enabled.
-    passwordText = passwordText.substring(0, passwordText.length - 2);
-    this.security[strategy].passwordPolicy.helpText += passwordText;
+    PasswordHelpBuilder.build(this.security[strategy].passwordPolicy);
   }
 
   saveBanner() {
