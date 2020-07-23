@@ -336,6 +336,18 @@
                               </div>
                             </div>
 
+                            <div class="row">
+                              <div class="col-sm-12">
+                                <input type="checkbox" ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled" />
+                                <input type="number"
+                                  ng-disabled="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled == false"
+                                  id="passwordMinLength" ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
+                                  required>
+                                  Minimum Password Length
+                                </input>
+                              </div>
+                            </div>
+
                             <div class="row top-gap">
                               <div class="col-md-12 bottom-gap">
                                 <h5>User Password Policy Help:</h5>

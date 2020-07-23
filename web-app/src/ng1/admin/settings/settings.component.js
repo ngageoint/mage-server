@@ -97,6 +97,8 @@ class AdminSettingsController {
       restrictSpecialChars: "",
       lastNumPassEnabled: false,
       lastNumPass: 0,
+      passwordMinLength: 0,
+      passwordMinLengthEnabled: false,
       helpText: null,
       helpTextTemplate: {
         minChars: 'at least # characters',
