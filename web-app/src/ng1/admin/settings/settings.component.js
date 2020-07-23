@@ -97,6 +97,7 @@ class AdminSettingsController {
       restrictSpecialChars: "",
       passwordMinLength: 0,
       passwordMinLengthEnabled: false,
+      customizeHelpText: false,
       helpText: null,
       helpTextTemplate: {
         minChars: 'at least # characters',
@@ -104,7 +105,7 @@ class AdminSettingsController {
         lowLetters: 'a minimum of # lowercase characters',
         highLetters: 'a minimum of # uppercase characters',
         numbers: 'at least # numbers',
-        specialChars: 'at least # special characters', 
+        specialChars: 'at least # special characters',
         passwordMinLength: 'length must be at least #'
       }
     }
@@ -183,7 +184,10 @@ class AdminSettingsController {
   }
 
   buildPasswordHelp(strategy) {
-    PasswordHelpBuilder.build(this.security[strategy].passwordPolicy);
+    if (!this.security[strategy].passwordPolicy.customizeHelpText) {
+      this.security[strategy].passwordPolicy.helpText =
+        PasswordHelpBuilder.build(this.security[strategy].passwordPolicy);
+    }
   }
 
   saveBanner() {

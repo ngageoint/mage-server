@@ -1,14 +1,10 @@
 'use strict'
 
 function build(passwordPolicy) {
-    if (passwordPolicy.customizeHelpText) {
-        return;
-    }
-
     const originalKeys = Object.keys(passwordPolicy);
     const filtered = originalKeys.filter(function (value, index, arr) {
-        if (value == 'helpText' || value == 'helpTextTemplate' || value == 'customizeHelpText'
-            || value == 'lastNumPass' || value == 'restrictSpecialChars' || value.endsWith('Enabled')) {
+        if (value.toLowerCase().includes('help') || value == 'lastNumPass' || value == 'restrictSpecialChars'
+            || value.endsWith('Enabled')) {
             return false;
         }
         return true;
@@ -34,8 +30,9 @@ function build(passwordPolicy) {
         }
     }
 
-    passwordPolicy.helpText = 'Your password is invalid and must contain ';
-    passwordPolicy.helpText += fixSentenceStructure(passwordText, commaCount);
+    let helpText = 'Your password is invalid and must contain ';
+    helpText += fixSentenceStructure(passwordText, commaCount);
+    return helpText;
 }
 
 function fixSentenceStructure(passwordText, commaCount) {
