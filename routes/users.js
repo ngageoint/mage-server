@@ -11,9 +11,21 @@ module.exports = function (app, security) {
     , { default: upload } = require('../upload')
     , passport = security.authentication.passport;
 
-  const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
-    return security.authentication.strategies[authName].passwordMinLength || prev;
-  }, null);
+  var passwordLength = null;
+
+  Setting.getSetting('security').then((securitySettings = {}) => {
+    const settings = securitySettings.settings || {};
+    passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
+      let result = null;
+      if(settings[authName]) {
+        const passwordPolicy = settings[authName].passwordPolicy;
+        if(passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
+          result = passwordPolicy.passwordMinLength;
+        }
+      }
+      return result || prev;
+    }, null);
+  });
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
