@@ -11,6 +11,7 @@ module.exports = function (app, security) {
     , { default: upload } = require('../upload')
     , passport = security.authentication.passport;
 
+  /*
   var passwordLength = null;
 
   Setting.getSetting('security').then((securitySettings = {}) => {
@@ -25,7 +26,11 @@ module.exports = function (app, security) {
       }
       return result || prev;
     }, null);
-  });
+  });*/
+
+  const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
+    return security.authentication.strategies[authName].passwordMinLength || prev;
+  }, null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
