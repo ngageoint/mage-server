@@ -39,12 +39,7 @@ class UserController {
   }
 
   $onInit() {
-    this.Api.get(api => {
-      var authenticationStrategies = api.authenticationStrategies || {};
-      if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
-        this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
-      }
-    });
+
   }
 
   $onChanges(changes) {

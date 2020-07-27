@@ -100,7 +100,7 @@
               <div class="form-group">
                 <label class="control-label col-sm-2">New</label>
                 <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$invalid}">
-                  <input type="password" ng-model="$ctrl.authentication.newPassword" ng-change="$ctrl.newPasswordChanged(authentication.newPassword)" name="newPassword" placeholder="{{passwordPlaceholder}}" class="form-control" required>
+                  <input type="password" ng-model="$ctrl.authentication.newPassword" ng-change="$ctrl.newPasswordChanged(authentication.newPassword)" name="newPassword" class="form-control" required>
                   <div class="help-block" ng-messages="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$error" ng-if="$ctrl.form.authentication.newPassword.$invalid">
                     <div ng-message="required">New password is required</div>
                   </div>
@@ -110,7 +110,7 @@
               <div class="form-group">
                 <label class="control-label col-sm-2">Re-type new</label>
                 <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPasswordConfirm.$invalid}">
-                  <input type="password" ng-model="$ctrl.authentication.newPasswordConfirm" name="newPasswordConfirm" placeholder="{{$ctrl.passwordPlaceholder}}" class="form-control" required>
+                  <input type="password" ng-model="$ctrl.authentication.newPasswordConfirm" name="newPasswordConfirm" class="form-control" required>
                   <div class="help-block" ng-messages="$ctrl.form.authentication.newPasswordConfirm.$error" ng-if="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPasswordConfirm.$invalid">
                     <div ng-message="required">New password confirmation is required</div>
                     <div ng-messages="nomatch">Passwords do not match</div>
