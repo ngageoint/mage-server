@@ -11,26 +11,8 @@ module.exports = function (app, security) {
     , { default: upload } = require('../upload')
     , passport = security.authentication.passport;
 
-  /*
+  
   var passwordLength = null;
-
-  Setting.getSetting('security').then((securitySettings = {}) => {
-    const settings = securitySettings.settings || {};
-    passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
-      let result = null;
-      if(settings[authName]) {
-        const passwordPolicy = settings[authName].passwordPolicy;
-        if(passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
-          result = passwordPolicy.passwordMinLength;
-        }
-      }
-      return result || prev;
-    }, null);
-  });*/
-
-  const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
-    return security.authentication.strategies[authName].passwordMinLength || prev;
-  }, null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
@@ -43,6 +25,29 @@ module.exports = function (app, security) {
 
       })(req, res, next);
     };
+  }
+
+  function loadPasswordSettings(req, res, next) {
+
+    if (!passwordLength) {
+      Setting.getSetting('security').then((securitySettings = {}) => {
+        const settings = securitySettings.settings || {};
+        passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
+          let result = null;
+          if (settings[authName]) {
+            const passwordPolicy = settings[authName].passwordPolicy;
+            if (passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
+              result = passwordPolicy.passwordMinLength;
+            }
+          }
+          return result || prev;
+        }, null);
+      }).finally(() => {
+        next();
+      });
+    } else {
+      next();
+    }
   }
 
   function defaultRole(req, res, next) {
@@ -178,6 +183,7 @@ module.exports = function (app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    loadPasswordSettings,
     validateUser,
     parseIconUpload,
     function (req, res, next) {
@@ -211,6 +217,7 @@ module.exports = function (app, security) {
   // Anyone can create a new user, but the new user will not be active
   app.post(
     '/api/users',
+    loadPasswordSettings,
     validateUser,
     defaultRole,
     setDefaults,
@@ -350,6 +357,7 @@ module.exports = function (app, security) {
   app.put(
     '/api/users/myself/password',
     passport.authenticate('local'),
+    loadPasswordSettings,
     function (req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.status(400).send('User does not use local authentication');
@@ -429,6 +437,7 @@ module.exports = function (app, security) {
     access.authorize('UPDATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
+    loadPasswordSettings,
     function (req, res, next) {
       const user = req.userParam;
 

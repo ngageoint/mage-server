@@ -6,11 +6,29 @@ module.exports = function(app, security) {
     , userTransformer = require('../transformers/user');
 
   var passwordLength = null;
-  Object.keys(security.authentication.strategies).forEach(function(name) {
-    if (security.authentication.strategies[name].passwordMinLength) {
-      passwordLength = security.authentication.strategies[name].passwordMinLength;
+
+  function loadPasswordSettings(req, res, next) {
+
+    if (!passwordLength) {
+      Setting.getSetting('security').then((securitySettings = {}) => {
+        const settings = securitySettings.settings || {};
+        passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
+          let result = null;
+          if (settings[authName]) {
+            const passwordPolicy = settings[authName].passwordPolicy;
+            if (passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
+              result = passwordPolicy.passwordMinLength;
+            }
+          }
+          return result || prev;
+        }, null);
+      }).finally(() => {
+        next();
+      });
+    } else {
+      next();
     }
-  });
+  }
 
   function authorizeSetup(req, res, next) {
     User.count(function(err, count) {
@@ -73,6 +91,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/setup',
+    loadPasswordSettings,
     authorizeSetup,
     validateSetup,
     function (req, res, next) {

@@ -100,6 +100,20 @@ describe("user create tests", function() {
   it('should fail to create user as admin w/o roleId', function(done) {
     mockTokenWithPermission('CREATE_USER');
 
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          local: {
+            usersReqAdmin: true,
+            passwordPolicy: {
+              passwordMinLengthEnabled: true,
+              passwordMinLength: 14
+            }
+          }
+        }
+      });
+
     request(app)
       .post('/api/users')
       .set('Accept', 'application/json')
