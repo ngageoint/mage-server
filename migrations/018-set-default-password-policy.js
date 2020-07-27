@@ -22,7 +22,7 @@ exports.down = function (done) {
 
 async function setDefaultPasswordPolicy() {
     const defaultPasswordPolicySettings = {
-        passwordMinLength: 0,
+        passwordMinLength: 14,
         passwordMinLengthEnabled: false
     }
 
