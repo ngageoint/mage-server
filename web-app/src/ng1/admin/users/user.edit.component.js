@@ -50,15 +50,6 @@ class AdminUserEditController {
   }
 
   $onInit() {
-    this.$q.all({
-      api: this.Api.get().$promise
-    }).then(result => {
-      const api = result.api;
-      const authenticationStrategies = api.authenticationStrategies || {};
-      if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
-        this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
-      }
-    });
 
     this.UserService.getRoles().success(roles => {
       this.roles = roles;
