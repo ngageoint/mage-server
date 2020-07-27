@@ -13,6 +13,7 @@ module.exports = function (app, security) {
 
   
   var passwordLength = null;
+  var passwordHelp = null;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
@@ -36,8 +37,11 @@ module.exports = function (app, security) {
           let result = null;
           if (settings[authName]) {
             const passwordPolicy = settings[authName].passwordPolicy;
-            if (passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
-              result = passwordPolicy.passwordMinLength;
+            if (passwordPolicy) {
+              if(passwordPolicy.passwordMinLengthEnabled){
+                result = passwordPolicy.passwordMinLength;
+              }
+              passwordHelp = passwordPolicy.helpText;
             }
           }
           return result || prev;
@@ -143,7 +147,7 @@ module.exports = function (app, security) {
     }
 
     if (password.length < passwordLength) {
-      return res.status(400).send(`Password must be at least ${passwordLength} characters`);
+      return res.status(400).send(passwordHelp);
     }
 
     user.authentication = {
@@ -374,7 +378,7 @@ module.exports = function (app, security) {
         return res.status(400).send('Passwords do not match');
       }
       if (password.length < passwordLength) {
-        return res.status(400).send(`Password must be at least ${passwordLength} characters`);
+        return res.status(400).send(passwordHelp);
       }
       req.user.authentication = {
         type: 'local',
@@ -478,7 +482,7 @@ module.exports = function (app, security) {
           return res.status(400).send('passwords do not match');
         }
         else if (password.length < passwordLength) {
-          return res.status(400).send(`Password must be at least ${passwordLength} characters`);
+          return res.status(400).send(passwordHelp);
         }
         // Need UPDATE_USER_PASSWORD to change a users password
         // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
