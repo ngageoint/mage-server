@@ -373,6 +373,18 @@ describe("user update tests", function () {
       }
     });
 
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
+
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
       .chain('populate')
@@ -471,6 +483,18 @@ describe("user update tests", function () {
       .expects('updateUser')
       .withArgs(sinon.match.has('roleId', undefined))
       .yields(null, mockUser);
+
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
 
     request(app)
       .put('/api/users/' + id.toString())
