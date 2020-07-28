@@ -128,6 +128,8 @@ module.exports = function (app, security) {
       };
   
       req.newUser = user;
+    }).catch(err => {
+      log.warn('Error during password validation' + err);
     }).finally(() => {
       next();
     });
