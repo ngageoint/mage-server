@@ -29,6 +29,51 @@ describe("Password Validator Tests", function () {
         });
     });
 
+    it('Test minimum password length', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        passwordMinLength: 3,
+                        passwordMinLengthEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ABC").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
+        }).then(() => {
+            PasswordValidator.validate("test", "ab").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+
+    it('Test minimum password length disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        passwordMinLength: 10,
+                        passwordMinLengthEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ABC").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+
+
     it('Test minimum characters', function (done) {
         sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
             settings: {
@@ -47,8 +92,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "ab").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -88,8 +134,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "ab123abc").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -129,8 +176,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "ABCDE1234f").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -170,8 +218,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "abcde1234F").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -211,8 +260,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "abcde1F").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -252,8 +302,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "abc&").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 
@@ -295,8 +346,9 @@ describe("Password Validator Tests", function () {
             PasswordValidator.validate("test", "abc$$$$$").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(true);
             });
-        }).finally(() => {
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 });
