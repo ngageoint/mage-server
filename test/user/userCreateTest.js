@@ -108,7 +108,8 @@ describe("user create tests", function() {
             usersReqAdmin: true,
             passwordPolicy: {
               passwordMinLengthEnabled: true,
-              passwordMinLength: 14
+              passwordMinLength: 14,
+              helpText: 'Password must be at least 14 characters'
             }
           }
         }
