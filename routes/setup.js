@@ -62,7 +62,6 @@ module.exports = function (app, security) {
         uid: uid,
         registered: true
       };
-    }).finally(() => {
       next();
     });
   }
