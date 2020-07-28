@@ -6,6 +6,7 @@ module.exports = function(app, security) {
     , userTransformer = require('../transformers/user');
 
   var passwordLength = null;
+  var passwordHelp = null;
 
   function loadPasswordSettings(req, res, next) {
 
@@ -16,8 +17,11 @@ module.exports = function(app, security) {
           let result = null;
           if (settings[authName]) {
             const passwordPolicy = settings[authName].passwordPolicy;
-            if (passwordPolicy && passwordPolicy.passwordMinLengthEnabled) {
-              result = passwordPolicy.passwordMinLength;
+            if (passwordPolicy) {
+              if(passwordPolicy.passwordMinLengthEnabled){
+                result = passwordPolicy.passwordMinLength;
+              }
+              passwordHelp = passwordPolicy.helpText;
             }
           }
           return result || prev;
@@ -63,7 +67,7 @@ module.exports = function(app, security) {
     }
 
     if (password.length < passwordLength) {
-      return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
+      return res.status(400).send(passwordHelp);
     }
 
     var uid = req.param('uid');
