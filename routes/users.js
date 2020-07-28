@@ -7,13 +7,10 @@ module.exports = function (app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
-    , pageInfoTransformer = require('../transformers/pageinfo.js')
+    , pageInfoTransformer = require('../transformers/pageinfo')
     , { default: upload } = require('../upload')
-    , passport = security.authentication.passport;
-
-  
-  var passwordLength = null;
-  var passwordHelp = null;
+    , passport = security.authentication.passport
+    , passwordValidator = require('../utilities/passwordValidator');
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
@@ -26,32 +23,6 @@ module.exports = function (app, security) {
 
       })(req, res, next);
     };
-  }
-
-  function loadPasswordSettings(req, res, next) {
-
-    if (!passwordLength) {
-      Setting.getSetting('security').then((securitySettings = {}) => {
-        const settings = securitySettings.settings || {};
-        passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
-          let result = null;
-          if (settings[authName]) {
-            const passwordPolicy = settings[authName].passwordPolicy;
-            if (passwordPolicy) {
-              if(passwordPolicy.passwordMinLengthEnabled){
-                result = passwordPolicy.passwordMinLength;
-              }
-              passwordHelp = passwordPolicy.helpText;
-            }
-          }
-          return result || prev;
-        }, null);
-      }).finally(() => {
-        next();
-      });
-    } else {
-      next();
-    }
   }
 
   function defaultRole(req, res, next) {
@@ -146,18 +117,20 @@ module.exports = function (app, security) {
       return res.status(400).send('Passwords do not match');
     }
 
-    if (password.length < passwordLength) {
-      return res.status(400).send(passwordHelp);
-    }
+    passwordValidator.validate('local', password).then(validationStatus => {
+      if(!validationStatus.isValid) {
+        return res.status(400).send(validationStatus.msg);
+      }
 
-    user.authentication = {
-      type: 'local',
-      password: password
-    };
-
-    req.newUser = user;
-
-    next();
+      user.authentication = {
+        type: 'local',
+        password: password
+      };
+  
+      req.newUser = user;
+    }).finally(() => {
+      next();
+    });
   }
 
   function setDefaults(req, res, next) {
@@ -187,7 +160,6 @@ module.exports = function (app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
-    loadPasswordSettings,
     validateUser,
     parseIconUpload,
     function (req, res, next) {
@@ -221,7 +193,6 @@ module.exports = function (app, security) {
   // Anyone can create a new user, but the new user will not be active
   app.post(
     '/api/users',
-    loadPasswordSettings,
     validateUser,
     defaultRole,
     setDefaults,
@@ -361,7 +332,6 @@ module.exports = function (app, security) {
   app.put(
     '/api/users/myself/password',
     passport.authenticate('local'),
-    loadPasswordSettings,
     function (req, res, next) {
       if (req.user.authentication.type !== 'local') {
         return res.status(400).send('User does not use local authentication');
@@ -377,19 +347,21 @@ module.exports = function (app, security) {
       if (password !== confirm) {
         return res.status(400).send('Passwords do not match');
       }
-      if (password.length < passwordLength) {
-        return res.status(400).send(passwordHelp);
-      }
-      req.user.authentication = {
-        type: 'local',
-        password: password
-      };
-      new api.User().update(req.user, function (err, updatedUser) {
-        if (err) {
-          return next(err);
+      passwordValidator.validate('local', password).then(validationStatus => {
+        if(!validationStatus.isValid) {
+          return res.status(400).send(validationStatus.msg);
         }
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
+        req.user.authentication = {
+          type: 'local',
+          password: password
+        };
+        new api.User().update(req.user, function (err, updatedUser) {
+          if (err) {
+            return next(err);
+          }
+          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+          res.json(updatedUser);
+        });
       });
     }
   );
@@ -441,7 +413,6 @@ module.exports = function (app, security) {
     access.authorize('UPDATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
     parseIconUpload,
-    loadPasswordSettings,
     function (req, res, next) {
       const user = req.userParam;
 
@@ -481,25 +452,39 @@ module.exports = function (app, security) {
         else if (password !== confirm) {
           return res.status(400).send('passwords do not match');
         }
-        else if (password.length < passwordLength) {
-          return res.status(400).send(passwordHelp);
-        }
-        // Need UPDATE_USER_PASSWORD to change a users password
-        // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
-        if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
-          user.authentication.password = password;
-        }
+
+        passwordValidator.validate('local', password).then(validationStatus => {
+          if (!validationStatus.isValid) {
+            return res.status(400).send(validationStatus.msg);
+          }
+
+          // Need UPDATE_USER_PASSWORD to change a users password
+          // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+          if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
+            user.authentication.password = password;
+          }
+
+          const files = req.files || {};
+          const [avatar] = files.avatar || [];
+          const [icon] = files.icon || [];
+          new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+            if (err) return next(err);
+    
+            updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+            res.json(updatedUser);
+          });
+        });
+      } else {
+        const files = req.files || {};
+        const [avatar] = files.avatar || [];
+        const [icon] = files.icon || [];
+        new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+          if (err) return next(err);
+  
+          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+          res.json(updatedUser);
+        });
       }
-
-      const files = req.files || {};
-      const [avatar] = files.avatar || [];
-      const [icon] = files.icon || [];
-      new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
-        if (err) return next(err);
-
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
-      });
     }
   );
 

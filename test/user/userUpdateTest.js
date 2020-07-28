@@ -15,11 +15,13 @@ var UserModel = mongoose.model('User');
 require('../../models/event');
 var EventModel = mongoose.model('Event');
 
+const Setting = require('../../models/setting');
+
 require('sinon-mongoose');
 
-describe("user update tests", function() {
+describe("user update tests", function () {
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -28,13 +30,13 @@ describe("user update tests", function() {
     var permissions = Array.isArray(permission) ? permission : [permission];
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, permissions));
   }
 
-  it('should update myself', function(done) {
+  it('should update myself', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -50,7 +52,7 @@ describe("user update tests", function() {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function(field, callback) {
+        populate: function (field, callback) {
           callback(null, mockUser);
         }
       }
@@ -58,7 +60,7 @@ describe("user update tests", function() {
 
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
@@ -83,7 +85,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
@@ -91,7 +93,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to update myself if passwords do not match', function(done) {
+  it('should fail to update myself if passwords do not match', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -132,13 +134,13 @@ describe("user update tests", function() {
         newPasswordConfirm: 'passwordconfirm'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Passwords do not match');
       })
       .end(done);
   });
 
-  it('should fail to update myself if passwords does not meet complexity', function(done) {
+  it('should fail to update myself if passwords does not meet complexity', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -165,6 +167,18 @@ describe("user update tests", function() {
       .expects('save')
       .resolves(mockUser);
 
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
+
     request(app)
       .put('/api/users/myself/password')
       .set('Accept', 'application/json')
@@ -179,13 +193,13 @@ describe("user update tests", function() {
         newPasswordConfirm: 'password'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
   });
 
-  it('should update user', function(done) {
+  it('should update user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -226,7 +240,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -234,10 +248,10 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should update user role with UPDATE_USER_ROLE', function(done) {
+  it('should update user role with UPDATE_USER_ROLE', function (done) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, ['UPDATE_USER', 'UPDATE_USER_ROLE']));
@@ -278,7 +292,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -286,7 +300,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should update user password with UPDATE_USER_ROLE permission', function(done) {
+  it('should update user password with UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_ROLE']);
 
     var id = mongoose.Types.ObjectId();
@@ -310,6 +324,18 @@ describe("user update tests", function() {
       .withArgs(sinon.match.has('authentication', sinon.match.has('password', 'passwordpassword')))
       .yields(null, mockUser);
 
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
+
     request(app)
       .put('/api/users/' + id.toString())
       .set('Accept', 'application/json')
@@ -325,7 +351,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -333,7 +359,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to update user password w/o UPDATE_USER_ROLE permission', function(done) {
+  it('should fail to update user password w/o UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -372,7 +398,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -380,7 +406,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('fails to update the user password without the passwordconfirm parameter', function(done) {
+  it('fails to update the user password without the passwordconfirm parameter', function (done) {
 
     mockTokenWithPermission('UPDATE_USER');
 
@@ -422,7 +448,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to update user role w/o UPDATE_USER_ROLE', function(done) {
+  it('should fail to update user role w/o UPDATE_USER_ROLE', function (done) {
     mockTokenWithPermission(['UPDATE_USER']);
 
     var id = mongoose.Types.ObjectId();
@@ -462,7 +488,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -470,7 +496,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should activate user', function(done) {
+  it('should activate user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -490,7 +516,7 @@ describe("user update tests", function() {
 
     sinon.mock(User)
       .expects('updateUser')
-      .withArgs(sinon.match({active: true}))
+      .withArgs(sinon.match({ active: true }))
       .yields(null, mockUser);
 
     request(app)
@@ -505,7 +531,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should disable user', function(done) {
+  it('should disable user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -525,7 +551,7 @@ describe("user update tests", function() {
 
     sinon.mock(User)
       .expects('updateUser')
-      .withArgs(sinon.match({enabled: false}))
+      .withArgs(sinon.match({ enabled: false }))
       .yields(null, mockUser);
 
     request(app)
@@ -540,7 +566,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should remove token if user is inactive', function(done) {
+  it('should remove token if user is inactive', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -559,7 +585,7 @@ describe("user update tests", function() {
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;
     // mock mongoose populate call
-    mockUser.populate = function(field, callback) {
+    mockUser.populate = function (field, callback) {
       callback(null, mockUser);
     };
 
@@ -578,7 +604,7 @@ describe("user update tests", function() {
 
     const tokenStub = sinon.mock(TokenModel)
       .expects('remove')
-      .withArgs(sinon.match({userId: id}))
+      .withArgs(sinon.match({ userId: id }))
       .yields(null);
 
     request(app)
@@ -590,13 +616,13 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function() {
+      .expect(function () {
         expect(tokenStub.called).to.be.true;
       })
       .end(done);
   });
 
-  it('should remove token if user is disabled', function(done) {
+  it('should remove token if user is disabled', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -615,7 +641,7 @@ describe("user update tests", function() {
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;
     // mock mongoose populate call
-    mockUser.populate = function(field, callback) {
+    mockUser.populate = function (field, callback) {
       callback(null, mockUser);
     };
 
@@ -634,7 +660,7 @@ describe("user update tests", function() {
 
     const tokenStub = sinon.mock(TokenModel)
       .expects('remove')
-      .withArgs(sinon.match({userId: id}))
+      .withArgs(sinon.match({ userId: id }))
       .yields(null);
 
     request(app)
@@ -646,13 +672,13 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function() {
+      .expect(function () {
         expect(tokenStub.called).to.be.true;
       })
       .end(done);
   });
 
-  it('should fail to update user if passwords dont match', function(done) {
+  it('should fail to update user if passwords dont match', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -683,13 +709,13 @@ describe("user update tests", function() {
         roleId: mongoose.Types.ObjectId()
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('passwords do not match');
       })
       .end(done);
   });
 
-  it('should fail to update user if password does not meet complexity', function(done) {
+  it('should fail to update user if password does not meet complexity', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -708,6 +734,18 @@ describe("user update tests", function() {
       .chain('populate')
       .resolves(mockUser);
 
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
+
     request(app)
       .put('/api/users/' + id.toString())
       .set('Accept', 'application/json')
@@ -720,13 +758,13 @@ describe("user update tests", function() {
         roleId: mongoose.Types.ObjectId()
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
   });
 
-  it('should update status for myself', function(done) {
+  it('should update status for myself', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -739,7 +777,7 @@ describe("user update tests", function() {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function(field, callback) {
+        populate: function (field, callback) {
           callback(null, mockUser);
         }
       }
@@ -747,7 +785,7 @@ describe("user update tests", function() {
 
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
@@ -769,7 +807,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         mockUser.should.have.property('status').that.equals('help');
 
         var user = res.body;
@@ -779,7 +817,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to update status for myself w/o status', function(done) {
+  it('should fail to update status for myself w/o status', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -792,7 +830,7 @@ describe("user update tests", function() {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function(field, callback) {
+        populate: function (field, callback) {
           callback(null, mockUser);
         }
       }
@@ -800,7 +838,7 @@ describe("user update tests", function() {
 
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
@@ -811,13 +849,13 @@ describe("user update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send({})
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Missing required parameter 'status'");
       })
       .end(done);
   });
 
-  it('should delete status for myself', function(done) {
+  it('should delete status for myself', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
@@ -831,7 +869,7 @@ describe("user update tests", function() {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function(field, callback) {
+        populate: function (field, callback) {
           callback(null, mockUser);
         }
       }
@@ -839,7 +877,7 @@ describe("user update tests", function() {
 
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
@@ -861,7 +899,7 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         mockUser.should.have.property('status').that.is.undefined;
 
         var user = res.body;
@@ -871,7 +909,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should add recent event for admin user', function(done) {
+  it('should add recent event for admin user', function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
     var mockUser = new UserModel({
@@ -904,16 +942,16 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [1]}, {new: true})
+      .withArgs(userId, { recentEventIds: [1] }, { new: true })
       .yields(null, mockUser);
 
     request(app)
-      .post('/api/users/' + userId.toString() + '/events/1/recent' )
+      .post('/api/users/' + userId.toString() + '/events/1/recent')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
@@ -921,13 +959,13 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should limit recent events for acl user', function(done) {
+  it('should limit recent events for acl user', function (done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      recentEventIds: [5,4,3,2,1],
+      recentEventIds: [5, 4, 3, 2, 1],
       authentication: {
         type: 'local'
       }
@@ -938,7 +976,7 @@ describe("user update tests", function() {
       token: '12345',
       deviceId: '123',
       userId: {
-        populate: function(field, callback) {
+        populate: function (field, callback) {
           callback(null, mockUser);
         }
       }
@@ -946,7 +984,7 @@ describe("user update tests", function() {
 
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
@@ -974,16 +1012,16 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [6,5,4,3,2]}, {new: true})
+      .withArgs(userId, { recentEventIds: [6, 5, 4, 3, 2] }, { new: true })
       .yields(null, mockUser);
 
     request(app)
-      .post('/api/users/' + userId.toString() + '/events/6/recent' )
+      .post('/api/users/' + userId.toString() + '/events/6/recent')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
@@ -991,7 +1029,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should add recent event for acl user', function(done) {
+  it('should add recent event for acl user', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
     var mockUser = new UserModel({
@@ -1027,16 +1065,16 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [1]}, {new: true})
+      .withArgs(userId, { recentEventIds: [1] }, { new: true })
       .yields(null, mockUser);
 
     request(app)
-      .post('/api/users/' + userId.toString() + '/events/1/recent' )
+      .post('/api/users/' + userId.toString() + '/events/1/recent')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
@@ -1044,7 +1082,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should add recent event for user in event', function(done) {
+  it('should add recent event for user in event', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
     var mockUser = new UserModel({
@@ -1084,16 +1122,16 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [1]}, {new: true})
+      .withArgs(userId, { recentEventIds: [1] }, { new: true })
       .yields(null, mockUser);
 
     request(app)
-      .post('/api/users/' + userId.toString() + '/events/1/recent' )
+      .post('/api/users/' + userId.toString() + '/events/1/recent')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
@@ -1101,7 +1139,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to add recent event for user not in event', function(done) {
+  it('should fail to add recent event for user not in event', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
     var mockUser = new UserModel({
@@ -1135,11 +1173,11 @@ describe("user update tests", function() {
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [1]}, {new: true})
+      .withArgs(userId, { recentEventIds: [1] }, { new: true })
       .yields(null, mockUser);
 
     request(app)
-      .post('/api/users/' + userId.toString() + '/events/1/recent' )
+      .post('/api/users/' + userId.toString() + '/events/1/recent')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(403)

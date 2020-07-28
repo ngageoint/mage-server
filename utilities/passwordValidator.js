@@ -17,14 +17,20 @@ function validate(strategy, password) {
     }
 
     return Setting.getSetting("security").then(securitySettings => {
+        if (!securitySettings.settings[strategy]) {
+            log.debug('No security settings found for the strategy named: ' + strategy);
+            return validationStatus;
+        }
+
         const passwordPolicy = securitySettings.settings[strategy].passwordPolicy;
 
         if (!passwordPolicy) {
             log.debug('No password policy is defined for the strategy named: ' + strategy);
-            return Promise.resolve(validationStatus);
+            return validationStatus;
         }
 
-        let isValid = validateMinimumCharacters(passwordPolicy, password);
+        let isValid = validatePasswordLength(passwordPolicy, password);
+        isValid = isValid && validateMinimumCharacters(passwordPolicy, password);
         isValid = isValid && validateMaximumConsecutiveCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumLowercaseCharacters(passwordPolicy, password);
         isValid = isValid && validateMinimumUppercaseCharacters(passwordPolicy, password);
@@ -37,8 +43,16 @@ function validate(strategy, password) {
             validationStatus.msg = passwordPolicy.helpText;
         }
 
-        return Promise.resolve(validationStatus);
+        return validationStatus;
     });
+}
+
+function validatePasswordLength(passwordPolicy, password) {
+    let isValid = true;
+    if (passwordPolicy.passwordMinLengthEnabled) {
+        isValid = password.length >= passwordPolicy.passwordMinLength;
+    }
+    return isValid;
 }
 
 function validateMinimumCharacters(passwordPolicy, password) {
