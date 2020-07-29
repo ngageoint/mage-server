@@ -339,15 +339,16 @@
                               <div class="col-sm-12">
                                 <div class="form-inline bottom-gap">
                                   <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)">
+                                    <div class="checkbox right-gap">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                    </div>
                                     Restrict To These Special Characters:
-                                    </input>
                                     <input type="text" id="restrictSpecialChars"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap"
+                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control"
                                       required />
                                   </div>
                                 </div>
