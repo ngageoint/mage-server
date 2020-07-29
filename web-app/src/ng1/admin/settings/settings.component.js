@@ -100,13 +100,13 @@ class AdminSettingsController {
       customizeHelpText: false,
       helpText: null,
       helpTextTemplate: {
-        minChars: 'at least # characters',
-        maxConChars: 'a maximum of # consecutive characters',
-        lowLetters: 'a minimum of # lowercase characters',
-        highLetters: 'a minimum of # uppercase characters',
-        numbers: 'at least # numbers',
-        specialChars: 'at least # special characters',
-        passwordMinLength: 'length must be at least #'
+        minChars: 'have at least # letters',
+        maxConChars: 'not contain more than # consecutive letters',
+        lowLetters: 'have a minimum of # lowercase letters',
+        highLetters: 'have a minimum of # uppercase letters',
+        numbers: 'have at least # numbers',
+        specialChars: 'have at least # special characters',
+        passwordMinLength: 'be at least # characters in length'
       }
     }
   }

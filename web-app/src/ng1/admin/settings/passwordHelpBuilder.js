@@ -30,8 +30,12 @@ function build(passwordPolicy) {
         }
     }
 
-    let helpText = 'Your password is invalid and must contain ';
-    helpText += fixSentenceStructure(passwordText, commaCount);
+    let helpText = '';
+    if(passwordText.length > 0) {
+        helpText = 'Your password is invalid and must ';
+        helpText += fixSentenceStructure(passwordText, commaCount);
+    }
+   
     return helpText;
 }
 
