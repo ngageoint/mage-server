@@ -178,7 +178,8 @@ class AdminSettingsController {
           if (_.isEqual(this.security[strategy].passwordPolicy.helpTextTemplate, this.defaultPasswordPolicySettings.helpTextTemplate)) {
             this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
           } else {
-            //TODO the template has changed...so handle this??
+            //TODO the template has changed...so handle this?? We need to save 
+            //the modified help text after the password help is built.
           }
 
           this.buildPasswordHelp(strategy);
