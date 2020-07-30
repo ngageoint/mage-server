@@ -351,4 +351,24 @@ describe("Password Validator Tests", function () {
             done(err);
         });
     });
+
+    it('Test restricted special characters disabled', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        specialChars: 10,
+                        specialCharsEnabled: false
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "abc").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
 });
