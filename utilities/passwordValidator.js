@@ -11,6 +11,7 @@ function validate(strategy, password) {
 
     if (!strategy || !password) {
         log.warn('strategy or password is missing');
+        log.warn('strategy: ' + strategy);
         validationStatus.isValid = false;
         validationStatus.msg = "Password or strategy is missing";
         return Promise.resolve(validationStatus);
@@ -28,6 +29,8 @@ function validate(strategy, password) {
             log.debug('No password policy is defined for the strategy named: ' + strategy);
             return validationStatus;
         }
+
+        log.silly("Password Validation password policy: " + JSON.stringify(passwordPolicy));
 
         let isValid = validatePasswordLength(passwordPolicy, password);
         isValid = isValid && validateMinimumCharacters(passwordPolicy, password);
@@ -51,6 +54,8 @@ function validatePasswordLength(passwordPolicy, password) {
     let isValid = true;
     if (passwordPolicy.passwordMinLengthEnabled) {
         isValid = password.length >= passwordPolicy.passwordMinLength;
+
+        log.debug('Password meets min length: ' + isValid);
     }
     return isValid;
 }
@@ -66,7 +71,9 @@ function validateMinimumCharacters(passwordPolicy, password) {
                 passwordCount++;
             }
         }
+        
         isValid = passwordCount >= passwordPolicy.minChars;
+        log.debug('Password meets miniminum letters: ' + isValid);
     }
     return isValid;
 }
@@ -89,6 +96,7 @@ function validateMaximumConsecutiveCharacters(passwordPolicy, password) {
                 break;
             }
         }
+        log.debug('Password meets max consecutive letters: ' + isValid);
     }
     return isValid;
 }
@@ -105,6 +113,7 @@ function validateMinimumLowercaseCharacters(passwordPolicy, password) {
             }
         }
         isValid = passwordCount >= passwordPolicy.lowLetters;
+        log.debug('Password meets minimum lowercase letters: ' + isValid);
     }
     return isValid;
 }
@@ -121,6 +130,7 @@ function validateMinimumUppercaseCharacters(passwordPolicy, password) {
             }
         }
         isValid = passwordCount >= passwordPolicy.highLetters;
+        log.debug('Password meets minimum uppercase letters: ' + isValid);
     }
     return isValid;
 }
@@ -137,6 +147,7 @@ function validateMinimumNumbers(passwordPolicy, password) {
             }
         }
         isValid = passwordCount >= passwordPolicy.numbers;
+        log.debug('Password meets minimum numbers: ' + isValid);
     }
     return isValid;
 }
@@ -167,6 +178,7 @@ function validateMinimumSpecialCharacters(passwordPolicy, password) {
             }
         }
         isValid = specialCharCount >= passwordPolicy.specialChars;
+        log.debug('Password meets special characters policy: ' + isValid);
     }
     return isValid;
 }
