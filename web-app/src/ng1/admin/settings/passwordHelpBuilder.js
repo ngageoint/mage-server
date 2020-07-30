@@ -19,7 +19,7 @@ function build(passwordPolicy) {
         if (enabled) {
             const value = passwordPolicy[key];
             const msg = passwordPolicy.helpTextTemplate[key];
-            if (msg) {
+            if (msg && value) {
                 const subbedMsg = msg.replace('#', value);
 
                 passwordText += subbedMsg;
