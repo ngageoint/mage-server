@@ -3,8 +3,7 @@
 function build(passwordPolicy) {
     const originalKeys = Object.keys(passwordPolicy);
     const filtered = originalKeys.filter(function (value, index, arr) {
-        if (value.toLowerCase().includes('help') || value == 'lastNumPass' || value == 'restrictSpecialChars'
-            || value.endsWith('Enabled')) {
+        if (value.toLowerCase().includes('help') || value.endsWith('Enabled')) {
             return false;
         }
         return true;
@@ -31,11 +30,11 @@ function build(passwordPolicy) {
     }
 
     let helpText = '';
-    if(passwordText.length > 0) {
+    if (passwordText.length > 0) {
         helpText = 'Your password is invalid and must ';
         helpText += fixSentenceStructure(passwordText, commaCount);
     }
-   
+
     return helpText;
 }
 

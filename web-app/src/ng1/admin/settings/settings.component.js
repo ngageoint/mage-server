@@ -106,6 +106,7 @@ class AdminSettingsController {
         highLetters: 'have a minimum of # uppercase letters',
         numbers: 'have at least # numbers',
         specialChars: 'have at least # special characters',
+        restrictSpecialChars: 'be restricted to these special characters: #',
         passwordMinLength: 'be at least # characters in length'
       }
     }
