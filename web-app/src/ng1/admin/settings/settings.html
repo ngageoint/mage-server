@@ -397,8 +397,12 @@
                                 <div class="form-group">
                                   <textarea placeholder="Password Policy Help"
                                     ng-model="$ctrl.security[strategy].passwordPolicy.helpText" class="form-control"
-                                    ng-disabled="!$ctrl.security[strategy].passwordPolicy.customizeHelpText">
+                                    ng-disabled="!$ctrl.security[strategy].passwordPolicy.customizeHelpText" 
+                                    aria-describedby="passwordHelpBlock">
                                   </textarea>
+                                  <span id="passwordHelpBlock" class="help-block">This is the help text that is displayed
+                                    to the user during password creation/update, when their password fails to meet the
+                                    password policy.</span>
                                 </div>
                               </div>
                             </div>
