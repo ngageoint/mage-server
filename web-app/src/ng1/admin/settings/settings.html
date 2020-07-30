@@ -238,7 +238,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.minCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Minimum Letters</label>
+                                    <label for="minChars">Minimum Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -255,7 +255,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Maximum Consecutive Letters</label>
+                                    <label for="maxConChars">Maximum Consecutive Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -272,7 +272,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Lowercase Letters</label>
+                                    <label for="lowLetters">Lowercase Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -289,7 +289,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.highLettersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Uppercase Letters</label>
+                                    <label for="highLetters">Uppercase Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -306,7 +306,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.numbersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Numbers</label>
+                                    <label for="numbers">Numbers</label>
                                   </div>
                                 </div>
                               </div>
@@ -323,7 +323,7 @@
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Special Characters</label>
+                                    <label for="specialChars">Special Characters</label>
                                   </div>
                                 </div>
                               </div>
@@ -338,7 +338,7 @@
                                         ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     </div>
-                                    <label>Restrict To These Special Characters:</label>
+                                    <label for="restrictSpecialChars">Restrict To These Special Characters:</label>
                                     <input type="text" id="restrictSpecialChars"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0"
@@ -366,7 +366,7 @@
                                       id="passwordMinLength"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label>Minimum Password Length</label>
+                                    <label for="passwordMinLength">Minimum Password Length</label>
                                   </div>
                                 </div>
                               </div>
