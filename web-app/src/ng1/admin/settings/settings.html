@@ -234,11 +234,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="minChars"
+                                    <input type="number" id="minChars" aria-labelledby="minCharsLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.minCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="minChars">Minimum Letters</label>
+                                    <label for="minChars" id="minCharsLabel">Minimum Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -251,11 +251,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="maxConChars"
+                                    <input type="number" id="maxConChars" aria-labelledby="maxConCharsLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="maxConChars">Maximum Consecutive Letters</label>
+                                    <label for="maxConChars" id="maxConCharsLabel">Maximum Consecutive Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -268,11 +268,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="lowLetters"
+                                    <input type="number" id="lowLetters" aria-labelledby="lowLettersLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="lowLetters">Lowercase Letters</label>
+                                    <label for="lowLetters" id="lowLettersLabel">Lowercase Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -285,11 +285,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="highLetters"
+                                    <input type="number" id="highLetters" aria-labelledby="highLettersLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.highLettersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="highLetters">Uppercase Letters</label>
+                                    <label for="highLetters" id="highLettersLabel">Uppercase Letters</label>
                                   </div>
                                 </div>
                               </div>
@@ -302,11 +302,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.numbersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="numbers"
+                                    <input type="number" id="numbers" aria-labelledby="numbersLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.numbersEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="numbers">Numbers</label>
+                                    <label for="numbers" id="numbersLabel">Numbers</label>
                                   </div>
                                 </div>
                               </div>
@@ -319,11 +319,11 @@
                                     <input type="checkbox"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="specialChars"
+                                    <input type="number" id="specialChars" aria-labelledby="specialCharsLabel"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == false"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="specialChars">Special Characters</label>
+                                    <label for="specialChars" id="specialCharsLabel">Special Characters</label>
                                   </div>
                                 </div>
                               </div>
@@ -363,10 +363,10 @@
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number"
                                       ng-disabled="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled == false"
-                                      id="passwordMinLength"
+                                      id="passwordMinLength" aria-labelledby="passwordMinLengthLabel"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="passwordMinLength">Minimum Password Length</label>
+                                    <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password Length</label>
                                   </div>
                                 </div>
                               </div>
