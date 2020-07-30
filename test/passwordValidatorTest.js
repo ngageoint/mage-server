@@ -371,4 +371,68 @@ describe("Password Validator Tests", function () {
             done(err);
         });
     });
+
+    it('Test complext policy', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        minCharsEnabled: true,
+                        minChars: 1,
+                        maxConCharsEnabled: true,
+                        maxConChars: 3,
+                        lowLettersEnabled: true,
+                        lowLetters: 1,
+                        highLettersEnabled: true,
+                        highLetters: 2,
+                        numbersEnabled: true,
+                        numbers: 2,
+                        specialCharsEnabled: false,
+                        specialChars: 0,
+                        restrictSpecialCharsEnabled: false,
+                        restrictSpecialChars: "",
+                        passwordMinLength: 10,
+                        passwordMinLengthEnabled: true
+                    }
+                }
+            }
+        }));
+
+        PasswordValidator.validate("test", "ab1cD3F~~~").then(validationStatus => {
+            expect(validationStatus.isValid).to.equal(true);
+        }).then(() => {
+            //Fail min letters
+            PasswordValidator.validate("test", "1234567890").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+        }).then(() => {
+            //Fail consecutive characters
+            PasswordValidator.validate("test", "abcd1cD3F~~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+        }).then(() => {
+            //Fail lowercase letters
+            PasswordValidator.validate("test", "AB1CD3F~~~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+        }).then(() => {
+            //Fail uppercase letters
+            PasswordValidator.validate("test", "ab1cd3f~~~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+        }).then(() => {
+            //Fail numbers
+            PasswordValidator.validate("test", "ab#cd#f~~~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+        }).then(() => {
+            //Fail password length
+            PasswordValidator.validate("test", "ab1cD3F~~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+            });
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
 });
