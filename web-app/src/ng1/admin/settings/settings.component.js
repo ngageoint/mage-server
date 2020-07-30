@@ -175,7 +175,11 @@ class AdminSettingsController {
             this.security[strategy].passwordPolicy = this.defaultPasswordPolicySettings;
           }
 
-          this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
+          if (_.isEqual(this.security[strategy].passwordPolicy.helpTextTemplate, this.defaultPasswordPolicySettings.helpTextTemplate)) {
+            this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
+          } else {
+            //TODO the template has changed...so handle this??
+          }
 
           this.buildPasswordHelp(strategy);
         });
