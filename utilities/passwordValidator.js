@@ -1,3 +1,5 @@
+"use strict"
+
 var Setting = require('../models/setting')
     , log = require('winston');
 
