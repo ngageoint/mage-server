@@ -181,6 +181,7 @@ class AdminSettingsController {
           } else {
             //TODO the template has changed...so handle this?? We need to save 
             //the modified help text after the password help is built.
+            throw 'Help Text Template Modifications Are Not Supported';
           }
 
         });
