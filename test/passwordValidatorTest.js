@@ -5,7 +5,8 @@ var PasswordValidator = require('../utilities/passwordValidator.js'),
     chai = require('chai'),
     sinon = require('sinon'),
     sinonChai = require('sinon-chai'),
-    expect = require("chai").expect;
+    expect = require("chai").expect,
+    _ = require('underscore');
 
 chai.use(sinonChai);
 
@@ -46,6 +47,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "ab").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'passwordMinLength')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -91,6 +93,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "ab").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'minChars')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -133,6 +136,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "ab123abc").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'maxConChars')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -175,6 +179,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "ABCDE1234f").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'lowLetters')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -217,6 +222,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "abcde1234F").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'highLetters')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -259,6 +265,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "abcde1F").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'numbers')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -301,6 +308,7 @@ describe("Password Validator Tests", function () {
         }).then(() => {
             PasswordValidator.validate("test", "abc&").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'specialChars')).to.equal(true);
             });
             done();
         }).catch(err => {
@@ -404,31 +412,46 @@ describe("Password Validator Tests", function () {
             //Fail min letters
             PasswordValidator.validate("test", "1234567890").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'minChars')).to.equal(true);
             });
         }).then(() => {
             //Fail consecutive characters
             PasswordValidator.validate("test", "abcd1cD3F~~").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'maxConChars')).to.equal(true);
             });
         }).then(() => {
             //Fail lowercase letters
             PasswordValidator.validate("test", "AB1CD3F~~~").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'lowLetters')).to.equal(true);
             });
         }).then(() => {
             //Fail uppercase letters
             PasswordValidator.validate("test", "ab1cd3f~~~").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'highLetters')).to.equal(true);
             });
         }).then(() => {
             //Fail numbers
             PasswordValidator.validate("test", "ab#cd#f~~~").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'numbers')).to.equal(true);
             });
         }).then(() => {
             //Fail password length
             PasswordValidator.validate("test", "ab1cD3F~~").then(validationStatus => {
                 expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'passwordMinLength')).to.equal(true);
+            });
+        }).then(() => {
+            //Fail multiple
+            PasswordValidator.validate("test", "~").then(validationStatus => {
+                expect(validationStatus.isValid).to.equal(false);
+                expect(_.includes(validationStatus.failedKeys, 'passwordMinLength')).to.equal(true);
+                expect(_.includes(validationStatus.failedKeys, 'numbers')).to.equal(true);
+                expect(_.includes(validationStatus.failedKeys, 'highLetters')).to.equal(true);
+                expect(_.includes(validationStatus.failedKeys, 'lowLetters')).to.equal(true);
             });
             done();
         }).catch(err => {

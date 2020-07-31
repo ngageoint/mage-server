@@ -6,6 +6,7 @@ const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
 function validate(strategy, password) {
     let validationStatus = {
         isValid: true,
+        failedKeys: [],
         msg: ""
     };
 
@@ -32,17 +33,31 @@ function validate(strategy, password) {
 
         log.silly("Password Validation password policy: " + JSON.stringify(passwordPolicy));
 
-        let isValid = validatePasswordLength(passwordPolicy, password);
-        isValid = isValid && validateMinimumCharacters(passwordPolicy, password);
-        isValid = isValid && validateMaximumConsecutiveCharacters(passwordPolicy, password);
-        isValid = isValid && validateMinimumLowercaseCharacters(passwordPolicy, password);
-        isValid = isValid && validateMinimumUppercaseCharacters(passwordPolicy, password);
-        isValid = isValid && validateMinimumNumbers(passwordPolicy, password);
-        isValid = isValid && validateMinimumSpecialCharacters(passwordPolicy, password);
+        if (!validatePasswordLength(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('passwordMinLength');
+        }
+        if (!validateMinimumCharacters(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('minChars');
+        }
+        if (!validateMaximumConsecutiveCharacters(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('maxConChars');
+        }
+        if (!validateMinimumLowercaseCharacters(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('lowLetters');
+        }
+        if (!validateMinimumUppercaseCharacters(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('highLetters');
+        }
+        if (!validateMinimumNumbers(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('numbers');
+        }
+        if (!validateMinimumSpecialCharacters(passwordPolicy, password)) {
+            validationStatus.failedKeys.push('specialChars');
+        }
 
-        validationStatus.isValid = isValid;
+        validationStatus.isValid = validationStatus.failedKeys.length == 0;
 
-        if (!isValid) {
+        if (!validationStatus.isValid) {
             validationStatus.msg = passwordPolicy.helpText;
         }
 
@@ -71,7 +86,7 @@ function validateMinimumCharacters(passwordPolicy, password) {
                 passwordCount++;
             }
         }
-        
+
         isValid = passwordCount >= passwordPolicy.minChars;
         log.debug('Password meets miniminum letters: ' + isValid);
     }
