@@ -452,6 +452,7 @@ describe("Password Validator Tests", function () {
                 expect(_.includes(validationStatus.failedKeys, 'numbers')).to.equal(true);
                 expect(_.includes(validationStatus.failedKeys, 'highLetters')).to.equal(true);
                 expect(_.includes(validationStatus.failedKeys, 'lowLetters')).to.equal(true);
+                expect(_.includes(validationStatus.failedKeys, 'minChars')).to.equal(true);
             });
             done();
         }).catch(err => {
