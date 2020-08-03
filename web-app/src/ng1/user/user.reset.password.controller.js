@@ -13,13 +13,6 @@ function UserResetPasswordController($scope, $timeout, $state, Api, UserService,
   };
   $scope.passwordStatus = {};
 
-  Api.get(function(api) {
-    var authenticationStrategies = api.authenticationStrategies || {};
-    if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
-      $scope.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
-    }
-  });
-
   $scope.resetPassword = function() {
     if ($scope.account.newPassword !== $scope.account.newPasswordconfirm) {
       $scope.showStatus = true;

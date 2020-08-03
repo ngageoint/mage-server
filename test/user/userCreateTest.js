@@ -94,11 +94,24 @@ describe("user create tests", function() {
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
-      .end(done);
+      .end(function(err, res) {
+        if (err) return done(err);
+        done();
+      });
   });
 
   it('should fail to create user as admin w/o roleId', function(done) {
     mockTokenWithPermission('CREATE_USER');
+
+    sinon.mock(Setting)
+      .expects('getSetting').withArgs('security')
+      .resolves({
+        settings: {
+          local: {
+            usersReqAdmin: true
+          }
+        }
+      });
 
     request(app)
       .post('/api/users')
@@ -139,15 +152,13 @@ describe("user create tests", function() {
       }
     });
 
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        settings: {
-          [mockUser.authentication.type]: {
-            usersReqAdmin: true
-          }
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        [mockUser.authentication.type]: {
+          usersReqAdmin: true
         }
-      });
+      }
+    }));
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -203,15 +214,13 @@ describe("user create tests", function() {
       }
     });
 
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        settings: {
-          [mockUser.authentication.type]: {
-            usersReqAdmin: true
-          }
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        [mockUser.authentication.type]: {
+          usersReqAdmin: true
         }
-      })
+      }
+    }));
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -371,6 +380,18 @@ describe("user create tests", function() {
       .yields(null, new RoleModel({
         permissions: ['SOME_PERMISSIONS']
       }));
+
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        'local': {
+          passwordPolicy: {
+            helpText: 'Password must be at least 14 characters',
+            passwordMinLengthEnabled: true,
+            passwordMinLength: 14
+          }
+        }
+      }
+    }));
 
     request(app)
       .post('/api/users')

@@ -1,9 +1,12 @@
+"use strict";
+
 import _ from 'underscore';
 import angular from 'angular';
 import zxcvbn from 'zxcvbn';
 
 class AdminUserEditController {
-  constructor($state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService) {
+  constructor($q, $state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService) {
+    this.$q = $q;
     this.$state = $state;
     this.$stateParams = $stateParams;
     this.$timeout = $timeout;
@@ -40,15 +43,13 @@ class AdminUserEditController {
         text: 'Excellent'
       }
     };
+    this.passwordStatus = {
+      status: null,
+      msg: null
+    };
   }
 
   $onInit() {
-    this.Api.get(api =>  {
-      var authenticationStrategies = api.authenticationStrategies || {};
-      if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
-        this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
-      }
-    });
 
     this.UserService.getRoles().success(roles => {
       this.roles = roles;
@@ -85,11 +86,11 @@ class AdminUserEditController {
     this.error = false;
 
     if (this.iconMetadata.type === 'create') {
-      var canvas = this.iconMetadata.getCanvas();
+      const canvas = this.iconMetadata.getCanvas();
       this.user.icon = this.UserIconService.canvasToPng(canvas);
     }
 
-    var user = {
+    const user = {
       username: this.user.username,
       displayName: this.user.displayName,
       email: this.user.email,
@@ -108,14 +109,14 @@ class AdminUserEditController {
       user.roleId = this.user.role.id;
     }
 
-    var failure = response => {
+    const failure = response => {
       this.$timeout(() => {
         this.saving = false;
         this.error = response.responseText;
       });
     };
 
-    var progress = e => {
+    const progress = e => {
       if(e.lengthComputable){
         this.$timeout(() => {
           this.uploading = true;
@@ -136,7 +137,7 @@ class AdminUserEditController {
   }
 
   avatarChanged($event) {
-    var avatar = $event.avatar;
+    const avatar = $event.avatar;
     if (!avatar) {
       this.user.avatarData = null;
       this.user.avatar = null;
@@ -147,7 +148,7 @@ class AdminUserEditController {
     this.user.avatar = avatar;
 
     if (window.FileReader) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = (() => {
         return (e) => {
           this.$timeout(() => {
@@ -161,11 +162,11 @@ class AdminUserEditController {
   }
 
   iconChanged($event) {
-    var icon = $event.icon;
+    const icon = $event.icon;
     this.user.icon = icon;
 
     if (window.FileReader) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = (() => {
         return e => {
           this.$timeout(() => {
@@ -192,7 +193,7 @@ class AdminUserEditController {
   setIconInitials(name, icon) {
     if (icon.text) return;
 
-    var initials = name.match(/\b\w/g) || [];
+    const initials = name.match(/\b\w/g) || [];
     icon.text = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
   }
 
@@ -203,10 +204,17 @@ class AdminUserEditController {
   }
   
   passwordChanged(password) {
-    var score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
-    this.passwordStrengthScore = score + 1;
-    this.passwordStrengthType = this.passwordStrengthMap[score].type;
-    this.passwordStrength = this.passwordStrengthMap[score].text;
+    if(password && password.length > 0) {
+      const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
+      this.passwordStrengthScore = score + 1;
+      this.passwordStrengthType = this.passwordStrengthMap[score].type;
+      this.passwordStrength = this.passwordStrengthMap[score].text;
+    } else {
+      this.passwordStrengthScore = 0;
+      this.passwordStrengthType = null;
+      this.passwordStrength = null;
+    }
+   
   }
 
   updatePassword(form) {
@@ -214,25 +222,32 @@ class AdminUserEditController {
 
     if (!form.$valid) return;
 
-    var user = {
+    const user = {
       password: this.user.password,
       passwordconfirm: this.user.passwordconfirm
     };
 
     this.UserService.updateUser(this.user.id, user, () => {
-      this.user.password = "";
-      this.user.passwordconfirm = "";
-      form.$setPristine(true);
-      this.passwordStatus = {status: 'success', msg: "Password successfully updated."};
+      this.$timeout(() => {
+        this.passwordStrengthScore = 0;
+        this.passwordStrengthType = null;
+        this.passwordStrength = null;
+        this.user.password = "";
+        this.user.passwordconfirm = "";
+        form.$setPristine(true);
+        this.passwordStatus.status = 'success';
+        this.passwordStatus.msg = "Password successfully updated.";
+      });
     }, data => {
       this.$timeout(() => {
-        this.passwordStatus = {status: "danger", msg: data.responseText};
+        this.passwordStatus.status = "danger";
+        this.passwordStatus.msg = data.responseText;
       });
     });
   }
 }
 
-AdminUserEditController.$inject = ['$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
+AdminUserEditController.$inject = ['$q', '$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
 
 export default {
   template: require('./user.edit.html'),

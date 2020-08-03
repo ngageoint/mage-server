@@ -7,13 +7,10 @@ module.exports = function (app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
-    , pageInfoTransformer = require('../transformers/pageinfo.js')
+    , pageInfoTransformer = require('../transformers/pageinfo')
     , { default: upload } = require('../upload')
-    , passport = security.authentication.passport;
-
-  const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
-    return security.authentication.strategies[authName].passwordMinLength || prev;
-  }, null);
+    , passport = security.authentication.passport
+    , passwordValidator = require('../utilities/passwordValidator');
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
@@ -120,18 +117,21 @@ module.exports = function (app, security) {
       return res.status(400).send('Passwords do not match');
     }
 
-    if (password.length < passwordLength) {
-      return res.status(400).send(`Password must be at least ${passwordLength} characters`);
-    }
+    passwordValidator.validate('local', password).then(validationStatus => {
+      if(!validationStatus.isValid) {
+        return res.status(400).send(validationStatus.msg);
+      }
 
-    user.authentication = {
-      type: 'local',
-      password: password
-    };
-
-    req.newUser = user;
-
-    next();
+      user.authentication = {
+        type: 'local',
+        password: password
+      };
+  
+      req.newUser = user;
+      next();
+    }).catch(err => {
+      log.warn('Error during password validation' + err);
+    });
   }
 
   function setDefaults(req, res, next) {
@@ -348,19 +348,21 @@ module.exports = function (app, security) {
       if (password !== confirm) {
         return res.status(400).send('Passwords do not match');
       }
-      if (password.length < passwordLength) {
-        return res.status(400).send(`Password must be at least ${passwordLength} characters`);
-      }
-      req.user.authentication = {
-        type: 'local',
-        password: password
-      };
-      new api.User().update(req.user, function (err, updatedUser) {
-        if (err) {
-          return next(err);
+      passwordValidator.validate('local', password).then(validationStatus => {
+        if(!validationStatus.isValid) {
+          return res.status(400).send(validationStatus.msg);
         }
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
+        req.user.authentication = {
+          type: 'local',
+          password: password
+        };
+        new api.User().update(req.user, function (err, updatedUser) {
+          if (err) {
+            return next(err);
+          }
+          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+          res.json(updatedUser);
+        });
       });
     }
   );
@@ -451,25 +453,39 @@ module.exports = function (app, security) {
         else if (password !== confirm) {
           return res.status(400).send('passwords do not match');
         }
-        else if (password.length < passwordLength) {
-          return res.status(400).send(`Password must be at least ${passwordLength} characters`);
-        }
-        // Need UPDATE_USER_PASSWORD to change a users password
-        // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
-        if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
-          user.authentication.password = password;
-        }
+
+        passwordValidator.validate('local', password).then(validationStatus => {
+          if (!validationStatus.isValid) {
+            return res.status(400).send(validationStatus.msg);
+          }
+
+          // Need UPDATE_USER_PASSWORD to change a users password
+          // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+          if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
+            user.authentication.password = password;
+          }
+
+          const files = req.files || {};
+          const [avatar] = files.avatar || [];
+          const [icon] = files.icon || [];
+          new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+            if (err) return next(err);
+    
+            updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+            res.json(updatedUser);
+          });
+        });
+      } else {
+        const files = req.files || {};
+        const [avatar] = files.avatar || [];
+        const [icon] = files.icon || [];
+        new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+          if (err) return next(err);
+  
+          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+          res.json(updatedUser);
+        });
       }
-
-      const files = req.files || {};
-      const [avatar] = files.avatar || [];
-      const [icon] = files.icon || [];
-      new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
-        if (err) return next(err);
-
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
-      });
     }
   );
 
