@@ -97,6 +97,8 @@ class AdminSettingsController {
       restrictSpecialChars: "",
       passwordMinLength: 0,
       passwordMinLengthEnabled: false,
+      previousPasswordCount: 0,
+      previousPasswordCountEnabled: false,
       customizeHelpText: false,
       helpText: null,
       helpTextTemplate: {
@@ -107,7 +109,8 @@ class AdminSettingsController {
         numbers: 'have at least # numbers',
         specialChars: 'have at least # special characters',
         restrictSpecialChars: 'be restricted to these special characters: #',
-        passwordMinLength: 'be at least # characters in length'
+        passwordMinLength: 'be at least # characters in length',
+        previousPasswordCount: 'not be any of the past # previous passwords'
       }
     }
   }
