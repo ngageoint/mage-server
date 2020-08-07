@@ -29,7 +29,7 @@ async function addPasswordHistory(db) {
         strategies.push(strategy);
     }
 
-    db.collection('settings', { strict: true }, function (err, collection) {
+    await db.collection('settings', { strict: true }, function (err, collection) {
         if (err) {
             log.warn(err);
             throw err;
@@ -37,8 +37,12 @@ async function addPasswordHistory(db) {
 
         const cursor = collection.find({ type: 'security' });
 
+        log.debug("Iterating over collection using the following strategies " + strategies);
+
         cursor.forEach(function (doc) {
+            log.debug("Processing " + doc._id);
             strategies.forEach(strategy => {
+
                 if (doc.settings[strategy] && doc.settings[strategy].passwordPolicy) {
                     const passwordPolicy = doc.settings[strategy].passwordPolicy;
                     passwordPolicy.previousPasswordCount = 0;
@@ -47,6 +51,10 @@ async function addPasswordHistory(db) {
                         passwordPolicy.helpTextTemplate.previousPasswordCount =
                             'not be any of the past # previous passwords';
                     }
+                    log.info("Adding password history settings to " + doc._id);
+                    collection.updateOne({ _id: doc._id }, doc).then(() => { }).catch(err => {
+                        log.warn(err);
+                    });
                 }
             });
         }, function (err) {
@@ -54,13 +62,14 @@ async function addPasswordHistory(db) {
                 log.warn("Failed to modify settings", err);
                 throw err;
             }
-        });
 
-        // Close the cursor, this is the same as reseting the query
-        cursor.close(function (err, result) {
-            if (err) {
-                log.warn("Failed to close cursor", err);
-            }
+            log.debug("Closing cursor");
+            // Close the cursor, this is the same as reseting the query
+            cursor.close(function (err, result) {
+                if (err) {
+                    log.warn("Failed to close cursor", err);
+                }
+            });
         });
     });
 }
