@@ -8,7 +8,7 @@ exports.up = async function (done) {
 
     try {
         log.info('Adding password history to password policy');
-        await addPasswordHistory();
+        await addPasswordHistory(this.db);
         done();
     } catch (err) {
         log.warn('Failed updating password policy', err);
@@ -20,7 +20,7 @@ exports.down = function (done) {
     done();
 };
 
-async function addPasswordHistory() {
+async function addPasswordHistory(db) {
     const authConfig = config.api.authenticationStrategies || {};
 
     let strategies = [];
@@ -29,24 +29,37 @@ async function addPasswordHistory() {
         strategies.push(strategy);
     }
 
-    Setting.getSetting('security').then(securitySettings => {
-        strategies.forEach(strategy => {
-            if (securitySettings.settings[strategy]) {
-                if (securitySettings.settings[strategy].passwordPolicy) {
-                    log.info('Updating password policy for ' + strategy);
+    db.collection('settings', { strict: true }, function (err, collection) {
+        if (err) {
+            log.warn(err);
+            throw err;
+        }
 
-                    const passwordPolicy = securitySettings.settings[strategy].passwordPolicy;
+        const cursor = collection.find({ type: 'security' });
+
+        cursor.forEach(function (doc) {
+            strategies.forEach(strategy => {
+                if (doc.settings[strategy] && doc.settings[strategy].passwordPolicy) {
+                    const passwordPolicy = doc.settings[strategy].passwordPolicy;
                     passwordPolicy.previousPasswordCount = 0;
                     passwordPolicy.previousPasswordCountEnabled = false;
                     if (passwordPolicy.helpTextTemplate) {
                         passwordPolicy.helpTextTemplate.previousPasswordCount =
                             'not be any of the past # previous passwords';
                     }
-
-                    Setting.updateSettingByType('security', securitySettings);
-                } else {
-                    log.info('No password policy defined for strategy ' + strategy);
                 }
+            });
+        }, function (err) {
+            if (err) {
+                log.warn("Failed to modify settings", err);
+                throw err;
+            }
+        });
+
+        // Close the cursor, this is the same as reseting the query
+        cursor.close(function (err, result) {
+            if (err) {
+                log.warn("Failed to close cursor", err);
             }
         });
     });
