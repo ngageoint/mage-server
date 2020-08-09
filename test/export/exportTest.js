@@ -1,6 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
+  , mockfs = require('mock-fs')
   , MockToken = require('../mockToken')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
@@ -105,6 +106,11 @@ describe("export tests", function() {
         relativePath: 'mock/path'
       }]);
 
+    const fs = {
+      '/var/lib/mage/icons/1': {}
+    };
+    mockfs(fs);
+
     request(app)
       .get('/api/kml?eventId=1&observations=true&locations=false&attachments=false')
       .set('Accept', 'application/json')
@@ -115,6 +121,7 @@ describe("export tests", function() {
         res.headers.should.have.property('content-disposition').that.equals('attachment; filename="mage-kml.zip"');
       })
       .end(function(err) {
+        mockfs.restore();
         done(err);
       });
   });
