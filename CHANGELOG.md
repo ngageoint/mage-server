@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Added observation location provider and location accuracy exports.
 
 ##### Bug Fixes
 * Fixed bug causing observation and location exports to fail.

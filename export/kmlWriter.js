@@ -66,18 +66,18 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
 };
 
 KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, primary, secondary) {
-  var observationTimestamp = generateTimestamp(observation.properties.timestamp);
-  var forms = event.formMap;
+  const observationTimestamp = generateTimestamp(observation.properties.timestamp);
+  const forms = event.formMap;
 
-  var sections = observation.properties.forms.map(observationForm => {
-    var form = forms[observationForm.formId];
-    var fields = form.fields
+  const sections = observation.properties.forms.map(observationForm => {
+    const form = forms[observationForm.formId];
+    const fields = form.fields
       .filter(field => !field.archived)
       .filter(field => field.type !== 'password')
       .filter(field => field.type !== 'geometry')
       .sort((a, b) => a.id - b.id);
 
-    var properties = fields
+    const properties = fields
       .filter(field => observationForm.hasOwnProperty(field.name))
       .map(field => {
         return {
@@ -92,11 +92,19 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
     };
   });
 
-  var description = generateDescription(observation, sections, observation.attachments);
+  gpsProperties = [];
+  const {provider, accuracy} = observation.properties;
+  if (provider) gpsProperties.push({ key: 'Location Provider', value: provider });
+  if (accuracy) gpsProperties.push({ key: 'Location Accuracy +/- (meters)', value: accuracy });
+  if (gpsProperties.length) {
+    sections.push({ title: 'GPS', properties: gpsProperties })
+  }
 
-  var styles = [event._id.toString()];
+  const description = generateDescription(observation, sections, observation.attachments);
+
+  const styles = [event._id.toString()];
   if (observation.properties.forms && observation.properties.forms.length) {
-    var form = forms[observation.properties.forms[0].formId];
+    const form = forms[observation.properties.forms[0].formId];
     styles.push(form._id.toString());
     if (primary) {
       styles.push(primary);
@@ -106,8 +114,8 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
     }
   }
 
-  var style = '#' + styles.join('-');
-  var coordinates = generatePlacemarkCoordinates(observation);
+  const style = '#' + styles.join('-');
+  const coordinates = generatePlacemarkCoordinates(observation);
 
   return generatePlacemarkElement(name, style, coordinates, observationTimestamp, description);
 };
@@ -275,14 +283,14 @@ function generateDescription(geojson, sections, attachments) {
       '<td>MGRS</td>' + '<td>' + mgrs.forward(centroid.geometry.coordinates) + '</td>' +
     '<tr>';
 
+  let odd = true;
   sections.forEach(section => {
     if (section.title) {
       description += '<h3>' + section.title + '</h3>';
     }
 
-    var odd = true;
     section.properties.forEach(property => {
-      var color = "";
+      let color = "";
       if (odd) color = "#D4E4F3";
       odd = !odd;
 
