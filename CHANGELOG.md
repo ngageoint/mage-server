@@ -8,6 +8,9 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fixed bug causing observation and location exports to fail.
+* Fixed incorrect timestamp when using local timezone for observation and location exports.
+* Fixed bug causing incorrect locations to be returned when using time filter and exporting both observations and locations.
 
 ## [5.4.0](https://github.com/ngageoint/mage-server/releases/tag/5.4.0)
 
