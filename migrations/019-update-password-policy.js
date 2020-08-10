@@ -8,7 +8,7 @@ exports.up = async function (done) {
 
     try {
         log.info('Adding password history to password policy');
-        await addPasswordHistory(this.db);
+        await addPasswordHistoryToSettings(this.db);
         done();
     } catch (err) {
         log.warn('Failed updating password policy', err);
@@ -20,7 +20,7 @@ exports.down = function (done) {
     done();
 };
 
-async function addPasswordHistory(db) {
+async function addPasswordHistoryToSettings(db) {
     const authConfig = config.api.authenticationStrategies || {};
 
     let strategies = [];
