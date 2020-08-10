@@ -42,7 +42,7 @@ async function addPasswordHistoryToSettings(db) {
             log.debug("Processing " + doc._id);
             strategies.forEach(strategy => {
 
-                if (doc.settings[strategy] && doc.settings[strategy].passwordPolicy) {
+                if (doc.settings.hasOwnProperty(strategy) && doc.settings[strategy].passwordPolicy) {
                     const passwordPolicy = doc.settings[strategy].passwordPolicy;
                     passwordPolicy.passwordHistoryCount = 0;
                     passwordPolicy.passwordHistoryCountEnabled = false;
