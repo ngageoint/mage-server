@@ -38,17 +38,17 @@ async function setDefaultPasswordPolicy() {
 
     Setting.getSetting('security').then(securitySettings => {
         strategies.forEach(strategy => {
-            if (!securitySettings.settings[strategy]) {
-                securitySettings.settings[strategy] = {};
-            }
+            if (securitySettings && securitySettings.hasOwnProperty("settings")
+                && securitySettings.settings.hasOwnProperty(strategy)) {
+                    
+                if (!securitySettings.settings[strategy].passwordPolicy) {
+                    log.info('Setting password policy for ' + strategy);
+                    securitySettings.settings[strategy].passwordPolicy = defaultPasswordPolicySettings;
 
-            if (!securitySettings.settings[strategy].passwordPolicy) {
-                log.info('Setting password policy for ' + strategy);
-                securitySettings.settings[strategy].passwordPolicy = defaultPasswordPolicySettings;
-
-                Setting.updateSettingByType('security', securitySettings);
-            } else {
-                log.info('Password policy already set for ' + strategy);
+                    Setting.updateSettingByType('security', securitySettings);
+                } else {
+                    log.info('Password policy already set for ' + strategy);
+                }
             }
         });
     });

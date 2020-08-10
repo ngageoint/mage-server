@@ -21,7 +21,7 @@ function validate(strategy, password) {
     }
 
     return Setting.getSetting("security").then(securitySettings => {
-        if (!securitySettings.settings[strategy]) {
+        if (!securitySettings || !securitySettings.settings || !securitySettings.settings[strategy]) {
             log.debug('No security settings found for the strategy named: ' + strategy);
             return validationStatus;
         }
