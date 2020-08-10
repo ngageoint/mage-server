@@ -1,7 +1,7 @@
 var config = require('../config.js'),
     log = require('winston');
 
-exports.id = 'update-password-policy';
+exports.id = 'add-password-history-setting';
 
 exports.up = async function (done) {
 
