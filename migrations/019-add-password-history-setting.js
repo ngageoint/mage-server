@@ -44,10 +44,10 @@ async function addPasswordHistoryToSettings(db) {
 
                 if (doc.settings[strategy] && doc.settings[strategy].passwordPolicy) {
                     const passwordPolicy = doc.settings[strategy].passwordPolicy;
-                    passwordPolicy.previousPasswordCount = 0;
-                    passwordPolicy.previousPasswordCountEnabled = false;
+                    passwordPolicy.passwordHistoryCount = 0;
+                    passwordPolicy.passwordHistoryCountEnabled = false;
                     if (passwordPolicy.helpTextTemplate) {
-                        passwordPolicy.helpTextTemplate.previousPasswordCount =
+                        passwordPolicy.helpTextTemplate.passwordHistoryCount =
                             'not be any of the past # previous passwords';
                     }
                     log.info("Adding password history settings to " + doc._id);

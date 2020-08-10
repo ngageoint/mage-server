@@ -377,14 +377,14 @@
                                 <div class="form-inline bottom-gap">
                                   <div class="form-group">
                                     <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.previousPasswordCountEnabled"
+                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.previousPasswordCountEnabled"
-                                      id="peviousPasswordCount" aria-labelledby="previousPasswordCountLabel"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.previousPasswordCount" min="0"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
+                                      id="passwordHistoryCount" aria-labelledby="passwordHistoryCountLabel"
+                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCount" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="previousPasswordCount" id="previousPasswordCountLabel">Previous Passwords Remembered</label>
+                                    <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous Passwords Remembered</label>
                                   </div>
                                 </div>
                               </div>
