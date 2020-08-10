@@ -1,5 +1,4 @@
-var Setting = require('../models/setting'),
-    config = require('../config.js'),
+var config = require('../config.js'),
     log = require('winston');
 
 exports.id = 'update-password-policy';
