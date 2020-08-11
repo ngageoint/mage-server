@@ -107,9 +107,8 @@ function addPolicyToCollection(collection, done) {
 
     cursor.forEach(function (doc) {
         strategies.forEach(strategy => {
-            log.debug("Checking " + doc._id + " against strategy " + strategy + " for password");
             if (doc.settings && doc.settings.hasOwnProperty(strategy)) {
-                log.debug("Checking to see if " + doc._id + " already has a password policy");
+                log.info("Checking to see if " + doc._id + " already has a password policy");
                 if (!doc.settings[strategy].passwordPolicy) {
                     doc.settings[strategy].passwordPolicy = defaultPasswordPolicySettings;
 

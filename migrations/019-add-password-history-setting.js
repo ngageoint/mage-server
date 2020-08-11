@@ -37,20 +37,24 @@ async function addPasswordHistoryToSettings(db, done) {
 
         cursor.forEach(function (doc) {
             strategies.forEach(strategy => {
-                log.debug("Checking " + doc._id + " against strategy " + strategy + " for password policy to add password history");
+                log.info("Checking " + doc._id + " against strategy " + strategy + " for password history");
                 if (doc.settings && doc.settings.hasOwnProperty(strategy)
                     && doc.settings[strategy].passwordPolicy) {
                     const passwordPolicy = doc.settings[strategy].passwordPolicy;
-                    passwordPolicy.passwordHistoryCount = 0;
-                    passwordPolicy.passwordHistoryCountEnabled = false;
-                    if (passwordPolicy.helpTextTemplate) {
-                        passwordPolicy.helpTextTemplate.passwordHistoryCount =
-                            'not be any of the past # previous passwords';
+                    if (passwordPolicy.passwordHistoryCount === undefined) {
+                        passwordPolicy.passwordHistoryCount = 0;
+                        passwordPolicy.passwordHistoryCountEnabled = false;
+                        if (passwordPolicy.helpTextTemplate) {
+                            passwordPolicy.helpTextTemplate.passwordHistoryCount =
+                                'not be any of the past # previous passwords';
+                        }
+                        log.info("Adding password history settings to " + doc._id);
+                        collection.updateOne({ _id: doc._id }, doc).then(() => { }).catch(err => {
+                            log.warn(err);
+                        });
+                    } else {
+                        log.info(doc._id + " already has a password history defined");
                     }
-                    log.info("Adding password history settings to " + doc._id);
-                    collection.updateOne({ _id: doc._id }, doc).then(() => { }).catch(err => {
-                        log.warn(err);
-                    });
                 } else {
                     log.info(strategy + " strategy does not have a password policy, so not adding password history");
                 }
