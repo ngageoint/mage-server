@@ -156,6 +156,13 @@ class AdminSettingsController {
               newUserTeams: []
             }
           } else {
+            if (this.security[strategy].devicesReqAdmin === undefined) {
+              this.security[strategy].devicesReqAdmin = { enabled: true };
+            }
+            if (this.security[strategy].usersReqAdmin === undefined) {
+              this.security[strategy].usersReqAdmin = { enabled: true };
+            }
+
             if (this.security[strategy].newUserTeams) {
               // Remove any teams and events that no longer exist
               this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
