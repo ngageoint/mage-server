@@ -98,6 +98,10 @@ function addPolicyToCollection(collection, done) {
     for (strategy in authConfig) {
         if (strategy == 'local') {
             strategies.push(strategy);
+            if (authConfig.local.passwordMinLength) {
+                log.info('Using password minimum length from configuration');
+                defaultPasswordPolicySettings.passwordMinLength = strategy.passwordMinLength;
+            }
         }
     }
 

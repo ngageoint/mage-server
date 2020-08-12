@@ -54,6 +54,7 @@ var UserSchema = new Schema({
     type: { type: String, required: false },
     id: { type: String, required: false },
     password: { type: String, required: false },
+    previousPasswords: { type: [String], required: false },
     security: {
       locked: { type: Boolean },
       lockedUntil: { type: Date },
