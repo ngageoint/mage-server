@@ -31,7 +31,7 @@ class AdminTeamController {
     //This is the list of users returned from a search
     this.nonMemberSearchResults = [];
     this.isSearching = false;
-    
+
     this.edit = false;
 
     this.teamEvents = [];
@@ -58,13 +58,7 @@ class AdminTeamController {
       delete this.stateAndData['inactive'];
       delete this.stateAndData['disabled'];
 
-      this.stateAndData[this.userState].userFilter.in = {_id: this.team.userIds};
-      this.stateAndData[this.userState].countFilter.in = {_id: this.team.userIds};
-      this.stateAndData[this.userSearchState].userFilter.nin = {_id: this.team.userIds};
-      this.stateAndData[this.userSearchState].countFilter.nin = {_id: this.team.userIds};
-      this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.members = this.UserPagingService.users(this.stateAndData[this.userState]);
-      });
+      this.refresh(this);
 
       var myAccess = this.team.acl[this.UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
@@ -87,6 +81,16 @@ class AdminTeamController {
           return this.team.id === team.id;
         });
       });
+    });
+  }
+
+  refresh(self) {
+    self.stateAndData[self.userState].userFilter.in = { _id: self.team.userIds };
+    self.stateAndData[self.userState].countFilter.in = { _id: self.team.userIds };
+    self.stateAndData[self.userSearchState].userFilter.nin = { _id: self.team.userIds };
+    self.stateAndData[self.userSearchState].countFilter.nin = { _id: self.team.userIds };
+    self.UserPagingService.refresh(self.stateAndData).then(() => {
+      self.members = self.UserPagingService.users(self.stateAndData[self.userState]);
     });
   }
 
@@ -126,7 +130,7 @@ class AdminTeamController {
     return this.UserPagingService.search(this.stateAndData[this.userSearchState], searchString).then(users => {
       this.nonMemberSearchResults = users;
 
-      if(this.nonMemberSearchResults.length == 0) {
+      if (this.nonMemberSearchResults.length == 0) {
         const noUser = {
           displayName: "No Results Found"
         };
@@ -134,7 +138,7 @@ class AdminTeamController {
       }
 
       this.isSearching = false;
-  
+
       return this.nonMemberSearchResults;
     });
   }
@@ -162,10 +166,10 @@ class AdminTeamController {
   }
 
   saveTeam() {
-    this.team.$save();
-
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.members = this.UserPagingService.users(this.stateAndData[this.userState]);
+    const self = this;
+    this.team.$save(null, function (team) {
+      self.team = team;
+      self.refresh(self);
     });
   }
 
