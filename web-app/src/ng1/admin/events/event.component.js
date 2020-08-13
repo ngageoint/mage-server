@@ -204,24 +204,20 @@ class AdminEventController {
   addUser(user) {
     this.nonMember = null;
     this.eventTeam.userIds.push(user.id);
+    const self = this;
     this.eventTeam.$save(() => {
-      this.event.$get({ populate: false });
-    });
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
-        return this.normalize(item);
+      this.event.$get({ populate: false }).then(() => {
+        self.refresh(self);
       });
     });
   }
 
   removeUser(user) {
-    this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return user.id === u.id; });
+    this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return user.id === u; });
+    const self = this;
     this.eventTeam.$save(() => {
-      this.event.$get({ populate: false });
-    });
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
-        return this.normalize(item);
+      this.event.$get({ populate: false }).then(() => {
+        self.refresh(self);
       });
     });
   }
