@@ -94,15 +94,19 @@ class AdminEventController {
       delete this.stateAndData['inactive'];
       delete this.stateAndData['disabled'];
 
-      this.stateAndData[this.userState].userFilter.in = { _id: this.eventTeam.userIds };
-      this.stateAndData[this.userState].countFilter.in = { _id: this.eventTeam.userIds };
-      this.stateAndData[this.nonMemberUserState].userFilter.nin = { _id: this.eventTeam.userIds };
-      this.stateAndData[this.nonMemberUserState].countFilter.nin = { _id: this.eventTeam.userIds };
+      this.refresh(this);
+    });
+  }
 
-      this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
-          return this.normalize(item);
-        });
+  refresh(self) {
+    self.stateAndData[self.userState].userFilter.in = { _id: self.eventTeam.userIds };
+    self.stateAndData[self.userState].countFilter.in = { _id: self.eventTeam.userIds };
+    self.stateAndData[self.nonMemberUserState].userFilter.nin = { _id: self.eventTeam.userIds };
+    self.stateAndData[self.nonMemberUserState].countFilter.nin = { _id: self.eventTeam.userIds };
+
+    self.UserPagingService.refresh(self.stateAndData).then(() => {
+      self.eventMembers = _.map(self.UserPagingService.users(self.stateAndData[self.userState]).concat(self.teamsInEvent), item => {
+        return self.normalize(item);
       });
     });
   }
@@ -185,11 +189,7 @@ class AdminEventController {
     this.teamsNotInEvent = _.reject(this.teamsNotInEvent, teamId => { return teamId === team.id; });
 
     this.Event.addTeam({ id: this.event.id }, team);
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
-        return this.normalize(item);
-      });
-    });
+    this.refresh(this);
   }
 
   removeTeam(team) {
@@ -198,11 +198,7 @@ class AdminEventController {
     this.teamsInEvent = _.reject(this.teamsInEvent, teamId => { return teamId === team.id; });
 
     this.Event.removeTeam({ id: this.event.id, teamId: team.id });
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.eventMembers = _.map(this.UserPagingService.users(this.stateAndData[this.userState]).concat(this.teamsInEvent), item => {
-        return this.normalize(item);
-      });
-    });
+    this.refresh(this);
   }
 
   addUser(user) {
