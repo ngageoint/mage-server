@@ -187,19 +187,22 @@ class AdminEventController {
     this.nonMember = null;
     this.event.teamIds.push(team.id);
     this.teamsInEvent.push(team);
-    this.teamsNotInEvent = _.reject(this.teamsNotInEvent, teamId => { return teamId === team.id; });
+    this.teamsNotInEvent = _.reject(this.teamsNotInEvent, oldTeam => { return oldTeam.id === team.id; });
 
-    this.Event.addTeam({ id: this.event.id }, team);
-    this.refresh(this);
+    this.Event.addTeam({ id: this.event.id }, team).$promise.then(() => {
+      this.refresh(this);
+    });
+    
   }
 
   removeTeam(team) { 
     this.event.teamIds = _.reject(this.event.teamIds, teamId => { return teamId === team.id; });
     this.teamsNotInEvent.push(team);
-    this.teamsInEvent = _.reject(this.teamsInEvent, teamId => { return teamId === team.id; });
+    this.teamsInEvent = _.reject(this.teamsInEvent, oldTeam => { return oldTeam.id === team.id; });
 
-    this.Event.removeTeam({ id: this.event.id, teamId: team.id });
-    this.refresh(this);
+    this.Event.removeTeam({ id: this.event.id, teamId: team.id }).$promise.then(() => {
+      this.refresh(this);
+    });
   }
 
   addUser(user) {
