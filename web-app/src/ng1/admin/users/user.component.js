@@ -55,7 +55,7 @@ class AdminUserController {
   $onInit() {
     this.UserService.getUser(this.$stateParams.userId).then(user => {
       this.user = user;  
-      let searchClone = JSON.parse(JSON.stringify(this.userTeamStateAndData[this.userTeamState]));
+      const searchClone = JSON.parse(JSON.stringify(this.userTeamStateAndData[this.userTeamState]));
       this.userTeamStateAndData[this.nonUserTeamSearchState] = searchClone;
 
       this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
@@ -134,7 +134,7 @@ class AdminUserController {
 
     if (device.iconClass) return device.iconClass;
 
-    var userAgent = device.userAgent || "";
+    const userAgent = device.userAgent || "";
 
     if (device.appVersion === 'Web Client') {
       device.iconClass = 'fa-desktop admin-desktop-icon-xs';
@@ -169,7 +169,7 @@ class AdminUserController {
   }
 
   deleteUser(user) {
-    var modalInstance = this.$uibModal.open({
+    const modalInstance = this.$uibModal.open({
       resolve: {
         user: () => {
           return user;
@@ -205,7 +205,11 @@ class AdminUserController {
   }
 
   gotoTeam(team) {
-    this.$state.go('admin.team', { teamId: team.id });
+    if (team.teamEventId) {
+      this.$state.go('admin.event', { eventId: team.teamEventId });
+    } else {
+      this.$state.go('admin.team', { teamId: team.id });
+    }
   }
 
   gotoDevice(device) {
