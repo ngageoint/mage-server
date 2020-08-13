@@ -154,7 +154,8 @@ class AdminTeamController {
     this.saveTeam();
   }
 
-  removeUser(user) {
+  removeUser($event, user) {
+    $event.stopPropagation();
     this.team.userIds = _.reject(this.team.userIds, u => { return user.id === u; });
 
     this.saveTeam();

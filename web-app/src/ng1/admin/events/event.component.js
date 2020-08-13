@@ -178,7 +178,8 @@ class AdminEventController {
     this.nonMember.type === 'user' ? this.addUser(this.nonMember) : this.addTeam(this.nonMember);
   }
 
-  removeMember(member) {
+  removeMember($event, member) {
+    $event.stopPropagation();
     member.type === 'user' ? this.removeUser(member) : this.removeTeam(member);
   }
 
@@ -192,7 +193,7 @@ class AdminEventController {
     this.refresh(this);
   }
 
-  removeTeam(team) {
+  removeTeam(team) { 
     this.event.teamIds = _.reject(this.event.teamIds, teamId => { return teamId === team.id; });
     this.teamsNotInEvent.push(team);
     this.teamsInEvent = _.reject(this.teamsInEvent, teamId => { return teamId === team.id; });
