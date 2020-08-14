@@ -144,6 +144,11 @@ class AdminEventController {
 
   searchNonMembers(searchString) {
     this.isSearching = true;
+
+    if(searchString == null) {
+      searchString = '.*';
+    }
+    
     return this.UserPagingService.search(this.stateAndData[this.nonMemberUserState], searchString).then(users => {
       let filteredTeams = this.$filter('filter')(this.teamsNotInEvent, searchString);
       this.nonMemberSearchResults = _.map(users.concat(filteredTeams), item => { return this.normalize(item); });
