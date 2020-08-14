@@ -251,7 +251,8 @@
                       <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
                       uib-typeahead="device as device.userAgent for device in $ctrl.searchLogins($viewValue)"
                       typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noDeviceSearchResults"
-                      class="form-control" ng-model-options="{ debounce: 1000 }" typeahead-on-select='$ctrl.filterLogins()'>
+                      typeahead-min-length="0"  class="form-control" ng-model-options="{ debounce: 1000 }" 
+                      typeahead-on-select='$ctrl.filterLogins()'>
                     </div>
                     <div class="form-group">
                       <div class="input-group">

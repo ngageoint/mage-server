@@ -229,6 +229,10 @@ class AdminUserController {
   searchLogins(searchString) {
     this.isSearchingDevices = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], searchString).then(devices => {
       this.loginSearchResults = devices;
       this.isSearchingDevices = false;
