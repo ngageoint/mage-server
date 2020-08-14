@@ -138,7 +138,7 @@
                     <input type="text" ng-model="$ctrl.user" placeholder="Filter on user"
                       uib-typeahead="user as user.displayName for user in $ctrl.searchLogins($viewValue)"
                       class="form-control" ng-model-options="{ debounce: 1000 }"
-                      typeahead-on-select='$ctrl.filterLogins()'>
+                      typeahead-min-length="0" typeahead-on-select='$ctrl.filterLogins()'>
                   </div>
                   <div class="form-group">
                     <div class="input-group">

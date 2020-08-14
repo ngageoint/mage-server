@@ -55,6 +55,10 @@ class AdminDeviceController {
   searchLogins(searchString) {
     this.isSearching = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
 
