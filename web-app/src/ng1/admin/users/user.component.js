@@ -113,6 +113,10 @@ class AdminUserController {
   searchNonUserTeams(searchString) {
     this.isSearching = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
       this.nonUserTeamSearchResults = teams;
 
