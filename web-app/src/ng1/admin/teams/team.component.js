@@ -127,6 +127,10 @@ class AdminTeamController {
   searchNonMembers(searchString) {
     this.isSearching = true;
 
+    if(searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData[this.userSearchState], searchString).then(users => {
       this.nonMemberSearchResults = users;
 
