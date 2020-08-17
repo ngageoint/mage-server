@@ -6,8 +6,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.). 
 
 ##### Bug Fixes
+* Multiple users can be added to a team and/or event without refreshing.
+* Users and Teams can be removed from events.
+* Removing a user from a team will no longer take you to the user page.
+* Display names are shown when users are added to the ACL.
 
 ## [5.4.0](https://github.com/ngageoint/mage-server/releases/tag/5.4.0)
 
