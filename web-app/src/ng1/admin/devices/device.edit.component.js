@@ -1,5 +1,7 @@
+"use strict";
+
 import angular from 'angular';
-  
+
 class AdminDeviceEditController {
   constructor($state, $stateParams, LocalStorageService, DeviceService, UserPagingService) {
     this.$state = $state;
@@ -38,10 +40,14 @@ class AdminDeviceEditController {
   searchPocs(searchString) {
     this.isSearching = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData[this.userState], searchString).then(users => {
       this.pocs = users;
       this.isSearching = false;
-  
+
       return this.pocs;
     });
   }
@@ -55,7 +61,7 @@ class AdminDeviceEditController {
       device.iconClass = 'fa-desktop admin-desktop-icon';
     } else if (userAgent.toLowerCase().indexOf("android") !== -1) {
       device.iconClass = 'fa-android admin-android-icon';
-    } else if(userAgent.toLowerCase().indexOf("ios") !== -1) {
+    } else if (userAgent.toLowerCase().indexOf("ios") !== -1) {
       device.iconClass = 'fa-apple admin-apple-icon';
     } else {
       device.iconClass = 'fa-mobile admin-generic-icon';

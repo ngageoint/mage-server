@@ -113,6 +113,10 @@ class AdminUserController {
   searchNonUserTeams(searchString) {
     this.isSearching = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
       this.nonUserTeamSearchResults = teams;
 
@@ -225,6 +229,10 @@ class AdminUserController {
   searchLogins(searchString) {
     this.isSearchingDevices = true;
 
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.DevicePagingService.search(this.deviceStateAndData[this.deviceState], searchString).then(devices => {
       this.loginSearchResults = devices;
       this.isSearchingDevices = false;
@@ -242,7 +250,7 @@ class AdminUserController {
 
   filterLogins() {
     this.filter.device = this.device;
-    this.ilter.startDate = this.login.startDate;
+    this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
