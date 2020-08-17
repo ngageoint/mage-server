@@ -132,6 +132,10 @@ class AdminDashboardController {
   }
 
   searchLoginsAgainstUsers(searchString) {
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData['all'], searchString).then(users => {
       this.loginSearchResults = users;
 
@@ -147,6 +151,10 @@ class AdminDashboardController {
   }
 
   searchLoginsAgainstDevices(searchString) {
+    if (searchString == null) {
+      searchString = '.*';
+    }
+    
     return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
       this.loginDeviceSearchResults = devices;
 

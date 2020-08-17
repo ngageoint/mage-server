@@ -22,16 +22,16 @@ class AdminEventAccessController {
     this.nonAclUserState = this.userState + '.nonacl';
     this.memberSearch = '';
     this.stateAndData = this.UserPagingService.constructDefault();
-  
+
     this.roles = [{
       name: 'GUEST',
       title: 'Guest',
       description: 'Read only access to this event.'
-    },{
+    }, {
       name: 'MANAGER',
       title: 'Manager',
       description: 'Read and Update access to this event.'
-    },{
+    }, {
       name: 'OWNER',
       title: 'Owner',
       description: 'Read, Update and Delete access to this event.'
@@ -42,12 +42,12 @@ class AdminEventAccessController {
     };
 
     // For some reason angular is not calling into filter function with correct context
-    this.filterMembers = this._filterMembers.bind(this);  
+    this.filterMembers = this._filterMembers.bind(this);
   }
 
   $onInit() {
-    this.$q.all({event: this.Event.get({id: this.$stateParams.eventId, populate: false}).$promise}).then(result => {  
-  
+    this.$q.all({ event: this.Event.get({ id: this.$stateParams.eventId, populate: false }).$promise }).then(result => {
+
       let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonAclUserState] = clone;
       delete this.stateAndData['active'];
@@ -128,10 +128,15 @@ class AdminEventAccessController {
 
   searchNonMembers(searchString) {
     this.isSearching = true;
+
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData[this.nonAclUserState], searchString).then(users => {
       this.nonMemberSearchResults = users;
 
-      if(this.nonMemberSearchResults.length == 0) {
+      if (this.nonMemberSearchResults.length == 0) {
         let noMember = {
           displayName: "No Results Found"
         };
@@ -150,6 +155,10 @@ class AdminEventAccessController {
       role: this.nonMember.role.name
     }, event => {
       delete this.nonMember.selected;
+
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(event.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(event.acl) };
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(event);
       });
@@ -161,6 +170,9 @@ class AdminEventAccessController {
       eventId: this.event.id,
       userId: member.id
     }, event => {
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(event.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(event.acl) };
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(event);
       });

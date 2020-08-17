@@ -54,10 +54,10 @@ class AdminTeamAccessController {
   refreshMembers(team) {
     this.team = team;
 
-    var usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
+    const usersById = _.indexBy(this.UserPagingService.users(this.stateAndData[this.userState]), 'id');
 
     this.teamMembers = _.map(this.team.acl, (access, userId) => {
-      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+      let member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
       member.id = userId;
       member.role = access.role;
       return member;
@@ -104,10 +104,15 @@ class AdminTeamAccessController {
 
   searchNonMembers(searchString) {
     this.isSearching = true;
+
+    if (searchString == null) {
+      searchString = '.*';
+    }
+
     return this.UserPagingService.search(this.stateAndData[this.nonAclUserState], searchString).then(users => {
       this.nonMemberSearchResults = users;
 
-      if(this.nonMemberSearchResults.length == 0) {
+      if (this.nonMemberSearchResults.length == 0) {
         const noUser = {
           displayName: "No Results Found"
         };
@@ -126,6 +131,10 @@ class AdminTeamAccessController {
       role: this.nonMember.role
     }, team => {
       delete this.nonMember.selected;
+
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(team.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(team.acl) };
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
@@ -137,6 +146,10 @@ class AdminTeamAccessController {
       teamId: this.team.id,
       userId: member.id
     }, team => {
+
+      this.stateAndData[this.userState].userFilter.in = { _id: Object.keys(team.acl) };
+      this.stateAndData[this.userState].countFilter.in = { _id: Object.keys(team.acl) };
+
       this.UserPagingService.refresh(this.stateAndData).then(() => {
         this.refreshMembers(team);
       });
