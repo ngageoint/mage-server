@@ -250,7 +250,7 @@ class AdminUserController {
 
   filterLogins() {
     this.filter.device = this.device;
-    this.ilter.startDate = this.login.startDate;
+    this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
