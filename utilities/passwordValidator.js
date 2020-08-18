@@ -1,11 +1,12 @@
 "use strict"
 
-var Setting = require('../models/setting')
-    , log = require('winston');
+const Setting = require('../models/setting')
+    , log = require('winston')
+    , Hasher = require('./pbkdf2')();
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
 
-function validate(strategy, password) {
+function validate(strategy, password, previousPasswords) {
     let validationStatus = {
         isValid: true,
         failedKeys: [],
@@ -55,6 +56,11 @@ function validate(strategy, password) {
         }
         if (!validateMinimumSpecialCharacters(passwordPolicy, password)) {
             validationStatus.failedKeys.push('specialChars');
+        }
+        if (previousPasswords) {
+            if (!validatePasswordHistory(passwordPolicy, password, previousPasswords)) {
+                validationStatus.failedKeys.push('passwordHistoryCount');
+            }
         }
 
         validationStatus.isValid = validationStatus.failedKeys.length == 0;
@@ -212,6 +218,35 @@ function createRestrictedRegex(restrictedChars) {
     }
 
     return nonAllowedRegex;
+}
+
+function validatePasswordHistory(passwordPolicy, password, previousPasswords) {
+    let isValid = true;
+    if (passwordPolicy.passwordHistoryCountEnabled) {
+        if (!Array.isArray(previousPasswords)) {
+            previousPasswords = [previousPasswords];
+        }
+        for (const prevPass of previousPasswords) {
+            Hasher.validPassword(password, prevPass, function (err, isSame) {
+                if (err) {
+                    log.warn("Failed to validate password history", err);
+                    isValid = false;
+                    return;
+                }
+
+                if (isSame) {
+                    isValid = false;
+                    return;
+                }
+            });
+
+            if (!isValid) {
+                break;
+            }
+        }
+    }
+
+    return isValid;
 }
 
 module.exports = {
