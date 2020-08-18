@@ -59,7 +59,7 @@ function setupGeoserverProxy() {
     var url = URL.parse(urlFilter.exec(path)[1], Boolean('parse query string'));
     delete url.search;
 
-    var wmsMatch = /service=wms/i.exec(url.path);
+    var wmsMatch = /request=GetMap/i.exec(url.path);
     if (wmsMatch && !url.query['SLD_BODY']) {
       var layers = '';
       var layersMatch = /layers=([^&]*)/i.exec(url.path);
@@ -70,9 +70,7 @@ function setupGeoserverProxy() {
       url.query.sld = util.format('%s/ogc/sld?layers=%s&access_token=%s', req.getRoot(), layers, config.token);
     }
 
-    var forward = '/geoserver/' + URL.parse(URL.format(url)).path;
-
-    return forward;
+    return '/geoserver/' + URL.parse(URL.format(url)).path;
   }
 
   var geoserverProxy = proxy(filter, {
