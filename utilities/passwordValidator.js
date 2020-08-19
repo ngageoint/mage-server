@@ -2,8 +2,9 @@
 
 const Setting = require('../models/setting')
     , log = require('winston')
-    , Hasher = require('./pbkdf2')()
-    , util = require('util');
+    , util = require('util')
+    , Hasher = require('./pbkdf2')();
+
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
 const validPassword = util.promisify(Hasher.validPassword);
@@ -236,6 +237,12 @@ async function validatePasswordHistory(passwordPolicy, password, encryptedPrevio
         if (!Array.isArray(encryptedPreviousPasswords)) {
             encryptedPreviousPasswords = [encryptedPreviousPasswords];
         }
+
+        if (passwordPolicy.passwordHistoryCount < encryptedPreviousPasswords.length) {
+            encryptedPreviousPasswords =
+                encryptedPreviousPasswords.slice(0, passwordPolicy.passwordHistoryCount);
+        }
+
         let isSame = true;
 
         for (let encryptedPreviousPassword of encryptedPreviousPasswords) {

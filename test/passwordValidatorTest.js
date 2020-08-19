@@ -461,6 +461,37 @@ describe("Password Validator Tests", function () {
         });
     });
 
+    it('Test password history slice', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        passwordHistoryCount: 1,
+                        passwordHistoryCountEnabled: true
+                    }
+                }
+            }
+        }));
+
+        const passwordHistory = [];
+
+        Hasher.hashPassword('history0', function (err, encryptedPassword) {
+            if (err) done(err);
+            passwordHistory.push(encryptedPassword);
+            Hasher.hashPassword('history1', function (err, encryptedPassword) {
+                if (err) done(err);
+                passwordHistory.push(encryptedPassword);
+
+                PasswordValidator.validate("test", "history1", passwordHistory).then(validationStatus => {
+                    expect(validationStatus.isValid).to.equal(true);
+                    done();
+                }).catch(err => {
+                    done(err);
+                });
+            });
+        });
+    });
+
     it('Test password history', function (done) {
         sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
             settings: {
