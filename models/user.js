@@ -12,7 +12,8 @@ var mongoose = require('mongoose')
   , CappedLocation = require('./cappedLocation')
   , Paging = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser')
-  , PasswordValidator = require('../utilities/passwordValidator');
+  , PasswordValidator = require('../utilities/passwordValidator')
+  , PasswordPolicyEnforcer = require('../utilities/passwordPolicyEnforcer');
 
 
 // Creates a new Mongoose Schema object
@@ -94,25 +95,6 @@ UserSchema.pre('save', function (next) {
   });
 });
 
-//Validate password against password policies
-UserSchema.pre('save', function (next) {
-  const user = this;
-  // only hash the password if it has been modified (or is new)
-  if (user.authentication.type !== 'local' || !user.isModified('authentication.password')) {
-    return next();
-  }
-
-  PasswordValidator.validate(user.authentication.type, user.authentication.password).then(validationStatus => {
-    let err = null;
-    if(!validationStatus.isValid) {
-      err = new Error(validationStatus.msg);
-      err.status = 400;
-    }
-
-    next(err);
-  });
-});
-
 // Encrypt password before save
 UserSchema.pre('save', function (next) {
   var user = this;
@@ -128,21 +110,24 @@ UserSchema.pre('save', function (next) {
       self.constructor.findById(user._id, done);
     },
     function (existingUser, done) {
-      if (!existingUser) {
-        // Creating new user, don't check previous password
-        return done();
+      let previousPasswords = [];
+      if (existingUser) {
+        previousPasswords.push(existingUser.authentication.password);
       }
+      previousPasswords.push(user.authentication.previousPasswords);
 
-      // Verify that the new password is different from the existing password
-      hasher.validPassword(user.authentication.password, existingUser.authentication.password, function (err, isValid) {
-        if (err) return done(err);
-
-        if (isValid) {
-          err = new Error('Password cannot be the same as previous password');
+      PasswordValidator.validate(user.authentication.type, user.authentication.password, previousPasswords).then(validationStatus => {
+        if (!validationStatus.isValid) {
+          let err = new Error(validationStatus.msg);
           err.status = 400;
+          return done(err);
         }
-
-        done(err);
+        done(null, existingUser);
+      });
+    },
+    function (existingUser, done) {
+      PasswordPolicyEnforcer.enforce(user.authentication.type, existingUser, user).then(() => {
+        done();
       });
     },
     function (done) {
@@ -355,11 +340,11 @@ function createQueryConditions(filter) {
   if (filter.enabled) {
     conditions.enabled = filter.enabled == 'true';
   }
-  
+
   return conditions;
 };
 
-exports.createUser = function(user, callback) {
+exports.createUser = function (user, callback) {
   const update = {
     username: user.username,
     displayName: user.displayName,
@@ -372,7 +357,7 @@ exports.createUser = function(user, callback) {
     authentication: user.authentication
   };
 
-  User.create(update, function(err, user) {
+  User.create(update, function (err, user) {
     if (err) return callback(err);
 
     user.populate('roleId', function (err, user) {
