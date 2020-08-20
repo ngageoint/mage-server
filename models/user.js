@@ -112,9 +112,8 @@ UserSchema.pre('save', function (next) {
     function (existingUser, done) {
       let previousPasswords = [];
       if (existingUser) {
-        previousPasswords.push(existingUser.authentication.password);
+        previousPasswords = previousPasswords.concat(existingUser.authentication.previousPasswords);
       }
-      previousPasswords.push(user.authentication.previousPasswords);
 
       PasswordValidator.validate(user.authentication.type, user.authentication.password, previousPasswords).then(validationStatus => {
         if (!validationStatus.isValid) {

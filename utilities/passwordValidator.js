@@ -243,7 +243,7 @@ async function validatePasswordHistory(passwordPolicy, password, encryptedPrevio
                 encryptedPreviousPasswords.slice(0, passwordPolicy.passwordHistoryCount);
         }
 
-        let isSame = true;
+        let isSame = false;
 
         for (let encryptedPreviousPassword of encryptedPreviousPasswords) {
             isSame = await validPassword(password, encryptedPreviousPassword);

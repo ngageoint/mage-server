@@ -22,7 +22,7 @@ function enforcePasswordHistory(existingUser, user, passwordPolicy) {
     if (passwordPolicy.passwordHistoryCountEnabled) {
         if (existingUser) {
             history.push(existingUser.authentication.password);
-            history.push(existingUser.authentication.previousPasswords);
+            history = history.concat(existingUser.authentication.previousPasswords);
 
             if (passwordPolicy.passwordHistoryCount < history.length) {
                 history = history.slice(0, passwordPolicy.passwordHistoryCount);
