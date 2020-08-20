@@ -1,18 +1,22 @@
 "use strict"
 
-var Setting = require('../models/setting')
-    , log = require('winston');
+const Setting = require('../models/setting')
+    , log = require('winston')
+    , util = require('util')
+    , Hasher = require('./pbkdf2')();
+
 
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-';
+const validPassword = util.promisify(Hasher.validPassword);
 
-function validate(strategy, password) {
+function validate(strategy, unencryptedPassword, encryptedPreviousPasswords) {
     let validationStatus = {
         isValid: true,
         failedKeys: [],
         msg: ""
     };
 
-    if (!strategy || !password) {
+    if (!strategy || !unencryptedPassword) {
         log.warn('strategy or password is missing');
         log.warn('strategy: ' + strategy);
         validationStatus.isValid = false;
@@ -35,28 +39,42 @@ function validate(strategy, password) {
 
         log.silly("Password Validation password policy: " + JSON.stringify(passwordPolicy));
 
-        if (!validatePasswordLength(passwordPolicy, password)) {
+        if (!validatePasswordLength(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('passwordMinLength');
         }
-        if (!validateMinimumCharacters(passwordPolicy, password)) {
+        if (!validateMinimumCharacters(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('minChars');
         }
-        if (!validateMaximumConsecutiveCharacters(passwordPolicy, password)) {
+        if (!validateMaximumConsecutiveCharacters(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('maxConChars');
         }
-        if (!validateMinimumLowercaseCharacters(passwordPolicy, password)) {
+        if (!validateMinimumLowercaseCharacters(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('lowLetters');
         }
-        if (!validateMinimumUppercaseCharacters(passwordPolicy, password)) {
+        if (!validateMinimumUppercaseCharacters(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('highLetters');
         }
-        if (!validateMinimumNumbers(passwordPolicy, password)) {
+        if (!validateMinimumNumbers(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('numbers');
         }
-        if (!validateMinimumSpecialCharacters(passwordPolicy, password)) {
+        if (!validateMinimumSpecialCharacters(passwordPolicy, unencryptedPassword)) {
             validationStatus.failedKeys.push('specialChars');
         }
+        if (encryptedPreviousPasswords) {
+            return validatePasswordHistory(passwordPolicy, unencryptedPassword, encryptedPreviousPasswords).then(isValid => {
+                if (!isValid) {
+                    validationStatus.failedKeys.push('passwordHistoryCount');
+                }
 
+                validationStatus.isValid = validationStatus.failedKeys.length == 0;
+
+                if (!validationStatus.isValid) {
+                    validationStatus.msg = passwordPolicy.helpText;
+                }
+
+                return validationStatus;
+            });
+        }
         validationStatus.isValid = validationStatus.failedKeys.length == 0;
 
         if (!validationStatus.isValid) {
@@ -212,6 +230,32 @@ function createRestrictedRegex(restrictedChars) {
     }
 
     return nonAllowedRegex;
+}
+
+async function validatePasswordHistory(passwordPolicy, password, encryptedPreviousPasswords) {
+    if (passwordPolicy.passwordHistoryCountEnabled) {
+        if (!Array.isArray(encryptedPreviousPasswords)) {
+            encryptedPreviousPasswords = [encryptedPreviousPasswords];
+        }
+
+        if (passwordPolicy.passwordHistoryCount < encryptedPreviousPasswords.length) {
+            encryptedPreviousPasswords =
+                encryptedPreviousPasswords.slice(0, passwordPolicy.passwordHistoryCount);
+        }
+
+        let isSame = false;
+
+        for (let encryptedPreviousPassword of encryptedPreviousPasswords) {
+            isSame = await validPassword(password, encryptedPreviousPassword);
+            if (isSame) {
+                log.warn("Password matches a password that has been previously used");
+                break;
+            }
+        }
+
+        return Promise.resolve(!isSame);
+    }
+    return Promise.resolve(true);
 }
 
 module.exports = {

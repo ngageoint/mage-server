@@ -235,7 +235,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="minChars" aria-labelledby="minCharsLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.minCharsEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="minChars" id="minCharsLabel">Minimum Letters</label>
@@ -252,7 +252,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="maxConChars" aria-labelledby="maxConCharsLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="maxConChars" id="maxConCharsLabel">Maximum Consecutive Letters</label>
@@ -269,7 +269,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="lowLetters" aria-labelledby="lowLettersLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="lowLetters" id="lowLettersLabel">Lowercase Letters</label>
@@ -286,7 +286,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="highLetters" aria-labelledby="highLettersLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.highLettersEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="highLetters" id="highLettersLabel">Uppercase Letters</label>
@@ -303,7 +303,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.numbersEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="numbers" aria-labelledby="numbersLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.numbersEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.numbersEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="numbers" id="numbersLabel">Numbers</label>
@@ -320,7 +320,7 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number" id="specialChars" aria-labelledby="specialCharsLabel"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="specialChars" id="specialCharsLabel">Special Characters</label>
@@ -340,7 +340,7 @@
                                     </div>
                                     <label for="restrictSpecialChars">Restrict To These Special Characters:</label>
                                     <input type="text" id="restrictSpecialChars"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control" />
                                   </div>
@@ -362,11 +362,29 @@
                                       ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                     <input type="number"
-                                      ng-disabled="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled == false"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
                                       id="passwordMinLength" aria-labelledby="passwordMinLengthLabel"
                                       ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
                                       ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
                                     <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password Length</label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="row">
+                              <div class="col-sm-12">
+                                <div class="form-inline bottom-gap">
+                                  <div class="form-group">
+                                    <input type="checkbox"
+                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
+                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                    <input type="number"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
+                                      id="passwordHistoryCount" aria-labelledby="passwordHistoryCountLabel"
+                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCount" min="0"
+                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                    <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous Passwords Remembered</label>
                                   </div>
                                 </div>
                               </div>

@@ -97,6 +97,8 @@ class AdminSettingsController {
       restrictSpecialChars: "",
       passwordMinLength: 0,
       passwordMinLengthEnabled: false,
+      passwordHistoryCount: 0,
+      passwordHistoryCountEnabled: false,
       customizeHelpText: false,
       helpText: null,
       helpTextTemplate: {
@@ -107,7 +109,8 @@ class AdminSettingsController {
         numbers: 'have at least # numbers',
         specialChars: 'have at least # special characters',
         restrictSpecialChars: 'be restricted to these special characters: #',
-        passwordMinLength: 'be at least # characters in length'
+        passwordMinLength: 'be at least # characters in length',
+        passwordHistoryCount: 'not be any of the past # previous passwords'
       }
     }
   }
@@ -153,6 +156,13 @@ class AdminSettingsController {
               newUserTeams: []
             }
           } else {
+            if (this.security[strategy].devicesReqAdmin === undefined) {
+              this.security[strategy].devicesReqAdmin = { enabled: true };
+            }
+            if (this.security[strategy].usersReqAdmin === undefined) {
+              this.security[strategy].usersReqAdmin = { enabled: true };
+            }
+
             if (this.security[strategy].newUserTeams) {
               // Remove any teams and events that no longer exist
               this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {

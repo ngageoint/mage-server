@@ -1,12 +1,13 @@
 "use strict";
 
-var PasswordValidator = require('../utilities/passwordValidator.js'),
+const PasswordValidator = require('../utilities/passwordValidator'),
     Setting = require('../models/setting'),
     chai = require('chai'),
     sinon = require('sinon'),
     sinonChai = require('sinon-chai'),
     expect = require("chai").expect,
-    _ = require('underscore');
+    _ = require('underscore'),
+    Hasher = require('../utilities/pbkdf2')();
 
 chai.use(sinonChai);
 
@@ -380,7 +381,7 @@ describe("Password Validator Tests", function () {
         });
     });
 
-    it('Test complext policy', function (done) {
+    it('Test complex password policy', function (done) {
         sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
             settings: {
                 test: {
@@ -457,6 +458,73 @@ describe("Password Validator Tests", function () {
             done();
         }).catch(err => {
             done(err);
+        });
+    });
+
+    it('Test password history slice', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        passwordHistoryCount: 1,
+                        passwordHistoryCountEnabled: true
+                    }
+                }
+            }
+        }));
+
+        const passwordHistory = [];
+
+        Hasher.hashPassword('history0', function (err, encryptedPassword) {
+            if (err) done(err);
+            passwordHistory.push(encryptedPassword);
+            Hasher.hashPassword('history1', function (err, encryptedPassword) {
+                if (err) done(err);
+                passwordHistory.push(encryptedPassword);
+
+                PasswordValidator.validate("test", "history1", passwordHistory).then(validationStatus => {
+                    expect(validationStatus.isValid).to.equal(true);
+                    done();
+                }).catch(err => {
+                    done(err);
+                });
+            });
+        });
+    });
+
+    it('Test password history', function (done) {
+        sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+            settings: {
+                test: {
+                    passwordPolicy: {
+                        passwordHistoryCount: 10,
+                        passwordHistoryCountEnabled: true
+                    }
+                }
+            }
+        }));
+
+        const passwordHistory = [];
+
+        Hasher.hashPassword('history0', function (err, encryptedPassword) {
+            if (err) done(err);
+            passwordHistory.push(encryptedPassword);
+            Hasher.hashPassword('history1', function (err, encryptedPassword) {
+                if (err) done(err);
+                passwordHistory.push(encryptedPassword);
+
+                PasswordValidator.validate("test", "history2", passwordHistory).then(validationStatus => {
+                    expect(validationStatus.isValid).to.equal(true);
+                }).then(() => {
+                    PasswordValidator.validate("test", "history1", passwordHistory).then(validationStatus => {
+                        expect(validationStatus.isValid).to.equal(false);
+                        expect(_.includes(validationStatus.failedKeys, 'passwordHistoryCount')).to.equal(true);
+                    });
+                    done();
+                }).catch(err => {
+                    done(err);
+                });
+            });
         });
     });
 });
