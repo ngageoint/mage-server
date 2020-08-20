@@ -7,6 +7,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.). 
+* Password history is now available for admins to control how many previous passwords a users may use.
 
 ##### Bug Fixes
 * Multiple users can be added to a team and/or event without refreshing.
