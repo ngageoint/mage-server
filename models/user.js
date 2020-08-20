@@ -122,11 +122,15 @@ UserSchema.pre('save', function (next) {
           return done(err);
         }
         done(null, existingUser);
+      }).catch(err => {
+        done(err);
       });
     },
     function (existingUser, done) {
       PasswordPolicyEnforcer.enforce(user.authentication.type, existingUser, user).then(() => {
         done();
+      }).catch(err => {
+        done(err);
       });
     },
     function (done) {
