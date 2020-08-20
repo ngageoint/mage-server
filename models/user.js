@@ -112,6 +112,7 @@ UserSchema.pre('save', function (next) {
     function (existingUser, done) {
       let previousPasswords = [];
       if (existingUser) {
+        previousPasswords.push(existingUser.authentication.password);
         previousPasswords = previousPasswords.concat(existingUser.authentication.previousPasswords);
       }
 
