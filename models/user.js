@@ -17,9 +17,9 @@ var mongoose = require('mongoose')
 
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
-var PhoneSchema = new Schema({
+const PhoneSchema = new Schema({
   type: { type: String, required: true },
   number: { type: String, required: true }
 }, {
@@ -28,7 +28,7 @@ var PhoneSchema = new Schema({
 });
 
 // Collection to hold users
-var UserSchema = new Schema({
+const UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
   displayName: { type: String, required: true },
   email: { type: String, required: false },
@@ -51,18 +51,7 @@ var UserSchema = new Schema({
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
   recentEventIds: [{ type: Number, ref: 'Event' }],
-  authentication: {
-    type: { type: String, required: false },
-    id: { type: String, required: false },
-    password: { type: String, required: false },
-    previousPasswords: { type: [String], required: false },
-    security: {
-      locked: { type: Boolean },
-      lockedUntil: { type: Date },
-      invalidLoginAttempts: { type: Number, default: 0 },
-      numberOfTimesLocked: { type: Number, default: 0 }
-    }
-  }
+  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication' }
 }, {
   versionKey: false,
   timestamps: {
