@@ -11,7 +11,7 @@ exports.up = function (done) {
         this.db.createCollection('authentication', { strict: true }, function (err, collection) {
             if (err) {
                 log.warn(err);
-                return done(err);
+                throw err;
             }
             self.db.collection('users', { strict: true }, function (err, userCollection) {
                 if (err) {
@@ -41,34 +41,30 @@ async function moveAuthentication(done, authenticationCollection, userCollection
             break;
         }
         const user = await cursor.next().catch(err => { throw err });
-        const userAuthentication = user.authentication;
 
-        if (userAuthentication) {
-            log.info("Creating new authentication record for user " + user.username);
+        if (user.hasOwnProperty('authentication')) {
+            const userAuthentication = user.authentication;
             delete user.authentication;
             delete userAuthentication._id;
 
-            const newAuthenticationRecord = await authenticationCollection.insertOne(userAuthentication).catch(err => { throw err });
-
+            log.info("Creating new authentication record for user " + user.username);
+            await authenticationCollection.insertOne(userAuthentication).catch(err => { throw err });
             log.info('Authentication record successfully created for user ' + user.username);
-            user.authenticationId = newAuthenticationRecord._id;
+
+            user.authenticationId = userAuthentication._id;
             log.info("Removing authentication section for user " + user.username);
-            /*userCollection.updateOne({ _id: user._id }, user).then(() => {
-                 log.info("Successfully removed authentication section for user " + user.username);
-             }).catch(err => {
-                 log.warn(err);
-                 throw err;
-             });*/
+            await userCollection.updateOne({ _id: user._id }, user).catch(err => { throw err });
+            log.info("Successfully removed authentication section for user " + user.username);
         } else {
             log.info("Authentication section has already been moved for " + user.username);
         }
     }
 
-    log.debug("Closing cursor");
+    log.debug("Closing cursor for authentication move");
     // Close the cursor, this is the same as reseting the query
     cursor.close(function (err, result) {
         if (err) {
-            log.warn("Failed to close cursor", err);
+            log.warn("Failed closing authentication move cursor", err);
         }
     });
     done();
