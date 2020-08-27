@@ -8,7 +8,7 @@ exports.up = function (done) {
     try {
         log.info('Moving authentication from user model to authentication model');
         const self = this;
-        this.db.createCollection('authentication', { strict: true }, function (err, collection) {
+        this.db.createCollection('authentications', { strict: true }, function (err, collection) {
             if (err) {
                 log.warn(err);
                 throw err;
