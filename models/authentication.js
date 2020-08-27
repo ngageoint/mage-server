@@ -15,6 +15,7 @@ const AuthenticationSchema = new Schema({
     id: { type: String, required: false },
     password: { type: String, required: false },
     previousPasswords: { type: [String], required: false },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true  },
     security: {
         locked: { type: Boolean },
         lockedUntil: { type: Date },
