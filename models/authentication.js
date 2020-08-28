@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
     , log = require('winston')
     , async = require("async")
     , hasher = require('../utilities/pbkdf2')()
+    , User = require('./user')
+    , Token = require('./token')
     , PasswordValidator = require('../utilities/passwordValidator')
     , PasswordPolicyEnforcer = require('../utilities/passwordPolicyEnforcer');
 
@@ -15,7 +17,7 @@ const AuthenticationSchema = new Schema({
     id: { type: String, required: false },
     password: { type: String, required: false },
     previousPasswords: { type: [String], required: false },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true  },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     security: {
         locked: { type: Boolean },
         lockedUntil: { type: Date },
@@ -29,8 +31,124 @@ const AuthenticationSchema = new Schema({
     }
 });
 
-AuthenticationSchema.method('validPassword', function (password, callback) {
-    if (this.type !== 'local') return callback(null, false);
+// Encrypt password before save
+AuthenticationSchema.pre('save', function (next) {
+    const authentication = this;
 
-    hasher.validPassword(password, this.password, callback);
+    // only hash the password if it has been modified (or is new)
+    if (authentication.type !== 'local' || !authentication.isModified('password')) {
+        return next();
+    }
+
+    async.waterfall([
+        function (done) {
+            User.getUserById(authentication.userId, done);
+        },
+        function (existingUser, done) {
+            let previousPasswords = [];
+            if (existingUser) {
+                previousPasswords.push(authentication.password);
+                previousPasswords = previousPasswords.concat(existingUser.authentication.previousPasswords);
+            }
+
+            PasswordValidator.validate(authentication.type, authentication.password, previousPasswords).then(validationStatus => {
+                if (!validationStatus.isValid) {
+                    let err = new Error(validationStatus.msg);
+                    err.status = 400;
+                    return done(err);
+                }
+                done(null, existingUser);
+            }).catch(err => {
+                done(err);
+            });
+        },
+        function (existingUser, done) {
+            PasswordPolicyEnforcer.enforce(authentication.type, existingUser.authentication, authentication).then(() => {
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        },
+        function (done) {
+            // Finally hash the password
+            hasher.hashPassword(authentication.password, function (err, hashedPassword) {
+                if (err) return next(err);
+
+                authentication.password = hashedPassword;
+                done();
+            });
+        }
+    ], function (err) {
+        return next(err);
+    });
 });
+
+// Remove Token if password changed
+AuthenticationSchema.pre('save', function (next) {
+    const auth = this;
+
+    // only hash the password if it has been modified (or is new)
+    if (!auth.isModified('password')) {
+        return next();
+    }
+
+    async.waterfall([
+        function (done) {
+            User.getUserById(auth.userId, done);
+        },
+        function (user, done) {
+            Token.removeTokensForUser(user, function (err) {
+                if (err) return done(err);
+
+                done();
+            });
+        }
+    ], function (err) {
+        return next(err);
+    });
+
+});
+
+function transform(auth, ret) {
+
+}
+
+AuthenticationSchema.set("toObject", {
+    transform: transform
+});
+
+AuthenticationSchema.set("toJSON", {
+    transform: transform
+});
+
+const Authentication = mongoose.model('Authentication', AuthenticationSchema);
+exports.Model = Authentication;
+
+exports.getAuthenticationById = function (id, callback) {
+    let result = Authentication.findById(id);
+    if (typeof callback === 'function') {
+        result = result.then(
+            auth => {
+                callback(null, auth);
+            },
+            err => {
+                callback(err);
+            });
+    }
+    return result;
+};
+
+exports.createAuthentication = function (authentication, callback) {
+    Authentication.create(authentication, function (err, auth) {
+        if (err) return callback(err);
+        callback(null, auth);
+    });
+};
+
+exports.updateAuthentication = function (authentication, callback) {
+    authentication.save(function (err, auth) {
+        if (err) return callback(err);
+
+        callback(null, auth);
+    });
+};
