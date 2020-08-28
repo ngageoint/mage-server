@@ -3,7 +3,7 @@
 const Setting = require('../models/setting')
     , log = require('winston');
 
-function enforce(strategy, existingUser, user) {
+function enforce(strategy, existingAuth, auth) {
     return Setting.getSetting("security").then(securitySettings => {
         const passwordPolicy = securitySettings.settings[strategy].passwordPolicy;
 
@@ -12,24 +12,24 @@ function enforce(strategy, existingUser, user) {
             return true;
         }
 
-        enforcePasswordHistory(existingUser, user, passwordPolicy);
+        enforcePasswordHistory(existingAuth, auth, passwordPolicy);
     });
 }
 
-function enforcePasswordHistory(existingUser, user, passwordPolicy) {
+function enforcePasswordHistory(existingAuth, auth, passwordPolicy) {
 
     let history = [];
     if (passwordPolicy.passwordHistoryCountEnabled) {
-        if (existingUser) {
-            history.push(existingUser.authentication.password);
-            history = history.concat(existingUser.authentication.previousPasswords);
+        if (existingAuth) {
+            history.push(existingAuth.password);
+            history = history.concat(existingAuth.previousPasswords);
 
             if (passwordPolicy.passwordHistoryCount < history.length) {
                 history = history.slice(0, passwordPolicy.passwordHistoryCount);
             }
         }
     }
-    user.authentication.previousPasswords = history;
+    auth.previousPasswords = history;
 }
 
 module.exports = {

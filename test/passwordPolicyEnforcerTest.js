@@ -29,22 +29,18 @@ describe("Password Policy Enforcer Tests", function () {
             }
         }));
 
-        const existingUser = {
-            authentication: {
-                password: 'password',
-                previousPasswords: ['one', 'two', 'three']
-            }
+        const existingAuthentication = {
+            password: 'password',
+            previousPasswords: ['one', 'two', 'three']
         };
-        const user = {
-            authentication: {
-                password: 'password123',
-                previousPasswords: ['one', 'two', 'three']
-            }
+        const auth = {
+            password: 'password123',
+            previousPasswords: ['one', 'two', 'three']
         };
 
-        PasswordPolicyEnforcer.enforce('test', existingUser, user).then(() => {
-            expect(user.authentication.previousPasswords.length).to.equal(1);
-            expect(user.authentication.previousPasswords[0]).to.equal('password');
+        PasswordPolicyEnforcer.enforce('test', existingAuthentication, auth).then(() => {
+            expect(auth.previousPasswords.length).to.equal(1);
+            expect(auth.previousPasswords[0]).to.equal('password');
             done();
         }).catch(err => {
             done(err);
