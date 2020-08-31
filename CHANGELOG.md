@@ -8,7 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
-
+* Fix login after intial account setup.
 
 ## [5.4.1](https://github.com/ngageoint/mage-server/releases/tag/5.4.1)
 
