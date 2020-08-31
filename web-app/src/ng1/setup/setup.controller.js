@@ -43,6 +43,8 @@ class SetupController {
     this.passwordRequirements = {};
 
     this.form = {};
+    this.status = null;
+    this.statusMessage = null;
   }
 
   $postLink() {
@@ -89,7 +91,6 @@ class SetupController {
   }
 
   finish() {
-    const self = this;
     this._$http.post('/api/setup', this.account, { headers: { 'Content-Type': 'application/json' } }).then(() => {
       // login the user
       return this._UserService.signin({ username: this.account.username, password: this.account.password });
@@ -102,10 +103,8 @@ class SetupController {
         this.onSetupComplete({ device: data });
       }
     }).catch(err => {
-      self.showStatus = true;
-      self.statusTitle = 'Error signing in';
-      self.statusMessage = err || 'Please check your username and password and try again.';
-      self.statusLevel = 'alert-danger';
+      this.status = "danger";
+      this.statusMessage = err.statusText || 'Please check your username and password and try again.';
     });
   }
 }
