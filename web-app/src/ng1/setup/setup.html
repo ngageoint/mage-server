@@ -136,6 +136,13 @@
           <div></div>
           <button type="submit" class="top-gap mdc-button mdc-button--raised primary-button" ng-click="$ctrl.finish()">Finish</button>
         </div>
+        <div class="form-group">
+          <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="$ctrl.statusMessage">
+            <div class="alert alert-{{$ctrl.status}}">
+              <p>{{$ctrl.statusMessage}}<p>
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   </div>
