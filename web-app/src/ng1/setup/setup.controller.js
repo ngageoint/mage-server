@@ -1,8 +1,10 @@
+"use strict";
+
 import { textField, linearProgress } from 'material-components-web';
 import zxcvbn from 'zxcvbn';
 import _ from 'underscore';
 
-var passwordStrengthMap = {
+const passwordStrengthMap = {
   0: {
     type: 'danger',
     text: 'Weak'
@@ -41,6 +43,8 @@ class SetupController {
     this.passwordRequirements = {};
 
     this.form = {};
+    this.status = null;
+    this.statusMessage = null;
   }
 
   $postLink() {
@@ -66,7 +70,7 @@ class SetupController {
   }
 
   onPasswordChange() {
-    var score = this.account.password && this.account.password.length ? zxcvbn(this.account.password, [this.account.username]).score : 0;
+    const score = this.account.password && this.account.password.length ? zxcvbn(this.account.password, [this.account.username]).score : 0;
     this.passwordStrengthScore = score + 1;
     this.passwordStrengthType = passwordStrengthMap[score].type;
     this.passwordStrength = passwordStrengthMap[score].text;
@@ -82,40 +86,37 @@ class SetupController {
       return;
     }
 
-    var index = this.pages.indexOf(this.page);
+    const index = this.pages.indexOf(this.page);
     this.page = this.pages[index + 1];
   }
 
   finish() {
-    this._$http.post('/api/setup', this.account, { headers: { 'Content-Type': 'application/json' } }).success(() => {
+    this._$http.post('/api/setup', this.account, { headers: { 'Content-Type': 'application/json' } }).then(() => {
       // login the user
-      this._UserService.signin({ username: this.account.username, password: this.account.password }).then(response => {
-        var user = response.user;
+      return this._UserService.signin({ username: this.account.username, password: this.account.password });
+    }).then(response => {
+      const user = response.user;
 
-        this._UserService.authorize('local', user, false, { uid: this.account.uid }).success(data => {
-          if (data.device.registered) {
-            this.onSetupComplete({ device: data });
-          }
-        });
-      }, response => {
-        this.showStatus = true;
-        this.statusTitle = 'Error signing in';
-        this.statusMessage = response.data || 'Please check your username and password and try again.';
-        this.statusLevel = 'alert-danger';
-      });
-    }).error(function () {
+      return this._UserService.authorize('local', user, false, { uid: this.account.uid });
+    }).then(data => {
+      if (data.device.registered) {
+        this.onSetupComplete({ device: data });
+      }
+    }).catch(err => {
+      this.status = "danger";
+      this.statusMessage = err.statusText || 'Please check your username and password and try again.';
     });
   }
 }
 
 SetupController.$inject = ['$q', '$http', '$element', 'UserService', 'Settings'];
 
-var template = require('./setup.html');
-var bindings = {
+const template = require('./setup.html');
+const bindings = {
   api: '<',
   onSetupComplete: '&'
 };
-var controller = SetupController;
+const controller = SetupController;
 
 export {
   template,
