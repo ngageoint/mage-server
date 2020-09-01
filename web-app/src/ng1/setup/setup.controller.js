@@ -2,7 +2,6 @@
 
 import { textField, linearProgress, snackbar } from 'material-components-web';
 import zxcvbn from 'zxcvbn';
-import _ from 'underscore';
 
 const passwordStrengthMap = {
   0: {
@@ -29,7 +28,7 @@ const passwordStrengthMap = {
 
 
 class SetupController {
-  constructor($q, $http, $element, UserService, Settings) {
+  constructor($q, $http, $element, UserService) {
     this.$q = $q;
     this._$http = $http;
     this._UserService = UserService;
@@ -39,8 +38,6 @@ class SetupController {
     this.account = {};
     this.pages = ['account', 'device'];
     this.page = this.pages[0];
-
-    this.passwordRequirements = {};
 
     this.form = {};
     this.status = null;
@@ -55,19 +52,6 @@ class SetupController {
     this.passwordStrengthProgress = new linearProgress.MDCLinearProgress(this._$element.find('.mdc-linear-progress')[0]);
     this.passwordConfirmField.useNativeValidation = false;
     this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
-  }
-
-  $onInit() {
-    this.$q.all({
-      settings: this.Settings.query().$promise
-    }).then(result => {
-      const settings = _.indexBy(result.settings, 'type');
-      const security = settings.security ? settings.security.settings : {};
-
-      if (security['local'] && security['local'].passwordPolicy && security['local'].passwordPolicy.passwordMinLengthEnabled) {
-        this.passwordRequirements.minLength = security['local'].passwordPolicy.passwordMinLength;
-      }
-    });
   }
 
   onPasswordChange() {
@@ -113,7 +97,7 @@ class SetupController {
   }
 }
 
-SetupController.$inject = ['$q', '$http', '$element', 'UserService', 'Settings'];
+SetupController.$inject = ['$q', '$http', '$element', 'UserService'];
 
 const template = require('./setup.html');
 const bindings = {

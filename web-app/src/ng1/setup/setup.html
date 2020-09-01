@@ -42,7 +42,6 @@
               autocapitalize="off"
               ng-model="$ctrl.account.password" 
               class="mdc-text-field__input"
-              minlength="{{$ctrl.passwordRequirements.minLength}}"
               ng-change="$ctrl.onPasswordChange()"
               required>
             <div class="mdc-notched-outline">
@@ -52,9 +51,6 @@
               </div>
               <div class="mdc-notched-outline__trailing"></div>
             </div>
-          </div>
-          <div class="mdc-text-field-helper-line">
-            <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Password must be at least {{$ctrl.passwordRequirements.minLength}} characters long</div>
           </div>
         </div>
 
