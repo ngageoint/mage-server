@@ -11,6 +11,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fix login after intial account setup.
+* Fix export important, favorite and attachment filters
 * Multiple users can be added to a team and/or event without refreshing.
 * Users and Teams can be removed from events.
 * Removing a user from a team will no longer take you to the user page.
