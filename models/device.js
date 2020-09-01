@@ -108,25 +108,23 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
   return query.exec();
 };
 
-exports.getDevices = function (options) {
-  options = options || {};
-  const filter = options.filter || {};
+exports.getDevices = function (options = {}) {
+  const {filter = {}, expand = {}} = options;
 
-  var conditions = createQueryConditions(filter);
+  const conditions = createQueryConditions(filter);
 
-  var query = Device.find(conditions);
+  let query = Device.find(conditions);
   
-  var isUserQuery = false;
-  if (options.expand.user) {
-    if (filter != null && !filter.user) {
-      //This is a query against devices
-      query.populate('userId');
-    } else {
+  let isUserQuery = false;
+  if (expand.user) {
+    if (filter.user) {
       query = null;
       isUserQuery = true;
+    } else {
+      query.populate('userId');
     }
   } else {
-    //TODO is this minimum enough??
+    // TODO is this minimum enough??
     query.populate({
       path: 'userId',
       select: 'displayName'
@@ -135,7 +133,7 @@ exports.getDevices = function (options) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    var countQuery =  null;
+    let countQuery =  null;
     if(!isUserQuery) {
       countQuery = Device.find(conditions);
     }
@@ -155,7 +153,7 @@ exports.count = function (options) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = FilterParser.parse(filter);
+  const conditions = FilterParser.parse(filter);
 
   if (filter.registered) {
     conditions.registered = filter.registered == 'true';

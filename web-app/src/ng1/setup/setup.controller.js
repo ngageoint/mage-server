@@ -1,6 +1,6 @@
 "use strict";
 
-import { textField, linearProgress } from 'material-components-web';
+import { textField, linearProgress, snackbar } from 'material-components-web';
 import zxcvbn from 'zxcvbn';
 import _ from 'underscore';
 
@@ -54,13 +54,14 @@ class SetupController {
     this.deviceIdField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[3]);
     this.passwordStrengthProgress = new linearProgress.MDCLinearProgress(this._$element.find('.mdc-linear-progress')[0]);
     this.passwordConfirmField.useNativeValidation = false;
+    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
   $onInit() {
     this.$q.all({
       settings: this.Settings.query().$promise
     }).then(result => {
-      const settings = settings = _.indexBy(result.settings, 'type');
+      const settings = _.indexBy(result.settings, 'type');
       const security = settings.security ? settings.security.settings : {};
 
       if (security['local'] && security['local'].passwordPolicy && security['local'].passwordPolicy.passwordMinLengthEnabled) {
@@ -91,21 +92,24 @@ class SetupController {
   }
 
   finish() {
-    this._$http.post('/api/setup', this.account, { headers: { 'Content-Type': 'application/json' } }).then(() => {
-      // login the user
-      return this._UserService.signin({ username: this.account.username, password: this.account.password });
-    }).then(response => {
-      const user = response.user;
-
-      return this._UserService.authorize('local', user, false, { uid: this.account.uid });
-    }).then(data => {
-      if (data.device.registered) {
-        this.onSetupComplete({ device: data });
-      }
-    }).catch(err => {
-      this.status = "danger";
-      this.statusMessage = err.statusText || 'Please check your username and password and try again.';
+    this._$http.post('/api/setup', this.account, {headers: { 'Content-Type': 'application/json' }}).success(() => {
+      // Login the user after setup is complete
+      this._UserService.signin({username: this.account.username, password: this.account.password}).then(response => {
+        this._UserService.authorize(response.token, this.account.uid).success(data => {
+          this.onSetupComplete({device: data});
+        })
+      }, response => {
+        this.showError(response.data || 'Please check server logs for more information.')
+      });
+    }).error(data => {
+      this.showError(data || 'Please check server logs for more information.')
     });
+  }
+
+  showError(message) {
+    this.statusTitle = 'Setup Error';
+    this.statusMessage = message || 'Please check server logs for more information.';
+    this.snackbar.open();
   }
 }
 

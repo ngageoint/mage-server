@@ -70,28 +70,26 @@ Kml.prototype.export = function(streamable) {
 };
 
 Kml.prototype.streamObservations = function(stream, archive, done) {
-  var self = this;
+  if (!this._filter.exportObservations) return done();
 
-  if (!self._filter.exportObservations) return done();
-
-  self.requestObservations(self._filter, function(err, observations) {
-    Icon.getAll({eventId: self._event._id}, function(err, icons) {
-      stream.write(writer.generateObservationStyles(self._event, icons));
-      stream.write(writer.generateKMLFolderStart(self._event.name, false));
+  this.requestObservations(this._filter, (err, observations) => {
+    Icon.getAll({ eventId: this._event._id}, (err, icons) => {
+      stream.write(writer.generateObservationStyles(this._event, icons));
+      stream.write(writer.generateKMLFolderStart(this._event.name, false));
 
       observations.forEach(observation => {
-        var form = null;
-        var primary = null;
-        var secondary = null;
+        let form = null;
+        let primary = null;
+        let secondary = null;
         if (observation.properties.forms.length) {
-          form = self._event.formMap[observation.properties.forms[0].formId];
+          form = this._event.formMap[observation.properties.forms[0].formId];
           primary = observation.properties.forms[0][form.primaryField];
           secondary = observation.properties.forms[0][form.variantField];
         }
 
-        var name = primary || self._event.name;
+        const name = primary || this._event.name;
 
-        stream.write(writer.generateObservationPlacemark(name, observation, self._event, primary, secondary));
+        stream.write(writer.generateObservationPlacemark(name, observation, this._event, primary, secondary));
 
         observation.attachments.forEach(attachment => {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
@@ -101,7 +99,7 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
       stream.write(writer.generateKMLFolderClose());
 
       // throw in icons
-      archive.directory(new api.Icon(self._event._id).getBasePath(), 'icons/' + self._event._id, {date: new Date()});
+      archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, {date: new Date()});
 
       done();
     });
