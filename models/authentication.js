@@ -124,31 +124,29 @@ AuthenticationSchema.set("toJSON", {
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
 
-exports.getAuthenticationById = function (id, callback) {
-    let result = Authentication.findById(id);
-    if (typeof callback === 'function') {
-        result = result.then(
-            auth => {
-                callback(null, auth);
-            },
-            err => {
-                callback(err);
-            });
-    }
-    return result;
+exports.getAuthenticationById = function (id) {
+    return Authentication.findById(id).exec();
 };
 
-exports.createAuthentication = function (authentication, callback) {
-    Authentication.create(authentication, function (err, auth) {
-        if (err) return callback(err);
-        callback(null, auth);
-    });
+exports.getAuthenticationByUserId = function (userid) {
+    return Authentication.findOne({ userId: userid }).exec();
 };
 
-exports.updateAuthentication = function (authentication, callback) {
-    authentication.save(function (err, auth) {
-        if (err) return callback(err);
+exports.createAuthentication = function (authentication, userId) {
+    const update = {
+        type: authentication.type,
+        id: authentication.id,
+        password: authentication.password,
+        previousPasswords: [],
+        userId: userId,
+        security: {
+            locked: false,
+            lockedUntil: null
+        }
+    };
+    return Authentication.create(update);
+};
 
-        callback(null, auth);
-    });
+exports.updateAuthentication = function (authentication) {
+    return authentication.save();
 };
