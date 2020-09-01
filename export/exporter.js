@@ -54,12 +54,15 @@ Exporter.prototype.mapObservations = function(observations) {
   });
 };
 
-Exporter.prototype.requestObservations = function(filter, done) {
+Exporter.prototype.requestObservations = function(filter, done) { 
   const options = {
     filter: {
       states: ['active'],
       observationStartDate: filter.startDate,
-      observationEndDate: filter.endDate
+      observationEndDate: filter.endDate,
+      favorites: filter.favorites,
+      important: filter.important,
+      attachments: filter.attachments
     }
   }
 

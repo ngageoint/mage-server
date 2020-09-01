@@ -9,6 +9,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fix login after intial account setup.
+* Fix export important, favorite and attachment filters
 
 ## [5.4.1](https://github.com/ngageoint/mage-server/releases/tag/5.4.1)
 
