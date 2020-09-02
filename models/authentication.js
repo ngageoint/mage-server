@@ -128,6 +128,10 @@ exports.getAuthenticationById = function (id) {
     return Authentication.findById(id).exec();
 };
 
+exports.getAuthenticationByAuthIdAndType = function (authId, authType) {
+    return Authentication.findOne({ id: authId, type: authType }).exec();
+};
+
 exports.getAuthenticationByUserId = function (userid) {
     return Authentication.findOne({ userId: userid }).exec();
 };

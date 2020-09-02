@@ -1,3 +1,5 @@
+"use strict";
+
 var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
@@ -10,10 +12,9 @@ var mongoose = require('mongoose')
   , Observation = require('./observation')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
+  , Authentication = require('./authentication')
   , Paging = require('../utilities/paging')
-  , FilterParser = require('../utilities/filterParser')
-  , PasswordValidator = require('../utilities/passwordValidator')
-  , PasswordPolicyEnforcer = require('../utilities/passwordPolicyEnforcer');
+  , FilterParser = require('../utilities/filterParser');
 
 
 // Creates a new Mongoose Schema object
@@ -51,7 +52,7 @@ const UserSchema = new Schema({
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
   recentEventIds: [{ type: Number, ref: 'Event' }],
-  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication' }
+  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
 }, {
   versionKey: false,
   timestamps: {
@@ -60,16 +61,20 @@ const UserSchema = new Schema({
 });
 
 UserSchema.method('validPassword', function (password, callback) {
-  var user = this;
-  if (user.authentication.type !== 'local') return callback(null, false);
+  const user = this;
+  Authentication.getAuthenticationByUserId(user._id).then(auth => {
+    if (auth.type !== 'local') return callback(null, false);
 
-  hasher.validPassword(password, user.authentication.password, callback);
+    hasher.validPassword(password, auth.password, callback);
+  }).catch(err => {
+    callback(err);
+  });
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
 UserSchema.pre('save', function (next) {
-  var user = this;
+  const user = this;
   user.username = user.username.toLowerCase();
   this.model('User').findOne({ username: user.username }, function (err, possibleDuplicate) {
     if (err) return next(err);
@@ -84,57 +89,24 @@ UserSchema.pre('save', function (next) {
   });
 });
 
-// Encrypt password before save
+// Save authentication
 UserSchema.pre('save', function (next) {
-  var user = this;
+  const user = this;
 
-  // only hash the password if it has been modified (or is new)
-  if (user.authentication.type !== 'local' || !user.isModified('authentication.password')) {
-    return next();
+  if (user.authenticationId == null) {
+    Authentication.create(user.authentication, user._id).then(auth => {
+      user.authenticationId = auth._id;
+      next();
+    }).catch(err => {
+      next(err);
+    });
+  } else {
+    /*Authentication.update().then(() => {
+      next();
+    }).catch(err => {
+      next(err);
+    });*/
   }
-
-  var self = this;
-  async.waterfall([
-    function (done) {
-      self.constructor.findById(user._id, done);
-    },
-    function (existingUser, done) {
-      let previousPasswords = [];
-      if (existingUser) {
-        previousPasswords.push(existingUser.authentication.password);
-        previousPasswords = previousPasswords.concat(existingUser.authentication.previousPasswords);
-      }
-
-      PasswordValidator.validate(user.authentication.type, user.authentication.password, previousPasswords).then(validationStatus => {
-        if (!validationStatus.isValid) {
-          let err = new Error(validationStatus.msg);
-          err.status = 400;
-          return done(err);
-        }
-        done(null, existingUser);
-      }).catch(err => {
-        done(err);
-      });
-    },
-    function (existingUser, done) {
-      PasswordPolicyEnforcer.enforce(user.authentication.type, existingUser, user).then(() => {
-        done();
-      }).catch(err => {
-        done(err);
-      });
-    },
-    function (done) {
-      // Finally hash the password
-      hasher.hashPassword(user.authentication.password, function (err, hashedPassword) {
-        if (err) return next(err);
-
-        user.authentication.password = hashedPassword;
-        done();
-      });
-    }
-  ], function (err) {
-    return next(err);
-  });
 });
 
 UserSchema.pre('save', function (next) {
@@ -155,22 +127,6 @@ UserSchema.post('save', function (err, user, next) {
   }
 
   next(err);
-});
-
-// Remove Token if password changed
-UserSchema.pre('save', function (next) {
-  var user = this;
-
-  // only hash the password if it has been modified (or is new)
-  if (!user.isModified('password')) {
-    return next();
-  }
-
-  Token.removeTokensForUser(user, function (err) {
-    if (err) return next(err);
-
-    next();
-  });
 });
 
 UserSchema.pre('remove', function (next) {
@@ -199,6 +155,9 @@ UserSchema.pre('remove', function (next) {
     },
     teamAcl: function (done) {
       Team.removeUserFromAllAcls(user, done);
+    },
+    authentication: function(done) {
+      //TODO
     }
   },
     function (err) {
@@ -207,14 +166,10 @@ UserSchema.pre('remove', function (next) {
 });
 
 // eslint-disable-next-line complexity
-var transform = function (user, ret, options) {
+const transform = function (user, ret, options) {
   if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
-
-    if (ret.authentication) {
-      delete ret.authentication.password;
-    }
 
     delete ret.avatar;
     if (ret.icon) { // TODO remove if check, icon is always there
@@ -224,6 +179,12 @@ var transform = function (user, ret, options) {
     if (user.populated('roleId')) {
       ret.role = ret.roleId;
       delete ret.roleId;
+    }
+
+    if (user.populated('authenticationId')) {
+      ret.authentication = ret.authenticationId;
+      delete ret.authentication.password;
+      delete ret.authenticationId;
     }
 
     if (user.avatar && user.avatar.relativePath) {
@@ -249,11 +210,11 @@ UserSchema.set("toObject", {
 exports.transform = transform;
 
 // Creates the Model for the User Schema
-var User = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
 exports.getUserById = function (id, callback) {
-  let result = User.findById(id).populate('roleId');
+  let result = User.findById(id).populate('roleId').populate('authenticationId');
   if (typeof callback === 'function') {
     result = result.then(
       user => {
@@ -267,14 +228,16 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').exec(function (err, user) {
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate('authenticationId').exec(function (err, user) {
     callback(err, user);
   });
 };
 
 exports.getUserByAuthenticationId = function (authenticationType, id, callback) {
-  User.findOne({ 'authentication.type': authenticationType, 'authentication.id': id }).populate('roleId').exec(function (err, user) {
-    callback(err, user);
+  Authentication.getAuthenticationByAuthIdAndType(id, authenticationType).then(auth => {
+    return getUserById(auth.userId, callback);
+  }).catch(err => {
+    callback(err);
   });
 };
 
@@ -285,9 +248,9 @@ exports.count = function (options, callback) {
   }
 
   options = options || {};
-  var filter = options.filter || {};
+  const filter = options.filter || {};
 
-  var conditions = createQueryConditions(filter);
+  const conditions = createQueryConditions(filter);
 
   User.count(conditions, function (err, count) {
     callback(err, count);
@@ -301,21 +264,22 @@ exports.getUsers = function (options, callback) {
   }
 
   options = options || {};
-  var filter = options.filter || {};
+  const filter = options.filter || {};
 
   const conditions = createQueryConditions(filter);
 
-  var query = User.find(conditions);
+  let query = User.find(conditions);
 
-  var populate = [];
+  let populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     populate.push({ path: 'roleId' });
+    populate.push({ path: 'authenticationId' });
     query = query.populate(populate);
   }
 
-  var isPaging = options.limit != null && options.limit > 0;
+  const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    var countQuery = User.find(conditions);
+    const countQuery = User.find(conditions);
     Paging.pageUsers(countQuery, query, options, callback);
   } else {
     query.exec(function (err, users) {
@@ -325,7 +289,7 @@ exports.getUsers = function (options, callback) {
 };
 
 function createQueryConditions(filter) {
-  var conditions = FilterParser.parse(filter);
+  const conditions = FilterParser.parse(filter);
 
   if (filter.active) {
     conditions.active = filter.active == 'true';
@@ -402,6 +366,8 @@ exports.invalidLogin = function (user) {
       }
 
       return user.save();
+    }).catch(err => {
+      return Promise.reject(err);
     });
 };
 
@@ -411,21 +377,21 @@ exports.validLogin = function (user) {
 };
 
 exports.setStatusForUser = function (user, status, callback) {
-  var update = { status: status };
+  const update = { status: status };
   User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
 exports.setRoleForUser = function (user, role, callback) {
-  var update = { role: role };
+  const update = { role: role };
   User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
 };
 
 exports.removeRolesForUser = function (user, callback) {
-  var update = { roles: [] };
+  const update = { roles: [] };
   User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
     callback(err, user);
   });
@@ -459,7 +425,7 @@ exports.addRecentEventForUser = function (user, event, callback) {
 };
 
 exports.removeRecentEventForUsers = function (event, callback) {
-  var update = {
+  const update = {
     $pull: { recentEventIds: event._id }
   };
 
