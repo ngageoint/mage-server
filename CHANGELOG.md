@@ -10,6 +10,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Password history is now available for admins to control how many previous passwords a users may use.
 
 ##### Bug Fixes
+
+## [5.4.2](https://github.com/ngageoint/mage-server/releases/tag/5.4.2)
+
+##### Features
+
+##### Bug Fixes
 * Fix login after intial account setup.
 * Fix export important, favorite and attachment filters
 * Multiple users can be added to a team and/or event without refreshing.
