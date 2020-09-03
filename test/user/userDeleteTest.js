@@ -1,14 +1,16 @@
-var request = require('supertest')
+"use strict";
+
+const request = require('supertest')
   , sinon = require('sinon')
   , MockToken = require('../mockToken')
   , app = require('../../express')
   , mongoose = require('mongoose');
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
 require('../../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
@@ -18,7 +20,7 @@ describe("user delete tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -31,8 +33,8 @@ describe("user delete tests", function() {
   it('should delete user by id', function(done) {
     mockTokenWithPermission('DELETE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
@@ -41,7 +43,8 @@ describe("user delete tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(mockUser)
