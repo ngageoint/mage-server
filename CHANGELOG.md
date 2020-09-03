@@ -10,10 +10,22 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Password history is now available for admins to control how many previous passwords a users may use.
 
 ##### Bug Fixes
+* Fix login after intial account setup.
+* Fix export important, favorite and attachment filters
 * Multiple users can be added to a team and/or event without refreshing.
 * Users and Teams can be removed from events.
 * Removing a user from a team will no longer take you to the user page.
 * Display names are shown when users are added to the ACL.
+
+## [5.4.1](https://github.com/ngageoint/mage-server/releases/tag/5.4.1)
+
+##### Features
+* Added observation location provider and location accuracy exports.
+
+##### Bug Fixes
+* Fixed bug causing observation and location exports to fail.
+* Fixed incorrect timestamp when using local timezone for observation and location exports.
+* Fixed bug causing incorrect locations to be returned when using time filter and exporting both observations and locations.
 
 ## [5.4.0](https://github.com/ngageoint/mage-server/releases/tag/5.4.0)
 

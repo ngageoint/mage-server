@@ -59,6 +59,12 @@ Csv.prototype.export = function(streamable) {
   },{
     label: 'wkt',
     value: 'Well Known Text'
+  }, {
+    label: 'Location Provider',
+    value: 'provider'
+  }, {
+    label: 'Location Accuracy +/- (meters)',
+    value: 'accuracy'
   }];
 
   self._event.forms

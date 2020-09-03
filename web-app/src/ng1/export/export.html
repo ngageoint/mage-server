@@ -104,11 +104,11 @@
           <div ng-if="$ctrl.exportTime.custom">
             <div class="top-gap">
               <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime"
-                on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
+                on-date-picked="$ctrl.onStartDate(date, timeZone)"></date-time>
             </div>
             <div class="top-gap">
               <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime"
-                on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
+                on-date-picked="$ctrl.onEndDate(date, timeZone)"></date-time>
             </div>
           </div>
           <div class="top-gap">
