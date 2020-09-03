@@ -1,6 +1,6 @@
 "use strict";
 
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
   , moment = require('moment')
