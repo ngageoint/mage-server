@@ -1,4 +1,4 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , MockToken = require('../mockToken')
@@ -6,15 +6,18 @@ var request = require('supertest')
   , mongoose = require('mongoose');
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
 require('../../models/role');
-var RoleModel = mongoose.model('Role');
+const RoleModel = mongoose.model('Role');
 
 require('../../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
 
 const Setting = require('../../models/setting');
+
+require('../../models/authentication');
+const AuthenticationModel = mongoose.model('Authentication');
 
 require('sinon-mongoose');
 
@@ -24,7 +27,7 @@ describe("user create tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -37,19 +40,34 @@ describe("user create tests", function() {
   it('should create user as admin', function(done) {
     mockTokenWithPermission('CREATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var roleId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const roleId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       password: 'password',
       passwordconfirm: 'password',
       roleId: roleId,
-      authentication: {
-        type: this.test.title
-      }
+      authenticationId: null
     });
+
+    mockUser.authentication = {
+      type: this.test.title,
+      security: {}
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: mockUser.authentication.type,
+      userId: id
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findOne')
+      .withArgs({ userId: id })
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(Setting)
       .expects('getSetting').withArgs('security')
@@ -90,7 +108,7 @@ describe("user create tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
@@ -140,17 +158,27 @@ describe("user create tests", function() {
         permissions: ['SOME_PERMISSIONS']
       }));
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword',
-      authentication: {
-        type: this.test.title
-      }
+      passwordconfirm: 'passwordpassword'
     });
+
+    mockUser.authentication = {
+      type: this.test.title,
+      security: {}
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: mockUser.authentication.type,
+      userId: id
+    });
+
+    sinon.stub(AuthenticationModel, "create").resolves(mockAuth);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -202,17 +230,27 @@ describe("user create tests", function() {
         permissions: ['SOME_PERMISSIONS']
       }));
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword',
-      authentication: {
-        type: 'test_auth'
-      }
+      passwordconfirm: 'passwordpassword'
     });
+
+    mockUser.authentication = {
+      type: 'test_auth',
+      security: {}
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: mockUser.authentication.type,
+      userId: id
+    });
+
+    sinon.stub(AuthenticationModel, "create").resolves(mockAuth);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
