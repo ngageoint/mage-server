@@ -1,3 +1,5 @@
+"use strict";
+
 const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
@@ -7,16 +9,16 @@ const request = require('supertest')
 require('sinon-mongoose');
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
 require('../../models/login');
-var LoginModel = mongoose.model('Login');
+const LoginModel = mongoose.model('Login');
 
 require('../../models/device');
-var DeviceModel = mongoose.model('Device');
+const DeviceModel = mongoose.model('Device');
 
 require('../../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
 
 let userId = mongoose.Types.ObjectId();
 let mockUser = new UserModel({
@@ -26,10 +28,13 @@ let mockUser = new UserModel({
   active: true,
   enabled: true,
   roleId: mongoose.Types.ObjectId(),
-  authentication: {
-    type: 'local'
-  }
+  authenticationId: mongoose.Types.ObjectId()
 });
+mockUser.authentication = {
+  _id: mockUser.authenticationId,
+  type: 'local', 
+  security: {}
+};
 
 async function authenticate() {
   userId = mongoose.Types.ObjectId();
@@ -40,15 +45,19 @@ async function authenticate() {
     active: true,
     enabled: true,
     roleId: mongoose.Types.ObjectId(),
-    authentication: {
-      type: 'local'
-    }
+    authenticationId: mongoose.Types.ObjectId()
   });
+  mockUser.authentication = {
+    _id: mockUser.authenticationId,
+    type: 'local', 
+    security: {}
+  };
 
   sinon.mock(UserModel)
     .expects('findOne')
     .withArgs({ username: 'test' })
     .chain('populate', 'roleId')
+    .chain('populate', 'authenticationId')
     .chain('exec')
     .yields(null, mockUser);
 
@@ -92,7 +101,8 @@ describe("device provision tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(Setting)
@@ -147,7 +157,8 @@ describe("device provision tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(Setting)
@@ -197,11 +208,11 @@ describe("device provision tests", function() {
       .send(reqDevice)
       .expect(200)
       .expect(function (res) {
-        var body = res.body;
+        const body = res.body;
         body.should.have.property('token').that.equals('token');
 
         body.should.have.property('device');
-        var device = body.device;
+        const device = body.device;
         device.should.have.property('uid').that.equals('test');
 
         body.should.have.property('user');
@@ -214,7 +225,8 @@ describe("device provision tests", function() {
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(Setting)
@@ -259,11 +271,11 @@ describe("device provision tests", function() {
       .send(reqDevice)
       .expect(200)
       .expect(function (res) {
-        var body = res.body;
+        const body = res.body;
         body.should.have.property('token').that.equals('token');
 
         body.should.have.property('device');
-        var device = body.device;
+        const device = body.device;
         device.should.have.property('uid').that.equals('test');
 
         body.should.have.property('user');
