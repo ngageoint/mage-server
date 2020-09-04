@@ -440,6 +440,12 @@ describe("user update tests", function () {
       active: true,
       authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: undefined,
+      security: {}
+    }
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -491,20 +497,25 @@ describe("user update tests", function () {
 
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      security: {}
+    };
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -538,10 +549,14 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
@@ -671,6 +686,11 @@ describe("user update tests", function () {
       roleId: mongoose.Types.ObjectId(),
       authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      security: {}
+    };
 
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;
@@ -682,7 +702,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
       .chain('populate', 'roleId')
-      //.chain('populate', 'authenticationId') TODO
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
@@ -737,7 +757,7 @@ describe("user update tests", function () {
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
       .chain('populate', 'roleId')
-      //.chain('populate', 'authenticationId') TODO
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)

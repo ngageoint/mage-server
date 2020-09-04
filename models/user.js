@@ -93,6 +93,7 @@ UserSchema.pre('save', function (next) {
 UserSchema.pre('save', function (next) {
   const user = this;
 
+  //TODO fully implement
   if (user.authenticationId == null) {
     Authentication.create(user.authentication, user._id).then(auth => {
       user.authenticationId = auth._id;
@@ -107,10 +108,11 @@ UserSchema.pre('save', function (next) {
       next(err);
     });*/
   }
+  next();
 });
 
 UserSchema.pre('save', function (next) {
-  var user = this;
+  const user = this;
   if (user.active === false || user.enabled === false) {
     Token.removeTokensForUser(user, function (err) {
       next(err);
@@ -130,7 +132,7 @@ UserSchema.post('save', function (err, user, next) {
 });
 
 UserSchema.pre('remove', function (next) {
-  var user = this;
+  const user = this;
 
   async.parallel({
     location: function (done) {
