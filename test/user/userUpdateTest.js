@@ -686,11 +686,6 @@ describe("user update tests", function () {
       roleId: mongoose.Types.ObjectId(),
       authenticationId: mongoose.Types.ObjectId()
     });
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      security: {}
-    };
 
     // mock variable used by mongoose to determine if this is a create or update
     mockUser.isNew = false;

@@ -93,22 +93,24 @@ UserSchema.pre('save', function (next) {
 UserSchema.pre('save', function (next) {
   const user = this;
 
-  //TODO fully implement
-  if (user.authenticationId == null) {
-    Authentication.create(user.authentication, user._id).then(auth => {
-      user.authenticationId = auth._id;
-      next();
-    }).catch(err => {
-      next(err);
-    });
+  if (user.hasOwnProperty('authentication') && user.authentication != null) {
+    if (user.authentication._id == null) {
+      Authentication.create(user.authentication, user._id).then(auth => {
+        user.authenticationId = auth._id;
+        next();
+      }).catch(err => {
+        next(err);
+      });
+    } else {
+      Authentication.update(user.authentication).then(() => {
+        next();
+      }).catch(err => {
+        next(err);
+      });
+    }
   } else {
-    /*Authentication.update().then(() => {
-      next();
-    }).catch(err => {
-      next(err);
-    });*/
+    next();
   }
-  next();
 });
 
 UserSchema.pre('save', function (next) {
@@ -158,7 +160,7 @@ UserSchema.pre('remove', function (next) {
     teamAcl: function (done) {
       Team.removeUserFromAllAcls(user, done);
     },
-    authentication: function(done) {
+    authentication: function (done) {
       //TODO
     }
   },
