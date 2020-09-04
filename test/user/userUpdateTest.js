@@ -800,6 +800,13 @@ describe("user update tests", function () {
       authenticationId: mongoose.Types.ObjectId()
     });
 
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
+
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
       .chain('populate', 'roleId')
@@ -835,6 +842,13 @@ describe("user update tests", function () {
       active: true,
       authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
