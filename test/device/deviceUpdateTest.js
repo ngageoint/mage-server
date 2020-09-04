@@ -21,7 +21,7 @@ describe("device update tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -34,7 +34,7 @@ describe("device update tests", function() {
   it("should update device", function(done) {
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    var userId = mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
     sinon.mock(DeviceModel)
       .expects('findByIdAndUpdate')
       .chain('exec')
@@ -69,7 +69,7 @@ describe("device update tests", function() {
   it("should update empty device", function(done) {
     mockTokenWithPermission('UPDATE_DEVICE');
 
-    var userId = mongoose.Types.ObjectId();
+    const userId = mongoose.Types.ObjectId();
     sinon.mock(DeviceModel)
       .expects('findByIdAndUpdate')
       .withArgs('123', {})
@@ -128,7 +128,8 @@ describe("device update tests", function() {
         console.log(arguments)
       })
       .withArgs(userId)
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves({});
 
     sinon.mock(DeviceModel.collection)
