@@ -170,20 +170,20 @@ UserSchema.pre('remove', function (next) {
 });
 
 UserSchema.post('findOne', function (user) {
-  if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
+  if (user && user.populated('authenticationId')) {
     user.authentication = user.authenticationId;
   }
 });
 
 UserSchema.post('findById', function (user) {
-  if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
+  if (user && user.populated('authenticationId')) {
     user.authentication = user.authenticationId;
   }
 });
 
 UserSchema.post('find', function (users) {
   for (const user of users) {
-    if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
+    if (user && user.populated('authenticationId')) {
       user.authentication = user.authenticationId;
     }
   }
@@ -207,8 +207,8 @@ const transform = function (user, ret, options) {
 
     if (user.populated('authenticationId')) {
       ret.authentication = ret.authenticationId;
-      delete ret.authentication.password;
-      delete ret.authenticationId;
+      //delete ret.authentication.password;
+      //delete ret.authenticationId;
     }
 
     if (user.avatar && user.avatar.relativePath) {
