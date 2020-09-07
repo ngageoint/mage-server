@@ -95,14 +95,14 @@ UserSchema.pre('save', function (next) {
 
   if (user.hasOwnProperty('authentication') && user.authentication != null) {
     if (user.authentication._id == null) {
-      Authentication.create(user.authentication, user._id).then(auth => {
+      Authentication.createAuthentication(user.authentication, user._id).then(auth => {
         user.authenticationId = auth._id;
         next();
       }).catch(err => {
         next(err);
       });
     } else {
-      Authentication.update(user.authentication).then(() => {
+      Authentication.updateAuthentication(user.authentication).then(() => {
         next();
       }).catch(err => {
         next(err);
@@ -167,6 +167,14 @@ UserSchema.pre('remove', function (next) {
     function (err) {
       next(err);
     });
+});
+
+UserSchema.post('findOne', function (user) {
+  if (user.populated('authenticationId')) {
+    user.authentication = user.authenticationId;
+    delete user.authentication.password;
+    delete user.authenticationId;
+  }
 });
 
 // eslint-disable-next-line complexity
