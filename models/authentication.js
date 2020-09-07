@@ -167,5 +167,5 @@ exports.updateAuthentication = function (authentication) {
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {
-    authentication.findByIdAndRemove(authenticationId, done);
+    Authentication.findByIdAndRemove(authenticationId, done);
 };
