@@ -171,13 +171,12 @@ describe("user authentication tests", function () {
 
     const mockAuth = new AuthenticationModel({
       _id: mockUser.authenticationId,
-      type: mockUser.authentication.type,
-      userId: userId
+      type: mockUser.authentication.type
     });
 
     sinon.mock(AuthenticationModel)
-      .expects('findOne')
-      .withArgs({ userId: userId })
+      .expects('findById')
+      .withArgs(mockAuth._id)
       .chain('exec')
       .resolves(mockAuth);
 
@@ -385,13 +384,12 @@ describe("user authentication tests", function () {
 
     const mockAuth = new AuthenticationModel({
       _id: mockUser.authenticationId,
-      type: mockUser.authentication.type,
-      userId: userId
+      type: mockUser.authentication.type
     });
 
     sinon.mock(AuthenticationModel)
-      .expects('findOne')
-      .withArgs({ userId: userId })
+      .expects('findById')
+      .withArgs(mockAuth._id)
       .chain('exec')
       .resolves(mockAuth);
 
@@ -458,13 +456,12 @@ describe("user authentication tests", function () {
 
     const mockAuth = new AuthenticationModel({
       _id: mockUser.authenticationId,
-      type: mockUser.authentication.type,
-      userId: userId
+      type: mockUser.authentication.type
     });
 
     sinon.mock(AuthenticationModel)
-      .expects('findOne')
-      .withArgs({ userId: userId })
+      .expects('findById')
+      .withArgs(mockAuth._id)
       .chain('exec')
       .resolves(mockAuth);
 

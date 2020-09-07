@@ -17,7 +17,6 @@ const AuthenticationSchema = new Schema({
     id: { type: String, required: false },
     password: { type: String, required: false },
     previousPasswords: { type: [String], required: false },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     security: {
         locked: { type: Boolean },
         lockedUntil: { type: Date },
@@ -42,7 +41,11 @@ AuthenticationSchema.pre('save', function (next) {
 
     async.waterfall([
         function (done) {
-            User.getUserById(authentication.userId, done);
+            User.getUserByAuthenticationId(authentication._id).then(user => {
+                done(null, user);
+            }).catch(err => {
+                done(err);
+            });
         },
         function (existingUser, done) {
             let previousPasswords = [];
@@ -63,11 +66,16 @@ AuthenticationSchema.pre('save', function (next) {
             });
         },
         function (existingUser, done) {
-            PasswordPolicyEnforcer.enforce(authentication.type, existingUser.authentication, authentication).then(() => {
+            if (existingUser) {
+                PasswordPolicyEnforcer.enforce(authentication.type, existingUser.authentication, authentication).then(() => {
+                    done();
+                }).catch(err => {
+                    done(err);
+                });
+            }
+            else {
                 done();
-            }).catch(err => {
-                done(err);
-            });
+            }
         },
         function (done) {
             // Finally hash the password
@@ -94,14 +102,22 @@ AuthenticationSchema.pre('save', function (next) {
 
     async.waterfall([
         function (done) {
-            User.getUserById(auth.userId, done);
+            User.getUserByAuthenticationId(auth._id).then(user => {
+                done(null, user);
+            }).catch(err => {
+                done(err);
+            });
         },
         function (user, done) {
-            Token.removeTokensForUser(user, function (err) {
-                if (err) return done(err);
+            if (user) {
+                Token.removeTokensForUser(user, function (err) {
+                    if (err) return done(err);
 
+                    done();
+                });
+            } else {
                 done();
-            });
+            }
         }
     ], function (err) {
         return next(err);
@@ -132,17 +148,12 @@ exports.getAuthenticationByAuthIdAndType = function (authId, authType) {
     return Authentication.findOne({ id: authId, type: authType }).exec();
 };
 
-exports.getAuthenticationByUserId = function (userid) {
-    return Authentication.findOne({ userId: userid }).exec();
-};
-
-exports.createAuthentication = function (authentication, userId) {
+exports.createAuthentication = function (authentication) {
     const update = {
         type: authentication.type,
         id: authentication.id,
         password: authentication.password,
         previousPasswords: [],
-        userId: userId,
         security: {
             locked: false,
             lockedUntil: null

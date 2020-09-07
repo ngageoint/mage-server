@@ -52,7 +52,7 @@ const UserSchema = new Schema({
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
   recentEventIds: [{ type: Number, ref: 'Event' }],
-  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
+  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication' }
 }, {
   versionKey: false,
   timestamps: {
@@ -62,7 +62,7 @@ const UserSchema = new Schema({
 
 UserSchema.method('validPassword', function (password, callback) {
   const user = this;
-  Authentication.getAuthenticationByUserId(user._id).then(auth => {
+  Authentication.getAuthenticationById(user.authenticationId).then(auth => {
     if (auth.type !== 'local') return callback(null, false);
 
     hasher.validPassword(password, auth.password, callback);
@@ -87,30 +87,6 @@ UserSchema.pre('save', function (next) {
 
     next();
   });
-});
-
-// Save authentication
-UserSchema.pre('save', function (next) {
-  const user = this;
-
-  if (user.hasOwnProperty('authentication') && user.authentication != null) {
-    if (user.authentication._id == null) {
-      Authentication.createAuthentication(user.authentication, user._id).then(auth => {
-        user.authenticationId = auth._id;
-        next();
-      }).catch(err => {
-        next(err);
-      });
-    } else {
-      Authentication.updateAuthentication(user.authentication).then(() => {
-        next();
-      }).catch(err => {
-        next(err);
-      });
-    }
-  } else {
-    next();
-  }
 });
 
 UserSchema.pre('save', function (next) {
@@ -333,27 +309,43 @@ exports.createUser = function (user, callback) {
     active: user.active,
     roleId: user.roleId,
     avatar: user.avatar,
-    icon: user.icon,
-    authentication: user.authentication
+    icon: user.icon
   };
 
-  User.create(update, function (err, user) {
-    if (err) return callback(err);
-
-    user.populate('roleId', function (err, user) {
-      callback(err, user);
+  Authentication.createAuthentication(user.authentication).then(auth => {
+    update.authenticationId = auth._id;
+    User.create(update, function (err, user) {
+      if (err) return callback(err);
+      user.populate('roleId', function (err, user) {
+        callback(err, user);
+      });
     });
+  }).catch(err => {
+    callback(err);
   });
 };
 
 exports.updateUser = function (user, callback) {
-  user.save(function (err, user) {
-    if (err) return callback(err);
+  if (user.hasOwnProperty('authentication')) {
+    Authentication.updateAuthentication(user.authentication).then(auth => {
+      user.authenticationId = auth._id;
+      user.save(function (err, user) {
+        if (err) return callback(err);
 
-    user.populate('roleId', function (err, user) {
-      callback(err, user);
+        user.populate('roleId', function (err, user) {
+          callback(err, user);
+        });
+      });
     });
-  });
+  } else {
+    user.save(function (err, user) {
+      if (err) return callback(err);
+
+      user.populate('roleId', function (err, user) {
+        callback(err, user);
+      });
+    });
+  }
 };
 
 exports.deleteUser = function (user, callback) {
@@ -456,3 +448,15 @@ exports.removeRecentEventForUsers = function (event, callback) {
     callback(err);
   });
 };
+
+exports.getUserByAuthenticationId = function (authenticationId) {
+  return User.findOne({authenticationId: authenticationId}, function (err, user) {
+    if(err) return Promise.reject(err);
+
+    return User.populate(user, 'authenticationId', function (err, populated) {
+      if(err) return Promise.reject(err);
+
+      return Promise.resolve(populated);
+    });
+  });
+}

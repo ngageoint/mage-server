@@ -49,24 +49,22 @@ describe("user create tests", function() {
       password: 'password',
       passwordconfirm: 'password',
       roleId: roleId,
-      authenticationId: null
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     mockUser.authentication = {
+      _id: mockUser.authenticationId,
       type: this.test.title,
       security: {}
     };
 
     const mockAuth = new AuthenticationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: mockUser.authentication.type,
-      userId: id
+      _id: mockUser.authenticationId,
+      type: mockUser.authentication.type
     });
 
     sinon.mock(AuthenticationModel)
-      .expects('findOne')
-      .withArgs({ userId: id })
-      .chain('exec')
+      .expects('create')
       .resolves(mockAuth);
 
     sinon.mock(Setting)
@@ -174,8 +172,7 @@ describe("user create tests", function() {
 
     const mockAuth = new AuthenticationModel({
       _id: mongoose.Types.ObjectId(),
-      type: mockUser.authentication.type,
-      userId: id
+      type: mockUser.authentication.type
     });
 
     sinon.stub(AuthenticationModel, "create").resolves(mockAuth);
