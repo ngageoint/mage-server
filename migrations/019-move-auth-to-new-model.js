@@ -47,7 +47,6 @@ async function moveAuthentication(done, authenticationCollection, userCollection
             delete user.authentication;
             delete userAuthentication._id;
 
-            userAuthentication.userId = user._id;
             log.info("Creating new authentication record for user " + user.username);
             await authenticationCollection.insertOne(userAuthentication).catch(err => { throw err });
             log.info('Authentication record successfully created for user ' + user.username);
