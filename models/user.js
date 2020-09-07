@@ -161,7 +161,7 @@ UserSchema.pre('remove', function (next) {
       Team.removeUserFromAllAcls(user, done);
     },
     authentication: function (done) {
-      //TODO
+      Authentication.removeAuthenticationById(user.authenticationId, done);
     }
   },
     function (err) {
@@ -207,8 +207,7 @@ const transform = function (user, ret, options) {
 
     if (user.populated('authenticationId')) {
       ret.authentication = ret.authenticationId;
-      //delete ret.authentication.password;
-      //delete ret.authenticationId;
+      delete ret.authentication.password;
     }
 
     if (user.avatar && user.avatar.relativePath) {

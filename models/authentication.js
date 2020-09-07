@@ -154,3 +154,7 @@ exports.createAuthentication = function (authentication, userId) {
 exports.updateAuthentication = function (authentication) {
     return authentication.save();
 };
+
+exports.removeAuthenticationById = function (authenticationId, done) {
+    authentication.findByIdAndRemove(authenticationId, done);
+};
