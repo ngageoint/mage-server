@@ -125,8 +125,9 @@ AuthenticationSchema.pre('save', function (next) {
 
 });
 
-function transform(auth, ret) {
-
+const transform = function (auth, ret) {
+    //TODO figure out when/where this is called
+    //delete ret.authentication.password;
 }
 
 AuthenticationSchema.set("toObject", {
@@ -136,6 +137,8 @@ AuthenticationSchema.set("toObject", {
 AuthenticationSchema.set("toJSON", {
     transform: transform
 });
+
+exports.transform = transform;
 
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
