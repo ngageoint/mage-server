@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose')
   , async = require("async")
-  , hasher = require('../utilities/pbkdf2')()
   , moment = require('moment')
   , Setting = require('./setting')
   , Token = require('./token')
@@ -62,13 +61,7 @@ const UserSchema = new Schema({
 
 UserSchema.method('validPassword', function (password, callback) {
   const user = this;
-  Authentication.getAuthenticationById(user.authenticationId).then(auth => {
-    if (auth.type !== 'local') return callback(null, false);
-
-    hasher.validPassword(password, auth.password, callback);
-  }).catch(err => {
-    callback(err);
-  });
+  Authentication.validPassword(user.authenticationId, password, callback);
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames

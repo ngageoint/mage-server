@@ -1,7 +1,6 @@
 "use strict";
 
 const mongoose = require('mongoose')
-    , log = require('winston')
     , async = require("async")
     , hasher = require('../utilities/pbkdf2')()
     , User = require('./user')
@@ -171,4 +170,14 @@ exports.updateAuthentication = function (authentication) {
 
 exports.removeAuthenticationById = function (authenticationId, done) {
     Authentication.findByIdAndRemove(authenticationId, done);
+};
+
+exports.validPassword = function (authenticationId, password, callback) {
+    Authentication.findById(authenticationId).exec().then(auth => {
+        if (auth.type !== 'local') return callback(null, false);
+
+        hasher.validPassword(password, auth.password, callback);
+    }).catch(err => {
+        callback(err);
+    });
 };
