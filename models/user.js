@@ -170,10 +170,22 @@ UserSchema.pre('remove', function (next) {
 });
 
 UserSchema.post('findOne', function (user) {
-  if (user.populated('authenticationId')) {
+  if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
     user.authentication = user.authenticationId;
-    delete user.authentication.password;
-    delete user.authenticationId;
+  }
+});
+
+UserSchema.post('findById', function (user) {
+  if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
+    user.authentication = user.authenticationId;
+  }
+});
+
+UserSchema.post('find', function (users) {
+  for (const user of users) {
+    if (user && user.hasOwnProperty('populated') && user.populated('authenticationId')) {
+      user.authentication = user.authenticationId;
+    }
   }
 });
 
