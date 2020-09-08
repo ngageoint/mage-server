@@ -264,13 +264,10 @@ exports.getUsers = function (options, callback) {
 
   const conditions = createQueryConditions(filter);
 
-  let query = User.find(conditions);
+  let query = User.find(conditions).populate('authenticationId');
 
-  let populate = [];
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
-    populate.push({ path: 'roleId' });
-    populate.push({ path: 'authenticationId' });
-    query = query.populate(populate);
+    query = query.populate('roleId');
   }
 
   const isPaging = options.limit != null && options.limit > 0;
@@ -447,11 +444,11 @@ exports.removeRecentEventForUsers = function (event, callback) {
 };
 
 exports.getUserByAuthenticationId = function (authenticationId) {
-  return User.findOne({authenticationId: authenticationId}, function (err, user) {
-    if(err) return Promise.reject(err);
+  return User.findOne({ authenticationId: authenticationId }, function (err, user) {
+    if (err) return Promise.reject(err);
 
     return User.populate(user, 'authenticationId', function (err, populated) {
-      if(err) return Promise.reject(err);
+      if (err) return Promise.reject(err);
 
       return Promise.resolve(populated);
     });

@@ -206,8 +206,8 @@ describe("user read tests", function() {
 
     sinon.mock(UserModel)
       .expects('find')
-      .chain('populate')
-      .withArgs([{ path: "roleId" }, { path: "authenticationId" }])
+      .chain('populate', 'authenticationId')
+      .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, [{
         username: 'test1'
