@@ -93,13 +93,8 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-UserSchema.post('save', function (err, user, next) {
-  if (err.name === 'MongoError' && err.code === 11000) {
-    err = new Error('username already exists');
-    err.status = 400;
-  }
-
-  next(err);
+UserSchema.post('save', function (user) {
+  manageAuthProperty(user);
 });
 
 UserSchema.pre('remove', function (next) {
@@ -139,27 +134,24 @@ UserSchema.pre('remove', function (next) {
 });
 
 UserSchema.post('findOne', function (user) {
-  if (user && user.populated('authenticationId')) {
-    user.authentication = user.authenticationId;
-    delete user.authenticationId;
-  }
+  manageAuthProperty(user);
 });
 
 UserSchema.post('findById', function (user) {
-  if (user && user.populated('authenticationId')) {
-    user.authentication = user.authenticationId;
-    delete user.authenticationId;
-  }
+  manageAuthProperty(user);
 });
 
 UserSchema.post('find', function (users) {
   for (const user of users) {
-    if (user && user.populated('authenticationId')) {
-      user.authentication = user.authenticationId;
-      delete user.authenticationId;
-    }
+    manageAuthProperty(user);
   }
 });
+
+function manageAuthProperty(user) {
+  if (user && user.populated('authenticationId')) {
+    user.authentication = user.authenticationId;
+  }
+};
 
 // eslint-disable-next-line complexity
 const transform = function (user, ret, options) {
@@ -196,11 +188,13 @@ const transform = function (user, ret, options) {
 };
 
 UserSchema.set("toJSON", {
-  transform: transform
+  transform: transform,
+  virtuals: true
 });
 
 UserSchema.set("toObject", {
-  transform: transform
+  transform: transform,
+  virtuals: true
 });
 
 exports.transform = transform;
