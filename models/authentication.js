@@ -151,7 +151,7 @@ exports.getAuthenticationByAuthIdAndType = function (authId, authType) {
 };
 
 exports.createAuthentication = function (authentication) {
-    const newAuth = AuthenticationSchema({
+    const newAuth = new Authentication({
         type: authentication.type,
         id: authentication.id,
         password: authentication.password,

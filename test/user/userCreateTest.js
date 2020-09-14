@@ -16,14 +16,14 @@ const UserModel = mongoose.model('User');
 
 const Setting = require('../../models/setting');
 
-require('../../models/authentication');
+const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
 
 require('sinon-mongoose');
 
-describe("user create tests", function() {
+describe("user create tests", function () {
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -31,13 +31,13 @@ describe("user create tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it('should create user as admin', function(done) {
+  it('should create user as admin', function (done) {
     mockTokenWithPermission('CREATE_USER');
 
     const id = mongoose.Types.ObjectId();
@@ -63,8 +63,8 @@ describe("user create tests", function() {
       type: mockUser.authentication.type
     });
 
-    sinon.mock(AuthenticationModel)
-      .expects('create')
+    sinon.mock(Authentication)
+      .expects('createAuthentication')
       .resolves(mockAuth);
 
     sinon.mock(Setting)
@@ -105,18 +105,18 @@ describe("user create tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
-      .end(function(err, res) {
+      .end(function (err, res) {
         if (err) return done(err);
         done();
       });
   });
 
-  it('should fail to create user as admin w/o roleId', function(done) {
+  it('should fail to create user as admin w/o roleId', function (done) {
     mockTokenWithPermission('CREATE_USER');
 
     sinon.mock(Setting)
@@ -140,13 +140,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('roleId is a required field');
       })
       .end(done);
   });
 
-  it('should create user', function(done) {
+  it('should create user', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     sinon.mock(RoleModel)
@@ -175,7 +175,9 @@ describe("user create tests", function() {
       type: mockUser.authentication.type
     });
 
-    sinon.stub(AuthenticationModel, "create").resolves(mockAuth);
+    sinon.mock(Authentication)
+      .expects('createAuthentication')
+      .resolves(mockAuth);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -209,7 +211,7 @@ describe("user create tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -217,7 +219,7 @@ describe("user create tests", function() {
       .end(done);
   });
 
-  it('should create user with no whitespace', function(done) {
+  it('should create user with no whitespace', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     sinon.mock(RoleModel)
@@ -247,7 +249,9 @@ describe("user create tests", function() {
       userId: id
     });
 
-    sinon.stub(AuthenticationModel, "create").resolves(mockAuth);
+    sinon.mock(Authentication)
+      .expects('createAuthentication')
+      .resolves(mockAuth);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -281,7 +285,7 @@ describe("user create tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
@@ -289,7 +293,7 @@ describe("user create tests", function() {
       .end(done);
   });
 
-  it('should fail to create user w/o username', function(done) {
+  it('should fail to create user w/o username', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -302,13 +306,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Invalid user document: missing required parameter 'username'");
       })
       .end(done);
   });
 
-  it('should fail to create user w/o displayName', function(done) {
+  it('should fail to create user w/o displayName', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -321,13 +325,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Invalid user document: missing required parameter 'displayName'");
       })
       .end(done);
   });
 
-  it('should fail to create user with invalid email', function(done) {
+  it('should fail to create user with invalid email', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -342,13 +346,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Invalid email address');
       })
       .end(done);
   });
 
-  it('should fail to create user w/o password', function(done) {
+  it('should fail to create user w/o password', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -361,13 +365,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Invalid user document: missing required parameter 'password'");
       })
       .end(done);
   });
 
-  it('should fail to create user w/o passwordconfirm', function(done) {
+  it('should fail to create user w/o passwordconfirm', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -380,13 +384,13 @@ describe("user create tests", function() {
         password: 'passwordpassword'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Invalid user document: missing required parameter 'passwordconfirm'");
       })
       .end(done);
   });
 
-  it('should fail to create user when passsord and passwordconfirm do not match', function(done) {
+  it('should fail to create user when passsord and passwordconfirm do not match', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     request(app)
@@ -400,13 +404,13 @@ describe("user create tests", function() {
         passwordconfirm: 'passwordconfirmpasswordconfirm'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Passwords do not match');
       })
       .end(done);
   });
 
-  it('should fail to create user when passsord does not meet complexity', function(done) {
+  it('should fail to create user when passsord does not meet complexity', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     sinon.mock(RoleModel)
@@ -439,7 +443,7 @@ describe("user create tests", function() {
         passwordconfirm: 'password'
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
