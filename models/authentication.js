@@ -151,7 +151,7 @@ exports.getAuthenticationByAuthIdAndType = function (authId, authType) {
 };
 
 exports.createAuthentication = function (authentication) {
-    const update = {
+    const newAuth = AuthenticationSchema({
         type: authentication.type,
         id: authentication.id,
         password: authentication.password,
@@ -160,8 +160,8 @@ exports.createAuthentication = function (authentication) {
             locked: false,
             lockedUntil: null
         }
-    };
-    return Authentication.create(update);
+    });
+    return newAuth.save();
 };
 
 exports.updateAuthentication = function (authentication) {
