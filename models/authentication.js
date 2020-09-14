@@ -165,7 +165,7 @@ exports.createAuthentication = function (authentication) {
 };
 
 exports.updateAuthentication = function (authentication) {
-    return authentication.save();
+    return new Authentication(authentication).save();
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {

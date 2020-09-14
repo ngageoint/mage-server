@@ -51,7 +51,7 @@ const UserSchema = new Schema({
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
   recentEventIds: [{ type: Number, ref: 'Event' }],
-  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication' }
+  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
 }, {
   versionKey: false,
   timestamps: {
@@ -315,8 +315,9 @@ exports.createUser = function (user, callback) {
 
 exports.updateUser = function (user, callback) {
   if (user.hasOwnProperty('authentication')) {
-    Authentication.updateAuthentication(user.authentication).then(auth => {
-      user.authenticationId = auth._id;
+    Authentication.updateAuthentication(user.authentication).then(() => {
+      user.authenticationId = user.authentication._id;
+      delete user.authentication;
       user.save(function (err, user) {
         if (err) return callback(err);
 
@@ -324,6 +325,8 @@ exports.updateUser = function (user, callback) {
           callback(err, user);
         });
       });
+    }).catch(err => {
+      callback(err);
     });
   } else {
     user.save(function (err, user) {
@@ -438,13 +441,5 @@ exports.removeRecentEventForUsers = function (event, callback) {
 };
 
 exports.getUserByAuthenticationId = function (authenticationId) {
-  return User.findOne({ authenticationId: authenticationId }, function (err, user) {
-    if (err) return Promise.reject(err);
-
-    return User.populate(user, 'authenticationId', function (err, populated) {
-      if (err) return Promise.reject(err);
-
-      return Promise.resolve(populated);
-    });
-  });
+  return User.findOne({ authenticationId: authenticationId }).populate('authenticationId').exec();
 }
