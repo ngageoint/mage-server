@@ -164,13 +164,15 @@ exports.createAuthentication = function (authentication) {
     return newAuth.save();
 };
 
-exports.updateAuthentication = function (authentication) {
-    return Authentication.findById(authentication._id).exec().then(auth => {
+exports.updateAuthentication = async function (authentication) {
+    try {
+        const auth = await Authentication.findById(authentication._id).exec();
         auth.password = authentication.password;
         return auth.save();
-    }).catch(err => {
+    }
+    catch (err) {
         return Promise.reject(err);
-    });
+    }
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {
