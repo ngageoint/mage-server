@@ -168,6 +168,8 @@ exports.updateAuthentication = function (authentication) {
     return Authentication.findById(authentication._id).exec().then(auth => {
         auth.password = authentication.password;
         return auth.save();
+    }).catch(err => {
+        return Promise.reject(err);
     });
 };
 
