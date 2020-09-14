@@ -70,13 +70,14 @@ class UserController {
       }
     };
 
-    var complete = () => {
-      this.status("Success", "Your account information has been updated.", "alert-success");
+    const self = this;
+    const complete = () => {
+      self.status("Success", "Your account information has been updated.", "alert-success");
     };
 
-    var failed = data => {
-      this.$timeout(() => {
-        this.status("Error", data, "alert-danger");
+    const failed = data => {
+      self.$timeout(() => {
+        self.status("Error", data, "alert-danger");
       });
     };
 
@@ -93,28 +94,29 @@ class UserController {
 
     if (!form.$valid) return;
 
-    var authentication = {
+    const authentication = {
       username: this.user.username,
       password: this.authentication.password,
       newPassword: this.authentication.newPassword,
       newPasswordConfirm: this.authentication.newPasswordConfirm
     };
 
+    const self = this;
     this.UserService.updateMyPassword(authentication).success(() => {
-      this.authentication.password = "";
-      this.authentication.newPassword = "";
-      this.authentication.newPasswordConfirm = "";
-      this.form.authentication.$setPristine();
-      this.passwordStatus = {status: "success", msg: "Password successfully updated, you will be redirected to the login page."};
+      self.authentication.password = "";
+      self.authentication.newPassword = "";
+      self.authentication.newPasswordConfirm = "";
+      self.form.authentication.$setPristine();
+      self.passwordStatus = {status: "success", msg: "Password successfully updated, you will be redirected to the login page."};
 
-      this.$timeout(function() {
-        this.$state.go('landing');
+      self.$timeout(function() {
+        self.$state.go('landing');
       }, 5000);
     }).error((data, status) => {
       if (status === 401) {
         form.password.$setValidity('invalid', false);
       } else {
-        this.passwordStatus = {status: "danger", msg: data};
+        self.passwordStatus = {status: "danger", msg: data};
       }
     });
   }
@@ -153,7 +155,7 @@ class UserController {
   }
 
   newPasswordChanged(password) {    
-    var score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
+    const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
     this.passwordStrengthScore = score + 1;
     this.passwordStrengthType = this.passwordStrengthMap[score].type;
     this.passwordStrength = this.passwordStrengthMap[score].text;

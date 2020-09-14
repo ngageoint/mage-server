@@ -315,8 +315,9 @@ exports.createUser = function (user, callback) {
 
 exports.updateUser = function (user, callback) {
   if (user.hasOwnProperty('authentication')) {
+    user.authentication._id = user.authenticationId;
     Authentication.updateAuthentication(user.authentication).then(() => {
-      user.authenticationId = user.authentication._id;
+      user.authenticationId = user.authenticationId._id;
       delete user.authentication;
       user.save(function (err, user) {
         if (err) return callback(err);

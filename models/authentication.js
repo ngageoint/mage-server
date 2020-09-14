@@ -165,7 +165,10 @@ exports.createAuthentication = function (authentication) {
 };
 
 exports.updateAuthentication = function (authentication) {
-    return new Authentication(authentication).save();
+    return Authentication.findById(authentication._id).exec().then(auth => {
+        auth.password = authentication.password;
+        return auth.save();
+    });
 };
 
 exports.removeAuthenticationById = function (authenticationId, done) {

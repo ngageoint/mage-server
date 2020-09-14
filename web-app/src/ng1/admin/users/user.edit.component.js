@@ -109,29 +109,31 @@ class AdminUserEditController {
       user.roleId = this.user.role.id;
     }
 
+    const self = this;
     const failure = response => {
       this.$timeout(() => {
-        this.saving = false;
-        this.error = response.responseText;
+        self.saving = false;
+        self.error = response.responseText;
       });
     };
 
     const progress = e => {
       if(e.lengthComputable){
         this.$timeout(() => {
-          this.uploading = true;
-          this.uploadProgress = (e.loaded/e.total) * 100;
+          self.uploading = true;
+          self.uploadProgress = (e.loaded/e.total) * 100;
         });
       }
     };
 
+    
     if (this.user.id) {
       this.UserService.updateUser(this.user.id, user, () => {
-        this.$state.go('admin.user', {userId: this.user.id});
+        self.$state.go('admin.user', {userId: self.user.id});
       }, failure, progress);
     } else {
       this.UserService.createUser(user, newUser => {
-        this.$state.go('admin.user', { userId: newUser.id });
+        self.$state.go('admin.user', { userId: newUser.id });
       }, failure, progress);
     }
   }
@@ -227,21 +229,22 @@ class AdminUserEditController {
       passwordconfirm: this.user.passwordconfirm
     };
 
+    const self = this;
     this.UserService.updateUser(this.user.id, user, () => {
-      this.$timeout(() => {
-        this.passwordStrengthScore = 0;
-        this.passwordStrengthType = null;
-        this.passwordStrength = null;
-        this.user.password = "";
-        this.user.passwordconfirm = "";
+      self.$timeout(() => {
+        self.passwordStrengthScore = 0;
+        self.passwordStrengthType = null;
+        self.passwordStrength = null;
+        self.user.password = "";
+        self.user.passwordconfirm = "";
         form.$setPristine(true);
-        this.passwordStatus.status = 'success';
-        this.passwordStatus.msg = "Password successfully updated.";
+        self.passwordStatus.status = 'success';
+        self.passwordStatus.msg = "Password successfully updated.";
       });
     }, data => {
-      this.$timeout(() => {
-        this.passwordStatus.status = "danger";
-        this.passwordStatus.msg = data.responseText;
+      self.$timeout(() => {
+        self.passwordStatus.status = "danger";
+        self.passwordStatus.msg = data.responseText;
       });
     });
   }
