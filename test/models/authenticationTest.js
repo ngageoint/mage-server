@@ -1,5 +1,4 @@
-const request = require('supertest')
-  , sinon = require('sinon')
+const sinon = require('sinon')
   , expect = require('chai').expect
   , mongoose = require('mongoose')
   , Authentication = require('../../models/authentication');
@@ -34,7 +33,7 @@ describe("authentication model tests", function () {
     });
   });
 
-  it('verify save is called on create', function (done) {
+  it('verify create logic', function (done) {
     const mockAuth = new AuthenticationModel({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
