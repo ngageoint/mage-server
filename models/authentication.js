@@ -14,7 +14,7 @@ const Schema = mongoose.Schema;
 const AuthenticationSchema = new Schema({
     type: { type: String, required: false },
     id: { type: String, required: false },
-    password: { type: String, required: false },
+    password: { type: String, required: true },
     previousPasswords: { type: [String], required: false },
     security: {
         locked: { type: Boolean },
