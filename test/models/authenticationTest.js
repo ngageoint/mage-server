@@ -33,4 +33,23 @@ describe("authentication model tests", function () {
       done();
     });
   });
+
+  it('verify save is called on create', function (done) {
+    const mockAuth = new AuthenticationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password'
+    });
+
+    sinon.stub(AuthenticationModel.prototype, 'save')
+      .resolves(mockAuth);
+
+    Authentication.createAuthentication(mockAuth).then(auth => {
+      expect(auth).to.not.be.null;
+      sinon.assert.calledOnce(AuthenticationModel.prototype.save);
+      done();
+    }).catch(err => {
+      done(err);
+    });
+  });
 });
