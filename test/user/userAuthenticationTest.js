@@ -1,4 +1,6 @@
-var request = require('supertest')
+"use strict";
+
+const request = require('supertest')
   , sinon = require('sinon')
   , expect = require('chai').expect
   , moment = require('moment')
@@ -8,54 +10,59 @@ var request = require('supertest')
   , Setting = require('../../models/setting');
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
 require('../../models/login');
-var LoginModel = mongoose.model('Login');
+const LoginModel = mongoose.model('Login');
 
 require('../../models/device');
-var DeviceModel = mongoose.model('Device');
+const DeviceModel = mongoose.model('Device');
 
 require('../../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
+
+require('../../models/authentication');
+const AuthenticationModel = mongoose.model('Authentication');
 
 require('../../models/setting');
-var SettingModel = mongoose.model('Setting');
+const SettingModel = mongoose.model('Setting');
 
 require('sinon-mongoose');
 
-describe("user authentication tests", function() {
+describe("user authentication tests", function () {
 
-  beforeEach(function() {
+  beforeEach(function () {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  it("should login user", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should login user", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      security: {}
+    };
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -76,7 +83,7 @@ describe("user authentication tests", function() {
 
     sinon.mock(DeviceModel)
       .expects('findOne')
-      .withArgs({uid: '1'})
+      .withArgs({ uid: '1' })
       .chain('exec')
       .resolves({
         uid: '1',
@@ -114,22 +121,24 @@ describe("user authentication tests", function() {
       .end(done);
   });
 
-  it("should fail login with inactive user", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should fail login with inactive user", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: false,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      security: {}
+    };
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -146,21 +155,36 @@ describe("user authentication tests", function() {
   });
 
 
-  it("should fail login with invalid local account", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should fail login with invalid local account", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       roleId: mongoose.Types.ObjectId(),
       active: true,
-      authentication: {}
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      security: {}
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authenticationId,
+      type: mockUser.authentication.type
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockAuth._id)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -169,6 +193,7 @@ describe("user authentication tests", function() {
       .withArgs({ type: 'security' })
       .chain('exec')
       .resolves({
+        type: 'security',
         settings: {
           accountLock: {
             enabled: true,
@@ -195,7 +220,7 @@ describe("user authentication tests", function() {
       .end(done);
   });
 
-  it("should fail login with invalid uid", function(done) {
+  it("should fail login with invalid uid", function (done) {
     var userId = mongoose.Types.ObjectId();
     var mockUser = new UserModel({
       _id: userId,
@@ -203,15 +228,18 @@ describe("user authentication tests", function() {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      type: 'local',
+      security: {}
+    };
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -221,7 +249,7 @@ describe("user authentication tests", function() {
 
     sinon.mock(DeviceModel)
       .expects('findOne')
-      .withArgs({uid: '1'})
+      .withArgs({ uid: '1' })
       .chain('exec')
       .resolves({
         uid: '1',
@@ -241,23 +269,26 @@ describe("user authentication tests", function() {
       .end(done);
   });
 
-  it("should fail login with unregistered uid", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should fail login with unregistered uid", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationID: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      type: 'local',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -279,7 +310,7 @@ describe("user authentication tests", function() {
 
     sinon.mock(DeviceModel)
       .expects('findOne')
-      .withArgs({uid: '1'})
+      .withArgs({ uid: '1' })
       .chain('exec')
       .resolves({
         uid: '1',
@@ -303,7 +334,7 @@ describe("user authentication tests", function() {
       .end(done);
   });
 
-  it("should logout without token", function(done) {
+  it("should logout without token", function (done) {
     sinon.mock(TokenModel)
       .expects('findByIdAndRemove')
       .withArgs("1")
@@ -317,7 +348,7 @@ describe("user authentication tests", function() {
       .end(done);
   });
 
-  it("should logout with token", function(done) {
+  it("should logout with token", function (done) {
     sinon.mock(TokenModel)
       .expects('findByIdAndRemove')
       .withArgs("1")
@@ -329,39 +360,53 @@ describe("user authentication tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /text\/html/)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('successfully logged out');
       })
       .end(done);
   });
 
-  it("should increment number of times locked on invalid login", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should increment number of times locked on invalid login", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        security: {
-          invalidLoginAttempts: 1
-        }
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      type: 'local',
+      security: {
+        invalidLoginAttempts: 1
+      }
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authenticationId,
+      type: mockUser.authentication.type
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockAuth._id)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
-
 
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
       .resolves({
+        type: 'security',
         settings: {
           accountLock: {
             enabled: true,
@@ -385,39 +430,53 @@ describe("user authentication tests", function() {
         password: 'none'
       })
       .expect(401)
-      .end(function(err) {
+      .end(function (err) {
         expect(userSpy.callCount).to.equal(1);
         expect(userSpy.thisValues[0].authentication.security.invalidLoginAttempts).to.equal(2);
         done(err);
       });
   });
 
-  it("should lock account after invalid logins pass threshold", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should lock account after invalid logins pass threshold", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        security: {
-          invalidLoginAttempts: 2
-        }
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      type: 'local',
+      security: {
+        numberOfTimesLocked: 0,
+        invalidLoginAttempts: 2
+      }
+    };
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authenticationId,
+      type: mockUser.authentication.type
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockAuth._id)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
-      .withArgs({ type: 'security' })
-      .chain('exec')
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
       .resolves({
         settings: {
           accountLock: {
@@ -442,7 +501,7 @@ describe("user authentication tests", function() {
         password: 'none'
       })
       .expect(401)
-      .end(function(err) {
+      .end(function (err) {
         expect(userSpy.callCount).to.equal(1);
         expect(userSpy.thisValues[0].authentication.security.locked).to.equal(true);
         expect(userSpy.thisValues[0].authentication.security.numberOfTimesLocked).to.equal(1);
@@ -452,33 +511,35 @@ describe("user authentication tests", function() {
       });
   });
 
-  it("should failed to login with locked account", function(done) {
-    var userId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+  it("should fail to login with locked account", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        security: {
-          locked: true,
-          lockedUntil: moment().add(5, 'minutes')
-        }
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      type: 'local',
+      security: {
+        locked: true,
+        lockedUntil: moment().add(5, 'minutes')
+      }
+    }
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
-      .withArgs({ type: 'security' })
-      .chain('exec')
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
       .resolves({
         settings: {
           accountLock: {
@@ -503,13 +564,13 @@ describe("user authentication tests", function() {
         password: 'none'
       })
       .expect(401)
-      .end(function(err, response) {
+      .end(function (err, response) {
         expect(response.text).to.equal('Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.');
         done(err);
       });
   });
 
-  it("should failed to login with disabled account", function(done) {
+  it("should failed to login with disabled account", function (done) {
     var userId = mongoose.Types.ObjectId();
     var mockUser = new UserModel({
       _id: userId,
@@ -529,10 +590,9 @@ describe("user authentication tests", function() {
       .yields(null, mockUser);
 
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
-      .withArgs({ type: 'security' })
-      .chain('exec')
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
       .resolves({
         settings: {
           accountLock: {
@@ -557,7 +617,7 @@ describe("user authentication tests", function() {
         password: 'none'
       })
       .expect(401)
-      .end(function(err, response) {
+      .end(function (err, response) {
         expect(response.text).to.equal('Your account has been disabled, please contact a MAGE administrator for assistance.');
         done(err);
       });

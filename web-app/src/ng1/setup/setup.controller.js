@@ -33,7 +33,6 @@ class SetupController {
     this._$http = $http;
     this._UserService = UserService;
     this._$element = $element;
-    this.Settings = Settings;
 
     this.account = {};
     this.pages = ['account', 'device'];

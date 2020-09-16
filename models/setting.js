@@ -1,3 +1,5 @@
+"use strict";
+
 const mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
@@ -6,7 +8,7 @@ const Schema = mongoose.Schema;
 const SettingSchema = new Schema({
   type: { type: String, required: true, unique: true },
   settings: Schema.Types.Mixed
-},{
+}, {
   versionKey: false
 });
 
@@ -24,23 +26,14 @@ SettingSchema.set("toJSON", {
 // Creates the Model for the Setting Schema
 const Setting = mongoose.model('Setting', SettingSchema);
 
-exports.getSettings = function() {
+exports.getSettings = function () {
   return Setting.find({}).exec();
 };
 
-exports.getSetting = function(type) {
-  const promise = new Promise(function(resolve, reject) {
-    Setting.findOne({type: type})
-      .exec()
-      .then(type => {
-        resolve(type ? type : undefined);
-      })
-      .catch(err => reject(err));
-  });
-
-  return promise;
+exports.getSetting = function (type) {
+  return Setting.findOne({ type: type }).exec();
 };
 
-exports.updateSettingByType = function(type, update) {
-  return Setting.findOneAndUpdate({type: type}, update, {new: true, upsert: true}).exec();
+exports.updateSettingByType = function (type, update) {
+  return Setting.findOneAndUpdate({ type: type }, update, { new: true, upsert: true }).exec();
 };

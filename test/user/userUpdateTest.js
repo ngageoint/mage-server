@@ -1,33 +1,48 @@
-var request = require('supertest')
+"use strict";
+
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , expect = require('chai').expect
   , MockToken = require('../mockToken')
   , app = require('../../express')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , hasher = require('../../utilities/pbkdf2')();
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
-var User = require('../../models/user');
-var UserModel = mongoose.model('User');
+const User = require('../../models/user');
+const UserModel = mongoose.model('User');
 
 require('../../models/event');
-var EventModel = mongoose.model('Event');
+const EventModel = mongoose.model('Event');
 
 const Setting = require('../../models/setting');
 
+require('../../models/authentication');
+const AuthenticationModel = mongoose.model('Authentication');
+
 require('sinon-mongoose');
 
+let hashedPassword = null;
+
 describe("user update tests", function () {
+
+  before(function (done) {
+    hasher.hashPassword('password', function (err, encryptedPassword) {
+      hashedPassword = encryptedPassword;
+      done();
+    });
+  });
 
   afterEach(function () {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    var permissions = Array.isArray(permission) ? permission : [permission];
+    const permissions = Array.isArray(permission) ? permission : [permission];
     sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({ token: "12345" })
@@ -37,17 +52,14 @@ describe("user update tests", function () {
   }
 
   it('should update myself', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
-      active: true,
-      authentication: {
-        type: 'local'
-      }
+      active: true
     });
 
-    var token = {
+    const token = {
       _id: '1',
       token: '12345',
       deviceId: '123',
@@ -94,21 +106,41 @@ describe("user update tests", function () {
   });
 
   it('should fail to update myself if passwords do not match', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authentication._id,
+      type: mockUser.authentication.type,
+      userId: userId,
+      password: hashedPassword,
+      security: mockUser.authentication.security
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockUser.authentication.authenticationId)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -141,21 +173,41 @@ describe("user update tests", function () {
   });
 
   it('should fail to update myself if passwords does not meet complexity', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authentication._id,
+      type: mockUser.authentication.type,
+      userId: userId,
+      password: hashedPassword,
+      security: mockUser.authentication.security
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockUser.authentication.authenticationId)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .chain('exec')
       .yields(null, mockUser);
 
@@ -202,20 +254,19 @@ describe("user update tests", function () {
   it('should update user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(mockUser)
@@ -256,21 +307,20 @@ describe("user update tests", function () {
       .chain('exec')
       .yields(null, MockToken(userId, ['UPDATE_USER', 'UPDATE_USER_ROLE']));
 
-    var id = mongoose.Types.ObjectId();
-    var roleId = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const roleId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -303,20 +353,40 @@ describe("user update tests", function () {
   it('should update user password with UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_ROLE']);
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
+
+    const mockAuth = new AuthenticationModel({
+      _id: mockUser.authentication._id,
+      type: mockUser.authentication.type,
+      userId: userId,
+      password: hashedPassword,
+      security: mockUser.authentication.security
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockUser.authentication.authenticationId)
+      .chain('exec')
+      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -362,16 +432,20 @@ describe("user update tests", function () {
   it('should fail to update user password w/o UPDATE_USER_ROLE permission', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: undefined,
+      security: {}
+    }
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -387,7 +461,8 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -411,7 +486,7 @@ describe("user update tests", function () {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
@@ -422,20 +497,25 @@ describe("user update tests", function () {
 
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      security: {}
+    };
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -463,20 +543,25 @@ describe("user update tests", function () {
   it('should fail to update user role w/o UPDATE_USER_ROLE', function (done) {
     mockTokenWithPermission(['UPDATE_USER']);
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -523,19 +608,18 @@ describe("user update tests", function () {
   it('should activate user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -558,19 +642,18 @@ describe("user update tests", function () {
   it('should disable user', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(User)
@@ -593,17 +676,15 @@ describe("user update tests", function () {
   it('should remove token if user is inactive', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: false,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     // mock variable used by mongoose to determine if this is a create or update
@@ -615,7 +696,8 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
@@ -649,17 +731,15 @@ describe("user update tests", function () {
   it('should remove token if user is disabled', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     // mock variable used by mongoose to determine if this is a create or update
@@ -671,7 +751,8 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
@@ -705,20 +786,26 @@ describe("user update tests", function () {
   it('should fail to update user if passwords dont match', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     request(app)
@@ -742,20 +829,26 @@ describe("user update tests", function () {
   it('should fail to update user if password does not meet complexity', function (done) {
     mockTokenWithPermission('UPDATE_USER');
 
-    var id = mongoose.Types.ObjectId();
-    var mockUser = new UserModel({
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
+
+    mockUser.authentication = {
+      _id: mockUser.authenticationId,
+      type: 'local',
+      password: 'password',
+      security: {}
+    }
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
@@ -789,14 +882,14 @@ describe("user update tests", function () {
   });
 
   it('should update status for myself', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true
     });
 
-    var token = {
+    const token = {
       _id: '1',
       token: '12345',
       deviceId: '123',
@@ -834,7 +927,7 @@ describe("user update tests", function () {
       .expect(function (res) {
         mockUser.should.have.property('status').that.equals('help');
 
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -842,14 +935,14 @@ describe("user update tests", function () {
   });
 
   it('should fail to update status for myself w/o status', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true
     });
 
-    var token = {
+    const token = {
       _id: '1',
       token: '12345',
       deviceId: '123',
@@ -880,7 +973,7 @@ describe("user update tests", function () {
   });
 
   it('should delete status for myself', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
@@ -888,7 +981,7 @@ describe("user update tests", function () {
       status: 'help'
     });
 
-    var token = {
+    const token = {
       _id: '1',
       token: '12345',
       deviceId: '123',
@@ -926,7 +1019,7 @@ describe("user update tests", function () {
       .expect(function (res) {
         mockUser.should.have.property('status').that.is.undefined;
 
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -936,22 +1029,21 @@ describe("user update tests", function () {
   it('should add recent event for admin user', function (done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(userId.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event'
     });
@@ -976,7 +1068,7 @@ describe("user update tests", function () {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -984,18 +1076,16 @@ describe("user update tests", function () {
   });
 
   it('should limit recent events for acl user', function (done) {
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       recentEventIds: [5, 4, 3, 2, 1],
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
-    var token = {
+    const token = {
       _id: '1',
       token: '12345',
       deviceId: '123',
@@ -1015,12 +1105,13 @@ describe("user update tests", function () {
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(userId.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    var eventAcl = {};
+    const eventAcl = {};
     eventAcl[userId.toString()] = 'OWNER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: 6,
       name: 'Mock Event',
       acl: eventAcl
@@ -1046,7 +1137,7 @@ describe("user update tests", function () {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -1056,24 +1147,23 @@ describe("user update tests", function () {
   it('should add recent event for acl user', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(userId.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    var eventAcl = {};
+    const eventAcl = {};
     eventAcl[userId.toString()] = 'OWNER';
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
       acl: eventAcl
@@ -1099,7 +1189,7 @@ describe("user update tests", function () {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -1109,22 +1199,21 @@ describe("user update tests", function () {
   it('should add recent event for user in event', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById')
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    var mockEvent1 = new EventModel({
+    const mockEvent1 = new EventModel({
       _id: 1,
       name: 'Mock Event 12345',
       acl: {}
@@ -1156,7 +1245,7 @@ describe("user update tests", function () {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function (res) {
-        var user = res.body;
+        const user = res.body;
         should.exist(user);
         user.should.have.property('id').that.equals(userId.toString());
       })
@@ -1166,22 +1255,21 @@ describe("user update tests", function () {
   it('should fail to add recent event for user not in event', function (done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
-    var mockUser = new UserModel({
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: {
-        type: 'local'
-      }
+      authenticationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(userId.toHexString())
-      .chain('populate')
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
       acl: {}
