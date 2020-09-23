@@ -2,6 +2,7 @@
 
 const moment = require('moment')
   , log = require('winston')
+  , exportDirectory = require('../environment/env').exportDirectory
   , Event = require('../models/event')
   , User = require('../models/user')
   , Device = require('../models/device')
@@ -24,7 +25,7 @@ module.exports = function (app, security) {
     mapDevices,
     function (req, res) {
       log.warn('Deprecated export method called');
-      
+
       const options = {
         event: req.event,
         users: req.users,
@@ -42,24 +43,30 @@ module.exports = function (app, security) {
     parseQueryParams,
     getEvent,
     validateEventAccess,
-    mapUsers,
-    mapDevices,
-    function (req, res) {
+    function (req, res, next) {
       const options = {
-        event: req.event,
-        users: req.users,
-        devices: req.devices,
+        eventId: req.event._id,
         filter: req.parameters.filter
       };
 
+      //TODO add path (or update during acutal work)
+      const path = exportDirectory + '';
       const meta = {
-        userId: '',
-        path: '',
+        userId: req.user._id,
+        physicalPath: path,
         exportType: req.params.exportType,
         status: ExportMetadata.ExportStatus.Starting,
         options: options
       };
-      //TODO implement
+
+      ExportMetadata.createMetadata(meta).then(result => {
+        //TODO implement
+        res.location('/api/export/' + result._id.toString());
+        res.status(201).end();
+      }).catch(err => {
+        log.warn(err);
+        return next(err);
+      });
     }
   );
 
@@ -67,12 +74,8 @@ module.exports = function (app, security) {
     '/api/export/:exportId',
     security.authentication.passport.authenticate('bearer'),
     parseQueryParams,
-    getEvent,
-    validateEventAccess,
-    mapUsers,
-    mapDevices,
-    function (req, res) {
-     //TODO implement
+    function (req, res, next) {
+      //TODO implement
     }
   );
 
@@ -80,12 +83,8 @@ module.exports = function (app, security) {
     '/api/export/:exportId/status',
     security.authentication.passport.authenticate('bearer'),
     parseQueryParams,
-    getEvent,
-    validateEventAccess,
-    mapUsers,
-    mapDevices,
-    function (req, res) {
-     //TODO implement
+    function (req, res, next) {
+      //TODO implement
     }
   );
 
@@ -180,6 +179,8 @@ function getEvent(req, res, next) {
 function mapUsers(req, res, next) {
   //get users for lookup
   User.getUsers(function (err, users) {
+    if(err) return next(err);
+
     const map = {};
     users.forEach(function (user) {
       map[user._id] = user;

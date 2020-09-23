@@ -155,7 +155,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    const url = "api/" + this.type.value + "?" + $httpParamSerializer(params);
+    const url = "api/export/" + this.type.value + "?" + $httpParamSerializer(params);
     jQuery.fileDownload(url)
       .done(function() {})
       .fail(function() {});

@@ -14,23 +14,34 @@ const STATUS = {
 
 const ExportMetadataSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    path: { type: String },
+    physicalPath: { type: String },
     exportType: { type: String, required: true },
-    status: { type: String, enum: [STATUS.Starting, STATUS.Running, STATUS.Completed, STATUS.Failed], required: true },
+    status: { type: String, enum: [STATUS.Starting, STATUS.Running, STATUS.Completed, STATUS.Failed], default: STATUS.Starting },
     options: {
-        event: { type: String },
-        users: { type: [String] },
-        devices: { type: [String] },
-        filter: { type: String }
+        eventId: { type: Number, ref: 'Event', required: true },
+        filter: { type: Schema.Types.Mixed }
     }
 }, {
     versionKey: false,
     timestamps: {
-        updatedAt: 'lastUpdated',
-        createdAt: { type: Date, expires: '72h', default: Date.now }
+        updatedAt: 'lastUpdated'
     }
 });
 
 const ExportMetadata = mongoose.model('ExportMetadata', ExportMetadataSchema);
 exports.ExportModel = ExportMetadata;
 exports.ExportStatus = STATUS;
+
+exports.createMetadata = function (meta) {
+    const newMeta = new ExportMetadata({
+        userId: meta.userId,
+        physicalPath: meta.physicalPath,
+        exportType: meta.exportType,
+        status: meta.status,
+        options: {
+            eventId: meta.options.eventId,
+            filter: meta.options.filter
+        }
+    });
+    return newMeta.save();
+};
