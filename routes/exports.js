@@ -1,11 +1,19 @@
-var moment = require('moment')
+'use strict';
+
+const moment = require('moment')
+  , log = require('winston')
   , Event = require('../models/event')
   , User = require('../models/user')
   , Device = require('../models/device')
   , access = require('../access')
-  , exporterFactory = require('../export/exporterFactory');
+  , exporterFactory = require('../export/exporterFactory')
+  , ExportMetadata = require('../models/exportmetadata');
 
-module.exports = function(app, security) {
+module.exports = function (app, security) {
+
+  /**
+   * @deprecated Use {@code /api/export/} instead
+   */
   app.get(
     '/api/:exportType(geojson|kml|shapefile|csv)',
     security.authentication.passport.authenticate('bearer'),
@@ -14,39 +22,95 @@ module.exports = function(app, security) {
     validateEventAccess,
     mapUsers,
     mapDevices,
-    function(req, res) {
-      var options = {
+    function (req, res) {
+      log.warn('Deprecated export method called');
+      
+      const options = {
         event: req.event,
         users: req.users,
         devices: req.devices,
         filter: req.parameters.filter
       };
-      var exporter = exporterFactory.createExporter(req.params.exportType, options);
+      const exporter = exporterFactory.createExporter(req.params.exportType, options);
       exporter.export(res);
     }
   );
+
+  app.get(
+    '/api/export/:exportType(geojson|kml|shapefile|csv)',
+    security.authentication.passport.authenticate('bearer'),
+    parseQueryParams,
+    getEvent,
+    validateEventAccess,
+    mapUsers,
+    mapDevices,
+    function (req, res) {
+      const options = {
+        event: req.event,
+        users: req.users,
+        devices: req.devices,
+        filter: req.parameters.filter
+      };
+
+      const meta = {
+        userId: '',
+        path: '',
+        exportType: req.params.exportType,
+        status: ExportMetadata.ExportStatus.Starting,
+        options: options
+      };
+      //TODO implement
+    }
+  );
+
+  app.get(
+    '/api/export/:exportId',
+    security.authentication.passport.authenticate('bearer'),
+    parseQueryParams,
+    getEvent,
+    validateEventAccess,
+    mapUsers,
+    mapDevices,
+    function (req, res) {
+     //TODO implement
+    }
+  );
+
+  app.get(
+    '/api/export/:exportId/status',
+    security.authentication.passport.authenticate('bearer'),
+    parseQueryParams,
+    getEvent,
+    validateEventAccess,
+    mapUsers,
+    mapDevices,
+    function (req, res) {
+     //TODO implement
+    }
+  );
+
 };
 
 function parseQueryParams(req, res, next) {
-  var parameters = {filter: {}};
+  const parameters = { filter: {} };
 
-  var startDate = req.param('startDate');
+  const startDate = req.param('startDate');
   if (startDate) {
     parameters.filter.startDate = moment.utc(startDate).toDate();
   }
 
-  var endDate = req.param('endDate');
+  const endDate = req.param('endDate');
   if (endDate) {
     parameters.filter.endDate = moment.utc(endDate).toDate();
   }
 
-  var eventId = req.param('eventId');
+  const eventId = req.param('eventId');
   if (!eventId) {
     return res.status(400).send("eventId is required");
   }
   parameters.filter.eventId = eventId;
 
-  var observations = req.param('observations');
+  const observations = req.param('observations');
   if (observations) {
     parameters.filter.exportObservations = observations === 'true';
 
@@ -63,7 +127,7 @@ function parseQueryParams(req, res, next) {
     }
   }
 
-  var locations = req.param('locations');
+  const locations = req.param('locations');
   if (locations) {
     parameters.filter.exportLocations = locations === 'true';
   }
@@ -78,7 +142,7 @@ function validateEventAccess(req, res, next) {
     next();
   } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
     // Make sure I am part of this event
-    Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
+    Event.userHasEventPermission(req.event, req.user._id, 'read', function (err, hasPermission) {
       if (hasPermission) {
         return next();
       } else {
@@ -91,18 +155,18 @@ function validateEventAccess(req, res, next) {
 }
 
 function getEvent(req, res, next) {
-  Event.getById(req.parameters.filter.eventId, {}, function(err, event) {
+  Event.getById(req.parameters.filter.eventId, {}, function (err, event) {
     req.event = event;
 
     // form map
     event.formMap = {};
 
     // create a field by name map, I will need this later
-    event.forms.forEach(function(form) {
+    event.forms.forEach(function (form) {
       event.formMap[form.id] = form;
 
-      var fieldNameToField = {};
-      form.fields.forEach(function(field) {
+      const fieldNameToField = {};
+      form.fields.forEach(function (field) {
         fieldNameToField[field.name] = field;
       });
 
@@ -116,8 +180,8 @@ function getEvent(req, res, next) {
 function mapUsers(req, res, next) {
   //get users for lookup
   User.getUsers(function (err, users) {
-    var map = {};
-    users.forEach(function(user) {
+    const map = {};
+    users.forEach(function (user) {
       map[user._id] = user;
     });
     req.users = map;
@@ -130,8 +194,8 @@ function mapDevices(req, res, next) {
   //get users for lookup
   Device.getDevices()
     .then(devices => {
-      var map = {};
-      devices.forEach(function(device) {
+      const map = {};
+      devices.forEach(function (device) {
         map[device._id] = device;
       });
       req.devices = map;
