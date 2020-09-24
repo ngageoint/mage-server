@@ -12,6 +12,15 @@ const STATUS = {
     Failed: 'Failed'
 };
 
+const ErrorSchema = new Schema({
+    type: { type: String, required: false },
+    message: { type: String, required: true }
+}, {
+    versionKey: false,
+    _id: false,
+    timestamps: true
+});
+
 const ExportMetadataSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     physicalPath: { type: String },
@@ -20,7 +29,8 @@ const ExportMetadataSchema = new Schema({
     options: {
         eventId: { type: Number, ref: 'Event', required: true },
         filter: { type: Schema.Types.Mixed }
-    }
+    },
+    processingErrors: [ErrorSchema]
 }, {
     versionKey: false,
     timestamps: {
@@ -37,11 +47,15 @@ exports.createMetadata = function (meta) {
         userId: meta.userId,
         physicalPath: meta.physicalPath,
         exportType: meta.exportType,
-        status: meta.status,
+        status: STATUS.Starting,
         options: {
             eventId: meta.options.eventId,
             filter: meta.options.filter
         }
     });
     return newMeta.save();
+};
+
+exports.getExportMetadataById = function (id) {
+    return ExportMetadata.findById(id);
 };

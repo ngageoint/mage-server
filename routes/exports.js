@@ -44,23 +44,18 @@ module.exports = function (app, security) {
     getEvent,
     validateEventAccess,
     function (req, res, next) {
-      const options = {
-        eventId: req.event._id,
-        filter: req.parameters.filter
-      };
 
-      //TODO add path (or update during acutal work)
-      const path = exportDirectory + '';
       const meta = {
         userId: req.user._id,
-        physicalPath: path,
         exportType: req.params.exportType,
-        status: ExportMetadata.ExportStatus.Starting,
-        options: options
+        options: {
+          eventId: req.event._id,
+          filter: req.parameters.filter
+        }
       };
 
       ExportMetadata.createMetadata(meta).then(result => {
-        //TODO implement
+        exportInBackground(result._id);
         res.location('/api/export/' + result._id.toString());
         res.status(201).end();
       }).catch(err => {
@@ -179,7 +174,7 @@ function getEvent(req, res, next) {
 function mapUsers(req, res, next) {
   //get users for lookup
   User.getUsers(function (err, users) {
-    if(err) return next(err);
+    if (err) return next(err);
 
     const map = {};
     users.forEach(function (user) {
@@ -203,4 +198,14 @@ function mapDevices(req, res, next) {
       next();
     })
     .catch(err => next(err));
+}
+
+function exportInBackground(exportId) {
+  return ExportMetadata.getExportMetadataById(exportId).then(meta => {
+    log.device('Begining export of ' + exportId)
+  }).catch(err => {
+    log.warn(err);
+    //TODO set metadata status to failed
+    return Promise.reject(err);
+  });
 }
