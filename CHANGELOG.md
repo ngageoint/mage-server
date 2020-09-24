@@ -14,6 +14,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Users and Teams can be removed from events.
 * Removing a user from a team will no longer take you to the user page.
 * Display names are shown when users are added to the ACL.
+* Fix swagger authentication token injection.
 
 ## [5.4.2](https://github.com/ngageoint/mage-server/releases/tag/5.4.2)
 
