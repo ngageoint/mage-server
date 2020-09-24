@@ -17,7 +17,9 @@ export default class MageAuthPlugin {
   constructor(system) {
     this.systemRef = mageAuthPluginGetSystem.bind(system);
     this.afterLoad = mageAuthPluginAfterLoad.bind(this);
-    const mageScheme = createSelector(system.authSelectors.definitionsToAuthorize, defList => defList.first());
+    const mageScheme = createSelector(system.authSelectors.definitionsToAuthorize, defList => {
+      return defList.find(securityScheme => securityScheme.has(SECURITY_SCHEME_NAME));
+    });
     const mageToken = createSelector(system.authSelectors.authorized, scheme => scheme.getIn([SECURITY_SCHEME_NAME, 'value']));
     this.statePlugins = {
       mageAuth: {

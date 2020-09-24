@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix swagger authentication token injection.
 
 ## [5.4.2](https://github.com/ngageoint/mage-server/releases/tag/5.4.2)
 
