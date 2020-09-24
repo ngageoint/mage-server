@@ -2,6 +2,7 @@
 
 const moment = require('moment')
   , log = require('winston')
+  , fs = require('fs')
   , exportDirectory = require('../environment/env').exportDirectory
   , Event = require('../models/event')
   , User = require('../models/user')
@@ -43,6 +44,8 @@ module.exports = function (app, security) {
     parseQueryParams,
     getEvent,
     validateEventAccess,
+    mapUsers,
+    mapDevices,
     function (req, res, next) {
 
       const meta = {
@@ -55,7 +58,10 @@ module.exports = function (app, security) {
       };
 
       ExportMetadata.createMetadata(meta).then(result => {
-        exportInBackground(result._id);
+        //TODO figure out event, users and devices
+        exportInBackground(result._id, req.event, req.users, req.devices).catch(err => {
+          log.warn(err);
+        });
         res.location('/api/export/' + result._id.toString());
         res.status(201).end();
       }).catch(err => {
@@ -200,11 +206,32 @@ function mapDevices(req, res, next) {
     .catch(err => next(err));
 }
 
-function exportInBackground(exportId) {
+function exportInBackground(exportId, event, users, devices) {
   return ExportMetadata.getExportMetadataById(exportId).then(meta => {
-    log.device('Begining export of ' + exportId)
+    log.debug('Begining export of ' + exportId);
+
+    const options = {
+      event: event,
+      users: users,
+      devices: devices,
+      filter: meta.options.filter
+    };
+
+    const exporter = exporterFactory.createExporter(meta.exportType, options);
+
+    if (!fs.existsSync(exportDirectory)) {
+      fs.mkdirSync(exportDirectory);
+    }
+
+    fs.closeSync(fs.openSync(exportDirectory + '/' + exportId, 'w'));
+    const writableStream = fs.createWriteStream(exportDirectory + '/' + exportId);
+    exporter.export(writableStream);
+    //event that gets called when the writing is complete
+    writableStream.on('finish', () => {
+      log.debug('Completed export of ' + exportId);
+    });
   }).catch(err => {
-    log.warn(err);
+    log.warn('Failed export of ' + exportId, err);
     //TODO set metadata status to failed
     return Promise.reject(err);
   });
