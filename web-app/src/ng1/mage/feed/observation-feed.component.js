@@ -27,7 +27,7 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
   this.currentObservationPage = 0;
   this.observationsChanged = 0;
   this.observationPages = null;
-  var observationsPerPage = 100;
+  var observationsPerPage = 50;
 
   this.actionFilter = 'all';
 

@@ -1,13 +1,13 @@
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , config = require('../config.js')
   , Location = require('./location');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
-var locationLimit = config.server.locationServices.userCollectionLocationLimit;
+const Schema = mongoose.Schema;
+const locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
 // Creates the Schema for FFT Locations
-var CappedLocationSchema = new Schema({
+const CappedLocationSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User'},
   eventId: {type: Number, required: false, sparse: true, ref:'Event'},
   locations: [Location.Model.schema]
@@ -22,11 +22,11 @@ CappedLocationSchema.index({'locations.properties.timestamp': 1});
 CappedLocationSchema.index({'locations.properties.timestamp': 1, 'eventId': 1});
 
 // Creates the Model for the User Schema
-var CappedLocation = mongoose.model('CappedLocation', CappedLocationSchema);
+const CappedLocation = mongoose.model('CappedLocation', CappedLocationSchema);
 exports.Model = CappedLocation;
 
 exports.addLocations = function(user, event, locations, callback) {
-  var update = {
+  const update = {
     $push: {
       locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
     }
@@ -38,14 +38,15 @@ exports.addLocations = function(user, event, locations, callback) {
 };
 
 exports.getLocations = function(options, callback) {
-  var limit = options.limit;
+  let limit = options.limit;
   limit = limit <= locationLimit ? limit : locationLimit;
-  var filter = options.filter;
 
-  var parameters = {};
+  const filter = options.filter;
+
+  const parameters = {};
   if (filter.eventId) parameters.eventId = filter.eventId;
 
-  var query = CappedLocation.find(parameters, {userId: 1, locations: {$slice: -1 * limit}});
+  const query = CappedLocation.find(parameters, {userId: 1, locations: {$slice: -1 * limit}});
 
   // TODO take out where
   if (filter.startDate) {
@@ -56,22 +57,37 @@ exports.getLocations = function(options, callback) {
     query.where('locations.properties.timestamp').lt(filter.endDate);
   }
 
-  query.lean().exec(function (err, users) {
+  if (options.populate) {
+    query.populate({
+      path: 'userId',
+      select: 'displayName email phones'
+    })
+  }
+
+  query.lean().exec(function (err, userLocations) {
     if (err) return callback(err);
 
-    users = users.map(function(user) {
+    userLocations = userLocations.map(userLocation => {
+      let user;
+      if (userLocation.userId._id) {
+        user = userLocation.userId;
+        user.id = user._id;
+        delete user._id;
+      }
+
       return {
-        id: user.userId,
-        locations: user.locations ? user.locations.reverse() : []
+        id: userLocation.userId.id || userLocation.userId,
+        user: user,
+        locations: (userLocation.locations || []).reverse()
       };
     });
 
-    callback(err, users);
+    callback(err, userLocations);
   });
 };
 
 exports.removeLocationsForUser = function(user, callback) {
-  var conditions = {"userId": user._id};
+  const conditions = {"userId": user._id};
   CappedLocation.remove(conditions, function(err) {
     callback(err);
   });

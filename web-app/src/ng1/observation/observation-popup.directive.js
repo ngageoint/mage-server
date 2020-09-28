@@ -1,27 +1,10 @@
-var _ = require('underscore')
+const _ = require('underscore')
   , moment = require('moment');
 
-module.exports = function observationPopup() {
-  var directive = {
-    restrict: "A",
-    template:  require('./observation-popup.directive.html'),
-    scope: {
-      observation: '=observationPopup',
-      observationPopupInfo: '&',
-      observationZoom: '&'
-    },
-    controller: ObservationPopupDirective
-  };
-
-  return directive;
-};
-
-ObservationPopupDirective.$inject = ['$scope', 'EventService', 'UserService'];
-
-function ObservationPopupDirective($scope, EventService, UserService) {
-  let properties = $scope.observation.properties || {};
+function ObservationPopupDirective($scope, EventService) {
+  const properties = $scope.observation.properties || {};
   if (properties.forms && properties.forms.length > 0) {
-    var form = _.find(EventService.getForms($scope.observation), function(form) {
+    const form = _.find(EventService.getForms($scope.observation), function(form) {
       return form.id === $scope.observation.properties.forms[0].formId;
     });
 
@@ -54,8 +37,22 @@ function ObservationPopupDirective($scope, EventService, UserService) {
 
   $scope.$watch('observation', function() {
     $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
-    UserService.getUser($scope.observation.userId).then(function(user) {
-      $scope.observationUser = user;
-    });
   });
 }
+
+module.exports = function observationPopup() {
+  const directive = {
+    restrict: "A",
+    template: require('./observation-popup.directive.html'),
+    scope: {
+      observation: '=observationPopup',
+      observationPopupInfo: '&',
+      observationZoom: '&'
+    },
+    controller: ObservationPopupDirective
+  };
+
+  return directive;
+};
+
+ObservationPopupDirective.$inject = ['$scope', 'EventService'];

@@ -276,6 +276,8 @@ module.exports = function(app, security) {
       parameters.sort = columns;
     }
 
+    parameters.populate = req.query.populate === 'true';
+
     req.parameters = parameters;
 
     next();
@@ -387,10 +389,11 @@ module.exports = function(app, security) {
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
-      var options = {
+      const options = {
         filter: req.parameters.filter,
         fields: req.parameters.fields,
-        sort: req.parameters.sort
+        sort: req.parameters.sort,
+        populate: req.parameters.populate
       };
 
       new api.Observation(req.event).getAll(options, function(err, observations) {

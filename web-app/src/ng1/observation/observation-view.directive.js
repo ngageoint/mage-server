@@ -1,22 +1,7 @@
-var _ = require('underscore')
+const _ = require('underscore')
   , moment = require('moment')
   , MDCRipple = require('material-components-web').ripple.MDCRipple
   , MDCTextField = require('material-components-web').textField.MDCTextField;
-
-module.exports = function observationView() {
-  var directive = {
-    restrict: "E",
-    template:  require('./observation-view.directive.html'),
-    scope: {
-      observation: '=observation',
-      event: '=event'
-    },
-    controller: ObservationViewController
-  };
-
-  return directive;
-};
-ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$timeout', 'MapService'];
 
 function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService, $timeout, MapService) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
@@ -26,17 +11,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.isUserFavorite = false;
   $scope.canEdit = false;
   $scope.canEditImportant = false;
-  var importantEditField;
-
-  UserService.getUser($scope.observation.userId).then(function(user) {
-    $scope.observationUser = user;
-  });
-
-  if ($scope.observation.important) {
-    UserService.getUser($scope.observation.important.userId).then(function(user) {
-      $scope.observationImportantUser = user;
-    });
-  }
+  let importantEditField;
 
   $scope.closeObservationView = function() {
     $scope.$emit('observation:viewDone', $scope.observation);
@@ -138,11 +113,11 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
     $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
 
-    var myAccess = $scope.event.acl[UserService.myself.id];
-    var aclPermissions = myAccess ? myAccess.permissions : [];
+    const myAccess = $scope.event.acl[UserService.myself.id];
+    const aclPermissions = myAccess ? myAccess.permissions : [];
     $scope.canEditImportant = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
 
-    var formMap = _.indexBy(EventService.getFormsForEvent($scope.event), 'id');
+    const formMap = _.indexBy(EventService.getFormsForEvent($scope.event), 'id');
     $scope.observationForm = {
       geometryField: {
         title: 'Location',
@@ -158,14 +133,14 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     };
 
     _.each($scope.observation.properties.forms, function(form) {
-      var observationForm = EventService.createForm($scope.observation, formMap[form.formId]);
+      const observationForm = EventService.createForm($scope.observation, formMap[form.formId]);
       observationForm.name = formMap[form.formId].name;
       $scope.observationForm.forms.push(observationForm);
     });
 
     if ($scope.observation.properties.forms.length > 0) {
-      var firstForm = $scope.observation.properties.forms[0];
-      var observationForm = $scope.observationForm.forms.find(function(observationForm) {
+      const firstForm = $scope.observation.properties.forms[0];
+      const observationForm = $scope.observationForm.forms.find(function(observationForm) {
         return observationForm.id === firstForm.formId;
       });
 
@@ -189,8 +164,21 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     if (!important) return;
 
     $scope.importantEditor.description = important.description;
-    UserService.getUser(important.userId).then(function(user) {
-      $scope.importantUser = user;
-    });
   });
 }
+
+module.exports = function observationView() {
+  const directive = {
+    restrict: "E",
+    template: require('./observation-view.directive.html'),
+    scope: {
+      observation: '=observation',
+      event: '=event'
+    },
+    controller: ObservationViewController
+  };
+
+  return directive;
+};
+
+ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$timeout', 'MapService'];

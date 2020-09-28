@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* New APIs to populate observation and location user information.  Removed individual calls to get users.
 * First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.). 
 * Password history is now available for admins to control how many previous passwords a users may use.
 

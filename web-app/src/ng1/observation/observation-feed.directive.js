@@ -1,24 +1,7 @@
-var _ = require('underscore')
+const _ = require('underscore')
   , moment = require('moment')
   , MDCRipple = require('material-components-web').ripple.MDCRipple
   , MDCTextField = require('material-components-web').textField.MDCTextField;
-
-module.exports = function observationNewsItem() {
-  var directive = {
-    restrict: "A",
-    template:  require('./observation-feed.directive.html'),
-    scope: {
-      observation: '=observationNewsItem',
-      event: '=event',
-      form: '=selectedObservationForm'
-    },
-    controller: ObservationNewsItemController
-  };
-
-  return directive;
-};
-
-ObservationNewsItemController.$inject = ['$scope', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$element', '$timeout', 'MapService'];
 
 function ObservationNewsItemController($scope, $uibModal, EventService, UserService, LocalStorageService, $element, $timeout, MapService) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
@@ -27,17 +10,7 @@ function ObservationNewsItemController($scope, $uibModal, EventService, UserServ
   $scope.isUserFavorite = false;
   $scope.canEdit = false;
   $scope.canEditImportant = false;
-  var importantEditField;
-
-  UserService.getUser($scope.observation.userId).then(function(user) {
-    $scope.observationUser = user;
-  });
-
-  if ($scope.observation.important) {
-    UserService.getUser($scope.observation.important.userId).then(function(user) {
-      $scope.observationImportantUser = user;
-    });
-  }
+  let importantEditField;
 
   $scope.toggleFavorite = function() {
     if ($scope.isUserFavorite) {
@@ -194,8 +167,22 @@ function ObservationNewsItemController($scope, $uibModal, EventService, UserServ
     if (!important) return;
 
     $scope.importantEditor.description = important.description;
-    UserService.getUser(important.userId).then(function(user) {
-      $scope.importantUser = user;
-    });
   });
 }
+
+ObservationNewsItemController.$inject = ['$scope', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$element', '$timeout', 'MapService'];
+
+module.exports = function observationNewsItem() {
+  const directive = {
+    restrict: "A",
+    template: require('./observation-feed.directive.html'),
+    scope: {
+      observation: '=observationNewsItem',
+      event: '=event',
+      form: '=selectedObservationForm'
+    },
+    controller: ObservationNewsItemController
+  };
+
+  return directive;
+};
