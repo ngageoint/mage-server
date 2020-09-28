@@ -3,6 +3,7 @@
 const moment = require('moment')
   , log = require('winston')
   , fs = require('fs')
+  , Writable = require('stream')
   , exportDirectory = require('../environment/env').exportDirectory
   , Event = require('../models/event')
   , User = require('../models/user')
@@ -223,9 +224,12 @@ function exportInBackground(exportId, event, users, devices) {
       fs.mkdirSync(exportDirectory);
     }
 
-    fs.closeSync(fs.openSync(exportDirectory + '/' + exportId, 'w'));
     const writableStream = fs.createWriteStream(exportDirectory + '/' + exportId);
+    Writable.prototype.type = function(){};
+    Writable.prototype.attachment = function(){};
+    
     exporter.export(writableStream);
+
     //event that gets called when the writing is complete
     writableStream.on('finish', () => {
       log.debug('Completed export of ' + exportId);
