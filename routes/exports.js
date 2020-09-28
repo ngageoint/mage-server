@@ -216,7 +216,17 @@ function mapDevices(req, res, next) {
 
 function exportInBackground(exportId, event, users, devices) {
   return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
-    log.debug('Begining export of ' + exportId);
+    log.debug('Checking to see if we need to create ' + exportDirectory);
+    if (!fs.existsSync(exportDirectory)) {
+      log.info('Creating directory ' + exportDirectory);
+      fs.mkdirSync(exportDirectory);
+    }
+
+    const filename = exportDirectory + '/' + exportId + '-' + meta.exportType + '.zip';
+    meta.physicalPath = filename;
+    return ExportMetadata.updateExportMetadata(meta);
+  }).then(meta => {
+    log.info('Begining export of ' + exportId);
     const options = {
       event: event,
       users: users,
@@ -226,20 +236,17 @@ function exportInBackground(exportId, event, users, devices) {
 
     const exporter = exporterFactory.createExporter(meta.exportType, options);
 
-    if (!fs.existsSync(exportDirectory)) {
-      fs.mkdirSync(exportDirectory);
-    }
-
-    const filename = exportDirectory + '/' + exportId + '-' + meta.exportType + '.zip';
-    const writableStream = fs.createWriteStream(filename);
+    const writableStream = fs.createWriteStream(meta.physicalPath);
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
 
     exporter.export(writableStream);
 
+    return writableStream;
+  }).then(writableStream => {
     //event that gets called when the writing is complete
     return writableStream.on('finish', () => {
-      log.debug('Successfully completed export of ' + exportId);
+      log.info('Successfully completed export of ' + exportId);
       return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
     });
   }).catch(err => {

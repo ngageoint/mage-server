@@ -66,3 +66,7 @@ exports.updateExportMetadataStatus = function (id, status) {
         return update.save();
     });
 };
+
+exports.updateExportMetadata = function (meta) {
+    return meta.save();
+};
