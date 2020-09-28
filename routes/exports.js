@@ -236,13 +236,12 @@ function exportInBackground(exportId, event, users, devices) {
       filter: meta.options.filter
     };
 
-    const exporter = exporterFactory.createExporter(meta.exportType, options);
-
     const writableStream = fs.createWriteStream(meta.physicalPath);
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
 
-    log.debug('Begining actual export of ' + exportId + ' (' + meta.exportType + ')')
+    log.debug('Begining actual export of ' + exportId + ' (' + meta.exportType + ')');
+    const exporter = exporterFactory.createExporter(meta.exportType, options);
     exporter.export(writableStream);
 
     return writableStream;
