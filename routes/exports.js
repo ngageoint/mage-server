@@ -60,6 +60,7 @@ module.exports = function (app, security) {
 
       ExportMetadata.createMetadata(meta).then(result => {
         //TODO figure out event, users and devices
+        //TODO handle error w/catch??
         exportInBackground(result._id, req.event, req.users, req.devices).catch(err => {
           log.warn(err);
         });
@@ -215,6 +216,8 @@ function mapDevices(req, res, next) {
 }
 
 function exportInBackground(exportId, event, users, devices) {
+  log.info('Setting up export of ' + exportId );
+
   return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
     log.debug('Checking to see if we need to create ' + exportDirectory);
     if (!fs.existsSync(exportDirectory)) {
@@ -226,7 +229,6 @@ function exportInBackground(exportId, event, users, devices) {
     meta.physicalPath = filename;
     return ExportMetadata.updateExportMetadata(meta);
   }).then(meta => {
-    log.info('Begining export of ' + exportId);
     const options = {
       event: event,
       users: users,
@@ -240,10 +242,12 @@ function exportInBackground(exportId, event, users, devices) {
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
 
+    log.debug('Begining actual export of ' + exportId + ' (' + meta.exportType + ')')
     exporter.export(writableStream);
 
     return writableStream;
   }).then(writableStream => {
+    //TODO learn if this `on` call is fired even if it's already fired.
     //event that gets called when the writing is complete
     return writableStream.on('finish', () => {
       log.info('Successfully completed export of ' + exportId);
