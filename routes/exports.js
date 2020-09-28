@@ -208,9 +208,8 @@ function mapDevices(req, res, next) {
 }
 
 function exportInBackground(exportId, event, users, devices) {
-  return ExportMetadata.getExportMetadataById(exportId).then(meta => {
+  return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
     log.debug('Begining export of ' + exportId);
-
     const options = {
       event: event,
       users: users,
@@ -224,19 +223,22 @@ function exportInBackground(exportId, event, users, devices) {
       fs.mkdirSync(exportDirectory);
     }
 
-    const writableStream = fs.createWriteStream(exportDirectory + '/' + exportId);
-    Writable.prototype.type = function(){};
-    Writable.prototype.attachment = function(){};
-    
+    const filename = exportDirectory + '/' + exportId + '-' + meta.exportType + '.zip';
+    const writableStream = fs.createWriteStream(filename);
+    Writable.prototype.type = function () { };
+    Writable.prototype.attachment = function () { };
+
     exporter.export(writableStream);
 
     //event that gets called when the writing is complete
-    writableStream.on('finish', () => {
-      log.debug('Completed export of ' + exportId);
+    return writableStream.on('finish', () => {
+      log.debug('Successfully completed export of ' + exportId);
+      return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
     });
   }).catch(err => {
     log.warn('Failed export of ' + exportId, err);
-    //TODO set metadata status to failed
-    return Promise.reject(err);
+    return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed).then(() => {
+      return Promise.reject(err);
+    });
   });
 }

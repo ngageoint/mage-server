@@ -59,3 +59,10 @@ exports.createMetadata = function (meta) {
 exports.getExportMetadataById = function (id) {
     return ExportMetadata.findById(id);
 };
+
+exports.updateExportMetadataStatus = function (id, status) {
+    return this.getExportMetadataById(id).then(update => {
+        update.status = status;
+        return update.save();
+    });
+};
