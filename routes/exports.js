@@ -64,7 +64,9 @@ module.exports = function (app, security) {
           log.warn(err);
         });
         res.location('/api/export/' + result._id.toString());
-        res.status(201).end();
+        res.status(201);
+        res.end(result._id.toString());
+        return next();
       }).catch(err => {
         log.warn(err);
         return next(err);
@@ -86,7 +88,12 @@ module.exports = function (app, security) {
     security.authentication.passport.authenticate('bearer'),
     parseQueryParams,
     function (req, res, next) {
-      //TODO implement
+      return ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
+        res.end(meta.status);
+        return next();
+      }).catch(err => {
+        return next(err);
+      });
     }
   );
 
