@@ -2273,7 +2273,11 @@ paths:
           type: boolean
       responses:
         201:
-          description: export location
+          description: export id
+          content: 
+            text/plain:
+              schema:
+                type: string
   /api/export/{exportId}/status:
     get:
       tags: [ Export ]
@@ -2292,6 +2296,12 @@ paths:
       responses:
         200:
           description: export location
+          content: 
+            text/plain:
+              schema:
+                type: string
+                enum: [ Starting, Running, Completed, Failed ]
+                example: Running
 components:
   securitySchemes:
     authenticationToken:
