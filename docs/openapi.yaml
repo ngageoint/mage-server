@@ -2153,6 +2153,7 @@ paths:
         Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
+      summary: Perform export during request.  May timeout, so use export in background.
       parameters:
       - name: exportType
         in: path
@@ -2278,14 +2279,21 @@ paths:
             text/plain:
               schema:
                 type: string
+          links:
+            GetExportStatusByExportId:
+              operationId: getExportStatus
+              parameters:
+                exportId: '$response.body'
+              description: >
+                The value returned in the response can be used as
+                the `exportId` parameter in `GET /api/export/{exportId}/status`.
   /api/export/{exportId}/status:
     get:
       tags: [ Export ]
-      operationId: exportBackgroundStatus
+      operationId: getExportStatus
       description: >
         Get the status of a background export operation. The requesting user must have
-        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
-        event with `read`.
+        an ACL entry in the event with `read`.
       summary: Get the status of a background export operation.
       parameters:
       - name: exportId
