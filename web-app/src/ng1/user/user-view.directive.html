@@ -11,7 +11,7 @@
   </header>
   <div class="mdc-card user-view-body">
     <div class="map-clip">
-      <div map-clip="user.location"></div>
+      <div map-clip="location"></div>
     </div>
     <div class="user-view-avatar">
       <div class="user-avatar-border" avatar-user="user" avatar-width="125" avatar-height="125"></div>
@@ -27,12 +27,12 @@
         <i class="material-icons">my_location</i>
       </div>
       <div class="user-view-row-text" >
-        <span>{{user.location.geometry | geometry:5}}</span>
+        <span>{{location.geometry | geometry:5}}</span>
       </div>
       <span class="user-view-location-accuracy">
-        <span class=" location-accuracy--provider">{{user.location.properties.provider}} </span>
+        <span class=" location-accuracy--provider">{{location.properties.provider}} </span>
         <span>&#177;</span>
-        <span> {{user.location.properties.accuracy}}m</span>
+        <span> {{location.properties.accuracy}}m</span>
       </span>
     </a>
 

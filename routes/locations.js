@@ -26,29 +26,31 @@ module.exports = function(app, security) {
   }
 
   function parseQueryParams(req, res, next) {
-    var parameters = {
+    const parameters = {
       filter: {
         eventId: req.event._id
       }
     };
 
-    var startDate = req.param('startDate');
+    const startDate = req.param('startDate');
     if (startDate) {
       parameters.filter.startDate = moment.utc(startDate).toDate();
     }
 
-    var endDate = req.param('endDate');
+    const endDate = req.param('endDate');
     if (endDate) {
       parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
-    var lastLocationId = req.param('lastLocationId');
+    const lastLocationId = req.param('lastLocationId');
     if (lastLocationId) {
       parameters.filter.lastLocationId = lastLocationId;
     }
 
-    var limit = req.param('limit');
+    const limit = req.param('limit');
     parameters.limit = limit ? parseInt(limit) : 1;
+
+    parameters.populate = req.query.populate === 'true';
 
     req.parameters = parameters;
 
@@ -111,10 +113,11 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
-      var options = {
+      const options = {
         groupByUser: true,
         filter: req.parameters.filter,
-        limit: req.parameters.limit
+        limit: req.parameters.limit,
+        populate: req.parameters.populate
       };
 
       location.getLocations(options, function(err, users) {

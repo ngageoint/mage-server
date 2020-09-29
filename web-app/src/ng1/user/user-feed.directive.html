@@ -1,4 +1,5 @@
 <div class="user-card mdc-card__primary-action mdc-typography">
+
   <div class="user-header" ng-click="viewUser()">
     <div class="user-thumbnail">
       <div avatar-user="user" avatar-width="40" avatar-height="40"></div>
@@ -9,16 +10,16 @@
         {{user.displayName}}
         </div>
       </div>
-      <div class="user-subhead ellipsis">
-        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+      <div class="user-subhead user-link ellipsis">
+        <span>{{user.email}}</span>
       </div>
-      <div class="user-subhead">
-        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+      <div class="user-subhead user-link">
+        <span>{{user.phones[0].number}}</span>
       </div>
     </div>
     <div class="user-header-content-right">
-      <div class="user-time user-subhead">{{user.location.properties.timestamp | moment}}</div>
-      <div class="user-time user-subhead">{{user.location.geometry | geometry:5}}</div>
+      <div class="user-time user-subhead">{{location.properties.timestamp | moment}}</div>
+      <div class="user-time user-subhead">{{location.geometry | geometry:5}}</div>
     </div>
   </div>
   <div class="mdc-card__actions">

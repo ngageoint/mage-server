@@ -4,31 +4,29 @@
       <div avatar-user="user" avatar-width="40" avatar-height="40"></div>
     </div>
     <div class="user-header-content">
-      <div class="user-header-text">
-        <div>
-        {{user.displayName}}
-        </div>
+      <div class="user-header-text ellipsis">
+        <div>{{user.displayName}}</div>
       </div>
       <div class="user-subhead ellipsis">
-        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+        <a class="user-link" ng-href="mailto:{{user.email}}">{{user.email}}</a>
       </div>
-      <div class="user-subhead">
-        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+      <div class="user-subhead ellipsis">
+        <a class="user-link" ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
       </div>
     </div>
     <div class="user-header-content-right">
-      <div class="user-time user-subhead">{{user.location.properties.timestamp | moment}}</div>
+      <div class="user-time user-subhead">{{location.properties.timestamp | moment}}</div>
     </div>
   </div>
   <div class="mdc-card__actions">
     <div class="mdc-card__action-buttons">
-        <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followingUser.id == user.id}" ng-click="followUser($event, user)">
+        <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followingUser.id == user.id}" ng-click="followUser($event)">
             <span class="mdc-button__label" ng-show="followingUser.id == user.id">Following</span>
             <span class="mdc-button__label" ng-hide="followingUser.id == user.id">Follow</span>
           </button>
     </div>
     <div class="mdc-card__action-icons">
-      <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick(user)">
+      <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick()">
         <i class="material-icons mdc-icon-button__icon">my_location</i>
       </button>
       <button class="material-icons-outlined mdc-icon-button mdc-card__action mdc-card__action--icon"

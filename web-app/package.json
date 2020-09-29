@@ -81,7 +81,7 @@
     "ngx-mat-select-search": "^2.1.1",
     "papaparse": "4.1.4",
     "select2": "4.0.7",
-    "swagger-ui": "^3.24.0",
+    "swagger-ui": "3.24.0",
     "tslib": "^1.10.0",
     "ui-select": "0.17.1",
     "underscore": "1.8.3",

@@ -4,7 +4,7 @@
       <i class="material-icons observation-important--icon">flag</i>
       <div class="observation-important__content">
         <div>
-           <span class="observation-important--overline">Flagged By {{observationImportantUser.displayName}}</span>
+           <span class="observation-important--overline">Flagged By {{observation.important.user.displayName}}</span>
         </div>
         <div class="observation-important--description">
           {{observation.important.description}}
@@ -16,7 +16,7 @@
       <div class="observation-header-content">
         <div class="observation-overline">
           <div class="">
-            <span>{{observationUser.displayName}}</span>
+            <span>{{observation.user.displayName}}</span>
             <span class="">·</span>
             <span class="">{{observation.properties.timestamp | moment}}</span>
           </div>

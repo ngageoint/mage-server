@@ -1,9 +1,5 @@
-module.exports = Location;
-
-Location.$inject = ['$resource'];
-
 function Location($resource) {
-  var Location = $resource('/api/events/:eventId/locations/:groupBy', {
+  const Location = $resource('/api/events/:eventId/locations/:groupBy', {
     eventId: '@eventId',
     groupBy: '@groupBy'
   },{
@@ -18,3 +14,8 @@ function Location($resource) {
 
   return Location;
 }
+
+Location.$inject = ['$resource'];
+
+module.exports = Location;
+

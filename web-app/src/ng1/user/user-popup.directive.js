@@ -1,28 +1,13 @@
-var moment = require('moment');
-
-module.exports = function locationPopup() {
-  var directive = {
-    restrict: "A",
-    template: require('./user-popup.directive.html'),
-    scope: {
-      user: '=locationPopup',
-      userPopupInfo: '&',
-      userZoom: '&'
-    },
-    controller: LocationPopupController
-  };
-
-  return directive;
-};
-
-LocationPopupController.$inject = ['$scope', 'MapService'];
+const moment = require('moment');
 
 function LocationPopupController($scope, MapService) {
+  $scope.user = $scope.userWithLocation.user;
+  $scope.location = $scope.userWithLocation.location;
   $scope.followingUser = MapService.followedFeature;
-  $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+  $scope.date = moment($scope.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
 
   $scope.onInfoClicked = function() {
-    $scope.userPopupInfo({user: $scope.user});
+    $scope.userPopupInfo({user: $scope.userWithLocation});
   };
 
   $scope.onZoomClicked = function() {
@@ -34,6 +19,23 @@ function LocationPopupController($scope, MapService) {
   };
 
   $scope.$watch('user', function() {
-    $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+    $scope.date = moment($scope.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
   });
 }
+
+LocationPopupController.$inject = ['$scope', 'MapService'];
+
+module.exports = function locationPopup() {
+  const directive = {
+    restrict: "A",
+    template: require('./user-popup.directive.html'),
+    scope: {
+      userWithLocation: '=locationPopup',
+      userPopupInfo: '&',
+      userZoom: '&'
+    },
+    controller: LocationPopupController
+  };
+
+  return directive;
+};

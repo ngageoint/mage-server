@@ -192,16 +192,15 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
   function getUser(id, options) {
     options = options || {};
 
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
-    var parameters = {};
+    const parameters = {};
     if (options.populate) {
-       parameters.populate = options.populate;
+      parameters.populate = options.populate;
     }
 
-    // Go get user again
-     $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
-       deferred.resolve(user);
+    $http.get('/api/users/' + id, { params: parameters }).success(function (user) {
+      deferred.resolve(user);
     });
 
     return deferred.promise;
@@ -209,7 +208,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
   function getAllUsers(options) {
     options = options || {};
-    var deferredUsers = $q.defer();
+    const deferredUsers = $q.defer();
 
     $http.get('/api/users', {params: options})
       .success(function(data) {

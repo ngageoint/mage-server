@@ -1,9 +1,30 @@
+function UserNewsItemController($scope, MapService) {
+  $scope.followingUser = MapService.followedFeature;
+
+  $scope.user = $scope.userWithLocation.user;
+  $scope.location = $scope.userWithLocation.location
+
+  $scope.followUser = function(e) {
+    e.stopPropagation();
+    MapService.followFeatureInLayer($scope.user, 'People');
+  };
+
+  $scope.onUserLocationClick = function() {
+    MapService.zoomToFeatureInLayer($scope.user, 'People');
+  };
+
+  $scope.viewUser = function() {
+    $scope.onUserLocationClick($scope.user);
+    $scope.$emit('user:view', $scope.userWithLocation);
+  };
+}
+
 module.exports = function userNewsItem() {
-  var directive = {
+  const directive = {
     restrict: "A",
-    template:  require('./user-feed.directive.html'),
+    template: require('./user-feed.directive.html'),
     scope: {
-      user: '=userNewsItem',
+      userWithLocation: '=userNewsItem',
       followUserId: '=userNewsItemFollow'
     },
     controller: UserNewsItemController
@@ -13,22 +34,3 @@ module.exports = function userNewsItem() {
 };
 
 UserNewsItemController.$inject = ['$scope', 'MapService'];
-
-function UserNewsItemController($scope, MapService) {
-  $scope.followingUser = MapService.followedFeature;
-
-  $scope.followUser = function(e, user) {
-    e.stopPropagation();
-    MapService.followFeatureInLayer(user, 'People');
-  };
-
-  $scope.onUserLocationClick = function(user) {
-    MapService.zoomToFeatureInLayer(user, 'People');
-  };
-
-  $scope.viewUser = function() {
-    $scope.onUserLocationClick($scope.user);
-    $scope.$emit('user:view', $scope.user);
-  };
-
-}

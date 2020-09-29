@@ -1,13 +1,7 @@
-var _ = require('underscore');
-
-module.exports = LocationService;
-
-LocationService.$inject = ['$q', '$httpParamSerializer', 'Location', 'UserService', 'LocalStorageService'];
-
-function LocationService($q, $httpParamSerializer, Location, UserService, LocalStorageService) {
+function LocationService($q, $httpParamSerializer, Location) {
 
   // Specify times in milliseconds
-  var colorBuckets = [{
+  const colorBuckets = [{
     min: Number.NEGATIVE_INFINITY,
     max: 600000,
     color: '#0000FF' // blue
@@ -21,46 +15,30 @@ function LocationService($q, $httpParamSerializer, Location, UserService, LocalS
     color: '#FF5721' // orange
   }];
 
-  var service = {
-    getUserLocationsForEvent: getUserLocationsForEvent,
-    colorBuckets: colorBuckets
-  };
-
-  return service;
-
   function getUserLocationsForEvent(event, options) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
-    var parameters = {eventId: event.id, groupBy: 'users'};
+    const parameters = { eventId: event.id, groupBy: 'users', populate: 'true' };
     if (options.interval) {
       parameters.startDate = options.interval.start;
       parameters.endDate = options.interval.end;
     }
 
-    Location.query(parameters, function(userLocations) {
-      var deferredUserLocations = [];
-      _.each(userLocations, function(userLocation) {
-        var deferredUser = $q.defer();
-
-        UserService.getUser(userLocation.id).then(function(user) {
-          if (user && user.iconUrl) {
-            userLocation.locations[0].style = {
-              iconUrl: '/api/users/' + user.id + '/icon?' + $httpParamSerializer({access_token: LocalStorageService.getToken(), _dc: user.lastUpdated})
-            };
-          }
-
-          _.extend(userLocation, user);
-          deferredUser.resolve(userLocation);
-        });
-
-        deferredUserLocations.push(deferredUser.promise);
-      });
-
-      $q.all(deferredUserLocations).then(function(userLocations) {
-        deferred.resolve(userLocations);
-      });
+    Location.query(parameters, function (userLocations) {
+      deferred.resolve(userLocations);
     });
 
     return deferred.promise;
   }
+
+  const service = {
+    getUserLocationsForEvent: getUserLocationsForEvent,
+    colorBuckets: colorBuckets
+  };
+
+  return service;
 }
+
+module.exports = LocationService;
+
+LocationService.$inject = ['$q', '$httpParamSerializer', 'Location'];

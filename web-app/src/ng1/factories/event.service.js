@@ -4,9 +4,9 @@ var _ = require('underscore')
 
 module.exports = EventService;
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', '$httpParamSerializer', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'LocalStorageService'];
 
-function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService) {
+function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Event, ObservationService, LocationService, LayerService, FilterService, PollingService, LocalStorageService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
@@ -498,23 +498,26 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function fetchLocations(event, parameters) {
     return LocationService.getUserLocationsForEvent(event, parameters).then(function(userLocations) {
-      var added = [];
-      var updated = [];
-      var removed = [];
+      const added = [];
+      const updated = [];
 
-      var usersById = {};
-      var filteredUsersById = eventsById[event.id].filteredUsersById;
+      const usersById = {};
+      const filteredUsersById = eventsById[event.id].filteredUsersById;
       _.each(userLocations, function(userLocation) {
         // Track each location feature by users id,
         // so update the locations id to match the usersId
-        var location = userLocation.locations[0];
+        const location = userLocation.locations[0];
         location.id = userLocation.id;
+        location.style = {
+          iconUrl: '/api/users/' + userLocation.user.id + '/icon?' + $httpParamSerializer({ access_token: LocalStorageService.getToken(), _dc: userLocation.user.lastUpdated })
+        }
+
         userLocation.location = location;
         delete userLocation.locations;
 
         if (FilterService.isUserInTeamFilter(userLocation.id)) {
           // Check if we already have this user, if so update, otherwise add
-          var localUser = filteredUsersById[userLocation.id];
+          const localUser = filteredUsersById[userLocation.id];
           if (localUser) {
 
             if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) {
@@ -533,7 +536,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       });
 
       // remaining elements were not pulled from the server, hence we should remove them
-      removed = _.values(filteredUsersById);
+      const removed = _.values(filteredUsersById);
 
       eventsById[event.id].usersById = _.indexBy(userLocations, 'id');
       eventsById[event.id].filteredUsersById = usersById;

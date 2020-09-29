@@ -29,31 +29,28 @@
   flex-direction: column;
   justify-content: space-between;
   flex: 1;
-  /* width: 100%; */
-  /* padding-right: 16px; */
+  min-width: 0;
 }
 
 .user-header-content-right {
   padding-right: 16px;
-  width: 150px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .user-thumbnail {
-  width: 72px;
+  flex: 0 0 72px;
   margin-top: auto;
   margin-bottom: auto;
   text-align: center;
 }
 
 .user-thumbnail img {
-  /* margin-left: 16px; */
   max-width: 40px;
-  /* max-height: 40px; */
 }
 
 .user-header-text {
-  font-size: 1.2rem;
+  font-size: 16px;
   color: rgba(30, 136, 229, 0.87);
   font-weight: 500;
   display: flex;
@@ -62,7 +59,13 @@
 }
 
 .user-subhead {
-  color: rgba(0, 0, 0, 0.54)
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.user-link {
+  color: rgba(30, 136, 229, 0.87) !important;
+  cursor: pointer;
 }
 
 .user-supporting-text-container {
@@ -73,7 +76,7 @@
 }
 
 .user-supporting-text {
-  color: rgba(0, 0, 0, 0.54)
+  color: rgba(0, 0, 0, 0.6)
 }
 
 .user-time {

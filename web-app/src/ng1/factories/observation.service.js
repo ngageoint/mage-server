@@ -22,9 +22,9 @@ function ObservationService($q, $httpParamSerializer, Observation, ObservationAt
   return service;
 
   function getObservationsForEvent(event, options) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
-    var parameters = {eventId: event.id, states: 'active'};
+    const parameters = {eventId: event.id, states: 'active', populate: 'true'};
     if (options.interval) {
       parameters.observationStartDate = options.interval.start;
       parameters.observationEndDate = options.interval.end;
