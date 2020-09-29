@@ -216,7 +216,7 @@ function mapDevices(req, res, next) {
 }
 
 function exportInBackground(exportId, event, users, devices) {
-  log.info('Setting up export of ' + exportId );
+  log.info('Setting up export of ' + exportId);
 
   return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
     log.debug('Checking to see if we need to create ' + exportDirectory);
@@ -247,14 +247,17 @@ function exportInBackground(exportId, event, users, devices) {
     return writableStream;
   }).then(writableStream => {
     //TODO learn if this `on` call is fired even if it's already fired.
-    //event that gets called when the writing is complete
     return writableStream.on('finish', () => {
       log.info('Successfully completed export of ' + exportId);
       return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
     });
   }).catch(err => {
     log.warn('Failed export of ' + exportId, err);
-    return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed).then(() => {
+    //TODO add error message
+    return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed).then(meta => {
+      meta.processingErrors.push({ message: err });
+      return ExportMetadata.updateExportMetadata(meta);
+    }).finally(() => {
       return Promise.reject(err);
     });
   });
