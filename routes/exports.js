@@ -229,31 +229,35 @@ function exportInBackground(exportId, event, users, devices) {
     meta.physicalPath = filename;
     return ExportMetadata.updateExportMetadata(meta);
   }).then(meta => {
-    const options = {
-      event: event,
-      users: users,
-      devices: devices,
-      filter: meta.options.filter
-    };
+    log.debug('Constructing writable stream for ' + exportId);
 
     const writableStream = fs.createWriteStream(meta.physicalPath);
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
-
-    log.debug('Begining actual export of ' + exportId + ' (' + meta.exportType + ')');
-    const exporter = exporterFactory.createExporter(meta.exportType, options);
-    exporter.export(writableStream);
-
-    return writableStream;
-  }).then(writableStream => {
-    //TODO learn if this `on` call is fired even if it's already fired.
-    return writableStream.on('finish', () => {
+    writableStream.on('finish', () => {
       log.info('Successfully completed export of ' + exportId);
-      return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
+      ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
     });
+
+    return Promise.resolve({
+      meta: meta,
+      stream: writableStream
+    });
+  }).then(data => {
+    const options = {
+      event: event,
+      users: users,
+      devices: devices,
+      filter: data.meta.options.filter
+    };
+    log.debug('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
+    const exporter = exporterFactory.createExporter(data.meta.exportType, options);
+    exporter.export(data.stream);
+
+    return true;
   }).catch(err => {
     log.warn('Failed export of ' + exportId, err);
-    //TODO add error message
+
     return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed).then(meta => {
       meta.processingErrors.push({ message: err });
       return ExportMetadata.updateExportMetadata(meta);
