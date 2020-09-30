@@ -15,7 +15,9 @@ const moment = require('moment')
 module.exports = function (app, security) {
 
   /**
-   * @deprecated Use {@code /api/export/} instead
+   * This method holds up the request until the export is complete.
+   * 
+   * @deprecated Use {@code /api/export/} instead.  
    */
   app.get(
     '/api/:exportType(geojson|kml|shapefile|csv)',
@@ -39,6 +41,10 @@ module.exports = function (app, security) {
     }
   );
 
+  /**
+   * This performs the export in the "background".  This means that the export does 
+   * not hold up the request until the export is complete.
+   */
   app.get(
     '/api/export/:exportType(geojson|kml|shapefile|csv)',
     security.authentication.passport.authenticate('bearer'),
@@ -65,7 +71,10 @@ module.exports = function (app, security) {
         });
         res.location('/api/export/' + result._id.toString());
         res.status(201);
-        res.end(result._id.toString());
+        const exportId = {
+          exportId: result._id.toString()
+        };
+        res.json(exportId);
         return next();
       }).catch(err => {
         log.warn(err);
@@ -89,7 +98,10 @@ module.exports = function (app, security) {
     parseQueryParams,
     function (req, res, next) {
       return ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
-        res.end(meta.status);
+        const status = {
+          status: meta.status
+        };
+        res.json(status);
         return next();
       }).catch(err => {
         return next(err);
@@ -228,11 +240,12 @@ function exportInBackground(exportId, event, users, devices) {
     meta.physicalPath = filename;
     return ExportMetadata.updateExportMetadata(meta);
   }).then(meta => {
-    log.debug('Constructing writable stream for ' + exportId);
-
-    const writableStream = fs.createWriteStream(meta.physicalPath);
+    //TODO adding type and attachment functions to support current (version 5.4.2) export implementations.
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
+
+    log.debug('Constructing file ' + meta.physicalPath);
+    const writableStream = fs.createWriteStream(meta.physicalPath);
     writableStream.on('finish', () => {
       log.info('Successfully completed export of ' + exportId);
       ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
@@ -249,7 +262,7 @@ function exportInBackground(exportId, event, users, devices) {
       devices: devices,
       filter: data.meta.options.filter
     };
-    log.debug('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
+    log.info('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
     const exporter = exporterFactory.createExporter(data.meta.exportType, options);
     exporter.export(data.stream);
 
