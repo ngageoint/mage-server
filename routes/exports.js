@@ -26,7 +26,7 @@ module.exports = function (app, security) {
     mapUsers,
     mapDevices,
     function (req, res) {
-      log.warn('Deprecated export method called');
+      log.warn('DEPRECATED - /api/exportType called.  Please use /api/export/exportType instead.');
 
       const options = {
         event: req.event,
@@ -60,7 +60,6 @@ module.exports = function (app, security) {
 
       ExportMetadata.createMetadata(meta).then(result => {
         //TODO figure out event, users and devices
-        //TODO handle error w/catch??
         exportInBackground(result._id, req.event, req.users, req.devices).catch(err => {
           log.warn(err);
         });
