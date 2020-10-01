@@ -158,6 +158,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.important = this.exportImportantObservations.value;
     }
     const url = "api/export/" + this.type.value + "?" + $httpParamSerializer(params);
+    //TODO design UI to handle both the background export, as well as status updates.
     $http.get(url).then(response => {
       console.log('Export id: ' + response.data);
     }).catch(err => {
