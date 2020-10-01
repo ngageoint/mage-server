@@ -1,8 +1,4 @@
-"use strict";
-
 import _ from 'underscore';
-
-var PasswordHelpBuilder = require('./passwordHelpBuilder');
 
 class AdminSettingsController {
   constructor($q, $timeout, Api, Settings, LocalStorageService, Event, Team) {
@@ -79,40 +75,6 @@ class AdminSettingsController {
       footerTextColor: '#000000',
       footerBackgroundColor: 'FFFFFF'
     };
-
-    this.defaultPasswordPolicySettings = {
-      minCharsEnabled: false,
-      minChars: 0,
-      maxConCharsEnabled: false,
-      maxConChars: 0,
-      lowLettersEnabled: false,
-      lowLetters: 0,
-      highLettersEnabled: false,
-      highLetters: 0,
-      numbersEnabled: false,
-      numbers: 0,
-      specialCharsEnabled: false,
-      specialChars: 0,
-      restrictSpecialCharsEnabled: false,
-      restrictSpecialChars: "",
-      passwordMinLength: 0,
-      passwordMinLengthEnabled: false,
-      passwordHistoryCount: 0,
-      passwordHistoryCountEnabled: false,
-      customizeHelpText: false,
-      helpText: null,
-      helpTextTemplate: {
-        minChars: 'have at least # letters',
-        maxConChars: 'not contain more than # consecutive letters',
-        lowLetters: 'have a minimum of # lowercase letters',
-        highLetters: 'have a minimum of # uppercase letters',
-        numbers: 'have at least # numbers',
-        specialChars: 'have at least # special characters',
-        restrictSpecialChars: 'be restricted to these special characters: #',
-        passwordMinLength: 'be at least # characters in length',
-        passwordHistoryCount: 'not be any of the past # previous passwords'
-      }
-    }
   }
 
   $onInit() {
@@ -121,8 +83,7 @@ class AdminSettingsController {
       settings: this.Settings.query().$promise,
       teams: this.Team.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise,
       events: this.Event.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise
-    })
-      .then(result => {
+    }).then(result => {
         const api = result.api;
         this.teams = _.reject(result.teams, team => { return team.teamEventId; });
         this.events = result.events;
@@ -146,6 +107,8 @@ class AdminSettingsController {
             enabled: false
           };
         }
+        
+        this.buildPasswordHelp();
 
         this.strategies.forEach(strategy => {
           if (!this.security[strategy]) {
@@ -180,30 +143,22 @@ class AdminSettingsController {
               this.security[strategy].newUserEvents = [];
             }
           }
-
-          if (!this.security[strategy].passwordPolicy) {
-            this.security[strategy].passwordPolicy = this.defaultPasswordPolicySettings;
-          }
-
-          if (_.isEqual(this.security[strategy].passwordPolicy.helpTextTemplate, this.defaultPasswordPolicySettings.helpTextTemplate)) {
-            this.security[strategy].passwordPolicy.helpTextTemplate = this.defaultPasswordPolicySettings.helpTextTemplate;
-            this.buildPasswordHelp(strategy);
-          } else {
-            //TODO the template has changed...so handle this?? We need to save 
-            //the modified help text after the password help is built.
-            throw 'Help Text Template Modifications Are Not Supported';
-          }
-
         });
 
         this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
       });
   }
 
-  buildPasswordHelp(strategy) {
-    if (!this.security[strategy].passwordPolicy.customizeHelpText) {
-      this.security[strategy].passwordPolicy.helpText =
-        PasswordHelpBuilder.build(this.security[strategy].passwordPolicy);
+  buildPasswordHelp() {
+    if (!this.security.local.passwordPolicy.customizeHelpText) {
+      const policy = this.security.local.passwordPolicy
+      const templates = Object.entries(policy.helpTextTemplate)
+        .filter(([key]) => policy[`${key}Enabled`] === true)
+        .map(([key, value]) => {
+          return value.replace('#', policy[key])
+        });
+
+      this.security.local.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
     }
   }
 

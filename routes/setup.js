@@ -3,6 +3,7 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , User = require('../models/user')
     , Device = require('../models/device')
+    , Setting = require('../models/setting')
     , userTransformer = require('../transformers/user')
     , passwordValidator = require('../utilities/passwordValidator');
 
@@ -19,17 +20,17 @@ module.exports = function (app, security) {
   }
 
   function validateSetup(req, res, next) {
-    var username = req.param('username');
+    const username = req.param('username');
     if (!username) {
       return res.status(400).send('username is required');
     }
 
-    var password = req.param('password');
+    const password = req.param('password');
     if (!password) {
       return res.status(400).send('password is required');
     }
 
-    var passwordconfirm = req.param('passwordconfirm');
+    const passwordconfirm = req.param('passwordconfirm');
     if (!passwordconfirm) {
       return res.status(400).send('passwordconfirm is required');
     }
@@ -38,32 +39,27 @@ module.exports = function (app, security) {
       return res.status(400).send('passwords do not match');
     }
 
-    passwordValidator.validate('local', password).then(validationStatus => {
-      if (!validationStatus.isValid) {
-        return res.status(400).send(validationStatus.msg);
+    const uid = req.param('uid');
+    if (!uid) {
+      return res.send(400).send('passwordconfirm is required');
+    }
+
+    req.device = {
+      uid: uid,
+      registered: true
+    };
+
+    req.user = {
+      username: username,
+      displayName: username,
+      active: true,
+      authentication: {
+        type: 'local',
+        password: password
       }
+    };
 
-      var uid = req.param('uid');
-      if (!uid) {
-        return res.send(400).send('passwordconfirm is required');
-      }
-
-      req.user = {
-        username: username,
-        displayName: username,
-        active: true,
-        authentication: {
-          type: 'local',
-          password: password
-        }
-      };
-
-      req.device = {
-        uid: uid,
-        registered: true
-      };
-      next();
-    });
+    next();
   }
 
   app.post(

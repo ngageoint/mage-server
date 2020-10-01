@@ -1,5 +1,3 @@
-"use strict";
-
 import _ from 'underscore';
 import angular from 'angular';
 import zxcvbn from 'zxcvbn';
@@ -109,31 +107,29 @@ class AdminUserEditController {
       user.roleId = this.user.role.id;
     }
 
-    const self = this;
     const failure = response => {
       this.$timeout(() => {
-        self.saving = false;
-        self.error = response.responseText;
+        this.saving = false;
+        this.error = response.responseText;
       });
     };
 
     const progress = e => {
       if(e.lengthComputable){
         this.$timeout(() => {
-          self.uploading = true;
-          self.uploadProgress = (e.loaded/e.total) * 100;
+          this.uploading = true;
+          this.uploadProgress = (e.loaded/e.total) * 100;
         });
       }
     };
 
-    
     if (this.user.id) {
       this.UserService.updateUser(this.user.id, user, () => {
-        self.$state.go('admin.user', {userId: self.user.id});
+        this.$state.go('admin.user', {userId: self.user.id});
       }, failure, progress);
     } else {
       this.UserService.createUser(user, newUser => {
-        self.$state.go('admin.user', { userId: newUser.id });
+        this.$state.go('admin.user', { userId: newUser.id });
       }, failure, progress);
     }
   }
@@ -216,7 +212,6 @@ class AdminUserEditController {
       this.passwordStrengthType = null;
       this.passwordStrength = null;
     }
-   
   }
 
   updatePassword(form) {
@@ -224,28 +219,23 @@ class AdminUserEditController {
 
     if (!form.$valid) return;
 
-    const user = {
+    const authentication = {
       password: this.user.password,
       passwordconfirm: this.user.passwordconfirm
     };
 
-    const self = this;
-    this.UserService.updateUser(this.user.id, user, () => {
-      self.$timeout(() => {
-        self.passwordStrengthScore = 0;
-        self.passwordStrengthType = null;
-        self.passwordStrength = null;
-        self.user.password = "";
-        self.user.passwordconfirm = "";
-        form.$setPristine(true);
-        self.passwordStatus.status = 'success';
-        self.passwordStatus.msg = "Password successfully updated.";
-      });
-    }, data => {
-      self.$timeout(() => {
-        self.passwordStatus.status = "danger";
-        self.passwordStatus.msg = data.responseText;
-      });
+    this.UserService.updatePassword(this.user.id, authentication).then(() => {
+      this.passwordStrengthScore = 0;
+      this.passwordStrengthType = null;
+      this.passwordStrength = null;
+      this.user.password = "";
+      this.user.passwordconfirm = "";
+      form.$setPristine(true);
+      this.passwordStatus.status = 'success';
+      this.passwordStatus.msg = "Password successfully updated.";
+    }, response => {
+      this.passwordStatus.status = "danger";
+      this.passwordStatus.msg = response.data;
     });
   }
 }

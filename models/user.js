@@ -15,7 +15,6 @@ const mongoose = require('mongoose')
   , Paging = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
 
-
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
@@ -59,9 +58,8 @@ const UserSchema = new Schema({
   }
 });
 
-UserSchema.method('validPassword', function (password, callback) {
-  const user = this;
-  Authentication.validPassword(user.authenticationId, password, callback);
+UserSchema.virtual('authentication').get(function () {
+  return this.populated('authenticationId') ? this.authenticationId : null;
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
@@ -73,7 +71,7 @@ UserSchema.pre('save', function (next) {
     if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
-      var error = new Error('username already exists');
+      const error = new Error('username already exists');
       error.status = 400;
       return next(error);
     }
@@ -91,10 +89,6 @@ UserSchema.pre('save', function (next) {
   } else {
     next();
   }
-});
-
-UserSchema.post('save', function (user) {
-  manageAuthProperty(user);
 });
 
 UserSchema.pre('remove', function (next) {
@@ -132,26 +126,6 @@ UserSchema.pre('remove', function (next) {
       next(err);
     });
 });
-
-UserSchema.post('findOne', function (user) {
-  manageAuthProperty(user);
-});
-
-UserSchema.post('findById', function (user) {
-  manageAuthProperty(user);
-});
-
-UserSchema.post('find', function (users) {
-  for (const user of users) {
-    manageAuthProperty(user);
-  }
-});
-
-function manageAuthProperty(user) {
-  if (user && user.populated('authenticationId')) {
-    user.authentication = user.authenticationId;
-  }
-};
 
 // eslint-disable-next-line complexity
 const transform = function (user, ret, options) {
@@ -223,13 +197,9 @@ exports.getUserByUsername = function (username, callback) {
   });
 };
 
-exports.getUserByAuthenticationId = function (authenticationType, id, callback) {
-  Authentication.getAuthenticationByAuthIdAndType(id, authenticationType).then(auth => {
-    return getUserById(auth.userId, callback);
-  }).catch(err => {
-    callback(err);
-  });
-};
+exports.getUserByAuthenticationId = function (authenticationId) {
+  return User.findOne({ authenticationId: authenticationId }).populate('authenticationId').exec();
+}
 
 exports.count = function (options, callback) {
   if (typeof options === 'function') {
@@ -289,55 +259,37 @@ function createQueryConditions(filter) {
 };
 
 exports.createUser = function (user, callback) {
-  const update = {
-    username: user.username,
-    displayName: user.displayName,
-    email: user.email,
-    phones: user.phones,
-    active: user.active,
-    roleId: user.roleId,
-    avatar: user.avatar,
-    icon: user.icon
-  };
+  Authentication.createAuthentication(user.authentication).then(authentication => {
+    const newUser = {
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      phones: user.phones,
+      active: user.active,
+      roleId: user.roleId,
+      avatar: user.avatar,
+      icon: user.icon,
+      authenticationId: authentication._id
+    };
 
-  Authentication.createAuthentication(user.authentication).then(auth => {
-    update.authenticationId = auth._id;
-    User.create(update, function (err, user) {
+    User.create(newUser, function (err, user) {
       if (err) return callback(err);
+
       user.populate('roleId', function (err, user) {
         callback(err, user);
       });
     });
-  }).catch(err => {
-    callback(err);
-  });
+  }).catch(err => callback(err));
 };
 
 exports.updateUser = function (user, callback) {
-  if (user.hasOwnProperty('authentication')) {
-    user.authentication._id = user.authenticationId;
-    Authentication.updateAuthentication(user.authentication).then(() => {
-      user.authenticationId = user.authenticationId._id;
-      delete user.authentication;
-      user.save(function (err, user) {
-        if (err) return callback(err);
+  user.save(function (err, user) {
+    if (err) return callback(err);
 
-        user.populate('roleId', function (err, user) {
-          callback(err, user);
-        });
-      });
-    }).catch(err => {
-      callback(err);
+    user.populate('roleId', function (err, user) {
+      callback(err, user);
     });
-  } else {
-    user.save(function (err, user) {
-      if (err) return callback(err);
-
-      user.populate('roleId', function (err, user) {
-        callback(err, user);
-      });
-    });
-  }
+  });
 };
 
 exports.deleteUser = function (user, callback) {
@@ -347,35 +299,41 @@ exports.deleteUser = function (user, callback) {
 };
 
 exports.invalidLogin = function (user) {
-  return Setting.getSetting('security')
-    .then((securitySettings = { settings: { accountLock: {} } }) => {
-      let { enabled, max, interval, threshold } = securitySettings.settings.accountLock;
-      if (!enabled) return Promise.resolve(user);
+  // TODO test me on brand new server
+  return Setting.getSetting('security').then(({settings = {}}) => {
+    const {
+      local: {
+        accountLock = {}
+      },
+    } = settings;
 
-      let security = user.authentication.security;
-      const invalidLoginAttempts = security.invalidLoginAttempts + 1;
-      if (invalidLoginAttempts >= threshold) {
-        const numberOfTimesLocked = security.numberOfTimesLocked + 1;
-        if (numberOfTimesLocked >= max) {
-          user.enabled = false;
-          user.authentication.security = {};
-        } else {
-          user.authentication.security = {
-            locked: true,
-            numberOfTimesLocked: numberOfTimesLocked,
-            lockedUntil: moment().add(interval, 'seconds').toDate()
-          };
-        }
+    const { enabled, max, interval, threshold } = accountLock;
+    if (!enabled) return Promise.resolve(user);
+
+    const security = user.authentication.security;
+    const invalidLoginAttempts = security.invalidLoginAttempts + 1;
+    if (invalidLoginAttempts >= threshold) {
+      const numberOfTimesLocked = security.numberOfTimesLocked + 1;
+      if (numberOfTimesLocked >= max) {
+        user.enabled = false;
+        user.authentication.security = {};
       } else {
-        security.invalidLoginAttempts = invalidLoginAttempts;
-        security.locked = undefined;
-        security.lockedUntil = undefined;
+        user.authentication.security = {
+          locked: true,
+          numberOfTimesLocked: numberOfTimesLocked,
+          lockedUntil: moment().add(interval, 'seconds').toDate()
+        };
       }
+    } else {
+      security.invalidLoginAttempts = invalidLoginAttempts;
+      security.locked = undefined;
+      security.lockedUntil = undefined;
+    }
 
-      return user.save();
-    }).catch(err => {
-      return Promise.reject(err);
-    });
+    return user.save();
+  }).catch(err => {
+    return Promise.reject(err);
+  });
 };
 
 exports.validLogin = function (user) {
@@ -440,7 +398,3 @@ exports.removeRecentEventForUsers = function (event, callback) {
     callback(err);
   });
 };
-
-exports.getUserByAuthenticationId = function (authenticationId) {
-  return User.findOne({ authenticationId: authenticationId }).populate('authenticationId').exec();
-}

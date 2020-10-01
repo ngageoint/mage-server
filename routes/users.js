@@ -4,13 +4,13 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , Setting = require('../models/setting')
     , Event = require('../models/event')
+    , Authentication = require('../models/authentication')
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
     , pageInfoTransformer = require('../transformers/pageinfo')
     , { default: upload } = require('../upload')
-    , passport = security.authentication.passport
-    , passwordValidator = require('../utilities/passwordValidator');
+    , passport = security.authentication.passport;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
@@ -117,21 +117,13 @@ module.exports = function (app, security) {
       return res.status(400).send('Passwords do not match');
     }
 
-    passwordValidator.validate('local', password).then(validationStatus => {
-      if(!validationStatus.isValid) {
-        return res.status(400).send(validationStatus.msg);
-      }
+    user.authentication = {
+      type: 'local',
+      password: password
+    };
 
-      user.authentication = {
-        type: 'local',
-        password: password
-      };
-  
-      req.newUser = user;
-      next();
-    }).catch(err => {
-      log.warn('Error during password validation' + err);
-    });
+    req.newUser = user;
+    next();
   }
 
   function setDefaults(req, res, next) {
@@ -335,35 +327,28 @@ module.exports = function (app, security) {
     passport.authenticate('local'),
     function (req, res, next) {
       if (req.user.authentication.type !== 'local') {
-        return res.status(400).send('User does not use local authentication');
+        return res.sendStatus(404);
       }
+
       const password = req.param('newPassword');
       const confirm = req.param('newPasswordConfirm');
       if (!password) {
         return res.status(400).send('newPassword is required');
       }
+
       if (!confirm) {
         return res.status(400).send('newPasswordConfirm is required');
       }
+
       if (password !== confirm) {
         return res.status(400).send('Passwords do not match');
       }
-      passwordValidator.validate('local', password).then(validationStatus => {
-        if(!validationStatus.isValid) {
-          return res.status(400).send(validationStatus.msg);
-        }
-        req.user.authentication = {
-          type: 'local',
-          password: password
-        };
-        new api.User().update(req.user, function (err, updatedUser) {
-          if (err) {
-            return next(err);
-          }
-          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-          res.json(updatedUser);
-        });
-      });
+
+      req.user.authentication.password = password
+
+      Authentication.updateAuthentication(req.user.authentication).then(() => {
+        res.sendStatus(200);
+      }).catch(err => next(err));
     }
   );
 
@@ -443,49 +428,52 @@ module.exports = function (app, security) {
           number: phone
         }];
       }
+      const files = req.files || {};
+      const [avatar] = files.avatar || [];
+      const [icon] = files.icon || [];
+      new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
+        if (err) return next(err);
+
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  // Update a specific user's password
+  // Need UPDATE_USER_PASSWORD to change a users password
+  // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+  app.put(
+    '/api/users/:userId/password',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_USER_ROLE'),
+    function (req, res, next) {
+      const user = req.userParam;
+      console.log('update password for user',user);
+
+      if (user.authentication.type !== 'local') {
+        return res.sendStatus(404);
+      }
 
       const password = req.param('password');
-      if (password && user.authentication.type === 'local') {
-        const confirm = req.param('passwordconfirm');
-        if (!confirm) {
-          return res.status(400).send(`Invalid user document: missing required parameter 'passwordconfirm'`)
-        }
-        else if (password !== confirm) {
-          return res.status(400).send('passwords do not match');
-        }
-
-        passwordValidator.validate('local', password).then(validationStatus => {
-          if (!validationStatus.isValid) {
-            return res.status(400).send(validationStatus.msg);
-          }
-
-          // Need UPDATE_USER_PASSWORD to change a users password
-          // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
-          if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
-            user.authentication.password = password;
-          }
-
-          const files = req.files || {};
-          const [avatar] = files.avatar || [];
-          const [icon] = files.icon || [];
-          new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
-            if (err) return next(err);
-    
-            updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-            res.json(updatedUser);
-          });
-        });
-      } else {
-        const files = req.files || {};
-        const [avatar] = files.avatar || [];
-        const [icon] = files.icon || [];
-        new api.User().update(user, { avatar, icon }, function (err, updatedUser) {
-          if (err) return next(err);
-  
-          updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-          res.json(updatedUser);
-        });
+      const passwordconfirm = req.param('passwordconfirm');
+      if (!password) {
+        return res.status(400).send('password is required');
       }
+
+      if (!passwordconfirm) {
+        return res.status(400).send('passwordconfirm is required');
+      }
+
+      if (password !== passwordconfirm) {
+        return res.status(400).send('Passwords do not match');
+      }
+
+      user.authentication.password = password;
+
+      Authentication.updateAuthentication(user.authentication).then(() => {
+        res.sendStatus(200);
+      }).catch(err => next(err));
     }
   );
 
