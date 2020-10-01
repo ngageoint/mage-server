@@ -430,7 +430,7 @@ describe("Password Validator Tests", function() {
 
   it('Should pass password history', async function() {
     const policy = {
-      passwordHistoryCount: 11,
+      passwordHistoryCount: 2,
       passwordHistoryCountEnabled: true
     }
 
@@ -439,21 +439,14 @@ describe("Password Validator Tests", function() {
     const hash1 = await hashPassword('hash1');
     const hash2 = await hashPassword('hash2');
     const hash3 = await hashPassword('hash3');
-    const hash4 = await hashPassword('hash4');
-    const hash5 = await hashPassword('hash5');
-    const hash6 = await hashPassword('hash6');
-    const hash7 = await hashPassword('hash7');
-    const hash8 = await hashPassword('hash8');
-    const hash9 = await hashPassword('hash9');
-    const hash10 = await hashPassword('hash10');
 
     const authentication = {
       password: 'hash1',
-      previousPasswords: [hash10, hash9, hash8, hash7, hash6, hash5, hash4, hash3, hash2, hash1]
+      previousPasswords: [hash3, hash2, hash1]
     }
 
     let validationStatus = await PasswordValidator.validate(policy, authentication);
-    expect(validationStatus.valid).to.be.false;
+    expect(validationStatus.valid).to.be.true;
   });
 
   it('Should fail password history', async function () {
