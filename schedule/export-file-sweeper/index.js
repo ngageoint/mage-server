@@ -4,16 +4,21 @@
 const async = require('async')
     , log = require('winston')
     , fs = require('fs')
+    , path = require('path')
     , exportDirectory = require('../../environment/env').exportDirectory;
 
 function sweep() {
-    log.info('export-file-sweeper: Sweeping ' + exportDirectory);
+    log.info('export-file-sweeper: Sweeping directory ' + exportDirectory);
 
-    const files = fs.readdirSync(exportDirectory);
+    const files = fs.readdirSync(exportDirectory).map(function(file) {
+        return path.join(exportDirectory, file);
+      });
 
     async.eachSeries(files, function (file, done) {
         log.info('export-file-sweeper: Checking export file ' + file);
-        //TODO implement
+        const stats = fs.lstatSync(file);
+        //TODO delete file if older than some time
+        log.info(stats.ctimeMs);
         done();
     }, function (err) {
         if (err) {
