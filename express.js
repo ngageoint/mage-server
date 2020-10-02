@@ -77,7 +77,7 @@ require('./routes')(app, { authentication: authentication });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use(function(err, req, res, next) { // Express requires a 4 parameter function callback, dont' remove unused next parameter
-  if (process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV !== 'test') {
     log.error(err.message);
     log.error(err.stack);
   }

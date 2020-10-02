@@ -201,13 +201,11 @@ describe("user authentication tests", function () {
       .resolves({
         type: 'security',
         settings: {
-          local: {
-            accountLock: {
-              enabled: true,
-              threshold: 3,
-              max: 3,
-              interval: 60
-            }
+          accountLock: {
+            enabled: true,
+            threshold: 3,
+            max: 3,
+            interval: 60
           }
         }
       });
@@ -431,13 +429,11 @@ describe("user authentication tests", function () {
       .resolves({
         type: 'security',
         settings: {
-          local: {
-            accountLock: {
-              enabled: true,
-              threshold: 3,
-              max: 3,
-              interval: 60
-            }
+          accountLock: {
+            enabled: true,
+            threshold: 3,
+            max: 3,
+            interval: 60
           }
         }
       });
@@ -503,13 +499,11 @@ describe("user authentication tests", function () {
       .withArgs('security')
       .resolves({
         settings: {
-          local: {
-            accountLock: {
-              enabled: true,
-              threshold: 3,
-              max: 3,
-              interval: 60
-            }
+          accountLock: {
+            enabled: true,
+            threshold: 3,
+            max: 3,
+            interval: 60
           }
         }
       });
@@ -537,6 +531,87 @@ describe("user authentication tests", function () {
         expect(userSpy.thisValues[0].security.numberOfTimesLocked).to.equal(1);
         expect(userSpy.thisValues[0].security.lockedUntil).to.be.a('date');
         expect(userSpy.thisValues[0].security.lockedUntil).to.be.above(new Date());
+        done(err);
+      });
+  });
+  
+  it("should disable account after invalid logins pass threshold", function (done) {
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'none',
+        security: {
+          numberOfTimesLocked: 0,
+          invalidLoginAttempts: 2
+        }
+      })
+    });
+
+    sinon.mock(AuthenticationModel)
+      .expects('findById')
+      .withArgs(mockUser.authenticationId._id)
+      .chain('exec')
+      .resolves(mockUser.authentication);
+
+    sinon.mock(UserModel)
+      .expects('findOne')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
+      .chain('populate', 'authenticationId')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sinon.mock(Setting)
+      .expects('getSetting')
+      .withArgs('security')
+      .resolves({
+        settings: {
+          accountLock: {
+            enabled: true,
+            threshold: 3,
+            max: 1,
+            interval: 60
+          }
+        }
+      });
+
+    sinon.mock(AuthenticationModel.prototype)
+      .expects('validatePassword')
+      .yields(null, false);
+
+    let userSpy = sinon.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
+    let authenticationSpy = sinon.mock(mockUser.authentication)
+      .expects('save')
+      .resolves(mockUser.authentication);
+
+    request(app)
+      .post('/api/login')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        password: 'none'
+      })
+      .expect(401)
+      .end(function (err) {
+        expect(userSpy.callCount).to.equal(1);
+        expect(userSpy.thisValues[0].enabled).to.be.false;
+
+        expect(authenticationSpy.callCount).to.equal(1);
+        expect(authenticationSpy.thisValues[0].security.locked).to.be.undefined;
+        expect(authenticationSpy.thisValues[0].security.lockedUntil).to.be.undefined;
+        expect(authenticationSpy.thisValues[0].security.numberOfTimesLocked).to.be.undefined;
+        expect(authenticationSpy.thisValues[0].security.invalidLoginAttempts).to.be.undefined;
+
         done(err);
       });
   });
