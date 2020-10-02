@@ -49,6 +49,7 @@ Provision.prototype.check = function(type, options, callback) {
 
       req.provisionedDevice = device;
 
+      // TODO investigate removing
       if (callback) return callback(null, device);
 
       if (!device || !device.registered) return res.status(403).send(info.message);

@@ -54,7 +54,7 @@ Exporter.prototype.mapObservations = function(observations) {
   });
 };
 
-Exporter.prototype.requestObservations = function(filter, done) { 
+Exporter.prototype.requestObservations = function(filter, done) {
   const options = {
     filter: {
       states: ['active'],

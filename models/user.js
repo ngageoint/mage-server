@@ -298,9 +298,10 @@ exports.deleteUser = function (user, callback) {
   });
 };
 
+// TODO should this be in authentication model?
 exports.invalidLogin = function (user) {
   // TODO test me on brand new server
-  return Setting.getSetting('security').then(({settings = {}}) => {
+  return Setting.getSetting('security').then(({settings}) => {
     const {
       local: {
         accountLock = {}
@@ -330,7 +331,7 @@ exports.invalidLogin = function (user) {
       security.lockedUntil = undefined;
     }
 
-    return user.save();
+    return user.authentication.save();
   }).catch(err => {
     return Promise.reject(err);
   });
@@ -338,7 +339,7 @@ exports.invalidLogin = function (user) {
 
 exports.validLogin = function (user) {
   user.authentication.security = {};
-  return user.save();
+  return user.authentication.save();
 };
 
 exports.setStatusForUser = function (user, status, callback) {

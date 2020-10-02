@@ -255,10 +255,10 @@ exports.getObservations = function(event, o, callback) {
     fields.attachments = {$slice: 0};
   }
 
-  const query = observationModel(event).find(conditions, fields, options);
+  let query = observationModel(event).find(conditions, fields, options);
 
   if (o.populate) {
-    query
+    query = query
       .populate({
         path: 'userId', 
         select: 'displayName' })

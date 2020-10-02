@@ -46,18 +46,12 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
         }
 
         user.authentication.validatePassword(password, function(err, isValid) {
-          if (err) {
-            return done(err);
-          }
+          if (err) return done(err);
 
           if (isValid) {
             User.validLogin(user)
-              .then(() => {
-                done(null, user);
-              })
-              .catch(err => {
-                done(err);
-              });
+              .then(() => done(null, user))
+              .catch(err => done(err));
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)

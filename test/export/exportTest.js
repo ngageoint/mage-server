@@ -96,8 +96,10 @@ describe("export tests", function() {
         forms: []
       }
     });
+
     sinon.mock(ObservationModel)
       .expects('find')
+      .chain('exec')
       .yields(null, [mockObservation]);
 
     sinon.mock(IconModel)
