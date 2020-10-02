@@ -17,10 +17,18 @@ function sweep() {
     async.eachSeries(files, function (file, done) {
         log.debug('export-file-sweeper: Checking export file ' + file);
         const stats = fs.lstatSync(file);
-        //TODO delete file if older than some time
+
         const now = new Date();
         if (stats.birthtimeMs + (72 * 60 * 60) < now.getMilliseconds()) {
             log.info('export-file-sweeper: ' + file + ' is too old, and will be deleted');
+
+            fs.unlink(file, (err) => {
+                if (err) { 
+                    log.warn('export-file-sweeper: Failed to remove ' + file, err);
+                    return done(err);
+                }
+                log.info('export-file-sweeper: Successfully removed ' + file);
+            });
         } else {
             log.debug('export-file-sweeper: ' + file + ' has not expired, and does not need to be deleted');
         }
