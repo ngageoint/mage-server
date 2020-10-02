@@ -311,7 +311,6 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res, next) {
-      console.log('req.parameters.includeUnavailable', req.parameters);
       new api.Layer()
         .getLayers({
           layerIds: req.event.layerIds,
