@@ -240,7 +240,11 @@ describe("device provision tests", function() {
     sinon.mock(Setting)
       .expects('getSetting')
       .withArgs('security')
-      .resolves(undefined);
+      .resolves({
+        settings: {
+          local: {}
+        }
+      });
 
     sinon.mock(DeviceModel)
       .expects('findOne')
