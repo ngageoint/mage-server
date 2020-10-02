@@ -1,11 +1,11 @@
 module.exports = function(options) {
 
-  var crypto = require('crypto');
+  const crypto = require('crypto');
 
   options = options || {};
-  var iterations = options.iterations || 12000;
-  var saltLength = options.saltLength || 128;
-  var derivedKeyLength = options.derivedKeyLength || 256;
+  const iterations = options.iterations || 12000;
+  const saltLength = options.saltLength || 128;
+  const derivedKeyLength = options.derivedKeyLength || 256;
 
   /**
    * Serialize a password object containing all the information needed to check a password into a string
@@ -23,7 +23,7 @@ module.exports = function(options) {
    * The info is salt, derivedKey, derivedKey length and number of iterations
    */
   function deserializePassword(password) {
-    var items = password.split('::');
+    const items = password.split('::');
 
     return {
       salt: items[0],
@@ -41,12 +41,12 @@ module.exports = function(options) {
    * @param {Funtion} callback Signature: err, encryptedPassword
    */
   function hashPassword(password, callback) {
-    var salt = crypto.randomBytes(saltLength).toString('base64');
+    const salt = crypto.randomBytes(saltLength).toString('base64');
 
     crypto.pbkdf2(password, salt, iterations, derivedKeyLength, 'sha1', function (err, derivedKey) {
       if (err) { return callback(err); }
 
-      var encryptedPassword = serializePassword({
+      const encryptedPassword = serializePassword({
         salt: salt,
         iterations: iterations,
         derivedKeyLength: derivedKeyLength,

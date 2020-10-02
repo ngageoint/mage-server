@@ -45,7 +45,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
           return done(null, false, { message: 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.' });
         }
 
-        user.validPassword(password, function(err, isValid) {
+        user.authentication.validatePassword(password, function(err, isValid) {
           if (err) {
             return done(err);
           }

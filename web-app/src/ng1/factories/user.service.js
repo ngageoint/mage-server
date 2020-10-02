@@ -17,6 +17,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     acceptDisclaimer,
     logout,
     getMyself,
+    updatePassword,
     updateMyPassword,
     updateMyself,
     checkLoggedInUser,
@@ -155,9 +156,15 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return theDeferred.promise;
   }
 
+  function updatePassword(userId, authentication) {
+    return $http.put(`/api/users/${userId}/password`, authentication, {
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
   function updateMyPassword(authentication) {
-    var promise = $http.put('/api/users/myself/password', $httpParamSerializer(authentication), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    const promise = $http.put('/api/users/myself/password', authentication, {
+      headers: {"Content-Type": "application/json"},
       ignoreAuthModule:true
     });
 
