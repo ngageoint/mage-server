@@ -70,6 +70,8 @@ const environment = {
   layerBaseDirectory: path.resolve(process.env.MAGE_LAYER_DIR || '/var/lib/mage/layers'),
   tempDirectory: path.resolve(process.env.MAGE_TEMP_DIR || '/tmp'),
   exportDirectory: path.resolve(process.env.MAGE_EXPORT_DIR || '/var/lib/mage/export'),
+  exportSweepInterval: parseInt(process.env.MAGE_EXPORT_SWEEP_INTERVAL) || 28800,
+  exportTtl: parseInt(process.env.MAGE_EXPORT_TTL) || 259200,
   tokenExpiration: parseInt(process.env.MAGE_TOKEN_EXPIRATION) || 28800,
   cookies: {
     secure: process.env.MAGE_SESSION_COOKIE_SECURE !== 'false'

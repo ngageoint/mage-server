@@ -5,7 +5,9 @@ const async = require('async')
     , log = require('winston')
     , fs = require('fs')
     , path = require('path')
-    , exportDirectory = require('../../environment/env').exportDirectory;
+    , exportDirectory = require('../../environment/env').exportDirectory
+    , exportTtl = require('../../environment/env').exportTtl
+    , exportSweepInterval = require('../../environment/env').exportSweepInterval;
 
 function sweep() {
     log.info('export-file-sweeper: Sweeping directory ' + exportDirectory);
@@ -18,7 +20,7 @@ function sweep() {
         const stats = fs.lstatSync(file);
         log.debug('export-file-sweeper: Checking export file ' + file);
 
-        if (stats.birthtimeMs + (72 * 60 * 60) < Date.now()) {
+        if (stats.birthtimeMs + (exportTtl) < Date.now()) {
             log.info('export-file-sweeper: ' + file + ' has expired, and will be deleted');
 
             fs.unlink(file, (err) => {
@@ -40,10 +42,12 @@ function sweep() {
 }
 
 exports.initialize = function (app, done) {
-    log.info('export-file-sweeper: Initializing job to check ' + exportDirectory + ' for expired export files.');
-
-    //TODO use config value for interval
-    setInterval(sweep, 5000);
+   
+    const intervalMs = exportSweepInterval*1000;
+    log.info('export-file-sweeper: Initializing job to check ' + exportDirectory + ' for expired export files every ' + intervalMs + 'ms');
+    const firstSweep = new Date(Date.now() + intervalMs);
+    log.info('export-file-sweeper: Will begin first sweep at ' + firstSweep.toString());
+    setInterval(sweep, intervalMs);
 
     done();
 };
