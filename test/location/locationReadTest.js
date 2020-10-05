@@ -162,7 +162,6 @@ describe("location read tests", function() {
 
     sinon.mock(CappedLocationModel)
       .expects('find')
-      .chain('lean')
       .chain('exec')
       .yields(null, [{
         userId: mongoose.Types.ObjectId(),

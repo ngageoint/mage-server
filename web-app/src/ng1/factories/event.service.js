@@ -508,12 +508,15 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
         // so update the locations id to match the usersId
         const location = userLocation.locations[0];
         location.id = userLocation.id;
-        location.style = {
-          iconUrl: '/api/users/' + userLocation.user.id + '/icon?' + $httpParamSerializer({ access_token: LocalStorageService.getToken(), _dc: userLocation.user.lastUpdated })
-        }
 
         userLocation.location = location;
         delete userLocation.locations;
+
+        if (userLocation.user.iconUrl) {
+          location.style = {
+            iconUrl: `${userLocation.user.iconUrl}?${$httpParamSerializer({ access_token: LocalStorageService.getToken(), _dc: userLocation.user.lastUpdated })}`
+          }
+        }
 
         if (FilterService.isUserInTeamFilter(userLocation.id)) {
           // Check if we already have this user, if so update, otherwise add

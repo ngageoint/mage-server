@@ -125,7 +125,7 @@ class AdminUserEditController {
 
     if (this.user.id) {
       this.UserService.updateUser(this.user.id, user, () => {
-        this.$state.go('admin.user', {userId: self.user.id});
+        this.$state.go('admin.user', {userId: this.user.id});
       }, failure, progress);
     } else {
       this.UserService.createUser(user, newUser => {

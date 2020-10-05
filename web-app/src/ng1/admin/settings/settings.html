@@ -31,7 +31,7 @@
           <div ng-if="$ctrl.pill === 'security'">
             <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
 
-            <form ng-if="$ctrl.authConfig" ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
+            <form ng-if="$ctrl.authenticationStrategies" ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
               <div ng-repeat="strategy in $ctrl.strategies">
                 <div class="row" style="padding-bottom: 25px;">
                   <div class="col-sm-11">
@@ -121,306 +121,308 @@
                           </div>
                         </div>
 
-                        <div class="row" ng-show="$ctrl.authConfig.local">
-                          <div class="col-sm-12">
-                            <div class="row">
-                              <div class="col-md-12 bottom-gap">
-                                <h4>Account Lock</h4>
-                                <hr>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-group">
-                                  <label class="control-label" for="type">Enabled</label>
-                                  <ui-select ng-model="$ctrl.security.accountLock.enabled" theme="bootstrap">
-                                    <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                                    <ui-select-choices
-                                      repeat="accountLockChoice.value as accountLockChoice in $ctrl.accountLockChoices">
-                                      <div ng-bind-html="accountLockChoice.title"></div>
-                                      <small ng-bind-html="accountLockChoice.description"></small>
-                                    </ui-select-choices>
-                                  </ui-select>
-                                  <p class="help-block">MAGE can lock user accounts after a number of invalid login
-                                    attempts
-                                    for a certain amount of time.</p>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div ng-show="$ctrl.security.accountLock.enabled">
+                        <div ng-if="strategy === 'local'">
+                          <div class="row">
+                            <div class="col-sm-12">
                               <div class="row">
-                                <div class="col-sm-12">
-                                  <label class="control-label" for="type">Account Lockout Threshold</label>
-                                  <div class="form-group">
-                                    <input type="number" ng-model="$ctrl.security.accountLock.threshold"
-                                      class="form-control">
-                                    <p class="help-block">Number of invalid login attempts, after which the users
-                                      account will
-                                      be locked.</p>
-                                  </div>
-
-                                </div>
-                              </div>
-
-                              <div class="row">
-                                <div class="col-sm-12">
-                                  <label class="control-label" for="type">Account Lockout Interval (Seconds)</label>
-                                  <div class="form-group">
-                                    <input type="number" ng-model="$ctrl.security.accountLock.interval"
-                                      class="form-control"></input>
-                                    <p class="help-block">Amount of time in seconds a users account will remain locked
-                                      after
-                                      reaching number of invalid login attempts.</p>
-                                  </div>
+                                <div class="col-md-12 bottom-gap">
+                                  <h4>Account Lock</h4>
+                                  <hr>
                                 </div>
                               </div>
 
                               <div class="row">
                                 <div class="col-sm-12">
                                   <div class="form-group">
-                                    <label class="control-label" for="type">Enable Max Lockout</label>
-                                    <ui-select ng-model="$ctrl.maxLock.enabled" theme="bootstrap">
+                                    <label class="control-label" for="type">Enabled</label>
+                                    <ui-select ng-model="$ctrl.security.local.accountLock.enabled" theme="bootstrap">
                                       <ui-select-match>{{$select.selected.title}}</ui-select-match>
                                       <ui-select-choices
-                                        repeat="maxLockChoice.value as maxLockChoice in $ctrl.maxLockChoices">
-                                        <div ng-bind-html="maxLockChoice.title"></div>
-                                        <small ng-bind-html="maxLockChoice.description"></small>
+                                        repeat="accountLockChoice.value as accountLockChoice in $ctrl.accountLockChoices">
+                                        <div ng-bind-html="accountLockChoice.title"></div>
+                                        <small ng-bind-html="accountLockChoice.description"></small>
                                       </ui-select-choices>
                                     </ui-select>
-                                    <p class="help-block">MAGE can disable user accounts if a user locks their account a
-                                      certain number of times.</p>
+                                    <p class="help-block">MAGE can lock user accounts after a number of invalid login
+                                      attempts
+                                      for a certain amount of time.</p>
                                   </div>
                                 </div>
                               </div>
 
-                              <div class="row" ng-if="$ctrl.maxLock.enabled">
-                                <div class="col-sm-12">
-                                  <label class="control-label" for="type">Max Lockout Threshold</label>
-                                  <div class="form-group">
-                                    <input type="number" ng-model="$ctrl.security.accountLock.max"
-                                      class="form-control"></input>
-                                    <p class="help-block">Number of times a user account can be locked before it is
-                                      disabled.
-                                      Disabled accounts must be re-enabled by an admin. If left blank this feature is
-                                      disabled.</p>
+                              <div ng-show="$ctrl.security.local.accountLock.enabled">
+                                <div class="row">
+                                  <div class="col-sm-12">
+                                    <label class="control-label" for="type">Account Lockout Threshold</label>
+                                    <div class="form-group">
+                                      <input type="number" ng-model="$ctrl.security.local.accountLock.threshold"
+                                        class="form-control">
+                                      <p class="help-block">Number of invalid login attempts, after which the users
+                                        account will
+                                        be locked.</p>
+                                    </div>
+
+                                  </div>
+                                </div>
+
+                                <div class="row">
+                                  <div class="col-sm-12">
+                                    <label class="control-label" for="type">Account Lockout Interval (Seconds)</label>
+                                    <div class="form-group">
+                                      <input type="number" ng-model="$ctrl.security.local.accountLock.interval"
+                                        class="form-control"></input>
+                                      <p class="help-block">Amount of time in seconds a users account will remain locked
+                                        after
+                                        reaching number of invalid login attempts.</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="row">
+                                  <div class="col-sm-12">
+                                    <div class="form-group">
+                                      <label class="control-label" for="type">Enable Max Lockout</label>
+                                      <ui-select ng-model="$ctrl.maxLock.enabled" theme="bootstrap">
+                                        <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                        <ui-select-choices
+                                          repeat="maxLockChoice.value as maxLockChoice in $ctrl.maxLockChoices">
+                                          <div ng-bind-html="maxLockChoice.title"></div>
+                                          <small ng-bind-html="maxLockChoice.description"></small>
+                                        </ui-select-choices>
+                                      </ui-select>
+                                      <p class="help-block">MAGE can disable user accounts if a user locks their account a
+                                        certain number of times.</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="row" ng-if="$ctrl.maxLock.enabled">
+                                  <div class="col-sm-12">
+                                    <label class="control-label" for="type">Max Lockout Threshold</label>
+                                    <div class="form-group">
+                                      <input type="number" ng-model="$ctrl.security.local.accountLock.max"
+                                        class="form-control"></input>
+                                      <p class="help-block">Number of times a user account can be locked before it is
+                                        disabled.
+                                        Disabled accounts must be re-enabled by an admin. If left blank this feature is
+                                        disabled.</p>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div class="row" ng-show="$ctrl.authConfig.local">
-                          <div class="col-sm-12">
-                            <div class="row">
-                              <div class="col-md-12 bottom-gap">
-                                <h4>Password Policies</h4>
-                                <hr>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-md-12 bottom-gap">
-                                <h5>Minimum Password Requirements for User Accounts:</h5>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="minChars" aria-labelledby="minCharsLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="minChars" id="minCharsLabel">Minimum Letters</label>
-                                  </div>
+                          <div class="row">
+                            <div class="col-sm-12">
+                              <div class="row">
+                                <div class="col-md-12 bottom-gap">
+                                  <h4>Password Policies</h4>
+                                  <hr>
                                 </div>
                               </div>
-                            </div>
 
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="maxConChars" aria-labelledby="maxConCharsLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="maxConChars" id="maxConCharsLabel">Maximum Consecutive Letters</label>
-                                  </div>
+                              <div class="row">
+                                <div class="col-md-12 bottom-gap">
+                                  <h5>Minimum Password Requirements for User Accounts:</h5>
                                 </div>
                               </div>
-                            </div>
 
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="lowLetters" aria-labelledby="lowLettersLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="lowLetters" id="lowLettersLabel">Lowercase Letters</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="highLetters" aria-labelledby="highLettersLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="highLetters" id="highLettersLabel">Uppercase Letters</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.numbersEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="numbers" aria-labelledby="numbersLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.numbersEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="numbers" id="numbersLabel">Numbers</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number" id="specialChars" aria-labelledby="specialCharsLabel"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="specialChars" id="specialCharsLabel">Special Characters</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row"
-                              ng-show="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == true">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <div class="checkbox right-gap">
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
                                       <input type="checkbox"
-                                        ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="minChars" aria-labelledby="minCharsLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.minCharsEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.minChars" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="minChars" id="minCharsLabel">Minimum Letters</label>
                                     </div>
-                                    <label for="restrictSpecialChars">Restrict To These Special Characters:</label>
-                                    <input type="text" id="restrictSpecialChars"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control" />
                                   </div>
                                 </div>
                               </div>
-                            </div>
 
-                            <div class="row top-gap">
-                              <div class="col-md-12 bottom-gap">
-                                <h5>User Password Policies:</h5>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
-                                      id="passwordMinLength" aria-labelledby="passwordMinLengthLabel"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password Length</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-inline bottom-gap">
-                                  <div class="form-group">
-                                    <input type="checkbox"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" />
-                                    <input type="number"
-                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
-                                      id="passwordHistoryCount" aria-labelledby="passwordHistoryCountLabel"
-                                      ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCount" min="0"
-                                      ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                    <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous Passwords Remembered</label>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="row top-gap">
-                              <div class="col-md-12 bottom-gap">
-                                <h5>User Password Policy Help:</h5>
-                              </div>
-                            </div>
-
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-group">
-                                  <div class="checkbox">
-                                    <label>
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
                                       <input type="checkbox"
-                                        ng-model="$ctrl.security[strategy].passwordPolicy.customizeHelpText"
-                                        ng-click="$ctrl.buildPasswordHelp(strategy)">
-                                      Customize password help message
-                                    </label>
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="maxConChars" aria-labelledby="maxConCharsLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.maxConCharsEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.maxConChars" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="maxConChars" id="maxConCharsLabel">Maximum Consecutive Letters</label>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                            <div class="row">
-                              <div class="col-sm-12">
-                                <div class="form-group">
-                                  <textarea placeholder="Password Policy Help"
-                                    ng-model="$ctrl.security[strategy].passwordPolicy.helpText" class="form-control"
-                                    ng-disabled="!$ctrl.security[strategy].passwordPolicy.customizeHelpText" 
-                                    aria-describedby="passwordHelpBlock">
-                                  </textarea>
-                                  <span id="passwordHelpBlock" class="help-block">This is the help text that is displayed
-                                    to the user during password creation/update, when their password fails to meet the
-                                    password policy.</span>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="lowLetters" aria-labelledby="lowLettersLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.lowLettersEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.lowLetters" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="lowLetters" id="lowLettersLabel">Lowercase Letters</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="highLetters" aria-labelledby="highLettersLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.highLettersEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.highLetters" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="highLetters" id="highLettersLabel">Uppercase Letters</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.numbersEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="numbers" aria-labelledby="numbersLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.numbersEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.numbers" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="numbers" id="numbersLabel">Numbers</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number" id="specialChars" aria-labelledby="specialCharsLabel"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.specialCharsEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.specialChars" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="specialChars" id="specialCharsLabel">Special Characters</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row"
+                                ng-show="$ctrl.security[strategy].passwordPolicy.specialCharsEnabled == true">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <div class="checkbox right-gap">
+                                        <input type="checkbox"
+                                          ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
+                                          ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      </div>
+                                      <label for="restrictSpecialChars">Restrict To These Special Characters:</label>
+                                      <input type="text" id="restrictSpecialChars"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.restrictSpecialCharsEnabled"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.restrictSpecialChars" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row top-gap">
+                                <div class="col-md-12 bottom-gap">
+                                  <h5>User Password Policies:</h5>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordMinLengthEnabled"
+                                        id="passwordMinLength" aria-labelledby="passwordMinLengthLabel"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.passwordMinLength" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password Length</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-inline bottom-gap">
+                                    <div class="form-group">
+                                      <input type="checkbox"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" />
+                                      <input type="number"
+                                        ng-disabled="!$ctrl.security[strategy].passwordPolicy.passwordHistoryCountEnabled"
+                                        id="passwordHistoryCount" aria-labelledby="passwordHistoryCountLabel"
+                                        ng-model="$ctrl.security[strategy].passwordPolicy.passwordHistoryCount" min="0"
+                                        ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
+                                      <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous Passwords Remembered</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row top-gap">
+                                <div class="col-md-12 bottom-gap">
+                                  <h5>User Password Policy Help:</h5>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-group">
+                                    <div class="checkbox">
+                                      <label>
+                                        <input type="checkbox"
+                                          ng-model="$ctrl.security[strategy].passwordPolicy.customizeHelpText"
+                                          ng-click="$ctrl.buildPasswordHelp(strategy)">
+                                        Customize password help message
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-group">
+                                    <textarea placeholder="Password Policy Help"
+                                      ng-model="$ctrl.security[strategy].passwordPolicy.helpText" class="form-control"
+                                      ng-disabled="!$ctrl.security[strategy].passwordPolicy.customizeHelpText" 
+                                      aria-describedby="passwordHelpBlock">
+                                    </textarea>
+                                    <span id="passwordHelpBlock" class="help-block">This is the help text that is displayed
+                                      to the user during password creation/update, when their password fails to meet the
+                                      password policy.</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>

@@ -6,9 +6,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* New APIs to populate observation and location user information.  Removed individual calls to get users.
+
+##### Bug Fixes
+
+## [5.4.3](https://github.com/ngageoint/mage-server/releases/tag/5.4.3)
+
+#### Release Notes
+* This release include database migrations, please remember to backup your database before upgrading.
+
+##### Features
+* Optimize observation and user location responses.  Created new APIs to populate observation and location user information and removed individual calls to get users.
+* Admins can now setup a more robust password policy, see Admin -> Settings -> Local Authentication.
 * First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.). 
-* Password history is now available for admins to control how many previous passwords a users may use.
 
 ##### Bug Fixes
 * Multiple users can be added to a team and/or event without refreshing.
