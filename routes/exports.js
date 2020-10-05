@@ -230,6 +230,8 @@ function exportInBackground(exportId, event, users, devices) {
   log.info('Setting up export of ' + exportId);
 
   return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
+
+    //TODO possibly move this to some init script?
     log.debug('Checking to see if we need to create ' + exportDirectory);
     if (!fs.existsSync(exportDirectory)) {
       log.info('Creating directory ' + exportDirectory);
@@ -241,6 +243,7 @@ function exportInBackground(exportId, event, users, devices) {
     return ExportMetadata.updateExportMetadata(meta);
   }).then(meta => {
     //TODO adding type and attachment functions to support current (version 5.4.2) export implementations.
+    //can probably move this to the top of this class
     Writable.prototype.type = function () { };
     Writable.prototype.attachment = function () { };
 
