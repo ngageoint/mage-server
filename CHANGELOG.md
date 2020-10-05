@@ -11,7 +11,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ## [5.4.3](https://github.com/ngageoint/mage-server/releases/tag/5.4.3)
 
-##### Release Notes
+#### Release Notes
 * This release include database migrations, please remember to backup your database before upgrading.
 
 ##### Features
