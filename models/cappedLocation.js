@@ -29,7 +29,9 @@ const transform = function (userLocation, ret) {
     }
 
     delete ret._id;
-    ret.id = userLocation.userId.id || userLocation.userId;
+    ret.id = ret.user ? ret.user.id : userLocation.userId;
+    console.log('************************  ret.id is', ret.id)
+
     ret.locations = (userLocation.locations || []).reverse();
   }
 }
