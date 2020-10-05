@@ -49,23 +49,17 @@ describe("user create tests", function () {
       password: 'password',
       passwordconfirm: 'password',
       roleId: roleId,
-      authenticationId: mongoose.Types.ObjectId()
-    });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: this.test.title,
-      security: {}
-    };
-
-    const mockAuth = new AuthenticationModel({
-      _id: mockUser.authenticationId,
-      type: mockUser.authentication.type
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     });
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
-      .resolves(mockAuth);
+      .resolves(mockUser.authentication);
 
     sinon.mock(Setting)
       .expects('getSetting').withArgs('security')
@@ -162,27 +156,25 @@ describe("user create tests", function () {
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword'
-    });
-
-    mockUser.authentication = {
-      type: this.test.title,
-      security: {}
-    };
-
-    const mockAuth = new AuthenticationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: mockUser.authentication.type
+      passwordconfirm: 'passwordpassword',
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     });
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
-      .resolves(mockAuth);
+      .resolves(mockUser.authentication);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
-        [mockUser.authentication.type]: {
-          usersReqAdmin: true
+        local: {
+          usersReqAdmin: {
+            enabled: true
+          }
         }
       }
     }));
@@ -235,28 +227,25 @@ describe("user create tests", function () {
       username: 'test',
       displayName: 'test',
       password: 'passwordpassword',
-      passwordconfirm: 'passwordpassword'
-    });
-
-    mockUser.authentication = {
-      type: 'test_auth',
-      security: {}
-    };
-
-    const mockAuth = new AuthenticationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: mockUser.authentication.type,
-      userId: id
+      passwordconfirm: 'passwordpassword',
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     });
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
-      .resolves(mockAuth);
+      .resolves(mockUser.authentication);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
-        [mockUser.authentication.type]: {
-          usersReqAdmin: true
+        local: {
+          usersReqAdmin: {
+            enabled: true
+          }
         }
       }
     }));

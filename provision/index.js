@@ -21,40 +21,30 @@ Provision.prototype.use = function(name, strategy) {
   return this;
 };
 
-Provision.prototype.check = function(type, options, callback) {
-  if (!callback && typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
+Provision.prototype.check = function(type, options) {
   options = options || {};
 
   const strategies = this.strategies;
 
-  return async function(req, res, next) {
-    let strategy;
-    try {
-      const security = await Setting.getSetting('security') || { settings: {} };
-      const localAuthentication = security.settings[type] || {};
+  return function(req, res, next) {
+    Setting.getSetting('security').then(({settings}) => {
+      const localAuthentication = settings[type] || {};
       const localDeviceSettings = localAuthentication.devicesReqAdmin || {};
-      strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
-    } catch (err) {
-      return next(err);
-    }
+      const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
 
-    const provision = strategies[strategy];
-    if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
+      const provision = strategies[strategy];
+      if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
 
-    provision.check(req, options, function(err, device, info = {}) {
-      if (err) return next(err);
+      provision.check(req, options, function (err, device, info = {}) {
+        if (err) return next(err);
 
-      req.provisionedDevice = device;
+        req.provisionedDevice = device;
 
-      if (callback) return callback(null, device);
+        if (!device || !device.registered) return res.status(403).send(info.message);
 
-      if (!device || !device.registered) return res.status(403).send(info.message);
-
-      next();
-    });
+        next();
+      });
+    })
   };
 };
 

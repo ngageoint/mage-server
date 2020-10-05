@@ -25,16 +25,7 @@ const AuthenticationModel = mongoose.model('Authentication');
 
 require('sinon-mongoose');
 
-let hashedPassword = null;
-
 describe("user update tests", function () {
-
-  before(function (done) {
-    hasher.hashPassword('password', function (err, encryptedPassword) {
-      hashedPassword = encryptedPassword;
-      done();
-    });
-  });
 
   afterEach(function () {
     sinon.restore();
@@ -106,35 +97,20 @@ describe("user update tests", function () {
   });
 
   it('should fail to update myself if passwords do not match', function (done) {
-    const mockUser = new UserModel({
+    const mockUser = {
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
+      enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: mongoose.Types.ObjectId()
-    });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: 'password',
-      security: {}
+      authentication: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     }
-
-    const mockAuth = new AuthenticationModel({
-      _id: mockUser.authentication._id,
-      type: mockUser.authentication.type,
-      userId: userId,
-      password: hashedPassword,
-      security: mockUser.authentication.security
-    });
-
-    sinon.mock(AuthenticationModel)
-      .expects('findById')
-      .withArgs(mockUser.authentication.authenticationId)
-      .chain('exec')
-      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
@@ -144,13 +120,13 @@ describe("user update tests", function () {
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(UserModel.prototype)
-      .expects('validPassword')
+    sinon.mock(AuthenticationModel.prototype)
+      .expects('validatePassword')
       .yields(null, true);
 
-    sinon.mock(mockUser)
+    sinon.mock(mockUser.authentication)
       .expects('save')
-      .resolves(mockUser);
+      .resolves(mockUser.authentication);
 
     request(app)
       .put('/api/users/myself/password')
@@ -173,35 +149,20 @@ describe("user update tests", function () {
   });
 
   it('should fail to update myself if passwords does not meet complexity', function (done) {
-    const mockUser = new UserModel({
+    const mockUser = {
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
+      enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: mongoose.Types.ObjectId()
-    });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: 'password',
-      security: {}
+      authentication: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     }
-
-    const mockAuth = new AuthenticationModel({
-      _id: mockUser.authentication._id,
-      type: mockUser.authentication.type,
-      userId: userId,
-      password: hashedPassword,
-      security: mockUser.authentication.security
-    });
-
-    sinon.mock(AuthenticationModel)
-      .expects('findById')
-      .withArgs(mockUser.authentication.authenticationId)
-      .chain('exec')
-      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findOne')
@@ -211,13 +172,9 @@ describe("user update tests", function () {
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(UserModel.prototype)
-      .expects('validPassword')
+    sinon.mock(AuthenticationModel.prototype)
+      .expects('validatePassword')
       .yields(null, true);
-
-    sinon.mock(mockUser)
-      .expects('save')
-      .resolves(mockUser);
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -359,29 +316,14 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: mongoose.Types.ObjectId()
+      enabled: true,
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: 'password',
-      security: {}
-    }
-
-    const mockAuth = new AuthenticationModel({
-      _id: mockUser.authentication._id,
-      type: mockUser.authentication.type,
-      userId: userId,
-      password: hashedPassword,
-      security: mockUser.authentication.security
-    });
-
-    sinon.mock(AuthenticationModel)
-      .expects('findById')
-      .withArgs(mockUser.authentication.authenticationId)
-      .chain('exec')
-      .resolves(mockAuth);
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
@@ -394,6 +336,10 @@ describe("user update tests", function () {
       .withArgs(sinon.match.has('authentication', sinon.match.has('password', 'passwordpassword')))
       .yields(null, mockUser);
 
+    sinon.mock(mockUser.authentication)
+      .expects('save')
+      .resolves(mockUser.authentication);
+
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
         'local': {
@@ -407,25 +353,14 @@ describe("user update tests", function () {
     }));
 
     request(app)
-      .put('/api/users/' + id.toString())
+      .put('/api/users/' + id.toString() + '/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        username: 'test',
-        displayName: 'test',
-        email: 'test@test.com',
-        phone: '000-000-0000',
-        active: true,
         password: 'passwordpassword',
         passwordconfirm: 'passwordpassword'
       })
       .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function (res) {
-        var user = res.body;
-        should.exist(user);
-        user.should.have.property('id').that.equals(id.toString());
-      })
       .end(done);
   });
 
@@ -438,14 +373,14 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: mongoose.Types.ObjectId()
+      enabled: true,
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: undefined,
+        security: {}
+      })
     });
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: undefined,
-      security: {}
-    }
 
     sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
       settings: {
@@ -465,37 +400,20 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(User)
-      .expects('updateUser')
-      .withArgs(sinon.match.has('authentication', sinon.match.has('password', sinon.match.typeOf("undefined"))))
-      .yields(null, mockUser);
-
     request(app)
-      .put('/api/users/' + id.toString())
+      .put('/api/users/' + id.toString() + '/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        username: 'test',
-        displayName: 'test',
-        email: 'test@test.com',
-        phone: '000-000-0000',
-        active: true,
         password: 'passwordpassword',
         passwordconfirm: 'passwordpassword'
       })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const user = res.body;
-        should.exist(user);
-        user.should.have.property('id').that.equals(id.toString());
-      })
+      .expect(403)
       .end(done);
   });
 
   it('fails to update the user password without the passwordconfirm parameter', function (done) {
-
-    mockTokenWithPermission('UPDATE_USER');
+    mockTokenWithPermission('UPDATE_USER_ROLE');
 
     const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
@@ -503,14 +421,13 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: mongoose.Types.ObjectId()
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: undefined,
+        security: {}
+      })
     });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      security: {}
-    };
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
@@ -522,20 +439,15 @@ describe("user update tests", function () {
       .expects('updateUser').never();
 
     request(app)
-      .put('/api/users/' + id.toString())
+      .put('/api/users/' + id.toString() + '/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        username: 'test',
-        displayName: 'test',
-        email: 'test@test.com',
-        phone: '000-000-0000',
-        active: true,
         password: 'passwordpassword',
       })
       .expect(400)
       .expect(res => {
-        expect(res.text).to.equal(`Invalid user document: missing required parameter 'passwordconfirm'`);
+        expect(res.text).to.equal(`passwordconfirm is required`);
       })
       .end(done);
   });
@@ -784,22 +696,20 @@ describe("user update tests", function () {
   });
 
   it('should fail to update user if passwords dont match', function (done) {
-    mockTokenWithPermission('UPDATE_USER');
+    mockTokenWithPermission('UPDATE_USER_ROLE');
 
     const id = mongoose.Types.ObjectId();
-    const mockUser = new UserModel({
+    const mockUser = {
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: mongoose.Types.ObjectId()
-    });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: 'password',
-      security: {}
+      authentication: AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     }
 
     sinon.mock(UserModel)
@@ -809,7 +719,7 @@ describe("user update tests", function () {
       .resolves(mockUser);
 
     request(app)
-      .put('/api/users/' + id.toString())
+      .put('/api/users/' + id.toString() + '/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -821,28 +731,26 @@ describe("user update tests", function () {
       })
       .expect(400)
       .expect(function (res) {
-        res.text.should.equal('passwords do not match');
+        res.text.should.equal('Passwords do not match');
       })
       .end(done);
   });
 
   it('should fail to update user if password does not meet complexity', function (done) {
-    mockTokenWithPermission('UPDATE_USER');
+    mockTokenWithPermission('UPDATE_USER_ROLE');
 
     const id = mongoose.Types.ObjectId();
-    const mockUser = new UserModel({
+    const mockUser = {
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: mongoose.Types.ObjectId()
-    });
-
-    mockUser.authentication = {
-      _id: mockUser.authenticationId,
-      type: 'local',
-      password: 'password',
-      security: {}
+      authentication: AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
     }
 
     sinon.mock(UserModel)
@@ -864,7 +772,7 @@ describe("user update tests", function () {
     }));
 
     request(app)
-      .put('/api/users/' + id.toString())
+      .put('/api/users/' + id.toString() + '/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({

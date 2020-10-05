@@ -20,6 +20,9 @@ const DeviceModel = mongoose.model('Device');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
+require('../../models/authentication');
+const AuthenticationModel = mongoose.model('Authentication');
+
 let userId = mongoose.Types.ObjectId();
 let mockUser = new UserModel({
   _id: userId,
@@ -45,7 +48,12 @@ async function authenticate() {
     active: true,
     enabled: true,
     roleId: mongoose.Types.ObjectId(),
-    authenticationId: mongoose.Types.ObjectId()
+    authenticationId: new AuthenticationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      security: {}
+    })
   });
   mockUser.authentication = {
     _id: mockUser.authenticationId,
@@ -61,13 +69,13 @@ async function authenticate() {
     .chain('exec')
     .yields(null, mockUser);
 
-  sinon.mock(UserModel.prototype)
-    .expects('validPassword')
+  sinon.mock(AuthenticationModel.prototype)
+    .expects('validatePassword')
     .yields(null, true);
 
-  sinon.mock(mockUser)
+  sinon.mock(mockUser.authentication)
     .expects('save')
-    .resolves(mockUser);
+    .resolves(mockUser.authentication);
 
   let jwt;
   await request(app)
@@ -232,7 +240,11 @@ describe("device provision tests", function() {
     sinon.mock(Setting)
       .expects('getSetting')
       .withArgs('security')
-      .resolves(undefined);
+      .resolves({
+        settings: {
+          local: {}
+        }
+      });
 
     sinon.mock(DeviceModel)
       .expects('findOne')

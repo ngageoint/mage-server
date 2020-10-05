@@ -45,8 +45,7 @@ module.exports = function(app, passport, provision, strategies) {
     });
   }));
 
-  passport.use('authorization', new BearerStrategy(
-  function (token, done) {
+  passport.use('authorization', new BearerStrategy(function (token, done) {
     const expectation = {
       assertion: TokenAssertion.Authorized
     };
@@ -70,31 +69,20 @@ module.exports = function(app, passport, provision, strategies) {
   }
 
   function provisionDevice(req, res, next) {
-    const strategy = req.user.authentication.type;
-    provision.check(strategy, function(err, device, info = {}) {
-      if (!device || !device.registered) return res.status(403).send(info.message);
-
-      req.provisionedDevice = device;
-      next();
-    })(req, res, next);
-  }
-
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
+    provision.check(req.user.authentication.type)(req, res, next);
   }
 
   app.post(
     '/auth/token',
     authorize,
     provisionDevice,
-    parseLoginMetadata,
     function (req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
+      const options = {
+        userAgent: req.headers['user-agent'],
+        appVersion: req.param('appVersion')
+      };
+
+      new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
         if (err) return next(err);
 
         res.json({

@@ -71,6 +71,7 @@ describe("observation read tests", function() {
     });
     sinon.mock(ObservationModel)
       .expects('find')
+      .chain('exec')
       .yields(null, [mockObservation]);
 
     request(app)
@@ -79,6 +80,57 @@ describe("observation read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function(res) {
+        var observations = res.body;
+        should.exist(observations);
+        observations.should.be.an('array');
+        observations.should.have.length(1);
+      })
+      .end(done);
+  });
+
+
+  it("should get observations for any event and populate user", function (done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var mockObservation = new ObservationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      }
+    });
+    sinon.mock(ObservationModel)
+      .expects('find')
+      .chain('populate').withArgs({
+        path: 'userId',
+        select: 'displayName'
+      })
+      .chain('populate').withArgs({
+        path: 'important.userId',
+        select: 'displayName'
+      })
+      .chain('exec')
+      .yields(null, [mockObservation]);
+
+    request(app)
+      .get('/api/events/1/observations?populate=true')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function (res) {
         var observations = res.body;
         should.exist(observations);
         observations.should.be.an('array');
@@ -122,6 +174,7 @@ describe("observation read tests", function() {
     });
     sinon.mock(ObservationModel)
       .expects('find')
+      .chain('exec')
       .yields(null, [mockObservation]);
 
     request(app)
@@ -173,6 +226,7 @@ describe("observation read tests", function() {
           $lt: endDate.toDate()
         }
       })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -223,6 +277,7 @@ describe("observation read tests", function() {
           $lt: endDate.toDate()
         }
       })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -276,6 +331,7 @@ describe("observation read tests", function() {
           }
         }
       })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -332,6 +388,7 @@ describe("observation read tests", function() {
           }
         }
       })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -378,6 +435,7 @@ describe("observation read tests", function() {
       .withArgs({
         "states.0.name": { $in: ['active', 'archive'] }
       })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -418,6 +476,7 @@ describe("observation read tests", function() {
     sinon.mock(ObservationModel)
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: 1 } })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -458,6 +517,7 @@ describe("observation read tests", function() {
     sinon.mock(ObservationModel)
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: -1 } })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)

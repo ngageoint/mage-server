@@ -298,47 +298,41 @@ exports.deleteUser = function (user, callback) {
   });
 };
 
-exports.invalidLogin = function (user) {
-  // TODO test me on brand new server
-  return Setting.getSetting('security').then(({settings = {}}) => {
-    const {
-      local: {
-        accountLock = {}
-      },
-    } = settings;
+exports.invalidLogin = async function (user) {
+  const { settings } = await Setting.getSetting('security');
+  const { accountLock = {} } = settings;
+  const { enabled, max, interval, threshold } = accountLock;
 
-    const { enabled, max, interval, threshold } = accountLock;
-    if (!enabled) return Promise.resolve(user);
+  if (!enabled) return user;
 
-    const security = user.authentication.security;
-    const invalidLoginAttempts = security.invalidLoginAttempts + 1;
-    if (invalidLoginAttempts >= threshold) {
-      const numberOfTimesLocked = security.numberOfTimesLocked + 1;
-      if (numberOfTimesLocked >= max) {
-        user.enabled = false;
-        user.authentication.security = {};
-      } else {
-        user.authentication.security = {
-          locked: true,
-          numberOfTimesLocked: numberOfTimesLocked,
-          lockedUntil: moment().add(interval, 'seconds').toDate()
-        };
-      }
+  const authentication = user.authentication;
+  const invalidLoginAttempts = authentication.security.invalidLoginAttempts + 1;
+  if (invalidLoginAttempts >= threshold) {
+    const numberOfTimesLocked = authentication.security.numberOfTimesLocked + 1;
+    if (numberOfTimesLocked >= max) {
+      user.enabled = false;
+      await user.save();
+
+      authentication.security = {};
     } else {
-      security.invalidLoginAttempts = invalidLoginAttempts;
-      security.locked = undefined;
-      security.lockedUntil = undefined;
+      authentication.security = {
+        locked: true,
+        numberOfTimesLocked: numberOfTimesLocked,
+        lockedUntil: moment().add(interval, 'seconds').toDate()
+      };
     }
+  } else {
+    authentication.security.invalidLoginAttempts = invalidLoginAttempts;
+    authentication.security.locked = undefined;
+    authentication.security.lockedUntil = undefined;
+  }
 
-    return user.save();
-  }).catch(err => {
-    return Promise.reject(err);
-  });
+  await authentication.save();
 };
 
-exports.validLogin = function (user) {
+exports.validLogin = async function (user) {
   user.authentication.security = {};
-  return user.save();
+  await user.authentication.save();
 };
 
 exports.setStatusForUser = function (user, status, callback) {
