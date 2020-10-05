@@ -5,7 +5,9 @@ const config = require('../config.js'),
 
 exports.id = 'set-default-password-policy';
 
-const { local = { passwordMinLength: 14 } } = config.api.authenticationStrategies
+const { local = { } } = config.api.authenticationStrategies
+if (local.passwordMinLength === undefined) local.passwordMinLength = 14;
+
 const passwordPolicy = {
   minCharsEnabled: false,
   minChars: 0,
@@ -42,11 +44,16 @@ const passwordPolicy = {
 
 exports.up = function (done) {
   log.info('Setting default password policy');
+
   const update = {
+    $rename: {
+      'settings.accountLock': 'settings.local.accountLock'
+    },
     $set: {
       'settings.local.passwordPolicy': passwordPolicy,
     }
   }
+
   this.db.collection('settings').findAndModify({ type: 'security' }, null, update, { upsert: true }, done);
 };
 

@@ -300,16 +300,15 @@ exports.deleteUser = function (user, callback) {
 
 exports.invalidLogin = async function (user) {
   const { settings } = await Setting.getSetting('security');
-  const { accountLock = {} } = settings;
-  const { enabled, max, interval, threshold } = accountLock;
+  const { accountLock = {} } = settings.local;
 
-  if (!enabled) return user;
+  if (!accountLock.enabled) return user;
 
   const authentication = user.authentication;
   const invalidLoginAttempts = authentication.security.invalidLoginAttempts + 1;
-  if (invalidLoginAttempts >= threshold) {
+  if (invalidLoginAttempts >= accountLock.threshold) {
     const numberOfTimesLocked = authentication.security.numberOfTimesLocked + 1;
-    if (numberOfTimesLocked >= max) {
+    if (numberOfTimesLocked >= accountLock.max) {
       user.enabled = false;
       await user.save();
 
@@ -318,7 +317,7 @@ exports.invalidLogin = async function (user) {
       authentication.security = {
         locked: true,
         numberOfTimesLocked: numberOfTimesLocked,
-        lockedUntil: moment().add(interval, 'seconds').toDate()
+        lockedUntil: moment().add(accountLock.interval, 'seconds').toDate()
       };
     }
   } else {

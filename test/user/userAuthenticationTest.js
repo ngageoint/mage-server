@@ -201,11 +201,13 @@ describe("user authentication tests", function () {
       .resolves({
         type: 'security',
         settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
+          local: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
           }
         }
       });
@@ -429,11 +431,13 @@ describe("user authentication tests", function () {
       .resolves({
         type: 'security',
         settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
+          local: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
           }
         }
       });
@@ -499,11 +503,13 @@ describe("user authentication tests", function () {
       .withArgs('security')
       .resolves({
         settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
+          local: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
           }
         }
       });
@@ -572,11 +578,13 @@ describe("user authentication tests", function () {
       .withArgs('security')
       .resolves({
         settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 1,
-            interval: 60
+          local: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 1,
+              interval: 60
+            }
           }
         }
       });

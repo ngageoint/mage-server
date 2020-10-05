@@ -12,14 +12,9 @@ class AdminSettingsController {
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
 
-    this.events = [{
-      name: 'foo',
-      description: 'bar'
-    }];
-
     this.teams = [];
     this.strategies = [];
-    this.authConfig = {};
+    this.authenticationStrategies = {};
 
     this.usersReqAdminChoices = [{
       title: 'Enabled',
@@ -84,69 +79,69 @@ class AdminSettingsController {
       teams: this.Team.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise,
       events: this.Event.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise
     }).then(result => {
-        const api = result.api;
-        this.teams = _.reject(result.teams, team => { return team.teamEventId; });
-        this.events = result.events;
+      const api = result.api;
+      this.teams = _.reject(result.teams, team => { return team.teamEventId; });
+      this.events = result.events;
 
-        this.authConfig = api.authenticationStrategies || {};
-        this.pill = this.authConfig.local ? 'security' : 'banner';
+      this.authenticationStrategies = api.authenticationStrategies || {};
+      this.pill = Object.keys(this.authenticationStrategies).length ? 'security' : 'banner';
 
-        let strategy = {};
-        for (strategy in this.authConfig) {
-          this.strategies.push(strategy);
-        }
+      let strategy = {};
+        for (strategy in this.authenticationStrategies) {
+        this.strategies.push(strategy);
+      }
 
-        this.settings = _.indexBy(result.settings, 'type');
+      this.settings = _.indexBy(result.settings, 'type');
 
-        this.banner = this.settings.banner ? this.settings.banner.settings : {};
-        this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
-        this.security = this.settings.security ? this.settings.security.settings : {};
+      this.banner = this.settings.banner ? this.settings.banner.settings : {};
+      this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
+      this.security = this.settings.security ? this.settings.security.settings : {};
 
-        if (!this.security.accountLock) {
-          this.security.accountLock = {
-            enabled: false
-          };
-        }
-        
-        this.buildPasswordHelp();
+      if (!this.security.local.accountLock) {
+        this.security.local.accountLock = {
+          enabled: false
+        };
+      }
+      
+      this.buildPasswordHelp();
 
-        this.strategies.forEach(strategy => {
-          if (!this.security[strategy]) {
-            this.security[strategy] = {
-              devicesReqAdmin: { enabled: true },
-              usersReqAdmin: { enabled: true },
-              newUserEvents: [],
-              newUserTeams: []
-            }
-          } else {
-            if (this.security[strategy].devicesReqAdmin === undefined) {
-              this.security[strategy].devicesReqAdmin = { enabled: true };
-            }
-            if (this.security[strategy].usersReqAdmin === undefined) {
-              this.security[strategy].usersReqAdmin = { enabled: true };
-            }
-
-            if (this.security[strategy].newUserTeams) {
-              // Remove any teams and events that no longer exist
-              this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
-                return this.teams.some(team => team.id === id)
-              });
-            } else {
-              this.security[strategy].newUserTeams = [];
-            }
-
-            if (this.security[strategy].newUserEvents) {
-              this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
-                return this.events.some(event => event.id === id)
-              });
-            } else {
-              this.security[strategy].newUserEvents = [];
-            }
+      this.strategies.forEach(strategy => {
+        if (!this.security[strategy]) {
+          this.security[strategy] = {
+            devicesReqAdmin: { enabled: true },
+            usersReqAdmin: { enabled: true },
+            newUserEvents: [],
+            newUserTeams: []
           }
-        });
+        } else {
+          if (this.security[strategy].devicesReqAdmin === undefined) {
+            this.security[strategy].devicesReqAdmin = { enabled: true };
+          }
+          if (this.security[strategy].usersReqAdmin === undefined) {
+            this.security[strategy].usersReqAdmin = { enabled: true };
+          }
 
-        this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
+          if (this.security[strategy].newUserTeams) {
+            // Remove any teams and events that no longer exist
+            this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
+              return this.teams.some(team => team.id === id)
+            });
+          } else {
+            this.security[strategy].newUserTeams = [];
+          }
+
+          if (this.security[strategy].newUserEvents) {
+            this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
+              return this.events.some(event => event.id === id)
+            });
+          } else {
+            this.security[strategy].newUserEvents = [];
+          }
+        }
       });
+
+      this.maxLock.enabled = this.security.local.accountLock && this.security.local.accountLock.max !== undefined;
+    });
   }
 
   buildPasswordHelp() {
@@ -188,7 +183,7 @@ class AdminSettingsController {
 
   saveSecurity() {
     if (!this.maxLock.enabled) {
-      delete this.security.accountLock.max;
+      delete this.security.local.accountLock.max;
     }
 
     this.strategies.forEach(strategy => {
