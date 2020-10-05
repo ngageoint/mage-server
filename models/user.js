@@ -162,13 +162,11 @@ const transform = function (user, ret, options) {
 };
 
 UserSchema.set("toJSON", {
-  transform: transform,
-  virtuals: true
+  transform: transform
 });
 
 UserSchema.set("toObject", {
-  transform: transform,
-  virtuals: true
+  transform: transform
 });
 
 exports.transform = transform;

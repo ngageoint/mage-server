@@ -21,6 +21,27 @@ CappedLocationSchema.index({'eventId': 1});
 CappedLocationSchema.index({'locations.properties.timestamp': 1});
 CappedLocationSchema.index({'locations.properties.timestamp': 1, 'eventId': 1});
 
+const transform = function (userLocation, ret) {
+  if ('function' !== typeof userLocation.ownerDocument) {
+    if (userLocation.populated('userId')) {
+      ret.user = userLocation.userId.toObject();
+      delete ret.user.icon;
+    }
+
+    delete ret._id;
+    ret.id = userLocation.userId.id || userLocation.userId;
+    ret.locations = (userLocation.locations || []).reverse();
+  }
+}
+
+CappedLocationSchema.set("toJSON", {
+  transform: transform
+});
+
+CappedLocationSchema.set("toObject", {
+  transform: transform
+});
+
 // Creates the Model for the User Schema
 const CappedLocation = mongoose.model('CappedLocation', CappedLocationSchema);
 exports.Model = CappedLocation;
@@ -60,30 +81,11 @@ exports.getLocations = function(options, callback) {
   if (options.populate) {
     query.populate({
       path: 'userId',
-      select: 'displayName email phones'
+      select: 'icon displayName email phones'
     })
   }
 
-  query.lean().exec(function (err, userLocations) {
-    if (err) return callback(err);
-
-    userLocations = userLocations.map(userLocation => {
-      let user;
-      if (userLocation.userId._id) {
-        user = userLocation.userId;
-        user.id = user._id;
-        delete user._id;
-      }
-
-      return {
-        id: userLocation.userId.id || userLocation.userId,
-        user: user,
-        locations: (userLocation.locations || []).reverse()
-      };
-    });
-
-    callback(err, userLocations);
-  });
+  query.exec(callback);
 };
 
 exports.removeLocationsForUser = function(user, callback) {

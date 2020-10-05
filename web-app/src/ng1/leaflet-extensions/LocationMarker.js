@@ -68,6 +68,8 @@ L.LocationMarker = L.Layer.extend({
     if (this._iconMarker) {
       this._iconMarker.setLatLng(latlng);
     }
+
+    return this;
   },
 
   setAccuracy: function (accuracy) {
