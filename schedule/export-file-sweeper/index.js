@@ -20,7 +20,7 @@ function sweep() {
         const stats = fs.lstatSync(file);
         log.debug('export-file-sweeper: Checking export file ' + file);
 
-        if (stats.birthtimeMs + (exportTtl) < Date.now()) {
+        if (stats.birthtimeMs + (exportTtl*1000) < Date.now()) {
             log.info('export-file-sweeper: ' + file + ' has expired, and will be deleted');
 
             fs.unlink(file, (err) => {
