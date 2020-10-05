@@ -15,12 +15,11 @@ function sweep() {
     });
 
     async.eachSeries(files, function (file, done) {
-        log.debug('export-file-sweeper: Checking export file ' + file);
         const stats = fs.lstatSync(file);
+        log.debug('export-file-sweeper: Checking export file ' + file);
 
-        const now = new Date();
-        if (stats.birthtimeMs + (72 * 60 * 60) < now.getMilliseconds()) {
-            log.info('export-file-sweeper: ' + file + ' is too old, and will be deleted');
+        if (stats.birthtimeMs + (72 * 60 * 60) < Date.now()) {
+            log.info('export-file-sweeper: ' + file + ' has expired, and will be deleted');
 
             fs.unlink(file, (err) => {
                 if (err) { 
