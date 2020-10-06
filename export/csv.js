@@ -70,7 +70,7 @@ Csv.prototype.export = function(streamable) {
   self._event.forms
     .filter(form => !form.archived)
     .forEach(function(form) {
-      var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
+      const formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
 
       form.fields
         .filter(field => !field.archived)
@@ -111,14 +111,14 @@ Csv.prototype.export = function(streamable) {
   streamable.type('application/zip');
   streamable.attachment("mage-export-csv.zip");
 
-  var archive = archiver('zip');
+  const archive = archiver('zip');
   archive.pipe(streamable);
 
   async.parallel([
     function(done) {
       if (!self._filter.exportObservations) return done();
 
-      var observationStream = new stream.PassThrough();
+      const observationStream = new stream.PassThrough();
       archive.append(observationStream, { name:'observations.csv' });
       self.streamObservations(observationStream, archive, observationFields, function(err) {
         observationStream.end();
@@ -148,7 +148,7 @@ Csv.prototype.export = function(streamable) {
 Csv.prototype.streamObservations = function(stream, archive, fields, done) {
   var self = this;
   self.requestObservations(self._filter, function(err, observations) {
-    var json = self.flattenObservations(observations, archive);
+    const json = self.flattenObservations(observations, archive);
 
     try {
       const csv = json2csv.parse(json, {fields});
@@ -161,21 +161,21 @@ Csv.prototype.streamObservations = function(stream, archive, fields, done) {
 };
 
 Csv.prototype.flattenObservations = function(observations, archive) {
-  var event = this._event;
-  var users = this._users;
-  var devices = this._devices;
+  const event = this._event;
+  const users = this._users;
+  const devices = this._devices;
 
-  var flattened = [];
+  const flattened = [];
 
   observations.forEach(function(observation) {
-    var properties = observation.properties;
+    const properties = observation.properties;
     properties.id = observation.id;
 
     properties.forms.forEach(function(observationForm) {
-      var form = event.formMap[observationForm.formId];
-      var formPrefix = event.forms.length > 1 ? form.name + '.' : '';
-      for (var name in observationForm) {
-        var field = form.fieldNameToField[name];
+      const form = event.formMap[observationForm.formId];
+      const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
+      for (const name in observationForm) {
+        const field = form.fieldNameToField[name];
         if (field) {
           properties[formPrefix + field.name] = observationForm[name];
           delete observationForm[name];
@@ -210,8 +210,8 @@ Csv.prototype.flattenObservations = function(observations, archive) {
 
     flattened.push(properties);
 
-    for (var i = 1; i < observation.attachments.length; i++) {
-      var attachment = observation.attachments[i];
+    for (let i = 1; i < observation.attachments.length; i++) {
+      const attachment = observation.attachments[i];
 
       flattened.push({
         id: observation.id,
@@ -227,14 +227,14 @@ Csv.prototype.flattenObservations = function(observations, archive) {
 };
 
 Csv.prototype.streamLocations = function(stream, done) {
-  var self = this;
-  var limit = 2000;
+  const self = this;
+  const limit = 2000;
 
-  var startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
-  var endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
-  var lastLocationId = null;
+  let startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
+  const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
+  let lastLocationId = null;
 
-  var locations = [];
+  let locations = [];
 
   async.doUntil(function(done) {
     self.requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
@@ -246,9 +246,9 @@ Csv.prototype.streamLocations = function(stream, done) {
       });
 
       log.info('Successfully wrote ' + locations.length + ' locations to CSV');
-      var last = locations.slice(-1).pop();
+      const last = locations.slice(-1).pop();
       if (last) {
-        var locationTime = moment(last.properties.timestamp);
+        const locationTime = moment(last.properties.timestamp);
         lastLocationId = last._id;
         if (!startDate || startDate.isBefore(locationTime)) {
           startDate = locationTime;
@@ -269,11 +269,11 @@ Csv.prototype.streamLocations = function(stream, done) {
 };
 
 Csv.prototype.flattenLocations = function(locations) {
-  var users = this._users;
-  var devices = this._devices;
+  const users = this._users;
+  const devices = this._devices;
 
   return locations.map(function(location) {
-    var properties = location.properties;
+    const properties = location.properties;
     if (users[location.userId]) properties.user = users[location.userId].username;
     if (devices[properties.deviceId]) properties.device = devices[properties.deviceId].uid;
 
