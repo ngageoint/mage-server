@@ -25,6 +25,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Removing a user from a team will no longer take you to the user page.
 * Display names are shown when users are added to the ACL.
 * Fix swagger authentication token injection.
+* Observation export will no longer fail if attachment file is missing from file system.
 
 ## [5.4.2](https://github.com/ngageoint/mage-server/releases/tag/5.4.2)
 

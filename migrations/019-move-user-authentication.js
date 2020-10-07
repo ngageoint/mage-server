@@ -56,10 +56,8 @@ async function migrateAuthentication(authenticationCollection, userCollection) {
     }
   }
 
-  log.debug("Closing cursor for authentication move");
-
   // Close the cursor, this is the same as reseting the query
-  cursor.close(function (err, result) {
+  cursor.close(function (err) {
     if (err) log.warn("Failed closing authentication move cursor", err);
   });
 
