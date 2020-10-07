@@ -95,7 +95,7 @@ module.exports = function (app, security) {
     '/api/export/:exportId/status',
     security.authentication.passport.authenticate('bearer'),
     function (req, res, next) {
-      return ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
+      ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
         const status = {
           status: meta.status
         };
@@ -111,12 +111,36 @@ module.exports = function (app, security) {
     '/api/export/user/:userId',
     security.authentication.passport.authenticate('bearer'),
     function (req, res, next) {
-      return ExportMetadata.getExportMetadatasByUserId(req.params.userId).then(metas => {
+      ExportMetadata.getExportMetadatasByUserId(req.params.userId).then(metas => {
         res.json(metas);
         return next();
       }).catch(err => {
         return next(err);
       });
+    }
+  );
+
+  app.get(
+    '/api/export/count',
+    security.authentication.passport.authenticate('bearer'),
+    function (req, res, next) {
+      const filter = {};
+
+      if (req.query) {
+        for (let [key, value] of Object.entries(req.query)) {
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
+            continue;
+          }
+          filter[key] = value;
+        }
+      }
+
+      ExportMetadata.count({ filter: filter })
+        .then(count => {
+          res.json({ count: count });
+          return next();
+        })
+        .catch(err => next(err));
     }
   );
 

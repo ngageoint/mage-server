@@ -3,20 +3,23 @@
 module.exports = {
   template: require('./export-button.component.html'),
   bindings: {
-    drawer: '<',
-    myself: '<'
+    drawer: '<'
   },
   controller: ExportButtonController
 };
 
-ExportButtonController.$inject = ['$http', 'Event'];
+ExportButtonController.$inject = ['Event', 'ExportService', 'UserService'];
 
-function ExportButtonController($http, Event) {
+function ExportButtonController(Event, ExportService, UserService) {
 
   this.$onInit = function () {
     this.count = 0;
-    setInterval(this.checkCompletedExports.bind(this), 5000);
+    setInterval(this.checkCompletedExports.bind(this), 10000);
   };
+
+  this.$onChanges = function (changes) {
+    //TODO 
+  }
 
   this.export = function () {
     Event.query().$promise.then(function (events) {
@@ -30,12 +33,13 @@ function ExportButtonController($http, Event) {
   };
 
   this.checkCompletedExports = function () {
-    const url = "api/export/user/" + this.myself.id;
-    
-    /*$http.get(url).then(response => {
-      this.count = response.data.length;
-    }).catch(err => {
-      console.log(err);
-    });*/
+    if (UserService.myself) {
+      console.log(UserService.myself.id);
+      /*ExportService.count({ userId: UserService.myself.id }).then(cnt => {
+        this.count = cnt;
+      }).catch(err => {
+        console.log(err);
+      });*/
+    }
   };
 }

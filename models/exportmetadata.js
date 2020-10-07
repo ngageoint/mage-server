@@ -1,6 +1,7 @@
 "use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+    , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
@@ -68,6 +69,16 @@ exports.getExportMetadatasByUserId = function (userId) {
         userId: userId
     };
     return ExportMetadata.find(conditions);
+};
+
+
+exports.count = function (options) {
+    options = options || {};
+    var filter = options.filter || {};
+
+    const conditions = FilterParser.parse(filter);
+
+    return ExportMetadata.count(conditions).exec();
 };
 
 exports.updateExportMetadataStatus = function (id, status) {
