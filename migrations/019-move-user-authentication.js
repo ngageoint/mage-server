@@ -7,10 +7,10 @@ exports.id = 'move-user-authentication';
 exports.up = function (done) {
   try {
     log.info('Moving authentication from user model to authentication model');
-    this.db.createCollection('authentications', { strict: true }, (err, authenticationCollection) => {
+    this.db.createCollection('authentications', (err, authenticationCollection) => {
       if (err) done(err);
 
-      this.db.collection('users', { strict: true }, function (err, userCollection) {
+      this.db.collection('users', function (err, userCollection) {
         if (err) done(err);
 
         migrateAuthentication(authenticationCollection, userCollection)
