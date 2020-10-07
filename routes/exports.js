@@ -86,7 +86,6 @@ module.exports = function (app, security) {
   app.get(
     '/api/export/:exportId',
     security.authentication.passport.authenticate('bearer'),
-    parseQueryParams,
     function (req, res, next) {
       //TODO implement
     }
@@ -95,13 +94,25 @@ module.exports = function (app, security) {
   app.get(
     '/api/export/:exportId/status',
     security.authentication.passport.authenticate('bearer'),
-    parseQueryParams,
     function (req, res, next) {
       return ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
         const status = {
           status: meta.status
         };
         res.json(status);
+        return next();
+      }).catch(err => {
+        return next(err);
+      });
+    }
+  );
+
+  app.get(
+    '/api/export/user/:userId',
+    security.authentication.passport.authenticate('bearer'),
+    function (req, res, next) {
+      return ExportMetadata.getExportMetadatasByUserId(req.params.userId).then(metas => {
+        res.json(metas);
         return next();
       }).catch(err => {
         return next(err);

@@ -25,9 +25,10 @@ const ExportMetadataSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     physicalPath: { type: String },
     exportType: { type: String, required: true },
-    status: { 
-        type: String, 
-        enum: [exportStatusEnum.Starting, exportStatusEnum.Running, exportStatusEnum.Completed, exportStatusEnum.Failed] },
+    status: {
+        type: String,
+        enum: [exportStatusEnum.Starting, exportStatusEnum.Running, exportStatusEnum.Completed, exportStatusEnum.Failed]
+    },
     options: {
         eventId: { type: Number, ref: 'Event', required: true },
         filter: { type: Schema.Types.Mixed }
@@ -60,6 +61,13 @@ exports.createMetadata = function (meta) {
 
 exports.getExportMetadataById = function (id) {
     return ExportMetadata.findById(id);
+};
+
+exports.getExportMetadatasByUserId = function (userId) {
+    const conditions = {
+        userId: userId
+    };
+    return ExportMetadata.find(conditions);
 };
 
 exports.updateExportMetadataStatus = function (id, status) {
