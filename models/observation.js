@@ -117,7 +117,10 @@ function transform(observation, ret, options) {
 
     if (observation.populated('userId')) {
       ret.user = ret.userId;
-      delete ret.userId;
+
+      // TODO Update mobile clients to handle observation.userId or observation.user.id
+      // Leave userId as mobile clients depend on it for observation create/update,
+      ret.userId =  ret.user.id;
     }
 
     if (ret.important && observation.populated('important.userId')) {
@@ -292,7 +295,11 @@ exports.getObservationById = function(event, observationId, options, callback) {
 };
 
 exports.updateObservation = function(event, observationId, observation, callback) {
-  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true, upsert: true}, callback);
+  observationModel(event)
+    .findByIdAndUpdate(observationId, observation, { new: true, upsert: true })
+    .populate({ path: 'userId', select: 'displayName' })
+    .populate({ path: 'important.userId', select: 'displayName' })
+    .exec(callback);
 };
 
 exports.removeObservation = function(event, observationId, callback) {

@@ -135,6 +135,9 @@ describe("observation create tests", function() {
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match.any, {new: true, upsert: true})
+      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
+      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)

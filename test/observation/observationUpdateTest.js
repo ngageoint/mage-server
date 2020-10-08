@@ -82,6 +82,9 @@ describe("observation update tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
+      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
+      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -145,6 +148,9 @@ describe("observation update tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
+      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
+      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
@@ -324,6 +330,9 @@ describe("observation update tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
+      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
+      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
+      .chain('exec')
       .yields(null, null);
 
     request(app)

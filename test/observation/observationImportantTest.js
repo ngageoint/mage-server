@@ -103,6 +103,9 @@ describe("observation important tests", function() {
     var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId, sinon.match( { 'important': sinon.match({ userId: userId }) }), sinon.match.any)
+      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
+      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
+      .chain('exec')
       .yields(null, mockObservation);
 
     request(app)
