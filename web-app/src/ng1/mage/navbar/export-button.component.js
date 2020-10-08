@@ -34,10 +34,8 @@ function ExportButtonController(Event, ExportService, UserService) {
 
   this.checkCompletedExports = function () {
     if (UserService.myself) {
-      console.log(UserService.myself.id);
-      //TODO this requires a log in
-      ExportService.count({ userId: UserService.myself.id }).then(response => {
-        this.count = response.data.count;
+      ExportService.getMyExports().then(response => {
+        this.count = response.data.length;
       }).catch(err => {
         console.log(err);
       });

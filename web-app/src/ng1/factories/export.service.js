@@ -2,27 +2,38 @@
 
 module.exports = ExportService;
 
-ExportService.$inject = ['$http'];
+ExportService.$inject = ['$http', '$httpParamSerializer'];
 
-function ExportService($http) {
+function ExportService($http, $httpParamSerializer) {
 
     const service = {
-        count,
-        export: performExport
+        getMyExports,
+        getAllExports,
+        export: performExport,
+        deleteExport
     };
 
     return service;
 
-    function count(options) {
-        options = options || {};
-
-        return $http.get('/api/exports/count', { params: options });
+    function getMyExports() {
+        return $http.get('/api/exports/myself');
     }
 
-    function performExport(type, options) {
-        options = options || {};
+    function getAllExports() {
+        return $http.get('/api/exports');
+    }
 
-        const url = "/api/exports/" + type;
-        return $http.get(url, {params: options});
+    function performExport(type, params) {
+        params = params || {};
+        params.exportType = type;
+
+        return $http.post('/api/exports', $httpParamSerializer(params), {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
+    }
+
+    function deleteExport(exportId) {
+        const url = "/api/exports/" + exportId;
+        return $http.delete(url);
     }
 }

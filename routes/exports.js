@@ -1,22 +1,22 @@
 'use strict';
 
 const moment = require('moment')
-, log = require('winston')
-, fs = require('fs')
-, Writable = require('stream')
-, exportDirectory = require('../environment/env').exportDirectory
-, Event = require('../models/event')
-, User = require('../models/user')
-, Device = require('../models/device')
-, access = require('../access')
-, exporterFactory = require('../export/exporterFactory')
-, ExportMetadata = require('../models/exportmetadata');
+  , log = require('winston')
+  , fs = require('fs')
+  , Writable = require('stream')
+  , exportDirectory = require('../environment/env').exportDirectory
+  , Event = require('../models/event')
+  , User = require('../models/user')
+  , Device = require('../models/device')
+  , access = require('../access')
+  , exporterFactory = require('../export/exporterFactory')
+  , ExportMetadata = require('../models/exportmetadata');
 
 
 module.exports = function (app, security) {
 
   const passport = security.authentication.passport;
- 
+
   /**
    * This method holds up the request until the export is complete.
    * 
@@ -48,8 +48,7 @@ module.exports = function (app, security) {
    * This performs the export in the "background".  This means that the export does 
    * not hold up the request until the export is complete.
    */
-  app.get(
-    '/api/exports/:exportType(geojson|kml|shapefile|csv)',
+  app.post('/api/exports',
     passport.authenticate('bearer'),
     parseQueryParams,
     getEvent,
@@ -60,9 +59,9 @@ module.exports = function (app, security) {
 
       const meta = {
         userId: req.user._id,
-        exportType: req.params.exportType,
+        exportType: req.param('exportType'),
         options: {
-          eventId: req.event._id,
+          eventId: req.param('eventId'),
           filter: req.parameters.filter
         }
       };
@@ -86,74 +85,42 @@ module.exports = function (app, security) {
     }
   );
 
-  app.get(
-    '/api/exports/:exportId/download',
+  /**
+   * Get all exports
+   */
+  app.get('/api/exports',
     passport.authenticate('bearer'),
-     //TODO read_metadata role??
-     access.authorize('READ_USER'),
+    access.authorize('READ_EXPORT'),
     function (req, res, next) {
       //TODO implement
     }
   );
 
-  app.get(
-    '/api/exports/:exportId/status',
+  /**
+   * Get my exports
+   */
+  app.get('/api/exports/myself',
     passport.authenticate('bearer'),
-     //TODO read_metadata role??
-     access.authorize('READ_USER'),
+    //access.authorize('READ_EXPORT'),
     function (req, res, next) {
-      ExportMetadata.getExportMetadataById(req.params.exportId).then(meta => {
-        const status = {
-          status: meta.status
-        };
-        res.json(status);
-        return next();
-      }).catch(err => {
-        return next(err);
-      });
-    }
-  );
-
-  app.get(
-    '/api/exports/user/:userId',
-    passport.authenticate('bearer'),
-     //TODO read_metadata role??
-     access.authorize('READ_USER'),
-    function (req, res, next) {
-      ExportMetadata.getExportMetadatasByUserId(req.params.userId).then(metas => {
+      ExportMetadata.getExportMetadatasByUserId(req.user._id).then(metas => {
         res.json(metas);
         return next();
       }).catch(err => {
+        log.warn(err);
         return next(err);
       });
     }
   );
 
-  app.get(
-    '/api/exports/count',
+  /**
+   * Remove a specific export
+   */
+  app.delete('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    //TODO read_metadata role??
-    access.authorize('READ_USER'),
+    access.authorize('DELETE_EXPORT'),
     function (req, res, next) {
-      const filter = {};
-
-      if (req.query) {
-        for (let [key, value] of Object.entries(req.query)) {
-          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
-            continue;
-          }
-          filter[key] = value;
-        }
-      }
-
-      ExportMetadata.count({ filter: filter })
-        .then(cnt => {
-          res.json({ count: cnt });
-          return next();
-        })
-        .catch(err => next(err));
-    }
-  );
+    });
 };
 
 function parseQueryParams(req, res, next) {
