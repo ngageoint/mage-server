@@ -2,12 +2,13 @@
 
 module.exports = ExportService;
 
-ExportService.$inject = ['$http', '$q', '$httpParamSerializer'];
+ExportService.$inject = ['$http'];
 
-function ExportService($http, $q, $httpParamSerializer) {
+function ExportService($http) {
 
     const service = {
-        count
+        count,
+        export: performExport
     };
 
     return service;
@@ -15,6 +16,11 @@ function ExportService($http, $q, $httpParamSerializer) {
     function count(options) {
         options = options || {};
 
-        return $http.get('api/export/count', { params: options });
+        return $http.get('/api/exports/count', { params: options });
+    }
+
+    function performExport(type, options) {
+        const url = "/api/exports/" + type;
+        return $http.get(url, {params: options});
     }
 }

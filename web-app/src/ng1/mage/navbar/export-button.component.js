@@ -35,6 +35,7 @@ function ExportButtonController(Event, ExportService, UserService) {
   this.checkCompletedExports = function () {
     if (UserService.myself) {
       console.log(UserService.myself.id);
+      //TODO this requires a log in
       /*ExportService.count({ userId: UserService.myself.id }).then(cnt => {
         this.count = cnt;
       }).catch(err => {

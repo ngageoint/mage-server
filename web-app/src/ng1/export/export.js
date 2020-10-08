@@ -145,8 +145,7 @@ function ExportController(LocalStorageService, FilterService, ExportService, $ti
     const params = {
       eventId: this.exportEvent.selected.id,
       observations: this.exportObservations.value,
-      locations: this.exportLocations.value,
-      access_token: LocalStorageService.getToken() //eslint-disable-line camelcase
+      locations: this.exportLocations.value
     };
 
     if (start) params.startDate = start;
@@ -157,9 +156,8 @@ function ExportController(LocalStorageService, FilterService, ExportService, $ti
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    const url = "api/export/" + this.type.value + "?" + $httpParamSerializer(params);
-    //TODO design UI to handle both the background export, as well as status updates.
-    $http.get(url).then(response => {
+    
+    ExportService.export(this.type.value, params).then(response => {
       console.log('Export id: ' + response.data);
     }).catch(err => {
       console.log(err);
