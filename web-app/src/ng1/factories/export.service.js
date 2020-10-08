@@ -20,6 +20,8 @@ function ExportService($http) {
     }
 
     function performExport(type, options) {
+        options = options || {};
+
         const url = "/api/exports/" + type;
         return $http.get(url, {params: options});
     }

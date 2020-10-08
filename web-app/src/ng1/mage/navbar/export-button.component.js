@@ -36,11 +36,11 @@ function ExportButtonController(Event, ExportService, UserService) {
     if (UserService.myself) {
       console.log(UserService.myself.id);
       //TODO this requires a log in
-      /*ExportService.count({ userId: UserService.myself.id }).then(cnt => {
-        this.count = cnt;
+      ExportService.count({ userId: UserService.myself.id }).then(response => {
+        this.count = response.data.count;
       }).catch(err => {
         console.log(err);
-      });*/
+      });
     }
   };
 }
