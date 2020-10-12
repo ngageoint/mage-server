@@ -101,7 +101,7 @@ module.exports = function (app, security) {
    */
   app.get('/api/exports/myself',
     passport.authenticate('bearer'),
-    //access.authorize('READ_EXPORT'),
+    access.authorize('READ_EXPORT'),
     function (req, res, next) {
       ExportMetadata.getExportMetadatasByUserId(req.user._id).then(metas => {
         res.json(metas);
