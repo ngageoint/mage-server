@@ -208,6 +208,11 @@ a:hover, a:focus {
   color: white;
 }
 
+.export-info-panel .export-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
 .time-zone-button {
   height: 56px;
   padding-left: 12px;
