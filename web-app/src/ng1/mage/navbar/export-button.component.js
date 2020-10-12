@@ -3,14 +3,15 @@
 module.exports = {
   template: require('./export-button.component.html'),
   bindings: {
-    drawer: '<'
+    drawer: '<',
+    myself: '<'
   },
   controller: ExportButtonController
 };
 
-ExportButtonController.$inject = ['Event', 'ExportService', 'UserService'];
+ExportButtonController.$inject = ['Event', 'ExportService'];
 
-function ExportButtonController(Event, ExportService, UserService) {
+function ExportButtonController(Event, ExportService) {
 
   this.$onInit = function () {
     this.count = 0;
@@ -33,7 +34,7 @@ function ExportButtonController(Event, ExportService, UserService) {
   };
 
   this.checkCompletedExports = function () {
-    if (UserService.myself) {
+    if (this.myself) {
       ExportService.getMyExports().then(response => {
         this.count = response.data.length;
       }).catch(err => {
