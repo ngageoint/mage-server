@@ -6,7 +6,7 @@ const MDCDialog = require('material-components-web').dialog.MDCDialog
   , moment = require('moment')
   , angular = require('angular');
 
-function ExportController(LocalStorageService, FilterService, ExportService, $timeout, $element, $httpParamSerializer, $http) {
+function ExportController(FilterService, ExportService, $timeout, $element) {
   this.exportPanel;
   this.intervalSelectMdc;
   this.chipSet;
@@ -175,4 +175,4 @@ module.exports = {
   controller: ExportController
 };
 
-ExportController.$inject = ['LocalStorageService', 'FilterService', 'ExportService', '$timeout', '$element', '$httpParamSerializer', '$http'];
+ExportController.$inject = ['FilterService', 'ExportService', '$timeout', '$element'];

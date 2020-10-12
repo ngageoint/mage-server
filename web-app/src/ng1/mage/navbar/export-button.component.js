@@ -18,7 +18,7 @@ function ExportButtonController(Event, ExportService, UserService) {
   };
 
   this.$onChanges = function (changes) {
-    //TODO 
+    this.checkCompletedExports();
   }
 
   this.export = function () {
