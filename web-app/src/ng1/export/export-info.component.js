@@ -1,13 +1,12 @@
 'use strict';
 
 const MDCDialog = require('material-components-web').dialog.MDCDialog
-  , MDCSelect = require('material-components-web').select.MDCSelect
-  , MDCChipSet = require('material-components-web').chips.MDCChipSet
-  , moment = require('moment')
-  , angular = require('angular');
+    , MDCDataTable = require('material-components-web').dataTable.MDCDataTable
+    , angular = require('angular');
 
-function ExportInfoController($element, $timeout, FilterService) {
+function ExportInfoController($timeout, FilterService) {
     this.exportInfoPanel;
+    this.exports = [];
 
     this.$onChanges = function () {
         if (this.events) {
@@ -32,7 +31,8 @@ function ExportInfoController($element, $timeout, FilterService) {
         });
         this.exportInfoPanel.listen('MDCDialog:opening', () => {
             this.exportEvent = { selected: FilterService.getEvent() };
-            this.initializeEventPanel();
+            this.getExports();
+
         });
 
         if (this.events) {
@@ -42,8 +42,22 @@ function ExportInfoController($element, $timeout, FilterService) {
         }
     };
 
-    this.initializeEventPanel = function() {
+    this.getExports = function () {
+        //const dataTable = new MDCDataTable(angular.element.find('.mdc-data-table')[0]);
+        //const rows = dataTable.getRows();
+        //rows.splice(0, rows.length);
+        this.exports.splice(0, this.exports.length);
+        this.exports.push({
+            userName: 'Pecker', 
+            exportType: 'CSV',
+            status: 'Pending'
+        });
     };
+
+    this.openExport = function ($event) {
+        //TODO implement
+        console.log('Launch Dialog');
+    }
 }
 
 module.exports = {
@@ -57,4 +71,4 @@ module.exports = {
     controller: ExportInfoController
 };
 
-ExportInfoController.$inject = ['$element', '$timeout', 'FilterService'];
+ExportInfoController.$inject = ['$timeout', 'FilterService'];
