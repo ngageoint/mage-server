@@ -4,7 +4,7 @@ const MDCDialog = require('material-components-web').dialog.MDCDialog
     , MDCChipSet = require('material-components-web').chips.MDCChipSet
     , angular = require('angular');
 
-function ExportInfoController($element, $timeout, FilterService, ExportService) {
+function ExportInfoController($element, $filter, $timeout, FilterService, ExportService) {
     this.exportInfoPanel;
     this.chipSet;
     this.exports = [];
@@ -39,6 +39,7 @@ function ExportInfoController($element, $timeout, FilterService, ExportService) 
 
         this.chipSet.listen('MDCChip:selection', event => {
             console.log(event.detail);
+            //$filter('filter')([event.detail.chipId], this.exports);
 
         });
 
@@ -78,4 +79,4 @@ module.exports = {
     controller: ExportInfoController
 };
 
-ExportInfoController.$inject = ['$element', '$timeout', 'FilterService', 'ExportService'];
+ExportInfoController.$inject = ['$element', '$filter', '$timeout', 'FilterService', 'ExportService'];

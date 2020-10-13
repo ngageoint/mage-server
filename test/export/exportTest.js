@@ -220,13 +220,20 @@ describe("export tests", function () {
     mockfs(fs);
 
     request(app)
-      .get('/api/export/kml?eventId=2&observations=true&locations=false&attachments=false')
+      .post('/api/exports/')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
+      .send({
+        exportType: 'kml',
+        eventId: 2,
+        observations: true,
+        locations: false,
+        attachments: false
+      })
       .expect(201)
       .expect(function (res) {
         res.headers.should.have.property('content-type').that.contains('application/json');
-        res.headers.should.have.property('location').that.equals('/api/export/' + exportMeta._id);
+        res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
       })
       .end(function (err) {
         mockfs.restore();
