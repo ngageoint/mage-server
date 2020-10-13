@@ -4,7 +4,7 @@ const MDCDialog = require('material-components-web').dialog.MDCDialog
     , MDCDataTable = require('material-components-web').dataTable.MDCDataTable
     , angular = require('angular');
 
-function ExportInfoController($timeout, FilterService) {
+function ExportInfoController($timeout, FilterService, ExportService) {
     this.exportInfoPanel;
     this.exports = [];
 
@@ -47,10 +47,13 @@ function ExportInfoController($timeout, FilterService) {
         //const rows = dataTable.getRows();
         //rows.splice(0, rows.length);
         this.exports.splice(0, this.exports.length);
-        this.exports.push({
-            userName: 'Pecker', 
-            exportType: 'CSV',
-            status: 'Pending'
+
+        ExportService.getAllExports().then(response => {
+            for (const e of response.data) {
+                this.exports.push(e);
+            }
+        }).catch(err => {
+            console.log(err);
         });
     };
 
@@ -71,4 +74,4 @@ module.exports = {
     controller: ExportInfoController
 };
 
-ExportInfoController.$inject = ['$timeout', 'FilterService'];
+ExportInfoController.$inject = ['$timeout', 'FilterService', 'ExportService'];

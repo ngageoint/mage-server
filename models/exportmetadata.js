@@ -71,6 +71,11 @@ exports.getExportMetadatasByUserId = function (userId) {
     return ExportMetadata.find(conditions);
 };
 
+exports.getAllExportMetadatas = function () {
+    const conditions = {
+    };
+    return ExportMetadata.find(conditions);
+};
 
 exports.count = function (options) {
     options = options || {};

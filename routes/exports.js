@@ -92,7 +92,13 @@ module.exports = function (app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_EXPORT'),
     function (req, res, next) {
-      //TODO implement
+      ExportMetadata.getAllExportMetadatas().then(metas => {
+        res.json(metas);
+        return next();
+      }).catch(err => {
+        log.warn(err);
+        return next(err);
+      });
     }
   );
 
