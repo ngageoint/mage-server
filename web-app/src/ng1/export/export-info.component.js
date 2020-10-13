@@ -1,11 +1,12 @@
 'use strict';
 
 const MDCDialog = require('material-components-web').dialog.MDCDialog
-    , MDCDataTable = require('material-components-web').dataTable.MDCDataTable
+    , MDCChipSet = require('material-components-web').chips.MDCChipSet
     , angular = require('angular');
 
-function ExportInfoController($timeout, FilterService, ExportService) {
+function ExportInfoController($element, $timeout, FilterService, ExportService) {
     this.exportInfoPanel;
+    this.chipSet;
     this.exports = [];
 
     this.$onChanges = function () {
@@ -25,6 +26,7 @@ function ExportInfoController($timeout, FilterService, ExportService) {
     };
 
     this.initialize = function () {
+        this.chipSet = new MDCChipSet($element.find('.mdc-chip-set')[0]);
         this.exportInfoPanel = new MDCDialog(angular.element.find('.export-info-panel')[0]);
         this.exportInfoPanel.listen('MDCDialog:closing', () => {
             this.onExportClose();
@@ -32,6 +34,11 @@ function ExportInfoController($timeout, FilterService, ExportService) {
         this.exportInfoPanel.listen('MDCDialog:opening', () => {
             this.exportEvent = { selected: FilterService.getEvent() };
             this.getExports();
+
+        });
+
+        this.chipSet.listen('MDCChip:selection', event => {
+            console.log(event.detail);
 
         });
 
@@ -43,9 +50,6 @@ function ExportInfoController($timeout, FilterService, ExportService) {
     };
 
     this.getExports = function () {
-        //const dataTable = new MDCDataTable(angular.element.find('.mdc-data-table')[0]);
-        //const rows = dataTable.getRows();
-        //rows.splice(0, rows.length);
         this.exports.splice(0, this.exports.length);
 
         ExportService.getAllExports().then(response => {
@@ -74,4 +78,4 @@ module.exports = {
     controller: ExportInfoController
 };
 
-ExportInfoController.$inject = ['$timeout', 'FilterService', 'ExportService'];
+ExportInfoController.$inject = ['$element', '$timeout', 'FilterService', 'ExportService'];
