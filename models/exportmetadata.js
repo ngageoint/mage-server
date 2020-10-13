@@ -68,13 +68,13 @@ exports.getExportMetadatasByUserId = function (userId) {
     const conditions = {
         userId: userId
     };
-    return ExportMetadata.find(conditions);
+    return ExportMetadata.find(conditions).populate('userId');
 };
 
 exports.getAllExportMetadatas = function () {
     const conditions = {
     };
-    return ExportMetadata.find(conditions);
+    return ExportMetadata.find(conditions).populate('userId');
 };
 
 exports.count = function (options) {
