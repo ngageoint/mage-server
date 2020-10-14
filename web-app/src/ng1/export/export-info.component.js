@@ -7,10 +7,10 @@ const MDCDialog = require('material-components-web').dialog.MDCDialog
 function ExportInfoController($element, $filter, $timeout, FilterService, ExportService) {
     this.exportInfoPanel;
     this.chipSet;
-    this.exports = [];
+    this.allExports = [];
     this.filteredExports = [];
     this.exportOpen = { opened: false };
-    this.pageData = [];
+    this.pagedExports = [];
     this.page = 1;
     this.numItemsPerPage = 4;
 
@@ -55,11 +55,11 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
     };
 
     this.getExports = function () {
-        this.exports.splice(0, this.exports.length);
+        this.allExports.splice(0, this.allExports.length);
 
         ExportService.getAllExports().then(response => {
             for (const e of response.data) {
-                this.exports.push(e);
+                this.allExports.push(e);
             }
             this.filter();
         }).catch(err => {
@@ -69,7 +69,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
 
     this.filter = function () {
         this.filteredExports.splice(0, this.filteredExports.length);
-        for (const ex of this.exports) {
+        for (const ex of this.allExports) {
             if (this.matchesFilters(ex)) {
                 this.filteredExports.push(ex);
             }
@@ -78,7 +78,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
     };
 
     this.applyPaging = function () {
-        this.pageData.splice(0, this.pageData.length);
+        this.pagedExports.splice(0, this.pagedExports.length);
 
         const startIdx = this.numItemsPerPage * (this.page - 1);
 
@@ -88,7 +88,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
         }
 
         for (let i = startIdx; i < endIdx; i++) {
-            this.pageData.push(this.filteredExports[i]);
+            this.pagedExports.push(this.filteredExports[i]);
         }
 
     };
