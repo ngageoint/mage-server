@@ -8,6 +8,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
     this.exportInfoPanel;
     this.chipSet;
     this.exports = [];
+    this.filteredExports = [];
     this.exportOpen = { opened: false };
 
     this.$onChanges = function () {
@@ -40,11 +41,8 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
         });
 
         this.chipSet.listen('MDCChip:selection', event => {
-            console.log(event.detail);
-            //TODO filter
-            //$filter('filter')([event.detail.chipId], this.exports);
-
-        });
+            this.filter();
+        }).bind(this);
 
         if (this.events) {
             if (this.open && this.open.opened && !this.exportInfoPanel.isOpen) {
@@ -60,10 +58,42 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
             for (const e of response.data) {
                 this.exports.push(e);
             }
+            this.filter();
         }).catch(err => {
             console.log(err);
         });
     };
+
+    this.filter = function () {
+        this.filteredExports.splice(0, this.filteredExports.length);
+        for (const ex of this.exports) {
+            if (this.matchesFilters(ex)) {
+                this.filteredExports.push(ex);
+            }
+        }
+    };
+
+    this.matchesFilters = function (ex) {
+        let matches = true;
+        for (const chip of this.chipSet.chips) {
+            if (chip.id === 'completed-exports-chip') {
+                if (chip.selected === true) {
+                    if (ex.status !== 'Completed') {
+                        matches = false;
+                        break;
+                    }
+                }
+            } else if (chip.id === 'my-exports-chip') {
+                if (chip.selected === true) {
+                    if (ex.userId.displayName !== this.myself.displayName) {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+        }
+        return matches;
+    }
 
     this.openExport = function () {
         this.exportOpen = { opened: true };

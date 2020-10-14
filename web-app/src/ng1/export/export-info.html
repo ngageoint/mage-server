@@ -53,7 +53,7 @@
                                     <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
                                 </tr>
                             </thead>
-                            <tbody class="mdc-data-table__content" ng-repeat="export in $ctrl.exports">
+                            <tbody class="mdc-data-table__content" ng-repeat="export in $ctrl.filteredExports">
                                 <tr class="mdc-data-table__row">
                                     <td class="mdc-data-table__cell">{{export.status}}</td>
                                     <th class="mdc-data-table__cell" scope="row">{{export.userId.displayName}}</th>
