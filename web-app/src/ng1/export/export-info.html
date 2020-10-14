@@ -67,6 +67,11 @@
                         </table>
                     </div>
                 </div>
+                <div>
+                    <ul uib-pagination total-items="$ctrl.filteredExports.length" ng-model="$ctrl.page"
+                        ng-change="$ctrl.applyPaging" items-per-page="4" class="pagination-sm" boundary-links="true"
+                        force-ellipses="true"></ul>
+                </div>
             </div>
             <footer class="mdc-dialog__actions">
                 <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
@@ -81,8 +86,5 @@
     </div>
     <div class="mdc-dialog__scrim"></div>
 </div>
-<export-panel 
-  ng-if="$ctrl.exportOpen" 
-  open="$ctrl.exportOpen" 
-  on-export-close="$ctrl.onExportClose()" 
-  events="$ctrl.events"></export-panel>
+<export-panel ng-if="$ctrl.exportOpen" open="$ctrl.exportOpen" on-export-close="$ctrl.onExportClose()"
+    events="$ctrl.events"></export-panel>

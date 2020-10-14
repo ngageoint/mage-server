@@ -9,6 +9,8 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
     this.chipSet;
     this.exports = [];
     this.filteredExports = [];
+    this.pageData = [];
+    this.page = 1;
     this.exportOpen = { opened: false };
 
     this.$onChanges = function () {
@@ -71,6 +73,11 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
                 this.filteredExports.push(ex);
             }
         }
+        this.applyPaging();
+    };
+
+    this.applyPaging = function() {
+        //TODO implement paging
     };
 
     this.matchesFilters = function (ex) {
