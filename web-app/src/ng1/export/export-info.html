@@ -73,7 +73,7 @@
                     <span class="mdc-button__label">Close</span>
                 </button>
                 <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-                    ng-click="$ctrl.openExport($event)" data-mdc-dialog-button-default data-mdc-dialog-initial-focus>
+                    ng-click="$ctrl.openExport()" data-mdc-dialog-button-default data-mdc-dialog-initial-focus>
                     <span class="mdc-button__label">New Export</span>
                 </button>
             </footer>
@@ -81,3 +81,8 @@
     </div>
     <div class="mdc-dialog__scrim"></div>
 </div>
+<export-panel 
+  ng-if="$ctrl.exportOpen" 
+  open="$ctrl.exportOpen" 
+  on-export-close="$ctrl.onExportClose()" 
+  events="$ctrl.events"></export-panel>

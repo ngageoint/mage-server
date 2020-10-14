@@ -8,6 +8,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
     this.exportInfoPanel;
     this.chipSet;
     this.exports = [];
+    this.exportOpen = { opened: false };
 
     this.$onChanges = function () {
         if (this.events) {
@@ -30,15 +31,17 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
         this.exportInfoPanel = new MDCDialog(angular.element.find('.export-info-panel')[0]);
         this.exportInfoPanel.listen('MDCDialog:closing', () => {
             this.onExportClose();
+            this.exportOpen = { opened: false };
         });
         this.exportInfoPanel.listen('MDCDialog:opening', () => {
+            this.exportOpen = { opened: false };
             this.exportEvent = { selected: FilterService.getEvent() };
             this.getExports();
-
         });
 
         this.chipSet.listen('MDCChip:selection', event => {
             console.log(event.detail);
+            //TODO filter
             //$filter('filter')([event.detail.chipId], this.exports);
 
         });
@@ -62,9 +65,8 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
         });
     };
 
-    this.openExport = function ($event) {
-        //TODO implement
-        console.log('Launch Dialog');
+    this.openExport = function () {
+        this.exportOpen = { opened: true };
     }
 }
 
