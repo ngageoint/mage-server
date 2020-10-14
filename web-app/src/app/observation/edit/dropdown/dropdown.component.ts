@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { MatSelectChange } from '@angular/material';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -14,13 +15,12 @@ export interface Choice {
 })
 export class DropdownComponent implements OnInit {
   @Input() field: any;
+  @Output() selectionChange = new EventEmitter<{value: any}>();
 
   searchControl: FormControl = new FormControl();
   filteredChoices: Observable<any[]>;
 
-  constructor() { }
-
-  ngOnInit() {
+  ngOnInit(): void {
     this.filteredChoices = this.searchControl.valueChanges.pipe(
       startWith(''),
       map(value => {
@@ -30,6 +30,12 @@ export class DropdownComponent implements OnInit {
         return title ? this.filter(title) : this.field.choices.slice()
       })
     );
+  }
+
+  onSelectionChange(event: MatSelectChange): void {
+    this.selectionChange.emit({
+      value: event.value
+    })
   }
 
   private filter(title: string): Choice[] {

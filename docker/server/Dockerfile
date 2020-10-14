@@ -1,6 +1,6 @@
 FROM node:10.17.0
 
-ARG MAGE_VER=5.3.5
+ARG MAGE_VER=5.4.3
 
 LABEL author="NGA"
 

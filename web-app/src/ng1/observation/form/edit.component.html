@@ -7,7 +7,7 @@
     <div ng-switch on="field.type">
       <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
       <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
-      <observation-edit-dropdown ng-switch-when="dropdown" [field]="field"></observation-edit-dropdown>
+      <observation-edit-dropdown ng-switch-when="dropdown" [field]="field" (selection-change)="$ctrl.onSelectionChange()"></observation-edit-dropdown>
       <observation-edit-multiselectdropdown ng-switch-when="multiselectdropdown" [field]="field"></observation-edit-multiselectdropdown>
       <email-edit ng-switch-when="email" field="field"></email-edit>
       <geometry-edit ng-switch-when="geometry" 

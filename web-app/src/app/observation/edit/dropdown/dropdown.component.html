@@ -1,6 +1,6 @@
 <mat-form-field appearance="outline">
   <mat-label>{{field.title + (field.required ? ' *' : '')}}</mat-label>
-  <mat-select [(ngModel)]="field.value">
+  <mat-select [(ngModel)]="field.value" (selectionChange)="onSelectionChange($event)">
     <mat-option>
       <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{field.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
     </mat-option>
