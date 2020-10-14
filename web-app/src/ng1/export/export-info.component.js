@@ -42,7 +42,7 @@ function ExportInfoController($element, $filter, $timeout, FilterService, Export
 
         this.chipSet.listen('MDCChip:selection', event => {
             this.filter();
-        }).bind(this);
+        });
 
         if (this.events) {
             if (this.open && this.open.opened && !this.exportInfoPanel.isOpen) {
