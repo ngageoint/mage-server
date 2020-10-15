@@ -71,7 +71,7 @@ module.exports = function (app, security) {
         exportInBackground(result._id, req.event, req.users, req.devices).catch(err => {
           log.warn(err);
         });
-        res.location('/api/exports/' + result._id.toString());
+        res.location(result.location);
         res.status(201);
         const exportId = {
           exportId: result._id.toString()

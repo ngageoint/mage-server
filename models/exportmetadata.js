@@ -26,6 +26,8 @@ const ExportMetadataSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     physicalPath: { type: String },
     exportType: { type: String, required: true },
+    location: { type: String },
+    server: { type: String },
     status: {
         type: String,
         enum: [exportStatusEnum.Starting, exportStatusEnum.Running, exportStatusEnum.Completed, exportStatusEnum.Failed]
@@ -57,7 +59,10 @@ exports.createMetadata = function (meta) {
             filter: meta.options.filter
         }
     });
-    return newMeta.save();
+    return newMeta.save().then(savedMeta => {
+        savedMeta.location = '/api/exports/' + savedMeta._id.toString();
+        return savedMeta.save();
+    });
 };
 
 exports.getExportMetadataById = function (id) {
