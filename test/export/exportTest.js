@@ -206,6 +206,7 @@ describe("export tests", function () {
 
     sinon.mock(ExportMetadataModel.prototype)
       .expects('save')
+      .twice()
       .resolves(exportMeta);
 
     sinon.mock(IconModel)
