@@ -45,8 +45,8 @@ exports.initialize = function (app, done) {
    
     const intervalMs = exportSweepInterval*1000;
     log.info('export-file-sweeper: Initializing job to check ' + exportDirectory + ' for expired export files every ' + intervalMs + 'ms');
-    const firstSweep = new Date(Date.now() + intervalMs);
-    log.info('export-file-sweeper: Will begin first sweep at ' + firstSweep.toString());
+    
+    sweep();
     setInterval(sweep, intervalMs);
 
     done();

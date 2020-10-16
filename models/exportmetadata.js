@@ -27,7 +27,6 @@ const ExportMetadataSchema = new Schema({
     physicalPath: { type: String },
     exportType: { type: String, required: true },
     location: { type: String },
-    server: { type: String },
     status: {
         type: String,
         enum: [exportStatusEnum.Starting, exportStatusEnum.Running, exportStatusEnum.Completed, exportStatusEnum.Failed]
