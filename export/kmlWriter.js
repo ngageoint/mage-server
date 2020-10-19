@@ -195,7 +195,7 @@ function generateFormStyles(event, form, icons) {
   });
 
   // default form style
-  styles.push("<Style id='" + [event._id.toString(), form._id.toString()].join("-") + "'>"+defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+  styles.push('<Style id="' + [event._id.toString(), form._id.toString()].join("-") + '">' + defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
 
   var typeField = getFieldByName(form, form.primaryField);
 
@@ -214,7 +214,7 @@ function generateFormStyles(event, form, icons) {
         styleTypeMap[choice.title] = '<LineStyle><width>'+style[choice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
       }
       styleVariantMap[choice.title] = {};
-      styles.push("<Style id='" + [event._id.toString(), form._id.toString(), choice.title].join("-") + "'>"+styleTypeMap[choice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+      styles.push('<Style id="' + [event._id.toString(), form._id.toString(), choice.title].join("-") + '">' + styleTypeMap[choice.title] + "<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
 
       // variant styles for each type
       var variantField = getFieldByName(form, form.variantField);
@@ -236,7 +236,7 @@ function generateFormStyles(event, form, icons) {
             fillOpacity = convert(~~(style[choice.title][variantChoice.title].fillOpacity * 255));
             styleVariantMap[choice.title][variantChoice.title] = '<LineStyle><width>'+style[choice.title][variantChoice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
           }
-          styles.push("<Style id='" + [event._id.toString(), form._id.toString(), choice.title, variantChoice.title].join("-") + "'>"+styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+          styles.push('<Style id="' + [event._id.toString(), form._id.toString(), choice.title, variantChoice.title].join("-") + '">' + styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
         });
       }
     });
