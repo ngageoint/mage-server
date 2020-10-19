@@ -43,14 +43,13 @@
                             <thead>
                                 <tr class="mdc-data-table__header-row">
                                     <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
-                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Display Name
+                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">User
                                     </th>
-                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Export Type
+                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Type
                                     </th>
                                     <th class="mdc-data-table__header-cell" role="columnheader" scope="col">URL
                                     </th>
                                     <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Expires</th>
-                                    <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
                                 </tr>
                             </thead>
                             <tbody class="mdc-data-table__content" ng-repeat="export in $ctrl.pagedExports">
@@ -61,7 +60,6 @@
                                     <td class="mdc-data-table__cell"> <a href="https://www.w3schools.com/">Download</a>
                                     </td>
                                     <td class="mdc-data-table__cell">Oct. 20, 2020</td>
-                                    <td class="mdc-data-table__cell">{{export.createdAt}}</td>
                                 </tr>
                             </tbody>
                         </table>
