@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, OnChanges, Input, Output, EventEmitter, Inject, ViewChild, SimpleChanges, HostListener } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 
 export interface PeriodicElement {
@@ -27,30 +28,24 @@ const ELEMENT_DATA: PeriodicElement[] = [
   selector: 'exports',
   templateUrl: './exports.component.html'
 })
-export class ExportsComponent implements OnDestroy, OnChanges {
+export class ExportsComponent implements OnChanges {
   @Input() open: any;
   @Input() events: any[];
   @Output() onExportClose = new EventEmitter<void>();
 
-  private dialogRef: MatDialogRef<ExportsDialogComponent>;
-
   constructor(private dialog: MatDialog) {
   }
 
-  ngOnDestroy(): void {
-    this.dialogRef = null;
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
-    this.handleDialog();
-  }
-
-  handleDialog(): void {
-    if (!this.dialogRef) {
-      this.dialogRef = this.dialog.open(ExportsDialogComponent, {
-        data: { onExportClose: this.onExportClose }
-      });
+    if (this.open) {
+      this.openDialog();
     }
+  }
+  openDialog(): void {
+    this.dialog.open(ExportsDialogComponent)
+      .afterClosed().subscribe(() => {
+        this.onExportClose.emit();
+      });
   }
 }
 
@@ -59,19 +54,16 @@ export class ExportsComponent implements OnDestroy, OnChanges {
   templateUrl: 'exports-dialog.component.html',
   styleUrls: ['./exports-dialog.component.scss']
 })
-export class ExportsDialogComponent implements OnInit, OnDestroy {
+export class ExportsDialogComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true}) sort: MatSort;
 
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   private dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
 
   constructor(
-    private dialogRef: MatDialogRef<ExportsDialogComponent>, @Inject(MAT_DIALOG_DATA) private data: any) { }
+    private dialogRef: MatDialogRef<ExportsDialogComponent>) { }
 
-  @HostListener('unloaded')
-  ngOnDestroy(): void {
-    this.data.onExportClose.emit();
-  }
 
   newExport(): void {
     //TODO launch old export dialog?
@@ -79,5 +71,6 @@ export class ExportsDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 }

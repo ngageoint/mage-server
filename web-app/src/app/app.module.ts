@@ -41,7 +41,8 @@ import {
   MatExpansionModule,
   MatTableModule,
   MatDialogModule,
-  MatPaginatorModule
+  MatPaginatorModule,
+  MatSortModule
 } from '@angular/material';
 
 import { ZoomComponent } from './map/controls/zoom.component';
@@ -121,7 +122,8 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     CheckboardModule,
     MatTableModule,
     MatDialogModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatSortModule
   ],
   providers: [
     mapServiceProvider
