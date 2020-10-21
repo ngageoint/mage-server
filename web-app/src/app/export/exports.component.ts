@@ -1,7 +1,7 @@
 import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
-import {MatSort} from '@angular/material/sort';
+import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 
 export interface PeriodicElement {
@@ -33,19 +33,22 @@ export class ExportsComponent implements OnChanges {
   @Input() events: any[];
   @Output() onExportClose = new EventEmitter<void>();
 
+  private matDialogRef: MatDialogRef<ExportsDialogComponent>;
+
   constructor(private dialog: MatDialog) {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.open) {
+    if (this.open && this.open.opened && !this.matDialogRef) {
       this.openDialog();
     }
   }
   openDialog(): void {
-    this.dialog.open(ExportsDialogComponent)
-      .afterClosed().subscribe(() => {
-        this.onExportClose.emit();
-      });
+    this.matDialogRef = this.dialog.open(ExportsDialogComponent);
+    this.matDialogRef.afterClosed().subscribe(() => {
+      this.onExportClose.emit();
+      this.matDialogRef = null;
+    });
   }
 }
 
@@ -56,7 +59,7 @@ export class ExportsComponent implements OnChanges {
 })
 export class ExportsDialogComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true}) sort: MatSort;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   private dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
