@@ -4,9 +4,9 @@
   <i class="material-icons">save_alt</i>
   <span style="padding-left: 10px;" class="mdc-button__label">Exports<sup><span class="badge badge-accent">{{$ctrl.count}}</span></sup>
 </a>
-<export-info-panel 
+<exports 
   ng-if="$ctrl.exportOpen" 
   open="$ctrl.exportOpen" 
-  on-export-close="$ctrl.onExportClose()" 
+  (on-export-close)="$ctrl.onExportClose()" 
   events="$ctrl.events"
-  myself="$ctrl.myself"></export-info-panel>
+  myself="$ctrl.myself"></exports>

@@ -38,7 +38,10 @@ import {
   MatRadioModule,
   MatCheckboxModule,
   MatSliderModule,
-  MatExpansionModule
+  MatExpansionModule,
+  MatTableModule,
+  MatDialogModule,
+  MatPaginatorModule
 } from '@angular/material';
 
 import { ZoomComponent } from './map/controls/zoom.component';
@@ -59,6 +62,7 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
+import { ExportsComponent, ExportsDialogComponent } from './export/exports.component';
 
 import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
 
@@ -78,7 +82,9 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportsDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -112,7 +118,10 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     SaturationModule,
     HueModule,
     AlphaModule,
-    CheckboardModule
+    CheckboardModule,
+    MatTableModule,
+    MatDialogModule,
+    MatPaginatorModule
   ],
   providers: [
     mapServiceProvider
@@ -137,7 +146,9 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersControlComponent,
     ScrollWrapperComponent,
     SwaggerComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportsDialogComponent
   ]
 })
 export class AppModule {
