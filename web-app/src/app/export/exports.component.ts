@@ -7,7 +7,6 @@ import { ExportMetadataService, ExportMetadata } from './export-metadata.service
 
 
 @Component({
-  selector: 'exports',
   templateUrl: './exports.component.html'
 })
 export class ExportsComponent implements OnChanges {
