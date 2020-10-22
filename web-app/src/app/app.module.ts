@@ -65,7 +65,7 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent, ExportsDialogComponent } from './export/exports.component';
 
-import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { LocalStorageService, localStorageServiceProvider, mapServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
 
 @NgModule({
@@ -128,6 +128,7 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
   ],
   providers: [
     mapServiceProvider,
+    localStorageServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
