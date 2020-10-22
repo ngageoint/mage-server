@@ -1,16 +1,28 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
-@Injectable()
+export interface ExportMetadata {
+    userId: any,
+    physicalPath: string,
+    exportType: string,
+    location: string,
+    status: string,
+    options: any
+}
+
+@Injectable({
+    providedIn: 'root'
+})
 export class ExportService {
 
     constructor(private http: HttpClient) { }
 
-    getMyExports() {
+    getMyExports(): Observable<Object> {
         return this.http.get('/api/exports/myself');
     }
 
-    getAllExports() {
+    getAllExports(): Observable<Object> {
         return this.http.get('/api/exports');
     }
 
@@ -27,7 +39,7 @@ export class ExportService {
         });
     }*/
 
-    deleteExport(exportId: string) {
+    deleteExport(exportId: string): Observable<Object> {
         const url = "/api/exports/" + exportId;
         return this.http.delete(url);
     }

@@ -3,17 +3,8 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ExportService } from './export.service';
+import { ExportService, ExportMetadata } from './export.service';
 
-
-export interface ExportMetadata {
-  userId: any,
-  physicalPath: string,
-  exportType: string,
-  location: string,
-  status: string,
-  options: any
-}
 
 @Component({
   selector: 'exports',
@@ -71,5 +62,11 @@ export class ExportsDialogComponent implements OnInit {
   ngOnInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+
+    this.dataSource.data.splice(0, this.dataSource.data.length);
+
+    this.exportService.getMyExports().subscribe((data: any) => {
+        console.log('response');
+    });
   }
 }
