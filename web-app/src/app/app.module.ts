@@ -55,7 +55,7 @@ import { MultiSelectDropdownComponent } from './observation/edit/multiselectdrop
 // import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
 import { LeafletComponent } from './map/leaflet.component';
@@ -66,6 +66,7 @@ import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent, ExportsDialogComponent } from './export/exports.component';
 
 import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { TokenInterceptorService } from './http/token-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -126,7 +127,8 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     MatSortModule
   ],
   providers: [
-    mapServiceProvider
+    mapServiceProvider,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
   entryComponents: [
