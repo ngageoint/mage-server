@@ -14,7 +14,7 @@ class AuthorizeController {
 
   $onInit() {
     this.showAuthorize = false;
-    this._UserService.authorize(this.strategy, this.token, null).success(() => {
+    this._UserService.authorize(this.token, null).success(() => {
       this.onAuthorized();
     }).error(() => {
       this.showAuthorize = true;
