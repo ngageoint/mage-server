@@ -3,7 +3,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ExportService, ExportMetadata } from './export.service';
+import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 
 
 @Component({
@@ -42,7 +42,7 @@ export class ExportsComponent implements OnChanges {
   selector: 'exports-dialog',
   templateUrl: 'exports-dialog.component.html',
   styleUrls: ['./exports-dialog.component.scss'],
-  providers: [ExportService]
+  providers: [ExportMetadataService]
 })
 export class ExportsDialogComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -52,7 +52,7 @@ export class ExportsDialogComponent implements OnInit {
   dataSource = new MatTableDataSource<ExportMetadata>();
 
   constructor(
-    private dialogRef: MatDialogRef<ExportsDialogComponent>, private exportService: ExportService) { }
+    private dialogRef: MatDialogRef<ExportsDialogComponent>, private exportMetaService: ExportMetadataService) { }
 
 
   newExport(): void {
@@ -65,7 +65,7 @@ export class ExportsDialogComponent implements OnInit {
 
     this.dataSource.data.splice(0, this.dataSource.data.length);
 
-    this.exportService.getMyExports().subscribe((data: ExportMetadata[]) => {
+    this.exportMetaService.getMyExports().subscribe((data: ExportMetadata[]) => {
       for (const meta of data) {
         this.dataSource.data.push(meta);
         //TODO filter?

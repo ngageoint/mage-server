@@ -14,7 +14,7 @@ export interface ExportMetadata {
 @Injectable({
     providedIn: 'root'
 })
-export class ExportService {
+export class ExportMetadataService {
 
     constructor(private http: HttpClient) { }
 
