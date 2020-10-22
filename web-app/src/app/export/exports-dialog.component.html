@@ -1,5 +1,6 @@
 <h2 mat-dialog-title>Export Details</h2>
 <div mat-dialog-content>
+
   <table mat-table [dataSource]="dataSource" matSort class="mat-typography">
 
     <ng-container matColumnDef="status">
@@ -19,7 +20,9 @@
 
     <ng-container matColumnDef="url">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> URL </th>
-      <td mat-cell *matCellDef="let export"> {{export.url}} </td>
+      <td mat-cell *matCellDef="let export">
+        <a mat-raised-button href="https://www.google.com/" target="_blank">Download</a>
+      </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

@@ -65,8 +65,12 @@ export class ExportsDialogComponent implements OnInit {
 
     this.dataSource.data.splice(0, this.dataSource.data.length);
 
-    this.exportService.getMyExports().subscribe((data: any) => {
-        console.log('response');
+    this.exportService.getMyExports().subscribe((data: ExportMetadata[]) => {
+      for (const meta of data) {
+        this.dataSource.data.push(meta);
+        //TODO filter?
+        //TODO page?
+      }
     });
   }
 }
