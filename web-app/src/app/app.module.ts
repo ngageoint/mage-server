@@ -63,7 +63,7 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
-import { ExportsComponent, ExportsDialogComponent } from './export/exports.component';
+import { ExportsComponent, ExportMetadataDialogComponent } from './export/exports.component';
 
 import { LocalStorageService, localStorageServiceProvider, mapServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
@@ -86,7 +86,7 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     LayerContentComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportsDialogComponent
+    ExportMetadataDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -153,7 +153,7 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     SwaggerComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportsDialogComponent
+    ExportMetadataDialogComponent
   ]
 })
 export class AppModule {

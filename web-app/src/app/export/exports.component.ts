@@ -18,7 +18,7 @@ export class ExportsComponent implements OnChanges {
   /**
    * Keep track of the dialog ref to detect if the dialog is open or not
    */
-  private matDialogRef: MatDialogRef<ExportsDialogComponent>;
+  private matDialogRef: MatDialogRef<ExportMetadataDialogComponent>;
 
   constructor(private dialog: MatDialog) {
   }
@@ -29,7 +29,7 @@ export class ExportsComponent implements OnChanges {
     }
   }
   openDialog(): void {
-    this.matDialogRef = this.dialog.open(ExportsDialogComponent);
+    this.matDialogRef = this.dialog.open(ExportMetadataDialogComponent);
 
     this.matDialogRef.afterClosed().subscribe(() => {
       this.onExportClose.emit();
@@ -39,12 +39,12 @@ export class ExportsComponent implements OnChanges {
 }
 
 @Component({
-  selector: 'exports-dialog',
-  templateUrl: 'exports-dialog.component.html',
-  styleUrls: ['./exports-dialog.component.scss'],
+  selector: 'export-metadata-dialog',
+  templateUrl: 'export-metadata-dialog.component.html',
+  styleUrls: ['./export-metadata-dialog.component.scss'],
   providers: [ExportMetadataService]
 })
-export class ExportsDialogComponent implements OnInit {
+export class ExportMetadataDialogComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
@@ -52,7 +52,7 @@ export class ExportsDialogComponent implements OnInit {
   dataSource = new MatTableDataSource<ExportMetadata>();
 
   constructor(
-    private dialogRef: MatDialogRef<ExportsDialogComponent>, private exportMetaService: ExportMetadataService) { }
+    private dialogRef: MatDialogRef<ExportMetadataDialogComponent>, private exportMetaService: ExportMetadataService) { }
 
 
   newExport(): void {
