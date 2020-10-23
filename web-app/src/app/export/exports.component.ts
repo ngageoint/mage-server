@@ -43,7 +43,7 @@ export class ExportsComponent implements OnChanges {
   styleUrls: ['./export-metadata-dialog.component.scss'],
   providers: [ExportMetadataService]
 })
-export class ExportMetadataDialogComponent implements OnInit {
+export class ExportMetadataDialogComponent implements OnInit, OnChanges {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
@@ -61,15 +61,13 @@ export class ExportMetadataDialogComponent implements OnInit {
   ngOnInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
 
+  ngOnChanges(changes: SimpleChanges): void {
     this.dataSource.data.splice(0, this.dataSource.data.length);
 
     this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
-      for (const meta of data) {
-        this.dataSource.data.push(meta);
-        //TODO filter?
-        //TODO page?
-      }
+      this.dataSource.data.concat(data);
     });
   }
 }
