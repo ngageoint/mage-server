@@ -7,7 +7,7 @@ import { ExportMetadataService, ExportMetadata } from './export-metadata.service
 
 
 @Component({
-  templateUrl: './exports.component.html'
+  template: '<div></div>'
 })
 export class ExportsComponent implements OnChanges {
   @Input() open: any;
