@@ -64,7 +64,7 @@ export class ExportMetadataDialogComponent implements OnInit {
 
     this.dataSource.data.splice(0, this.dataSource.data.length);
 
-    this.exportMetaService.getMyExports().subscribe((data: ExportMetadata[]) => {
+    this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
       for (const meta of data) {
         this.dataSource.data.push(meta);
         //TODO filter?

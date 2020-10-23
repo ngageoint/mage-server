@@ -18,11 +18,11 @@ export class ExportMetadataService {
 
     constructor(private http: HttpClient) { }
 
-    getMyExports(): Observable<ExportMetadata[]> {
+    getMyExportMetadata(): Observable<ExportMetadata[]> {
         return this.http.get<ExportMetadata[]>('/api/exports/myself');
     }
 
-    getAllExports(): Observable<ExportMetadata[]> {
+    getAllExportMetadata(): Observable<ExportMetadata[]> {
         return this.http.get<ExportMetadata[]>('/api/exports');
     }
 
