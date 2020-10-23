@@ -47,7 +47,7 @@ function syncEvent(event, callback) {
 }
 
 function syncUser(userLocations, event, callback) {
-  new api.User().getById(userLocations.id, function(err, user) {
+  new api.User().getById(userLocations.userId, function(err, user) {
     if (err) return callback(err);
 
     UserModel.createLocations(userLocations.locations, user, event, callback);

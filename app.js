@@ -57,7 +57,7 @@ require('./migrate').runDatabaseMigrations()
 
   })
   .catch(err => {
-    log.error('error initializing server: ' + err);
+    log.error('error initializing database: ', err);
     process.exitCode = 1;
   });
 
