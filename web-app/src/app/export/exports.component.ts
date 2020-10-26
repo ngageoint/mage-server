@@ -47,7 +47,7 @@ export class ExportMetadataDialogComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
-  displayedColumns: string[] = ['status', 'user', 'type', 'url'];
+  displayedColumns: string[] = ['status', 'user', 'type', 'url', 'event', 'delete'];
   dataSource = new MatTableDataSource<ExportMetadata>();
 
   constructor(
@@ -66,7 +66,12 @@ export class ExportMetadataDialogComponent implements OnInit {
       this.dataSource.data.concat(data);
     });
   }
+
   doFilter(filter: string): void {
     this.dataSource.filter = filter.trim().toLocaleLowerCase();
+  }
+
+  redirectToDelete(id: string): void {
+    //TODO implement
   }
 }

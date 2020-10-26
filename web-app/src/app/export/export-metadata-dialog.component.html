@@ -1,8 +1,8 @@
 <h2 mat-dialog-title>Export Details</h2>
 <div mat-dialog-content>
 
-  <div fxLayout fxLayoutAlign="center center">
-    <mat-form-field fxFlex="40%">
+  <div layout="row" layout-fill layout-align="center center">
+    <mat-form-field>
       <input matInput type="text" (keyup)="doFilter($event.target.value)" placeholder="Filter">
     </mat-form-field>
   </div>
@@ -28,6 +28,20 @@
       <th mat-header-cell *matHeaderCellDef mat-sort-header> URL </th>
       <td mat-cell *matCellDef="let export">
         <a mat-raised-button href="https://www.google.com/" target="_blank">Download</a>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="event">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Event </th>
+      <td mat-cell *matCellDef="let export"> {{export.event}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="delete">
+      <th mat-header-cell *matHeaderCellDef> Delete </th>
+      <td mat-cell *matCellDef="let element">
+        <button mat-icon-button color="warn" (click)="redirectToDelete(element.id)">
+          <mat-icon class="mat-18">delete</mat-icon>
+        </button>
       </td>
     </ng-container>
 
