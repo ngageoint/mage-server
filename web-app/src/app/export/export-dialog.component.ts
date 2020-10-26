@@ -3,6 +3,12 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExportMetadataService } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 
+interface ExportOption {
+  all?: boolean,
+  custom?: boolean,
+  value: number,
+  label: string
+}
 
 @Component({
   selector: 'export-dialog',
@@ -17,6 +23,8 @@ export class ExportDialogComponent implements OnInit {
   exportObservations: boolean;
   exportLocations: boolean;
   panelOpenState: boolean;
+  exportOptions: ExportOption[];
+  exportTime: ExportOption;
 
   constructor(
     private dialogRef: MatDialogRef<ExportDialogComponent>,
@@ -32,6 +40,30 @@ export class ExportDialogComponent implements OnInit {
     } else {
       this.showEventError = false;
     }
+
+    this.exportOptions = [{
+      value: 300,
+      label: 'Last 5 minutes'
+    }, {
+      value: 3600,
+      label: 'Last Hour'
+    }, {
+      value: 43200,
+      label: 'Last 12 Hours'
+    }, {
+      value: 86400,
+      label: 'Last 24 Hours'
+    }, {
+      all: true,
+      value: null,
+      label: 'All  (Use With Caution)'
+    }, {
+      custom: true,
+      value: null,
+      label: 'Custom (Choose your own start/end)'
+    }];
+    this.exportTime = this.exportOptions[0];
+
   }
 
   exportData(): void {

@@ -29,8 +29,7 @@
         <mat-form-field appearance="fill">
             <mat-label></mat-label>
             <mat-select>
-                <mat-option value="5mins">Last 5 Minutes</mat-option>
-                <mat-option value="lastHour">Last Hour</mat-option>
+                <mat-option *ngFor="let option of exportOptions">{{option.label}}</mat-option>
             </mat-select>
         </mat-form-field>
     </section>
