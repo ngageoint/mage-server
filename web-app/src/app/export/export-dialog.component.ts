@@ -1,6 +1,6 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
+import { Component, OnInit, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ExportMetadataService } from './export-metadata.service';
 
 @Component({
   selector: 'export-dialog',
@@ -10,12 +10,14 @@ import { ExportMetadataService, ExportMetadata } from './export-metadata.service
 })
 export class ExportDialogComponent implements OnInit {
 
+  exportEvent: string;
 
   constructor(
-    private dialogRef: MatDialogRef<ExportDialogComponent>, private exportMetaService: ExportMetadataService) { }
-
+    private dialogRef: MatDialogRef<ExportDialogComponent>, private exportMetaService: ExportMetadataService,
+    @Inject(MAT_DIALOG_DATA) public data: any) { }
 
 
   ngOnInit(): void {
+    this.exportEvent = "TODO";
   }
 }

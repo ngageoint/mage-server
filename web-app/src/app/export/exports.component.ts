@@ -28,7 +28,9 @@ export class ExportsComponent implements OnChanges {
       if (!result || result === 'closeAction') {
         this.onExportClose.emit();
       } else {
-        this.dialog.open(ExportDialogComponent).afterClosed().subscribe(() => {
+        this.dialog.open(ExportDialogComponent, { 
+          data: { events: this.events } 
+        }).afterClosed().subscribe(() => {
           this.onExportClose.emit();
         });
       }
