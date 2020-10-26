@@ -67,7 +67,7 @@ import { ExportsComponent, ExportMetadataDialogComponent } from './export/export
 import { ExportDialogComponent } from './export/export-dialog.component';
 
 
-import { LocalStorageService, localStorageServiceProvider, mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
 
 @NgModule({
@@ -132,7 +132,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
   providers: [
     mapServiceProvider,
     localStorageServiceProvider,
-    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true },
+    filterServiceProvider
   ],
   bootstrap: [],
   entryComponents: [
