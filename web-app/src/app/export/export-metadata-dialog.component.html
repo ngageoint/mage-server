@@ -1,6 +1,12 @@
 <h2 mat-dialog-title>Export Details</h2>
 <div mat-dialog-content>
 
+  <div fxLayout fxLayoutAlign="center center">
+    <mat-form-field fxFlex="40%">
+      <input matInput type="text" (keyup)="doFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
+  </div>
+  <br>
   <table mat-table [dataSource]="dataSource" matSort class="mat-typography">
 
     <ng-container matColumnDef="status">
