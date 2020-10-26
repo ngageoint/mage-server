@@ -64,6 +64,8 @@ import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent, ExportMetadataDialogComponent } from './export/exports.component';
+import { ExportDialogComponent } from './export/export-dialog.component';
+
 
 import { LocalStorageService, localStorageServiceProvider, mapServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
@@ -86,7 +88,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     LayerContentComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportMetadataDialogComponent
+    ExportMetadataDialogComponent,
+    ExportDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -153,7 +156,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     SwaggerComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportMetadataDialogComponent
+    ExportMetadataDialogComponent,
+    ExportDialogComponent
   ]
 })
 export class AppModule {

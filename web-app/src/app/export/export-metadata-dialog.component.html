@@ -51,6 +51,6 @@
   <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
 </div>
 <div mat-dialog-actions>
-  <button class="mat-raised-button" mat-dialog-close>Close</button>
-  <button class="mat-raised-button mat-primary" (click)="newExport()">New Export</button>
+  <button class="mat-raised-button" mat-dialog-close="closeAction">Close</button>
+  <button class="mat-raised-button mat-primary" (click)="openExport()">New Export</button>
 </div>
