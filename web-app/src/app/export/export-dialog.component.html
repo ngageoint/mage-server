@@ -26,6 +26,13 @@
     </section>
     <section class="example-section">
         <h3>Time</h3>
+        <mat-form-field appearance="fill">
+            <mat-label></mat-label>
+            <mat-select>
+                <mat-option value="5mins">Last 5 Minutes</mat-option>
+                <mat-option value="lastHour">Last Hour</mat-option>
+            </mat-select>
+        </mat-form-field>
     </section>
     <section class="example-section">
         <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
