@@ -13,14 +13,28 @@ import { FilterService } from '../upgrade/ajs-upgraded-providers';
 export class ExportDialogComponent implements OnInit {
 
   exportEvent: any;
+  showEventError: boolean;
+  exportObservations: boolean;
+  exportLocations: boolean;
+  panelOpenState: boolean;
 
   constructor(
-    private dialogRef: MatDialogRef<ExportDialogComponent>, private exportMetaService: ExportMetadataService,
+    private dialogRef: MatDialogRef<ExportDialogComponent>,
+    private exportMetaService: ExportMetadataService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     @Inject(FilterService) private filterService: any) { }
 
 
   ngOnInit(): void {
     this.exportEvent = { selected: this.filterService.getEvent() };
+    if (!this.exportEvent.selected) {
+      this.showEventError = true;
+    } else {
+      this.showEventError = false;
+    }
+  }
+
+  exportData(): void {
+
   }
 }

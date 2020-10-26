@@ -1,1 +1,46 @@
-<h2 mat-dialog-title>{{exportEvent.selected.name}} Details</h2>
+<h2 mat-dialog-title>{{exportEvent.selected.name}} Export</h2>
+<div mat-dialog-content>
+    <section class="example-section">
+        <h3>What to Export</h3>
+        <mat-list>
+            <mat-list-item>
+                <mat-checkbox [(ngModel)]="exportObservations" (ngModelChange)="updateAllComplete()">
+                    Observations
+                </mat-checkbox>
+            </mat-list-item>
+            <mat-list-item>
+                <mat-checkbox [(ngModel)]="exportLocations" (ngModelChange)="updateAllComplete()">
+                    Locations
+                </mat-checkbox>
+            </mat-list-item>
+        </mat-list>
+    </section>
+    <section class="example-section">
+        <h3>Export Format</h3>
+        <mat-chip-list aria-label="Export format">
+            <mat-chip>KML</mat-chip>
+            <mat-chip>GeoJSON</mat-chip>
+            <mat-chip color="primary" selected>CSV</mat-chip>
+            <mat-chip color="accent" selected>Shapefile</mat-chip>
+        </mat-chip-list>
+    </section>
+    <section class="example-section">
+        <h3>Time</h3>
+    </section>
+    <section class="example-section">
+        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Advanced
+                </mat-panel-title>
+                <mat-panel-description>
+                </mat-panel-description>
+            </mat-expansion-panel-header>
+            <p>I'm visible because I am open</p>
+        </mat-expansion-panel>
+    </section>
+</div>
+<div mat-dialog-actions>
+    <button class="mat-raised-button" mat-dialog-close>Cancel</button>
+    <button class="mat-raised-button mat-primary" (click)="exportData()" cdkFocusInitial>OK</button>
+</div>
