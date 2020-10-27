@@ -69,6 +69,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // If the user changes the sort order, reset back to the first page.
+    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+
     this.isLoadingResults = true;
     this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
       data.forEach(meta => {
@@ -76,6 +79,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         //TODO only need to do this 1/event (use map or something)
         meta.eventName = this.eventService.getEventById(meta.options.eventId).name;
       });
+      //TODO should we assing, or manipulate?
       this.dataSource.data = data;
       this.isLoadingResults = false;
     });
