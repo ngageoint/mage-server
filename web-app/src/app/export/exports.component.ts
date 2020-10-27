@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges, Inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges, Inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -28,8 +28,8 @@ export class ExportsComponent implements OnChanges {
       if (!result || result === 'closeAction') {
         this.onExportClose.emit();
       } else {
-        this.dialog.open(ExportDialogComponent, { 
-          data: { events: this.events } 
+        this.dialog.open(ExportDialogComponent, {
+          data: { events: this.events }
         }).afterClosed().subscribe(() => {
           this.onExportClose.emit();
         });
@@ -44,15 +44,17 @@ export class ExportsComponent implements OnChanges {
   styleUrls: ['./export-metadata-dialog.component.scss'],
   providers: [ExportMetadataService]
 })
-export class ExportMetadataDialogComponent implements OnInit {
+export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
+
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   displayedColumns: string[] = ['status', 'user', 'type', 'url', 'event', 'delete'];
   dataSource = new MatTableDataSource<ExportMetadata>();
+  isLoadingResults: boolean = true;
 
   constructor(
-    private dialogRef: MatDialogRef<ExportMetadataDialogComponent>, 
+    private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
     private exportMetaService: ExportMetadataService,
     @Inject(EventService) private eventService: any) { }
 
@@ -64,12 +66,18 @@ export class ExportMetadataDialogComponent implements OnInit {
   ngOnInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
 
+  ngAfterViewInit(): void {
+    this.isLoadingResults = true;
     this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
       data.forEach(meta => {
+        //TODO wtf with the timing here
+        //TODO only need to do this 1/event (use map or something)
         meta.eventName = this.eventService.getEventById(meta.options.eventId).name;
       });
       this.dataSource.data = data;
+      this.isLoadingResults = false;
     });
   }
 

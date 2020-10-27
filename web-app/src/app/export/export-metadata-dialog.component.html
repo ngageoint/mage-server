@@ -1,9 +1,12 @@
 <h2 mat-dialog-title>Export Details</h2>
 <div mat-dialog-content>
+  <div class="loading-shade" *ngIf="isLoadingResults">
+    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+  </div>
   <div layout="row" layout-fill layout-align="center center">
     <mat-form-field>
       <mat-label>Filter</mat-label>
-      <input matInput (keyup)="doFilter($event.target.value)" placeholder="e.g. john" #input>
+      <input matInput (keyup)="doFilter($event.target.value)" placeholder="e.g. john, kml, event" #input>
     </mat-form-field>
   </div>
   <br>
