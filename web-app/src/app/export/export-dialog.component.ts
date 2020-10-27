@@ -28,6 +28,7 @@ export class ExportDialogComponent implements OnInit {
   advancedOptionsExpanded: boolean;
   exportOptions: ExportOption[];
   exportTime: ExportOption;
+  exportType: string;
 
   constructor(
     private dialogRef: MatDialogRef<ExportDialogComponent>,
@@ -46,6 +47,8 @@ export class ExportDialogComponent implements OnInit {
 
     this.exportObservations = true;
     this.exportLocations = true;
+
+    this.exportType = "KML";
 
     this.exportOptions = [{
       value: 300,
