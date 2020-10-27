@@ -64,7 +64,7 @@ export class ExportMetadataDialogComponent implements OnInit {
     this.dataSource.sort = this.sort;
 
     this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
-      this.dataSource.data.concat(data);
+      this.dataSource.data = data;
     });
   }
 

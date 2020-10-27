@@ -62,11 +62,11 @@ export class ExportDialogComponent implements OnInit {
     }, {
       value: 43200,
       label: 'Last 12 Hours',
-      key:'twelve'
+      key: 'twelve'
     }, {
       value: 86400,
       label: 'Last 24 Hours',
-      key:'twentyfour'
+      key: 'twentyfour'
     }, {
       all: true,
       value: null,
@@ -83,15 +83,23 @@ export class ExportDialogComponent implements OnInit {
   }
 
   exportData(event: any): void {
+    if (!this.exportEvent.selected) {
+      //TODO figure this out
+      //$event.preventDefault();
+      this.showEventError = true;
+      return;
+    }
+
     this.showEventError = false;
 
-    let start;
-    let end;
+    let start: string;
+    let end: string;
     if (this.exportTime === 'custom') {
       //TODO handle time.  Used moment previously
     }
 
     const exportRequest: ExportRequest = {
+      exportType: this.exportType,
       eventId: this.exportEvent.selected.id,
       observations: this.exportObservations,
       locations: this.exportLocations
@@ -105,6 +113,10 @@ export class ExportDialogComponent implements OnInit {
       exportRequest.favorites = this.exportFavoriteObservations;
       exportRequest.important = this.exportImportantObservations;
     }
+
+    this.exportMetaService.performExport(exportRequest).subscribe((exportId: string) => {
+      console.log(exportId);
+    });
   }
 
   onExportTypeChanged(event: any): void {
