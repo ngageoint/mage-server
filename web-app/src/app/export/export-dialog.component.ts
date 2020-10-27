@@ -22,7 +22,10 @@ export class ExportDialogComponent implements OnInit {
   showEventError: boolean;
   exportObservations: boolean;
   exportLocations: boolean;
-  panelOpenState: boolean;
+  exportFavoriteObservations: boolean;
+  exportImportantObservations: boolean;
+  excludeObservationsAttachments: boolean;
+  advancedOptionsExpanded: boolean;
   exportOptions: ExportOption[];
   exportTime: ExportOption;
 
@@ -40,6 +43,9 @@ export class ExportDialogComponent implements OnInit {
     } else {
       this.showEventError = false;
     }
+
+    this.exportObservations = true;
+    this.exportLocations = true;
 
     this.exportOptions = [{
       value: 300,
