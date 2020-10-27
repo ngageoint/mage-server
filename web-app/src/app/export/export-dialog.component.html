@@ -5,13 +5,13 @@
         <mat-list class="item-container">
             <mat-list-item class="item-content">
                 <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportObservations"
-                    (ngModelChange)="updateAllComplete()">
+                    (ngModelChange)="exportObservations" >
                     Observations
                 </mat-checkbox>
             </mat-list-item>
             <mat-list-item class="item-content">
                 <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportLocations"
-                    (ngModelChange)="updateAllComplete()">
+                    (ngModelChange)="exportLocations">
                     Locations
                 </mat-checkbox>
             </mat-list-item>
@@ -44,19 +44,19 @@
             <mat-list class="item-container">
                 <mat-list-item class="item-content">
                     <mat-checkbox class="item-action" color="primary" [(ngModel)]="excludeObservationsAttachments"
-                        (ngModelChange)="updateAllComplete()">
+                        (ngModelChange)="excludeObservationsAttachments">
                         Exclude all attachments
                     </mat-checkbox>
                 </mat-list-item>
                 <mat-list-item class="item-content">
                     <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportFavoriteObservations"
-                        (ngModelChange)="updateAllComplete()">
+                        (ngModelChange)="exportFavoriteObservations">
                         Export only your favorite observations
                     </mat-checkbox>
                 </mat-list-item>
                 <mat-list-item class="item-content">
                     <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportImportantObservations"
-                        (ngModelChange)="updateAllComplete()">
+                        (ngModelChange)="exportImportantObservations">
                         Export only observations flagged important
                     </mat-checkbox>
                 </mat-list-item>

@@ -76,7 +76,6 @@ export class ExportDialogComponent implements OnInit {
   }
 
   exportData(): void {
-
   }
 
   onExportTypeChanged(event: any): void {
