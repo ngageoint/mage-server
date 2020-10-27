@@ -20,10 +20,10 @@
     <section class="mat-typography">
         <h3 class="header">Export Format</h3>
         <mat-chip-list class="item-container" aria-label="Export format">
-            <mat-chip class="item-action" selected>KML</mat-chip>
-            <mat-chip class="item-action">GeoJSON</mat-chip>
-            <mat-chip class="item-action">CSV</mat-chip>
-            <mat-chip class="item-action">Shapefile</mat-chip>
+            <mat-chip class="item-action" (click)="onExportTypeChanged($event)" selected>KML</mat-chip>
+            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">GeoJSON</mat-chip>
+            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">CSV</mat-chip>
+            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">Shapefile</mat-chip>
         </mat-chip-list>
     </section>
     <section class="mat-typography">
