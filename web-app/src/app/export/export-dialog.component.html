@@ -29,8 +29,8 @@
     <section class="mat-typography">
         <h3 class="header">Time</h3>
         <mat-form-field class="item-container" appearance="outline">
-            <mat-select [(ngModel)]="exportTime" [(value)]="selected">
-                <mat-option *ngFor="let option of exportOptions" value="{{i}}">{{option.label}}</mat-option>
+            <mat-select [(ngModel)]="exportTime">
+                <mat-option *ngFor="let option of exportOptions" [value]="option.key">{{option.label}}</mat-option>
             </mat-select>
         </mat-form-field>
     </section>
@@ -66,5 +66,5 @@
 </div>
 <div class="item-actions" mat-dialog-actions>
     <button class="mat-raised-button" mat-dialog-close>Cancel</button>
-    <button class="mat-raised-button mat-primary" (click)="exportData()" cdkFocusInitial>OK</button>
+    <button class="mat-raised-button mat-primary" (click)="exportData($event)" cdkFocusInitial>OK</button>
 </div>

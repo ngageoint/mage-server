@@ -7,7 +7,8 @@ interface ExportOption {
   all?: boolean,
   custom?: boolean,
   value: number,
-  label: string
+  label: string,
+  key: string
 }
 
 @Component({
@@ -27,7 +28,7 @@ export class ExportDialogComponent implements OnInit {
   excludeObservationsAttachments: boolean;
   advancedOptionsExpanded: boolean;
   exportOptions: ExportOption[];
-  exportTime: ExportOption;
+  exportTime: string;
   exportType: string;
 
   constructor(
@@ -52,30 +53,38 @@ export class ExportDialogComponent implements OnInit {
 
     this.exportOptions = [{
       value: 300,
-      label: 'Last 5 minutes'
+      label: 'Last 5 minutes',
+      key: 'five'
     }, {
       value: 3600,
-      label: 'Last Hour'
+      label: 'Last Hour',
+      key: 'hour'
     }, {
       value: 43200,
-      label: 'Last 12 Hours'
+      label: 'Last 12 Hours',
+      key:'twelve'
     }, {
       value: 86400,
-      label: 'Last 24 Hours'
+      label: 'Last 24 Hours',
+      key:'twentyfour'
     }, {
       all: true,
       value: null,
-      label: 'All  (Use With Caution)'
+      label: 'All  (Use With Caution)',
+      key: 'all'
     }, {
       custom: true,
       value: null,
-      label: 'Custom (Choose your own start/end)'
+      label: 'Custom (Choose your own start/end)',
+      key: 'custom'
     }];
-    this.exportTime = this.exportOptions[0];
+    this.exportTime = 'five';
 
   }
 
-  exportData(): void {
+  exportData(event: any): void {
+    this.showEventError = false;
+    console.log(this.exportTime)
   }
 
   onExportTypeChanged(event: any): void {
