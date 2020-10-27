@@ -8,7 +8,8 @@ export interface ExportMetadata {
     exportType: string,
     location: string,
     status: string,
-    options: any
+    options: any,
+    eventName?: string
 }
 
 export interface ExportRequest {

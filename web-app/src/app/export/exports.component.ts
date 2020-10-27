@@ -1,11 +1,11 @@
-import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, Output, EventEmitter, ViewChild, SimpleChanges, Inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { ExportDialogComponent } from './export-dialog.component';
-
+import { EventService } from '../upgrade/ajs-upgraded-providers';
 
 @Component({
   template: '<div></div>'
@@ -52,7 +52,9 @@ export class ExportMetadataDialogComponent implements OnInit {
   dataSource = new MatTableDataSource<ExportMetadata>();
 
   constructor(
-    private dialogRef: MatDialogRef<ExportMetadataDialogComponent>, private exportMetaService: ExportMetadataService) { }
+    private dialogRef: MatDialogRef<ExportMetadataDialogComponent>, 
+    private exportMetaService: ExportMetadataService,
+    @Inject(EventService) private eventService: any) { }
 
 
   openExport(): void {
@@ -64,6 +66,9 @@ export class ExportMetadataDialogComponent implements OnInit {
     this.dataSource.sort = this.sort;
 
     this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
+      data.forEach(meta => {
+        meta.eventName = this.eventService.getEventById(meta.options.eventId).name;
+      });
       this.dataSource.data = data;
     });
   }
