@@ -11,6 +11,17 @@ export interface ExportMetadata {
     options: any
 }
 
+export interface ExportRequest {
+    eventId: number,
+    observations: boolean,
+    locations: boolean,
+    attachments?: boolean,
+    favorites?: boolean,
+    important?: boolean,
+    startDate?: string,
+    endDate?: string
+}
+
 @Injectable({
     providedIn: 'root'
 })

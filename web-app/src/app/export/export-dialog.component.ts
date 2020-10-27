@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ExportMetadataService } from './export-metadata.service';
+import { ExportMetadataService, ExportRequest } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 
 interface ExportOption {
@@ -84,7 +84,27 @@ export class ExportDialogComponent implements OnInit {
 
   exportData(event: any): void {
     this.showEventError = false;
-    console.log(this.exportTime)
+
+    let start;
+    let end;
+    if (this.exportTime === 'custom') {
+      //TODO handle time.  Used moment previously
+    }
+
+    const exportRequest: ExportRequest = {
+      eventId: this.exportEvent.selected.id,
+      observations: this.exportObservations,
+      locations: this.exportLocations
+    };
+
+    if (start) exportRequest.startDate = start;
+    if (end) exportRequest.endDate = end;
+
+    if (this.exportObservations) {
+      exportRequest.attachments = this.excludeObservationsAttachments;
+      exportRequest.favorites = this.exportFavoriteObservations;
+      exportRequest.important = this.exportImportantObservations;
+    }
   }
 
   onExportTypeChanged(event: any): void {
