@@ -115,8 +115,10 @@ export class ExportDialogComponent implements OnInit {
     }
 
     this.exportMetaService.performExport(exportRequest).subscribe((exportId: string) => {
+      //TODO snackbar?
       console.log(exportId);
     });
+    this.dialogRef.close();
   }
 
   onExportTypeChanged(event: any): void {
