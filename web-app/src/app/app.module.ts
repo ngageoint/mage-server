@@ -63,7 +63,8 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
-import { ExportsComponent, ExportMetadataDialogComponent } from './export/exports.component';
+import { ExportsComponent } from './export/exports.component';
+import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
 import { ExportDialogComponent } from './export/export-dialog.component';
 
 
