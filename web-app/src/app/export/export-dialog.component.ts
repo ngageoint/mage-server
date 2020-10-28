@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExportMetadataService, ExportRequest } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 
-interface ExportOption {
+interface ExportTimeOption {
   all?: boolean,
   custom?: boolean,
   value: number,
@@ -27,7 +27,7 @@ export class ExportDialogComponent implements OnInit {
   exportImportantObservations: boolean;
   excludeObservationsAttachments: boolean;
   advancedOptionsExpanded: boolean;
-  exportOptions: ExportOption[];
+  exportTimeOptions: ExportTimeOption[];
   exportTime: string;
   exportType: string;
 
@@ -51,7 +51,7 @@ export class ExportDialogComponent implements OnInit {
 
     this.exportType = "KML";
 
-    this.exportOptions = [{
+    this.exportTimeOptions = [{
       value: 300,
       label: 'Last 5 minutes',
       key: 'five'
@@ -84,6 +84,7 @@ export class ExportDialogComponent implements OnInit {
 
   exportData($event: any): void {
     if (!this.exportEvent.selected) {
+      //TODO test this
       $event.preventDefault();
       this.showEventError = true;
       return;
@@ -91,19 +92,19 @@ export class ExportDialogComponent implements OnInit {
 
     this.showEventError = false;
 
-    let option: ExportOption;
-    for (let i = 0; i < this.exportOptions.length; i++) {
-      option = this.exportOptions[i];
-      if (option.key === this.exportTime) {
+    let exportTimeOption: ExportTimeOption;
+    for (let i = 0; i < this.exportTimeOptions.length; i++) {
+      exportTimeOption = this.exportTimeOptions[i];
+      if (exportTimeOption.key === this.exportTime) {
         break;
       }
     }
 
     let start: string;
     let end: string;
-    if (option.custom) {
+    if (exportTimeOption.custom) {
       //TODO handle time.  Used moment previously
-    } else if (option.value) {
+    } else if (exportTimeOption.value) {
       //TODO implement
     }
 

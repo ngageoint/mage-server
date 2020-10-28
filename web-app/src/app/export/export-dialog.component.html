@@ -30,7 +30,7 @@
         <h3 class="header">Time</h3>
         <mat-form-field class="item-container" appearance="outline">
             <mat-select [(ngModel)]="exportTime">
-                <mat-option *ngFor="let option of exportOptions" [value]="option.key">{{option.label}}</mat-option>
+                <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}</mat-option>
             </mat-select>
         </mat-form-field>
     </section>
