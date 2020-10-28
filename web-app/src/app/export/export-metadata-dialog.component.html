@@ -35,6 +35,16 @@
         <td mat-cell *matCellDef="let export"> {{export.eventName}} </td>
       </ng-container>
 
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Start Date </th>
+        <td mat-cell *matCellDef="let export"> {{export.options.filter.startDate}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> End Date </th>
+        <td mat-cell *matCellDef="let export"> {{export.options.filter.endDate}} </td>
+      </ng-container>
+
       <ng-container matColumnDef="delete">
         <th mat-header-cell *matHeaderCellDef> Delete </th>
         <td mat-cell *matCellDef="let element">

@@ -17,7 +17,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     paginator: MatPaginator;
     @ViewChild(MatSort, { static: true })
     sort: MatSort;
-    displayedColumns: string[] = ['status', 'type', 'url', 'event', 'delete'];
+    displayedColumns: string[] = ['status', 'type', 'url', 'event', 'startDate', 'endDate', 'delete'];
     dataSource = new MatTableDataSource<ExportMetadata>();
     isLoadingResults: boolean = true;
 

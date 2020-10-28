@@ -2,6 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExportMetadataService, ExportRequest } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
+const moment = require('moment');
 
 interface ExportTimeOption {
   all?: boolean,
@@ -105,7 +106,7 @@ export class ExportDialogComponent implements OnInit {
     if (exportTimeOption.custom) {
       //TODO handle time.  Used moment previously
     } else if (exportTimeOption.value) {
-      //TODO implement
+      start = moment().subtract('seconds', exportTimeOption.value).utc().format("YYYY-MM-DD HH:mm:ss");
     }
 
     const exportRequest: ExportRequest = {
