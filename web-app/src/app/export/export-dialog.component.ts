@@ -82,20 +82,29 @@ export class ExportDialogComponent implements OnInit {
 
   }
 
-  exportData(event: any): void {
+  exportData($event: any): void {
     if (!this.exportEvent.selected) {
-      //TODO figure this out
-      //$event.preventDefault();
+      $event.preventDefault();
       this.showEventError = true;
       return;
     }
 
     this.showEventError = false;
 
+    let option: ExportOption;
+    for (let i = 0; i < this.exportOptions.length; i++) {
+      option = this.exportOptions[i];
+      if (option.key === this.exportTime) {
+        break;
+      }
+    }
+
     let start: string;
     let end: string;
-    if (this.exportTime === 'custom') {
+    if (option.custom) {
       //TODO handle time.  Used moment previously
+    } else if (option.value) {
+      //TODO implement
     }
 
     const exportRequest: ExportRequest = {

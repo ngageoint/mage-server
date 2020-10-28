@@ -17,7 +17,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     paginator: MatPaginator;
     @ViewChild(MatSort, { static: true })
     sort: MatSort;
-    displayedColumns: string[] = ['status', 'user', 'type', 'url', 'event', 'delete'];
+    displayedColumns: string[] = ['status', 'type', 'url', 'event', 'delete'];
     dataSource = new MatTableDataSource<ExportMetadata>();
     isLoadingResults: boolean = true;
 
@@ -40,12 +40,14 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
         this.isLoadingResults = true;
         this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
+            let map = new Map<any, string>();
             data.forEach(meta => {
-                //TODO wtf with the timing here
-                //TODO only need to do this 1/event (use map or something)
-                meta.eventName = this.eventService.getEventById(meta.options.eventId).name;
+                if(!map.has(meta.options.eventId)) {
+                    const eventName = this.eventService.getEventById(meta.options.eventId).name;
+                    map.set(meta.options.eventId, eventName);
+                }
+                meta.eventName = map.get(meta.options.eventId);
             });
-            //TODO should we assigning, or manipulate?
             this.dataSource.data = data;
             this.isLoadingResults = false;
         });
