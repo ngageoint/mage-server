@@ -1,7 +1,8 @@
 "use strict";
 
 const mongoose = require('mongoose')
-    , FilterParser = require('../utilities/filterParser');
+    , FilterParser = require('../utilities/filterParser')
+    , log = require('winston');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
@@ -65,7 +66,7 @@ exports.createMetadata = function (meta) {
 };
 
 exports.getExportMetadataById = function (id) {
-    return ExportMetadata.findById(id);
+    return ExportMetadata.findById(id).exec();
 };
 
 exports.getExportMetadatasByUserId = function (userId) {
@@ -94,6 +95,9 @@ exports.updateExportMetadataStatus = function (id, status) {
     return this.getExportMetadataById(id).then(update => {
         update.status = status;
         return update.save();
+    }).catch(err => {
+        log.warn(err);
+        return Promise.reject(err);
     });
 };
 

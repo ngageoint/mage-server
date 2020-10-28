@@ -284,18 +284,14 @@ function exportInBackground(exportId, event, users, devices) {
       filter: data.meta.options.filter
     };
     log.info('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
-    const exporter = exporterFactory.createExporter(data.meta.exportType, options);
+    const exporter = exporterFactory.createExporter(data.meta.exportType.toLowerCase(), options);
     exporter.export(data.stream);
 
     return true;
   }).catch(err => {
     log.warn('Failed export of ' + exportId, err);
 
-    return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed).then(meta => {
-      meta.processingErrors.push({ message: err });
-      return ExportMetadata.updateExportMetadata(meta);
-    }).finally(() => {
-      return Promise.reject(err);
-    });
+    ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed);
+    return Promise.reject(err);
   });
 }
