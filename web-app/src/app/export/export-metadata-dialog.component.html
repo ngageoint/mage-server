@@ -3,15 +3,13 @@
   <div class="loading-shade" *ngIf="isLoadingResults">
     <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
   </div>
-  <div layout="row" layout-fill layout-align="center center">
-    <mat-form-field>
-      <mat-label>Filter</mat-label>
-      <input matInput (keyup)="doFilter($event.target.value)" placeholder="e.g. kml" #input>
-    </mat-form-field>
-  </div>
+  <mat-form-field>
+    <mat-label>Filter</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
+  </mat-form-field>
   <br>
   <div class="mat-elevation-z8">
-    <table mat-table [dataSource]="dataSource" matSort class="mat-typography">
+    <table mat-table [dataSource]="dataSource" class="mat-typography" matSort>
 
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
@@ -56,6 +54,11 @@
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- Row shown when there is no matching data. -->
+      <tr mat-row *matNoDataRow>
+        <td mat-cell colspan="7">No data matching the filter "{{input.value}}"</td>
+      </tr>
     </table>
     <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
   </div>

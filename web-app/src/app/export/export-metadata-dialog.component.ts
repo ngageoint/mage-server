@@ -36,13 +36,11 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        // If the user changes the sort order, reset back to the first page.
-        this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
         this.isLoadingResults = true;
         this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
             let map = new Map<any, string>();
             data.forEach(meta => {
-                if(!map.has(meta.options.eventId)) {
+                if (!map.has(meta.options.eventId)) {
                     const eventName = this.eventService.getEventById(meta.options.eventId).name;
                     map.set(meta.options.eventId, eventName);
                 }
@@ -53,8 +51,13 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         });
     }
 
-    doFilter(filter: string): void {
-        this.dataSource.filter = filter.trim().toLocaleLowerCase();
+    applyFilter(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSource.filter = filterValue.trim().toLowerCase();
+
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
     }
 
     redirectToDelete(id: string): void {
