@@ -6,6 +6,18 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { EventService } from '../upgrade/ajs-upgraded-providers';
 
+export class ExportMetadataUI implements ExportMetadata {
+    _id: any;
+    userId: any;
+    physicalPath: string;
+    exportType: string;
+    location: string;
+    status: string;
+    options: any;
+    eventName: string;
+    undoable: boolean = false;
+}
+
 @Component({
     selector: 'export-metadata-dialog',
     templateUrl: 'export-metadata-dialog.component.html',
@@ -18,7 +30,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     @ViewChild(MatSort, { static: true })
     sort: MatSort;
     displayedColumns: string[] = ['status', 'type', 'url', 'event', 'startDate', 'endDate', 'delete'];
-    dataSource = new MatTableDataSource<ExportMetadata>();
+    dataSource = new MatTableDataSource<ExportMetadataUI>();
     isLoadingResults: boolean = true;
 
     constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
@@ -37,6 +49,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         this.isLoadingResults = true;
+        let uiModels: ExportMetadataUI[] = [];
         this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
             let map = new Map<any, string>();
             data.forEach(meta => {
@@ -44,9 +57,12 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
                     const eventName = this.eventService.getEventById(meta.options.eventId).name;
                     map.set(meta.options.eventId, eventName);
                 }
-                meta.eventName = map.get(meta.options.eventId);
+                let metaUI: ExportMetadataUI = new ExportMetadataUI();
+                Object.keys(meta).forEach(key => metaUI[key] = meta[key]);
+                metaUI.eventName = map.get(meta.options.eventId);
+                uiModels.push(metaUI);
             });
-            this.dataSource.data = data;
+            this.dataSource.data = uiModels;
             this.isLoadingResults = false;
         });
     }
@@ -60,17 +76,19 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         }
     }
 
-    downloadExport(meta: ExportMetadata): void {
+    downloadExport(meta: ExportMetadataUI): void {
         console.log("Download " + meta.location);
     }
 
-    retryExport(meta: ExportMetadata): void {
+    retryExport(meta: ExportMetadataUI): void {
         console.log("retry " + meta.location);
     }
 
-    deleteExport(meta: ExportMetadata): void {
-        if (confirm("Are you sure you want to delete this export?")) {
-            console.log("Removing " + meta._id);
-        }
+    deleteExport(meta: ExportMetadataUI): void {
+        meta.undoable = true;
+    }
+
+    undoDelete(meta: ExportMetadataUI): void {
+        meta.undoable = false;
     }
 }
