@@ -7,7 +7,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { EventService } from '../upgrade/ajs-upgraded-providers';
 
-export class ExportMetadataUI implements ExportMetadata {
+export interface Undoable {
+    undoable: boolean;
+    undoTimerHandle?: NodeJS.Timer;
+}
+
+export class ExportMetadataUI implements ExportMetadata, Undoable {
     _id: any;
     userId: any;
     physicalPath: string;
@@ -17,7 +22,7 @@ export class ExportMetadataUI implements ExportMetadata {
     options: any;
     eventName: string;
     undoable: boolean = false;
-    undoTimerHandle: NodeJS.Timer;
+    undoTimerHandle?: NodeJS.Timer;
 }
 
 @Component({
@@ -81,17 +86,19 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     downloadExport(meta: ExportMetadataUI): void {
         console.log("Download " + meta.location);
+        //TODO implement
     }
 
     retryExport(meta: ExportMetadataUI): void {
         console.log("retry " + meta.location);
+        //TODO implement
     }
 
     scheduleDeleteExport(meta: ExportMetadataUI): void {
         meta.undoable = true;
         const self = this;
         this.snackBar.open("Export will be removed in 10 seconds", "Undo", {
-            duration: 5000,
+            duration: 2000,
         }).onAction().subscribe(() => {
             self.undoDelete(meta);
         });
@@ -102,8 +109,13 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     }
 
     private deleteExport(meta: ExportMetadataUI): void {
-        //TODO implement
-        console.log('Removing ' + meta._id);
+        this.exportMetaService.deleteExport(meta._id).subscribe(() => {
+            const idx: number = this.dataSource.data.indexOf(meta);
+
+            if (idx > -1) {
+                this.dataSource.data.splice(idx, 1);
+            }
+        });
     }
 
     undoDelete(meta: ExportMetadataUI): void {
