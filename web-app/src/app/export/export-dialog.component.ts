@@ -30,7 +30,8 @@ export class ExportDialogComponent implements OnInit {
   advancedOptionsExpanded: boolean;
   exportTimeOptions: ExportTimeOption[];
   exportTime: string;
-  exportType: string;
+  exportFormat: string;
+  exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
 
   constructor(
     private dialogRef: MatDialogRef<ExportDialogComponent>,
@@ -50,7 +51,7 @@ export class ExportDialogComponent implements OnInit {
     this.exportObservations = true;
     this.exportLocations = true;
 
-    this.exportType = "KML";
+    this.exportFormat = this.exportFormats[0];
 
     this.exportTimeOptions = [{
       value: 300,
@@ -80,7 +81,6 @@ export class ExportDialogComponent implements OnInit {
       key: 'custom'
     }];
     this.exportTime = 'five';
-
   }
 
   exportData($event: any): void {
@@ -110,7 +110,7 @@ export class ExportDialogComponent implements OnInit {
     }
 
     const exportRequest: ExportRequest = {
-      exportType: this.exportType,
+      exportType: this.exportFormat,
       eventId: this.exportEvent.selected.id,
       observations: this.exportObservations,
       locations: this.exportLocations
@@ -132,7 +132,7 @@ export class ExportDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  onExportTypeChanged(event: any): void {
-    this.exportType = event.target.textContent;
+  onExportFormatChanged(event: any): void {
+    this.exportFormat = event.target.textContent;
   }
 }

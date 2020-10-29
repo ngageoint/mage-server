@@ -1,71 +1,72 @@
-<h2 mat-dialog-title>{{exportEvent.selected.name}} Export</h2>
-<div mat-dialog-content>
-    <section class="mat-typography">
-        <h3 class="header">What to Export</h3>
-        <mat-list class="item-container">
-            <mat-list-item class="item-content">
-                <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportObservations"
-                    (ngModelChange)="exportObservations">
-                    Observations
-                </mat-checkbox>
-            </mat-list-item>
-            <mat-list-item class="item-content">
-                <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportLocations"
-                    (ngModelChange)="exportLocations">
-                    Locations
-                </mat-checkbox>
-            </mat-list-item>
-        </mat-list>
-    </section>
-    <section class="mat-typography">
-        <h3 class="header">Export Format</h3>
-        <mat-chip-list class="item-container" aria-label="Export format">
-            <mat-chip class="item-action" (click)="onExportTypeChanged($event)" selected>KML</mat-chip>
-            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">GeoJSON</mat-chip>
-            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">CSV</mat-chip>
-            <mat-chip class="item-action" (click)="onExportTypeChanged($event)">Shapefile</mat-chip>
-        </mat-chip-list>
-    </section>
-    <section class="mat-typography">
-        <h3 class="header">Time</h3>
-        <mat-form-field class="item-container" appearance="outline">
-            <mat-select [(ngModel)]="exportTime">
-                <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-    </section>
-    <section class="mat-typography">
-        <mat-expansion-panel (opened)="advancedOptionsExpanded = true" (closed)="advancedOptionsExpanded = false">
-            <mat-expansion-panel-header>
-                <mat-panel-title>
-                    Advanced
-                </mat-panel-title>
-            </mat-expansion-panel-header>
-            <mat-list class="item-container">
-                <mat-list-item class="item-content">
-                    <mat-checkbox class="item-action" color="primary" [(ngModel)]="excludeObservationsAttachments"
-                        (ngModelChange)="excludeObservationsAttachments">
-                        Exclude all attachments
+<section class="mat-typography">
+    <h1 mat-dialog-title>{{exportEvent.selected.name}} Export</h1>
+</section>
+<section class="mat-typography">
+    <div mat-dialog-content>
+        <section>
+            <h2 class="header">What to Export</h2>
+            <mat-list>
+                <mat-list-item>
+                    <mat-checkbox [(ngModel)]="exportObservations">
+                        Observations
                     </mat-checkbox>
                 </mat-list-item>
-                <mat-list-item class="item-content">
-                    <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportFavoriteObservations"
-                        (ngModelChange)="exportFavoriteObservations">
-                        Export only your favorite observations
-                    </mat-checkbox>
-                </mat-list-item>
-                <mat-list-item class="item-content">
-                    <mat-checkbox class="item-action" color="primary" [(ngModel)]="exportImportantObservations"
-                        (ngModelChange)="exportImportantObservations">
-                        Export only observations flagged important
+                <mat-list-item >
+                    <mat-checkbox [(ngModel)]="exportLocations">
+                        Locations
                     </mat-checkbox>
                 </mat-list-item>
             </mat-list>
-        </mat-expansion-panel>
-    </section>
-    <br>
-</div>
-<div class="item-actions" mat-dialog-actions>
-    <button class="mat-raised-button" mat-dialog-close>Cancel</button>
-    <button class="mat-raised-button mat-primary" (click)="exportData($event)" cdkFocusInitial>OK</button>
-</div>
+        </section>
+        <section>
+            <h2 class="header">Export Format</h2>
+            <mat-radio-group class="item-container" aria-label="Export format" [(ngModel)]="exportFormat">
+                <mat-radio-button class="item-action" *ngFor="let format of exportFormats" [value]="format">
+                    {{format}}</mat-radio-button>
+            </mat-radio-group>
+        </section>
+        <section>
+            <h2 class="header">Time</h2>
+            <mat-form-field appearance="outline">
+                <mat-label>Select a time</mat-label>
+                <mat-select [(ngModel)]="exportTime">
+                    <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </section>
+        <section>
+            <mat-expansion-panel (opened)="advancedOptionsExpanded = true" (closed)="advancedOptionsExpanded = false">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Advanced
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-list>
+                    <mat-list-item>
+                        <mat-checkbox [(ngModel)]="excludeObservationsAttachments">
+                            Exclude all attachments
+                        </mat-checkbox>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-checkbox [(ngModel)]="exportFavoriteObservations">
+                            Export only your favorite observations
+                        </mat-checkbox>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-checkbox [(ngModel)]="exportImportantObservations">
+                            Export only observations flagged important
+                        </mat-checkbox>
+                    </mat-list-item>
+                </mat-list>
+            </mat-expansion-panel>
+        </section>
+        <br>
+    </div>
+</section>
+<section class="mat-typography">
+    <div class="item-actions" mat-dialog-actions>
+        <button class="mat-raised-button" mat-dialog-close>Cancel</button>
+        <button class="mat-raised-button mat-primary" (click)="exportData($event)" cdkFocusInitial>OK</button>
+    </div>
+</section>
