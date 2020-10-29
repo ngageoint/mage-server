@@ -17,6 +17,7 @@ export class ExportMetadataUI implements ExportMetadata {
     options: any;
     eventName: string;
     undoable: boolean = false;
+    undoTimerHandle: NodeJS.Timer;
 }
 
 @Component({
@@ -86,7 +87,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         console.log("retry " + meta.location);
     }
 
-    deleteExport(meta: ExportMetadataUI): void {
+    scheduleDeleteExport(meta: ExportMetadataUI): void {
         meta.undoable = true;
         const self = this;
         this.snackBar.open("Export will be removed in 10 seconds", "Undo", {
@@ -94,9 +95,19 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         }).onAction().subscribe(() => {
             self.undoDelete(meta);
         });
+        meta.undoTimerHandle = setTimeout(() => {
+            meta.undoTimerHandle = null;
+            this.deleteExport(meta);
+        }, 10000);
+    }
+
+    private deleteExport(meta: ExportMetadataUI): void {
+        //TODO implement
+        console.log('Removing ' + meta._id);
     }
 
     undoDelete(meta: ExportMetadataUI): void {
         meta.undoable = false;
+        clearTimeout(meta.undoTimerHandle);
     }
 }
