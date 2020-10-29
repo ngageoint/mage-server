@@ -114,6 +114,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
             if (idx > -1) {
                 this.dataSource.data.splice(idx, 1);
+                if (this.dataSource.paginator) {
+                    this.dataSource.paginator.firstPage();
+                }
             }
         });
     }
