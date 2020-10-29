@@ -3,6 +3,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { EventService } from '../upgrade/ajs-upgraded-providers';
 
@@ -35,6 +36,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         private exportMetaService: ExportMetadataService,
+        private snackBar: MatSnackBar,
         @Inject(EventService)
         private eventService: any) { }
 
@@ -86,6 +88,12 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     deleteExport(meta: ExportMetadataUI): void {
         meta.undoable = true;
+        const self = this;
+        this.snackBar.open("Export will be removed in 10 seconds", "Undo", {
+            duration: 5000,
+        }).onAction().subscribe(() => {
+            self.undoDelete(meta);
+        });
     }
 
     undoDelete(meta: ExportMetadataUI): void {

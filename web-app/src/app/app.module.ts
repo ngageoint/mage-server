@@ -42,7 +42,8 @@ import {
   MatTableModule,
   MatDialogModule,
   MatPaginatorModule,
-  MatSortModule
+  MatSortModule,
+  MatSnackBarModule
 } from '@angular/material';
 
 import { ZoomComponent } from './map/controls/zoom.component';
@@ -128,7 +129,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     MatTableModule,
     MatDialogModule,
     MatPaginatorModule,
-    MatSortModule
+    MatSortModule,
+    MatSnackBarModule
   ],
   providers: [
     mapServiceProvider,
