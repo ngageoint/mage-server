@@ -38,12 +38,12 @@
 
         <ng-container matColumnDef="startDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Start Date </th>
-          <td mat-cell *matCellDef="let export"> {{export.options.filter.startDate}} </td>
+          <td mat-cell *matCellDef="let export"> {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="endDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> End Date </th>
-          <td mat-cell *matCellDef="let export"> {{export.options.filter.endDate}} </td>
+          <td mat-cell *matCellDef="let export"> {{export.options.filter.endDate | date:'MMM d, y hh:mm:ss'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="delete">
