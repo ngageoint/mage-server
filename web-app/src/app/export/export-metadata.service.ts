@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ExportMetadata {
+    _id: any,
     userId: any,
     physicalPath: string,
     exportType: string,

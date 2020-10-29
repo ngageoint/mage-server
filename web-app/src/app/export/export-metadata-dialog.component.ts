@@ -60,7 +60,14 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         }
     }
 
-    redirectToDelete(id: string): void {
+    downloadExport(meta: ExportMetadata): void {
+        console.log("Download " + meta.location);
+    }
+
+    deleteExport(meta: ExportMetadata): void {
         //TODO implement
+        if (confirm("Confirm delete?\n\n " + meta._id)) {
+
+        }
     }
 }
