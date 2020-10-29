@@ -126,6 +126,11 @@ module.exports = function (app, security) {
     passport.authenticate('bearer'),
     access.authorize('DELETE_EXPORT'),
     function (req, res, next) {
+      ExportMetadata.removeMetadata(req.param("exportId")).then(() => {
+        return next();
+      }).catch(err => {
+        return next(err);
+      });
     });
 };
 

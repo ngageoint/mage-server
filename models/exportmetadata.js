@@ -104,3 +104,7 @@ exports.updateExportMetadataStatus = function (id, status) {
 exports.updateExportMetadata = function (meta) {
     return meta.save();
 };
+
+exports.removeMetadata = function (id) {
+    return ExportMetadata.remove({ _id: id }).exec();
+};

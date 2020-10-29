@@ -64,10 +64,13 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         console.log("Download " + meta.location);
     }
 
-    deleteExport(meta: ExportMetadata): void {
-        //TODO implement
-        if (confirm("Confirm delete?\n\n " + meta._id)) {
+    retryExport(meta: ExportMetadata): void {
+        console.log("retry " + meta.location);
+    }
 
+    deleteExport(meta: ExportMetadata): void {
+        if (confirm("Are you sure you want to delete this export?")) {
+            console.log("Removing " + meta._id);
         }
     }
 }
