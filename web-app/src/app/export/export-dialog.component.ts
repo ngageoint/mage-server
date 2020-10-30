@@ -1,5 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportRequest } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 const moment = require('moment');
@@ -37,7 +38,8 @@ export class ExportDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<ExportDialogComponent>,
     private exportMetaService: ExportMetadataService,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    @Inject(FilterService) private filterService: any) { }
+    @Inject(FilterService) private filterService: any,
+    private snackBar: MatSnackBar) { }
 
 
   ngOnInit(): void {
@@ -125,9 +127,9 @@ export class ExportDialogComponent implements OnInit {
       exportRequest.important = this.exportImportantObservations;
     }
 
-    this.exportMetaService.performExport(exportRequest).subscribe((exportId: string) => {
-      //TODO snackbar?
-      console.log(exportId);
+    this.exportMetaService.performExport(exportRequest).subscribe((response: any) => {
+      const msg: string = "Export started with export id " + response.exportId;
+      this.snackBar.open(msg, null, { duration: 2000 });
     });
     this.dialogRef.close();
   }
