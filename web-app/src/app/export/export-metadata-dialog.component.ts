@@ -40,7 +40,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['status', 'type', 'url', 'event', 'startDate', 'endDate', 'delete'];
     dataSource = new MatTableDataSource<ExportMetadataUI>();
     isLoadingResults: boolean = true;
-    private token: any;
+    token: any;
     private uiModels: ExportMetadataUI[] = [];
 
     constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
