@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
-import { EventService } from '../upgrade/ajs-upgraded-providers';
+import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 
 export interface Undoable {
     undoable: boolean;
@@ -40,12 +40,17 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['status', 'type', 'url', 'event', 'startDate', 'endDate', 'delete'];
     dataSource = new MatTableDataSource<ExportMetadataUI>();
     isLoadingResults: boolean = true;
+    private token: any;
 
     constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         private exportMetaService: ExportMetadataService,
         private snackBar: MatSnackBar,
         @Inject(EventService)
-        private eventService: any) { }
+        private eventService: any,
+        @Inject(LocalStorageService)
+        private storageService: any) { 
+            this.token = this.storageService.getToken();
+        }
 
     openExport(): void {
         this.dialogRef.close('openExport');
