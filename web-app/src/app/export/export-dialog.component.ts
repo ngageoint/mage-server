@@ -108,7 +108,7 @@ export class ExportDialogComponent implements OnInit {
     if (exportTimeOption.custom) {
       //TODO handle time.  Used moment previously
     } else if (exportTimeOption.value) {
-      start = moment().subtract('seconds', exportTimeOption.value).utc().format("YYYY-MM-DD HH:mm:ss");
+      start = moment().subtract(exportTimeOption.value, 'seconds').utc().format("YYYY-MM-DD HH:mm:ss");
     }
 
     const exportRequest: ExportRequest = {
