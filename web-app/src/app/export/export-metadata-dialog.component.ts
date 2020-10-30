@@ -49,9 +49,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         @Inject(EventService)
         private eventService: any,
         @Inject(LocalStorageService)
-        private storageService: any) { 
-            this.token = this.storageService.getToken();
-        }
+        private storageService: any) {
+        this.token = this.storageService.getToken();
+    }
 
     openExport(): void {
         this.dialogRef.close('openExport');
@@ -60,6 +60,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     ngOnInit() {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
+
+        // If the user changes the sort order, reset back to the first page.
+        this.sort.sortChange.subscribe(() => this.paginator.firstPage());
     }
 
     ngAfterViewInit(): void {
