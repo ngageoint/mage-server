@@ -133,8 +133,4 @@ export class ExportDialogComponent implements OnInit {
     });
     this.dialogRef.close();
   }
-
-  onExportFormatChanged(event: any): void {
-    this.exportFormat = event.target.textContent;
-  }
 }
