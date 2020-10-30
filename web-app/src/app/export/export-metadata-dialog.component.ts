@@ -18,6 +18,7 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
     physicalPath: string;
     exportType: string;
     location: string;
+    filename?: string;
     status: string;
     options: any;
     eventName: string;
@@ -121,7 +122,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         });
     }
 
-    undoDelete(meta: ExportMetadataUI): void {
+    undoDelete(meta: Undoable): void {
         meta.undoable = false;
         clearTimeout(meta.undoTimerHandle);
     }

@@ -261,8 +261,9 @@ function exportInBackground(exportId, event, users, devices) {
       fs.mkdirSync(exportDirectory);
     }
 
-    const filename = exportDirectory + '/' + exportId + '-' + meta.exportType + '.zip';
-    meta.physicalPath = filename;
+    const filename = exportId + '-' + meta.exportType + '.zip';
+    meta.physicalPath = exportDirectory + '/' + filename;
+    meta.filename = filename;
     return ExportMetadata.updateExportMetadata(meta);
   }).then(meta => {
     //TODO adding type and attachment functions to support current (version 5.4.2) export implementations.

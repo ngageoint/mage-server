@@ -6,6 +6,7 @@ export interface ExportMetadata {
     _id: any,
     userId: any,
     physicalPath: string,
+    filename?: string,
     exportType: string,
     location: string,
     status: string,
