@@ -41,6 +41,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     dataSource = new MatTableDataSource<ExportMetadataUI>();
     isLoadingResults: boolean = true;
     private token: any;
+    private uiModels: ExportMetadataUI[] = [];
 
     constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         private exportMetaService: ExportMetadataService,
@@ -63,7 +64,7 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         this.isLoadingResults = true;
-        let uiModels: ExportMetadataUI[] = [];
+        this.uiModels = [];
         this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
             let map = new Map<any, string>();
             data.forEach(meta => {
@@ -74,9 +75,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
                 let metaUI: ExportMetadataUI = new ExportMetadataUI();
                 Object.keys(meta).forEach(key => metaUI[key] = meta[key]);
                 metaUI.eventName = map.get(meta.options.eventId);
-                uiModels.push(metaUI);
+                this.uiModels.push(metaUI);
             });
-            this.dataSource.data = uiModels;
+            this.dataSource.data = this.uiModels;
             this.isLoadingResults = false;
         });
     }
@@ -111,10 +112,11 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
     private deleteExport(meta: ExportMetadataUI): void {
         this.exportMetaService.deleteExport(meta._id).subscribe(() => {
-            const idx: number = this.dataSource.data.indexOf(meta);
+            const idx: number = this.uiModels.indexOf(meta);
 
             if (idx > -1) {
-                this.dataSource.data.splice(idx, 1);
+                this.uiModels.splice(idx, 1);
+                this.dataSource.data = this.uiModels;
                 if (this.dataSource.paginator) {
                     this.dataSource.paginator.firstPage();
                 }
