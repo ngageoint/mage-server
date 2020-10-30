@@ -90,11 +90,6 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
         }
     }
 
-    downloadExport(meta: ExportMetadataUI): void {
-        console.log("Download " + meta.location);
-        //TODO implement
-    }
-
     retryExport(meta: ExportMetadataUI): void {
         console.log("retry " + meta.location);
         //TODO implement
