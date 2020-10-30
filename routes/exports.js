@@ -88,7 +88,7 @@ module.exports = function (app, security) {
   /**
    * Get all exports
    */
-  app.get('/api/exports',
+  app.get('/api/exports/all',
     passport.authenticate('bearer'),
     access.authorize('READ_EXPORT'),
     function (req, res, next) {

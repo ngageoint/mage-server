@@ -234,7 +234,7 @@ describe("export tests", function () {
       .expect(201)
       .expect(function (res) {
         res.headers.should.have.property('content-type').that.contains('application/json');
-        res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
+        res.headers.should.have.property('location').that.equals('/api/exports/download/' + exportMeta._id);
       })
       .end(function (err) {
         mockfs.restore();

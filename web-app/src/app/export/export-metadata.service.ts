@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface ExportMetadata {
@@ -37,16 +37,12 @@ export class ExportMetadataService {
     }
 
     getAllExportMetadata(): Observable<ExportMetadata[]> {
-        return this.http.get<ExportMetadata[]>('/api/exports');
+        return this.http.get<ExportMetadata[]>('/api/exports/all');
     }
 
     performExport(request: ExportRequest): Observable<string> {
-        const httpParams = new HttpParams();
-        Object.keys(request).forEach(key => httpParams.set(key, request[key] != null ? request[key].toString(): null));
-
         return this.http.post<string>('/api/exports', JSON.stringify(request), {
-            headers: { "Content-Type": "application/json" },
-            params: httpParams
+            headers: { "Content-Type": "application/json" }
         });
     }
 
