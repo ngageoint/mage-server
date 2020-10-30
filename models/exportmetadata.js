@@ -61,7 +61,7 @@ exports.createMetadata = function (meta) {
         }
     });
     return newMeta.save().then(savedMeta => {
-        savedMeta.location = '/api/exports/' + savedMeta._id.toString();
+        savedMeta.location = '/api/exports/download/' + savedMeta._id.toString();
         return savedMeta.save();
     });
 };

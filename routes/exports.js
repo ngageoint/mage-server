@@ -120,6 +120,27 @@ module.exports = function (app, security) {
   );
 
   /**
+  * Get a specific export
+  */
+  app.get('/api/exports/download/:exportId',
+    passport.authenticate('bearer'),
+    access.authorize('READ_EXPORT'),
+    function (req, res, next) {
+      ExportMetadata.getExportMetadataById(req.param("exportId")).then(meta => {
+        const file = meta.physicalPath;
+        res.writeHead(200, {
+          "Content-Type": "application/octet-stream",
+          "Content-Disposition": "attachment; filename=" + meta.filename
+        });
+        const readStream = fs.createReadStream(file);
+        readStream.pipe(res);
+        return next();
+      }).catch(err => {
+        return next(err);
+      });
+    });
+
+  /**
    * Remove a specific export
    */
   app.delete('/api/exports/:exportId',

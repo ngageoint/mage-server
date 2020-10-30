@@ -27,7 +27,7 @@
         <ng-container matColumnDef="url">
           <th mat-header-cell *matHeaderCellDef> Link </th>
           <td mat-cell *matCellDef="let export">
-            <a *ngIf="export.status == 'Completed'" href="{{export.location}}/{{export.filename}}" download="todo.zip"
+            <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token=TODO" download="{{export.filename}}"
               target="_blank">Download</a>
             <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
               (click)="retryExport(export)">Retry</button>
