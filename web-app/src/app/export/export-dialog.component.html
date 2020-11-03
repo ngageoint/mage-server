@@ -11,7 +11,7 @@
                         Observations
                     </mat-checkbox>
                 </mat-list-item>
-                <mat-list-item >
+                <mat-list-item>
                     <mat-checkbox [(ngModel)]="exportLocations">
                         Locations
                     </mat-checkbox>
@@ -34,6 +34,24 @@
                     </mat-option>
                 </mat-select>
             </mat-form-field>
+        </section>
+        <section *ngIf="exportTime === 'custom'">
+            <p>
+                <mat-form-field appearance="fill">
+                    <mat-label>Start Date/Time</mat-label>
+                    <input matInput [ngxMatDatetimePicker]="picker" (dateChange)="onStartDate($event)">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <ngx-mat-datetime-picker #picker [showSeconds]="true"></ngx-mat-datetime-picker>
+                </mat-form-field>
+            </p>
+            <p>
+                <mat-form-field appearance="fill">
+                    <mat-label>End Date/Time</mat-label>
+                    <input matInput [ngxMatDatetimePicker]="picker2" (dateChange)="onEndDate($event)">
+                    <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                    <ngx-mat-datetime-picker #picker2 [showSeconds]="true"></ngx-mat-datetime-picker>
+                </mat-form-field>
+            </p>
         </section>
         <section>
             <mat-expansion-panel (opened)="advancedOptionsExpanded = true" (closed)="advancedOptionsExpanded = false">

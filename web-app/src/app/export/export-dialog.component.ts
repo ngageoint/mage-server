@@ -3,6 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportRequest } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
+import { MatDatepickerInputEvent } from '@angular/material';
 const moment = require('moment');
 
 interface ExportTimeOption {
@@ -33,6 +34,10 @@ export class ExportDialogComponent implements OnInit {
   exportTime: string;
   exportFormat: string;
   exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
+  localOffset: string = moment().format('Z');
+  localTime: boolean = true;
+  startDate: Date = moment().startOf('day').toDate();
+  endDate: Date = moment().endOf('day').toDate();
 
   constructor(
     private dialogRef: MatDialogRef<ExportDialogComponent>,
@@ -85,6 +90,17 @@ export class ExportDialogComponent implements OnInit {
     this.exportTime = 'five';
   }
 
+  onStartDate(event: MatDatepickerInputEvent<Date>): void {
+    this.startDate = event.value;
+    //this.localTime = timeZone === 'local';
+    console.log();
+  }
+
+  onEndDate(event: MatDatepickerInputEvent<Date>): void {
+    this.endDate = event.value;
+    //this.localTime = timeZone === 'local';
+  }
+
   exportData($event: any): void {
     if (!this.exportEvent.selected) {
       //TODO test this
@@ -106,7 +122,17 @@ export class ExportDialogComponent implements OnInit {
     let start: string;
     let end: string;
     if (exportTimeOption.custom) {
-      //TODO handle time.  Used moment previously
+      let startDate = moment(this.startDate);
+      if (startDate) {
+        startDate = this.localTime ? startDate.utc() : startDate;
+        start = startDate.format("YYYY-MM-DD HH:mm:ss");
+      }
+
+      let endDate = moment(this.endDate);
+      if (endDate) {
+        endDate = this.localTime ? endDate.utc() : endDate;
+        end = endDate.format("YYYY-MM-DD HH:mm:ss");
+      }
     } else if (exportTimeOption.value) {
       start = moment().subtract(exportTimeOption.value, 'seconds').utc().format("YYYY-MM-DD HH:mm:ss");
     }
