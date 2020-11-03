@@ -93,7 +93,6 @@ export class ExportDialogComponent implements OnInit {
   onStartDate(event: MatDatepickerInputEvent<Date>): void {
     this.startDate = event.value;
     //this.localTime = timeZone === 'local';
-    console.log();
   }
 
   onEndDate(event: MatDatepickerInputEvent<Date>): void {

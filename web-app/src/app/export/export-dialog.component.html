@@ -7,12 +7,12 @@
             <h2 class="header">What to Export</h2>
             <mat-list>
                 <mat-list-item>
-                    <mat-checkbox [(ngModel)]="exportObservations">
+                    <mat-checkbox [(ngModel)]="exportObservations" color="primary">
                         Observations
                     </mat-checkbox>
                 </mat-list-item>
                 <mat-list-item>
-                    <mat-checkbox [(ngModel)]="exportLocations">
+                    <mat-checkbox [(ngModel)]="exportLocations" color="primary">
                         Locations
                     </mat-checkbox>
                 </mat-list-item>
@@ -21,7 +21,7 @@
         <section>
             <h2 class="header">Export Format</h2>
             <mat-radio-group class="item-container" aria-label="Export format" [(ngModel)]="exportFormat">
-                <mat-radio-button class="item-action" *ngFor="let format of exportFormats" [value]="format">
+                <mat-radio-button class="item-action" *ngFor="let format of exportFormats" [value]="format" color="primary">
                     {{format}}</mat-radio-button>
             </mat-radio-group>
         </section>
@@ -62,17 +62,17 @@
                 </mat-expansion-panel-header>
                 <mat-list>
                     <mat-list-item>
-                        <mat-checkbox [(ngModel)]="excludeObservationsAttachments">
+                        <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary">
                             Exclude all attachments
                         </mat-checkbox>
                     </mat-list-item>
                     <mat-list-item>
-                        <mat-checkbox [(ngModel)]="exportFavoriteObservations">
+                        <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary">
                             Export only your favorite observations
                         </mat-checkbox>
                     </mat-list-item>
                     <mat-list-item>
-                        <mat-checkbox [(ngModel)]="exportImportantObservations">
+                        <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary">
                             Export only observations flagged important
                         </mat-checkbox>
                     </mat-list-item>
