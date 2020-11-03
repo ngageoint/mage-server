@@ -80,6 +80,7 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
         <!-- Row shown when there is no matching data. -->
+        <!-- TODO Does not appear to be working in Angular 8. Angular 10 claims to fix this-->
         <tr mat-row *matNoDataRow>
           <td mat-cell colspan="7">No data matching the filter "{{input.value}}"</td>
         </tr>
