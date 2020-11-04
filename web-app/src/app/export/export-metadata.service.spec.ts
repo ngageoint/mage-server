@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 describe('ExportMetadataService', () => {
   let httpClient: HttpClient;
@@ -57,5 +57,23 @@ describe('ExportMetadataService', () => {
 
     // Finally, assert that there are no outstanding requests.
     httpTestingController.verify();
+  });
+
+  it('Test getMyExportMetadata w/error', () => {
+    const emsg = 'deliberate 404 error';
+
+    const service: ExportMetadataService = TestBed.get(ExportMetadataService);
+    expect(service).toBeTruthy();
+    service.getMyExportMetadata().subscribe(data => fail('should have failed with the 404 error'),
+      (error: HttpErrorResponse) => {
+        expect(error.status).toEqual(404, 'status');
+        expect(error.error).toEqual(emsg, 'message');
+      }
+    );
+
+    const req = httpTestingController.expectOne('/api/exports/myself');
+
+    // Respond with mock error
+    req.flush(emsg, { status: 404, statusText: 'Not Found' });
   });
 });
