@@ -11,7 +11,7 @@ export class ExportsComponent implements OnChanges {
   @Input() events: any[];
   @Output() onExportClose = new EventEmitter<void>();
 
-  constructor(private dialog: MatDialog) {
+  constructor(public dialog: MatDialog) {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
