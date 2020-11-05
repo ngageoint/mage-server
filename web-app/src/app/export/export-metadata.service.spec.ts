@@ -23,7 +23,7 @@ describe('ExportMetadataService', () => {
     httpTestingController.verify();
   });
 
-  it('Test getMyExportMetadata', () => {
+  it('should get my metadata', () => {
     const myMetadata: ExportMetadata[] = [{
       _id: 1,
       userId: 1,
@@ -34,7 +34,6 @@ describe('ExportMetadataService', () => {
       status: 'Running',
       options: {}
     }];
-
 
     const service: ExportMetadataService = TestBed.get(ExportMetadataService);
     expect(service).toBeTruthy();
@@ -59,7 +58,7 @@ describe('ExportMetadataService', () => {
     httpTestingController.verify();
   });
 
-  it('Test getMyExportMetadata w/error', () => {
+  it('should fail to get my metadata due to error', () => {
     const emsg = 'deliberate 404 error';
 
     const service: ExportMetadataService = TestBed.get(ExportMetadataService);
