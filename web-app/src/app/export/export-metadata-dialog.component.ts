@@ -43,13 +43,13 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     token: any;
     private uiModels: ExportMetadataUI[] = [];
 
-    constructor(private dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
-        private exportMetaService: ExportMetadataService,
-        private snackBar: MatSnackBar,
+    constructor(public dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
+        public exportMetaService: ExportMetadataService,
+        public snackBar: MatSnackBar,
         @Inject(EventService)
-        private eventService: any,
+        public eventService: any,
         @Inject(LocalStorageService)
-        private storageService: any) {
+        public storageService: any) {
         this.token = this.storageService.getToken();
     }
 
@@ -82,6 +82,8 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
             });
             this.dataSource.data = this.uiModels;
             this.isLoadingResults = false;
+        }, (error: any) => {
+            console.log("Error getting my export metadata " + error)
         });
     }
 
