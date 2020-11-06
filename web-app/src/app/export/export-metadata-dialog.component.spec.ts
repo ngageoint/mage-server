@@ -80,9 +80,6 @@ describe('Export Metadata Dialog Component', () => {
         expect(component.dataSource.sort).toBeTruthy();
         expect(component.token).toEqual(tokenString);
 
-        console.log(component.eventService.getEventById(1));
-        component.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
-            console.log('Finally worked?');
-        });
+        expect(component.dataSource.data.length).toBeGreaterThan(0);
     }));
 });

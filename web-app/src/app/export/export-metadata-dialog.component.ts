@@ -29,10 +29,9 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
 @Component({
     selector: 'export-metadata-dialog',
     templateUrl: 'export-metadata-dialog.component.html',
-    styleUrls: ['./export-metadata-dialog.component.scss'],
-    providers: [ExportMetadataService]
+    styleUrls: ['./export-metadata-dialog.component.scss']
 })
-export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
+export class ExportMetadataDialogComponent implements OnInit {
     @ViewChild(MatPaginator, { static: true })
     paginator: MatPaginator;
     @ViewChild(MatSort, { static: true })
@@ -44,8 +43,9 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
     private uiModels: ExportMetadataUI[] = [];
 
     constructor(public dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
-        public exportMetaService: ExportMetadataService,
         public snackBar: MatSnackBar,
+        @Inject(ExportMetadataService)
+        public exportMetaService: ExportMetadataService,
         @Inject(EventService)
         public eventService: any,
         @Inject(LocalStorageService)
@@ -63,9 +63,10 @@ export class ExportMetadataDialogComponent implements OnInit, AfterViewInit {
 
         // If the user changes the sort order, reset back to the first page.
         this.sort.sortChange.subscribe(() => this.paginator.firstPage());
+        this.loadData();
     }
 
-    ngAfterViewInit(): void {
+    loadData(): void {
         this.isLoadingResults = true;
         this.uiModels = [];
         this.exportMetaService.getMyExportMetadata().subscribe((data: ExportMetadata[]) => {
