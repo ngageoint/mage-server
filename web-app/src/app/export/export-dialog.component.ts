@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ExportMetadataService, ExportRequest } from './export-metadata.service';
+import { ExportMetadataService, ExportRequest, ExportResponse } from './export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 import { MatDatepickerInputEvent } from '@angular/material';
 const moment = require('moment');
@@ -152,7 +152,7 @@ export class ExportDialogComponent implements OnInit {
       exportRequest.important = this.exportImportantObservations;
     }
 
-    this.exportMetaService.performExport(exportRequest).subscribe((response: any) => {
+    this.exportMetaService.performExport(exportRequest).subscribe((response: ExportResponse) => {
       const msg: string = "Export started with export id " + response.exportId;
       this.snackBar.open(msg, null, { duration: 2000 });
     });

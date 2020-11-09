@@ -25,6 +25,10 @@ export interface ExportRequest {
     endDate?: string
 }
 
+export interface ExportResponse {
+    exportId: string
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -40,8 +44,8 @@ export class ExportMetadataService {
         return this.http.get<ExportMetadata[]>('/api/exports/all');
     }
 
-    performExport(request: ExportRequest): Observable<string> {
-        return this.http.post<string>('/api/exports', JSON.stringify(request), {
+    performExport(request: ExportRequest): Observable<ExportResponse> {
+        return this.http.post<ExportResponse>('/api/exports', JSON.stringify(request), {
             headers: { "Content-Type": "application/json" }
         });
     }
@@ -49,5 +53,14 @@ export class ExportMetadataService {
     deleteExport(exportId: string): Observable<Object> {
         const url = "/api/exports/" + exportId;
         return this.http.delete(url);
+    }
+
+    retryExport(meta: ExportMetadata): Observable<ExportResponse> {
+        const request = {
+            exportId: meta._id
+        }
+        return this.http.post<ExportResponse>('/api/exports/retry', JSON.stringify(request), {
+            headers: { "Content-Type": "application/json" }
+        });
     }
 }

@@ -154,6 +154,18 @@ module.exports = function (app, security) {
         return next(err);
       });
     });
+
+  /**
+   * Retry a failed export
+   */  
+  app.post('/api/exports/retry',
+    passport.authenticate('bearer'),
+    access.authorize('READ_EXPORT'),
+    function (req, res, next) {
+      ExportMetadata.getExportMetadataById(req.param("exportId")).then(meta => {
+        //TODO implement
+      });
+    });
 };
 
 function parseQueryParams(req, res, next) {

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
+import { ExportMetadataService, ExportMetadata, ExportResponse } from './export-metadata.service';
 import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 
 export interface Undoable {
@@ -98,8 +98,10 @@ export class ExportMetadataDialogComponent implements OnInit {
     }
 
     retryExport(meta: ExportMetadataUI): void {
-        console.log("retry " + meta.location);
-        //TODO implement
+        this.exportMetaService.retryExport(meta).subscribe((response: ExportResponse) => {
+            const msg: string = "Retrying export with export id " + response.exportId;
+            this.snackBar.open(msg, null, { duration: 2000 });
+        });
     }
 
     scheduleDeleteExport(meta: ExportMetadataUI): void {
