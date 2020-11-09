@@ -29,6 +29,18 @@ describe('Export Metadata Dialog Component', () => {
             options: {
                 eventId: 1
             }
+        },
+        {
+            _id: 2,
+            userId: 1,
+            physicalPath: '/tmp/test.csv',
+            filename: 'test.csv',
+            exportType: 'csv',
+            location: '/api/exports/2',
+            status: 'Completed',
+            options: {
+                eventId: 1
+            }
         }];
 
         const metaObservable: Observable<ExportMetadata[]> = new Observable<ExportMetadata[]>(
@@ -80,6 +92,18 @@ describe('Export Metadata Dialog Component', () => {
         expect(component.dataSource.sort).toBeTruthy();
         expect(component.token).toEqual(tokenString);
 
-        expect(component.dataSource.data.length).toBeGreaterThan(0);
+        expect(component.dataSource.data.length).toBe(2);
     }));
+
+    it('should filter', () => {
+        const event: any = {
+            target: {
+                value: 'kml'
+            }
+        };
+        expect(component.dataSource.filteredData.length).toBe(2);
+        component.applyFilter(event);
+        expect(component.dataSource.paginator.pageIndex).toBe(0);
+        expect(component.dataSource.filteredData.length).toBe(1);
+    });
 });
