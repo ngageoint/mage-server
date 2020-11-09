@@ -105,5 +105,6 @@ describe('Export Metadata Dialog Component', () => {
         component.applyFilter(event);
         expect(component.dataSource.paginator.pageIndex).toBe(0);
         expect(component.dataSource.filteredData.length).toBe(1);
+        expect(component.dataSource.filteredData[0]._id).toBe(1);
     });
 });
