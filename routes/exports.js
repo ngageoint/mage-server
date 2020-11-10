@@ -171,7 +171,12 @@ module.exports = function (app, security) {
       exportInBackground(req.parameters.exportId, req.event, req.users, req.devices).catch(err => {
         log.warn(err);
       });
-      next();
+     
+      const exportResponse = {
+        exportId: req.parameters.exportId
+      };
+      res.json(exportResponse);
+      return next();
     });
 };
 
@@ -179,7 +184,7 @@ function loadExportMetadata(req, res, next) {
   ExportMetadata.getExportMetadataById(req.param("exportId")).then(result => {
     const parameters = { filter: {} };
 
-    parameters.filter.eventId = result.eventId;
+    parameters.filter.eventId = result.options.eventId;
     parameters.exportId = result._id;
 
     req.parameters = parameters;
