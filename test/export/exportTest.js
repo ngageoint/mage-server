@@ -39,7 +39,7 @@ describe("export tests", function () {
       .withArgs({ token: '12345' })
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .yields(null, MockToken(userId, [permission, 'READ_EXPORT']));
   }
 
   const userId = mongoose.Types.ObjectId();
