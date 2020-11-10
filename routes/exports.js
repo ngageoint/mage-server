@@ -162,61 +162,31 @@ module.exports = function (app, security) {
   app.post('/api/exports/retry',
     passport.authenticate('bearer'),
     access.authorize('READ_EXPORT'),
+    loadExportMetadata,
+    getEvent,
+    validateEventAccess,
+    mapUsers,
+    mapDevices,
     function (req, res, next) {
-      ExportMetadata.getExportMetadataById(req.param("exportId")).then(meta => {
-        const exportResponse = {
-          exportId: result._id.toString()
-        };
-        res.json(exportResponse);
-        next();
-        return meta;
-      }).then(meta => {
-        return Event.getById(meta.eventId, {}, function (err, event) {
-          // form map
-          event.formMap = {};
-
-          // create a field by name map, I will need this later
-          event.forms.forEach(function (form) {
-            event.formMap[form.id] = form;
-
-            const fieldNameToField = {};
-            form.fields.forEach(function (field) {
-              fieldNameToField[field.name] = field;
-            });
-
-            form.fieldNameToField = fieldNameToField;
-            return {
-              meta: meta,
-              event: event
-            }
-          });
-        });
-      }).then(data => {
-        return User.getUsers(function (err, users) {
-          if (err) throw new Error(err);
-
-          const map = {};
-          users.forEach(function (user) {
-            map[user._id] = user;
-          });
-          data.users = map;
-          return data;
-        });
-      }).then(data => {
-        Device.getDevices()
-          .then(devices => {
-            const map = {};
-            devices.forEach(function (device) {
-              map[device._id] = device;
-            });
-            this.exportInBackground(data.meta.eventId, data.event, data.users, devices);
-          })
-          .catch(err => { throw new Error(err) });
-      }).catch(err => {
-        return next(err);
+      exportInBackground(req.parameters.exportId, req.event, req.users, req.devices).catch(err => {
+        log.warn(err);
       });
+      next();
     });
 };
+
+function loadExportMetadata(req, res, next) {
+  ExportMetadata.getExportMetadataById(req.param("exportId")).then(result => {
+    const parameters = { filter: {} };
+
+    parameters.filter.eventId = result.eventId;
+    parameters.exportId = result._id;
+
+    req.parameters = parameters;
+
+    next();
+  }).catch(err => { next(err) });
+}
 
 function parseQueryParams(req, res, next) {
   const parameters = { filter: {} };
