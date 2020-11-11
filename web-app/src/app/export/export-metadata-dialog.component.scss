@@ -9,9 +9,17 @@ td, th {
   width: 25%;
 }
 
-.mat-form-field {
+mat-form-field {
   font-size: 14px;
   width: 100%;
+}
+
+#close-button {
+  margin-right: 8px;
+}
+
+#new-button {
+  margin-left: 8px;
 }
 
 .loading-shade {
@@ -25,4 +33,9 @@ td, th {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+[mat-dialog-actions] {
+  display: flex;
+  justify-content: right;
 }
