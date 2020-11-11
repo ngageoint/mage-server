@@ -11,82 +11,80 @@
       <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
     </mat-form-field>
     <br>
-    <div class="mat-elevation-z8">
-      <table mat-table [dataSource]="dataSource" class="mat-typography" matSort>
+    <table mat-table [dataSource]="dataSource" class="mat-typography" matSort>
 
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
-          <td mat-cell *matCellDef="let export"> {{export.status}} </td>
-        </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+        <td mat-cell *matCellDef="let export"> {{export.status}} </td>
+      </ng-container>
 
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </th>
-          <td mat-cell *matCellDef="let export"> {{export.exportType}} </td>
-        </ng-container>
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </th>
+        <td mat-cell *matCellDef="let export"> {{export.exportType}} </td>
+      </ng-container>
 
-        <ng-container matColumnDef="url">
-          <th mat-header-cell *matHeaderCellDef> Link </th>
-          <td mat-cell *matCellDef="let export">
-            <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}" download="{{export.filename}}"
-              target="_blank">Download</a>
-            <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
-              (click)="retryExport(export)">Retry</button>
-            <div *ngIf="export.status == 'Running'">N/A</div>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="url">
+        <th mat-header-cell *matHeaderCellDef> Link </th>
+        <td mat-cell *matCellDef="let export">
+          <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}"
+            download="{{export.filename}}" target="_blank">Download</a>
+          <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
+            (click)="retryExport(export)">Retry</button>
+          <div *ngIf="export.status == 'Running'">N/A</div>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="event">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </th>
-          <td mat-cell *matCellDef="let export"> {{export.eventName}} </td>
-        </ng-container>
+      <ng-container matColumnDef="event">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </th>
+        <td mat-cell *matCellDef="let export"> {{export.eventName}} </td>
+      </ng-container>
 
-        <ng-container matColumnDef="startDate">
-          <th mat-header-cell *matHeaderCellDef> Start </th>
-          <td mat-cell *matCellDef="let export">
-            <div *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseBlock">
-              {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-            <ng-template #elseBlock>-</ng-template>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef> Start </th>
+        <td mat-cell *matCellDef="let export">
+          <div *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseBlock">
+            {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+          </div>
+          <ng-template #elseBlock>-</ng-template>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="endDate">
-          <th mat-header-cell *matHeaderCellDef> End </th>
-          <td mat-cell *matCellDef="let export">
-            <div *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseBlock">
-              {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-            <ng-template #elseBlock>-</ng-template>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef> End </th>
+        <td mat-cell *matCellDef="let export">
+          <div *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseBlock">
+            {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+          </div>
+          <ng-template #elseBlock>-</ng-template>
+        </td>
+      </ng-container>
 
-        <ng-container matColumnDef="delete">
-          <th mat-header-cell *matHeaderCellDef> Delete </th>
-          <td mat-cell *matCellDef="let export">
-            <div *ngIf="export.undoable; else elseBlock">
-              <button mat-icon-button color="warn" (click)="undoDelete(export)">
-                <mat-icon class="mat-18">undo</mat-icon>
-              </button>
-            </div>
-            <ng-template #elseBlock>
-              <button mat-icon-button color="warn" (click)="scheduleDeleteExport(export)">
-                <mat-icon class="mat-18">delete</mat-icon>
-              </button>
-            </ng-template>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="delete">
+        <th mat-header-cell *matHeaderCellDef> Delete </th>
+        <td mat-cell *matCellDef="let export">
+          <div *ngIf="export.undoable; else elseBlock">
+            <button mat-icon-button color="warn" (click)="undoDelete(export)">
+              <mat-icon class="mat-18">undo</mat-icon>
+            </button>
+          </div>
+          <ng-template #elseBlock>
+            <button mat-icon-button color="warn" (click)="scheduleDeleteExport(export)">
+              <mat-icon class="mat-18">delete</mat-icon>
+            </button>
+          </ng-template>
+        </td>
+      </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-        <!-- Row shown when there is no matching data. -->
-        <!-- TODO Does not appear to be working in Angular 8. Angular 10 claims to fix this-->
-        <tr mat-row *matNoDataRow>
-          <td mat-cell colspan="7">No data matching the filter "{{input.value}}"</td>
-        </tr>
-      </table>
-      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
-    </div>
+      <!-- Row shown when there is no matching data. -->
+      <!-- TODO Does not appear to be working in Angular 8. Angular 10 claims to fix this-->
+      <tr mat-row *matNoDataRow>
+        <td mat-cell colspan="7">No data matching the filter "{{input.value}}"</td>
+      </tr>
+    </table>
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     <br>
   </div>
 </section>
