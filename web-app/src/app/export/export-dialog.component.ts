@@ -24,8 +24,8 @@ export class ExportDialogComponent implements OnInit {
 
   exportEvent: any;
   showEventError: boolean;
-  exportObservations: boolean;
-  exportLocations: boolean;
+  exportObservations: boolean = true;
+  exportLocations: boolean = true;
   exportFavoriteObservations: boolean;
   exportImportantObservations: boolean;
   excludeObservationsAttachments: boolean;

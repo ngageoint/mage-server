@@ -214,24 +214,24 @@ function parseQueryParams(req, res, next) {
 
   const observations = req.param('observations');
   if (observations) {
-    parameters.filter.exportObservations = observations === 'true';
+    parameters.filter.exportObservations = observations === true;
 
     if (parameters.filter.exportObservations) {
-      parameters.filter.favorites = req.param('favorites') === 'true';
+      parameters.filter.favorites = req.param('favorites') === true;
       if (parameters.filter.favorites) {
         parameters.filter.favorites = {
           userId: req.user._id
         };
       }
 
-      parameters.filter.important = req.param('important') === 'true';
-      parameters.filter.attachments = req.param('attachments') === 'true';
+      parameters.filter.important = req.param('important') === true;
+      parameters.filter.attachments = req.param('attachments') === true;
     }
   }
 
   const locations = req.param('locations');
   if (locations) {
-    parameters.filter.exportLocations = locations === 'true';
+    parameters.filter.exportLocations = locations === true;
   }
 
   req.parameters = parameters;
