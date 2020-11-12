@@ -59,19 +59,36 @@
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let export" [attr.colspan]="columnsToDisplay.length">
           <div class="export-detail" [@detailExpand]="export == expandedExport ? 'expanded' : 'collapsed'">
-            <div
-              *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseStartBlock">
-              Start Date: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-            <div *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseEndBlock">
-              End Date: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-            <ng-template #elseStartBlock>Start Date: N/A</ng-template>
-            <ng-template #elseEndBlock>End Date: N/A</ng-template>
-            <div *ngIf="export.options && export.options.filter; else elseFilterBlock">
-              Filter: {{export.options.filter}}
-            </div>
-            <ng-template #elseFilterBlock>Filter: N/A</ng-template>
+            <ul>
+              <li>
+                <div
+                  *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseStartBlock">
+                  Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+                </div>
+              </li>
+              <li>
+                <div
+                  *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseEndBlock">
+                  End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+                </div>
+              </li>
+              <li>
+                <ng-template #elseStartBlock>Start: N/A</ng-template>
+              </li>
+              <li>
+                <ng-template #elseEndBlock>End: N/A</ng-template>
+              </li>
+              <li>
+                <mat-checkbox [checked]="export.options.filter.exportLocations" disabled>
+                  Export Locations
+                </mat-checkbox>
+              </li>
+              <li>
+                <mat-checkbox [checked]="export.options.filter.exportObservations" disabled>
+                  Export Observations
+                </mat-checkbox>
+              </li>
+            </ul>
           </div>
         </td>
       </ng-container>
