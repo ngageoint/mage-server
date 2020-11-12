@@ -99,7 +99,7 @@ export class ExportMetadataDialogComponent implements OnInit {
 
     retryExport(meta: ExportMetadataUI): void {
         this.exportMetaService.retryExport(meta).subscribe((response: ExportResponse) => {
-            const msg: string = "Retrying export with export id " + response.exportId;
+            const msg: string = "Retrying export";
             this.snackBar.open(msg, null, { duration: 2000 });
             //TODO delay by snackbar timeout?
             this.loadData();
@@ -109,7 +109,7 @@ export class ExportMetadataDialogComponent implements OnInit {
     scheduleDeleteExport(meta: ExportMetadataUI): void {
         meta.undoable = true;
         const self = this;
-        this.snackBar.open("Export will be removed in 10 seconds", "Undo", {
+        this.snackBar.open("Export removed", "Undo", {
             duration: 2000,
         }).onAction().subscribe(() => {
             self.undoDelete(meta);
