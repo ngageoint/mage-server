@@ -153,7 +153,7 @@ export class ExportDialogComponent implements OnInit {
     }
 
     this.exportMetaService.performExport(exportRequest).subscribe((response: ExportResponse) => {
-      const msg: string = "Export started with export id " + response.exportId;
+      const msg: string = "Export started";
       this.snackBar.open(msg, null, { duration: 2000 });
     });
     this.dialogRef.close();
