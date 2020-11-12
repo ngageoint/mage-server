@@ -4,6 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ExportMetadataService, ExportMetadata, ExportResponse } from './export-metadata.service';
 import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 
@@ -29,18 +30,26 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
 @Component({
     selector: 'export-metadata-dialog',
     templateUrl: 'export-metadata-dialog.component.html',
-    styleUrls: ['./export-metadata-dialog.component.scss']
+    styleUrls: ['./export-metadata-dialog.component.scss'],
+    animations: [
+        trigger('detailExpand', [
+            state('collapsed', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+        ]),
+    ]
 })
 export class ExportMetadataDialogComponent implements OnInit {
     @ViewChild(MatPaginator, { static: true })
     paginator: MatPaginator;
     @ViewChild(MatSort, { static: true })
     sort: MatSort;
-    displayedColumns: string[] = ['status', 'type', 'url', 'event', 'startDate', 'endDate', 'delete'];
+    columnsToDisplay: string[] = ['status', 'type', 'url', 'event', 'delete'];
     dataSource = new MatTableDataSource<ExportMetadataUI>();
     isLoadingResults: boolean = true;
     token: any;
     private uiModels: ExportMetadataUI[] = [];
+    expandedExport: ExportMetadataUI | null;
 
     constructor(public dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         public snackBar: MatSnackBar,

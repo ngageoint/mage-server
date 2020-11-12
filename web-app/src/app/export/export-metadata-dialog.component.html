@@ -11,7 +11,7 @@
       <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
     </mat-form-field>
     <br>
-    <table mat-table [dataSource]="dataSource" class="mat-typography" matSort>
+    <table mat-table [dataSource]="dataSource" multiTemplateDataRows matSort>
 
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
@@ -39,26 +39,6 @@
         <td mat-cell *matCellDef="let export"> {{export.eventName}} </td>
       </ng-container>
 
-      <ng-container matColumnDef="startDate">
-        <th mat-header-cell *matHeaderCellDef> Start </th>
-        <td mat-cell *matCellDef="let export">
-          <div *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseBlock">
-            {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
-          </div>
-          <ng-template #elseBlock>-</ng-template>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="endDate">
-        <th mat-header-cell *matHeaderCellDef> End </th>
-        <td mat-cell *matCellDef="let export">
-          <div *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseBlock">
-            {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
-          </div>
-          <ng-template #elseBlock>-</ng-template>
-        </td>
-      </ng-container>
-
       <ng-container matColumnDef="delete">
         <th mat-header-cell *matHeaderCellDef> Delete </th>
         <td mat-cell *matCellDef="let export">
@@ -75,8 +55,27 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+      <ng-container matColumnDef="expandedDetail">
+        <td mat-cell *matCellDef="let export" [attr.colspan]="columnsToDisplay.length">
+          <div class="export-detail" [@detailExpand]="export == expandedExport ? 'expanded' : 'collapsed'">
+            <div *ngIf="export.options && export.options.filter && export.options.filter.startDate; else elseBlock">
+              {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+            </div>
+            <div *ngIf="export.options && export.options.filter && export.options.filter.endDate; else elseBlock">
+              {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+            </div>
+            <ng-template #elseBlock>-</ng-template>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnsToDisplay; sticky: true"></tr>
+      <tr mat-row *matRowDef="let export; columns: columnsToDisplay;" class="export-row"
+        [class.export-expanded-row]="expandedExport === export"
+        (click)="expandedExport = expandedExport === export ? null : export">
+      </tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="export-detail-row"></tr>
 
       <!-- Row shown when there is no matching data. -->
       <!-- TODO Does not appear to be working in Angular 8. Angular 10 claims to fix this-->

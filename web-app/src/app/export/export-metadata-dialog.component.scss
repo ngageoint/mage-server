@@ -5,8 +5,29 @@ table {
   width: 100%;
 }
 
-td, th {
+td {
   width: 25%;
+}
+
+tr.export-detail-row {
+  height: 0;
+}
+
+tr.export-row:not(.export-expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.export-row:not(.export-expanded-row):active {
+  background: #efefef;
+}
+
+.export-row td {
+  border-bottom-width: 0;
+}
+
+.export-detail {
+  overflow: hidden;
+  display: flex;
 }
 
 mat-form-field {
