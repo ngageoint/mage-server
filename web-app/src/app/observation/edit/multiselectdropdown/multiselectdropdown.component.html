@@ -1,6 +1,6 @@
-<mat-form-field appearance="outline">
-  <mat-label>{{field.title + (field.required ? ' *' : '')}}</mat-label>
-  <mat-chip-list #chipList>
+<mat-form-field appearance="fill">
+  <mat-label>{{field.title}}</mat-label>
+  <mat-chip-list #chipList [required]="field.required" [(ngModel)]="field.value" #dropdown="ngModel">
     <mat-chip *ngFor="let choice of field.value" [removable]="removable" (removed)="remove(choice)">
       {{choice}}
       <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
@@ -8,7 +8,6 @@
     <input #choiceInput
       #trigger="matAutocompleteTrigger"  
       (click)="trigger.openPanel()"
-      [formControl]="choiceControl" 
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList" 
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
@@ -19,4 +18,6 @@
       <span [ngClass]="{'select__choice--disabled ': field.value && field.value.includes(choice.title)}">{{choice.title}}</span>
     </mat-option>
   </mat-autocomplete>
+
+  <mat-error>You must enter a value</mat-error>
 </mat-form-field>

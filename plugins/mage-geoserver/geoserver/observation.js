@@ -188,22 +188,22 @@ function createLayer(event, callback) {
             name: 'mage:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
-          attributes: mapper.attributesForEvent(event),
-          metadata: {
-            entry: [{
-              '@key': 'time',
-              dimensionInfo: {
-                enabled: true,
-                attribute: 'timestamp',
-                presentation: 'LIST',
-                units: 'ISO8601',
-                defaultValue: {
-                  'strategy': 'MINIMUM'
-                },
-                nearestMatchEnabled: false
-              }
-            }]
-          }
+          attributes: mapper.attributesForEvent(event)
+          // metadata: {
+          //   entry: [{
+          //     '@key': 'time',
+          //     dimensionInfo: {
+          //       enabled: true,
+          //       attribute: 'timestamp',
+          //       presentation: 'LIST',
+          //       units: 'ISO8601',
+          //       defaultValue: {
+          //         'strategy': 'MINIMUM'
+          //       },
+          //       nearestMatchEnabled: false
+          //     }
+          //   }]
+          // }
         }
       };
 

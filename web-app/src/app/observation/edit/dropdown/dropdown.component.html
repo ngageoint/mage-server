@@ -1,6 +1,6 @@
-<mat-form-field appearance="outline">
-  <mat-label>{{field.title + (field.required ? ' *' : '')}}</mat-label>
-  <mat-select [(ngModel)]="field.value" (selectionChange)="onSelectionChange($event)">
+<mat-form-field appearance="fill">
+  <mat-label>{{field.title}}</mat-label>
+  <mat-select [(ngModel)]="field.value" [required]="field.required" (selectionChange)="onSelectionChange($event)" #dropdown="ngModel">
     <mat-option>
       <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{field.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
     </mat-option>
@@ -10,4 +10,5 @@
       {{choice.title}}
     </mat-option>
   </mat-select>
+  <mat-error *ngIf="dropdown.errors?.required">You must enter a value</mat-error>
 </mat-form-field>

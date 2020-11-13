@@ -8,13 +8,21 @@ export interface Choice {
   title: string;
 }
 
+interface DropdownField {
+  title: string,
+  name: string,
+  value: string,
+  required: boolean,
+  choices: Choice[]
+}
+
 @Component({
   selector: 'observation-edit-dropdown',
   templateUrl: './dropdown.component.html',
   styleUrls: ['./dropdown.component.scss']
 })
-export class DropdownComponent implements OnInit {
-  @Input() field: any;
+export class ObservationEditDropdownComponent implements OnInit {
+  @Input() field: DropdownField;
   @Output() selectionChange = new EventEmitter<{value: any}>();
 
   searchControl: FormControl = new FormControl();

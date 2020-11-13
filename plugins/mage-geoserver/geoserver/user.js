@@ -377,22 +377,22 @@ function createLayerBody(event) {
           nillable: true,
           binding: 'java.lang.String'
         }]
-      },
-      metadata: {
-        entry: [{
-          '@key': 'time',
-          dimensionInfo: {
-            enabled: true,
-            attribute: 'timestamp',
-            presentation: 'LIST',
-            units: 'ISO8601',
-            defaultValue: {
-              'strategy': 'MINIMUM'
-            },
-            nearestMatchEnabled: false
-          }
-        }]
       }
+      // metadata: {
+      //   entry: [{
+      //     '@key': 'time',
+      //     dimensionInfo: {
+      //       enabled: true,
+      //       attribute: 'timestamp',
+      //       presentation: 'LIST',
+      //       units: 'ISO8601',
+      //       defaultValue: {
+      //         'strategy': 'MINIMUM'
+      //       },
+      //       nearestMatchEnabled: false
+      //     }
+      //   }]
+      // }
     }
   };
 

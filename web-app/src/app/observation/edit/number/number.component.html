@@ -1,0 +1,8 @@
+<mat-form-field appearance="fill">
+  <mat-label>{{field.title}}</mat-label>
+  <input matInput type="number" [(ngModel)]="field.value" [required]="field.required" [minValue]="field.min" [maxValue]="field.max" #number="ngModel">
+  <mat-error *ngIf="number.errors?.required">You must enter a value</mat-error>
+  <mat-error *ngIf="number.errors?.minValue">Must be greater than {{field.min}}</mat-error>
+  <mat-error *ngIf="number.errors?.maxValue">Must be less than {{field.max}}</mat-error>
+</mat-form-field>
+

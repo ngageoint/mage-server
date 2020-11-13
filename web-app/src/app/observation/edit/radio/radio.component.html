@@ -1,0 +1,8 @@
+<label>{{field.title + (field.required ? ' *' : '')}}</label>
+<mat-radio-group class="radio-group" [(ngModel)]="field.value" #radio="ngModel" [required]="field.required">
+  <mat-radio-button *ngFor="let choice of field.choices" [value]="choice" color="primary" class="radio-button">
+    {{choice.title}}
+  </mat-radio-button>
+
+  <mat-error *ngIf="radio.touched && radio.invalid">{{field.title}} is required</mat-error>
+</mat-radio-group>

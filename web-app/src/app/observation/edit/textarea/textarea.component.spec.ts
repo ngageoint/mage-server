@@ -1,40 +1,36 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, ViewChild } from '@angular/core';
-
-import { ObservationEditDropdownComponent } from './dropdown.component';
-import { By } from '@angular/platform-browser';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { MatError, MatFormField, MatFormFieldModule, MatInput, MatInputModule } from '@angular/material';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatError, MatInputModule, MatSelect, MatSelectModule } from '@angular/material';
+import { ObservationEditTextComponent } from '../text/text.component';
+
+import { ObservationEditTextareaComponent } from './textarea.component';
 
 @Component({
-  template: `<observation-edit-dropdown [field]="field"></observation-edit-dropdown>`
+  selector: `host-component`,
+  template: `<observation-edit-textarea [field]="field"></observation-edit-textarea>`
 })
 class TestHostComponent {
+
   field = {
-    title: 'Colors',
-    choices: [{
-      title: 'red'
-    },{
-      title: 'green'
-    },{
-      title: 'blue'
-    }]
+    title: 'Number',
+    name: 'field1'
   }
 
-  @ViewChild(ObservationEditDropdownComponent, { static: false }) component: ObservationEditDropdownComponent
+  @ViewChild(ObservationEditTextComponent, { static: false }) component: ObservationEditTextComponent
 }
 
-describe('DropdownComponent', () => {
-  let component: ObservationEditDropdownComponent
+describe('TextareaComponent', () => {
+  let component: ObservationEditTextareaComponent
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, FormsModule, ReactiveFormsModule, NgxMatSelectSearchModule, MatInputModule, MatSelectModule],
-      declarations: [ObservationEditDropdownComponent, TestHostComponent]
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
+      declarations: [ObservationEditTextComponent, TestHostComponent]
     })
       .compileComponents()
   }))
@@ -47,27 +43,27 @@ describe('DropdownComponent', () => {
   })
 
   it('should create', () => {
-    expect(fixture.debugElement.query(By.directive(ObservationEditDropdownComponent))).toBeTruthy();
-  });
+    expect(component).toBeTruthy()
+  })
 
-  it('should not indicate required', () => {
+  fit('should not indicate required', () => {
     component.field.required = false
     fixture.detectChanges()
-    const select = fixture.debugElement.query(By.directive(MatSelect)).componentInstance
-    expect(select.required).toBeFalsy()
+    const input = fixture.debugElement.query(By.directive(MatFormField)).componentInstance
+    expect(input._control.required).toBeFalsy()
   })
 
   it('should indicate required', () => {
     component.field.required = true
     fixture.detectChanges()
-    const select = fixture.debugElement.query(By.directive(MatSelect)).componentInstance
-    expect(select.required).toBeTruthy()
+    const input = fixture.debugElement.query(By.directive(MatFormField)).componentInstance
+    expect(input._control.required).toBeTruthy()
   })
 
   it('should show error on invalid and touched', async () => {
     component.field.required = true
 
-    const input = fixture.debugElement.query(By.directive(MatSelect)).references['dropdown']
+    const input = fixture.debugElement.query(By.directive(MatInput)).references['number']
     input.control.markAsTouched()
 
     fixture.detectChanges()

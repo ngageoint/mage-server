@@ -26,8 +26,14 @@ import { AddObservationComponent } from '../app/map/controls/add-observation.com
 import { LeafletComponent } from '../app/map/leaflet.component';
 
 import { ScrollWrapperComponent } from '../app/wrapper/scroll/feed-scroll.component';
+import { ObservationEditCheckboxComponent } from '../app/observation/edit/checkbox/checkbox.component';
 import { DropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
+import { ObservationEditEmailComponent } from '../app/observation/edit/email/email.component';
 import { MultiSelectDropdownComponent } from '../app/observation/edit/multiselectdropdown/multiselectdropdown.component';
+import { ObservationEditNumberComponent } from '../app/observation/edit/number/number.component';
+import { ObservationEditTextComponent } from '../app/observation/edit/text/text.component';
+import { ObservationEditTextareaComponent } from '../app/observation/edit/textarea/textarea.component';
+import { ObservationEditRadioComponent } from '../app/observation/edit/radio/radio.component';
 
 require('angular-minicolors');
 require('select2');
@@ -56,15 +62,20 @@ app
   .directive('matSidenavContent', downgradeComponent({ component: MatSidenavContent }))
   .directive('matSidenavContainer', downgradeComponent({ component: MatSidenavContainer }))
   .directive('feedScrollWrapper', downgradeComponent({ component: ScrollWrapperComponent }))
+  .directive('observationEditCheckbox', downgradeComponent({ component: ObservationEditCheckboxComponent }))
   .directive('observationEditDropdown', downgradeComponent({ component: DropdownComponent }))
+  .directive('observationEditEmail', downgradeComponent({ component: ObservationEditEmailComponent }))
   .directive('observationEditMultiselectdropdown', downgradeComponent({ component: MultiSelectDropdownComponent }))
+  .directive('observationEditNumber', downgradeComponent({ component: ObservationEditNumberComponent }))
+  .directive('observationEditText', downgradeComponent({ component: ObservationEditTextComponent }))
+  .directive('observationEditTextarea', downgradeComponent({ component: ObservationEditTextareaComponent }))
+  .directive('observationEditRadio', downgradeComponent({ component: ObservationEditRadioComponent }))
   .directive('mapLeaflet', downgradeComponent({ component: LeafletComponent }))
   .directive('mapControlZoom', downgradeComponent({ component: ZoomComponent }))
   .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }));
-
 
 app
   .component('filterPanel', require('./filter/filter'))

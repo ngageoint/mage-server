@@ -45,7 +45,6 @@ import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
 import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
-import { DropdownComponent } from './observation/edit/dropdown/dropdown.component';
 import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
 // import app from '../ng1/app.js';
@@ -61,11 +60,19 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 
 import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { ObservationEditCheckboxComponent } from './observation/edit/checkbox/checkbox.component';
+import { ObservationEditEmailComponent } from './observation/edit/email/email.component';
+import { ObservationEditNumberComponent } from './observation/edit/number/number.component';
+import { MinValueDirective } from './observation/edit/number/min-value.directive';
+import { MaxValueDirective } from './observation/edit/number/max-value.directive';
+import { ObservationEditDropdownComponent } from './observation/edit/dropdown/dropdown.component';
+import { ObservationEditTextComponent } from './observation/edit/text/text.component';
+import { ObservationEditTextareaComponent } from './observation/edit/textarea/textarea.component';
+import { ObservationEditRadioComponent } from './observation/edit/radio/radio.component';
 
 @NgModule({
   declarations: [
     SwaggerComponent,
-    DropdownComponent,
     MultiSelectDropdownComponent,
     ScrollWrapperComponent,
     ZoomComponent,
@@ -78,7 +85,16 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    MinValueDirective,
+    MaxValueDirective,
+    ObservationEditCheckboxComponent,
+    ObservationEditDropdownComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
   ],
   imports: [
     BrowserModule,
@@ -127,7 +143,13 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     MatSidenav,
     MatSidenavContent,
     MatSidenavContainer,
-    DropdownComponent, 
+    ObservationEditDropdownComponent, 
+    ObservationEditCheckboxComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
     MultiSelectDropdownComponent,
     LeafletComponent,
     ZoomComponent,
