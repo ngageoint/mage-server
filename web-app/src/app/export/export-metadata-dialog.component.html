@@ -27,9 +27,9 @@
         <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
         <mat-cell *matCellDef="let export">
           <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}"
-            download="{{export.filename}}" target="_blank">Download</a>
+            download="{{export.filename}}" target="_blank" (click)="$event.stopPropagation()">Download</a>
           <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
-            (click)="retryExport(export)">Retry</button>
+            (click)="$event.stopPropagation(); retryExport(export)">Retry</button>
           <div *ngIf="export.status == 'Running'">N/A</div>
         </mat-cell>
       </ng-container>
@@ -43,12 +43,12 @@
         <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
         <mat-cell *matCellDef="let export">
           <div *ngIf="export.undoable; else elseBlock">
-            <button mat-icon-button color="warn" (click)="undoDelete(export)">
+            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); undoDelete(export)">
               <mat-icon class="mat-18">undo</mat-icon>
             </button>
           </div>
           <ng-template #elseBlock>
-            <button mat-icon-button color="warn" (click)="scheduleDeleteExport(export)">
+            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); scheduleDeleteExport(export)">
               <mat-icon class="mat-18">delete</mat-icon>
             </button>
           </ng-template>
