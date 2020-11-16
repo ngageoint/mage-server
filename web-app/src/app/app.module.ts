@@ -45,7 +45,8 @@ import {
   MatSortModule,
   MatSnackBarModule,
   MatDatepickerModule,
-  MatNativeDateModule
+  MatNativeDateModule,
+  MatTabsModule
 } from '@angular/material';
 
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
@@ -75,6 +76,7 @@ import { ExportDialogComponent } from './export/export-dialog.component';
 
 import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider, eventServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
+import { CdkDetailRowDirective } from './export/cdk-detail-row.directive';
 
 @NgModule({
   declarations: [
@@ -95,7 +97,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     ColorPickerComponent,
     ExportsComponent,
     ExportMetadataDialogComponent,
-    ExportDialogComponent
+    ExportDialogComponent,
+    CdkDetailRowDirective
   ],
   imports: [
     BrowserModule,
@@ -139,7 +142,8 @@ import { TokenInterceptorService } from './http/token-interceptor.service';
     MatNativeDateModule,
     NgxMatDatetimePickerModule, 
     NgxMatTimepickerModule,
-    NgxMatNativeDateModule
+    NgxMatNativeDateModule,
+    MatTabsModule
   ],
   providers: [
     mapServiceProvider,

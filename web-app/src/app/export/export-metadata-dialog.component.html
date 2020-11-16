@@ -79,12 +79,16 @@
                 <ng-template #elseEndBlock>End: N/A</ng-template>
               </li>
               <li>
-                <mat-checkbox [checked]="export.options.filter.exportLocations" color="primary" disabled>
+                <mat-checkbox
+                  [checked]="export.options && export.options.filter && export.options.filter.exportLocations"
+                  color="primary" disabled>
                   Export Locations
                 </mat-checkbox>
               </li>
               <li>
-                <mat-checkbox [checked]="export.options.filter.exportObservations" color="primary" disabled>
+                <mat-checkbox
+                  [checked]="export.options && export.options.filter && export.options.filter.exportObservations"
+                  color="primary" disabled>
                   Export Observations
                 </mat-checkbox>
               </li>

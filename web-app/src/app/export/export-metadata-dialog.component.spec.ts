@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef } from '@angular/material';
+import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatTabsModule, MatCheckboxModule } from '@angular/material';
 import { LocalStorageService, EventService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -62,7 +62,7 @@ describe('Export Metadata Dialog Component', () => {
         TestBed.configureTestingModule({
             imports: [MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
                 MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
-                NoopAnimationsModule],
+                NoopAnimationsModule, MatTabsModule, MatCheckboxModule],
             providers: [
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
@@ -87,13 +87,13 @@ describe('Export Metadata Dialog Component', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should wire up components to datasource', async(() => {
+    it('should wire up components to datasource', () => {
         expect(component.dataSource.paginator).toBeTruthy();
         expect(component.dataSource.sort).toBeTruthy();
         expect(component.token).toEqual(tokenString);
 
         expect(component.dataSource.data.length).toBe(2);
-    }));
+    });
 
     it('should filter', () => {
         const event: any = {
