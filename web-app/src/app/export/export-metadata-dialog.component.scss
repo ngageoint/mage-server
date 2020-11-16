@@ -1,33 +1,25 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-table {
-  width: 100%;
+mat-table {
+  overflow: auto;
+  max-height: 500px;
 }
 
-td {
-  width: 25%;
+.export-row {
+  position: relative;
 }
 
-tr.export-detail-row {
-  height: 0;
+.export-row:not(.expanded) {
+  cursor: pointer;
 }
 
-tr.export-row:not(.export-expanded-row):hover {
-  background: whitesmoke;
+.export-row:not(.expanded):hover {
+  background: #f5f5f5;
 }
 
-tr.export-row:not(.export-expanded-row):active {
-  background: #efefef;
-}
-
-.export-row td {
-  border-bottom-width: 0;
-}
-
-.export-detail {
-  overflow: hidden;
-  display: flex;
+.export-row.expanded {
+  border-bottom-color: transparent;
 }
 
 mat-form-field {

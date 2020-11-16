@@ -6,6 +6,7 @@ import { LocalStorageService, EventService } from '../upgrade/ajs-upgraded-provi
 import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { CdkDetailRowDirective } from './cdk-detail-row.directive';
 
 describe('Export Metadata Dialog Component', () => {
 
@@ -69,7 +70,7 @@ describe('Export Metadata Dialog Component', () => {
                 { provide: MatDialogRef, useValue: {} },
                 { provide: ExportMetadataService, useValue: exportMetadataServiceSpy }
             ],
-            declarations: [ExportMetadataDialogComponent]
+            declarations: [CdkDetailRowDirective, ExportMetadataDialogComponent]
         }).compileComponents();
     }));
 
