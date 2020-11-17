@@ -65,28 +65,39 @@
     <ng-template #tpl let-export>
       <div *ngIf="export.options && export.options.filter" class="mat-row detail-row" [@detailExpand]
         style="overflow: hidden">
-        <ul>
-          <li>
-            <div *ngIf="export.options.filter.startDate">
-              Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-          </li>
-          <li>
-            <div *ngIf="export.options.filter.endDate">
-              End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
-            </div>
-          </li>
-          <li>
-            <mat-checkbox [checked]="export.options.filter.exportLocations" color="primary" disabled>
+        <mat-list dense>
+          <div mat-subheader>Time Range</div>
+          <mat-list-item>
+            {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}} -
+            {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+          </mat-list-item>
+          <div mat-subheader>Export Options</div>
+          <mat-list-item *ngIf="export.options.filter.exportLocations">
+            <mat-checkbox [checked]="true" color="primary" disabled>
               Export Locations
             </mat-checkbox>
-          </li>
-          <li>
-            <mat-checkbox [checked]="export.options.filter.exportObservations" color="primary" disabled>
+          </mat-list-item>
+          <mat-list-item *ngIf="export.options.filter.exportObservations">
+            <mat-checkbox [checked]="true" color="primary" disabled>
               Export Observations
             </mat-checkbox>
-          </li>
-        </ul>
+          </mat-list-item>
+          <mat-list-item *ngIf="export.options.filter.excludeObservationsAttachments">
+            <mat-checkbox [checked]="true" color="primary" disabled>
+              Exclude All Attachments
+            </mat-checkbox>
+          </mat-list-item>
+          <mat-list-item *ngIf="export.options.filter.exportFavoriteObservations">
+            <mat-checkbox [checked]="true" color="primary" disabled>
+              Export Only Your Favorite Observations
+            </mat-checkbox>
+          </mat-list-item>
+          <mat-list-item *ngIf="export.options.filter.exportImportantObservations">
+            <mat-checkbox [checked]="true" color="primary" disabled>
+              Export Only Observations Flagged Important
+            </mat-checkbox>
+          </mat-list-item>
+        </mat-list>
       </div>
     </ng-template>
   </div>
