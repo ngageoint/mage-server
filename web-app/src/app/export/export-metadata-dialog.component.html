@@ -63,29 +63,26 @@
     <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     <br>
     <ng-template #tpl let-export>
-      <div class="mat-row detail-row" [@detailExpand] style="overflow: hidden">
+      <div *ngIf="export.options && export.options.filter" class="mat-row detail-row" [@detailExpand]
+        style="overflow: hidden">
         <ul>
           <li>
-            <div *ngIf="export.options && export.options.filter && export.options.filter.startDate">
+            <div *ngIf="export.options.filter.startDate">
               Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
             </div>
           </li>
           <li>
-            <div *ngIf="export.options && export.options.filter && export.options.filter.endDate">
+            <div *ngIf="export.options.filter.endDate">
               End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
             </div>
           </li>
           <li>
-            <mat-checkbox
-              [checked]="export.options && export.options.filter && export.options.filter.exportLocations"
-              color="primary" disabled>
+            <mat-checkbox [checked]="export.options.filter.exportLocations" color="primary" disabled>
               Export Locations
             </mat-checkbox>
           </li>
           <li>
-            <mat-checkbox
-              [checked]="export.options && export.options.filter && export.options.filter.exportObservations"
-              color="primary" disabled>
+            <mat-checkbox [checked]="export.options.filter.exportObservations" color="primary" disabled>
               Export Observations
             </mat-checkbox>
           </li>
