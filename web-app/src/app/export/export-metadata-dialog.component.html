@@ -68,8 +68,12 @@
         <mat-list dense>
           <div mat-subheader>Time Range</div>
           <mat-list-item>
-            {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}} -
-            {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+            <p matLine>
+              Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+            </p>
+            <p matLine>
+              End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+            </p>
           </mat-list-item>
           <div mat-subheader>Export Options</div>
           <mat-list-item *ngIf="export.options.filter.exportLocations">
