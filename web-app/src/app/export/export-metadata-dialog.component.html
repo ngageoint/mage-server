@@ -86,17 +86,17 @@
               Export Observations
             </mat-checkbox>
           </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.excludeObservationsAttachments">
+          <mat-list-item *ngIf="export.options.filter.attachments">
             <mat-checkbox [checked]="true" color="primary" disabled>
               Exclude All Attachments
             </mat-checkbox>
           </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.exportFavoriteObservations">
+          <mat-list-item *ngIf="export.options.filter.favorites">
             <mat-checkbox [checked]="true" color="primary" disabled>
               Export Only Your Favorite Observations
             </mat-checkbox>
           </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.exportImportantObservations">
+          <mat-list-item *ngIf="export.options.filter.important">
             <mat-checkbox [checked]="true" color="primary" disabled>
               Export Only Observations Flagged Important
             </mat-checkbox>
