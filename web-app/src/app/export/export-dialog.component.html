@@ -3,82 +3,85 @@
 </section>
 <section class="mat-typography">
     <div mat-dialog-content>
-        <section>
-            <h2 class="header">What to Export</h2>
-            <mat-list>
-                <mat-list-item>
-                    <mat-checkbox [(ngModel)]="exportObservations" color="primary">
-                        Observations
-                    </mat-checkbox>
-                </mat-list-item>
-                <mat-list-item>
-                    <mat-checkbox [(ngModel)]="exportLocations" color="primary">
-                        Locations
-                    </mat-checkbox>
-                </mat-list-item>
-            </mat-list>
-        </section>
-        <section>
-            <h2 class="header">Export Format</h2>
-            <mat-radio-group aria-label="Export format" [(ngModel)]="exportFormat">
-                <mat-radio-button *ngFor="let format of exportFormats" [value]="format" color="primary">
-                    {{format}}</mat-radio-button>
-            </mat-radio-group>
-        </section>
-        <section>
-            <h2 class="header">Time</h2>
-            <mat-form-field appearance="outline">
-                <mat-label>Select a time</mat-label>
-                <mat-select [(ngModel)]="exportTime">
-                    <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </section>
-        <section *ngIf="exportTime === 'custom'">
-            <p>
-                <mat-form-field appearance="fill">
-                    <mat-label>Start Date/Time</mat-label>
-                    <input matInput [ngxMatDatetimePicker]="picker" (dateChange)="onStartDate($event)">
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <ngx-mat-datetime-picker #picker [showSeconds]="true"></ngx-mat-datetime-picker>
-                </mat-form-field>
-            </p>
-            <p>
-                <mat-form-field appearance="fill">
-                    <mat-label>End Date/Time</mat-label>
-                    <input matInput [ngxMatDatetimePicker]="picker2" (dateChange)="onEndDate($event)">
-                    <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
-                    <ngx-mat-datetime-picker #picker2 [showSeconds]="true"></ngx-mat-datetime-picker>
-                </mat-form-field>
-            </p>
-        </section>
-        <section>
-            <mat-expansion-panel (opened)="advancedOptionsExpanded = true" (closed)="advancedOptionsExpanded = false">
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        Advanced
-                    </mat-panel-title>
-                </mat-expansion-panel-header>
+        <mat-card>
+            <section>
+                <h2 class="header">What to Export</h2>
                 <mat-list>
                     <mat-list-item>
-                        <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary">
-                            Exclude all attachments
+                        <mat-checkbox [(ngModel)]="exportObservations" color="primary">
+                            Observations
                         </mat-checkbox>
                     </mat-list-item>
                     <mat-list-item>
-                        <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary">
-                            Export only your favorite observations
-                        </mat-checkbox>
-                    </mat-list-item>
-                    <mat-list-item>
-                        <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary">
-                            Export only observations flagged important
+                        <mat-checkbox [(ngModel)]="exportLocations" color="primary">
+                            Locations
                         </mat-checkbox>
                     </mat-list-item>
                 </mat-list>
-            </mat-expansion-panel>
-        </section>
+            </section>
+            <section>
+                <h2 class="header">Export Format</h2>
+                <mat-radio-group aria-label="Export format" [(ngModel)]="exportFormat">
+                    <mat-radio-button *ngFor="let format of exportFormats" [value]="format" color="primary">
+                        {{format}}</mat-radio-button>
+                </mat-radio-group>
+            </section>
+            <section>
+                <h2 class="header">Time</h2>
+                <mat-form-field appearance="outline">
+                    <mat-label>Select a time</mat-label>
+                    <mat-select [(ngModel)]="exportTime">
+                        <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </section>
+            <section *ngIf="exportTime === 'custom'">
+                <p>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Start Date/Time</mat-label>
+                        <input matInput [ngxMatDatetimePicker]="picker" (dateChange)="onStartDate($event)">
+                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker #picker [showSeconds]="true"></ngx-mat-datetime-picker>
+                    </mat-form-field>
+                </p>
+                <p>
+                    <mat-form-field appearance="fill">
+                        <mat-label>End Date/Time</mat-label>
+                        <input matInput [ngxMatDatetimePicker]="picker2" (dateChange)="onEndDate($event)">
+                        <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker #picker2 [showSeconds]="true"></ngx-mat-datetime-picker>
+                    </mat-form-field>
+                </p>
+            </section>
+            <section>
+                <mat-expansion-panel (opened)="advancedOptionsExpanded = true"
+                    (closed)="advancedOptionsExpanded = false">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            Advanced
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <mat-list>
+                        <mat-list-item>
+                            <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary">
+                                Exclude all attachments
+                            </mat-checkbox>
+                        </mat-list-item>
+                        <mat-list-item>
+                            <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary">
+                                Export only your favorite observations
+                            </mat-checkbox>
+                        </mat-list-item>
+                        <mat-list-item>
+                            <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary">
+                                Export only observations flagged important
+                            </mat-checkbox>
+                        </mat-list-item>
+                    </mat-list>
+                </mat-expansion-panel>
+            </section>
+        </mat-card>
         <br>
     </div>
 </section>

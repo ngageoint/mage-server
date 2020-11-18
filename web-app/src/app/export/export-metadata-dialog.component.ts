@@ -37,6 +37,16 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
             state('expanded', style({ height: '*' })),
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
+        trigger('flyInOut', [
+            state('in', style({ transform: 'translateX(0)' })),
+            transition('void => *', [
+                style({ transform: 'translateX(-100%)' }),
+                animate(100)
+            ]),
+            transition('* => void', [
+                animate(100, style({ transform: 'translateX(100%)' }))
+            ])
+        ])
     ]
 })
 export class ExportMetadataDialogComponent implements OnInit {
@@ -49,7 +59,6 @@ export class ExportMetadataDialogComponent implements OnInit {
     isLoadingResults: boolean = true;
     token: any;
     private uiModels: ExportMetadataUI[] = [];
-    expandedExport: ExportMetadataUI | null;
 
     constructor(public dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         public snackBar: MatSnackBar,

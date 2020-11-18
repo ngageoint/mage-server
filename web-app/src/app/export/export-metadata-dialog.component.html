@@ -3,107 +3,110 @@
 </section>
 <section class="mat-typography">
   <div mat-dialog-content>
-    <div class="loading-shade" *ngIf="isLoadingResults">
-      <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
-    </div>
-    <mat-form-field>
-      <mat-label>Filter</mat-label>
-      <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
-    </mat-form-field>
     <br>
-    <mat-table [dataSource]="dataSource" multiTemplateDataRows matSort>
-
-      <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
-        <mat-cell *matCellDef="let export"> {{export.status}} </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="type">
-        <mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </mat-header-cell>
-        <mat-cell *matCellDef="let export"> {{export.exportType}} </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="url">
-        <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
-        <mat-cell *matCellDef="let export">
-          <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}"
-            download="{{export.filename}}" target="_blank" (click)="$event.stopPropagation()">Download</a>
-          <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
-            (click)="$event.stopPropagation(); retryExport(export)">Retry</button>
-          <div *ngIf="export.status == 'Running'">N/A</div>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="event">
-        <mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </mat-header-cell>
-        <mat-cell *matCellDef="let export"> {{export.eventName}} </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="delete">
-        <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
-        <mat-cell *matCellDef="let export">
-          <div *ngIf="export.undoable; else elseBlock">
-            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); undoDelete(export)">
-              <mat-icon class="mat-18">undo</mat-icon>
-            </button>
-          </div>
-          <ng-template #elseBlock>
-            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); scheduleDeleteExport(export)">
-              <mat-icon class="mat-18">delete</mat-icon>
-            </button>
-          </ng-template>
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="columnsToDisplay; sticky: true"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: columnsToDisplay;" matRipple class="export-row" [cdkDetailRow]="row"
-        [cdkDetailRowTpl]="tpl">
-      </mat-row>
-    </mat-table>
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
-    <br>
-    <ng-template #tpl let-export>
-      <div *ngIf="export.options && export.options.filter" class="mat-row detail-row" [@detailExpand]
-        style="overflow: hidden">
-        <mat-list dense>
-          <div mat-subheader>Time Range</div>
-          <mat-list-item>
-            <p matLine>
-              Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
-            </p>
-            <p matLine>
-              End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
-            </p>
-          </mat-list-item>
-          <div mat-subheader>Export Options</div>
-          <mat-list-item *ngIf="export.options.filter.exportLocations">
-            <mat-checkbox [checked]="true" color="primary" disabled>
-              Export Locations
-            </mat-checkbox>
-          </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.exportObservations">
-            <mat-checkbox [checked]="true" color="primary" disabled>
-              Export Observations
-            </mat-checkbox>
-          </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.attachments">
-            <mat-checkbox [checked]="true" color="primary" disabled>
-              Exclude All Attachments
-            </mat-checkbox>
-          </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.favorites">
-            <mat-checkbox [checked]="true" color="primary" disabled>
-              Export Only Your Favorite Observations
-            </mat-checkbox>
-          </mat-list-item>
-          <mat-list-item *ngIf="export.options.filter.important">
-            <mat-checkbox [checked]="true" color="primary" disabled>
-              Export Only Observations Flagged Important
-            </mat-checkbox>
-          </mat-list-item>
-        </mat-list>
+    <mat-card>
+      <div class="loading-shade" *ngIf="isLoadingResults">
+        <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
       </div>
-    </ng-template>
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
+      </mat-form-field>
+      <br>
+      <mat-table [dataSource]="dataSource" multiTemplateDataRows matSort>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
+          <mat-cell *matCellDef="let export"> {{export.status}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </mat-header-cell>
+          <mat-cell *matCellDef="let export"> {{export.exportType}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="url">
+          <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
+          <mat-cell *matCellDef="let export">
+            <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}"
+              download="{{export.filename}}" target="_blank" (click)="$event.stopPropagation()">Download</a>
+            <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
+              (click)="$event.stopPropagation(); retryExport(export)">Retry</button>
+            <div *ngIf="export.status == 'Running'">N/A</div>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="event">
+          <mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </mat-header-cell>
+          <mat-cell *matCellDef="let export"> {{export.eventName}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="delete">
+          <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
+          <mat-cell *matCellDef="let export">
+            <div *ngIf="export.undoable; else elseBlock">
+              <button mat-icon-button color="warn" (click)="$event.stopPropagation(); undoDelete(export)">
+                <mat-icon class="mat-18">undo</mat-icon>
+              </button>
+            </div>
+            <ng-template #elseBlock>
+              <button mat-icon-button color="warn" (click)="$event.stopPropagation(); scheduleDeleteExport(export)">
+                <mat-icon class="mat-18">delete</mat-icon>
+              </button>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columnsToDisplay; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: columnsToDisplay;" matRipple class="export-row" [cdkDetailRow]="row"
+          [cdkDetailRowTpl]="tpl">
+        </mat-row>
+      </mat-table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      <br>
+      <ng-template #tpl let-export>
+        <div *ngIf="export.options && export.options.filter" class="mat-row" [@detailExpand]>
+          <mat-list dense>
+            <div mat-subheader>Time Range</div>
+            <mat-list-item>
+              <p matLine>
+                Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+              </p>
+              <p matLine>
+                End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+              </p>
+            </mat-list-item>
+            <div mat-subheader>Export Options</div>
+            <mat-list-item *ngIf="export.options.filter.exportLocations">
+              <mat-checkbox [checked]="true" color="primary" disabled>
+                Export Locations
+              </mat-checkbox>
+            </mat-list-item>
+            <mat-list-item *ngIf="export.options.filter.exportObservations">
+              <mat-checkbox [checked]="true" color="primary" disabled>
+                Export Observations
+              </mat-checkbox>
+            </mat-list-item>
+            <mat-list-item *ngIf="export.options.filter.attachments">
+              <mat-checkbox [checked]="true" color="primary" disabled>
+                Exclude All Attachments
+              </mat-checkbox>
+            </mat-list-item>
+            <mat-list-item *ngIf="export.options.filter.favorites">
+              <mat-checkbox [checked]="true" color="primary" disabled>
+                Export Only Your Favorite Observations
+              </mat-checkbox>
+            </mat-list-item>
+            <mat-list-item *ngIf="export.options.filter.important">
+              <mat-checkbox [checked]="true" color="primary" disabled>
+                Export Only Observations Flagged Important
+              </mat-checkbox>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </ng-template>
+    </mat-card>
+    <br>
   </div>
 </section>
 <section class="mat-typography">
