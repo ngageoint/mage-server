@@ -6,9 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportMetadata, ExportResponse } from './services/export-metadata.service';
 import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
-import { detailExpand } from './animations/detail-expand.animation';
-import { fadeIn } from './animations/fade-in.animation';
-
+import { detailExpandAnimation } from './animations/detail-expand.animation';
 
 export interface Undoable {
     undoable: boolean;
@@ -34,8 +32,7 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
     templateUrl: 'export-metadata-dialog.component.html',
     styleUrls: ['./export-metadata-dialog.component.scss'],
     animations: [
-        detailExpand,
-        fadeIn
+        detailExpandAnimation
     ]
 })
 export class ExportMetadataDialogComponent implements OnInit {

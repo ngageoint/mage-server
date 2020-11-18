@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportMetadataService, ExportRequest, ExportResponse } from './services/export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 import { MatDatepickerInputEvent } from '@angular/material';
+import { slideInOutAnimation } from './animations/slide-in-out.animation';
 const moment = require('moment');
 
 interface ExportTimeOption {
@@ -18,7 +19,9 @@ interface ExportTimeOption {
   selector: 'export-dialog',
   templateUrl: 'export-dialog.component.html',
   styleUrls: ['./export-dialog.component.scss'],
-  providers: [ExportMetadataService]
+  providers: [ExportMetadataService],
+   animations: [slideInOutAnimation]
+   //host: { '[@slideInOutAnimation]': '' }
 })
 export class ExportDialogComponent implements OnInit {
 
