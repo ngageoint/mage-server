@@ -3,10 +3,10 @@ import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
 import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatTabsModule, MatCheckboxModule, MatListModule, MatCardModule } from '@angular/material';
 import { LocalStorageService, EventService } from '../upgrade/ajs-upgraded-providers';
-import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
+import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CdkDetailRowDirective } from './cdk-detail-row.directive';
+import { CdkDetailRowDirective } from './directives/cdk-detail-row.directive';
 
 describe('Export Metadata Dialog Component', () => {
 
