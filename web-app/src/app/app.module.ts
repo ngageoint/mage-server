@@ -76,7 +76,7 @@ import { ExportDialogComponent } from './export/export-dialog.component';
 
 import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider, eventServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
-import { CdkDetailRowDirective } from './export/cdk-detail-row.directive';
+import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 
 @NgModule({
   declarations: [
