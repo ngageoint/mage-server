@@ -4,9 +4,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ExportMetadataService, ExportMetadata, ExportResponse } from './services/export-metadata.service';
 import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
+import { detailExpand } from './animations/detail-expand.animation';
+import { fadeIn } from './animations/fade-in.animation';
+
 
 export interface Undoable {
     undoable: boolean;
@@ -32,21 +34,8 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
     templateUrl: 'export-metadata-dialog.component.html',
     styleUrls: ['./export-metadata-dialog.component.scss'],
     animations: [
-        trigger('detailExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-        trigger('flyInOut', [
-            state('in', style({ transform: 'translateX(0)' })),
-            transition('void => *', [
-                style({ transform: 'translateX(-100%)' }),
-                animate(100)
-            ]),
-            transition('* => void', [
-                animate(100, style({ transform: 'translateX(100%)' }))
-            ])
-        ])
+        detailExpand,
+        fadeIn
     ]
 })
 export class ExportMetadataDialogComponent implements OnInit {
