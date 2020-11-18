@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ExportMetadataService, ExportMetadata, ExportResponse } from './export-metadata.service';
+import { ExportMetadataService, ExportMetadata, ExportResponse } from './services/export-metadata.service';
 import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 
 export interface Undoable {

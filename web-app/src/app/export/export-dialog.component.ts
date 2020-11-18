@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ExportMetadataService, ExportRequest, ExportResponse } from './export-metadata.service';
+import { ExportMetadataService, ExportRequest, ExportResponse } from './services/export-metadata.service';
 import { FilterService } from '../upgrade/ajs-upgraded-providers';
 import { MatDatepickerInputEvent } from '@angular/material';
 const moment = require('moment');
