@@ -45,8 +45,7 @@ import {
   MatSortModule,
   MatSnackBarModule,
   MatDatepickerModule,
-  MatNativeDateModule,
-  MatTabsModule
+  MatNativeDateModule
 } from '@angular/material';
 
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
@@ -142,8 +141,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     MatNativeDateModule,
     NgxMatDatetimePickerModule, 
     NgxMatTimepickerModule,
-    NgxMatNativeDateModule,
-    MatTabsModule
+    NgxMatNativeDateModule
   ],
   providers: [
     mapServiceProvider,

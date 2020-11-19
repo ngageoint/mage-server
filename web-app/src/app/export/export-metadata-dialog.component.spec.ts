@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatTabsModule, MatCheckboxModule, MatListModule, MatCardModule } from '@angular/material';
+import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule } from '@angular/material';
 import { LocalStorageService, EventService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -63,7 +63,7 @@ describe('Export Metadata Dialog Component', () => {
         TestBed.configureTestingModule({
             imports: [MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
                 MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
-                NoopAnimationsModule, MatTabsModule, MatCheckboxModule, MatListModule, MatCardModule],
+                NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule],
             providers: [
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
