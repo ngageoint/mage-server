@@ -66,3 +66,12 @@ mat-paginator {
 mat-list {
   padding-left: 20px;
 }
+
+mat-list-item {
+  margin-left: 10px;
+}
+
+mat-list mat-icon {
+  margin-right: 5px;
+  transform: scale(.75);
+}
