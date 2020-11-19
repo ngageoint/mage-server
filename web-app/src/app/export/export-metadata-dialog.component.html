@@ -67,7 +67,9 @@
       <ng-template #tpl let-export>
         <div *ngIf="export.options && export.options.filter" class="mat-row" [@detailExpand]>
           <mat-list dense>
-            <div mat-subheader><mat-icon>calendar_today</mat-icon>Time Range</div>
+            <div mat-subheader>
+              <mat-icon>calendar_today</mat-icon>Time Range
+            </div>
             <mat-list-item>
               <p matLine>
                 Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
@@ -76,7 +78,9 @@
                 End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
               </p>
             </mat-list-item>
-            <div mat-subheader><mat-icon>save_alt</mat-icon>Export Options</div>
+            <div mat-subheader>
+              <mat-icon>save_alt</mat-icon>Export Options
+            </div>
             <mat-list-item *ngIf="export.options.filter.exportLocations">
               <mat-checkbox [checked]="true" color="primary" disabled>
                 Export Locations
