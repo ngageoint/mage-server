@@ -1,11 +1,6 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-mat-table {
-  overflow: auto;
-  max-height: 500px;
-}
-
 .export-row {
   position: relative;
 }
@@ -22,24 +17,6 @@ mat-table {
   border-bottom-color: transparent;
 }
 
-mat-form-field {
-  font-size: 14px;
-  width: 100%;
-}
-
-ul {
-  list-style-type: none;
-  margin-top: 4px;
-}
-
-#close-button {
-  margin-right: 8px;
-}
-
-#new-button {
-  margin-left: 8px;
-}
-
 .loading-shade {
   position: absolute;
   top: 0;
@@ -53,9 +30,37 @@ ul {
   justify-content: center;
 }
 
+#close-button {
+  margin-right: 8px;
+}
+
+#new-button {
+  margin-left: 8px;
+}
+
+#new-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
+ul {
+  list-style-type: none;
+  margin-top: 4px;
+}
+
 [mat-dialog-actions] {
   display: flex;
   justify-content: right;
+}
+
+mat-table {
+  overflow: auto;
+  max-height: 500px;
+}
+
+mat-form-field {
+  font-size: 14px;
+  width: 100%;
 }
 
 mat-paginator {

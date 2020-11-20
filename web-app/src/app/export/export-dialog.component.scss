@@ -1,6 +1,24 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
+#cancel-button {
+  margin-right: 8px;
+}
+
+#ok-button {
+  margin-left: 8px;
+}
+
+#ok-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
+[mat-dialog-actions] {
+  display: flex;
+  justify-content: right;
+}
+
 mat-radio-group {
   display: flex;
   flex-direction: row;
@@ -12,15 +30,8 @@ mat-radio-button {
   margin-right: 8px;
 }
 
-#cancel-button {
-  margin-right: 8px;
-}
-
-#ok-button {
-  margin-left: 8px;
-}
-
-[mat-dialog-actions] {
+ngx-mat-datetime-picker {
   display: flex;
-  justify-content: right;
+  width: 350px;
+  justify-content: space-between;
 }
