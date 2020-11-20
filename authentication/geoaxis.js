@@ -58,7 +58,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
   },
   function(req, accessToken, refreshToken, profile, done) {
     const geoaxisUser = profile._json;
-    User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
+    User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function(err, user) {
       if (err) return done(err);
 
       const email = geoaxisUser.email;
@@ -80,9 +80,9 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
             }
           };
 
-          User.createUser(user, function(err, newUser) {
-            return done(err, newUser);
-          });
+          new api.User().create(user).then(newUser => {
+            return done(null, newUser);
+          }).catch(err => done(err));
         });
       } else if (!user.active) {
         log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');

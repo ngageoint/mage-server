@@ -16,7 +16,7 @@ class OAuthSigninController {
         let message = 'There was a problem signing in, Please contact a MAGE administrator for assistance.';
         if (user) {
           if (!user.active) {
-            message = 'Your account has been created but it is not active. An administrator needs to activate your account before you can log in.';
+            message = 'Your account has been created but it is not active. A MAGE administrator needs to activate your account before you can log in.';
           } else if (!user.enabled) {
             message = 'Your account has been disabled, please contact a MAGE administrator for assistance.'
           }
@@ -24,14 +24,6 @@ class OAuthSigninController {
 
         this.statusTitle = 'Signin Failed';
         this.statusMessage = message
-        this.snackbar.open();
-        return;
-      }
-
-      // User has an account, but its not active
-      if (!user.active) {
-        this.statusTitle = 'Account Created';
-        this.statusMessage = 'Please contact a MAGE administrator to activate your account.';
         this.snackbar.open();
         return;
       }

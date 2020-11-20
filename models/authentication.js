@@ -10,8 +10,9 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
+  id: { type: String, required: false },
   type: { type: String, required: false },
-  password: { type: String, required: true },
+  password: { type: String, required: false },
   previousPasswords: { type: [String], required: false },
   security: {
     locked: { type: Boolean },
@@ -112,12 +113,13 @@ AuthenticationSchema.pre('save', function (next) {
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
 
-exports.getAuthenticationById = function (id) {
-  return Authentication.findById(id).exec();
+exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
+  Authentication.findOne({id: uid, type: strategy}, callback);
 };
 
 exports.createAuthentication = function (authentication) {
   const newAuth = new Authentication({
+    id: authentication.id,
     type: authentication.type,
     password: authentication.password,
     previousPasswords: [],

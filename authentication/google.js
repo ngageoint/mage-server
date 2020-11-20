@@ -51,7 +51,7 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
     callbackURL: googleStrategy.callbackURL
   },
   function (accessToken, refreshToken, profile, done) {
-    User.getUserByAuthenticationId('google', profile.id, function (err, user) {
+    User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -78,9 +78,9 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
             }
           };
 
-          User.createUser(user, function (err, newUser) {
-            return done(err, newUser);
-          });
+          new api.User().create(user).then(newUser => {
+            return done(null, newUser);
+          }).catch(err => done(err));
         });
       } else if (!user.active) {
         return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });

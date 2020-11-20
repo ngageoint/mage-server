@@ -62,7 +62,8 @@ function orient(event, observationId, attachment, callback) {
   log.info("file", file);
 
   var start = new Date().valueOf();
-  gm(file).autoOrient().write(outputFile, function(err) {
+
+  gm(file).out('-auto-orient').write(outputFile, function(err) {
     if (err) return callback(err);
 
     var end = new Date().valueOf();

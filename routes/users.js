@@ -2,7 +2,6 @@ module.exports = function (app, security) {
   const api = require('../api')
     , log = require('winston')
     , Role = require('../models/role')
-    , Setting = require('../models/setting')
     , Event = require('../models/event')
     , Authentication = require('../models/authentication')
     , access = require('../access')
@@ -126,26 +125,6 @@ module.exports = function (app, security) {
     next();
   }
 
-  function setDefaults(req, res, next) {
-    const authenticationType = req.newUser.authentication.type;
-
-    req.newUser.active = false;
-    Setting.getSetting('security').then((security = {}) => {
-      const settings = security.settings || {};
-      if (settings[authenticationType]) {
-        const requireAdminActivation = settings[authenticationType].usersReqAdmin;
-        if (requireAdminActivation) {
-          req.newUser.active = !requireAdminActivation.enabled;
-        }
-
-        req.defaultTeams = settings[authenticationType].newUserTeams;
-        req.defaultEvents = settings[authenticationType].newUserEvents;
-      }
-
-      next();
-    });
-  }
-
   // Create a new user (ADMIN)
   // If authentication for admin fails go to next route and
   // create user as non-admin, roles will be empty
@@ -173,12 +152,10 @@ module.exports = function (app, security) {
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().create(req.newUser, { avatar, icon }, function(err, newUser) {
-        if (err) return next(err);
-
+      new api.User().create(req.newUser, { avatar, icon }).then(newUser => {
         newUser = userTransformer.transform(newUser, { path: req.getRoot() });
         res.json(newUser);
-      });
+      }).catch(err => next(err));
     }
   );
 
@@ -188,15 +165,11 @@ module.exports = function (app, security) {
     '/api/users',
     validateUser,
     defaultRole,
-    setDefaults,
     function(req, res, next) {
-      const { defaultTeams, defaultEvents } = req;
-      new api.User().create(req.newUser, { defaultTeams, defaultEvents }, function(err, newUser) {
-        if (err) return next(err);
-
+      new api.User().create(req.newUser).then(newUser => {
         newUser = userTransformer.transform(newUser, { path: req.getRoot() });
         res.json(newUser);
-      });
+      }).catch(err => next(err));
     }
   );
 

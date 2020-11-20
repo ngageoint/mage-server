@@ -1,19 +1,21 @@
-var UserModel = require('../models/user')
+const UserModel = require('../models/user')
   , log = require('winston')
   , TokenModel = require('../models/token')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')
   , TeamModel = require('../models/team')
+  , Setting = require('../models/setting')
   , path = require('path')
   , fs = require('fs-extra')
+  , util = require('util')
   , async = require('async')
   , environment = require('../environment/env');
 
-var userBase = environment.userBaseDirectory;
+const userBase = environment.userBaseDirectory;
 
 function contentPath(id, user, content, type) {
-  var relativePath = path.join(id.toString(), type + path.extname(content.path));
-  var absolutePath = path.join(userBase, relativePath);
+  const relativePath = path.join(id.toString(), type + path.extname(content.path));
+  const absolutePath = path.join(userBase, relativePath);
   return {
     relativePath: relativePath,
     absolutePath: absolutePath
@@ -89,89 +91,78 @@ User.prototype.getById = function(id, callback) {
   });
 };
 
-User.prototype.create = function(user, options, callback) {
-  const operations = [];
+User.prototype.create = async function(user, options = {}) {
+  const { settings = {} } = await Setting.getSetting('security') || {};
+  let defaultTeams;
+  let defaultEvents
+  const authenticationType = user.authentication.type;
+  if (settings[authenticationType]) {
+    const requireAdminActivation = settings[authenticationType].usersReqAdmin;
+    if (requireAdminActivation) {
+      user.active = user.active || !requireAdminActivation.enabled;
+    }
 
-  operations.push(function(done) {
-    UserModel.createUser(user, function(err, newUser) {
-      done(err, newUser);
-    });
-  });
+    defaultTeams = settings[authenticationType].newUserTeams;
+    defaultEvents = settings[authenticationType].newUserEvents;
+  }
+
+  const newUser = await util.promisify(UserModel.createUser)(user);
 
   if (options.avatar) {
-    operations.push(function(newUser, done) {
+    try {
       const avatar = avatarPath(newUser._id, newUser, options.avatar);
-      fs.move(options.avatar.path, avatar.absolutePath, function(err) {
-        if (err) {
-          return done(err);
-        }
+      await fs.move(options.avatar.path, avatar.absolutePath);
 
-        newUser.avatar = {
-          relativePath: avatar.relativePath,
-          contentType: options.avatar.mimetype,
-          size: options.avatar.size
-        };
+      newUser.avatar = {
+        relativePath: avatar.relativePath,
+        contentType: options.avatar.mimetype,
+        size: options.avatar.size
+      };
 
-        done(null, newUser);
-      });
-    });
+      await newUser.save();
+    } catch {}
   }
 
   if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
-    operations.push(function(newUser, done) {
+    try {
       const icon = iconPath(newUser._id, newUser, options.icon);
-      fs.move(options.icon.path, icon.absolutePath, function(err) {
-        if (err) {
-          return done(err);
-        }
+      await fs.move(options.icon.path, icon.absolutePath);
 
-        newUser.icon.type = options.icon.type;
-        newUser.icon.relativePath = icon.relativePath;
-        newUser.icon.contentType = options.icon.mimetype;
-        newUser.icon.size = options.icon.size;
-        newUser.icon.text = options.icon.text;
-        newUser.icon.color = options.icon.color;
+      newUser.icon.type = options.icon.type;
+      newUser.icon.relativePath = icon.relativePath;
+      newUser.icon.contentType = options.icon.mimetype;
+      newUser.icon.size = options.icon.size;
+      newUser.icon.text = options.icon.text;
+      newUser.icon.color = options.icon.color;
 
-        done(null, newUser);
-      });
-    });
+      await newUser.save();
+    } catch {}
   }
 
-  if (options.defaultTeams && Array.isArray(options.defaultTeams)) {
-    operations.push(function (newUser, done) {
-      async.each(options.defaultTeams, function (team, done) {
-        TeamModel.addUser({ _id: team }, newUser, () => {
-          done();
-        });
-      }, function(err) {
-        done(null, newUser);
-      });
-    });
+  if (defaultTeams && Array.isArray(defaultTeams)) {
+    const addUserToTeam = util.promisify(TeamModel.addUser);
+    for (let i = 0; i < defaultTeams.length; i++) {
+      try {
+        await addUserToTeam({ _id: defaultTeams[i] }, newUser);
+      } catch {}
+    }
   }
 
-  if (options.defaultEvents && Array.isArray(options.defaultEvents)) {
-    operations.push(function (newUser, done) {
-      async.each(options.defaultEvents, function (event, done) {
-        TeamModel.getTeamForEvent({_id: event}, function(err, team) {
-          if (err || !team) return done();
+  if (defaultEvents && Array.isArray(defaultEvents)) {
+    const addUserToTeam = util.promisify(TeamModel.addUser);
+    const getTeamForEvent = util.promisify(TeamModel.getTeamForEvent);
 
-          TeamModel.addUser(team, newUser, () => {
-            done();
-          });
-        });
-      }, function(err) {
-          done(null, newUser);
-      });
-    });
+    for (let i = 0; i < defaultEvents.length; i++) {
+      const team = await getTeamForEvent({ _id: defaultEvents[i] });
+      if (team) {
+        try {
+          await addUserToTeam(team, newUser);
+        } catch { }
+      }
+    }
   }
 
-  async.waterfall(operations, function(err, newUser) {
-    if (err) return callback(err);
-
-    if (!options.avatar && !options.icon) return callback(null, newUser);
-
-    UserModel.updateUser(newUser, callback);
-  });
+  return newUser;
 };
 
 User.prototype.update = function(user, options, callback) {
@@ -180,14 +171,14 @@ User.prototype.update = function(user, options, callback) {
     options = {};
   }
 
-  var operations = [];
+  const operations = [];
   operations.push(function(done) {
     done(null, user);
   });
 
   if (options.avatar) {
     operations.push(function(updatedUser, done) {
-      var avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
+      const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
         if (err) {
           return done(err);
@@ -209,10 +200,10 @@ User.prototype.update = function(user, options, callback) {
       if (user.icon.relativePath) {
         // delete it
         operations.push(function(updatedUser, done) {
-          var icon = updatedUser.icon;
+          const icon = updatedUser.icon;
           icon.path = path.join(userBase, updatedUser.icon.relativePath);
 
-          var iconPaths = iconPath(updatedUser._id, updatedUser, icon);
+          const iconPaths = iconPath(updatedUser._id, updatedUser, icon);
           fs.remove(iconPaths.absolutePath, function(err) {
             if (err) {
               log.warn('Error removing users map icon from ' + iconPaths.absolutePath);
@@ -228,7 +219,7 @@ User.prototype.update = function(user, options, callback) {
       }
     } else {
       operations.push(function(updatedUser, done) {
-        var icon = iconPath(updatedUser._id, updatedUser, options.icon);
+        const icon = iconPath(updatedUser._id, updatedUser, options.icon);
         fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
           if (err) return done(err);
 
@@ -261,7 +252,7 @@ User.prototype.delete = function(user, callback) {
 User.prototype.avatar = function(user, callback) {
   if (!user.avatar.relativePath) return callback();
 
-  var avatar = user.avatar.toObject();
+  const avatar = user.avatar.toObject();
   avatar.path = path.join(userBase, user.avatar.relativePath);
 
   callback(null, avatar);
@@ -270,7 +261,7 @@ User.prototype.avatar = function(user, callback) {
 User.prototype.icon = function(user, callback) {
   if (!user.icon.relativePath) return callback();
 
-  var icon = user.icon.toObject();
+  const icon = user.icon.toObject();
   icon.path = path.join(userBase, user.icon.relativePath);
 
   callback(null, icon);

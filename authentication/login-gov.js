@@ -55,7 +55,7 @@ module.exports = function(app, passport, provision) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
-      User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
+      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function(err, user) {
         if (err) return done(err);
 
         const email = userinfo.email;
@@ -77,9 +77,9 @@ module.exports = function(app, passport, provision) {
               }
             };
 
-            User.createUser(user, function(err, newUser) {
-              return done(err, newUser);
-            });
+            new api.User().create(user).then(newUser => {
+              return done(null, newUser);
+            }).catch(err => done(err));
           });
         } else if (!user.active) {
           return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account."} );
