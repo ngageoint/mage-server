@@ -422,7 +422,6 @@ module.exports = function (app, security) {
     access.authorize('UPDATE_USER_ROLE'),
     function (req, res, next) {
       const user = req.userParam;
-      console.log('update password for user',user);
 
       if (user.authentication.type !== 'local') {
         return res.sendStatus(404);

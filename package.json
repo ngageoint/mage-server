@@ -90,8 +90,7 @@
     "sinon": "7.5.0",
     "sinon-chai": "3.3.0",
     "sinon-mongoose": "2.3.0",
-    "superagent": "5.0.6",
-    "supertest": "4.0.2",
+    "supertest": "6.0.1",
     "typescript": "3.7.5",
     "yaml": "^1.7.1"
   },

@@ -277,7 +277,7 @@ describe("user read tests", function() {
     mockTokenWithPermission('READ_USER');
 
     mockfs({
-      '/var/lib/mage/users/mock/path/avatar.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+      '/var/lib/mage/users/mock/path/avatar.jpeg': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
     const id = mongoose.Types.ObjectId();
@@ -287,7 +287,7 @@ describe("user read tests", function() {
       avatar: {
         relativePath: 'mock/path/avatar.jpeg',
         contentType: 'image/jpeg',
-        size: 256
+        size: 7
       }
     });
 
@@ -320,7 +320,7 @@ describe("user read tests", function() {
       avatar: {
         relativePath: 'mock/path/avatar.jpeg',
         contentType: 'image/jpeg',
-        size: 256
+        size: 7
       }
     });
 
@@ -343,7 +343,7 @@ describe("user read tests", function() {
     mockTokenWithPermission('READ_USER');
 
     mockfs({
-      '/var/lib/mage/users/mock/path/icon.png': new Buffer([8, 6, 7, 5, 3, 0, 9])
+      '/var/lib/mage/users/mock/path/icon.png': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
     const id = mongoose.Types.ObjectId();
@@ -353,7 +353,7 @@ describe("user read tests", function() {
       icon: {
         relativePath: 'mock/path/icon.png',
         contentType: 'image/png',
-        size: 48
+        size: 7
       }
     });
 
