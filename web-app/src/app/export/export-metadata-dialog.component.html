@@ -4,7 +4,7 @@
 <section class="mat-typography">
   <div mat-dialog-content>
     <br>
-    <mat-card>
+    <mat-card class="mat-elevation-z0">
       <div class="loading-shade" *ngIf="isLoadingResults">
         <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
       </div>
@@ -115,7 +115,7 @@
 </section>
 <section class="mat-typography">
   <div mat-dialog-actions>
-    <button class="mat-button" id="close-button" mat-dialog-close="closeAction">Close</button>
+    <button class="mat-button" id="close-button" color="primary" mat-dialog-close="closeAction">Close</button>
     <button class="mat-button mat-primary" id="new-button" (click)="openExport()">New Export</button>
   </div>
 </section>

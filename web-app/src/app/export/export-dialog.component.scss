@@ -14,6 +14,10 @@
   color: white;
 }
 
+#time-field {
+  width: 350px;
+}
+
 [mat-dialog-actions] {
   display: flex;
   justify-content: right;
@@ -28,8 +32,4 @@ mat-radio-group {
 
 mat-radio-button {
   margin-right: 8px;
-}
-
-#time-field {
-  width: 350px;
 }
