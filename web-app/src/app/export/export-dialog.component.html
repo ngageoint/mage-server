@@ -5,7 +5,7 @@
     <div mat-dialog-content>
         <mat-card>
             <section>
-                <h2 class="header">What to Export</h2>
+                <h2>What to Export</h2>
                 <mat-list>
                     <mat-list-item>
                         <mat-checkbox [(ngModel)]="exportObservations" color="primary">
@@ -20,15 +20,15 @@
                 </mat-list>
             </section>
             <section>
-                <h2 class="header">Export Format</h2>
+                <h2>Export Format</h2>
                 <mat-radio-group aria-label="Export format" [(ngModel)]="exportFormat">
                     <mat-radio-button *ngFor="let format of exportFormats" [value]="format" color="primary">
                         {{format}}</mat-radio-button>
                 </mat-radio-group>
             </section>
             <section>
-                <h2 class="header">Time</h2>
-                <mat-form-field appearance="outline">
+                <h2>Time</h2>
+                <mat-form-field id="time-field" appearance="outline">
                     <mat-label>Select a time</mat-label>
                     <mat-select [(ngModel)]="exportTime">
                         <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
