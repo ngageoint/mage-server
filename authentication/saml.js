@@ -20,8 +20,8 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
   }
 
   passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
-    const username = profile[strategyConfig.usernameAttribute];
-    User.getUserByAuthenticationId('saml', username, function (err, user) {
+    const uid = profile[strategyConfig.uidAttribute];
+    User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -30,20 +30,20 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
           if (err) return done(err);
 
           const user = {
-            username: username,
+            username: uid,
             displayName: profile[strategyConfig.displayNameAttribute],
             email: profile[strategyConfig.emailAttribute],
             active: false,
             roleId: role._id,
             authentication: {
               type: 'saml',
-              id: username
+              id: uid
             }
           };
 
-          User.createUser(user, function (err, newUser) {
-            return done(err, newUser);
-          });
+          new api.User().create(user).then(newUser => {
+            return done(null, newUser);
+          }).catch(err => done(err));
         });
       } else if (!user.active) {
         return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });

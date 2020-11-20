@@ -24,15 +24,6 @@ describe("authentication model tests", function () {
     });
   });
 
-  it('validate missing password', function (done) {
-    const authentication = new AuthenticationModel();
-
-    authentication.validate(function (err) {
-      expect(err.errors.password).to.exist;
-      done();
-    });
-  });
-
   it('verify create logic', function (done) {
     const mockAuth = new AuthenticationModel({
       _id: mongoose.Types.ObjectId(),

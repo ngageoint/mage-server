@@ -15,7 +15,7 @@ module.exports = {
       // saml: {
       //   type: 'saml',
       //   title: 'SAML',
-      //   usernameAttribute: '',
+      //   uidAttribute: '',
       //   displayNameAttribute: '',
       //   emailAttribute: '',
       //   textColor: '#FFFFFF',
