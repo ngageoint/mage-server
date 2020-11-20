@@ -1,6 +1,12 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
+
+.time-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
 #cancel-button {
   margin-right: 8px;
 }
@@ -32,4 +38,8 @@ mat-radio-group {
 
 mat-radio-button {
   margin-right: 8px;
+}
+
+mat-icon {
+  transform: scale(.75);
 }
