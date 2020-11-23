@@ -29,7 +29,7 @@
             <section>
                 <h2>Time</h2>
                 <mat-form-field id="time-field" appearance="outline">
-                    <mat-label>Select a time</mat-label>
+                    <mat-label>Time Range</mat-label>
                     <mat-select [(ngModel)]="exportTime">
                         <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
                         </mat-option>
