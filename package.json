@@ -1,6 +1,6 @@
 {
   "name": "mage-server",
-  "version": "5.4.3",
+  "version": "5.4.4",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [
@@ -18,7 +18,7 @@
   ],
   "homepage": "https://www1.nga.mil",
   "engines": {
-    "node": ">= 8.x <= 10.x",
+    "node": ">= 8.x <= 14.x",
     "npm": ">= 5.x"
   },
   "dependencies": {
