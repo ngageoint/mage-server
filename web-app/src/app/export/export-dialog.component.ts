@@ -102,9 +102,12 @@ export class ExportDialogComponent implements OnInit {
     this.endDate = event.value;
   }
 
-  toggleTime() {
+  toggleTime(): void {
     this.localTime = !this.localTime;
+    this.setOffset();
+  }
 
+  setOffset(): void {
     let offset: string = "";
     if (this.localTime) {
       const totalMinutes: any = moment().parseZone().utcOffset();
@@ -143,7 +146,7 @@ export class ExportDialogComponent implements OnInit {
     this.currentOffset = offset;
   }
 
-  numDigits(x) {
+  numDigits(x: number): number {
     return Math.max(Math.floor(Math.log10(Math.abs(x))), 0) + 1;
   }
 
