@@ -2,16 +2,17 @@
 @import "variables.scss";
 
 
-.time-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.time-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
 }
 
 .locale-button {
-  margin-top: 4px;
-  height: 52px;
-  width: auto;
   color: #1E88E5;
+  height: 50px;
+  margin-bottom: 20px;
 }
 
 #cancel-button {
