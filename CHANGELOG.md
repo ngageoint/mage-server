@@ -12,6 +12,15 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Web should not prompt for device uid, if device admin approval is not enabled.
 * Fix bug in 3rd party authentication which was not properly adding authenticated users.
 
+## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
+
+##### Features
+
+##### Bug Fixes
+* Change Graphics Magick call to orient image attachments such that exif metadata is not lost.
+* Web should not prompt for device uid, if device admin approval is not enabled.
+* Fix bug in 3rd party authentication which was not properly adding authenticated users.
+
 ## [5.4.3](https://github.com/ngageoint/mage-server/releases/tag/5.4.3)
 
 #### Release Notes
