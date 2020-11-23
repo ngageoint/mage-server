@@ -286,9 +286,9 @@ module.exports = function(app, security) {
       };
 
       const style = {
-        stroke: req.query.stroke || '#000000FF',
-        fill: req.query.fill || '#00000011',
-        width: req.query.width || 1
+        stroke: req.query.stroke,
+        fill: req.query.fill,
+        width: req.query.width
       };
 
       const table = req.layer.tables.find(table => table.name === req.params.tableName);
@@ -375,11 +375,10 @@ module.exports = function(app, security) {
         z: Number(req.params.z)
       };
 
-      console.log('query width', req.query.width);
       const style = {
-        stroke: req.query.stroke || '#000000FF',
-        fill: req.query.fill || '#00000011',
-        width: req.query.width || 1
+        stroke: req.query.stroke,
+        fill: req.query.fill,
+        width: req.query.width
       };
 
       const table = req.layer.tables.find(table => table.name === req.params.tableName);
