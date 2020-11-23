@@ -187,8 +187,12 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
           res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
         }
       } else {
-        const url = req.user.active ? '/#/signin?strategy=saml&action=authorize-device' : '/#/signin?action=inactive-account';
-        res.redirect(url);
+        if (req.user.active && req.user.enabled) {
+          res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
+        } else {
+          const action = !req.user.active ? 'inactive-account' : 'disabled-account';
+          res.redirect(`/#/signin?strategy=saml&action=${action}`);
+        }
       }
     }
   );

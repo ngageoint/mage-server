@@ -22,9 +22,21 @@
     <div class="wand-container">
       <img class="mage-wand" src="/assets/images/bluewand.png"/>
     </div>
-    <p>Your account has been created.</p>
+    <p>Your account has been created but it is not active. A MAGE administrator needs to activate your account before you can log in.</p>
     <div class="auth-button-container">
       <button class="top-gap mdc-button mdc-button--raised return-to-login-button" ng-click="$ctrl.returnToSignin()">Return to Login</button>
+    </div>
+  </div>
+</div>
+<div ng-if="$ctrl.action === 'disabled-account'" class="section-container ng-animatable fade-in">
+  <div class="signup-container">
+    <div class="wand-container">
+      <img class="mage-wand" src="/assets/images/bluewand.png" />
+    </div>
+    <p>Your account has been disabled, please contact a MAGE administrator for assistance.</p>
+    <div class="auth-button-container">
+      <button class="top-gap mdc-button mdc-button--raised return-to-login-button"
+        ng-click="$ctrl.returnToSignin()">Return to Login</button>
     </div>
   </div>
 </div>
