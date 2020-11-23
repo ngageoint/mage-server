@@ -20,8 +20,8 @@ interface ExportTimeOption {
   templateUrl: 'export-dialog.component.html',
   styleUrls: ['./export-dialog.component.scss'],
   providers: [ExportMetadataService],
-   animations: [slideInOutAnimation]
-   //host: { '[@slideInOutAnimation]': '' }
+  animations: [slideInOutAnimation]
+  //host: { '[@slideInOutAnimation]': '' }
 })
 export class ExportDialogComponent implements OnInit {
 
@@ -37,8 +37,8 @@ export class ExportDialogComponent implements OnInit {
   exportTime: string;
   exportFormat: string;
   exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
-  localOffset: string = moment().format('Z');
-  localTime: boolean = true;
+  currentOffset: string;
+  localTime: boolean = false;
   startDate: Date = moment().startOf('day').toDate();
   endDate: Date = moment().endOf('day').toDate();
 
@@ -51,6 +51,7 @@ export class ExportDialogComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.toggleTime();
     this.exportEvent = { selected: this.filterService.getEvent() };
     if (!this.exportEvent.selected) {
       this.showEventError = true;
@@ -95,12 +96,55 @@ export class ExportDialogComponent implements OnInit {
 
   onStartDate(event: MatDatepickerInputEvent<Date>): void {
     this.startDate = event.value;
-    //this.localTime = timeZone === 'local';
   }
 
   onEndDate(event: MatDatepickerInputEvent<Date>): void {
     this.endDate = event.value;
-    //this.localTime = timeZone === 'local';
+  }
+
+  toggleTime() {
+    this.localTime = !this.localTime;
+
+    let offset: string = "";
+    if (this.localTime) {
+      const totalMinutes: any = moment().parseZone().utcOffset();
+      const hours: number = Math.floor(totalMinutes / 60);
+      const minutes: number = totalMinutes % 60;
+
+      offset += "LOCAL (";
+      if (this.numDigits(hours) == 1) {
+        if (hours > 0) {
+          offset += "0" + hours;
+        } else {
+          const hoursStr: string = hours.toString();
+          offset += hoursStr[0];
+          offset += "0";
+          offset += hoursStr[1];
+        }
+
+      } else {
+        offset += hours.toString();
+      }
+
+      offset += ":"
+
+      if (this.numDigits(minutes) == 1) {
+        offset += "0" + minutes;
+      } else {
+        offset += minutes.toString();
+      }
+
+      offset += ")";
+    }
+    else {
+      offset = "GMT (+00:00)";
+    }
+
+    this.currentOffset = offset;
+  }
+
+  numDigits(x) {
+    return Math.max(Math.floor(Math.log10(Math.abs(x))), 0) + 1;
   }
 
   exportData($event: any): void {

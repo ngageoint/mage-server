@@ -48,8 +48,8 @@
                             </mat-form-field>
                         </div>
                         <div>
-                            <button class="mat-stroked-button locale-button">
-                                LOCAL (-07:00)<mat-icon>access_time</mat-icon>
+                            <button class="mat-stroked-button locale-button" (click)="toggleTime()">
+                                {{currentOffset}}<mat-icon>access_time</mat-icon>
                             </button>
                         </div>
                     </div>
@@ -65,8 +65,8 @@
                             </mat-form-field>
                         </div>
                         <div>
-                            <button class="mat-stroked-button locale-button">
-                                LOCAL (-07:00)<mat-icon>access_time</mat-icon>
+                            <button class="mat-stroked-button locale-button" (click)="toggleTime()">
+                                {{currentOffset}}<mat-icon>access_time</mat-icon>
                             </button>
                         </div>
                     </div>
