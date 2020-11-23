@@ -2,7 +2,7 @@
   <h1 mat-dialog-title>Exports</h1>
 </section>
 <section class="mat-typography">
-  <div mat-dialog-content>
+  <mat-dialog-content>
     <br>
     <mat-card class="mat-elevation-z0">
       <div class="loading-shade" *ngIf="isLoadingResults">
@@ -111,11 +111,11 @@
       </ng-template>
     </mat-card>
     <br>
-  </div>
+  </mat-dialog-content>
 </section>
 <section class="mat-typography">
-  <div mat-dialog-actions>
+  <mat-dialog-actions>
     <button class="mat-button" id="close-button" color="primary" mat-dialog-close="closeAction">CLOSE</button>
     <button class="mat-button mat-primary" id="new-button" (click)="openExport()">NEW EXPORT</button>
-  </div>
+  </mat-dialog-actions>
 </section>
