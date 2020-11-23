@@ -7,7 +7,7 @@ function fieldFilter(field) {
 }
 
 exports.attributesForEvent = function(event) {
-  let attributes = {
+  const attributes = {
     attribute: [{
       name: 'geometry',
       minOccurs: 0,
@@ -27,31 +27,31 @@ exports.attributesForEvent = function(event) {
       nillable: true,
       binding: 'java.lang.String'
     },{
-      name: 'event.id',
+      name: 'event_id',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: 'java.lang.Integer'
     },{
-      name: 'form.id',
+      name: 'form_id',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: 'java.lang.Integer'
     },{
-      name: 'event.name',
+      name: 'event_name',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: "java.lang.String"
     },{
-      name: 'user.username',
+      name: 'user_username',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: 'java.lang.String'
     },{
-      name: 'user.displayName',
+      name: 'user_displayName',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
@@ -69,7 +69,7 @@ exports.attributesForEvent = function(event) {
 };
 
 exports.descriptorsForEvent = function(event) {
-  let descriptors = [{
+  const descriptors = [{
     localName: 'geometry',
     type: {
       binding: 'org.locationtech.jts.geom.Geometry'
@@ -99,7 +99,7 @@ exports.descriptorsForEvent = function(event) {
       mapping: 'properties.url'
     }
   },{
-    localName: 'event.id',
+    localName: 'event_id',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -109,7 +109,7 @@ exports.descriptorsForEvent = function(event) {
       mapping: 'properties.event._id'
     }
   },{
-    localName: 'form.id',
+    localName: 'form_id',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -119,7 +119,7 @@ exports.descriptorsForEvent = function(event) {
       mapping: 'properties.formId'
     }
   },{
-    localName: 'event.name',
+    localName: 'event_name',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -129,7 +129,7 @@ exports.descriptorsForEvent = function(event) {
       mapping: 'properties.event.name'
     }
   },{
-    localName: 'user.username',
+    localName: 'user_username',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -139,7 +139,7 @@ exports.descriptorsForEvent = function(event) {
       mapping: 'properties.user.username'
     }
   },{
-    localName: 'user.displayName',
+    localName: 'user_displayName',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -161,7 +161,7 @@ exports.descriptorsForEvent = function(event) {
 
 function attributeForField(field, form) {
   return {
-    name: cname.generateCName(`${form.name}.${field.title}`),
+    name: cname.generateCName(`${form.name}_${field.title}`),
     minOccurs: 0,
     maxOccurs: 1,
     nillable: true,
@@ -171,7 +171,7 @@ function attributeForField(field, form) {
 
 function descriptorForField(field, form) {
   return {
-    localName: cname.generateCName(`${form.name}.${field.title}`),
+    localName: cname.generateCName(`${form.name}_${field.title}`),
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -183,7 +183,7 @@ function descriptorForField(field, form) {
   };
 }
 
-var bindingMap = {
+const bindingMap = {
   date:  'java.util.Date',
   geometry: 'org.locationtech.jts.geom.Geometry',
   dropdown: 'java.lang.String',

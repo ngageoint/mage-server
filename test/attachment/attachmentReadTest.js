@@ -33,6 +33,7 @@ describe("attachment read tests", function() {
 
   afterEach(function() {
     sinon.restore();
+    mockfs.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
@@ -112,7 +113,7 @@ describe("attachment read tests", function() {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
-      '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+      '/var/lib/mage/attachments/mock/path/attachment.jpeg': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
     sinon.mock(TeamModel)
@@ -136,7 +137,7 @@ describe("attachment read tests", function() {
         timestamp: Date.now()
       },
       attachments: [{
-        size: 4096,
+        size: 7,
         contentType: 'image/jpeg',
         relativePath: 'mock/path/attachment.jpeg'
       }]
@@ -158,9 +159,8 @@ describe("attachment read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', 'image/jpeg')
-      .expect('Content-Length', "4096")
+      .expect('Content-Length', "7")
       .end(function(err) {
-        mockfs.restore();
         done(err);
       });
   });
@@ -213,7 +213,7 @@ describe("attachment read tests", function() {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
-      '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+      '/var/lib/mage/attachments/mock/path/attachment.jpeg': Buffer.from([8, 6, 7, 5, 3, 0, 9])
     });
 
     sinon.mock(TeamModel)
@@ -237,7 +237,7 @@ describe("attachment read tests", function() {
         timestamp: Date.now()
       },
       attachments: [{
-        size: 4096,
+        size: 7,
         contentType: 'image/jpeg',
         relativePath: 'mock/path/attachment.jpeg'
       }]
@@ -257,11 +257,11 @@ describe("attachment read tests", function() {
       .get('/api/events/1/observations/' + observationId + '/attachments/456')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .set('Range', 'bytes=0-8')
+      .set('Range', 'bytes=0-4')
       .expect(206)
       .expect('Content-Type', 'image/jpeg')
-      .expect('Content-Length', "9")
-      .expect('Content-Range', 'bytes 0-8/4096')
+      .expect('Content-Length', "5")
+      .expect('Content-Range', 'bytes 0-4/7')
       .end(done);
   });
 });

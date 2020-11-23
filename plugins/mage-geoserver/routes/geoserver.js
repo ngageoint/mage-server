@@ -7,7 +7,7 @@ const fs = require('fs')
   , sldBuilder = require('../sld')
   , config = require('../config.json');
 
-var blankImagePath = path.resolve(__dirname, '../images/blank.png');
+const blankImagePath = path.resolve(__dirname, '../images/blank.png');
 
 function GeoServerResource() {}
 
@@ -60,7 +60,7 @@ module.exports = function(app, authentication) {
 };
 
 GeoServerResource.prototype.sld = function(req, res, next) {
-  var layers = req.param('layers');
+  const layers = req.param('layers');
   if (!layers) return res.sendStatus(400);
 
   sldBuilder.create(req.getRoot(), layers.split(','), function(err, sld) {
@@ -118,7 +118,7 @@ GeoServerResource.prototype.getUserSvg = function(req, res) {
         '@y': 0,
         '@width': '42px',
         '@height': '42px',
-        '@xlink:href': util.format('%s/ogc/icons/users/%s?access_token=%s', req.getRoot(), req.params.userId, config.token)
+        '@xlink:href': util.format('%s/ogc/icons/users/%s?access_token=%s', req.getRoot(), req.userParam._id.toString(), config.token)
       }
     }
   }).end();
@@ -143,7 +143,7 @@ GeoServerResource.prototype.getUserIcon = function(req, res, next) {
 };
 
 GeoServerResource.prototype.getAttachments = function(req, res) {
-  let fieldsByName = {};
+  const fieldsByName = {};
   req.event.form.fields.forEach(function(field) {
     fieldsByName[field.name] = field;
   });
