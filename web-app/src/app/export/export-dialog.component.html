@@ -38,9 +38,9 @@
             </section>
             <section *ngIf="exportTime === 'custom'">
                 <section>
-                    <div class="time-row">
+                    <div class="time-grid">
                         <div>
-                            <mat-form-field>
+                            <mat-form-field appearance="outline">
                                 <mat-label>Start Date/Time</mat-label>
                                 <input matInput [ngxMatDatetimePicker]="picker" (dateChange)="onStartDate($event)">
                                 <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
@@ -48,16 +48,16 @@
                             </mat-form-field>
                         </div>
                         <div>
-                            <button class="mat-stroked-button">
+                            <button class="mat-stroked-button locale-button">
                                 Local (-07:00)<mat-icon>access_time</mat-icon>
                             </button>
                         </div>
                     </div>
                 </section>
                 <section>
-                    <div class="time-row">
+                    <div class="time-grid">
                         <div>
-                            <mat-form-field>
+                            <mat-form-field appearance="outline">
                                 <mat-label>End Date/Time</mat-label>
                                 <input matInput [ngxMatDatetimePicker]="picker2" (dateChange)="onEndDate($event)">
                                 <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
@@ -65,7 +65,7 @@
                             </mat-form-field>
                         </div>
                         <div>
-                            <button class="mat-stroked-button">
+                            <button class="mat-stroked-button locale-button">
                                 Local (-07:00)<mat-icon>access_time</mat-icon>
                             </button>
                         </div>

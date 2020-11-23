@@ -2,9 +2,16 @@
 @import "variables.scss";
 
 
-.time-row {
+.time-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
+}
+
+.locale-button {
+  margin-top: 4px;
+  height: 52px;
+  width: auto;
+  color: #1E88E5;
 }
 
 #cancel-button {
@@ -42,4 +49,9 @@ mat-radio-button {
 
 mat-icon {
   transform: scale(.75);
+  align-items: center;
+}
+
+mat-form-field {
+  margin-right: 8px;
 }
