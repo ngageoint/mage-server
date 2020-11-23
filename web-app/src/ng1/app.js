@@ -71,7 +71,6 @@ app
 app
   .component('filterPanel', require('./filter/filter'))
   .component('exportPanel', require('./export/export'))
-  .component('exportInfoPanel', require('./export/export-info.component'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
