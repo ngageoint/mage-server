@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node-version: [12.x, 14.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -17,6 +17,9 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Install dev tools
+      run: |
+        sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
     - name: Server install, build, and test
       run: |
         npm install
@@ -38,7 +41,7 @@ jobs:
         JOB_CONTEXT: ${{ toJson(matrix) }}
       run: echo "$JOB_CONTEXT"
     - name: Coveralls
-      if: matrix.node-version == '12.x'
+      if: matrix.node-version == '14.x'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
