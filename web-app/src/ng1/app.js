@@ -27,7 +27,7 @@ import { LeafletComponent } from '../app/map/leaflet.component';
 
 import { ScrollWrapperComponent } from '../app/wrapper/scroll/feed-scroll.component';
 import { ObservationEditCheckboxComponent } from '../app/observation/edit/checkbox/checkbox.component';
-import { DropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
+import { ObservationEditDropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
 import { ObservationEditEmailComponent } from '../app/observation/edit/email/email.component';
 import { MultiSelectDropdownComponent } from '../app/observation/edit/multiselectdropdown/multiselectdropdown.component';
 import { ObservationEditNumberComponent } from '../app/observation/edit/number/number.component';
@@ -63,7 +63,7 @@ app
   .directive('matSidenavContainer', downgradeComponent({ component: MatSidenavContainer }))
   .directive('feedScrollWrapper', downgradeComponent({ component: ScrollWrapperComponent }))
   .directive('observationEditCheckbox', downgradeComponent({ component: ObservationEditCheckboxComponent }))
-  .directive('observationEditDropdown', downgradeComponent({ component: DropdownComponent }))
+  .directive('observationEditDropdown', downgradeComponent({ component: ObservationEditDropdownComponent }))
   .directive('observationEditEmail', downgradeComponent({ component: ObservationEditEmailComponent }))
   .directive('observationEditMultiselectdropdown', downgradeComponent({ component: MultiSelectDropdownComponent }))
   .directive('observationEditNumber', downgradeComponent({ component: ObservationEditNumberComponent }))
