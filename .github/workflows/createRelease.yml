@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node: [12.x]
+        node: [12.x, 14.x]
         os: [ubuntu-latest]
 
     steps:
@@ -21,14 +21,17 @@ jobs:
         run: |
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
             echo "Setting friendly os to linux"
-            echo "::set-env name=FRIENDLY_OS::linux"
+            echo "FRIENDLY_OS=linux" >> $GITHUB_ENV
           fi
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
             echo "Setting friendly os to mac"
-            echo "::set-env name=FRIENDLY_OS::mac"
+            echo "FRIENDLY_OS=mac" >> $GITHUB_ENV
           fi
         shell: bash
       - uses: actions/checkout@v1
+      - name: Install dev tools
+        run: |
+          sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v1
         with:

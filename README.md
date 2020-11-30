@@ -69,7 +69,8 @@ Install [MongoDB](https://docs.mongodb.com/manual/administration/install-communi
 #### macOS install with homebrew
 
 ```bash
-$ brew install mongo
+$ brew tap mongodb/brew
+$ brew install mongodb-community@4.4
 $ mongo --version
 ```
 
@@ -78,17 +79,17 @@ $ mongo --version
 Configure mongo yum repository with your favorite editor
 
 ```bash
-$ vi /etc/yum.repos.d/mongodb-org-3.4.repo
+$ vi /etc/yum.repos.d/mongodb-org-4.4.repo
 ```
 With contents:
 
 ```bash
-[mongodb-org-3.4]
+[mongodb-org-4.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.4/x86_64/
+baseurl=https://repo.mongodb.org/yum/amazon/2/mongodb-org/4.4/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc
+gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc
 ```
 
 Install from newly created repo:
