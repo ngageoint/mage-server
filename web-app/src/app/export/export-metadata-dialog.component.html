@@ -82,29 +82,29 @@
               <mat-icon>save_alt</mat-icon>Export Options
             </div>
             <mat-list-item *ngIf="export.options.filter.exportLocations">
-              <mat-checkbox [checked]="true" color="primary" disabled>
-                Export Locations
+              <mat-checkbox [checked]="true" color="primary" id="export-locations" disabled>
               </mat-checkbox>
+              <label for="export-locations">Export Locations</label>
             </mat-list-item>
             <mat-list-item *ngIf="export.options.filter.exportObservations">
-              <mat-checkbox [checked]="true" color="primary" disabled>
-                Export Observations
+              <mat-checkbox [checked]="true" color="primary" id="export-observations" disabled>
               </mat-checkbox>
+              <label for="export-observations">Export Observations</label>
             </mat-list-item>
             <mat-list-item *ngIf="export.options.filter.attachments">
-              <mat-checkbox [checked]="true" color="primary" disabled>
-                Exclude All Attachments
+              <mat-checkbox [checked]="true" color="primary" id="exclude-all-attachments" disabled>
               </mat-checkbox>
+              <label for="exclude-all-attachments">Exclude All Attachments</label>
             </mat-list-item>
             <mat-list-item *ngIf="export.options.filter.favorites">
-              <mat-checkbox [checked]="true" color="primary" disabled>
-                Export Only Your Favorite Observations
+              <mat-checkbox [checked]="true" color="primary" id="export-only-obs" disabled>
               </mat-checkbox>
+              <label for="export-only-obs">Export Only Your Favorite Observations</label>
             </mat-list-item>
             <mat-list-item *ngIf="export.options.filter.important">
-              <mat-checkbox [checked]="true" color="primary" disabled>
-                Export Only Observations Flagged Important
+              <mat-checkbox [checked]="true" color="primary" id="export-only-important" disabled>
               </mat-checkbox>
+              <label for="export-only-important">Export Only Observations Flagged Important</label>
             </mat-list-item>
           </mat-list>
         </div>
