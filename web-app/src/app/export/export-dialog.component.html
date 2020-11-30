@@ -6,24 +6,25 @@
         <mat-card class="mat-elevation-z0">
             <section>
                 <h2>What to Export</h2>
-                <mat-list>
-                    <mat-list-item>
+                <ul>
+                    <li>
                         <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">
                         </mat-checkbox>
                         <label for="export-observations">Observations</label>
-                    </mat-list-item>
-                    <mat-list-item>
+                    </li>
+                    <li>
                         <mat-checkbox [(ngModel)]="exportLocations" color="primary" id="export-locations">
                         </mat-checkbox>
                         <label for="export-locations">Locations</label>
-                    </mat-list-item>
-                </mat-list>
+                    </li>
+                </ul>
             </section>
             <section>
                 <h2>Export Format</h2>
                 <mat-radio-group aria-label="Export format" [(ngModel)]="exportFormat">
                     <mat-radio-button *ngFor="let format of exportFormats" [value]="format" color="primary">
-                        {{format}}</mat-radio-button>
+                        {{format}}
+                    </mat-radio-button>
                 </mat-radio-group>
             </section>
             <section>
@@ -80,23 +81,25 @@
                             Advanced
                         </mat-panel-title>
                     </mat-expansion-panel-header>
-                    <mat-list>
-                        <mat-list-item>
-                            <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">
+                    <ul>
+                        <li>
+                            <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary"
+                                id="exclude-attachments">
                             </mat-checkbox>
                             <label for="exclude-attachments">Exclude all attachments</label>
-                        </mat-list-item>
-                        <mat-list-item>
+                        </li>
+                        <li>
                             <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary" id="export-only-obs">
                             </mat-checkbox>
                             <label for="export-only-obs">Export only your favorite observations</label>
-                        </mat-list-item>
-                        <mat-list-item>
-                            <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary" id="export-only-important">
+                        </li>
+                        <li>
+                            <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary"
+                                id="export-only-important">
                             </mat-checkbox>
                             <label for="export-only-important">Export only observations flagged important</label>
-                        </mat-list-item>
-                    </mat-list>
+                        </li>
+                    </ul>
                 </mat-expansion-panel>
             </section>
         </mat-card>
