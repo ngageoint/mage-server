@@ -63,6 +63,12 @@ mat-expansion-panel-header {
   padding-left: unset;
 }
 
+mat-expansion-panel ul {
+  list-style-type: none;
+  margin-left: unset;
+  padding-left: unset;
+}
+
 label {
   font-weight: unset;
   margin-left: 8px;
