@@ -112,7 +112,7 @@
         </ng-template>
       </mat-card>
     </div>
-    <div *ngIf="isExportOpen === true" [@flyInOut]="in">
+    <div *ngIf="isExportOpen === true" [@flyInOut]>
       <mat-card class="mat-elevation-z0">
         <section>
           <h2>What to Export</h2>
@@ -221,7 +221,7 @@
       <button class="mat-button" id="close-button" color="primary" mat-dialog-close="closeAction">CLOSE</button>
       <button class="mat-button mat-primary" id="new-button" (click)="openExport()">NEW EXPORT</button>
     </div>
-    <div *ngIf="isExportOpen" [@flyInOut]="in">
+    <div *ngIf="isExportOpen" [@flyInOut]>
       <button class="mat-button" id="cancel-button" mat-dialog-close="closeAction">CANCEL</button>
       <button class="mat-button mat-primary" id="ok-button" (click)="exportData($event)" cdkFocusInitial>OK</button>
     </div>

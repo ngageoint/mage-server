@@ -71,8 +71,6 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent } from './export/exports.component';
 import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
-import { ExportDialogComponent } from './export/export-dialog.component';
-
 
 import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider, eventServiceProvider } from './upgrade/ajs-upgraded-providers';
 import { TokenInterceptorService } from './http/token-interceptor.service';
@@ -97,7 +95,6 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ColorPickerComponent,
     ExportsComponent,
     ExportMetadataDialogComponent,
-    ExportDialogComponent,
     CdkDetailRowDirective
   ],
   imports: [
@@ -174,8 +171,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     SwaggerComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportMetadataDialogComponent,
-    ExportDialogComponent
+    ExportMetadataDialogComponent
   ]
 })
 export class AppModule {
