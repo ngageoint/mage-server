@@ -1,12 +1,14 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule } from '@angular/material';
-import { LocalStorageService, EventService } from '../upgrade/ajs-upgraded-providers';
+import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioButton, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule } from '@angular/material';
+import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { CdkDetailRowDirective } from './directives/cdk-detail-row.directive';
+import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
+import { FormsModule } from '@angular/forms';
 
 describe('Export Metadata Dialog Component', () => {
 
@@ -16,6 +18,10 @@ describe('Export Metadata Dialog Component', () => {
 
     beforeEach(async(() => {
         const fakeLocalStorageService = { getToken: () => tokenString };
+        const event = {
+            id: 1
+        };
+        const fakeFilterService = { getEvent: () => event };
 
         const exportMetadataServiceSpy: jasmine.SpyObj<ExportMetadataService> =
             jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata']);
@@ -28,7 +34,7 @@ describe('Export Metadata Dialog Component', () => {
             location: '/api/exports/1',
             status: 'Running',
             options: {
-                eventId: 1
+                eventId: event.id
             }
         },
         {
@@ -40,7 +46,7 @@ describe('Export Metadata Dialog Component', () => {
             location: '/api/exports/2',
             status: 'Completed',
             options: {
-                eventId: 1
+                eventId: event.id
             }
         }];
 
@@ -63,12 +69,14 @@ describe('Export Metadata Dialog Component', () => {
         TestBed.configureTestingModule({
             imports: [MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
                 MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
-                NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule],
+                NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule,
+                MatSelectModule, MatOptionModule, MatDatepickerModule, NgxMatDatetimePickerModule, FormsModule],
             providers: [
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
                 { provide: MatDialogRef, useValue: {} },
-                { provide: ExportMetadataService, useValue: exportMetadataServiceSpy }
+                { provide: ExportMetadataService, useValue: exportMetadataServiceSpy },
+                { provide: FilterService, useValue: fakeFilterService }
             ],
             declarations: [CdkDetailRowDirective, ExportMetadataDialogComponent]
         }).compileComponents();

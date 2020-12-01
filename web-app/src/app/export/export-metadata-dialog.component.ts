@@ -1,12 +1,23 @@
 import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { MatDatepickerInputEvent } from '@angular/material';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ExportMetadataService, ExportMetadata, ExportResponse } from './services/export-metadata.service';
-import { EventService, LocalStorageService } from '../upgrade/ajs-upgraded-providers';
+import { ExportMetadataService, ExportMetadata, ExportResponse, ExportRequest } from './services/export-metadata.service';
+import { EventService, LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { detailExpandAnimation } from './animations/detail-expand.animation';
+import { flyInOutAnimation } from './animations/fly-in-out.animation';
+const moment = require('moment');
+
+interface ExportTimeOption {
+    all?: boolean,
+    custom?: boolean,
+    value: number,
+    label: string,
+    key: string
+}
 
 export interface Undoable {
     undoable: boolean;
@@ -32,8 +43,10 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
     templateUrl: 'export-metadata-dialog.component.html',
     styleUrls: ['./export-metadata-dialog.component.scss'],
     animations: [
-        detailExpandAnimation
-    ]
+        detailExpandAnimation,
+        flyInOutAnimation
+    ],
+    providers: [ExportMetadataService]
 })
 export class ExportMetadataDialogComponent implements OnInit {
     @ViewChild(MatPaginator, { static: true })
@@ -45,6 +58,48 @@ export class ExportMetadataDialogComponent implements OnInit {
     isLoadingResults: boolean = true;
     token: any;
     private uiModels: ExportMetadataUI[] = [];
+    isExportOpen: boolean = false;
+    exportEvent: any;
+    exportObservations: boolean = true;
+    exportLocations: boolean = true;
+    exportFavoriteObservations: boolean;
+    exportImportantObservations: boolean;
+    excludeObservationsAttachments: boolean;
+    advancedOptionsExpanded: boolean;
+    exportTimeOptions: ExportTimeOption[] = [{
+        value: 300,
+        label: 'Last 5 minutes',
+        key: 'five'
+    }, {
+        value: 3600,
+        label: 'Last Hour',
+        key: 'hour'
+    }, {
+        value: 43200,
+        label: 'Last 12 Hours',
+        key: 'twelve'
+    }, {
+        value: 86400,
+        label: 'Last 24 Hours',
+        key: 'twentyfour'
+    }, {
+        all: true,
+        value: null,
+        label: 'All  (Use With Caution)',
+        key: 'all'
+    }, {
+        custom: true,
+        value: null,
+        label: 'Custom (Choose your own start/end)',
+        key: 'custom'
+    }];
+    exportTime: string = 'five';
+    exportFormat: string;
+    exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
+    currentOffset: string;
+    localTime: boolean = false;
+    startDate: Date = moment().startOf('day').toDate();
+    endDate: Date = moment().endOf('day').toDate();
 
     constructor(public dialogRef: MatDialogRef<ExportMetadataDialogComponent>,
         public snackBar: MatSnackBar,
@@ -53,12 +108,13 @@ export class ExportMetadataDialogComponent implements OnInit {
         @Inject(EventService)
         public eventService: any,
         @Inject(LocalStorageService)
-        public storageService: any) {
+        public storageService: any,
+        @Inject(FilterService) private filterService: any) {
         this.token = this.storageService.getToken();
     }
 
     openExport(): void {
-        this.dialogRef.close('openExport');
+        this.isExportOpen = true;
     }
 
     ngOnInit() {
@@ -68,6 +124,10 @@ export class ExportMetadataDialogComponent implements OnInit {
         // If the user changes the sort order, reset back to the first page.
         this.sort.sortChange.subscribe(() => this.paginator.firstPage());
         this.loadData();
+
+        this.toggleTime();
+        this.exportEvent = { selected: this.filterService.getEvent() };
+        this.exportFormat = this.exportFormats[0];
     }
 
     loadData(): void {
@@ -141,5 +201,111 @@ export class ExportMetadataDialogComponent implements OnInit {
     undoDelete(meta: Undoable): void {
         meta.undoable = false;
         clearTimeout(meta.undoTimerHandle);
+    }
+
+    onStartDate(event: MatDatepickerInputEvent<Date>): void {
+        this.startDate = event.value;
+    }
+
+    onEndDate(event: MatDatepickerInputEvent<Date>): void {
+        this.endDate = event.value;
+    }
+
+    toggleTime(): void {
+        this.localTime = !this.localTime;
+        this.setOffset();
+    }
+
+    private setOffset(): void {
+        let offset: string = "";
+        if (this.localTime) {
+            const totalMinutes: any = moment().parseZone().utcOffset();
+            const hours: number = Math.floor(totalMinutes / 60);
+            const minutes: number = totalMinutes % 60;
+
+            offset += "LOCAL (";
+            if (this.numDigits(hours) == 1) {
+                if (hours > 0) {
+                    offset += "0" + hours;
+                } else {
+                    const hoursStr: string = hours.toString();
+                    offset += hoursStr[0];
+                    offset += "0";
+                    offset += hoursStr[1];
+                }
+
+            } else {
+                offset += hours.toString();
+            }
+
+            offset += ":"
+
+            if (this.numDigits(minutes) == 1) {
+                offset += "0" + minutes;
+            } else {
+                offset += minutes.toString();
+            }
+
+            offset += ")";
+        }
+        else {
+            offset = "GMT (+00:00)";
+        }
+
+        this.currentOffset = offset;
+    }
+
+    private numDigits(x: number): number {
+        return Math.max(Math.floor(Math.log10(Math.abs(x))), 0) + 1;
+    }
+
+    exportData($event: any): void {
+        let exportTimeOption: ExportTimeOption;
+        for (let i = 0; i < this.exportTimeOptions.length; i++) {
+            exportTimeOption = this.exportTimeOptions[i];
+            if (exportTimeOption.key === this.exportTime) {
+                break;
+            }
+        }
+
+        let start: string;
+        let end: string;
+        if (exportTimeOption.custom) {
+            let startDate = moment(this.startDate);
+            if (startDate) {
+                startDate = this.localTime ? startDate.utc() : startDate;
+                start = startDate.format("YYYY-MM-DD HH:mm:ss");
+            }
+
+            let endDate = moment(this.endDate);
+            if (endDate) {
+                endDate = this.localTime ? endDate.utc() : endDate;
+                end = endDate.format("YYYY-MM-DD HH:mm:ss");
+            }
+        } else if (exportTimeOption.value) {
+            start = moment().subtract(exportTimeOption.value, 'seconds').utc().format("YYYY-MM-DD HH:mm:ss");
+        }
+
+        const exportRequest: ExportRequest = {
+            exportType: this.exportFormat,
+            eventId: this.exportEvent.selected.id,
+            observations: this.exportObservations,
+            locations: this.exportLocations
+        };
+
+        if (start) exportRequest.startDate = start;
+        if (end) exportRequest.endDate = end;
+
+        if (this.exportObservations) {
+            exportRequest.attachments = this.excludeObservationsAttachments;
+            exportRequest.favorites = this.exportFavoriteObservations;
+            exportRequest.important = this.exportImportantObservations;
+        }
+
+        this.exportMetaService.performExport(exportRequest).subscribe((response: ExportResponse) => {
+            const msg: string = "Export started";
+            this.snackBar.open(msg, null, { duration: 2000 });
+        });
+        this.dialogRef.close();
     }
 }
