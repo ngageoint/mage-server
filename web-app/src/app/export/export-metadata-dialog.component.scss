@@ -111,11 +111,12 @@ mat-paginator {
 }
 
 mat-list {
-  padding-left: 20px;
+  padding-left: unset;
+  margin-left: 10px;
 }
 
 mat-list-item {
-  margin-left: 10px;
+  margin-left: 20px;
 }
 
 mat-list mat-icon {
