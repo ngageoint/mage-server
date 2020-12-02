@@ -1,13 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioButton, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule } from '@angular/material';
+import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatGridListModule } from '@angular/material';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { CdkDetailRowDirective } from './directives/cdk-detail-row.directive';
-import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
+import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { FormsModule } from '@angular/forms';
 
 describe('Export Metadata Dialog Component', () => {
@@ -70,7 +70,8 @@ describe('Export Metadata Dialog Component', () => {
             imports: [MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
                 MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
                 NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule,
-                MatSelectModule, MatOptionModule, MatDatepickerModule, NgxMatDatetimePickerModule, FormsModule],
+                MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule,
+                NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule, FormsModule],
             providers: [
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
@@ -86,6 +87,7 @@ describe('Export Metadata Dialog Component', () => {
         expect(TestBed.get(LocalStorageService)).toBeTruthy();
         expect(TestBed.get(ExportMetadataService)).toBeTruthy();
         expect(TestBed.get(EventService)).toBeTruthy();
+        expect(TestBed.get(FilterService)).toBeTruthy();
 
         fixture = TestBed.createComponent(ExportMetadataDialogComponent);
         component = fixture.componentInstance;
