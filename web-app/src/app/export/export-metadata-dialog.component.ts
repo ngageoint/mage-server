@@ -9,6 +9,8 @@ import { ExportMetadataService, ExportMetadata, ExportResponse, ExportRequest } 
 import { EventService, LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { detailExpandAnimation } from './animations/detail-expand.animation';
 import { flyInOutAnimation } from './animations/fly-in-out.animation';
+import { slideInOutAnimation } from './animations/slide-in-out.animation';
+import { fadeInAnimation } from './animations/fade-in.animation';
 const moment = require('moment');
 
 interface ExportTimeOption {
