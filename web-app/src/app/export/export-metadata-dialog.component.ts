@@ -309,6 +309,9 @@ export class ExportMetadataDialogComponent implements OnInit {
     }
 
     changeFormat(format: string): void {
+        if (this.exportFormats.indexOf(format) == -1) {
+            throw new Error(format + ' is not a supported format');
+        }
         this.exportFormat = format;
     }
 }

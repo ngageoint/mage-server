@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatGridListModule, MatChipsModule } from '@angular/material';
+import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatChipsModule } from '@angular/material';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -45,6 +45,18 @@ describe('Export Metadata Dialog Component', () => {
             exportType: 'csv',
             location: '/api/exports/2',
             status: 'Completed',
+            options: {
+                eventId: event.id
+            }
+        },
+        {
+            _id: 3,
+            userId: 1,
+            physicalPath: '/tmp/test.json',
+            filename: 'test.json',
+            exportType: 'json',
+            location: '/api/exports/3',
+            status: 'Failed',
             options: {
                 eventId: event.id
             }
@@ -103,7 +115,7 @@ describe('Export Metadata Dialog Component', () => {
         expect(component.dataSource.sort).toBeTruthy();
         expect(component.token).toEqual(tokenString);
 
-        expect(component.dataSource.data.length).toBe(2);
+        expect(component.dataSource.data.length).toBe(3);
     });
 
     it('should filter', () => {
@@ -112,10 +124,65 @@ describe('Export Metadata Dialog Component', () => {
                 value: 'kml'
             }
         };
-        expect(component.dataSource.filteredData.length).toBe(2);
+        expect(component.dataSource.filteredData.length).toBe(3);
         component.applyFilter(event);
         expect(component.dataSource.paginator.pageIndex).toBe(0);
         expect(component.dataSource.filteredData.length).toBe(1);
         expect(component.dataSource.filteredData[0]._id).toBe(1);
+    });
+
+    it('should open export view', () => {
+        expect(component.isExportOpen).toBe(false);
+        component.openExport();
+        expect(component.isExportOpen).toBe(true);
+    });
+
+    it('should retry export', () => {
+        fail('not implemented');
+    });
+
+    it('should shedule delete', () => {
+        fail('not implemented');
+    });
+
+    it('should undo delete', () => {
+        fail('not implemented');
+    });
+
+    it('should set start date', () => {
+        const start = new Date();
+        const event: any = {
+            value: start
+        };
+        component.onStartDate(event);
+        expect(component.startDate).toEqual(start);
+    });
+
+    it('should set end date', () => {
+        const end = new Date();
+        const event: any = {
+            value: end
+        };
+        component.onEndDate(event);
+        expect(component.endDate).toEqual(end);
+    });
+
+    it('should toggle time', () => {
+        fail('not implemented');
+    });
+
+    it('should export', () => {
+        fail('not implemented');
+    });
+
+    it('should change export format', () => {
+        const badFormat = "test";
+        expect(function () {
+            component.changeFormat(badFormat);
+        }).toThrowError(Error);
+
+        const goodFormat = component.exportFormats[0];
+        component.changeFormat(goodFormat);
+        expect(component.exportFormat).toEqual(goodFormat);
     });
 });
