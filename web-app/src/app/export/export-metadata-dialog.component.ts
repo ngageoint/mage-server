@@ -200,6 +200,7 @@ export class ExportMetadataDialogComponent implements OnInit {
     undoDelete(meta: Undoable): void {
         meta.undoable = false;
         clearTimeout(meta.undoTimerHandle);
+        meta.undoTimerHandle = null;
     }
 
     onStartDate(event: MatDatepickerInputEvent<Date>): void {

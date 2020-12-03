@@ -106,7 +106,7 @@ describe('Export Metadata Dialog Component', () => {
         fixture.detectChanges();
     });
 
-    it('should create', () => {
+    it('should create component', () => {
         expect(component).toBeTruthy();
     });
 
@@ -141,12 +141,21 @@ describe('Export Metadata Dialog Component', () => {
         fail('not implemented');
     });
 
-    it('should shedule delete', () => {
+    it('should delete', () => {
         fail('not implemented');
     });
 
     it('should undo delete', () => {
-        fail('not implemented');
+        const meta: any = {
+            undoable: false,
+            undoTimerHandle: null
+        };
+        component.scheduleDeleteExport(meta);
+        expect(meta.undoable).toEqual(true);
+        expect(meta.undoTimerHandle).toBeTruthy();
+        component.undoDelete(meta);
+        expect(meta.undoable).toEqual(false);
+        expect(meta.undoTimerHandle).toBeFalsy();
     });
 
     it('should set start date', () => {
