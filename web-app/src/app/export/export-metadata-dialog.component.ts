@@ -307,4 +307,8 @@ export class ExportMetadataDialogComponent implements OnInit {
         });
         this.dialogRef.close();
     }
+
+    changeFormat(format: string): void {
+        this.exportFormat = format;
+    }
 }

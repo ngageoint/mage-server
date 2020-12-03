@@ -131,11 +131,11 @@
         </section>
         <section>
           <h2>Export Format</h2>
-          <mat-radio-group aria-label="Export format" [(ngModel)]="exportFormat">
-            <mat-radio-button *ngFor="let format of exportFormats" [value]="format" color="primary">
+          <mat-chip-list [(ngModel)]="exportFormat">
+            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)" color="primary">
               {{format}}
-            </mat-radio-button>
-          </mat-radio-group>
+            </mat-chip>
+          </mat-chip-list>
         </section>
         <section>
           <h2>Time</h2>
