@@ -168,7 +168,11 @@ describe('Export Metadata Dialog Component', () => {
     });
 
     it('should toggle time', () => {
-        fail('not implemented');
+        expect(component.localTime).toBeTruthy();
+        expect(component.currentOffset).toContain('LOCAL');
+        component.toggleTime();
+        expect(component.localTime).toBeFalsy();
+        expect(component.currentOffset).toContain('GMT');
     });
 
     it('should export', () => {
