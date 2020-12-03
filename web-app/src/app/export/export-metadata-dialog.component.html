@@ -116,7 +116,7 @@
       <mat-card class="mat-elevation-z0">
         <section>
           <h2>What to Export</h2>
-          <ul>
+          <ul id="export-list">
             <li>
               <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">
               </mat-checkbox>
@@ -191,7 +191,7 @@
                 Advanced
               </mat-panel-title>
             </mat-expansion-panel-header>
-            <ul>
+            <ul id="advanced-list">
               <li>
                 <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">
                 </mat-checkbox>

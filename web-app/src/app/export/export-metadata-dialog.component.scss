@@ -75,19 +75,21 @@
   width: 100%;
 }
 
-label {
-  font-weight: unset;
-  margin-left: 8px;
-}
-
-ul {
+#export-list {
   list-style-type: none;
-  margin-left: 8px;
+  margin-left: 16px;
   padding-left: unset;
 }
 
-li {
-  margin-bottom: 8px;
+#advanced-list {
+  list-style-type: none;
+  margin-left: unset;
+  padding-left: unset;
+}
+
+label {
+  font-weight: unset;
+  margin-left: 8px;
 }
 
 mat-dialog-actions {
@@ -142,11 +144,5 @@ mat-icon {
 }
 
 mat-expansion-panel-header {
-  padding-left: unset;
-}
-
-mat-expansion-panel ul {
-  list-style-type: none;
-  margin-left: unset;
   padding-left: unset;
 }
