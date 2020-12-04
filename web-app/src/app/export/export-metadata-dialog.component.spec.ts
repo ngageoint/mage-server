@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
 import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatChipsModule } from '@angular/material';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
-import { ExportMetadataService, ExportMetadata } from './services/export-metadata.service';
+import { ExportMetadataService, ExportMetadata, ExportRequest, ExportResponse } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { CdkDetailRowDirective } from './directives/cdk-detail-row.directive';
@@ -15,6 +15,7 @@ describe('Export Metadata Dialog Component', () => {
     let component: ExportMetadataDialogComponent;
     let fixture: ComponentFixture<ExportMetadataDialogComponent>;
     const tokenString: string = '1234567890';
+    let exportMetadataServiceSpy: jasmine.SpyObj<ExportMetadataService>;
 
     beforeEach(async(() => {
         const fakeLocalStorageService = { getToken: () => tokenString };
@@ -22,9 +23,10 @@ describe('Export Metadata Dialog Component', () => {
             id: 1
         };
         const fakeFilterService = { getEvent: () => event };
+        const fakeDialogRef = { close: () => {} };
 
-        const exportMetadataServiceSpy: jasmine.SpyObj<ExportMetadataService> =
-            jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata']);
+        exportMetadataServiceSpy =
+            jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata', 'performExport']);
         const myMetadata: ExportMetadata[] = [{
             _id: 1,
             userId: 1,
@@ -87,7 +89,7 @@ describe('Export Metadata Dialog Component', () => {
             providers: [
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
-                { provide: MatDialogRef, useValue: {} },
+                { provide: MatDialogRef, useValue: fakeDialogRef },
                 { provide: ExportMetadataService, useValue: exportMetadataServiceSpy },
                 { provide: FilterService, useValue: fakeFilterService }
             ],
@@ -185,7 +187,35 @@ describe('Export Metadata Dialog Component', () => {
     });
 
     it('should export', () => {
-        fail('not implemented');
+        const start = new Date();
+        const end = new Date();
+        const event: any = {
+            value: start
+        };
+        component.onStartDate(event);
+        event.value = end;
+        component.onEndDate(event);
+        const exportFormat = component.exportFormats[1];
+        component.changeFormat(exportFormat);
+
+        const obs: Observable<ExportResponse> = new Observable<ExportResponse>(
+            function subscribe(subscriber) {
+                try {
+                    const response: ExportResponse = {
+                        exportId: '0987'
+                    }
+                    subscriber.next(response);
+                    subscriber.complete();
+                } catch (e) {
+                    subscriber.error(e);
+                }
+            }
+        );
+
+        exportMetadataServiceSpy.performExport.and.callFake((request: ExportRequest) => void {
+
+        }).and.returnValue(obs);
+        component.exportData({});
     });
 
     it('should change export format', () => {
