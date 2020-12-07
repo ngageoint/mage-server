@@ -6,6 +6,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* New export UI to view previous exports
+* Exports are now done in the background to allow for larger exports
 
 ##### Bug Fixes
 

@@ -24,6 +24,7 @@ import { SearchComponent } from '../app/map/controls/search.component';
 import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
+import { ExportsComponent } from '../app/export/exports.component';
 
 import { ScrollWrapperComponent } from '../app/wrapper/scroll/feed-scroll.component';
 import { DropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
@@ -63,7 +64,8 @@ app
   .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
-  .directive('swagger', downgradeComponent({ component: SwaggerComponent }));
+  .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
+  .directive('exports', downgradeComponent({ component: ExportsComponent }));
 
 
 app

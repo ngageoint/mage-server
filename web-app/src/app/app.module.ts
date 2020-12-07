@@ -38,8 +38,17 @@ import {
   MatRadioModule,
   MatCheckboxModule,
   MatSliderModule,
-  MatExpansionModule
+  MatExpansionModule,
+  MatTableModule,
+  MatDialogModule,
+  MatPaginatorModule,
+  MatSortModule,
+  MatSnackBarModule,
+  MatDatepickerModule,
+  MatNativeDateModule
 } from '@angular/material';
+
+import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
@@ -51,7 +60,7 @@ import { MultiSelectDropdownComponent } from './observation/edit/multiselectdrop
 // import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
 import { LeafletComponent } from './map/leaflet.component';
@@ -59,8 +68,12 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
+import { ExportsComponent } from './export/exports.component';
+import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
 
-import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider, eventServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { TokenInterceptorService } from './http/token-interceptor.service';
+import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 
 @NgModule({
   declarations: [
@@ -78,7 +91,10 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportMetadataDialogComponent,
+    CdkDetailRowDirective
   ],
   imports: [
     BrowserModule,
@@ -112,10 +128,24 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     SaturationModule,
     HueModule,
     AlphaModule,
-    CheckboardModule
+    CheckboardModule,
+    MatTableModule,
+    MatDialogModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    NgxMatDatetimePickerModule, 
+    NgxMatTimepickerModule,
+    NgxMatNativeDateModule
   ],
   providers: [
-    mapServiceProvider
+    mapServiceProvider,
+    localStorageServiceProvider,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true },
+    filterServiceProvider,
+    eventServiceProvider
   ],
   bootstrap: [],
   entryComponents: [
@@ -137,7 +167,9 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersControlComponent,
     ScrollWrapperComponent,
     SwaggerComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportMetadataDialogComponent
   ]
 })
 export class AppModule {
