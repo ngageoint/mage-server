@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
-import { ExportMetadataDialogComponent } from './export-metadata-dialog.component';
+import { ExportMetadataDialogComponent, ExportMetadataUI } from './export-metadata-dialog.component';
 import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatChipsModule } from '@angular/material';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata, ExportRequest, ExportResponse } from './services/export-metadata.service';
@@ -23,10 +23,10 @@ describe('Export Metadata Dialog Component', () => {
             id: 1
         };
         const fakeFilterService = { getEvent: () => event };
-        const fakeDialogRef = { close: () => {} };
+        const fakeDialogRef = { close: () => { } };
 
         exportMetadataServiceSpy =
-            jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata', 'performExport']);
+            jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata', 'performExport', 'retryExport']);
         const myMetadata: ExportMetadata[] = [{
             _id: 1,
             userId: 1,
@@ -140,7 +140,35 @@ describe('Export Metadata Dialog Component', () => {
     });
 
     it('should retry export', () => {
-        fail('not implemented');
+        const meta: ExportMetadataUI = {
+            _id: '1',
+            userId: '1',
+            physicalPath: '/tmp',
+            exportType: 'GeoJSON',
+            location: '/export',
+            status: 'Failed',
+            options: {},
+            eventName: 'Test Event',
+            undoable: false
+        };
+
+        const responseObs: Observable<ExportResponse> = new Observable<ExportResponse>(
+            function subscribe(subscriber) {
+                try {
+                    const response: ExportResponse = {
+                        exportId: '11111'
+                    };
+                    subscriber.next(response);
+                    subscriber.complete();
+                } catch (e) {
+                    subscriber.error(e);
+                }
+            }
+        );
+
+        exportMetadataServiceSpy.retryExport.withArgs(meta).and.returnValue(responseObs);
+        component.retryExport(meta);
+        expect(exportMetadataServiceSpy.retryExport).toHaveBeenCalled();
     });
 
     it('should delete', () => {
@@ -213,7 +241,7 @@ describe('Export Metadata Dialog Component', () => {
         );
 
         exportMetadataServiceSpy.performExport.and.callFake((request: ExportRequest) => void {
-
+            //TODO add checks of the request
         }).and.returnValue(obs);
         component.exportData({});
     });
