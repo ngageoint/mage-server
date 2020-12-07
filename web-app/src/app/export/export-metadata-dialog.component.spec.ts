@@ -172,7 +172,14 @@ describe('Export Metadata Dialog Component', () => {
     });
 
     it('should delete', () => {
-        fail('not implemented');
+        const meta: any = {
+            undoable: false,
+            undoTimerHandle: null
+        };
+        component.scheduleDeleteExport(meta);
+        expect(meta.undoable).toEqual(true);
+        expect(meta.undoTimerHandle).toBeTruthy();
+        //TODO wait 10seconds
     });
 
     it('should undo delete', () => {
