@@ -11,7 +11,7 @@ import { detailExpandAnimation } from './animations/detail-expand.animation';
 import { flyInOutAnimation } from './animations/fly-in-out.animation';
 const moment = require('moment');
 
-interface ExportTimeOption {
+export interface ExportTimeOption {
     all?: boolean,
     custom?: boolean,
     value: number,

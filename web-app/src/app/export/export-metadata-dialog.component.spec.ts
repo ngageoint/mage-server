@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
-import { ExportMetadataDialogComponent, ExportMetadataUI } from './export-metadata-dialog.component';
+import { ExportMetadataDialogComponent, ExportMetadataUI, ExportTimeOption } from './export-metadata-dialog.component';
 import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatChipsModule } from '@angular/material';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata, ExportRequest, ExportResponse } from './services/export-metadata.service';
@@ -239,13 +239,21 @@ describe('Export Metadata Dialog Component', () => {
 
     function fakeExport(request: ExportRequest): Observable<ExportResponse> {
         expect(request).toBeTruthy();
-        expect(request.exportType).toEqual(component.exportFormats[1]);
+        expect(request.exportType).toEqual(component.exportFormat);
         expect(request.eventId).toEqual(1);
-        expect(request.observations).toEqual(true);
-        expect(request.locations).toEqual(true);
-        expect(request.attachments).toBeFalsy();
-        expect(request.favorites).toBeFalsy();
-        expect(request.important).toBeFalsy();
+        expect(request.observations).toEqual(component.exportObservations);
+        expect(request.locations).toEqual(component.exportLocations);
+        expect(request.attachments).toEqual(component.excludeObservationsAttachments);
+        expect(request.favorites).toEqual(component.exportFavoriteObservations);
+        expect(request.important).toEqual(component.exportImportantObservations);
+
+        let exportTimeOption: ExportTimeOption;
+        for (let i = 0; i < component.exportTimeOptions.length; i++) {
+            exportTimeOption = component.exportTimeOptions[i];
+            if (exportTimeOption.key === component.exportTime) {
+                break;
+            }
+        }
 
         const obs: Observable<ExportResponse> = new Observable<ExportResponse>(
             function subscribe(subscriber) {
