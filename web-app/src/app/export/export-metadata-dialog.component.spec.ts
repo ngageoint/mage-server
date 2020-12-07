@@ -233,6 +233,20 @@ describe('Export Metadata Dialog Component', () => {
         const exportFormat = component.exportFormats[1];
         component.changeFormat(exportFormat);
 
+        exportMetadataServiceSpy.performExport.and.callFake(fakeExport);
+        component.exportData({});
+    });
+
+    function fakeExport(request: ExportRequest): Observable<ExportResponse> {
+        expect(request).toBeTruthy();
+        expect(request.exportType).toEqual(component.exportFormats[1]);
+        expect(request.eventId).toEqual(1);
+        expect(request.observations).toEqual(true);
+        expect(request.locations).toEqual(true);
+        expect(request.attachments).toBeFalsy();
+        expect(request.favorites).toBeFalsy();
+        expect(request.important).toBeFalsy();
+
         const obs: Observable<ExportResponse> = new Observable<ExportResponse>(
             function subscribe(subscriber) {
                 try {
@@ -247,11 +261,8 @@ describe('Export Metadata Dialog Component', () => {
             }
         );
 
-        exportMetadataServiceSpy.performExport.and.callFake((request: ExportRequest) => void {
-            //TODO add checks of the request
-        }).and.returnValue(obs);
-        component.exportData({});
-    });
+        return obs;
+    }
 
     it('should change export format', () => {
         const badFormat = "test";
