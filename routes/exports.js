@@ -171,7 +171,7 @@ module.exports = function (app, security) {
       exportInBackground(req.parameters.exportId, req.event, req.users, req.devices).catch(err => {
         log.warn(err);
       });
-     
+
       const exportResponse = {
         exportId: req.parameters.exportId
       };
@@ -350,9 +350,7 @@ function exportInBackground(exportId, event, users, devices) {
     };
     log.info('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
     const exporter = exporterFactory.createExporter(data.meta.exportType.toLowerCase(), options);
-    exporter.export(data.stream);
-
-    return true;
+    return exporter.export(data.stream);
   }).catch(err => {
     log.warn('Failed export of ' + exportId, err);
 
