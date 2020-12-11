@@ -94,7 +94,7 @@ export class ExportMetadataDialogComponent implements OnInit {
     }];
     exportTime: string = 'five';
     exportFormat: string;
-    exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
+    exportFormats: string[] = ['KML', 'GeoJSON', 'GeoPackage', 'CSV', 'Shapefile'];
     currentOffset: string;
     localTime: boolean = false;
     startDate: Date = moment().startOf('day').toDate();

@@ -355,6 +355,5 @@ function exportInBackground(exportId, event, users, devices) {
     log.warn('Failed export of ' + exportId, err);
 
     ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed);
-    return Promise.reject(err);
   });
 }
