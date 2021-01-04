@@ -97,6 +97,16 @@ mat-dialog-actions {
   justify-content: right;
 }
 
+mat-header-cell {
+  display: flex;
+  justify-content: center;
+}
+
+mat-cell {
+  display: flex;
+  justify-content: center;
+}
+
 mat-table {
   overflow: auto;
   max-height: 500px;
