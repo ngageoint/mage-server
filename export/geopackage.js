@@ -20,7 +20,7 @@ function GeoPackage(options) {
 util.inherits(GeoPackage, Exporter);
 module.exports = GeoPackage;
 
-GeoPackage.prototype.export = function(streamable) {
+GeoPackage.prototype.export = function (streamable) {
   log.info('Export the GeoPackage');
   const self = this;
 
@@ -35,46 +35,46 @@ GeoPackage.prototype.export = function(streamable) {
   let filePath;
 
   return this.createGeoPackageFile()
-  .then(function(fp) {
-    filePath = fp;
-    return fp;
-  })
-  .then(function(fp) {
-    return GeoPackageAPI.GeoPackageAPI.create(fp);
-  })
-  .then(this.createUserTable.bind(this))
-  .then(this.addFormDataToGeoPackage.bind(this))
-  .then(this.createFormAttributeTables.bind(this))
-  .then(this.addObservationIcons.bind(this))
-  .then(this.addObservationsToGeoPackage.bind(this))
-  .then(this.addLocationsToGeoPackage.bind(this))
-  .then(this.addUsersToUsersTable.bind(this))
-  .then(function(){
-    log.info('GeoPackage created');
-    archive.append(fs.createReadStream(filePath), {name: downloadedFileName + '.gpkg'});
-    archive.on('end', function(){
-      log.info('Removing temporary GeoPackage file: %s', filePath);
-      fs.unlink(filePath, function() {
+    .then(function (fp) {
+      filePath = fp;
+      return fp;
+    })
+    .then(function (fp) {
+      return GeoPackageAPI.GeoPackageAPI.create(fp);
+    })
+    .then(this.createUserTable.bind(this))
+    .then(this.addFormDataToGeoPackage.bind(this))
+    .then(this.createFormAttributeTables.bind(this))
+    .then(this.addObservationIcons.bind(this))
+    .then(this.addObservationsToGeoPackage.bind(this))
+    .then(this.addLocationsToGeoPackage.bind(this))
+    .then(this.addUsersToUsersTable.bind(this))
+    .then(function () {
+      log.info('GeoPackage created');
+      archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
+      archive.on('end', function () {
+        log.info('Removing temporary GeoPackage file: %s', filePath);
+        fs.unlink(filePath, function () {
+        });
       });
+      archive.finalize();
+    })
+    .catch(function (error) {
+      log.info('Error exporting GeoPackage', error);
+      fs.unlink(filePath, function () {
+      });
+      throw error;
     });
-    archive.finalize();
-  })
-  .catch(function(error) {
-    log.info('Error exporting GeoPackage', error);
-    fs.unlink(filePath, function() {
-    });
-    throw error;
-  });
 };
 
-GeoPackage.prototype.createGeoPackageFile = function() {
+GeoPackage.prototype.createGeoPackageFile = function () {
   log.info('Create GeoPackage File');
   var filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
   var filePath = path.join(os.tmpdir(), filename);
-  return new Promise(function(resolve, reject) {
-    fs.unlink(filePath, function() {
-      fs.mkdir(path.dirname(filePath), function() {
-        fs.open(filePath, 'w', function(err) {
+  return new Promise(function (resolve, reject) {
+    fs.unlink(filePath, function () {
+      fs.mkdir(path.dirname(filePath), function () {
+        fs.open(filePath, 'w', function (err) {
           if (err) return reject(err);
           resolve(filePath);
         });
@@ -83,12 +83,12 @@ GeoPackage.prototype.createGeoPackageFile = function() {
   });
 }
 
-GeoPackage.prototype.getObservations = function() {
+GeoPackage.prototype.getObservations = function () {
   var self = this;
   self._filter.states = ['active'];
 
-  return new Promise(function(resolve, reject) {
-    new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
+  return new Promise(function (resolve, reject) {
+    new api.Observation(self._event).getAll({ filter: self._filter }, function (err, observations) {
       resolve(observations);
     });
   });
@@ -96,12 +96,12 @@ GeoPackage.prototype.getObservations = function() {
   return observationsGeoJson.features;
 }
 
-GeoPackage.prototype.getLocations = function(lastLocationId, startDate, endDate) {
+GeoPackage.prototype.getLocations = function (lastLocationId, startDate, endDate) {
   var self = this;
   var limit = 2000;
 
-  return new Promise(function(resolve, reject) {
-    self.requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
+  return new Promise(function (resolve, reject) {
+    self.requestLocations({ startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit }, function (err, requestedLocations) {
       resolve(requestedLocations);
     });
   });
@@ -109,7 +109,7 @@ GeoPackage.prototype.getLocations = function(lastLocationId, startDate, endDate)
 
 var iconMap = {};
 
-GeoPackage.prototype.createObservationTable = function(geopackage, properties) {
+GeoPackage.prototype.createObservationTable = function (geopackage, properties) {
   log.info('Create Observation Table');
   var columns = [];
 
@@ -148,30 +148,30 @@ GeoPackage.prototype.createObservationTable = function(geopackage, properties) {
   return geopackage.createFeatureTableFromProperties('Observations', columns);
 }
 
-GeoPackage.prototype.createAttachmentTable = function(geopackage) {
+GeoPackage.prototype.createAttachmentTable = function (geopackage) {
   log.info('Create Attachment Table');
   var columns = [{
     name: "name",
     dataType: "TEXT"
-  },{
+  }, {
     name: "size",
     dataType: "REAL"
   }];
   return geopackage.createMediaTable('Attachments', columns);
 }
 
-GeoPackage.prototype.createIconTable = function(geopackage) {
+GeoPackage.prototype.createIconTable = function (geopackage) {
   log.info('Create Icon Table');
   var columns = [{
     name: "eventId",
     dataType: "TEXT"
-  },{
+  }, {
     name: "formId",
     dataType: "TEXT"
-  },{
+  }, {
     name: "primary",
     dataType: "TEXT"
-  },{
+  }, {
     name: "variant",
     dataType: "TEXT"
   }];
@@ -184,17 +184,17 @@ var locationTablesCreated = {
 var usersLastLocation = {
 };
 
-GeoPackage.prototype.addUsersToUsersTable = function(geopackage) {
-  var self = this;
-  var userIds = Object.keys(self._users);
-  return userIds.reduce(function(sequence, userId) {
-    return sequence.then(function() {
+GeoPackage.prototype.addUsersToUsersTable = function (geopackage) {
+  const self = this;
+  let userIds = Object.keys(self._users);
+  return userIds.reduce(function (sequence, userId) {
+    return sequence.then(function () {
       if (!usersLastLocation[userId]) {
         return Promise.resolve();
       }
 
-      var user = self._users[userId];
-      var geoJson = {
+      const user = self._users[userId];
+      const geoJson = {
         type: 'Feature',
         geometry: usersLastLocation[userId].geometry,
         properties: {
@@ -206,21 +206,25 @@ GeoPackage.prototype.addUsersToUsersTable = function(geopackage) {
           userId: userId
         }
       };
-      var userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users')
+      const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
       return new Promise(function (resolve, reject) {
-        fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function(err, iconBuffer) {
-          var iconId = geopackage.addMedia('UserIcons', iconBuffer, user.icon.contentType, user.icon);
-          resolve(geopackage.linkMedia('Users', userRowId, 'UserIcons', iconId));
+        fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function (err, iconBuffer) {
+          if (iconBuffer) {
+            const iconId = geopackage.addMedia('UserIcons', iconBuffer, user.icon.contentType, user.icon);
+            resolve(geopackage.linkMedia('Users', userRowId, 'UserIcons', iconId));
+          } else {
+            resolve();
+          }
         });
       });
     });
   }, Promise.resolve())
-  .then(function() {
-    return geopackage;
-  });
+    .then(function () {
+      return geopackage;
+    });
 }
 
-GeoPackage.prototype.createLocationTableForUser = function(geopackage, userId) {
+GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) {
   if (locationTablesCreated[userId]) return Promise.resolve();
   var columns = [];
 
@@ -246,76 +250,76 @@ GeoPackage.prototype.createLocationTableForUser = function(geopackage, userId) {
   });
 
   locationTablesCreated[userId] = true;
-  return geopackage.createFeatureTableFromProperties('Locations'+userId, columns)
-  .catch(function(err) {
-  });
+  return geopackage.createFeatureTableFromProperties('Locations' + userId, columns)
+    .catch(function (err) {
+    });
 }
 
-GeoPackage.prototype.addLocationsToGeoPackage = function(geopackage, lastLocationId, startDate, endDate) {
+GeoPackage.prototype.addLocationsToGeoPackage = function (geopackage, lastLocationId, startDate, endDate) {
   log.info('Add Locations');
   var self = this;
 
   startDate = startDate || self._filter.startDate ? moment(self._filter.startDate) : null;
   endDate = endDate || self._filter.endDate ? moment(self._filter.endDate) : null;
 
-  return new Promise(function(resolve, reject) {
-    setTimeout(function(){
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       return self.getLocations(lastLocationId, startDate, endDate)
-      .then(function(locations) {
-        if (!locations || locations.length === 0) {
-          return resolve();
-        }
-
-        var last = locations.slice(-1).pop();
-        if (last) {
-          var locationTime = moment(last.properties.timestamp);
-          lastLocationId = last._id;
-          if (!startDate || startDate.isBefore(locationTime)) {
-            startDate = locationTime;
+        .then(function (locations) {
+          if (!locations || locations.length === 0) {
+            return resolve();
           }
-        }
 
-        return locations.reduce(function(sequence, location) {
-          var user = self._users[location.userId];
-          return self.createLocationTableForUser(geopackage, location.userId.toString(), user, location)
-          .then(function() {
-            return sequence.then(function() {
-              usersLastLocation[location.userId.toString()] = location;
-              var properties = {};
-              properties.userId = location.userId.toString();
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var locationTime = moment(last.properties.timestamp);
+            lastLocationId = last._id;
+            if (!startDate || startDate.isBefore(locationTime)) {
+              startDate = locationTime;
+            }
+          }
 
-              var geojson = {
-                type:'Feature',
-                geometry: location.geometry,
-                properties: location.properties
-              };
-              geojson.properties.mageId = location._id.toString();
-              geojson.properties.userId = location.userId.toString();
-              geojson.properties.deviceId = location.properties.deviceId.toString();
+          return locations.reduce(function (sequence, location) {
+            var user = self._users[location.userId];
+            return self.createLocationTableForUser(geopackage, location.userId.toString(), user, location)
+              .then(function () {
+                return sequence.then(function () {
+                  usersLastLocation[location.userId.toString()] = location;
+                  var properties = {};
+                  properties.userId = location.userId.toString();
 
-              if (geojson.properties.id) {
-                delete geojson.properties.id;
-              }
-              var featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations'+location.userId.toString());
+                  var geojson = {
+                    type: 'Feature',
+                    geometry: location.geometry,
+                    properties: location.properties
+                  };
+                  geojson.properties.mageId = location._id.toString();
+                  geojson.properties.userId = location.userId.toString();
+                  geojson.properties.deviceId = location.properties.deviceId.toString();
+
+                  if (geojson.properties.id) {
+                    delete geojson.properties.id;
+                  }
+                  var featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations' + location.userId.toString());
+                });
+              });
+          }, Promise.resolve())
+            .then(function () {
+              return resolve(self.addLocationsToGeoPackage(geopackage, lastLocationId, startDate, endDate));
             });
-          });
-        }, Promise.resolve())
-        .then(function() {
-          return resolve(self.addLocationsToGeoPackage(geopackage, lastLocationId, startDate, endDate));
         });
-      });
     });
   })
-  .then(function() {
-    return geopackage;
-  });
+    .then(function () {
+      return geopackage;
+    });
 }
 
-GeoPackage.prototype.createFormAttributeTables = function(geopackage) {
+GeoPackage.prototype.createFormAttributeTables = function (geopackage) {
   var self = this;
 
   log.info('Create Form Attribute Tables');
-  return Object.keys(self._event.formMap).reduce(function(sequence, formId) {
+  return Object.keys(self._event.formMap).reduce(function (sequence, formId) {
     var columns = [];
     var form = self._event.formMap[formId];
     if (form.primaryField) {
@@ -340,7 +344,7 @@ GeoPackage.prototype.createFormAttributeTables = function(geopackage) {
       columns.push({
         dataColumn: {
           column_name: field.name,
-          table_name: 'Form_'+formId,
+          table_name: 'Form_' + formId,
           name: field.title,
           title: field.title
         },
@@ -348,14 +352,14 @@ GeoPackage.prototype.createFormAttributeTables = function(geopackage) {
         dataType: 'TEXT'
       });
     }
-    return geopackage.createAttributeTable('Form_'+formId, columns);
+    return geopackage.createAttributeTable('Form_' + formId, columns);
   }, Promise.resolve())
-  .then(function() {
-    return geopackage;
-  });
+    .then(function () {
+      return geopackage;
+    });
 }
 
-GeoPackage.prototype.createUserTable = function(geopackage) {
+GeoPackage.prototype.createUserTable = function (geopackage) {
   const columns = [];
   columns.push({
     name: 'username',
@@ -382,30 +386,30 @@ GeoPackage.prototype.createUserTable = function(geopackage) {
     dataType: 'DATETIME'
   });
   return geopackage.createFeatureTableFromProperties('Users', columns)
-  .then(function() {
-    log.info('Create User Icon Table');
-    const columns = [{
-      name: "type",
-      dataType: "TEXT"
-    },{
-      name: "text",
-      dataType: "TEXT"
-    },{
-      name: "color",
-      dataType: "TEXT"
-    }];
-    return geopackage.createMediaTable('UserIcons', columns);
-  })
-  .then(function() {
-    log.info('Create User Avatar Table');
-    return geopackage.createMediaTable('UserAvatars');
-  })
-  .then(function() {
-    return geopackage;
-  });
+    .then(function () {
+      log.info('Create User Icon Table');
+      const columns = [{
+        name: "type",
+        dataType: "TEXT"
+      }, {
+        name: "text",
+        dataType: "TEXT"
+      }, {
+        name: "color",
+        dataType: "TEXT"
+      }];
+      return geopackage.createMediaTable('UserIcons', columns);
+    })
+    .then(function () {
+      log.info('Create User Avatar Table');
+      return geopackage.createMediaTable('UserAvatars');
+    })
+    .then(function () {
+      return geopackage;
+    });
 }
 
-GeoPackage.prototype.addFormDataToGeoPackage = function(geopackage) {
+GeoPackage.prototype.addFormDataToGeoPackage = function (geopackage) {
   var self = this;
 
   var columns = [];
@@ -431,112 +435,126 @@ GeoPackage.prototype.addFormDataToGeoPackage = function(geopackage) {
   });
 
   return geopackage.createAttributeTable('Forms', columns)
-  .then(function(dao) {
-    for (var formId in self._event.formMap) {
-      var form = self._event.formMap[formId];
-      var row = {
-        formName: form.name,
-        primaryField: form.primaryField,
-        variantField: form.variantField,
-        color: form.color,
-        formId: formId
-      };
+    .then(function (dao) {
+      for (var formId in self._event.formMap) {
+        var form = self._event.formMap[formId];
+        var row = {
+          formName: form.name,
+          primaryField: form.primaryField,
+          variantField: form.variantField,
+          color: form.color,
+          formId: formId
+        };
 
-      geopackage.addAttributeRow('Forms', row);
-    }
-  })
-  .then(function() {
-    return geopackage;
-  });
-}
-
-GeoPackage.prototype.addObservationsToGeoPackage = function(geopackage) {
-  log.info('Add Observations');
-  var self = this;
-  return this.getObservations()
-  .then(function(observations) {
-    var firstObs = observations[0];
-    return self.createObservationTable(geopackage, {
-
+        geopackage.addAttributeRow('Forms', row);
+      }
     })
-    .then(function() {
-      self.createAttachmentTable(geopackage);
-    })
-    .then(function() {
-      return observations.reduce(function(sequence, observation) {
-        return sequence.then(function() {
-
-          var form = self._event.formMap[observation.properties.forms[0].formId];
-          var primary = observation.properties.forms[0][form.primaryField];
-          var variant = observation.properties.forms[0][form.variantField];
-
-          var properties = {
-            lastModified: observation.lastModified,
-            timestamp: observation.properties.timestamp,
-            mageId: observation._id.toString(),
-            userId: observation.userId.toString(),
-            deviceId: observation.deviceId.toString(),
-            createdAt: observation.createdAt,
-            primaryField: primary,
-            variantField: variant
-          }
-          var geojson = {
-            type:'Feature',
-            geometry: observation.geometry,
-            properties: properties
-          };
-
-          var featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
-          // insert the icon link
-          var iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
-          if (primary) {
-            iconId = iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
-          }
-          if (variant) {
-            iconId = iconMap[observation.properties.forms[0].formId][primary][variant];
-          }
-          return geopackage.linkMedia('Observations', featureId, 'Icons', iconId)
-          .then(function() {
-            // insert all attachments and link them
-            if (observation.attachments) {
-              return self.addAttachments(geopackage, observation.attachments, featureId);
-            }
-          })
-          .then(function() {
-            // insert all of the forms as linked attribute tables
-            return observation.properties.forms.reduce(function(sequence, form) {
-              return sequence.then(function() {
-                form.primaryField = primary;
-                form.variantField = variant;
-                form.formId = form.formId.toString();
-                var rowId = geopackage.addAttributeRow('Form_'+form.formId, form);
-                var relatedTables = geopackage.getRelatedTablesExtension();
-                return relatedTables.linkRelatedIds('Observations', featureId, 'Form_'+form.formId, rowId, {
-                  name: 'simple_attributes',
-                  dataType: 'ATTRIBUTES'
-                });
-              });
-            }, Promise.resolve());
-          });
-        });
-      }, Promise.resolve())
-      .catch(function(error){
-        log.error('error', error);
-      });
+    .then(function () {
+      return geopackage;
     });
-  })
-  .then(function() {
-    return geopackage;
-  });
 }
 
-GeoPackage.prototype.addAttachments = function(geopackage, attachments, observationId) {
+GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
+  log.info('Add Observations');
+  const self = this;
+  return this.getObservations()
+    .then(function (observations) {
+      var firstObs = observations[0];
+      return self.createObservationTable(geopackage, {
+
+      })
+        .then(function () {
+          self.createAttachmentTable(geopackage);
+        })
+        .then(function () {
+          return observations.reduce(function (sequence, observation) {
+            return sequence.then(function () {
+
+              let primary;
+              let variant;
+
+              if (observation.properties.forms[0]) {
+                const form = self._event.formMap[observation.properties.forms[0].formId];
+                primary = observation.properties.forms[0][form.primaryField];
+                variant = observation.properties.forms[0][form.variantField];
+              }
+
+              const properties = {
+                lastModified: observation.lastModified,
+                timestamp: observation.properties.timestamp,
+                mageId: observation._id.toString(),
+                userId: observation.userId.toString(),
+                deviceId: observation.deviceId.toString(),
+                createdAt: observation.createdAt,
+                primaryField: primary,
+                variantField: variant
+              }
+              const geojson = {
+                type: 'Feature',
+                geometry: observation.geometry,
+                properties: properties
+              };
+
+              const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
+
+              let promise;
+
+              if (observation.properties.forms[0]) {
+                // insert the icon link
+                const iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
+                if (primary) {
+                  iconId = iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
+                }
+                if (variant) {
+                  iconId = iconMap[observation.properties.forms[0].formId][primary][variant];
+                }
+                promise = geopackage.linkMedia('Observations', featureId, 'Icons', iconId);
+              } else {
+                promise = Promise.resolve();
+              }
+
+              return promise
+                .then(function () {
+                  // insert all attachments and link them
+                  if (observation.attachments) {
+                    return self.addAttachments(geopackage, observation.attachments, featureId);
+                  }
+                })
+                .then(function () {
+                  // insert all of the forms as linked attribute tables
+                  return observation.properties.forms.reduce(function (sequence, form) {
+                    return sequence.then(function () {
+                      form.primaryField = primary;
+                      form.variantField = variant;
+                      form.formId = form.formId.toString();
+                      var rowId = geopackage.addAttributeRow('Form_' + form.formId, form);
+                      var relatedTables = geopackage.getRelatedTablesExtension();
+                      return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + form.formId, rowId, {
+                        name: 'simple_attributes',
+                        dataType: 'ATTRIBUTES'
+                      });
+                    });
+                  }, Promise.resolve());
+                });
+            });
+          }, Promise.resolve())
+            .catch(function (error) {
+              log.error('error', error);
+            });
+        });
+    })
+    .then(function () {
+      return geopackage;
+    });
+}
+
+GeoPackage.prototype.addAttachments = function (geopackage, attachments, observationId) {
   log.info('Add Attachments');
 
-  return attachments.reduce(function(sequence, attachment) {
-    return sequence.then(function() {
-      return new Promise(function(resolve, reject) {
-        fs.readFile(path.join(attachmentBase, attachment.relativePath), function(err, dataBuffer) {
+  return attachments.reduce(function (sequence, attachment) {
+    return sequence.then(function () {
+      return new Promise(function (resolve, reject) {
+        fs.readFile(path.join(attachmentBase, attachment.relativePath), function (err, dataBuffer) {
           var mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType, {
             name: attachment.name,
             size: attachment.size
@@ -549,7 +567,7 @@ GeoPackage.prototype.addAttachments = function(geopackage, attachments, observat
   }, Promise.resolve());
 }
 
-GeoPackage.prototype.addObservationIcons = function(geopackage) {
+GeoPackage.prototype.addObservationIcons = function (geopackage) {
   var self = this;
 
   var rootDir = path.join(new api.Icon(self._event._id).getBasePath());
@@ -558,12 +576,12 @@ GeoPackage.prototype.addObservationIcons = function(geopackage) {
   this.createIconTable(geopackage);
 
   var formDirs = fs.readdirSync(path.join(rootDir));
-  return formDirs.reduce(function(formSequence, formDir) {
-    return formSequence.then(function() {
+  return formDirs.reduce(function (formSequence, formDir) {
+    return formSequence.then(function () {
       iconMap[formDir] = iconMap[formDir] || {};
       if (formDir === 'icon.png') {
-        return new Promise(function(resolve, reject) {
-          fs.readFile(path.join(rootDir, formDir), function(err, iconBuffer) {
+        return new Promise(function (resolve, reject) {
+          fs.readFile(path.join(rootDir, formDir), function (err, iconBuffer) {
             var iconId = geopackage.addMedia('Icons', iconBuffer, 'image/png', {
               formId: formDir
             });
@@ -573,11 +591,11 @@ GeoPackage.prototype.addObservationIcons = function(geopackage) {
         });
       } else {
         var primaryDirs = fs.readdirSync(path.join(rootDir, formDir));
-        return primaryDirs.reduce(function(primarySequence, primaryDir) {
-          return primarySequence.then(function() {
+        return primaryDirs.reduce(function (primarySequence, primaryDir) {
+          return primarySequence.then(function () {
             if (primaryDir === 'icon.png') {
-              return new Promise(function(resolve, reject) {
-                fs.readFile(path.join(rootDir, formDir, primaryDir), function(err, iconBuffer) {
+              return new Promise(function (resolve, reject) {
+                fs.readFile(path.join(rootDir, formDir, primaryDir), function (err, iconBuffer) {
                   var iconId = geopackage.addMedia('Icons', iconBuffer, 'image/png', {
                     formId: formDir
                   });
@@ -588,11 +606,11 @@ GeoPackage.prototype.addObservationIcons = function(geopackage) {
             } else {
               iconMap[formDir][primaryDir] = iconMap[formDir][primaryDir] || {};
               var variantDirs = fs.readdirSync(path.join(rootDir, formDir, primaryDir));
-              return variantDirs.reduce(function(variantSequence, variantDir) {
-                return variantSequence.then(function() {
+              return variantDirs.reduce(function (variantSequence, variantDir) {
+                return variantSequence.then(function () {
                   if (variantDir === 'icon.png') {
-                    return new Promise(function(resolve, reject) {
-                      fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir), function(err, iconBuffer) {
+                    return new Promise(function (resolve, reject) {
+                      fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir), function (err, iconBuffer) {
                         var iconId = geopackage.addMedia('Icons', iconBuffer, 'image/png', {
                           formId: formDir,
                           primary: primaryDir
@@ -602,8 +620,8 @@ GeoPackage.prototype.addObservationIcons = function(geopackage) {
                       });
                     });
                   } else {
-                    return new Promise(function(resolve, reject) {
-                      fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'), function(err, iconBuffer) {
+                    return new Promise(function (resolve, reject) {
+                      fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'), function (err, iconBuffer) {
                         var iconId = geopackage.addMedia('Icons', iconBuffer, 'image/png', {
                           formId: formDir,
                           primary: primaryDir,
@@ -622,7 +640,7 @@ GeoPackage.prototype.addObservationIcons = function(geopackage) {
       }
     });
   }, Promise.resolve())
-  .then(function() {
-    return geopackage;
-  });
+    .then(function () {
+      return geopackage;
+    });
 }
