@@ -164,7 +164,6 @@ export class ExportMetadataDialogComponent implements OnInit {
         this.exportMetaService.retryExport(meta).subscribe((response: ExportResponse) => {
             const msg: string = "Retrying export";
             this.snackBar.open(msg, null, { duration: 2000 });
-            //TODO delay by snackbar timeout?
             this.loadData();
         });
     }
