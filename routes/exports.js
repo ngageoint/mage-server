@@ -149,6 +149,7 @@ module.exports = function (app, security) {
     access.authorize('DELETE_EXPORT'),
     function (req, res, next) {
       ExportMetadata.removeMetadata(req.param("exportId")).then(meta => {
+        fs.unlinkSync(meta.physicalPath);
         res.json(meta);
         return next();
       }).catch(err => {
