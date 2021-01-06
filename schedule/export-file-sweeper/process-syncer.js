@@ -15,16 +15,15 @@ mongoose.connect(mongo.uri, mongo.options, function (err) {
     }
 });
 
-function sync() {
+async function sync() {
     log.info('Syncing processes with database');
 
-    return ExportMetadata.getAllExportMetadatas().then(metas => {
-        for (meta of metas) {
-            if (meta.status == ExportMetadata.ExportStatus.Running) {
-                log.info('Updating status of ' + meta.physicalPath + ' to failed');
-                meta.status = ExportMetadata.ExportStatus.Failed;
-                ExportMetadata.updateExportMetadata(meta);
-            }
+    const metas = await ExportMetadata.getAllExportMetadatas();
+    for (meta of metas) {
+        if (meta.status == ExportMetadata.ExportStatus.Running) {
+            log.info('Updating status of ' + meta.physicalPath + ' to failed');
+            meta.status = ExportMetadata.ExportStatus.Failed;
+            ExportMetadata.updateExportMetadata(meta);
         }
-    });
+    }
 }
