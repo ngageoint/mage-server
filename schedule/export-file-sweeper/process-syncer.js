@@ -15,11 +15,6 @@ mongoose.connect(mongo.uri, mongo.options, function (err) {
     }
 });
 
-const mongooseLogger = log.loggers.get('mongoose');
-mongoose.set('debug', function (collection, method, query, doc, options) {
-    mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
-});
-
 function sync() {
     log.info('Syncing processes with database');
 
