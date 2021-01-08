@@ -5,7 +5,7 @@ const mongoose = require('mongoose'),
 
 const mongooseLogger = log.loggers.get('mongoose');
 
-mongoose.set('debug', function(collection, method, query, doc, options) {
+mongoose.set('debug', function (collection, method, query, doc, options) {
   mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
 });
 
@@ -15,9 +15,9 @@ log.info('Starting MAGE Server ...');
 
 // Create directory for storing SAGE media attachments
 const attachmentBase = environment.attachmentBaseDirectory;
-fs.mkdirp(attachmentBase, function(err) {
+fs.mkdirp(attachmentBase, function (err) {
   if (err) {
-    log.error("Could not create directory to store MAGE media attachments. "  + err);
+    log.error("Could not create directory to store MAGE media attachments. " + err);
     throw err;
   } else {
     log.info("Using '" + attachmentBase + "' as base directory for feature attachments.");
@@ -25,9 +25,9 @@ fs.mkdirp(attachmentBase, function(err) {
 });
 
 const iconBase = environment.iconBaseDirectory;
-fs.mkdirp(iconBase, function(err) {
+fs.mkdirp(iconBase, function (err) {
   if (err) {
-    log.error("Could not create directory to store MAGE icons. "  + err);
+    log.error("Could not create directory to store MAGE icons. " + err);
   } else {
     log.info("Using '" + iconBase + "' as base directory for MAGE icons.");
   }
@@ -36,15 +36,23 @@ fs.mkdirp(iconBase, function(err) {
 require('./migrate').runDatabaseMigrations()
   .then(() => {
     log.info('database initialized; loading plugins ...');
-    
+
     const plugins = require('./plugins');
-    plugins.initialize(app, function(err) {
+    const scheduleJobs = require('./schedule');
+    plugins.initialize(app, function (err) {
       if (err) {
         throw err;
       }
 
-      log.info('opening app for connections ...');
-      app.emit('comingOfMage');
+      log.info('plugins loaded; loading scheduled jobs ...');
+      scheduleJobs.initialize(app, function (err) {
+        if (err) {
+          throw new Error(err);
+        }
+
+        log.info('opening app for connections ...');
+        app.emit('comingOfMage');
+      });
     });
 
   })

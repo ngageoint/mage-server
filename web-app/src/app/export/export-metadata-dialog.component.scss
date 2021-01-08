@@ -1,0 +1,156 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.export-row {
+  position: relative;
+}
+
+.export-row:not(.expanded) {
+  cursor: pointer;
+}
+
+.export-row:not(.expanded):hover {
+  background: #f5f5f5;
+}
+
+.export-row.expanded {
+  border-bottom-color: transparent;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 289;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+}
+
+.locale-button {
+  color: #1E88E5;
+  height: 51px;
+  margin-bottom: 18px;
+}
+
+#close-button {
+  margin-right: 8px;
+  color: #1E88E5;
+}
+
+#new-button {
+  margin-left: 8px;
+}
+
+#new-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
+#cancel-button {
+  margin-right: 8px;
+  color: #1E88E5;
+}
+
+#ok-button {
+  margin-left: 8px;
+}
+
+#ok-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
+#time-field {
+  width: 100%;
+}
+
+#export-list {
+  list-style-type: none;
+  margin-left: 16px;
+  padding-left: unset;
+}
+
+#advanced-list {
+  list-style-type: none;
+  margin-left: unset;
+  padding-left: unset;
+}
+
+label {
+  font-weight: unset;
+  margin-left: 8px;
+}
+
+mat-dialog-actions {
+  display: flex;
+  justify-content: right;
+}
+
+mat-table {
+  overflow: auto;
+  max-height: 500px;
+}
+
+mat-form-field {
+  font-size: 14px;
+  width: 100%;
+}
+
+mat-paginator {
+  display: flex;
+  justify-content: right;
+}
+
+mat-list {
+  padding-left: unset;
+  margin-left: 10px;
+}
+
+mat-list-item {
+  margin-left: 20px;
+}
+
+mat-list mat-icon {
+  margin-right: 5px;
+  transform: scale(.75);
+}
+
+mat-radio-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  margin-left: 8px;
+}
+
+mat-radio-button {
+  margin-right: 8px;
+}
+
+mat-chip-list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  margin-left: 8px;
+}
+
+mat-icon {
+  transform: scale(.75);
+  margin-left: 8px;
+}
+
+mat-expansion-panel-header {
+  padding-left: unset;
+}

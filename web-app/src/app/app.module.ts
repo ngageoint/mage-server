@@ -47,11 +47,16 @@ import {
   MatGridListModule,
   MatDialogModule,
   MatTabsModule,
-  MatBadgeModule
+  MatBadgeModule,
+  MatTableModule,
+  MatPaginatorModule,
+  MatSortModule
 } from '@angular/material';
 
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
+
+import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
@@ -67,6 +72,8 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
+import { ExportsComponent } from './export/exports.component';
+import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -129,6 +136,7 @@ import {
 
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
+import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 
 @NgModule({
   declarations: [
@@ -185,7 +193,11 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
     UserListComponent,
     FeedComponent,
     ObservationPopupComponent,
-    UserPopupComponent
+    UserPopupComponent,
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportMetadataDialogComponent,
+    CdkDetailRowDirective
   ],
   imports: [
     BrowserModule,
@@ -232,7 +244,17 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
     SaturationModule,
     HueModule,
     AlphaModule,
-    CheckboardModule
+    CheckboardModule,
+    MatTableModule,
+    MatDialogModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    NgxMatDatetimePickerModule, 
+    NgxMatTimepickerModule,
+    NgxMatNativeDateModule
   ],
   providers: [
     mapServiceProvider,
@@ -270,7 +292,9 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
     AddObservationComponent,
     LayersControlComponent,
     SwaggerComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    ExportsComponent,
+    ExportMetadataDialogComponent
   ]
 })
 export class AppModule {

@@ -26,6 +26,7 @@ import { SearchComponent } from '../app/map/controls/search.component';
 import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
+import { ExportsComponent } from '../app/export/exports.component';
 
 import { FeedService } from '../app/feed/feed.service'
 import { PopupService } from '../app/map/popup.service'
@@ -80,7 +81,8 @@ app
   .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
-  .directive('swagger', downgradeComponent({ component: SwaggerComponent }));
+  .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
+  .directive('exports', downgradeComponent({ component: ExportsComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))

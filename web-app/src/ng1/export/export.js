@@ -1,10 +1,12 @@
+'use strict';
+
 const MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
   , MDCChipSet = require('material-components-web').chips.MDCChipSet
   , moment = require('moment')
   , angular = require('angular');
 
-function ExportController(LocalStorageService, FilterService, $timeout, $element, $httpParamSerializer) {
+function ExportController(FilterService, ExportService, $timeout, $element) {
   this.exportPanel;
   this.intervalSelectMdc;
   this.chipSet;
@@ -143,8 +145,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     const params = {
       eventId: this.exportEvent.selected.id,
       observations: this.exportObservations.value,
-      locations: this.exportLocations.value,
-      access_token: LocalStorageService.getToken() //eslint-disable-line camelcase
+      locations: this.exportLocations.value
     };
 
     if (start) params.startDate = start;
@@ -155,10 +156,12 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    const url = "api/" + this.type.value + "?" + $httpParamSerializer(params);
-    jQuery.fileDownload(url)
-      .done(function() {})
-      .fail(function() {});
+    
+    ExportService.export(this.type.value, params).then(response => {
+      console.log('Export id: ' + response.data);
+    }).catch(err => {
+      console.log(err);
+    });
   };
 }
 
@@ -172,4 +175,4 @@ module.exports = {
   controller: ExportController
 };
 
-ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', '$element', '$httpParamSerializer'];
+ExportController.$inject = ['FilterService', 'ExportService', '$timeout', '$element'];

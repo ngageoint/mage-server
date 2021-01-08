@@ -97,8 +97,8 @@
           <div class="col-md-6">
             <div class="card" ng-if="!$ctrl.user.active && $ctrl.hasUserEditPermission">
               <div class="card-content">
-                <strong class="text-success">Activate New User</strong>
-                <p class="text-success">This is a new user account.  Active to allow user to access MAGE.</p>
+                <strong class="text-success">Activate New User Account</strong>
+                <p class="text-success">This is a new user account.  Activate the account to allow user to access MAGE.</p>
                 <button class="btn btn-success top-gap" ng-click="$ctrl.activateUser($ctrl.user)"> <i class="fa fa-check"></i> Activate</button>
               </div>
             </div>
@@ -106,23 +106,23 @@
             <div class="card" ng-if="!$ctrl.user.enabled && $ctrl.user.active && $ctrl.hasUserEditPermission">
               <div class="card-content">
                 <strong class="text-warning">User Account Disabled</strong>
-                <p class="text-warning">Users account has been disabled, enable to allow user to access MAGE. Accounts can be disabled manually by an administrator, or for security reasons like an invalid number of login attempts.</p>
+                <p class="text-warning">This account is disabled. Enable the account to allow user to access MAGE. Accounts can be disabled manually by an administrator, or for security reasons, such as too many invalid login attempts.</p>
                 <button class="btn btn-warning top-gap" ng-click="$ctrl.enableUser($ctrl.user)"> <i class="fa fa-check"></i> Enable</button>
               </div>
             </div>
 
             <div class="card" ng-if="$ctrl.user.enabled && $ctrl.user.active && $ctrl.hasUserEditPermission">
               <div class="card-content">
-                <strong class="text-warning">Disable User</strong>
-                <p class="text-warning">Disabling will prevent user from accessing MAGE. All user information will be retained and the user can be enabled again at any time.</p>
+                <strong class="text-warning">Disable User Account</strong>
+                <p class="text-warning">Disabling will prevent the account user from accessing MAGE. MAGE will retain all account information and you can enable the account again at any time.</p>
                 <button class="btn btn-warning top-gap" ng-click="$ctrl.disableUser($ctrl.user)"> <i class="fa fa-ban"></i> Disable</button>
               </div>
             </div>
 
             <div class="card top-gap" ng-if="$ctrl.hasUserDeletePermission">
               <div class="card-content">
-                <strong class="text-danger">Delete user</strong>
-                <p class="text-danger">Deleting user will remove all user information including location data. This cannot be undone, all user data will be unrecoverable.</p>
+                <strong class="text-danger">Delete User Account</strong>
+                <p class="text-danger">Deleting the account will remove all associated user information including location data. This cannot be undone and the user's data will be unrecoverable.</p>
                 <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteUser($ctrl.user)"> <i class="fa fa-trash-o"></i> Delete</button>
               </div>
             </div>
@@ -251,7 +251,7 @@
                       <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
                       uib-typeahead="device as device.userAgent for device in $ctrl.searchLogins($viewValue)"
                       typeahead-loading="$ctrl.loginSearchResults" typeahead-no-results="noDeviceSearchResults"
-                      typeahead-min-length="0"  class="form-control" ng-model-options="{ debounce: 1000 }" 
+                      typeahead-min-length="0"  class="form-control" ng-model-options="{ debounce: 1000 }"
                       typeahead-on-select='$ctrl.filterLogins()'>
                     </div>
                     <div class="form-group">

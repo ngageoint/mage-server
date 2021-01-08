@@ -1,0 +1,229 @@
+<section class="mat-typography">
+  <h1 mat-dialog-title>Exports</h1>
+</section>
+<section class="mat-typography">
+  <mat-dialog-content>
+    <br>
+    <div [hidden]="isExportOpen === true">
+      <mat-card class="mat-elevation-z0">
+        <div class="loading-shade" *ngIf="isLoadingResults">
+          <mat-spinner></mat-spinner>
+        </div>
+        <mat-form-field>
+          <mat-label>Filter</mat-label>
+          <input matInput (keyup)="applyFilter($event)" placeholder="e.g. kml" #input>
+        </mat-form-field>
+        <br>
+        <mat-table [dataSource]="dataSource" multiTemplateDataRows matSort>
+
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
+            <mat-cell *matCellDef="let export"> {{export.status}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="type">
+            <mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </mat-header-cell>
+            <mat-cell *matCellDef="let export"> {{export.exportType}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="url">
+            <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
+            <mat-cell *matCellDef="let export">
+              <a *ngIf="export.status == 'Completed'" href="{{export.location}}?access_token={{token}}"
+                download="{{export.filename}}" target="_blank" (click)="$event.stopPropagation()">Download</a>
+              <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
+                (click)="$event.stopPropagation(); retryExport(export)">Retry</button>
+              <div *ngIf="export.status == 'Running'">N/A</div>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="event">
+            <mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </mat-header-cell>
+            <mat-cell *matCellDef="let export"> {{export.eventName}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="delete">
+            <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
+            <mat-cell *matCellDef="let export">
+              <div *ngIf="export.undoable; else elseBlock">
+                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); undoDelete(export)">
+                  <mat-icon class="mat-18">undo</mat-icon>
+                </button>
+              </div>
+              <ng-template #elseBlock>
+                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); scheduleDeleteExport(export)">
+                  <mat-icon class="mat-18">delete</mat-icon>
+                </button>
+              </ng-template>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="columnsToDisplay; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: columnsToDisplay;" matRipple class="export-row" [cdkDetailRow]="row"
+            [cdkDetailRowTpl]="tpl">
+          </mat-row>
+        </mat-table>
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        <br>
+        <ng-template #tpl let-export>
+          <div *ngIf="export.options && export.options.filter" class="mat-row" [@detailExpand]>
+            <mat-list dense>
+              <div mat-subheader>
+                <mat-icon>calendar_today</mat-icon>Time Range
+              </div>
+              <mat-list-item>
+                <p matLine>
+                  Start: {{export.options.filter.startDate |  date:'MMM d, y hh:mm:ss a'}}
+                </p>
+                <p matLine>
+                  End: {{export.options.filter.endDate |  date:'MMM d, y hh:mm:ss a'}}
+                </p>
+              </mat-list-item>
+              <div mat-subheader>
+                <mat-icon>save_alt</mat-icon>Export Options
+              </div>
+              <mat-list-item *ngIf="export.options.filter.exportLocations">
+                <mat-checkbox [checked]="true" color="primary" id="export-locations" disabled>
+                </mat-checkbox>
+                <label for="export-locations">Export Locations</label>
+              </mat-list-item>
+              <mat-list-item *ngIf="export.options.filter.exportObservations">
+                <mat-checkbox [checked]="true" color="primary" id="export-observations" disabled>
+                </mat-checkbox>
+                <label for="export-observations">Export Observations</label>
+              </mat-list-item>
+              <mat-list-item *ngIf="export.options.filter.attachments">
+                <mat-checkbox [checked]="true" color="primary" id="exclude-all-attachments" disabled>
+                </mat-checkbox>
+                <label for="exclude-all-attachments">Exclude All Attachments</label>
+              </mat-list-item>
+              <mat-list-item *ngIf="export.options.filter.favorites">
+                <mat-checkbox [checked]="true" color="primary" id="export-only-obs" disabled>
+                </mat-checkbox>
+                <label for="export-only-obs">Export Only Your Favorite Observations</label>
+              </mat-list-item>
+              <mat-list-item *ngIf="export.options.filter.important">
+                <mat-checkbox [checked]="true" color="primary" id="export-only-important" disabled>
+                </mat-checkbox>
+                <label for="export-only-important">Export Only Observations Flagged Important</label>
+              </mat-list-item>
+            </mat-list>
+          </div>
+        </ng-template>
+      </mat-card>
+    </div>
+    <div *ngIf="isExportOpen === true" [@flyInOut]>
+      <mat-card class="mat-elevation-z0">
+        <section>
+          <h2>What to Export</h2>
+          <ul id="export-list">
+            <li>
+              <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">
+              </mat-checkbox>
+              <label for="export-observations">Observations</label>
+            </li>
+            <li>
+              <mat-checkbox [(ngModel)]="exportLocations" color="primary" id="export-locations">
+              </mat-checkbox>
+              <label for="export-locations">Locations</label>
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>Export Format</h2>
+          <mat-chip-list [(ngModel)]="exportFormat">
+            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)" color="primary">
+              {{format}}
+            </mat-chip>
+          </mat-chip-list>
+        </section>
+        <section>
+          <h2>Time</h2>
+          <mat-form-field id="time-field" appearance="outline">
+            <mat-label>Time Range</mat-label>
+            <mat-select [(ngModel)]="exportTime">
+              <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </section>
+        <section *ngIf="exportTime === 'custom'">
+          <section>
+            <div class="time-group">
+              <div>
+                <mat-form-field appearance="outline">
+                  <mat-label>Start Date/Time</mat-label>
+                  <input matInput [ngxMatDatetimePicker]="picker" (dateChange)="onStartDate($event)">
+                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <ngx-mat-datetime-picker #picker [showSeconds]="true"></ngx-mat-datetime-picker>
+                </mat-form-field>
+              </div>
+              <div>
+                <button class="mat-stroked-button locale-button" (click)="toggleTime()">
+                  {{currentOffset}}<mat-icon>access_time</mat-icon>
+                </button>
+              </div>
+            </div>
+          </section>
+          <section>
+            <div class="time-group">
+              <div>
+                <mat-form-field appearance="outline">
+                  <mat-label>End Date/Time</mat-label>
+                  <input matInput [ngxMatDatetimePicker]="picker2" (dateChange)="onEndDate($event)">
+                  <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                  <ngx-mat-datetime-picker #picker2 [showSeconds]="true"></ngx-mat-datetime-picker>
+                </mat-form-field>
+              </div>
+              <div>
+                <button class="mat-stroked-button locale-button" (click)="toggleTime()">
+                  {{currentOffset}}<mat-icon>access_time</mat-icon>
+                </button>
+              </div>
+            </div>
+          </section>
+        </section>
+        <section>
+          <mat-expansion-panel (opened)="advancedOptionsExpanded = true" (closed)="advancedOptionsExpanded = false"
+            class="mat-elevation-z0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Advanced
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <ul id="advanced-list">
+              <li>
+                <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">
+                </mat-checkbox>
+                <label for="exclude-attachments">Exclude all attachments</label>
+              </li>
+              <li>
+                <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary" id="export-only-obs">
+                </mat-checkbox>
+                <label for="export-only-obs">Export only your favorite observations</label>
+              </li>
+              <li>
+                <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary" id="export-only-important">
+                </mat-checkbox>
+                <label for="export-only-important">Export only observations flagged important</label>
+              </li>
+            </ul>
+          </mat-expansion-panel>
+        </section>
+      </mat-card>
+    </div>
+    <br>
+  </mat-dialog-content>
+</section>
+<section class="mat-typography">
+  <mat-dialog-actions>
+    <div *ngIf="!isExportOpen">
+      <button class="mat-button" id="close-button" color="primary" mat-dialog-close="closeAction">CLOSE</button>
+      <button class="mat-button mat-primary" id="new-button" (click)="openExport()">NEW EXPORT</button>
+    </div>
+    <div *ngIf="isExportOpen" [@flyInOut]>
+      <button class="mat-button" id="cancel-button" mat-dialog-close="closeAction">CANCEL</button>
+      <button class="mat-button mat-primary" id="ok-button" (click)="exportData($event)" cdkFocusInitial>OK</button>
+    </div>
+  </mat-dialog-actions>
+</section>
