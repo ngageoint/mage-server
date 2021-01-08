@@ -1,0 +1,15 @@
+<div>
+  <mat-spinner *ngIf="!attachment?.preview" [color]="primary"></mat-spinner>
+  <img *ngIf="attachment?.preview" class="upload-preview" [src]="attachment?.preview" />
+</div>
+<div class="upload-delete" *ngIf="attachment?.preview">
+  <button mat-mini-fab color="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.markedForDelete">
+    <mat-icon>delete</mat-icon>
+  </button>
+</div>
+<div class="upload-container" *ngIf="attachment?.uploading">
+  <div class="upload-progress">
+    <div class="upload__label mat-title">Uploading {{attachment?.uploadProgress}}%</div>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+</div>

@@ -1,0 +1,117 @@
+.navigation {
+  display: flex;
+}
+
+.navigation__icon {
+  margin-right: 24px;
+}
+
+.navigation__title {
+  flex: 1 1 auto;
+}
+
+.observation {
+  margin-top: 16px;
+}
+
+.form {
+  margin: 0 8px 8px 8px;
+}
+
+.edit-content {
+  position: absolute;
+  top: 64px;
+  bottom: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.edit-content--scroll-lock {
+  overflow-y: hidden;
+}
+
+.edit-banner {
+  background: white;
+  border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.edit-banner--content {
+  background: white;
+  margin-top: 24px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.edit-banner--content mat-icon {
+  margin-left: 16px;
+  margin-right: 16px;
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: rgba(176,0,32, 0.87);
+}
+
+.edit-banner--content__text {
+  font-size: 1rem;
+  color: rgba($color: #000000, $alpha: .87);
+}
+
+.edit-banner--content__text:first-letter {
+  text-transform: uppercase;
+}
+
+.edit-banner--actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.edit-progress {
+  z-index: 1;
+}
+
+.form-mask {
+  background: black;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  opacity: .2;
+}
+
+.edit-attachments { 
+  margin: 16px 8px;
+}
+
+.edit-attachments {
+  padding: 4px;
+}
+
+.edit-attachments__grid {
+  margin-bottom: 16px;
+}
+
+.delete {
+  margin: 16px;
+}
+
+.delete__button {
+  width: 100%;
+}
+
+// Need this to override bootstrap, can be removed when bootstrap is removed
+input[type="file"] { 
+  display: none;
+}
+
+.add__button {
+  width: 100%;
+}
