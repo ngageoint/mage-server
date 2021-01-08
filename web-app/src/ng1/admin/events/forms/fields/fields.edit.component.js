@@ -41,9 +41,6 @@ class AdminFormFieldsEditController {
       name: 'numberfield',
       title: 'Number'
     },{
-      name: 'password',
-      title: 'Password'
-    },{
       name: 'radio',
       title: 'Radio Buttons'
     },{

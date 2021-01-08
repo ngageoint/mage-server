@@ -1,0 +1,23 @@
+<div mat-dialog-title>Favorited {{users?.length}} {{users?.length > 1 ? 'times' : 'time'}}</div>
+
+<mat-divider></mat-divider>
+
+<div mat-dialog-content>
+  <mat-list>
+    <div mat-subheader>Users</div>
+    <mat-list-item *ngFor="let user of users">
+      <div matListAvatar>
+        <user-avatar [user]="user"></user-avatar>
+      </div>
+      <div matLine>{{user.displayName}}</div>
+      <p matLine>{{user.email}} </p>
+      <p matLine *ngIf="user.phones?.length">{{user.phones[0].number}}</p>
+    </mat-list-item>
+  </mat-list>
+</div>
+
+<mat-divider></mat-divider>
+
+<div mat-dialog-actions class="actions">
+  <button mat-button color="primary" (click)="close()">Ok</button>
+</div>
