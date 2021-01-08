@@ -2,9 +2,10 @@ import {textField, snackbar} from 'material-components-web';
 
 class AuthorizeController {
 
-  constructor(UserService, $element) {
+  constructor(UserService, $element, $stateParams) {
     this._UserService = UserService;
     this._$element = $element;
+    this._$stateParams = $stateParams;
   }
 
   $postLink() {
@@ -22,7 +23,8 @@ class AuthorizeController {
   }
 
   authorize() {
-    this._UserService.authorize(this.token, this.uid).success(data => {
+    const token = this._$stateParams.token || this.token;
+    this._UserService.authorize(token, this.uid).success(data => {
       if (data.device.registered) {
         this.onAuthorized({device: data});
       } else {
@@ -48,7 +50,7 @@ class AuthorizeController {
   }
 }
 
-AuthorizeController.$inject = ['UserService', '$element'];
+AuthorizeController.$inject = ['UserService', '$element', '$stateParams'];
 
 export default {
   template: require('./authorize.html'),

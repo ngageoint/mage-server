@@ -38,19 +38,28 @@ import {
   MatRadioModule,
   MatCheckboxModule,
   MatSliderModule,
-  MatExpansionModule
+  MatExpansionModule,
+  MatSnackBarModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
+  MatButtonToggleModule,
+  MatProgressBarModule,
+  MatGridListModule,
+  MatDialogModule,
+  MatTabsModule,
+  MatBadgeModule
 } from '@angular/material';
+
+import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
+import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
-import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
-import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
-// import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
 import { LeafletComponent } from './map/leaflet.component';
@@ -59,22 +68,71 @@ import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 
-import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
-import { ObservationEditCheckboxComponent } from './observation/edit/checkbox/checkbox.component';
-import { ObservationEditEmailComponent } from './observation/edit/email/email.component';
-import { ObservationEditNumberComponent } from './observation/edit/number/number.component';
-import { MinValueDirective } from './observation/edit/number/min-value.directive';
-import { MaxValueDirective } from './observation/edit/number/max-value.directive';
-import { ObservationEditDropdownComponent } from './observation/edit/dropdown/dropdown.component';
-import { ObservationEditTextComponent } from './observation/edit/text/text.component';
-import { ObservationEditTextareaComponent } from './observation/edit/textarea/textarea.component';
-import { ObservationEditRadioComponent } from './observation/edit/radio/radio.component';
+import { MapClipComponent } from './map/clip/clip.component';
+import { GeometryModule } from './geometry/geometry.module';
+import { ObservationDeleteComponent } from './observation/observation-delete/observation-delete.component';
+import { ObservationListItemComponent } from './observation/observation-list/observation-list-item.component';
+import { MomentModule } from './moment/moment.module';
+import { BootstrapComponent } from './bootstrap/bootstrap.component';
+import { AttachmentComponent } from './observation/attachment/attachment.component';
+import { FilenamePipe } from './filename/filename.pipe';
+import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
+import { ObservationViewFormComponent } from './observation/observation-view/observation-view-form.component';
+import { ObservationViewComponent } from './observation/observation-view/observation-view.component';
+import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
+import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
+import { TokenInterceptorService } from './http/token-interceptor.service';
+import { ObservationFormComponent } from './observation/observation-form/observation-form.component';
+import { ObservationListComponent } from './observation/observation-list/observation-list.component';
+import { UserViewComponent } from './user/user-view/user-view.component';
+import { UserListItemComponent } from './user/user-list/user-list-item.component';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { FeedComponent } from './feed/feed.component';
+
+import {
+  mapServiceProvider,
+  eventServiceProvider,
+  localStorageServiceProvider,
+  geometryServiceProvider,
+  observationServiceProvider,
+  filterServiceProvider,
+  userServiceProvider } from './upgrade/ajs-upgraded-providers';
+
+import { 
+  ObservationViewCheckboxComponent,
+  ObservationViewDateComponent,
+  ObservationViewGeometryComponent,
+  ObservationViewMultiselectdropdownComponent,
+  ObservationViewTextComponent,
+  ObservationViewTextareaComponent
+} from './observation/observation-view/observation-view';
+
+import {
+  MinValueDirective,
+  MaxValueDirective,
+  MGRSValidatorDirective,
+  ObservationEditCheckboxComponent,
+  ObservationEditDateComponent,
+  ObservationEditSelectComponent,
+  ObservationEditEmailComponent,
+  ObservationEditGeometryComponent,
+  ObservationEditGeometryFormComponent,
+  ObservationEditGeometryMapComponent,
+  ObservationEditMultiselectComponent,
+  ObservationEditNumberComponent,
+  ObservationEditRadioComponent,
+  ObservationEditTextComponent,
+  ObservationEditTextareaComponent,
+  ObservationEditFormComponent,
+  ObservationEditComponent
+} from './observation/observation-edit/observation-edit';
+
+import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
+import { UserPopupComponent } from './user/user-popup/user-popup.component';
 
 @NgModule({
   declarations: [
     SwaggerComponent,
-    MultiSelectDropdownComponent,
-    ScrollWrapperComponent,
     ZoomComponent,
     AddObservationComponent,
     LocationComponent,
@@ -88,13 +146,46 @@ import { ObservationEditRadioComponent } from './observation/edit/radio/radio.co
     ColorPickerComponent,
     MinValueDirective,
     MaxValueDirective,
+    MGRSValidatorDirective,
+    ObservationListItemComponent,
+    ObservationEditComponent,
+    ObservationDeleteComponent,
+    ObservationEditFormComponent,
+    ObservationEditMultiselectComponent,
     ObservationEditCheckboxComponent,
-    ObservationEditDropdownComponent,
+    ObservationEditSelectComponent,
     ObservationEditEmailComponent,
     ObservationEditNumberComponent,
     ObservationEditTextComponent,
     ObservationEditTextareaComponent,
     ObservationEditRadioComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent,
+    ObservationEditDateComponent,
+    ObservationViewComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewDateComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewMultiselectdropdownComponent,
+    ObservationViewFormComponent,
+    ObservationFavoritesComponent,
+    ObservationFormComponent,
+    ObservationListComponent,
+    MapClipComponent,
+    BootstrapComponent,
+    AttachmentComponent,
+    FilenamePipe,
+    AttachUploadComponent,
+    UserAvatarComponent,
+    UserViewComponent,
+    UserListItemComponent,
+    UserListComponent,
+    FeedComponent,
+    ObservationPopupComponent,
+    UserPopupComponent
   ],
   imports: [
     BrowserModule,
@@ -105,11 +196,20 @@ import { ObservationEditRadioComponent } from './observation/edit/radio/radio.co
     ReactiveFormsModule,
     BrowserAnimationsModule,
     DragDropModule,
+    MatBadgeModule,
+    MatDialogModule,
+    MatButtonToggleModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatMomentDatetimeModule,
+    MatDatetimepickerModule,
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
+    MatTabsModule,
     MatButtonModule,
     MatCardModule,
+    MatGridListModule,
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatRadioModule,
@@ -124,6 +224,10 @@ import { ObservationEditRadioComponent } from './observation/edit/radio/radio.co
     NgxMatSelectSearchModule,
     MatChipsModule,
     MatSidenavModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+    MomentModule,
+    GeometryModule,
     ScrollingModule,
     SaturationModule,
     HueModule,
@@ -131,7 +235,14 @@ import { ObservationEditRadioComponent } from './observation/edit/radio/radio.co
     CheckboardModule
   ],
   providers: [
-    mapServiceProvider
+    mapServiceProvider,
+    userServiceProvider,
+    filterServiceProvider,
+    eventServiceProvider,
+    geometryServiceProvider,
+    observationServiceProvider,
+    localStorageServiceProvider,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
   entryComponents: [
@@ -143,21 +254,21 @@ import { ObservationEditRadioComponent } from './observation/edit/radio/radio.co
     MatSidenav,
     MatSidenavContent,
     MatSidenavContainer,
-    ObservationEditDropdownComponent, 
-    ObservationEditCheckboxComponent,
-    ObservationEditEmailComponent,
-    ObservationEditNumberComponent,
-    ObservationEditTextComponent,
-    ObservationEditTextareaComponent,
-    ObservationEditRadioComponent,
-    MultiSelectDropdownComponent,
+    BootstrapComponent,
+    FeedComponent,
+    ObservationDeleteComponent,
+    ObservationFavoritesComponent,
+    ObservationListItemComponent,
+    ObservationPopupComponent,
+    UserViewComponent,
+    UserAvatarComponent,
+    UserPopupComponent,
     LeafletComponent,
     ZoomComponent,
     SearchComponent,
     LocationComponent,
     AddObservationComponent,
     LayersControlComponent,
-    ScrollWrapperComponent,
     SwaggerComponent,
     ColorPickerComponent
   ]

@@ -35,6 +35,12 @@ mage {
   height: 100%;
 }
 
+.application {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .typeahead-dropdown-menu {
   margin-top: 0px;
 }

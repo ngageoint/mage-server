@@ -1,4 +1,4 @@
-var xmlbuilder = require('xmlbuilder')
+const xmlbuilder = require('xmlbuilder')
   , async = require('async')
   , moment = require('moment')
   , Event = require('../../../models/event')
@@ -8,9 +8,9 @@ var xmlbuilder = require('xmlbuilder')
   , workspace = config.geoserver.workspace;
 
 function getField(fieldName, form) {
-  var field;
+  let field;
   if (fieldName) {
-    for (var i = 0; i < form.fields.length; i++) {
+    for (let i = 0; i < form.fields.length; i++) {
       if (form.fields[i].name === fieldName) {
         field = form.fields[i];
         break;
@@ -22,14 +22,14 @@ function getField(fieldName, form) {
 }
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
-  let rules = [{
+  const rules = [{
     Name: {
       '#text': 'Default'
     },
     Filter: {
       PropertyIsNull: {
         PropertyName: {
-          '#text': 'form.id'
+          '#text': 'form_id'
         }
       }
     },
@@ -52,13 +52,13 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
   }];
 
   event.forms.forEach(form => {
-    let href = `${baseUrl}/ogc/svg/observation/${event._id}?formId=${form._id}&access_token=${token}`;
+    const href = `${baseUrl}/ogc/svg/observation/${event._id}?formId=${form._id}&access_token=${token}`;
 
     const primaryField = getField(form.primaryField, form);
     const secondaryField = getField(form.variantField, form);
     if (primaryField && secondaryField) {
-      const primaryProperty = cname.generateCName(`${form.name}.${primaryField.title}`);
-      const secondaryProperty = cname.generateCName(`${form.name}.${secondaryField.title}`);
+      const primaryProperty = cname.generateCName(`${form.name}_${primaryField.title}`);
+      const secondaryProperty = cname.generateCName(`${form.name}_${secondaryField.title}`);
 
       rules.push({
         Name: {
@@ -68,7 +68,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -113,7 +113,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -157,7 +157,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -192,7 +192,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
         }
       });
     } else if (primaryField) {
-      const primaryProperty = cname.generateCName(`${form.name}.${primaryField.title}`);
+      const primaryProperty = cname.generateCName(`${form.name}_${primaryField.title}`);
 
       rules.push({
         Name: {
@@ -202,7 +202,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -241,7 +241,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -280,7 +280,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
           And: {
             PropertyIsEqualTo: {
               PropertyName: {
-                '#text': 'form.id'
+                '#text': 'form_id'
               },
               Literal: {
                 '#text': form._id
@@ -326,7 +326,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event, collection) {
-  var iconHref = `${baseUrl}/ogc/svg/users/\${"user.id"}?access_token=${token}`;
+  const iconHref = `${baseUrl}/ogc/svg/users/\${"user_id"}?access_token=${token}`;
 
   sld.ele({
     NamedLayer: {
@@ -489,7 +489,7 @@ function addNamedLocationLayer(sld, baseUrl, event, collection) {
 }
 
 function create(baseUrl, layers, callback) {
-  var sld = xmlbuilder.create({
+  const sld = xmlbuilder.create({
     StyledLayerDescriptor: {
       '@xmlns': 'http://www.opengis.net/sld',
       '@xmlns:ogc': 'http://www.opengis.net/ogc',
@@ -505,7 +505,7 @@ function create(baseUrl, layers, callback) {
   }
 
   async.each(layers, function(layer, done) {
-    var components = layer.split(':');
+    const components = layer.split(':');
 
     if (components.length === 2 && components[0] === workspace) {
       layer = components[1];

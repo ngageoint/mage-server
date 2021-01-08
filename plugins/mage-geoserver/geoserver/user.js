@@ -1,4 +1,4 @@
-var async = require('async')
+const async = require('async')
   , request = require('request')
   , util = require('util')
   , log = require('winston')
@@ -6,7 +6,7 @@ var async = require('async')
   , SchemaModel = require('../models/schema')
   , LocationModel = require('../models/location');
 
-var geoserverRequest = request.defaults({
+const geoserverRequest = request.defaults({
   json: true,
   auth: {
     'username': geoserverConfig.username,
@@ -84,7 +84,7 @@ function createSchema(event) {
         mapping : "geometry"
       }
     },{
-      localName : "event.name",
+      localName : "event_name",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -94,7 +94,7 @@ function createSchema(event) {
         mapping : "properties.event.name"
       }
     },{
-      localName : "event.id",
+      localName : "event_id",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -104,7 +104,7 @@ function createSchema(event) {
         mapping : "properties.event._id"
       }
     },{
-      localName : "user.id",
+      localName : "user_id",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -114,7 +114,7 @@ function createSchema(event) {
         mapping : "properties.user._id"
       }
     },{
-      localName : "user.displayName",
+      localName : "user_displayName",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -124,7 +124,7 @@ function createSchema(event) {
         mapping : "properties.user.displayName"
       }
     },{
-      localName : "user.username",
+      localName : "user_username",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -134,7 +134,7 @@ function createSchema(event) {
         mapping : "properties.user.username"
       }
     },{
-      localName : "user.phone",
+      localName : "user_phone",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -144,7 +144,7 @@ function createSchema(event) {
         mapping : "properties.user.phone"
       }
     },{
-      localName : "user.email",
+      localName : "user_email",
       minOccurs : 0,
       maxOccurs : 1,
       type : {
@@ -225,7 +225,7 @@ function getLayer(event, callback) {
       return callback(err);
     }
 
-    var layer = body ? body.featureType : null;
+    const layer = body ? body.featureType : null;
     callback(err, layer);
   });
 }
@@ -239,7 +239,7 @@ function createLayer(event, callback) {
 
   async.series([
     function(done) {
-      var schema = createSchema(event);
+      const schema = createSchema(event);
       SchemaModel.createSchema(schema, done);
     },
     function(done) {
@@ -266,7 +266,7 @@ function createLayer(event, callback) {
 }
 
 function createLayerBody(event) {
-  var layer =  {
+  const layer =  {
     featureType: {
       name: 'users' + event._id,
       title: event.name + ' Users',
@@ -290,7 +290,7 @@ function createLayerBody(event) {
       store: {
         name: 'cite:mage'
       },
-      cqlFilter: "\"event.id\" = " + event._id,
+      cqlFilter: "\"event_id\" = " + event._id,
       attributes: {
         attribute: [{
           name: 'geometry',
@@ -335,49 +335,50 @@ function createLayerBody(event) {
           nillable: true,
           binding: 'java.lang.Double'
         },{
-          name: 'event.id',
+          name: 'event_id',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.Integer'
         },{
-          name: 'event.name',
+          name: 'event_name',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         },{
-          name: 'user.id',
+          name: 'user_id',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         },{
-          name: 'user.displayName',
+          name: 'user_displayName',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         },{
-          name: 'user.username',
+          name: 'user_username',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         },{
-          name: 'user.phone',
+          name: 'user_phone',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         },{
-          name: 'user.email',
+          name: 'user_email',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
           binding: 'java.lang.String'
         }]
       }
+      // TODO disable WMS time for now, geoserver support is lacking
       // metadata: {
       //   entry: [{
       //     '@key': 'time',

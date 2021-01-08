@@ -195,8 +195,16 @@ exports.getUserByUsername = function (username, callback) {
   });
 };
 
-exports.getUserByAuthenticationId = function (authenticationId) {
-  return User.findOne({ authenticationId: authenticationId }).populate('authenticationId').exec();
+exports.getUserByAuthenticationId = function(id) {
+  return User.findOne({ authenticationId: id} ).exec();
+}
+
+exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
+  Authentication.getAuthenticationByStrategy(strategy, uid, function(err, authentication) {
+    if (err || !authentication) return callback(err);
+
+    User.findOne({authenticationId: authentication._id}).populate('roleId').populate('authenticationId').exec(callback);
+  });
 }
 
 exports.count = function (options, callback) {

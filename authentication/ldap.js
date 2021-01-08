@@ -40,7 +40,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
   },
   function(profile, done) {
     const username = profile[strategyConfig.ldapUsernameField];
-    User.getUserByAuthenticationId('ldap', username, function(err, user) {
+    User.getUserByAuthenticationStrategy('ldap', username, function(err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -60,13 +60,13 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
             }
           };
 
-          User.createUser(user, function(err, newUser) {
+          new api.User().create(user).then(newUser => {
             if (newUser.active) {
-              done(err, newUser);
+              done(null, newUser);
             } else {
-              return done(null, newUser, { status: 403 });
+              done(null, newUser, { status: 403 });
             }
-          });
+          }).catch(err => done(err));
         });
       } else {
         return done(null, user);
@@ -169,7 +169,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     provision.check('ldap'),
     parseLoginMetadata,
     function(req, res, next) {
-      new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
         if (err) return next(err);
 
         res.json({

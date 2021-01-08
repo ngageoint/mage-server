@@ -1,7 +1,6 @@
 const fs = require('fs-extra'),
   path = require('path'),
-  GP = require('@ngageoint/geopackage'),
-  GeoPackageAPI = require('@ngageoint/geopackage').GeoPackage,
+  GeoPackageAPI = require('@ngageoint/geopackage').GeoPackageAPI,
   FeatureTile = require('@ngageoint/geopackage').FeatureTiles,
   ShadedFeaturesTile = require('@ngageoint/geopackage').ShadedFeaturesTile,
   environment = require('../environment/env');
@@ -101,21 +100,22 @@ async function tile(layer, tableName, { stroke, width: lineWidth, fill }, { x, y
       if (!featureDao) return;
       const ft = new FeatureTile(featureDao, width, height);
 
-      ft.setPointColor(stroke)
-      ft.setLineColor(stroke);
-      ft.setPolygonColor(stroke);
+      ft.pointColor = stroke;
+      ft.lineColor = stroke;
+      ft.polygonColor = stroke;
 
-      ft.setPolygonFillColor(fill);
+      ft.polygonFillColor = fill;
 
-      ft.setPointRadius(lineWidth);
-      ft.setPolygonStrokeWidth(lineWidth);
-      ft.setLineStrokeWidth(lineWidth);
+      ft.pointRadius = lineWidth;
+      ft.polygonStrokeWidth = lineWidth;
+      ft.lineStrokeWidth = lineWidth;
 
-      ft.setMaxFeaturesPerTile(10000);
+      ft.maxFeaturesPerTile = 10000;
 
       const shadedFeaturesTile = new ShadedFeaturesTile();
-      ft.setMaxFeaturesTileDraw(shadedFeaturesTile);
+      ft.maxFeaturesTileDraw = shadedFeaturesTile;
       tile = await ft.drawTile(x, y, z);
+
       break;
   }
 

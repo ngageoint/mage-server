@@ -34,7 +34,7 @@ class FormFeedController {
       this.event = new this.Event(event);
   
       if (this.$stateParams.formId) {
-        var form = _.find(event.forms, form => {
+        const form = _.find(event.forms, form => {
           return form.id.toString() === this.$stateParams.formId;
         });
         this.form = new this.Form(form);
@@ -44,8 +44,8 @@ class FormFeedController {
         this.event.forms = [this.form];
         this.UserService.getMyself().then(myself => {
           this.observations = [];
-          for (var i = 0; i < 3; i++) {
-            var observation = this.createObservation(i, Number(this.$stateParams.formId), myself.id);
+          for (let i = 0; i < 3; i++) {
+            const observation = this.createObservation(i, Number(this.$stateParams.formId), myself);
             observation.style = {
               iconUrl: this.getObservationIconUrl(observation, form)
             };
@@ -90,17 +90,19 @@ class FormFeedController {
   }
 
   getObservationIconUrl(observation, form) {
+    let primaryField;
+    let variantField;
     if (observation.properties.forms.length) {
-      var firstForm = observation.properties.forms[0];
-      var primaryField = firstForm[form.primaryField];
-      var variantField = firstForm[form.variantField];
+      const firstForm = observation.properties.forms[0];
+      primaryField = firstForm[form.primaryField];
+      variantField = firstForm[form.variantField];
     }
 
     return this.getObservationIconUrlForEvent(this.$stateParams.eventId, this.$stateParams.formId, primaryField, variantField);
   }
 
   getObservationIconUrlForEvent(eventId, formId, primary, variant) {
-    var url = '/api/events/' + eventId + '/icons';
+    let url = '/api/events/' + eventId + '/icons';
 
     if (formId) {
       url += '/' + formId;
@@ -117,7 +119,7 @@ class FormFeedController {
     return url + '?access_token=' + this.LocalStorageService.getToken();
   }
 
-  createObservation(observationId, formId, userId) {
+  createObservation(observationId, formId, user) {
     return {
       id: observationId,
       createdAt: moment(new Date()).toISOString(),
@@ -134,7 +136,7 @@ class FormFeedController {
         forms: [this.createForm(formId)]
       },
       type: 'Feature',
-      userId: userId
+      user: user
     };
   }
 
@@ -183,8 +185,8 @@ class FormFeedController {
 
   createMultiSelectField(form, field) {
     if (field.choices.length) {
-      var choices = new Set();
-      for (var i = 0; i < Math.floor(Math.random() * field.choices.length); i++) {
+      const choices = new Set();
+      for (let i = 0; i < Math.floor(Math.random() * field.choices.length); i++) {
         choices.add(field.choices[Math.floor(Math.random() * field.choices.length)].title);
       }
 
@@ -195,7 +197,7 @@ class FormFeedController {
   }
 
   createCheckbox(form, field) {
-    var randomChecked = Math.floor(Math.random() * 2);
+    const randomChecked = Math.floor(Math.random() * 2);
     form[field.name] = randomChecked === 1 ? field.title : '';
   }
 
@@ -222,7 +224,7 @@ class FormFeedController {
       this.saving = false;
       this.unSavedChanges = false;
     }, response => {
-      var data = response.data || {};
+      const data = response.data || {};
       this.showError({
         title:  'Error Saving Form',
         message: data.errors ?

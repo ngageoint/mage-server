@@ -1,6 +1,0 @@
-<mat-form-field appearance="fill">
-  <mat-label>{{field.title}}</mat-label>
-  <input matInput type="email" name="email" [(ngModel)]="field.value" [required]="field.required" #email="ngModel" email>
-  <mat-error *ngIf="email.errors?.required">You must enter a value</mat-error>
-  <mat-error *ngIf="email.errors?.email">Not a valid email</mat-error>
-</mat-form-field>

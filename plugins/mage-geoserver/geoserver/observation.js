@@ -1,4 +1,4 @@
-var async = require('async')
+const async = require('async')
   , request = require('request')
   , util = require('util')
   , log = require('winston')
@@ -6,7 +6,7 @@ var async = require('async')
   , mapper = require('./attributeMapper')
   , SchemaModel = require('../models/schema');
 
-var geoserverRequest = request.defaults({
+const geoserverRequest = request.defaults({
   json: true,
   auth: {
     'username': geoserverConfig.username,
@@ -39,11 +39,11 @@ exports.updateLayer = function(event) {
 
   async.parallel([
     function(done) {
-      var descriptors = mapper.descriptorsForEvent(event);
+      const descriptors = mapper.descriptorsForEvent(event);
       SchemaModel.updateAttributeDescriptors(event, descriptors, done);
     },
     function(done) {
-      var layer = {
+      const layer = {
         featureType: {
           name: 'observations' + event._id,
           title: event.name + ' Observations',
@@ -128,7 +128,7 @@ function getLayer(event, callback) {
       return callback(err);
     }
 
-    var layer = body ? body.featureType : null;
+    const layer = body ? body.featureType : null;
     callback(err, layer);
   });
 }
@@ -142,7 +142,7 @@ function createLayer(event, callback) {
 
   async.series([
     function(done) {
-      var schema = {
+      const schema = {
         typeName: 'observations' + event._id,
         userData: {
           collection: 'observations'
@@ -163,7 +163,7 @@ function createLayer(event, callback) {
     },
     function(done) {
       // TODO add time dimension
-      var layer =  {
+      const layer =  {
         featureType: {
           name: 'observations' + event._id,
           title: event.name + ' Observations',
@@ -187,8 +187,9 @@ function createLayer(event, callback) {
           store: {
             name: 'mage:mage'
           },
-          cqlFilter: "\"event.id\" = " + event._id,
+          cqlFilter: "\"event_id\" = " + event._id,
           attributes: mapper.attributesForEvent(event)
+          // TODO disable WMS time for now, geoserver support is lacking
           // metadata: {
           //   entry: [{
           //     '@key': 'time',

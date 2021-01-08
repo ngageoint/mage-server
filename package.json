@@ -1,6 +1,6 @@
 {
   "name": "mage-server",
-  "version": "5.4.3",
+  "version": "5.4.4",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [
@@ -18,12 +18,12 @@
   ],
   "homepage": "https://www1.nga.mil",
   "engines": {
-    "node": ">= 8.x <= 10.x",
+    "node": ">= 8.x <= 14.x",
     "npm": ">= 5.x"
   },
   "dependencies": {
     "@mapbox/togeojson": "0.16.0",
-    "@ngageoint/geopackage": "3.0.0-beta.1",
+    "@ngageoint/geopackage": "3.0.7",
     "@turf/centroid": "4.3.0",
     "@turf/kinks": "4.3.0",
     "adm-zip": "0.4.9",
@@ -90,8 +90,7 @@
     "sinon": "7.5.0",
     "sinon-chai": "3.3.0",
     "sinon-mongoose": "2.3.0",
-    "superagent": "5.0.6",
-    "supertest": "4.0.2",
+    "supertest": "6.0.1",
     "typescript": "3.7.5",
     "yaml": "^1.7.1"
   },

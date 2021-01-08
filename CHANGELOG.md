@@ -8,7 +8,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
-* Web should not prompt for device uid, if device admin aprroval is not enabled.
+
+## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
+
+##### Features
+* Support for "Feature Style" extension, upgrade to newest version of GeoPackage JS.
+
+##### Bug Fixes
+* Change Graphics Magick call to orient image attachments such that exif metadata is not lost.
+* Web should not prompt for device uid, if device admin approval is not enabled.
+* Fix bug in 3rd party authentication which was not properly adding authenticated users.
 
 ## [5.4.3](https://github.com/ngageoint/mage-server/releases/tag/5.4.3)
 

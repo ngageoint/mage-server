@@ -14,22 +14,11 @@ class LdapSigninController {
   }
 
   signin() {
-    this.UserService.ldapSignin({ username: this.username, password: this.password }).then(response => {
-      const user = response.user;
-
-      // User has an account, but its not active
-      if (!user.active) {
-        this.showStatus = true;
-        this.statusTitle = 'Account Created';
-        this.statusMessage = 'Please contact a MAGE administrator to activate your account.';
-        this.snackbar.open();
-        return;
-      }
-
+    this.UserService.ldapSignin({ username: this.username, password: this.password }).then(({ user, token }) => {
       this.onSignin({
         $event: {
           user: user,
-          token: response.token, 
+          token: token, 
           strategy: this.strategy.name
         }
       });
