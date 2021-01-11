@@ -46,6 +46,12 @@ exports.initialize = function (app, done) {
    
     const intervalMs = exportSweepInterval*1000;
     log.info('export-file-sweeper: Initializing job to check ' + exportDirectory + ' for expired export files every ' + intervalMs + 'ms');
+
+    log.debug('Checking to see if we need to create ' + exportDirectory);
+    if (!fs.existsSync(exportDirectory)) {
+      log.info('Creating directory ' + exportDirectory);
+      fs.mkdirSync(exportDirectory);
+    }
     
     ProcessSyncer.sync();
     sweep();
