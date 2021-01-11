@@ -298,6 +298,8 @@ GeoPackage.prototype.addLocationsToGeoPackage = function (geopackage, lastLocati
                   }
                   const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations' + location.userId.toString());
                 });
+              }).catch(err => {
+                reject(err);
               });
           }, Promise.resolve())
             .then(function () {
