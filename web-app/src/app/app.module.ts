@@ -39,25 +39,29 @@ import {
   MatCheckboxModule,
   MatSliderModule,
   MatExpansionModule,
-  MatTableModule,
-  MatDialogModule,
-  MatPaginatorModule,
-  MatSortModule,
   MatSnackBarModule,
   MatDatepickerModule,
-  MatNativeDateModule
+  MatNativeDateModule,
+  MatButtonToggleModule,
+  MatProgressBarModule,
+  MatGridListModule,
+  MatDialogModule,
+  MatTabsModule,
+  MatBadgeModule,
+  MatTableModule,
+  MatPaginatorModule,
+  MatSortModule
 } from '@angular/material';
+
+import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
+import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
 
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
-import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
-import { DropdownComponent } from './observation/edit/dropdown/dropdown.component';
-import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
-// import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -71,16 +75,72 @@ import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent } from './export/exports.component';
 import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
 
-import { localStorageServiceProvider, mapServiceProvider, filterServiceProvider, eventServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { MapClipComponent } from './map/clip/clip.component';
+import { GeometryModule } from './geometry/geometry.module';
+import { ObservationDeleteComponent } from './observation/observation-delete/observation-delete.component';
+import { ObservationListItemComponent } from './observation/observation-list/observation-list-item.component';
+import { MomentModule } from './moment/moment.module';
+import { BootstrapComponent } from './bootstrap/bootstrap.component';
+import { AttachmentComponent } from './observation/attachment/attachment.component';
+import { FilenamePipe } from './filename/filename.pipe';
+import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
+import { ObservationViewFormComponent } from './observation/observation-view/observation-view-form.component';
+import { ObservationViewComponent } from './observation/observation-view/observation-view.component';
+import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
+import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
+import { ObservationFormComponent } from './observation/observation-form/observation-form.component';
+import { ObservationListComponent } from './observation/observation-list/observation-list.component';
+import { UserViewComponent } from './user/user-view/user-view.component';
+import { UserListItemComponent } from './user/user-list/user-list-item.component';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { FeedComponent } from './feed/feed.component';
+
+import {
+  mapServiceProvider,
+  eventServiceProvider,
+  localStorageServiceProvider,
+  geometryServiceProvider,
+  observationServiceProvider,
+  filterServiceProvider,
+  userServiceProvider } from './upgrade/ajs-upgraded-providers';
+
+import { 
+  ObservationViewCheckboxComponent,
+  ObservationViewDateComponent,
+  ObservationViewGeometryComponent,
+  ObservationViewMultiselectdropdownComponent,
+  ObservationViewTextComponent,
+  ObservationViewTextareaComponent
+} from './observation/observation-view/observation-view';
+
+import {
+  MinValueDirective,
+  MaxValueDirective,
+  MGRSValidatorDirective,
+  ObservationEditCheckboxComponent,
+  ObservationEditDateComponent,
+  ObservationEditSelectComponent,
+  ObservationEditEmailComponent,
+  ObservationEditGeometryComponent,
+  ObservationEditGeometryFormComponent,
+  ObservationEditGeometryMapComponent,
+  ObservationEditMultiselectComponent,
+  ObservationEditNumberComponent,
+  ObservationEditRadioComponent,
+  ObservationEditTextComponent,
+  ObservationEditTextareaComponent,
+  ObservationEditFormComponent,
+  ObservationEditComponent
+} from './observation/observation-edit/observation-edit';
+
+import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
+import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 
 @NgModule({
   declarations: [
     SwaggerComponent,
-    DropdownComponent,
-    MultiSelectDropdownComponent,
-    ScrollWrapperComponent,
     ZoomComponent,
     AddObservationComponent,
     LocationComponent,
@@ -91,6 +151,49 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
+    ColorPickerComponent,
+    MinValueDirective,
+    MaxValueDirective,
+    MGRSValidatorDirective,
+    ObservationListItemComponent,
+    ObservationEditComponent,
+    ObservationDeleteComponent,
+    ObservationEditFormComponent,
+    ObservationEditMultiselectComponent,
+    ObservationEditCheckboxComponent,
+    ObservationEditSelectComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent,
+    ObservationEditDateComponent,
+    ObservationViewComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewDateComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewMultiselectdropdownComponent,
+    ObservationViewFormComponent,
+    ObservationFavoritesComponent,
+    ObservationFormComponent,
+    ObservationListComponent,
+    MapClipComponent,
+    BootstrapComponent,
+    AttachmentComponent,
+    FilenamePipe,
+    AttachUploadComponent,
+    UserAvatarComponent,
+    UserViewComponent,
+    UserListItemComponent,
+    UserListComponent,
+    FeedComponent,
+    ObservationPopupComponent,
+    UserPopupComponent,
     ColorPickerComponent,
     ExportsComponent,
     ExportMetadataDialogComponent,
@@ -105,11 +208,20 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ReactiveFormsModule,
     BrowserAnimationsModule,
     DragDropModule,
+    MatBadgeModule,
+    MatDialogModule,
+    MatButtonToggleModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatMomentDatetimeModule,
+    MatDatetimepickerModule,
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
+    MatTabsModule,
     MatButtonModule,
     MatCardModule,
+    MatGridListModule,
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatRadioModule,
@@ -124,6 +236,10 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     NgxMatSelectSearchModule,
     MatChipsModule,
     MatSidenavModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+    MomentModule,
+    GeometryModule,
     ScrollingModule,
     SaturationModule,
     HueModule,
@@ -142,10 +258,13 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
   ],
   providers: [
     mapServiceProvider,
-    localStorageServiceProvider,
-    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true },
+    userServiceProvider,
     filterServiceProvider,
-    eventServiceProvider
+    eventServiceProvider,
+    geometryServiceProvider,
+    observationServiceProvider,
+    localStorageServiceProvider,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
   entryComponents: [
@@ -157,15 +276,21 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     MatSidenav,
     MatSidenavContent,
     MatSidenavContainer,
-    DropdownComponent, 
-    MultiSelectDropdownComponent,
+    BootstrapComponent,
+    FeedComponent,
+    ObservationDeleteComponent,
+    ObservationFavoritesComponent,
+    ObservationListItemComponent,
+    ObservationPopupComponent,
+    UserViewComponent,
+    UserAvatarComponent,
+    UserPopupComponent,
     LeafletComponent,
     ZoomComponent,
     SearchComponent,
     LocationComponent,
     AddObservationComponent,
     LayersControlComponent,
-    ScrollWrapperComponent,
     SwaggerComponent,
     ColorPickerComponent,
     ExportsComponent,

@@ -8,8 +8,4 @@ angular.module('mage')
   .component('userAvatarEdit', avatarEdit)
   .component('userIconEdit', iconEdit)
   .component('userProfile', profile)
-  .directive('avatarUser', require('./user-avatar.directive'))
-  .directive('iconUser', require('./user-icon.directive'))
-  .directive('locationPopup', require('./user-popup.directive'))
-  .directive('userNewsItem', require('./user-feed.directive'))
-  .directive('userView', require('./user-view.directive'));
+  .directive('iconUser', require('./user-icon.directive'));

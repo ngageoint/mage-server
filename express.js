@@ -1,6 +1,7 @@
 const express = require("express")
   , crypto = require('crypto')
   , cookieSession = require('cookie-session')
+  , bodyParser = require('body-parser')
   , fs = require('fs')
   , passport = require('passport')
   , path = require('path')
@@ -49,7 +50,7 @@ app.enable('trust proxy');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(require('body-parser')({
+app.use(bodyParser({
   limit: '16mb',
   keepExtensions: true
 }));

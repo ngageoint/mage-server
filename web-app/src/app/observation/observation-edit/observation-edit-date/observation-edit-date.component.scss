@@ -1,0 +1,23 @@
+.datetime {
+  display: flex;
+  margin: 0 -8px;
+  align-items: flex-start;
+}
+
+.date, .time {
+  flex: 1 1 0;
+  padding: 0 8px;
+}
+
+:host ::ng-deep .mat-form-field-infix {
+  width: auto;
+}
+
+:host ::ng-deep mat-icon {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 16px;
+}

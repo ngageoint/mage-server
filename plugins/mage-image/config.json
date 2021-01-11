@@ -1,5 +1,5 @@
 {
-  "enable": false,
+  "enable": true,
   "image": {
     "orient": true,
     "thumbSizes": [150, 320, 800, 1024, 2048],

@@ -1,0 +1,53 @@
+<div>
+  <div class="chip-type">
+    <span class="chip-type__label">GEOMETRY</span>
+    <mat-chip-list selectable="true">
+      <mat-chip color="primary" [selected]="selectedShapeType === 'Point'" (click)="shapeTypeChanged('Point')">Point</mat-chip>
+      <mat-chip color="primary" [selected]="selectedShapeType === 'LineString'" (click)="shapeTypeChanged('LineString')">Line</mat-chip>
+      <mat-chip color="primary" [selected]="selectedShapeType === 'Polygon'" (click)="shapeTypeChanged('Polygon')">Polygon</mat-chip>
+      <mat-chip color="primary" [selected]="selectedShapeType === undefined" (click)="shapeTypeChanged()">None</mat-chip>
+    </mat-chip-list>
+  </div>
+
+  <div class="chip-type">
+    <span class="chip-type__label mat-subtitle-2">MANUAL EDIT</span>
+    <mat-chip-list selectable="true">
+      <mat-chip color="primary" [selected]="coordinateSystem === 'wgs84'" (click)="coordinateSystemChange('wgs84')">Lat/Lng</mat-chip>
+      <mat-chip color="primary" [selected]="coordinateSystem === 'mgrs'" (click)="coordinateSystemChange('mgrs')">MGRS</mat-chip>
+    </mat-chip-list>
+  </div>
+
+  <div [hidden]="coordinateSystem === 'mgrs'">
+    <div class="coordinates">
+      <div class="coordinate">
+        <mat-form-field appearance="standard">
+          <mat-label>Latitude</mat-label>
+          <input matInput type="number" step="any" min="-90" max="90" [(ngModel)]="latitude" (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates">
+        </mat-form-field>
+      </div>
+      <div class="coordinate">
+        <mat-form-field appearance="standard">
+          <mat-label>Longitude</mat-label>
+          <input matInput type="number" step="any" min="-180" max="180" [(ngModel)]="longitude" (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates">
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div [hidden]="coordinateSystem === 'wgs84'">
+    <div class="coordinates">
+      <div class="coordinate">
+        <mat-form-field appearance="standard">
+          <mat-label>MGRS</mat-label>
+          <input matInput type="text" [(ngModel)]="mgrs" (ngModelChange)="onMgrsChange()" [disabled]="!feature?.geometry?.coordinates" #mgrsModel="ngModel" mgrs>
+          <mat-error>Invalid MGRS</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-location__actions">
+    <button mat-button type="button" color="primary" (click)="onCancel($event)">Cancel</button>
+    <button mat-flat-button type="button" color="primary" (click)="onSave($event)" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
+  </div>
+</div>
