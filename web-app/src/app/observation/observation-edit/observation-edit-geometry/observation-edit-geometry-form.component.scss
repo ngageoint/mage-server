@@ -1,0 +1,39 @@
+.chip-type {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chip-type__label {
+  margin-right: 16px;
+  font: 500 14px/28px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.coordinates {
+  display: flex;
+  margin: 0 -8px;
+}
+
+.coordinate {
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 0 8px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+::ng-deep .mat-form-field-infix {
+  width: auto;
+}
+
+.edit-location__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-location__actions > button + button {
+  margin-left: 8px;
+}

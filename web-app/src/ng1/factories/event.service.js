@@ -1,12 +1,13 @@
 var _ = require('underscore')
   , angular = require('angular')
   , moment = require('moment');
+const { Observation } = require('./observation.resource');
 
 module.exports = EventService;
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', '$httpParamSerializer', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'LocalStorageService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', '$httpParamSerializer', 'Observation', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'LocalStorageService'];
 
-function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Event, ObservationService, LocationService, LayerService, FilterService, PollingService, LocalStorageService) {
+function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Observation, ObservationService, LocationService, LayerService, FilterService, PollingService, LocalStorageService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
@@ -233,9 +234,13 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
   }
 
   function saveObservation(observation) {
-    var event = eventsById[observation.eventId];
-    var isNewObservation = !observation.id;
-    return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
+    const resource = new Observation(observation)
+
+    const event = eventsById[resource.eventId];
+    const isNewObservation = !resource.id;
+    const promise = ObservationService.saveObservationForEvent(event, resource)
+    
+    promise.then(function(observation) {
       event.observationsById[observation.id] = observation;
 
       // Check if this new observation passes the current filter
@@ -244,6 +249,8 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
       }
     });
+
+    return promise;
   }
 
   function addObservationFavorite(observation) {

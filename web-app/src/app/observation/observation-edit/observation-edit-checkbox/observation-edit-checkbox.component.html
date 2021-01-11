@@ -1,0 +1,6 @@
+<div class="checkbox-content">
+  <mat-checkbox [(ngModel)]="field.value" [required]="field.required" color="primary" #checkbox="ngModel">{{field.title + (field.required ? ' *' : '')}}</mat-checkbox>
+  <mat-error>
+    <span [hidden]="!checkbox.invalid || !checkbox.touched">{{field.title}} is required</span>
+  </mat-error>
+</div>

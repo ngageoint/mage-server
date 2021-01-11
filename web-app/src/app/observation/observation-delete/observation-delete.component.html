@@ -1,0 +1,13 @@
+<div mat-dialog-title>Delete Observation</div>
+<div mat-dialog-content>
+  <p>Are you sure you would like to delete the following observation?</p>
+
+  <div class="observation">
+    <observation-list-item [observation]="observation" [form]="event.forms[0]" [event]="event"></observation-list-item>
+    <div class="delete-mask"></div>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">Cancel</button>
+  <button mat-flat-button color="warn" (click)="delete()">Delete</button>
+</div>

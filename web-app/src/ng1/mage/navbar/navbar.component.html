@@ -17,7 +17,7 @@
       <div class="mage-tooltip">
         <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/profile'">
           <span class="mdc-button__icon">
-          <span avatar-user="$ctrl.myself" avatar-width="25" avatar-height="25"></span>
+            <user-avatar [user]="$ctrl.myself" avatar-width="25" avatar-height="25"></user-avatar>
           </span>
           <span style="padding-left: 10px;" class="mdc-button__label">{{$ctrl.myself.displayName}}</span>
         </button>

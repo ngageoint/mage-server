@@ -59,8 +59,7 @@
 
               <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                 <div class="col-md-8">
-                  <div class="pull-left right-gap" avatar-user="u" avatar-width="40" avatar-height="40"></div>
-
+                  <user-avatar class="pull-left right-gap" [user]="u" avatar-width="40" avatar-height="40"></user-avatar>
                   <div class="strong">{{u.displayName}}</div>
                   <div class="muted">{{u.email}}</div>
                 </div>

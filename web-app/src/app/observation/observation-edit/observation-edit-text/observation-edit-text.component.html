@@ -1,0 +1,5 @@
+<mat-form-field appearance="fill">
+  <mat-label>{{field.title}}</mat-label>
+  <input matInput id="field.name" [(ngModel)]="field.value" [required]="field.required" #text="ngModel">
+  <mat-error *ngIf="text.errors?.required">You must enter a value</mat-error>
+</mat-form-field>

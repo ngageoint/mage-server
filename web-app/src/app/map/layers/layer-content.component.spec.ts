@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LayerContentComponent } from './layer-content.component';
-import { MatFormFieldModule, MatSliderModule, MatIconModule, MatCardModule, MatInputModule, MatSlideToggleChange, MatSliderChange } from '@angular/material';
+import { MatFormFieldModule, MatSliderModule, MatIconModule, MatCardModule, MatInputModule } from '@angular/material';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
 import { FormsModule } from '@angular/forms';

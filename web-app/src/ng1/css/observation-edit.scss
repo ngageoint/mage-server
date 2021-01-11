@@ -14,96 +14,6 @@
   stroke: white;
 }
 
-.observation-edit-content {
-  position: absolute;
-  top: 64px;
-  bottom: 0;
-  width: 100%;
-  overflow-y: auto;
-}
-
-.observation-edit-content--scroll-lock {
-  overflow-y: hidden;
-}
-
-.observation-edit-banner {
-  background: white;
-  border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  transition-property: max-height, opacity;
-  transition-duration: 250ms;
-}
-
-.observation-edit-banner.ng-enter,
-.observation-edit-banner.ng-leave.ng-leave-active {
-  max-height: 0;
-	opacity: 0;
-}
-
-.observation-edit-banner.ng-leave,
-.observation-edit-banner.ng-enter.ng-enter-active {
-  max-height: 500px;
-	opacity: 1;
-}
-
-.observation-edit-banner--content {
-  background: white;
-  margin-top: 24px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.observation-edit-banner--content__text {
-  font-size: 1rem;
-  color: rgba($color: #000000, $alpha: .87);
-}
-
-.observation-edit-banner--content__text:first-letter {
-  text-transform: uppercase;
-}
-
-.observation-edit-banner--content mat-icon {
-  margin-left: 16px;
-  margin-right: 16px;
-  font-size: 40px;
-  width: 40px;
-  height: 40px;
-  color: rgba(176,0,32, 0.87);
-}
-
-.observation-edit-banner--actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-right: 8px;
-  margin-bottom: 8px;
-}
-
-.form-mask {
-  background: black;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  transition: opacity ease-in-out 0.8s;
-  opacity: .2;
-}
-
-.form-mask.ng-enter,
-.form-mask.ng-leave.ng-leave-active {
-  opacity: 0;
-}
-
-.form-mask.ng-leave,
-.form-mask.ng-enter.ng-enter-active {
-  opacity: .2;
-}
-
 geometry-edit {
   display: inline-block;
 }
@@ -216,12 +126,4 @@ geometry-edit {
   overflow: hidden;
   position: absolute;
   z-index: -1;
-}
-
-.delete-observation-button-container {
-  margin: 16px;
-}
-
-.delete-observation-button {
-  width: 100%;
 }
