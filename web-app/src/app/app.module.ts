@@ -94,7 +94,7 @@ import { ObservationListComponent } from './observation/observation-list/observa
 import { UserViewComponent } from './user/user-view/user-view.component';
 import { UserListItemComponent } from './user/user-list/user-list-item.component';
 import { UserListComponent } from './user/user-list/user-list.component';
-import { FeedComponent } from './feed/feed.component';
+import { FeedPanelComponent } from './feed-panel/feed-panel.component';
 
 import {
   mapServiceProvider,
@@ -191,7 +191,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     UserViewComponent,
     UserListItemComponent,
     UserListComponent,
-    FeedComponent,
+    FeedPanelComponent,
     ObservationPopupComponent,
     UserPopupComponent,
     ColorPickerComponent,
@@ -277,7 +277,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     MatSidenavContent,
     MatSidenavContainer,
     BootstrapComponent,
-    FeedComponent,
+    FeedPanelComponent,
     ObservationDeleteComponent,
     ObservationFavoritesComponent,
     ObservationListItemComponent,

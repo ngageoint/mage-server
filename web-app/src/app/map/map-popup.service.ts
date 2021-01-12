@@ -6,7 +6,7 @@ import { ObservationPopupComponent } from '../observation/observation-popup/obse
 @Injectable({
   providedIn: 'root'
 })
-export class PopupService {
+export class MapPopupService {
 
   constructor(
     private componentFactoryResolver: ComponentFactoryResolver,

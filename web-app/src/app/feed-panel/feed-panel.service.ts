@@ -12,7 +12,7 @@ export interface UserEvent {
 @Injectable({
   providedIn: 'root'
 })
-export class FeedService {
+export class FeedPanelService {
   private viewUserSource = new Subject<UserEvent>();
   private viewObservationSource = new Subject<ObservationEvent>();
 

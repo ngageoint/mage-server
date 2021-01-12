@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FeedService } from './feed.service';
+import { FeedPanelService } from './feed-panel.service';
 
-describe('FeedService', () => {
+describe('FeedPanelService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: FeedService = TestBed.get(FeedService);
+    const service: FeedPanelService = TestBed.get(FeedPanelService);
     expect(service).toBeTruthy();
   });
 });

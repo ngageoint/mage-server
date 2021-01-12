@@ -1,7 +1,7 @@
 import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
 import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import * as moment from 'moment'
-import { FeedService } from 'src/app/feed/feed.service'
+import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service'
 import { MatRipple } from '@angular/material'
 import { animate, style, transition, trigger } from '@angular/animations'
 
@@ -49,7 +49,7 @@ export class ObservationListItemComponent implements OnChanges {
     @Inject(UserService) private userService: any,
     @Inject(EventService) private eventService: any,
     @Inject(LocalStorageService) private localStorageService: any,
-    private feedService: FeedService) {
+    private feedPanelService: FeedPanelService) {
 
   }
 
@@ -109,7 +109,7 @@ export class ObservationListItemComponent implements OnChanges {
 
   viewObservation(): void {    
     this.onObservationLocationClick()
-    this.feedService.viewObservation(this.observation)
+    this.feedPanelService.viewObservation(this.observation)
   }
 
   onObservationLocationClick(): void {
