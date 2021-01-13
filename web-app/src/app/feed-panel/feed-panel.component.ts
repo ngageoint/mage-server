@@ -1,14 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog, MatTabChangeEvent, MatTabGroup } from '@angular/material';
+import { MatDialog, MatTabGroup } from '@angular/material';
 import * as moment from 'moment';
 import { EventService, FilterService, MapService, ObservationService, UserService } from '../upgrade/ajs-upgraded-providers';
-import { FeedService } from './feed.service';
+import { FeedPanelService } from './feed-panel.service';
 
 @Component({
-  selector: 'app-feed',
-  templateUrl: './feed.component.html',
-  styleUrls: ['./feed.component.scss'],
+  selector: 'feed-panel',
+  templateUrl: './feed-panel.component.html',
+  styleUrls: ['./feed-panel.component.scss'],
   animations: [
     trigger('slide', [
       transition(':enter', [
@@ -21,7 +21,7 @@ import { FeedService } from './feed.service';
     ])
   ]
 })
-export class FeedComponent implements OnInit, OnChanges {
+export class FeedPanelComponent implements OnInit, OnChanges {
   @Input() event: any
   @Input() observationLocation: any
   @Input() observationsChanged: any
@@ -51,7 +51,7 @@ export class FeedComponent implements OnInit, OnChanges {
 
   constructor(
     public dialog: MatDialog,
-    private feedService: FeedService,
+    private feedPanelService: FeedPanelService,
     @Inject(MapService) private mapService: any,
     @Inject(UserService) private userService: any,
     @Inject(FilterService) private filterService: any,
@@ -61,7 +61,7 @@ export class FeedComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.eventService.addObservationsChangedListener(this)
 
-    this.feedService.viewUser$.subscribe(event => {
+    this.feedPanelService.viewUser$.subscribe(event => {
       this.viewUser = event.user
       this.newObservation = null
       this.editObservation = null
@@ -72,7 +72,7 @@ export class FeedComponent implements OnInit, OnChanges {
       })
     })
 
-    this.feedService.viewObservation$.subscribe(event => {
+    this.feedPanelService.viewObservation$.subscribe(event => {
       this.viewObservation = event.observation;
       this.newObservation = null
       this.editObservation = null
@@ -83,7 +83,7 @@ export class FeedComponent implements OnInit, OnChanges {
       })
     })
 
-    this.feedService.editObservation$.subscribe(event => {
+    this.feedPanelService.editObservation$.subscribe(event => {
       this.edit = true;
 
       const observation = event.observation;

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, Output, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material';
-import { FeedService } from 'src/app/feed/feed.service';
+import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import { LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
@@ -21,7 +21,7 @@ export class UserListItemComponent {
   followingUser: any
 
   constructor(
-    private feedService: FeedService,
+    private feedPanelService: FeedPanelService,
     @Inject(MapService) private mapService: any,
     @Inject(LocalStorageService) localStorageService: any) {
     this.followingUser = mapService.followedFeature
@@ -39,7 +39,7 @@ export class UserListItemComponent {
 
   viewUser(): void {
     this.onUserLocation()
-    this.feedService.viewUser(this.user)
+    this.feedPanelService.viewUser(this.user)
   }
 
   onRipple(): void {
