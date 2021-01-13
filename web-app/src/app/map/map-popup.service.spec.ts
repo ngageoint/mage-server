@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PopupService } from './popup.service';
+import { MapPopupService } from './map-popup.service';
 
-describe('PopupService', () => {
+describe('MapPopupService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: PopupService = TestBed.get(PopupService);
+    const service: MapPopupService = TestBed.get(MapPopupService);
     expect(service).toBeTruthy();
   });
 });

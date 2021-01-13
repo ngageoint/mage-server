@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { FeedService } from '../../feed/feed.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { animate, style, transition, trigger } from '@angular/animations';
 import { MatDialog } from '@angular/material';
@@ -49,7 +49,7 @@ export class ObservationViewComponent implements OnChanges {
     @Inject(MapService) private mapService: any,
     @Inject(EventService) private eventService: any,
     @Inject(UserService) private userService: any,
-    private feedService: FeedService,
+    private feedPanelService: FeedPanelService,
     @Inject(LocalStorageService) private localStorageService: any
   ) { }
 
@@ -118,7 +118,7 @@ export class ObservationViewComponent implements OnChanges {
 
   onEdit(): void {
     this.onObservationLocationClick();
-    this.feedService.edit(this.observation)
+    this.feedPanelService.edit(this.observation)
   }
 
   onObservationLocationClick(): void {
