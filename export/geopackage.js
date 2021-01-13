@@ -106,7 +106,7 @@ GeoPackage.prototype.getLocations = function (lastLocationId, startDate, endDate
 
 var iconMap = {};
 
-GeoPackage.prototype.createObservationTable = function (geopackage, properties) {
+GeoPackage.prototype.createObservationTable = function (geopackage) {
   log.info('Create Observation Table');
   let columns = [];
 
