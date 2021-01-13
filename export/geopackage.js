@@ -175,9 +175,6 @@ GeoPackage.prototype.createIconTable = function (geopackage) {
   return geopackage.createMediaTable('Icons', columns);
 }
 
-var locationTablesCreated = {
-};
-
 var usersLastLocation = {
 };
 
@@ -223,7 +220,6 @@ GeoPackage.prototype.addUsersToUsersTable = function (geopackage) {
 }
 
 GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) {
-  if (locationTablesCreated[userId]) return Promise.resolve();
   let columns = [];
 
   columns.push({
@@ -247,11 +243,10 @@ GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) 
     dataType: 'REAL'
   });
 
-  locationTablesCreated[userId] = true;
   return geopackage.createFeatureTableFromProperties('Locations' + userId, columns);
 }
 
-GeoPackage.prototype.addLocationsToGeoPackage = function (geopackage, lastLocationId, startDate, endDate) {
+GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, lastLocationId, startDate, endDate) {
   log.info('Add Locations');
   const self = this;
 
@@ -259,58 +254,58 @@ GeoPackage.prototype.addLocationsToGeoPackage = function (geopackage, lastLocati
   endDate = endDate || self._filter.endDate ? moment(self._filter.endDate) : null;
 
   return new Promise(function (resolve, reject) {
-    setTimeout(function () {
-      return self.getLocations(lastLocationId, startDate, endDate)
-        .then(function (locations) {
-          if (!locations || locations.length === 0) {
-            return resolve();
+
+    self.getLocations(lastLocationId, startDate, endDate)
+      .then(async function (locations) {
+        if (!locations || locations.length === 0) {
+          return resolve(geopackage);
+        }
+
+        const last = locations.slice(-1).pop();
+        if (last) {
+          const locationTime = moment(last.properties.timestamp);
+          lastLocationId = last._id;
+          if (!startDate || startDate.isBefore(locationTime)) {
+            startDate = locationTime;
+          }
+        }
+
+        let locationTablesCreated = {};
+        for (let i = 0; i < locations.length; i++) {
+          const location = locations[i];
+
+          if (!locationTablesCreated[location.userId.toString()]) {
+            await self.createLocationTableForUser(geopackage, location.userId.toString());
+            locationTablesCreated[location.userId.toString()] = true;
           }
 
-          const last = locations.slice(-1).pop();
-          if (last) {
-            const locationTime = moment(last.properties.timestamp);
-            lastLocationId = last._id;
-            if (!startDate || startDate.isBefore(locationTime)) {
-              startDate = locationTime;
-            }
+          usersLastLocation[location.userId.toString()] = location;
+          let geojson = {
+            type: 'Feature',
+            geometry: location.geometry,
+            properties: location.properties
+          };
+
+          geojson.properties.mageId = location._id.toString();
+          geojson.properties.userId = location.userId.toString();
+          geojson.properties.deviceId = location.properties.deviceId.toString();
+
+          if (geojson.properties.id) {
+            delete geojson.properties.id;
           }
 
-          return locations.reduce(function (sequence, location) {
-            const user = self._users[location.userId];
-            return self.createLocationTableForUser(geopackage, location.userId.toString(), user, location)
-              .then(function () {
-                return sequence.then(function () {
-                  usersLastLocation[location.userId.toString()] = location;
-                  let properties = {};
-                  properties.userId = location.userId.toString();
-
-                  let geojson = {
-                    type: 'Feature',
-                    geometry: location.geometry,
-                    properties: location.properties
-                  };
-                  geojson.properties.mageId = location._id.toString();
-                  geojson.properties.userId = location.userId.toString();
-                  geojson.properties.deviceId = location.properties.deviceId.toString();
-
-                  if (geojson.properties.id) {
-                    delete geojson.properties.id;
-                  }
-                  const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations' + location.userId.toString());
-                });
-              }).catch(err => {
-                reject(err);
-              });
-          }, Promise.resolve())
-            .then(function () {
-              return resolve(self.addLocationsToGeoPackage(geopackage, lastLocationId, startDate, endDate));
-            });
-        });
-    });
-  })
-    .then(function () {
-      return geopackage;
-    });
+          try {
+            await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations' + location.userId.toString());
+            await self.addLocationsToGeoPackage(geopackage, lastLocationId, startDate, endDate);
+            resolve(geopackage);
+          } catch (err) {
+            reject(err);
+          }
+        };
+      }).catch(err => {
+        reject(err);
+      });
+  });
 }
 
 GeoPackage.prototype.createFormAttributeTables = function (geopackage) {
