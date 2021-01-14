@@ -2218,7 +2218,7 @@ paths:
         Export mage data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
-      summary: Export in the background.
+      summary: Export mage data using a background task.
       parameters:
       - name: exportType
         in: path
@@ -2229,6 +2229,7 @@ paths:
           - geojson
           - kml
           - shapefile
+          - geopackage
           - csv
       - name: eventId
         in: query
@@ -2292,11 +2293,11 @@ paths:
       tags: [ Export ]
       operationId: getAllExports
       description: >
-        Get all exports regardless of user.
-      summary: Get a list of all exports.
+        Get all export metadata regardless of user.
+      summary: Get a list of all export metadata.
       responses:
         200:
-          description: all exports
+          description: all export metadata
           content: 
             text/plain:
               schema:
@@ -2308,11 +2309,11 @@ paths:
       tags: [ Export ]
       operationId: getMyExports
       description: >
-        Get only my exports.
-      summary: Get my exports.
+        Get only my export metadata.
+      summary: Get my export metadata.
       responses:
         200:
-          description: my exports
+          description: my export metadata
           content: 
             text/plain:
               schema:
@@ -2324,8 +2325,8 @@ paths:
       tags: [ Export ]
       operationId: getExportById
       description: >
-        Get an export by it's id.
-      summary: Get a specific export.
+        Download an export by id.
+      summary: Export download.
       parameters:
       - name: exportId
         in: path
@@ -3234,6 +3235,29 @@ components:
           type: string
         settings:
           type: object
+    ExportMetadata:
+      required:
+        - type
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        physicalPath:
+          type: string
+        filename:
+          type: string
+        exportType:
+          type: string
+          enum: [ geojson, kml, geopackage, shapefile, csv ]
+        location:
+          type: string
+          format: uri
+        status:
+          type: string
+        options:
+          type: string
   parameters:
     userIdInPath:
       in: path
