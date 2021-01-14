@@ -31,7 +31,7 @@ module.exports = function (app, security) {
     mapUsers,
     mapDevices,
     function (req, res) {
-      log.warn('DEPRECATED - /api/:exportType called.  Please use /api/exports/:exportType instead.');
+      log.warn('DEPRECATED - /api/:exportType called.  Please use /api/exports instead.');
 
       const options = {
         event: req.event,
