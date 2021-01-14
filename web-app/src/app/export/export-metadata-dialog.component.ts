@@ -147,7 +147,9 @@ export class ExportMetadataDialogComponent implements OnInit {
             this.dataSource.data = this.uiModels;
             this.isLoadingResults = false;
         }, (error: any) => {
-            console.log("Error getting my export metadata " + error)
+            console.log("Error getting my export metadata " + error);
+            this.snackBar.open("Failed to load exports", null, { duration: 2000 });
+            this.isLoadingResults = false;
         });
     }
 
