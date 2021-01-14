@@ -521,7 +521,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
                       form.variantField = variant;
                       form.formId = form.formId.toString();
                       const rowId = geopackage.addAttributeRow('Form_' + form.formId, form);
-                      const relatedTables = geopackage.getRelatedTablesExtension();
+                      const relatedTables = geopackage.relatedTablesExtension;
                       return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + form.formId, rowId, {
                         name: 'simple_attributes',
                         dataType: 'ATTRIBUTES'
