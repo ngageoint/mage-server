@@ -2280,14 +2280,6 @@ paths:
             text/plain:
               schema:
                 type: string
-          links:
-            GetExportStatusByExportId:
-              operationId: getExportStatus
-              parameters:
-                exportId: '$response.body'
-              description: >
-                The value returned in the response can be used as
-                the `exportId` parameter in `GET /api/export/{exportId}/status`.
   /api/exports/all:
     get:
       tags: [ Export ]
