@@ -2221,7 +2221,7 @@ paths:
       summary: Export mage data using a background task.
       parameters:
       - name: exportType
-        in: path
+        in: query
         required: true
         schema:
           type: string
@@ -2329,7 +2329,7 @@ paths:
           content: 
             application/zip:
               schema:
-                type: file
+                type: object
 components:
   securitySchemes:
     authenticationToken:
