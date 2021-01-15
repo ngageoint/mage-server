@@ -2299,11 +2299,10 @@ paths:
         200:
           description: all export metadata
           content: 
-            text/plain:
+            application/json:
               schema:
-                type: string
-                enum: [ Starting, Running, Completed, Failed ]
-                example: Running
+                type: array
+                items: { $ref: '#/components/schemas/ExportMetadata' }
   /api/exports/myself:
     get:
       tags: [ Export ]
@@ -2315,18 +2314,17 @@ paths:
         200:
           description: my export metadata
           content: 
-            text/plain:
+            application/json:
               schema:
-                type: string
-                enum: [ Starting, Running, Completed, Failed ]
-                example: Running
+                type: array
+                items: { $ref: '#/components/schemas/ExportMetadata' }
   /api/exports/download/{exportId}:
     get:
       tags: [ Export ]
       operationId: getExportById
       description: >
         Download an export by id.
-      summary: Export download.
+      summary: Download a completed export.
       parameters:
       - name: exportId
         in: path
@@ -2335,13 +2333,11 @@ paths:
           type: string
       responses:
         200:
-          description: export
+          description: The exported data as a compressed file.
           content: 
-            text/plain:
+            application/zip:
               schema:
-                type: string
-                enum: [ Starting, Running, Completed, Failed ]
-                example: Running
+                type: file
 components:
   securitySchemes:
     authenticationToken:
