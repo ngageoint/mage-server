@@ -2210,7 +2210,7 @@ paths:
       responses:
         200:
           description: export response
-  /api/exports/:
+  /api/exports:
     post:
       tags: [ Export ]
       operationId: exportBackground
@@ -2276,6 +2276,11 @@ paths:
       responses:
         201:
           description: export id
+          headers:
+            location:
+              description: The URI of the export download.
+              schema:
+                type: string
           content: 
             text/plain:
               schema:
@@ -3241,7 +3246,6 @@ components:
           enum: [ geojson, kml, geopackage, shapefile, csv ]
         location:
           type: string
-          format: uri
         status:
           type: string
         options:
