@@ -2153,7 +2153,7 @@ paths:
         Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
-      summary: Perform export during request.  May timeout, so use export in background.
+      summary: Perform export during request.  May timeout, so please use /api/exports instead.
       parameters:
       - name: exportType
         in: path
@@ -2210,18 +2210,18 @@ paths:
       responses:
         200:
           description: export response
-  /api/export/{exportType}:
-    get:
+  /api/exports:
+    post:
       tags: [ Export ]
       operationId: exportBackground
       description: >
-        Export mage data (GeoJSON, KML, Shapefiles, CSV) in the background. The requesting user must have
+        Export mage data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
-      summary: Export in the background.
+      summary: Export mage data using a background task.
       parameters:
       - name: exportType
-        in: path
+        in: query
         required: true
         schema:
           type: string
@@ -2229,6 +2229,7 @@ paths:
           - geojson
           - kml
           - shapefile
+          - geopackage
           - csv
       - name: eventId
         in: query
@@ -2275,26 +2276,52 @@ paths:
       responses:
         201:
           description: export id
+          headers:
+            location:
+              description: The URI of the export download.
+              schema:
+                type: string
           content: 
             text/plain:
               schema:
                 type: string
-          links:
-            GetExportStatusByExportId:
-              operationId: getExportStatus
-              parameters:
-                exportId: '$response.body'
-              description: >
-                The value returned in the response can be used as
-                the `exportId` parameter in `GET /api/export/{exportId}/status`.
-  /api/export/{exportId}/status:
+  /api/exports/all:
     get:
       tags: [ Export ]
-      operationId: getExportStatus
+      operationId: getAllExports
       description: >
-        Get the status of a background export operation. The requesting user must have
-        an ACL entry in the event with `read`.
-      summary: Get the status of a background export operation.
+        Get all export metadata regardless of user.
+      summary: Get a list of all export metadata.
+      responses:
+        200:
+          description: all export metadata
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ExportMetadata' }
+  /api/exports/myself:
+    get:
+      tags: [ Export ]
+      operationId: getMyExports
+      description: >
+        Get only my export metadata.
+      summary: Get my export metadata.
+      responses:
+        200:
+          description: my export metadata
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ExportMetadata' }
+  /api/exports/download/{exportId}:
+    get:
+      tags: [ Export ]
+      operationId: getExportById
+      description: >
+        Download an export by id.
+      summary: Download a completed export.
       parameters:
       - name: exportId
         in: path
@@ -2303,13 +2330,11 @@ paths:
           type: string
       responses:
         200:
-          description: export location
+          description: The exported data as a compressed file.
           content: 
-            text/plain:
+            application/zip:
               schema:
-                type: string
-                enum: [ Starting, Running, Completed, Failed ]
-                example: Running
+                type: object
 components:
   securitySchemes:
     authenticationToken:
@@ -3203,6 +3228,28 @@ components:
           type: string
         settings:
           type: object
+    ExportMetadata:
+      required:
+        - type
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        physicalPath:
+          type: string
+        filename:
+          type: string
+        exportType:
+          type: string
+          enum: [ geojson, kml, geopackage, shapefile, csv ]
+        location:
+          type: string
+        status:
+          type: string
+        options:
+          type: string
   parameters:
     userIdInPath:
       in: path
