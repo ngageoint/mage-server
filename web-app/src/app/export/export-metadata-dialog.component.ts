@@ -94,7 +94,7 @@ export class ExportMetadataDialogComponent implements OnInit {
     }];
     exportTime: string = 'five';
     exportFormat: string;
-    exportFormats: string[] = ['KML', 'GeoJSON', 'CSV', 'Shapefile'];
+    exportFormats: string[] = ['KML', 'GeoJSON', 'GeoPackage', 'CSV', 'Shapefile'];
     currentOffset: string;
     localTime: boolean = false;
     startDate: Date = moment().startOf('day').toDate();
@@ -147,7 +147,9 @@ export class ExportMetadataDialogComponent implements OnInit {
             this.dataSource.data = this.uiModels;
             this.isLoadingResults = false;
         }, (error: any) => {
-            console.log("Error getting my export metadata " + error)
+            console.log("Error getting my export metadata " + error);
+            this.snackBar.open("Failed to load exports", null, { duration: 2000 });
+            this.isLoadingResults = false;
         });
     }
 
@@ -164,7 +166,6 @@ export class ExportMetadataDialogComponent implements OnInit {
         this.exportMetaService.retryExport(meta).subscribe((response: ExportResponse) => {
             const msg: string = "Retrying export";
             this.snackBar.open(msg, null, { duration: 2000 });
-            //TODO delay by snackbar timeout?
             this.loadData();
         });
     }

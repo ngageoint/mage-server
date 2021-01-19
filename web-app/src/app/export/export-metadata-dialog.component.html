@@ -33,7 +33,7 @@
                 download="{{export.filename}}" target="_blank" (click)="$event.stopPropagation()">Download</a>
               <button class="mat-raised-button" *ngIf="export.status == 'Failed'"
                 (click)="$event.stopPropagation(); retryExport(export)">Retry</button>
-              <div *ngIf="export.status == 'Running'">N/A</div>
+              <mat-spinner *ngIf="export.status == 'Running'" diameter="25"></mat-spinner>
             </mat-cell>
           </ng-container>
 

@@ -107,5 +107,10 @@ exports.updateExportMetadata = function (meta) {
 };
 
 exports.removeMetadata = function (id) {
-    return ExportMetadata.remove({ _id: id }).exec();
+    return this.getExportMetadataById(id).then(meta => {
+        return meta.remove();
+    }).catch(err => {
+        log.warn(err);
+        return Promise.reject(err);
+    });
 };
