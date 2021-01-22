@@ -67,7 +67,7 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
 
   if (!self._filter.exportLocations) return done(null, []);
 
-  let startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
+  const startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
   const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
 
   const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
@@ -83,7 +83,6 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
     delete doc.properties.deviceId;
     locations.push(doc);
   }).then(() => {
-    cursor.close;
     const first = locations.slice(0).pop();
     const last = locations.slice(-1).pop();
     if (last) {
@@ -97,16 +96,14 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
         archive.append(files.prj, { name: 'locations/' + interval + '.prj' });
 
         log.info('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
-
-        const locationTime = moment(last.properties.timestamp);
-        if (!startDate || startDate.isBefore(locationTime)) {
-          startDate = locationTime;
-        }
-
       }, done);
     } else {
       done();
     }
+  }).catch(err => {
+    done(err);
+  }).finally(() => {
+    cursor.close;
   });
 };
 
