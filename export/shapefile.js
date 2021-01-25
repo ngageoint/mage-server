@@ -83,6 +83,8 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
     delete doc.properties.deviceId;
     locations.push(doc);
   }).then(() => {
+    if (cursor) cursor.close;
+
     const first = locations.slice(0).pop();
     const last = locations.slice(-1).pop();
     if (last) {
@@ -102,8 +104,6 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
     }
   }).catch(err => {
     done(err);
-  }).finally(() => {
-    if (cursor) cursor.close;
   });
 };
 
