@@ -17,12 +17,12 @@ util.inherits(Shapefile, Exporter);
 module.exports = Shapefile;
 
 Shapefile.prototype.export = function (stream) {
-  var self = this;
+  const self = this;
 
   stream.type('application/zip');
   stream.attachment('mage-shapefile.zip');
 
-  var archive = archiver('zip');
+  const archive = archiver('zip');
   archive.pipe(stream);
 
   async.parallel({
@@ -42,7 +42,7 @@ Shapefile.prototype.export = function (stream) {
 };
 
 Shapefile.prototype.observationsToShapefile = function (archive, done) {
-  var self = this;
+  const self = this;
 
   if (!self._filter.exportObservations) return done(null, []);
 
@@ -103,7 +103,7 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
   }).catch(err => {
     done(err);
   }).finally(() => {
-    cursor.close;
+    if (cursor) cursor.close;
   });
 };
 
@@ -135,7 +135,7 @@ function write(geojson, callback, doneCallback) {
 }
 
 function mapObservationProperties(observation) {
-  var event = this._event;
+  const event = this._event;
 
   observation.properties = observation.properties || {};
   observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
@@ -146,9 +146,9 @@ function mapObservationProperties(observation) {
   observation.properties.forms.forEach(function (observationForm) {
     if (Object.keys(observationForm).length === 0) return;
 
-    var form = event.formMap[observationForm.formId];
-    for (var name in observationForm) {
-      var field = form.fieldNameToField[name];
+    const form = event.formMap[observationForm.formId];
+    for (let name in observationForm) {
+      const field = form.fieldNameToField[name];
       if (field && !field.archived) {
         // Shapfiles attribute column names don't allow more than 10 characters
         // Lets try to shorten the properties field names by using form id instead of form name
@@ -164,7 +164,7 @@ function mapObservationProperties(observation) {
 }
 
 function mapObservations(observations) {
-  var self = this;
+  const self = this;
 
   if (!Array.isArray(observations)) observations = [observations];
 
