@@ -134,5 +134,7 @@ GeoJson.prototype.streamLocations = function (stream, done) {
     log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
 
     done();
+  }).catch(err => {
+    done(err);
   });
 };

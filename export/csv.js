@@ -246,6 +246,8 @@ Csv.prototype.streamLocations = function (stream, done) {
     log.info('done writing locations');
     stream.push(null);
     done();
+  }).catch(err => {
+    done(err);
   });
 };
 
