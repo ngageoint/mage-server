@@ -23,8 +23,8 @@ function excelLink(attachment, attachmentNumber) {
   return '=HYPERLINK("' + attachment.name + '", "attachment' + attachmentNumber + '")';
 }
 
-Csv.prototype.export = function(streamable) {
-  var self = this;
+Csv.prototype.export = function (streamable) {
+  const self = this;
 
   streamable.type('application/zip');
   streamable.attachment('mage-csv.zip');
@@ -32,31 +32,31 @@ Csv.prototype.export = function(streamable) {
   const observationFields = [{
     label: 'id',
     value: 'id'
-  },{
+  }, {
     label: 'User',
     value: 'user'
-  },{
+  }, {
     label: 'Device',
     value: 'device'
-  },{
+  }, {
     label: 'Shape Type',
     value: 'shapeType'
-  },{
+  }, {
     label: 'Latitude',
     value: 'latitude'
-  },{
+  }, {
     label: 'Longitude',
     value: 'longitude'
-  },{
+  }, {
     label: 'MGRS',
     value: 'mgrs'
-  },{
+  }, {
     label: 'Date (ISO8601)',
     value: 'timestamp'
-  },{
+  }, {
     label: 'excelTimestamp',
     value: 'Excel Timestamp (UTC)'
-  },{
+  }, {
     label: 'wkt',
     value: 'Well Known Text'
   }, {
@@ -69,13 +69,13 @@ Csv.prototype.export = function(streamable) {
 
   self._event.forms
     .filter(form => !form.archived)
-    .forEach(function(form) {
+    .forEach(function (form) {
       const formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
 
       form.fields
         .filter(field => !field.archived)
         .sort((a, b) => a.id - b.id)
-        .forEach(function(field) {
+        .forEach(function (field) {
           observationFields.push({
             label: formPrefix + field.title,
             value: formPrefix + field.name
@@ -115,43 +115,43 @@ Csv.prototype.export = function(streamable) {
   archive.pipe(streamable);
 
   async.parallel([
-    function(done) {
+    function (done) {
       if (!self._filter.exportObservations) return done();
 
       const observationStream = new stream.PassThrough();
-      archive.append(observationStream, { name:'observations.csv' });
-      self.streamObservations(observationStream, archive, observationFields, function(err) {
+      archive.append(observationStream, { name: 'observations.csv' });
+      self.streamObservations(observationStream, archive, observationFields, function (err) {
         observationStream.end();
         done(err);
       });
     },
-    function(done) {
+    function (done) {
       if (!self._filter.exportLocations) return done();
 
       const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true });
-      archive.append(asyncParser.processor, {name: 'locations.csv'});
-      self.streamLocations(asyncParser.input, function(err) {
+      archive.append(asyncParser.processor, { name: 'locations.csv' });
+      self.streamLocations(asyncParser.input, function (err) {
         done(err);
       });
     }
   ],
-  function(err) {
-    if (err) {
-      log.info(err);
-    }
+    function (err) {
+      if (err) {
+        log.info(err);
+      }
 
-    console.log('done writing csv, finalize archive');
-    archive.finalize();
-  });
+      console.log('done writing csv, finalize archive');
+      archive.finalize();
+    });
 };
 
-Csv.prototype.streamObservations = function(stream, archive, fields, done) {
-  var self = this;
-  self.requestObservations(self._filter, function(err, observations) {
+Csv.prototype.streamObservations = function (stream, archive, fields, done) {
+  const self = this;
+  self.requestObservations(self._filter, function (err, observations) {
     const json = self.flattenObservations(observations, archive);
 
     try {
-      const csv = json2csv.parse(json, {fields});
+      const csv = json2csv.parse(json, { fields });
       stream.write(csv);
       done();
     } catch (err) {
@@ -160,18 +160,18 @@ Csv.prototype.streamObservations = function(stream, archive, fields, done) {
   });
 };
 
-Csv.prototype.flattenObservations = function(observations, archive) {
+Csv.prototype.flattenObservations = function (observations, archive) {
   const event = this._event;
   const users = this._users;
   const devices = this._devices;
 
   const flattened = [];
 
-  observations.forEach(function(observation) {
+  observations.forEach(function (observation) {
     const properties = observation.properties;
     properties.id = observation.id;
 
-    properties.forms.forEach(function(observationForm) {
+    properties.forms.forEach(function (observationForm) {
       const form = event.formMap[observationForm.formId];
       const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
       for (const name in observationForm) {
@@ -187,7 +187,7 @@ Csv.prototype.flattenObservations = function(observations, archive) {
     if (users[observation.userId]) properties.user = users[observation.userId].username;
     if (devices[observation.deviceId]) properties.device = devices[observation.deviceId].uid;
 
-    var centroid = turfCentroid(observation);
+    const centroid = turfCentroid(observation);
     properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
     properties.shapeType = observation.geometry.type;
@@ -205,7 +205,7 @@ Csv.prototype.flattenObservations = function(observations, archive) {
     if (observation.attachments.length > 0) {
       properties.attachment = observation.attachments[0].name;
       properties.attachmentExcelLink = excelLink(observation.attachments[0], 1);
-      archive.file(path.join(attachmentBase, observation.attachments[0].relativePath), {name: observation.attachments[0].name});
+      archive.file(path.join(attachmentBase, observation.attachments[0].relativePath), { name: observation.attachments[0].name });
     }
 
     flattened.push(properties);
@@ -219,60 +219,41 @@ Csv.prototype.flattenObservations = function(observations, archive) {
         attachmentExcelLink: excelLink(attachment, i + 1)
       });
 
-      archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
+      archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
     }
   });
 
   return flattened;
 };
 
-Csv.prototype.streamLocations = function(stream, done) {
+Csv.prototype.streamLocations = function (stream, done) {
   const self = this;
-  const limit = 2000;
 
   let startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
   const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
-  let lastLocationId = null;
+  const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
   let locations = [];
-
-  async.doUntil(function(done) {
-    self.requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
-      if (err) return done(err);
-      locations = requestedLocations;
-
-      self.flattenLocations(locations).forEach(location => {
-        stream.push(location);
-      });
-
-      log.info('Successfully wrote ' + locations.length + ' locations to CSV');
-      const last = locations.slice(-1).pop();
-      if (last) {
-        const locationTime = moment(last.properties.timestamp);
-        lastLocationId = last._id;
-        if (!startDate || startDate.isBefore(locationTime)) {
-          startDate = locationTime;
-        }
-      }
-
-      done();
+  cursor.eachAsync(async function (doc, i) {
+    locations.push(doc);
+  }).then(() => {
+    if (cursor) cursor.close;
+    self.flattenLocations(locations).forEach(location => {
+      stream.push(location);
     });
-  },
-  function() {
-    return locations.length === 0;
-  },
-  function(err) {
+
+    log.info('Successfully wrote ' + locations.length + ' locations to CSV');
     log.info('done writing locations');
     stream.push(null);
-    done(err);
+    done();
   });
 };
 
-Csv.prototype.flattenLocations = function(locations) {
+Csv.prototype.flattenLocations = function (locations) {
   const users = this._users;
   const devices = this._devices;
 
-  return locations.map(function(location) {
+  return locations.map(function (location) {
     const properties = location.properties;
     if (users[location.userId]) properties.user = users[location.userId].username;
     if (devices[properties.deviceId]) properties.device = devices[properties.deviceId].uid;
