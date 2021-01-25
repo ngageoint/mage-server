@@ -1,4 +1,4 @@
-var util = require('util')
+const util = require('util')
   , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
@@ -18,53 +18,53 @@ function GeoJson(options) {
 util.inherits(GeoJson, Exporter);
 module.exports = GeoJson;
 
-GeoJson.prototype.export = function(streamable) {
-  var self = this;
+GeoJson.prototype.export = function (streamable) {
+  const self = this;
 
   streamable.type('application/zip');
   streamable.attachment("mage-geojson.zip");
 
-  var archive = archiver('zip');
+  const archive = archiver('zip');
   archive.pipe(streamable);
 
   async.parallel([
-    function(done) {
+    function (done) {
       if (!self._filter.exportObservations) return done();
 
-      var observationStream = new stream.PassThrough();
-      archive.append(observationStream, { name:'observations.geojson' });
-      self.streamObservations(observationStream, archive, function(err) {
+      const observationStream = new stream.PassThrough();
+      archive.append(observationStream, { name: 'observations.geojson' });
+      self.streamObservations(observationStream, archive, function (err) {
         observationStream.end();
         done(err);
       });
     },
-    function(done) {
+    function (done) {
       if (!self._filter.exportLocations) return done();
 
-      var locationStream = new stream.PassThrough();
-      archive.append(locationStream, {name: 'locations.geojson'});
-      self.streamLocations(locationStream, function(err) {
+      const locationStream = new stream.PassThrough();
+      archive.append(locationStream, { name: 'locations.geojson' });
+      self.streamLocations(locationStream, function (err) {
         locationStream.end();
         done(err);
       });
     }
   ],
-  function(err) {
-    if (err) {
-      log.info(err);
-    }
+    function (err) {
+      if (err) {
+        log.info(err);
+      }
 
-    archive.finalize();
-  });
+      archive.finalize();
+    });
 };
 
-GeoJson.prototype.streamObservations = function(stream, archive, done) {
-  var self = this;
-  self.requestObservations(self._filter, function(err, observations) {
+GeoJson.prototype.streamObservations = function (stream, archive, done) {
+  const self = this;
+  self.requestObservations(self._filter, function (err, observations) {
     if (err) return err;
 
     self.mapObservations(observations);
-    observations = observations.map(function(o) {
+    observations = observations.map(function (o) {
       return {
         geometry: o.geometry,
         properties: o.properties,
@@ -72,8 +72,8 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
       };
     });
 
-    observations.forEach(function(o) {
-      o.attachments = o.attachments.map(function(attachment) {
+    observations.forEach(function (o) {
+      o.attachments = o.attachments.map(function (attachment) {
         return {
           name: attachment.name,
           relativePath: attachment.relativePath,
@@ -84,8 +84,8 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
         };
       });
 
-      o.attachments.forEach(function(attachment) {
-        archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
+      o.attachments.forEach(function (attachment) {
+        archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
       });
     });
 
@@ -95,62 +95,44 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
     }));
 
     // throw in icons
-    archive.directory(new api.Icon(self._event._id).getBasePath(), 'mage-export/icons', {date: new Date()});
+    archive.directory(new api.Icon(self._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
 
     done();
   });
 };
 
-GeoJson.prototype.streamLocations = function(stream, done) {
+GeoJson.prototype.streamLocations = function (stream, done) {
   log.info('writing locations...');
 
-  var self = this;
-  var limit = 2000;
+  const self = this;
 
-  var startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
-  var endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
-  var lastLocationId = null;
+  const startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
+  const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
+
+  const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+
+  let locations = [];
 
   stream.write('{"type": "FeatureCollection", "features": [');
-  var locations = [];
-  async.doUntil(function(done) {
-    self.requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
-      if (err) return done(err);
+  cursor.eachAsync(async function (doc, i) {
+    locations.push(doc);
+  }).then(() => {
+    if (cursor) cursor.close;
 
-      locations = requestedLocations;
-
-      locations.forEach(location => {
-        var centroid = turfCentroid(location);
-        location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
-      });
-
-      if (locations.length) {
-        if (lastLocationId) stream.write(",");  // not first time through
-
-        var data = JSON.stringify(locations);
-        stream.write(data.substr(1, data.length - 2));
-      } else {
-        stream.write(']}');
-      }
-
-      log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
-      var last = locations.slice(-1).pop();
-      if (last) {
-        var locationTime = moment(last.properties.timestamp);
-        lastLocationId = last._id;
-        if (!startDate || startDate.isBefore(locationTime)) {
-          startDate = locationTime;
-        }
-      }
-
-      done();
+    locations.forEach(location => {
+      const centroid = turfCentroid(location);
+      location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
     });
-  },
-  function() {
-    return locations.length === 0;
-  },
-  function(err) {
-    log.info('done writing locations');
-    done(err);
+
+    if (locations.length) {
+      const data = JSON.stringify(locations);
+      stream.write(data.substr(1, data.length - 2));
+    } else {
+      stream.write(']}');
+    }
+
+    log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+
+    done();
   });
 };
