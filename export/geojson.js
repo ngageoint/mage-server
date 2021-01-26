@@ -114,17 +114,14 @@ GeoJson.prototype.streamLocations = function (stream, done) {
   let locations = [];
 
   stream.write('{"type": "FeatureCollection", "features": [');
-  cursor.eachAsync(async function (doc, i) {
-    locations.push(doc);
+  cursor.eachAsync(async function (location, i) {
+    const centroid = turfCentroid(location);
+    location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+    locations.push(location);
   }).then(() => {
     if (cursor) cursor.close;
 
-    locations.forEach(location => {
-      const centroid = turfCentroid(location);
-      location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
-    });
-
-    if (locations.length) {
+    if (locations.length > 0) {
       const data = JSON.stringify(locations);
       stream.write(data.substr(1, data.length - 2));
     } else {
