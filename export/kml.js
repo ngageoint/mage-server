@@ -117,17 +117,17 @@ Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
   const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
   let locations = [];
-  cursor.eachAsync(async function (doc, i) {
-    locations.push(doc);
+  let locationString = "";
+  cursor.eachAsync(async function (location, i) {
+    locationString += writer.generateLocationPlacemark(user, location);
+    locations.push(location);
   }).then(() => {
     if (cursor) cursor.close;
-    stream.write(writer.generateKMLFolderStart(user.displayName, false));
 
-    let locationString = "";
-    locations.forEach(function (location) {
-      locationString += writer.generateLocationPlacemark(user, location);
-    });
-    stream.write(locationString);
+    if (locations.length > 0) {
+      stream.write(writer.generateKMLFolderStart(user.displayName, false));
+      stream.write(locationString);
+    }
 
     // throw in user map icon
     if (user.icon && user.icon.relativePath) {
@@ -137,7 +137,10 @@ Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
       });
     }
 
-    stream.write(writer.generateKMLFolderClose());
+    if (locations.length > 0) {
+      stream.write(writer.generateKMLFolderClose());
+    }
+
     log.info('done writing all locations for ' + user.username);
 
     done();

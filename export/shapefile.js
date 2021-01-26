@@ -73,15 +73,15 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
   const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
   let locations = [];
-  cursor.eachAsync(async function (doc, i) {
-    if (self._users[doc.properties.user]) doc.properties.user = self._users[doc.properties.user].username;
-    if (self._users[doc.properties.deviceId]) doc.properties.device = self._users[doc.properties.deviceId].uid;
+  cursor.eachAsync(async function (location, i) {
+    if (self._users[location.properties.user]) location.properties.user = self._users[location.properties.user].username;
+    if (self._users[location.properties.deviceId]) location.properties.device = self._users[location.properties.deviceId].uid;
 
-    const centroid = turfCentroid(doc);
-    doc.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+    const centroid = turfCentroid(location);
+    location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
-    delete doc.properties.deviceId;
-    locations.push(doc);
+    delete location.properties.deviceId;
+    locations.push(location);
   }).then(() => {
     if (cursor) cursor.close;
 
