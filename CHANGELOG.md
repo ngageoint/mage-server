@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Default admin apporoval as enabled for new user accounts.  This was causing new user account creation to fail.
 
 ## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
 
