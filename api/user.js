@@ -97,7 +97,7 @@ User.prototype.create = async function(user, options = {}) {
   let defaultEvents
   const authenticationType = user.authentication.type;
   if (settings[authenticationType]) {
-    const requireAdminActivation = settings[authenticationType].usersReqAdmin;
+    const requireAdminActivation = settings[authenticationType].usersReqAdmin || { enabled: true };
     if (requireAdminActivation) {
       user.active = user.active || !requireAdminActivation.enabled;
     }
