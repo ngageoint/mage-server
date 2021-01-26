@@ -1,7 +1,9 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatTabGroup } from '@angular/material';
 import * as moment from 'moment';
+import { ObservationFormControl } from '../observation/observation-edit/observation-edit.component';
 import { EventService, FilterService, MapService, ObservationService, UserService } from '../upgrade/ajs-upgraded-providers';
 import { FeedPanelService } from './feed-panel.service';
 
@@ -40,6 +42,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   newObservation: any
   newObservationForm: any
   newObservationForms: any
+  newObservationFormGroup: FormGroup
 
   firstObservationChange = true
   observationBadge: number = null
@@ -52,6 +55,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   constructor(
     public dialog: MatDialog,
     private feedPanelService: FeedPanelService,
+    private formBuilder: FormBuilder,
     @Inject(MapService) private mapService: any,
     @Inject(UserService) private userService: any,
     @Inject(FilterService) private filterService: any,
@@ -108,11 +112,10 @@ export class FeedPanelComponent implements OnInit, OnChanges {
           required: true
         },
         forms: []
-      };
+      }
 
       observation.properties.forms.forEach(propertyForm => {
-        const observationForm = this.eventService.createForm(observation, formMap[propertyForm.formId])
-        observationForm.name = formMap[propertyForm.formId].name
+        const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
         form.forms.push(observationForm)
       })
 
@@ -151,8 +154,77 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.firstObservationChange = false
   }
 
-  createObservation(form: any): void {
+  createNewObservation(location: any): void {
+    const event = this.filterService.getEvent();
+
+    if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
+      this.dialog.open(this.permissionDialog, {
+        autoFocus: false,
+        width: '500px'
+      })
+
+      return
+    }
+
+    this.observation = {
+      id: 'new',
+      eventId: event.id,
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [location.latLng.lng, location.latLng.lat]
+      },
+      properties: {
+        timestamp: new Date(),
+        forms: []
+      }
+    }
+
+    // TODO multi-form this needs to be done when adding/deleting/reorder of forms
+    // Style will be based on first form in observation
+    // this.observation.style = {
+    //   iconUrl: this.getIconUrl(event, observationForms)
+    // }
+
     this.newObservation = this.observation
+
+    // TODO multi-form make sure this works with no forms
+    this.newObservationForms = [];
+    this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
+      for (let i = 0; i < form.min || 0; i++) {
+        this.newObservationForms.push({ ...form })
+      }
+
+      if (form.default && !form.min) {
+        this.newObservationForms.push({ ...form })
+      }
+    })
+
+    const timestampControl = new FormControl(moment(this.newObservation.properties.timestamp).toDate(), Validators.required);
+    (timestampControl as ObservationFormControl).definition = {
+      title: '',
+      type: 'date',
+      name: 'timestamp',
+      value: moment(this.newObservation.properties.timestamp).toDate(),
+      required: true
+    }
+
+    const geometryControl = new FormControl(this.newObservation.geometry, Validators.required);
+    (geometryControl as ObservationFormControl).definition = {
+      title: 'Location',
+      type: 'geometry',
+      name: 'geometry',
+      value: this.newObservation.geometry,
+      required: true
+    }
+
+    this.newObservationFormGroup = this.formBuilder.group({
+      timestamp: timestampControl,
+      geometry: geometryControl,
+      forms: new FormArray([])
+    });
+
+    // TODO build out other forms in fb group
 
     this.newObservationForm = {
       geometryField: {
@@ -168,68 +240,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
         name: 'timestamp',
         value: moment(this.newObservation.properties.timestamp).toDate(),
         required: true
-      },
-      forms: []
-    }
-
-    if (form) {
-      const observationForm = this.eventService.createForm(this.newObservation, form)
-      observationForm.name = form.name
-      this.newObservationForm.forms.push(observationForm)
-    }
-  }
-
-  observationAnimationComplete(event): void {
-    // This waits to remove form picker until after the new observation animation completes
-    if (event.fromState === 'void') {
-      delete this.newObservationForms
-    }
-  }
-
-  createNewObservation(location: any): void {
-    const event = this.filterService.getEvent();
-
-    if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
-      this.dialog.open(this.permissionDialog, {
-        autoFocus: false,
-        width: '500px'
-      })
-
-      return
-    }
-
-    const observationForms = this.eventService.getFormsForEvent(event, { archived: false });
-
-    // TODO this Observation used to be an angular 8 resource, this won't save
-    this.observation = {
-      id: 'new',
-      eventId: event.id,
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [location.latLng.lng, location.latLng.lat]
-      },
-      properties: {
-        timestamp: new Date(),
-        forms: []
       }
-    }
-
-    this.observation.style = {
-      iconUrl: this.getIconUrl(event, observationForms)
-    };
-
-    if (observationForms.length === 0) {
-      this.createObservation(null);
-    } else if (observationForms.length === 1) {
-      this.createObservation(observationForms[0]);
-    } else {
-      this.newObservationForms = observationForms;
     }
   }
 
   getIconUrl(event, form): void {
-    // const primaryForm = forms.length ? forms[0] : {};
     const fields = form.fields || []
     
     const primary = fields.find(field => {

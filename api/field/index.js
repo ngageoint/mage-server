@@ -1,4 +1,4 @@
-var Field = require('./field')
+const Field = require('./field')
   , DateField = require('./dateField')
   , GeometryField = require('./geometryField')
   , NumberField = require('./numberField')
@@ -9,7 +9,7 @@ var Field = require('./field')
   , CheckboxField = require('./checkboxField');
 
 function FieldFactory() {
-  var fields = {
+  const fields = {
     date: DateField,
     geometry: GeometryField,
     textfield: TextField,
@@ -24,7 +24,7 @@ function FieldFactory() {
   };
 
   this.getField = function(type) {
-    var field = fields[type];
+    let field = fields[type];
     if (!field) {
       field = Field;
     }

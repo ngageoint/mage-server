@@ -1,4 +1,4 @@
-<div>
+<div #editForm>
   <mat-toolbar color="primary">
     <mat-toolbar-row class="navigation">
       <button mat-icon-button class="navigation__icon" (click)="cancel()"><mat-icon>close</mat-icon></button>
@@ -15,22 +15,25 @@
 
   <div cdkScrollable #editContent class="edit-content" [ngClass]="{'edit-content--scroll-lock': mask}">
     <div class="edit-banner" *ngIf="error" @error>
-      <div class="edit-banner--content">
-        <mat-icon>error_outline</mat-icon>
-        <div class="edit-banner--content__text">{{error?.message}}.</div>
+      <div class="edit-banner-container">
+        <div class="edit-banner-content">
+          <div class="edit-banner-content__title">Invalid observation, correct the following errors.</div>
+          <div class="edit-banner-content__summary">{{error?.message}}</div>
+        </div>
       </div>
     
-      <div class="edit-banner--actions">
-        <button mat-button color="primary" (click)="error = null;">OK</button>
+      <div class="edit-banner-actions">
+        <button mat-button color="primary" (click)="error = null;">DISMISS</button>
       </div>
     </div>
 
     <form class="observation" name="observationForm" novalidate>
       <mat-card class="form">
-        <observation-edit-date [field]="form?.timestampField"></observation-edit-date>
+        <observation-edit-date [formGroup]="formGroup" [definition]="formGroup.get('timestamp').definition"></observation-edit-date>
       
         <observation-edit-geometry
-          [field]="form?.geometryField"
+          [formGroup]="formGroup"
+          [definition]="formGroup.get('geometry').definition"
           [featureId]="observation.id"
           [featureStyle]="geometryStyle"
           (onFeatureEdit)="onGeometryEdit($event)"
@@ -38,47 +41,71 @@
         </observation-edit-geometry>
       </mat-card>
 
-      <div *ngFor="let formDefinition of form?.forms">
-        <div class="form">
-          <observation-edit-form
-            [form]="observationForm"
-            [formDefinition]="formDefinition"
-            [geometryStyle]="geometryStyle"
-            (featureEdit)="onGeometryEdit($event)">
-          </observation-edit-form>
-        </div>
-      </div>
-
       <div *ngIf="!preview">
-        <mat-card class="edit-attachments">
-          <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px" *ngIf="allAttachments().length">
-            <mat-grid-tile *ngFor="let attachment of allAttachments(); trackBy: trackByAttachment; first as isFirst" [rowspan]="1" [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1">
-              <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" [observation]="observation" edit="true"></observation-attachment>
-              <attachment-upload *ngIf="attachment.file"
-                [url]="observation.url + '/attachments'"
-                [attachment]="attachment"
-                [allowUpload]="uploadAttachments"
-                (remove)="onAttachmentRemove($event)"
-                (error)="onAttachmentError($event)"
-                (upload)="onAttachmentUploaded($event)"></attachment-upload>
-            </mat-grid-tile>
-          </mat-grid-list>
-
-          <div>
-            <button mat-flat-button class="add__button" type="button" color="primary" (click)="file.click()">Add Attachments</button>
-            <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)">
+        <mat-card class="form">
+          <div class="attachment-field">
+            <div class="attachment-field__label">Attachments</div>
+      
+            <ng-container *ngIf="allAttachments().length; else empty">
+              <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px"
+                *ngIf="allAttachments().length">
+                <mat-grid-tile *ngFor="let attachment of allAttachments(); trackBy: trackByAttachment; first as isFirst"
+                  [rowspan]="1" [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1">
+                  <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" [observation]="observation"
+                    edit="true">
+                  </observation-attachment>
+                  <attachment-upload *ngIf="attachment.file" [url]="observation.url + '/attachments'"
+                    [attachment]="attachment" [allowUpload]="uploadAttachments" (remove)="onAttachmentRemove($event)"
+                    (error)="onAttachmentError($event)" (upload)="onAttachmentUploaded($event)"></attachment-upload>
+                </mat-grid-tile>
+              </mat-grid-list>
+            </ng-container>
+      
+            <div class="attachment-actions">
+              <button mat-button class="add__button" type="button" color="primary" (click)="file.click()">
+                Add Attachment
+              </button>
+              <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)">
+            </div>
+      
+            <div class="attachment-field__underline"></div>
           </div>
         </mat-card>
+      </div>
 
-        <div *ngIf="observation.id && canDeleteObservation" class="delete">
-          <button mat-flat-button color="warn" type="button" (click)="deleteObservation(observation)" class="delete__button">
-            Delete Observation
-          </button>
-        </div>
+      <div class="edit-form-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
+        <ng-container *ngFor="let formGroup of formGroup.get('forms').controls">
+          <div class="form" #form cdkDrag cdkDragBoundary=".edit-form-forms" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
+            <observation-edit-form
+              [formGroup]="formGroup"
+              [geometryStyle]="geometryStyle"
+              [options]="formOptions"
+              (remove)="removeForm($event)"
+              (featureEdit)="onGeometryEdit($event)">
+
+              <div *ngIf="form?.forms?.length > 1" cdkDragHandle>
+                <mat-icon class="form-drag-handle" svgIcon="handle"></mat-icon>
+              </div>
+            </observation-edit-form>
+          </div>
+        </ng-container>
       </div>
     </form>
   </div>
 
-  <div *ngIf="mask" @mask class="form-mask"></div>
+  <div class="add-form">
+    <button class="extended-fab-button" mat-fab color="accent" (click)="pickForm()">
+      <mat-icon>note_add</mat-icon>
+      <span class="extended-fab-button__text">Add Form</span>
+    </button>
+  </div>
 
+  <div *ngIf="mask" @mask class="form-mask"></div>
 </div>
+
+<ng-template #empty>
+  <div class="no-attachments">
+    <mat-icon class="no-attachments__icon">insert_drive_file</mat-icon>
+    <div class="no-attachments__text">No Attachments</div>
+  </div>
+</ng-template>

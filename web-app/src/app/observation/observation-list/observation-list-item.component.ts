@@ -145,9 +145,8 @@ export class ObservationListItemComponent implements OnChanges {
       forms: []
     }
 
-    this.observation.properties.forms.forEach(form => {
-      const observationForm = this.eventService.createForm(this.observation, formMap[form.formId])
-      observationForm.name = formMap[form.formId].name
+    this.observation.properties.forms.forEach(propertyForm => {
+      const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
       this.observationForm.forms.push(observationForm)
     })
 

@@ -21,12 +21,11 @@
 .item-card {
   margin: 8px;
   position: relative;
+  overflow: hidden;
 }
 
 .item-important {
   margin: -16px -16px 16px -16px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
   padding: 8px 0;
   display: flex;
   background: #FF9103;

@@ -1,16 +1,16 @@
-var util = require('util')
+const util = require('util')
   , turfKinks= require('@turf/kinks')
   , geoJsonValidator = require('geojson-validation')
   , Field = require('./field');
 
 geoJsonValidator.define('Position', function(position) {
-  let errors = [];
+  const errors = [];
   if (position[0] < -180 || position[0] > 180) {
-    errors.push('Longitude must be between -180 and 180');
+    errors.push('longitude must be between -180 and 180');
   }
 
   if (position[1] < -90 || position[1] > 90) {
-    errors.push('Latitude y must be between -90 and 90');
+    errors.push('latitude y must be between -90 and 90');
   }
 
   return errors;
@@ -22,18 +22,19 @@ function GeometryField(fieldDefinition, form) {
 util.inherits(GeometryField, Field);
 
 GeometryField.prototype.validate = function() {
-  GeometryField.super_.prototype.validate.call(this);
+  const error = GeometryField.super_.prototype.validate.call(this);
+  if (error) return error;
 
   if (!this.value) return;
 
   if (!geoJsonValidator.isGeometryObject(this.value)) {
-    throw new Error("Cannot create observation, '" + this.definition.title + "' is not valid.");
+    return { error: 'value', message: `${this.definition.title} must be GeoJSON` }
   }
 
   if (this.value.type === 'Polygon') {
-    var kinks = turfKinks(this.value);
+    const kinks = turfKinks(this.value);
     if (kinks.features.length > 0) {
-      throw new Error('Observation polygon geometry cannot intersect itself.');
+      return { error: 'value', message: `${this.definition.title} must not be a polygon that intersects itself` }
     }
   }
 };

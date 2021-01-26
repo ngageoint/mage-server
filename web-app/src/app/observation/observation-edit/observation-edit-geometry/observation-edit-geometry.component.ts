@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { FormGroup } from '@angular/forms'
 import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
 
 @Component({
@@ -7,7 +8,11 @@ import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
   styleUrls: ['./observation-edit-geometry.component.scss']
 })
 export class ObservationEditGeometryComponent implements OnChanges {
-  @Input() field: any
+  @Input() field: any // TODO remove
+
+  @Input() formGroup: FormGroup
+  @Input() definition: any
+
   @Input() featureId: string
   @Input() featureStyle: any
 
@@ -23,13 +28,12 @@ export class ObservationEditGeometryComponent implements OnChanges {
   constructor(private element: ElementRef, @Inject(LocalStorageService) private localStorageService: any) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // TODO look at changes
-    if (this.field && this.field.value) {
+    if (changes.formGroup && changes.formGroup.currentValue) {
       this.mapFeature = {
         id: this.featureId,
         type: 'Feature',
-        geometry: this.field.value,
-        style: { ...this.featureStyle }
+        geometry: changes.formGroup.currentValue.get(this.definition.name).value,
+        style: JSON.parse(JSON.stringify(this.featureStyle))
       }
     }
   }
@@ -37,11 +41,12 @@ export class ObservationEditGeometryComponent implements OnChanges {
   startGeometryEdit(): void {
     this.edit = true;
 
-    if (this.field.value) {
+    const value = this.formGroup.get(this.definition.name).value
+    if (value) {
       this.editFeature = {
         id: this.featureId,
         type: 'Feature',
-        geometry: this.field.value,
+        geometry: value,
         style: { ...this.featureStyle }
       }
     } else {
@@ -52,7 +57,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
           type: 'Point',
           coordinates: [mapPosition.center.lng, mapPosition.center.lat]
         },
-        style: { ...this.featureStyle }
+        style: JSON.parse(JSON.stringify(this.featureStyle))
       }
     }
 

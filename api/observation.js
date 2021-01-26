@@ -1,9 +1,9 @@
-var async = require('async')
+const async = require('async')
   , ObservationEvents = require('./events/observation.js')
   , FieldFactory = require('./field')
   , ObservationModel = require('../models/observation');
 
-var fieldFactory = new FieldFactory();
+const fieldFactory = new FieldFactory();
 
 function Observation(event, user, deviceId) {
   this._event = event;
@@ -11,14 +11,14 @@ function Observation(event, user, deviceId) {
   this._deviceId = deviceId;
 }
 
-var EventEmitter = new ObservationEvents();
+const EventEmitter = new ObservationEvents();
 Observation.on = EventEmitter;
 
 Observation.prototype.getAll = function(options, callback) {
-  var event = this._event;
-  var filter = options.filter;
+  const event = this._event;
+  const filter = options.filter;
   if (filter && filter.geometries) {
-    var allObservations = [];
+    let allObservations = [];
     async.each(
       filter.geometries,
       function(geometry, done) {
@@ -51,52 +51,151 @@ Observation.prototype.getById = function(observationId, options, callback) {
   ObservationModel.getObservationById(this._event, observationId, options, callback);
 };
 
+  // const tmp = {
+  //   timestamp: {
+  //       error: 'required',
+  //       message: 'this is required'
+  //       // type: 'value',
+  //       // message: 'not an ISO8601 string'
+
+  //   },
+  //   geometry: {
+  //     error: 'required',
+  //     message: 'this is required'
+  //     // type: 'value',
+  //     // message: 'not valid GeoJSON'
+  //   },
+  //   form: {
+  //     1: {
+  //       error: 'min',
+  //       message: 'does not meet min'
+  //       // error: 'max',
+  //       // message: 'does not meet max'
+  //     }
+  //   },
+  //   forms: [{
+  //     field: {
+  //       field1: {
+  //         required: {
+  //           type: 'required',
+  //           message: 'field1 is required'
+  //         },
+  //         value: {
+  //           type: 'value',
+  //           message: 'value is incorrect'
+  //         }
+  //       },
+  //       field2: {
+
+  //       }
+  //     }
+  //   }]
+  // }
+
 Observation.prototype.validate = function(observation) {
-  if (!observation.type || observation.type !== 'Feature' ) {
-    throw new Error("cannot create observation 'type' param not specified, or is not set to 'Feature'");
-  }
+  const error = {};
+  let message = '';
 
-  if (!observation.geometry) {
-    throw new Error("'geometry' param required but not specified");
-  }
-
-  if (!observation.properties.timestamp) {
-    throw new Error("'properties.timestamp' param required but not specified");
+  if (observation.type !== 'Feature') {
+    error.type = { error: 'required', message: observation.type ? 'type is required' :  'type must equal "Feature"' };
+    message += observation.type ? '\u2022 type is required\n' : '\u2022 type must equal "Feature"\n'
   }
 
   // validate timestamp
-  var timestampField = fieldFactory.createField({
+  const timestampError = fieldFactory.createField({
     type: 'date',
     required: true,
     name: 'timestamp',
-    title: 'timestamp'
-  }, observation.properties);
-  timestampField.validate();
+    title: 'Date'
+  }, observation.properties).validate();
+  console.log('timestamp error', timestampError)
+  if (timestampError) {
+    error.timestamp = timestampError;
+    message += `\u2022 ${timestampError.message}\n`;
+  }
 
-  var geometryField = fieldFactory.createField({
+  // validate geometry
+  const geometryError = fieldFactory.createField({
     type: 'geometry',
     required: true,
     name: 'geometry',
-    title: 'geometry'
-  }, observation);
-  geometryField.validate();
+    title: 'Location'
+  }, observation).validate();
+  if (geometryError) {
+    error.geometry = geometryError;
+    message += `\u2022 ${geometryError.message}\n`;
+  }
 
-  // validate form fields
-  var formMap = {};
-  this._event.forms.forEach(function(form) {
-    formMap[form._id] = form;
+  const forms = observation.properties.forms || [];
+  const formCount = forms.reduce((count, form) => {
+    count[form.formId] = (count[form.formId] || 0) + 1;
+    return count;
+  }, {})
+  
+  const formDefinitions = {};
+
+  // Validate forms min/max occurrences
+  const formError = {};
+  this._event.forms.forEach(formDefinition => {
+    formDefinitions[formDefinition._id] = formDefinition;
+
+    const count = formCount[formDefinition.id] || 0;
+    if (formDefinition.min && count < formDefinition.min) {
+      formError[formDefinition.id] = {
+        error: 'min',
+        message: `${formDefinition.name} form must be included in observation at least ${formDefinition.min} times`
+      }
+
+      message += `\u2022 ${formDefinition.name} form must be included in observation at least ${formDefinition.min} times\n`;
+    } else if  (formDefinition.max && (count > formDefinition.min)) {
+      formError[formDefinition.id] = {
+        error: 'min',
+        message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.min} times`
+      }
+
+      message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.min} times\n`;
+    }
   });
 
-  var forms = observation.properties.forms || [];
-  forms.forEach(function(observationForm) {
-    formMap[observationForm.formId].fields.filter(function(fieldDefinition) {
-      // Don't validate archived fields
-      return !fieldDefinition.archived;
-    }).forEach(function(fieldDefinition) {
-      var field = fieldFactory.createField(fieldDefinition, observationForm);
-      field.validate();
-    });
+  if (Object.keys(formError).length) {
+    error.form = formError;
+  }
+
+  // Validate form fields
+  const formErrors = [];
+  forms.forEach(observationForm => {
+    let fieldsMessage = '';
+
+    // Don't validate archived fields
+    const fieldsError = {};
+    formDefinitions[observationForm.formId].fields
+      .filter(fieldDefinition => !fieldDefinition.archived)
+      .forEach(fieldDefinition => {
+        const field = fieldFactory.createField(fieldDefinition, observationForm);
+        const fieldError = field.validate();
+        if (fieldError) {
+          fieldsError[field.name] = fieldError;
+          fieldsMessage += `    \u2022 ${fieldError.message}\n`;
+        }
+      });
+
+    if (Object.keys(fieldsError).length) {
+      formErrors.push(fieldsError);
+      message += `\n ${formDefinitions[observationForm.formId].name} form is invalid\n`;
+      message += fieldsMessage;
+    }
   });
+
+  if (formErrors.length) {
+    error.forms = formErrors
+  }
+
+  if (Object.keys(error).length) {
+    const err = new Error('Invalid Observation');
+    err.status = 400;
+    err.message = message;
+    return err;
+  }
 };
 
 Observation.prototype.createObservationId = function(callback) {
@@ -121,17 +220,12 @@ Observation.prototype.update = function(observationId, observation, callback) {
   if (this._user) observation.userId = this._user._id;
   if (this._deviceId) observation.deviceId = this._deviceId;
 
-  try {
-    this.validate(observation);
-  } catch (err) {
-    err.status = 400;
-    return callback(err);
-  }
+  const err = this.validate(observation);
+  if (err) return callback(err);
 
-  var self = this;
-  ObservationModel.updateObservation(this._event, observationId, observation, function(err, observation) {
+  ObservationModel.updateObservation(this._event, observationId, observation, (err, observation) => {
     if (observation) {
-      EventEmitter.emit(ObservationEvents.events.update, observation.toObject(), self._event, self._user);
+      EventEmitter.emit(ObservationEvents.events.update, observation.toObject(), this._event, this._user);
     }
 
     callback(err, observation);
@@ -155,11 +249,10 @@ Observation.prototype.removeImportant = function(observation, callback) {
 };
 
 Observation.prototype.addState = function(observationId, state, callback) {
-  const self = this;
-  ObservationModel.addState(this._event, observationId, state, function(err, state) {
+  ObservationModel.addState(this._event, observationId, state, (err, state) => {
     if (!err) {
       if (state.name === 'archive') {
-        EventEmitter.emit(ObservationEvents.events.remove, observationId, self._event);
+        EventEmitter.emit(ObservationEvents.events.remove, observationId, this._event);
       }
     }
     callback(err, state);

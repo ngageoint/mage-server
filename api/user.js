@@ -97,10 +97,9 @@ User.prototype.create = async function(user, options = {}) {
   let defaultEvents
   const authenticationType = user.authentication.type;
   if (settings[authenticationType]) {
-    const requireAdminActivation = settings[authenticationType].usersReqAdmin;
-    if (requireAdminActivation) {
-      user.active = user.active || !requireAdminActivation.enabled;
-    }
+    /// TODO bug here, this needs to default to true 
+    const requireAdminActivation = settings[authenticationType].usersReqAdmin || { enabled: true };
+    user.active = user.active || !requireAdminActivation.enabled;
 
     defaultTeams = settings[authenticationType].newUserTeams;
     defaultEvents = settings[authenticationType].newUserEvents;

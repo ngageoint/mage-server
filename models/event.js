@@ -69,10 +69,13 @@ function rolesWithPermission(permission) {
   return roles;
 }
 
-var FormSchema = new Schema({
+const FormSchema = new Schema({
   _id: { type: Number, required: true, unique: true, sparse: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
+  default: { type: Boolean, default: false },
+  min: { type: Number, required: false },
+  max: { type: Number, required: false },
   color: { type: String, required: true },
   archived: { type: Boolean, required: true, default: false },
   primaryField: { type: String, required: false },

@@ -1,4 +1,4 @@
-var util = require('util')
+const util = require('util')
   , Field = require('./field');
 
 function TextField(fieldDefinition, form) {
@@ -7,12 +7,13 @@ function TextField(fieldDefinition, form) {
 util.inherits(TextField, Field);
 
 TextField.prototype.validate = function() {
-  TextField.super_.prototype.validate.call(this);
+  const error = TextField.super_.prototype.validate.call(this);
+  if (error) return error;
 
   if (!this.value) return;
 
   if (this.value != null && !isString(this.value)) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a string");
+    return { error: 'value', message: `${this.definition.title} property must a String` }
   }
 };
 

@@ -1,20 +1,20 @@
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
   , log = require('winston');
 
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 // Collection to hold unique observation ids
-var ObservationIdSchema = new Schema();
-var ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
+const ObservationIdSchema = new Schema();
+const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
-var StateSchema = new Schema({
+const StateSchema = new Schema({
   name: { type: String, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
-var ThumbnailSchema = new Schema({
+const ThumbnailSchema = new Schema({
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
   name: { type: String, required: false },
@@ -26,7 +26,7 @@ var ThumbnailSchema = new Schema({
   strict: false
 });
 
-var AttachmentSchema = new Schema({
+const AttachmentSchema = new Schema({
   lastModified: {type: Date, required: false},
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
@@ -41,8 +41,8 @@ var AttachmentSchema = new Schema({
 });
 
 // Creates the Schema for the Attachments object
-var ObservationSchema = new Schema({
-  type: {type: String, required: true},
+const ObservationSchema = new Schema({
+  type: { type: String, enum: ['Feature'], required: true},
   lastModified: {type: Date, required: false},
   userId: {type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true},
   deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},

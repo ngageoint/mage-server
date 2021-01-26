@@ -24,6 +24,7 @@
   bottom: 0;
   width: 100%;
   overflow-y: auto;
+  padding-bottom: 70px;
 }
 
 .edit-content--scroll-lock {
@@ -31,7 +32,7 @@
 }
 
 .edit-banner {
-  background: white;
+  background: #e7e7e7;
   border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
   display: flex;
   flex-direction: column;
@@ -40,33 +41,29 @@
   z-index: 1;
 }
 
-.edit-banner--content {
-  background: white;
-  margin-top: 24px;
-  margin-bottom: 12px;
+.edit-banner-container {
+  margin: 16px;
   display: flex;
-  align-items: center;
+  flex-direction: row;
 }
 
-.edit-banner--content mat-icon {
-  margin-left: 16px;
-  margin-right: 16px;
-  font-size: 40px;
-  width: 40px;
-  height: 40px;
-  color: rgba(176,0,32, 0.87);
+.edit-banner-content {
+  display: flex;
+  flex-direction: column;
 }
 
-.edit-banner--content__text {
-  font-size: 1rem;
+.edit-banner-content__title {
+  font-size: 16px;
+  color: rgba(213, 0, 0, 1);
+}
+
+.edit-banner-content__summary {
+  font-size: 16px;
+  white-space: pre-wrap;
   color: rgba($color: #000000, $alpha: .87);
 }
 
-.edit-banner--content__text:first-letter {
-  text-transform: uppercase;
-}
-
-.edit-banner--actions {
+.edit-banner-actions {
   display: flex;
   justify-content: flex-end;
   margin-right: 8px;
@@ -87,20 +84,12 @@
   opacity: .2;
 }
 
-.edit-attachments { 
-  margin: 16px 8px;
-}
-
-.edit-attachments {
-  padding: 4px;
-}
-
 .edit-attachments__grid {
-  margin-bottom: 16px;
+  margin: 0 8px;
 }
 
 .delete {
-  margin: 16px;
+  margin: 16px 8px;
 }
 
 .delete__button {
@@ -113,5 +102,122 @@ input[type="file"] {
 }
 
 .add__button {
+  margin: 8px;
+}
+
+.attachment-field {
+  border-radius: 4px 4px 0 0;
+  background-color: rgb(245, 245, 245);
+}
+
+.attachment-field__underline {
   width: 100%;
+  pointer-events: none;
+  transform: scaleY(1.0001);
+  bottom: 1.34375em;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.attachment-field__label {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.125;
+  padding: 12px 16px 8px 16px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6)
+}
+
+.no-attachments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 194px;
+  background-color: #F5F5F5;
+  margin: 8px;
+}
+
+.no-attachments__icon {
+  font-size: 60px;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, .4);
+}
+
+.no-attachments__text {
+  font-size: 24px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .4)
+}
+
+.attachment-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.add-form {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}
+
+.extended-fab-button {
+  width: unset;
+  padding: 0 16px;
+  border-radius: 24px;
+  height: 48px;
+
+  .mat-icon {
+    margin-right: 12px;
+  }
+
+  .extended-fab-button__text {
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+}
+
+:host .extended-fab-button > ::ng-deep.mat-button-wrapper {
+  padding: unset;
+}
+
+.form-drag-handle {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.form-actions__drag {
+  margin-right: -14px;
+  margin-top: -14px;
+  // cursor: grab;
+}
+
+.form-actions__drag:active {
+  // cursor: grabbing;
+}
+
+.cdk-drop-list-dragging {
+  cursor: grabbing !important;
+}
+
+.cdk-drag-handle {
+  cursor: grab;
+}
+
+.cdk-drag-handle:active {
+  cursor: grabbing;
+}
+
+.cdk-drag-handle:hover {
+  cursor: grab;
 }

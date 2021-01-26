@@ -1,16 +1,4 @@
 <div class="item">
-  <div *ngIf="observation?.important" class="item-important">
-    <mat-icon class="item-important--icon">flag</mat-icon>
-    <div>
-      <div>
-        <span class="item-important--overline">Flagged By {{observation?.important?.user?.displayName}}</span>
-      </div>
-      <div class="item-important--description">
-        {{observation?.important?.description}}
-      </div>
-    </div>
-  </div>
-
   <div class="item-header">
     <div class="item-header-content">
       <div class="item-overline">

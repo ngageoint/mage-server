@@ -336,25 +336,21 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
     return forms;
   }
 
-  function createForm(observation, form, viewMode) {
+  function createForm(observationForm, formDefinition, viewMode) {
 
-    var observationForm = angular.copy(form);
+    const form = angular.copy(formDefinition);
 
-    var existingPropertyFields = [];
-    _.each(observation.properties.forms, function(form) {
-      if (form.formId === observationForm.id) {
-        _.each(form, function(value, key) {
+    const existingPropertyFields = [];
 
-          var field = service.getFormField(observationForm, key);
-          if (field) {
-            if (field.type === 'date' && field.value) {
-              field.value = moment(value).toDate();
-            } else {
-              field.value = value;
-            }
-            existingPropertyFields.push(field);
-          }
-        });
+    _.each(observationForm, function(value, key) {
+      const field = service.getFormField(form, key);
+      if (field) {
+        if (field.type === 'date' && field.value) {
+          field.value = moment(value).toDate();
+        } else {
+          field.value = value;
+        }
+        existingPropertyFields.push(field);
       }
     });
 
@@ -362,7 +358,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
       observationForm.fields = _.intersection(observationForm.fields, existingPropertyFields);
     }
 
-    return observationForm;
+    return form;
   }
 
   function exportForm(event) {

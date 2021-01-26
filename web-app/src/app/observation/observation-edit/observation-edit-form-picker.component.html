@@ -1,0 +1,7 @@
+<mat-nav-list>
+  <mat-list-item *ngFor="let form of forms" (click)="formPicked(form)">
+    <mat-icon mat-list-icon [style.color]="form.color">description</mat-icon>
+    <div mat-line>{{form.name}}</div>
+    <div mat-line> {{form.description}} </div>
+  </mat-list-item>
+</mat-nav-list>

@@ -1,6 +1,6 @@
 module.exports = function(app, security) {
 
-  var async = require('async')
+  const async = require('async')
     , api = require('../api')
     , log = require('winston')
     , archiver = require('archiver')
@@ -17,7 +17,7 @@ module.exports = function(app, security) {
     , {default: upload} = require('../upload')
     , passport = security.authentication.passport;
 
-  var sortColumnWhitelist = ["lastModified"];
+  const sortColumnWhitelist = ["lastModified"];
 
   function transformOptions(req) {
     return {
@@ -292,7 +292,7 @@ module.exports = function(app, security) {
       new api.Observation().createObservationId(function(err, doc) {
         if (err) return next(err);
 
-        var response = observationXform.transform(doc, transformOptions(req));
+        const response = observationXform.transform(doc, transformOptions(req));
         res.status(201).json(response);
       });
     }
@@ -307,9 +307,8 @@ module.exports = function(app, security) {
     populateUserFields,
     function (req, res, next) {
       new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
-        if (err) {
-          return next(err);
-        }
+        if (err) return next(err);
+
         if (!updatedObservation) {
           return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
         }

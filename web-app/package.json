@@ -46,9 +46,9 @@
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
     "@angular/upgrade": "~8.2.14",
-    "@nader-eloshaiker/mat-datetimepicker": "4.0.7",
-    "@nader-eloshaiker/mat-datetimepicker-moment": "4.0.7",
     "@ng-select/ng-select": "2.20.0",
+    "@mat-datetimepicker/core": "3.0.1",
+    "@mat-datetimepicker/moment": "3.0.1",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
@@ -91,8 +91,7 @@
     "webfontloader": "1.6.6",
     "xml2js": "0.4.19",
     "zone.js": "~0.9.1",
-    "zxcvbn": "4.4.2",
-    "@angular-material-components/datetime-picker": "2.x"
+    "zxcvbn": "4.4.2"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.803.21",

@@ -5,7 +5,7 @@ function Field(definition, value) {
 
 Field.prototype.validate = function() {
   if (this.definition.required && this.value == null) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property is required");
+    return { error: 'required', message: `${this.definition.title} is required` }
   }
 };
 

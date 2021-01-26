@@ -50,11 +50,12 @@ import {
   MatBadgeModule,
   MatTableModule,
   MatPaginatorModule,
-  MatSortModule
+  MatSortModule,
+  MatBottomSheetModule
 } from '@angular/material';
 
-import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
-import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
+import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
+import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
 
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 
@@ -89,7 +90,6 @@ import { ObservationViewComponent } from './observation/observation-view/observa
 import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
-import { ObservationFormComponent } from './observation/observation-form/observation-form.component';
 import { ObservationListComponent } from './observation/observation-list/observation-list.component';
 import { UserViewComponent } from './user/user-view/user-view.component';
 import { UserListItemComponent } from './user/user-list/user-list-item.component';
@@ -137,6 +137,8 @@ import {
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
+import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
+import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
 
 @NgModule({
   declarations: [
@@ -180,7 +182,6 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ObservationViewMultiselectdropdownComponent,
     ObservationViewFormComponent,
     ObservationFavoritesComponent,
-    ObservationFormComponent,
     ObservationListComponent,
     MapClipComponent,
     BootstrapComponent,
@@ -197,7 +198,9 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ColorPickerComponent,
     ExportsComponent,
     ExportMetadataDialogComponent,
-    CdkDetailRowDirective
+    CdkDetailRowDirective,
+    ObservationEditFormPickerComponent,
+    ObservationOptionsComponent
   ],
   imports: [
     BrowserModule,
@@ -209,6 +212,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     BrowserAnimationsModule,
     DragDropModule,
     MatBadgeModule,
+    MatBottomSheetModule,
     MatDialogModule,
     MatButtonToggleModule,
     MatNativeDateModule,
@@ -278,10 +282,12 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     MatSidenavContainer,
     BootstrapComponent,
     FeedPanelComponent,
+    ObservationOptionsComponent,
     ObservationDeleteComponent,
     ObservationFavoritesComponent,
     ObservationListItemComponent,
     ObservationPopupComponent,
+    ObservationEditFormPickerComponent,
     UserViewComponent,
     UserAvatarComponent,
     UserPopupComponent,

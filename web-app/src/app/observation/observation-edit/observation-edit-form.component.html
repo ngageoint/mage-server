@@ -1,26 +1,64 @@
 <mat-card>
-  <mat-card-header>
-    <mat-card-title>{{formDefinition.name}}</mat-card-title>
-  </mat-card-header>
-
-  <div *ngFor="let field of nonArchivedFields(formDefinition.fields)">
-    <div [ngSwitch]="field.type">
-      <observation-edit-checkbox *ngSwitchCase="'checkbox'" [field]="field"></observation-edit-checkbox>
-      <observation-edit-date *ngSwitchCase="'date'" [field]="field"></observation-edit-date>
-      <observation-edit-dropdown *ngSwitchCase="'dropdown'" [field]="field"></observation-edit-dropdown>
-      <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'" [field]="field"></observation-edit-multiselect>
-      <observation-edit-email *ngSwitchCase="'email'" [field]="field"></observation-edit-email>
-      <observation-edit-number *ngSwitchCase="'numberfield'" [field]="field"></observation-edit-number>
-      <observation-edit-radio *ngSwitchCase="'radio'" [field]="field"></observation-edit-radio>
-      <observation-edit-text *ngSwitchCase="'textfield'" [field]="field"></observation-edit-text>
-      <observation-edit-textarea *ngSwitchCase="'textarea'" [field]="field"></observation-edit-textarea>
-      <observation-edit-geometry *ngSwitchCase="'geometry'" 
-        [field]="field"
-        featureId="{{formDefinition.id}}_{{field.id}}"
-        [featureStyle]="geometryStyle"
-        (onFeatureEdit)="onGeometryEdit($event)"
-        (onFeatureChanged)="onGeometryChanged($event, field)">
-      </observation-edit-geometry>
+  <div class="form-header">
+    <div class="form-header-content">
+      <mat-icon class="form-header-title__icon" [style.color]="definition.color">description</mat-icon>
+      <div class="form-header-title">
+        <div class="form-header-title__text">{{definition.name}}</div>
+        <div *ngIf="primaryField.value" class="form-header__primary">
+          <div [ngSwitch]="primaryField?.type">
+            <div *ngSwitchCase="geometry">
+              {{primaryField?.value | geometry:5}}
+            </div>
+            <div *ngSwitchDefault>
+              {{primaryField?.value}}
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="secondaryField.value" class="form-header__secondary">
+          <span [ngSwitch]="secondaryField?.type">
+            <span *ngSwitchCase="geometry">
+              {{secondaryField?.value | geometry:5}}
+            </span>
+            <span *ngSwitchDefault>
+              {{secondaryField?.value}}
+            </span>
+          </span>
+        </div>
+      </div>
+      <div class="form-header-actions">
+        <button mat-icon-button (click)="expand = !expand"><mat-icon [@rotate]="expand" class="form-header-actions__expand">expand_more</mat-icon></button>
+        <div class="form-header-actions__drag" #dragHandle>
+          <ng-content></ng-content>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div *ngIf="expand" @expand class="form-content">
+    <div *ngFor="let control of fieldGroup.controls">
+      <div [ngSwitch]="control.definition.type">
+        <!-- <observation-edit-checkbox *ngSwitchCase="'checkbox'" [field]="field"></observation-edit-checkbox>
+        <observation-edit-date *ngSwitchCase="'date'" [field]="field"></observation-edit-date>
+        <observation-edit-dropdown *ngSwitchCase="'dropdown'" [field]="field"></observation-edit-dropdown>
+        <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'" [field]="field"></observation-edit-multiselect>
+        <observation-edit-email *ngSwitchCase="'email'" [field]="field"></observation-edit-email>
+        <observation-edit-number *ngSwitchCase="'numberfield'" [field]="field"></observation-edit-number>
+        <observation-edit-radio *ngSwitchCase="'radio'" [field]="field"></observation-edit-radio> -->
+        <observation-edit-text *ngSwitchCase="'textfield'" [field]="field" [control]="control"></observation-edit-text>
+        <!-- <observation-edit-textarea *ngSwitchCase="'textarea'" [field]="field"></observation-edit-textarea>
+        <observation-edit-geometry *ngSwitchCase="'geometry'"
+          [field]="field"
+          featureId="{{definition.id}}_{{field.id}}"
+          [featureStyle]="geometryStyle"
+          (onFeatureEdit)="onGeometryEdit($event)"
+          (onFeatureChanged)="onGeometryChanged($event, field)">
+        </observation-edit-geometry> -->
+      </div>
+    </div>
+  
+    <div class="form-actions">
+      <button mat-button color="warn" (click)="removeForm()">Remove Form</button>
     </div>
   </div>
 </mat-card>

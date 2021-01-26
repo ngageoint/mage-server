@@ -7,8 +7,6 @@
       <div class="navigation__title">
         <span>{{primaryFeedField?.value}}</span>
       </div>
-
-      <button *ngIf="canEdit" mat-button (click)="onEdit()">EDIT</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
@@ -112,10 +110,10 @@
               </button>
               <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
             </div>
-        
-            <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download" matTooltipPosition="above">
-              <mat-icon>save_alt</mat-icon>
-            </a>
+
+            <button *ngIf="canEdit" mat-icon-button (click)="onOptions()" class="actions--inactive">
+              <mat-icon>more_vert</mat-icon>
+            </button>
           </div>
         </div>
       </mat-card-actions>

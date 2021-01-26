@@ -14,3 +14,21 @@ body {
 bootstrap {
   height: 100%;
 }
+
+mat-bottom-sheet-container.feed-panel {
+  position: absolute;
+  left: 0;
+  bottom:0;
+  width: 450px;
+  min-width: 450px;
+}
+
+.form-remove-snackbar {
+  position: absolute;
+  left: 29px;
+  bottom:0;
+}
+
+.item-drag {
+  cursor: grabbing !important;
+}

@@ -1,0 +1,93 @@
+
+.form-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.form-header-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex: 1 0 auto;
+}
+
+.form-header-title {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.form-header-title__icon {
+  width: 40px;
+  height: 40px;
+  font-size: 40px;
+  margin-right: 16px;
+}
+
+.form-header-title__text {
+  font-family: Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  padding-bottom: 8px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.form-header__primary {
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .87);
+  padding-bottom: 4px;
+}
+
+.form-header__secondary {
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, .6);
+}
+
+.form-header-actions {
+  display: flex;
+}
+
+
+.form-header-actions > * + * {
+  margin-left: 8px;
+}
+
+.form-header-actions__drag {
+  margin-right: -14px;
+  margin-top: -14px;
+  // cursor: grab;
+}
+
+.form-header-actions__drag:active {
+  // cursor: grabbing;
+}
+
+.cdk-drag-handle {
+  cursor: grab;
+}
+
+.cdk-drag-handle:active {
+  cursor: grabbing;
+}
+
+.cdk-drop-list-dragging {
+  cursor: grabbing;
+}
+
+.form-header-actions__expand {
+  color:rgba(0, 0, 0, .6);
+}
+
+.form-content {
+  margin-top: 24px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}

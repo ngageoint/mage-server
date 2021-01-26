@@ -1,7 +1,7 @@
-var util = require('util')
+const util = require('util')
   , TextField = require('./textField');
 
-var emailRegex = /^[^\s@]+@[^\s@]+\./;
+const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
 function EmailField(fieldDefinition, form) {
   EmailField.super_.call(this, fieldDefinition, form);
@@ -10,12 +10,13 @@ function EmailField(fieldDefinition, form) {
 util.inherits(EmailField, TextField);
 
 EmailField.prototype.validate = function() {
-  EmailField.super_.prototype.validate.call(this);
+  const error = EmailField.super_.prototype.validate.call(this);
+  if (error) return error;
 
   if (!this.value) return;
 
   if (!this.value.match(emailRegex)) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid email address");
+    return { error: 'value', message: `${this.definition.title} must be valid email address` }
   }
 };
 

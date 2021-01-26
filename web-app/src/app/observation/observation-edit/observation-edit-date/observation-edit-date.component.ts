@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
-import { NgModel } from '@angular/forms'
+import { FormGroup, NgModel } from '@angular/forms'
 import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
 import * as moment from 'moment'
 
@@ -16,6 +16,8 @@ interface DateField {
   styleUrls: ['./observation-edit-date.component.scss']
 })
 export class ObservationEditDateComponent implements OnChanges {
+  @Input() definition: DateField
+  @Input() formGroup: FormGroup
 
   @Input() field: DateField
 
@@ -31,9 +33,10 @@ export class ObservationEditDateComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.field && this.field.value) {
-      this.date = moment(changes.field.currentValue.value)
-      this.time = moment(changes.field.currentValue.value)
+    if (changes.formGroup && changes.formGroup.currentValue) {
+      const timestamp = changes.formGroup.currentValue.get(this.definition.name).value
+      this.date = moment(timestamp)
+      this.time = moment(timestamp)
     }
   }
 
@@ -69,7 +72,7 @@ export class ObservationEditDateComponent implements OnChanges {
       date.add(date.utcOffset(), 'minutes')
     }
 
-    this.field.value = date.toDate()
+    this.formGroup.get(this.definition.name).setValue(date.toDate())
   }
 
 }

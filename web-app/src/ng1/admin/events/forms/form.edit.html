@@ -27,13 +27,32 @@
         </div>
         <div class="top-gap">
           <label class="control-label">Description</label>
-            <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
+          <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
         </div>
 
         <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
           <label class="control-label">Color</label>
             <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="$ctrl.form.color" name="color" ng-required="true">
             <span class="help-block" ng-if="$ctrl.generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+        </div>
+
+        <div class="top-gap">
+          <label>
+            <input type="checkbox" ng-model="$ctrl.form.default"> Add Form To Every New Observation
+          </label>
+        </div>
+
+        <div class="row top-gap-l">
+          <div class="col-md-6">
+            <label>Minimum</label>
+            <input class="form-control" type="number" ng-model="$ctrl.form.min">
+            <p class="help-block">Minimum number times this form must be present in an observation.</p>
+          </div>
+          <div class="col-md-6">
+            <label>Maximum</label>
+            <input class="form-control" type="number" ng-model="$ctrl.form.max">
+            <p class="help-block">Minimum number times this form can be present in an observation.</p>
+          </div>
         </div>
       </form>
 

@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ObservationFormComponent } from './observation-form.component';
+import { ObservationOptionsComponent } from './observation-options.component';
 
-describe('ObservationFormComponent', () => {
-  let component: ObservationFormComponent;
-  let fixture: ComponentFixture<ObservationFormComponent>;
+describe('ObservationOptionsComponent', () => {
+  let component: ObservationOptionsComponent;
+  let fixture: ComponentFixture<ObservationOptionsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationFormComponent ]
+      declarations: [ ObservationOptionsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ObservationFormComponent);
+    fixture = TestBed.createComponent(ObservationOptionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
