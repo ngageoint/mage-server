@@ -54,10 +54,10 @@ Shapefile.prototype.observationsToShapefile = function (archive, done) {
     write(observations, function (err, files) {
       if (err) return done(err);
 
-      archive.append(files.shp, { name: 'observations/observations' + files.shapeType + '.shp' });
-      archive.append(files.shx, { name: 'observations/observations' + files.shapeType + '.shx' });
-      archive.append(files.dbf, { name: 'observations/observations' + files.shapeType + '.dbf' });
-      archive.append(files.prj, { name: 'observations/observations' + files.shapeType + '.prj' });
+      archive.append(files.shp, { name: 'observations' + files.shapeType + '.shp' });
+      archive.append(files.shx, { name: 'observations' + files.shapeType + '.shx' });
+      archive.append(files.dbf, { name: 'observations' + files.shapeType + '.dbf' });
+      archive.append(files.prj, { name: 'observations' + files.shapeType + '.prj' });
     }, done);
   });
 };
@@ -85,17 +85,14 @@ Shapefile.prototype.locationsToShapefiles = function (archive, done) {
   }).then(() => {
     if (cursor) cursor.close;
 
-    const first = locations.slice(0).pop();
-    const last = locations.slice(-1).pop();
-    if (last) {
-      const interval = moment(first.properties.timestamp).toISOString() + '_' + moment(last.properties.timestamp).toISOString();
+    if (locations.length > 0) {
       write(locations, function (err, files) {
         if (err) return done(err);
 
-        archive.append(files.shp, { name: 'locations/' + interval + '.shp' });
-        archive.append(files.shx, { name: 'locations/' + interval + '.shx' });
-        archive.append(files.dbf, { name: 'locations/' + interval + '.dbf' });
-        archive.append(files.prj, { name: 'locations/' + interval + '.prj' });
+        archive.append(files.shp, { name: 'locations' + files.shapeType + '.shp' });
+        archive.append(files.shx, { name: 'locations' + files.shapeType + '.shx' });
+        archive.append(files.dbf, { name: 'locations' + files.shapeType + '.dbf' });
+        archive.append(files.prj, { name: 'locations' + files.shapeType + '.prj' });
 
         log.info('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
       }, done);
