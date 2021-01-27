@@ -16,6 +16,18 @@ function Shapefile(options) {
 util.inherits(Shapefile, Exporter);
 module.exports = Shapefile;
 
+/**
+ * ESRI. (2020, December 7). Shapefiles-ArcGIS Online Help | Documentation. ArcGIS Online.
+ * Retrieved from https://doc.arcgis.com/en/arcgis-online/reference/shapefiles.htm
+ * 
+ * "Compression formats other than a .zip archive are not supported."
+ * 
+ * "When you create a .zip file that contains the .shp, .shx, .dbf, and .prj 
+ * files that comprise the shapefile, store your shapefile directly in the 
+ * root (the central directory) of the .zip archive, not in directories 
+ * within the archive. If your .zip file viewer shows path information, 
+ * the path should be blank."
+ */
 Shapefile.prototype.export = function (stream) {
   const self = this;
 
