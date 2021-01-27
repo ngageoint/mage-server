@@ -110,7 +110,10 @@ export class ExportMetadataDialogComponent implements OnInit, OnDestroy {
         @Inject(LocalStorageService)
         public storageService: any,
         @Inject(FilterService) private filterService: any) {
+
         this.token = this.storageService.getToken();
+        this.localTime = this.storageService.getTimeZoneView().toUpperCase() === 'LOCAL';
+        this.setOffset();
     }
 
     openExport(): void {
@@ -125,7 +128,6 @@ export class ExportMetadataDialogComponent implements OnInit, OnDestroy {
         this.sort.sortChange.subscribe(() => this.paginator.firstPage());
         this.loadData();
 
-        this.toggleTime();
         this.exportEvent = { selected: this.filterService.getEvent() };
         this.exportFormat = this.exportFormats[0];
     }
