@@ -211,6 +211,74 @@ describe("user create tests", function () {
       .end(done);
   });
 
+  it('should create user and default admin approval to true', function (done) {
+    mockTokenWithPermission('NO_PERMISSIONS');
+
+    sinon.mock(RoleModel)
+      .expects('findOne')
+      .withArgs({ name: 'USER_ROLE' })
+      .yields(null, new RoleModel({
+        permissions: ['SOME_PERMISSIONS']
+      }));
+
+    const id = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      password: 'passwordpassword',
+      passwordconfirm: 'passwordpassword',
+      authenticationId: new AuthenticationModel({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        security: {}
+      })
+    });
+
+    sinon.mock(Authentication)
+      .expects('createAuthentication')
+      .resolves(mockUser.authentication);
+
+    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+      settings: {
+        local: {
+        }
+      }
+    }));
+
+    sinon.mock(mockUser)
+      .expects('populate')
+      .withArgs('roleId')
+      .yields(null, mockUser);
+
+    sinon.mock(UserModel)
+      .expects('create')
+      .withArgs(sinon.match.has('active', false))
+      .yields(null, mockUser);
+
+    request(app)
+      .post('/api/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        displayName: 'test',
+        phone: '000-000-0000',
+        email: 'test@test.com',
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function (res) {
+        var user = res.body;
+        should.exist(user);
+        user.should.have.property('id').that.equals(id.toString());
+      })
+      .end(done);
+  });
+
   it('should create user with no whitespace', function (done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
