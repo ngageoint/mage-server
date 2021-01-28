@@ -26,9 +26,6 @@ function excelLink(attachment, attachmentNumber) {
 Csv.prototype.export = function (streamable) {
   const self = this;
 
-  streamable.type('application/zip');
-  streamable.attachment('mage-csv.zip');
-
   const observationFields = [{
     label: 'id',
     value: 'id'
