@@ -2248,16 +2248,16 @@ paths:
           format: date-time
       - name: observations
         in: query
+        required: true
         description: Boolean flag indicating whether or not to export observations
         schema:
           type: boolean
-          default: true
       - name: locations
         in: query
+        required: true
         description: Boolean flag indicating whether or not to export user locations
         schema:
           type: boolean
-          default: true
       - name: attachments
         in: query
         description: Boolean flag indicating whether or not to `exclude` observation attachments (if any).  Attachments are included by default.

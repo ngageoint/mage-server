@@ -259,6 +259,12 @@ function validateEventAccess(req, res, next) {
 
 function getEvent(req, res, next) {
   Event.getById(req.parameters.filter.eventId, {}, function (err, event) {
+    if (err || !event) {
+      const msg = "Event with id " + req.parameters.filter.eventId + " does not exist";
+      res.status(400).send(msg);
+      return next(msg);
+    }
+
     req.event = event;
 
     // form map
