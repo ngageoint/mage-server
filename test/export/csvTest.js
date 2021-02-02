@@ -31,6 +31,7 @@ describe("csv export tests", function () {
     forms: [],
     acl: {}
   };
+  const userId = mongoose.Types.ObjectId();
 
   beforeEach(function () {
     const mockEvent = new EventModel(event);
@@ -43,7 +44,6 @@ describe("csv export tests", function () {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -108,21 +108,24 @@ describe("csv export tests", function () {
       .yields(null, [mockObservation]);
 
     const writable = new TestWritableStream();
+    writable.on('finish', () => {
+      //TODO read from stream, and verify observations and locations
+      done();
+    });
 
     const csvExporter = new CsvExporter(options);
     csvExporter.export(writable);
-
-    //TODO read from stream, and verify observations and locations
-    done();
   });
 });
 
 class TestWritableStream {
   constructor() {
     stream.Writable.call(this);
+    this.bufferArray = [];
   }
   _write(chunk, encoding, done) {
     //console.log(chunk.toString());
+    this.bufferArray.push(chunk);
     done();
   }
 };
