@@ -1,29 +1,63 @@
 const sinon = require('sinon')
   , expect = require('chai').expect
+  , mongoose = require('mongoose')
+  , stream = require('stream')
+  , util = require('util')
   , CsvExporter = require('../../export/csv')
-  , Writable = require('stream');
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
 require('chai').should();
 require('sinon-mongoose');
 
-Writable.prototype.type = function () { };
-Writable.prototype.attachment = function () { };
+require('../../models/team');
+const TeamModel = mongoose.model('Team');
+
+require('../../models/event');
+const EventModel = mongoose.model('Event');
+
+const Observation = require('../../models/observation');
+const observationModel = Observation.observationModel;
+
+stream.Writable.prototype.type = function () { };
+stream.Writable.prototype.attachment = function () { };
 
 describe("csv export tests", function () {
+
+  const event = {
+    _id: 1,
+    name: 'Event 1',
+    collectionName: 'observations1',
+    forms: [],
+    acl: {}
+  };
+
+  beforeEach(function () {
+    const mockEvent = new EventModel(event);
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+  });
 
   afterEach(function () {
     sinon.restore();
   });
 
+  const userId = mongoose.Types.ObjectId();
+  function mockTokenWithPermission(permission) {
+    sinon.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
+  }
+
   it("should export data as csv", function (done) {
-    const event = {
-      _id: 1,
-      forms: [],
-      formMap: []
-    }
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     const user0 = {
-      id: '0',
+      id: userId,
       username: 'test_user_0'
     };
     const users = new Map();
@@ -42,19 +76,54 @@ describe("csv export tests", function () {
       devices: devices,
       filter: {
         exportObservations: true,
-        exportLocations: true
+        exportLocations: false
       }
     };
 
     //TODO stub out observations and locations
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
 
-    const streamable = new Writable();
+    const ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    const mockObservation = new ObservationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now(),
+        forms: []
+      }
+    });
+    sinon.mock(ObservationModel)
+      .expects('find')
+      .chain('exec')
+      .yields(null, [mockObservation]);
+
+    const writable = new TestWritableStream();
+
     const csvExporter = new CsvExporter(options);
-
-    expect.fail('Not Implemented');
-    //csvExporter.export(streamable);
+    csvExporter.export(writable);
 
     //TODO read from stream, and verify observations and locations
     done();
   });
 });
+
+class TestWritableStream {
+  constructor() {
+    stream.Writable.call(this);
+  }
+  _write(chunk, encoding, done) {
+    //console.log(chunk.toString());
+    done();
+  }
+};
+util.inherits(TestWritableStream, stream.Writable); 
