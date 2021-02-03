@@ -3,6 +3,7 @@ const sinon = require('sinon')
   , mongoose = require('mongoose')
   , stream = require('stream')
   , util = require('util')
+  , JSZip = require('JSZip')
   , CsvExporter = require('../../export/csv')
   , MockToken = require('../mockToken')
   , TokenModel = mongoose.model('Token');
@@ -47,7 +48,7 @@ describe("csv export tests", function () {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
@@ -110,6 +111,10 @@ describe("csv export tests", function () {
     const writable = new TestWritableStream();
     writable.on('finish', () => {
       //TODO read from stream, and verify observations and locations
+      const zip = new JSZip(writable.byteArray);
+      const observations = zip.files['observations.csv'];
+      expect(observations).to.not.be.null;
+
       done();
     });
 
@@ -121,11 +126,12 @@ describe("csv export tests", function () {
 class TestWritableStream {
   constructor() {
     stream.Writable.call(this);
-    this.bufferArray = [];
+    this.byteArray = [];
   }
   _write(chunk, encoding, done) {
-    //console.log(chunk.toString());
-    this.bufferArray.push(chunk);
+    for (let i = 0; i < chunk.length; i++) {
+      this.byteArray.push(chunk[i]);
+    }
     done();
   }
 };
