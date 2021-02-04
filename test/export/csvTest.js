@@ -20,6 +20,9 @@ const EventModel = mongoose.model('Event');
 const Observation = require('../../models/observation');
 const observationModel = Observation.observationModel;
 
+require('../../models/location');
+const LocationModel = mongoose.model('Location');
+
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
 
@@ -67,7 +70,52 @@ describe("csv export tests", function () {
     return csvData;
   }
 
-  it("should export data as csv", function (done) {
+  it("should populate nothing", function (done) {
+    const user0 = {
+      id: userId,
+      username: 'test_user_0'
+    };
+    const users = new Map();
+    users[user0.id] = user0;
+
+    const device0 = {
+      id: '0',
+      uid: '12345'
+    };
+    const devices = new Map();
+    devices[device0.id] = device0;
+
+    const options = {
+      event: event,
+      users: users,
+      devices: devices,
+      filter: {
+        exportObservations: false,
+        exportLocations: false
+      }
+    };
+
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    const writable = new TestWritableStream();
+    writable.on('finish', () => {
+      const zip = new JSZip(writable.byteArray);
+      const observations = zip.files['observations.csv'];
+      expect(observations).to.be.undefined;
+      
+      const locations = zip.files['locations.csv'];
+      expect(locations).to.be.undefined;
+
+      done();
+    });
+
+    const csvExporter = new CsvExporter(options);
+    csvExporter.export(writable);
+  });
+
+  it("should populate observations", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     const user0 = {
@@ -94,7 +142,6 @@ describe("csv export tests", function () {
       }
     };
 
-    //TODO stub out observations and locations
     sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
@@ -123,8 +170,10 @@ describe("csv export tests", function () {
 
     const writable = new TestWritableStream();
     writable.on('finish', () => {
-      //TODO read from stream, and verify observations and locations
       const zip = new JSZip(writable.byteArray);
+      const locations = zip.files['locations.csv'];
+      expect(locations).to.be.undefined;
+
       const observations = zip.files['observations.csv'];
       expect(observations).to.not.be.null;
       expect(observations._data).to.not.be.null;
@@ -149,6 +198,79 @@ describe("csv export tests", function () {
     const csvExporter = new CsvExporter(options);
     csvExporter.export(writable);
   });
+
+  /*it("should populate locations", function (done) {
+    mockTokenWithPermission('READ_LOCATION_ALL');
+
+    const user0 = {
+      id: userId,
+      username: 'test_user_0'
+    };
+    const users = new Map();
+    users[user0.id] = user0;
+
+    const device0 = {
+      id: '0',
+      uid: '12345'
+    };
+    const devices = new Map();
+    devices[device0.id] = device0;
+
+    const options = {
+      event: event,
+      users: users,
+      devices: devices,
+      filter: {
+        exportObservations: false,
+        exportLocations: true
+      }
+    };
+
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sinon.mock(LocationModel)
+      .expects('find')
+      .yields(null, [{
+        "eventId": event._id,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    const writable = new TestWritableStream();
+    writable.on('finish', () => {
+      const zip = new JSZip(writable.byteArray);
+      const locations = zip.files['locations.csv'];
+      expect(locations).to.not.be.null;
+      expect(locations._data).to.not.be.null;
+
+      const locBufferContent = locations._data.getContent();
+      expect(locBufferContent).to.not.be.null;
+      const locCsvData = parseCSV(locBufferContent);
+      expect(locCsvData.length).to.equal(2);
+
+      expect(locCsvData[0][3]).to.equal('"Shape Type"');
+      expect(locCsvData[1][3]).to.equal('"Point"');
+
+      expect(locCsvData[0][4]).to.equal('"Latitude"');
+      expect(locCsvData[1][4]).to.equal('0');
+
+      expect(locCsvData[0][5]).to.equal('"Longitude"');
+      expect(locCsvData[1][5]).to.equal('0');
+
+      done();
+    });
+
+    const csvExporter = new CsvExporter(options);
+    csvExporter.export(writable);
+  });*/
 });
 
 class TestWritableStream {
