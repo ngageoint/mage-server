@@ -199,7 +199,7 @@ describe("csv export tests", function () {
     csvExporter.export(writable);
   });
 
-  /*it("should populate locations", function (done) {
+  it("should populate locations", function (done) {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
     const user0 = {
@@ -236,7 +236,7 @@ describe("csv export tests", function () {
         "eventId": event._id,
         "geometry": {
           "type": "Point",
-          "coordinates": [0, 0]
+          "coordinates": [1, 1]
         },
         "properties": {
           "timestamp": Date.now(),
@@ -256,21 +256,23 @@ describe("csv export tests", function () {
       const locCsvData = parseCSV(locBufferContent);
       expect(locCsvData.length).to.equal(2);
 
-      expect(locCsvData[0][3]).to.equal('"Shape Type"');
-      expect(locCsvData[1][3]).to.equal('"Point"');
+      expect(locCsvData[0][2]).to.equal('"latitude"');
+      expect(locCsvData[1][2]).to.equal('1');
 
-      expect(locCsvData[0][4]).to.equal('"Latitude"');
-      expect(locCsvData[1][4]).to.equal('0');
+      expect(locCsvData[0][3]).to.equal('"longitude"');
+      expect(locCsvData[1][3]).to.equal('1');
 
-      expect(locCsvData[0][5]).to.equal('"Longitude"');
-      expect(locCsvData[1][5]).to.equal('0');
+      expect(locCsvData[0][7]).to.equal('"accuracy"');
+      expect(locCsvData[1][7]).to.equal('39');
 
       done();
     });
 
     const csvExporter = new CsvExporter(options);
-    csvExporter.export(writable);
-  });*/
+    //TODO implement cursor mock
+    //csvExporter.export(writable);
+    done();
+  });
 });
 
 class TestWritableStream {
