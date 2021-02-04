@@ -4,7 +4,6 @@ const sinon = require('sinon')
   , stream = require('stream')
   , util = require('util')
   , JSZip = require('jszip')
-  , { unzip } = require('zlib')
   , CsvExporter = require('../../export/csv')
   , MockToken = require('../mockToken')
   , TokenModel = mongoose.model('Token');
@@ -53,6 +52,19 @@ describe("csv export tests", function () {
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
+  }
+
+  function parseCSV(buffer) {
+    const decoder = new TextDecoder("utf-8");
+    const csvContent = decoder.decode(buffer);
+
+    let csvData = [];
+    let lbreak = csvContent.split("\n");
+    lbreak.forEach(res => {
+      csvData.push(res.split(","));
+    });
+
+    return csvData;
   }
 
   it("should export data as csv", function (done) {
@@ -117,12 +129,21 @@ describe("csv export tests", function () {
       expect(observations).to.not.be.null;
       expect(observations._data).to.not.be.null;
 
-      const buffer = observations._data.getContent();
-      expect(buffer).to.not.be.null;
-      const decoder = new TextDecoder("utf-8");
-      const csvContent = decoder.decode(buffer);
+      const obsBufferContent = observations._data.getContent();
+      expect(obsBufferContent).to.not.be.null;
+      const obsCsvData = parseCSV(obsBufferContent);
+      expect(obsCsvData.length).to.equal(2);
 
-      console.log(csvContent);
+      expect(obsCsvData[0][3]).to.equal('"Shape Type"');
+      expect(obsCsvData[1][3]).to.equal('"Point"');
+
+      expect(obsCsvData[0][4]).to.equal('"Latitude"');
+      expect(obsCsvData[1][4]).to.equal('0');
+
+      expect(obsCsvData[0][5]).to.equal('"Longitude"');
+      expect(obsCsvData[1][5]).to.equal('0');
+
+      done();
     });
 
     const csvExporter = new CsvExporter(options);
