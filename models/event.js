@@ -39,8 +39,8 @@ function hasAtLeastOneField(fields) {
 }
 
 function fieldNamesAreUnique(fields) {
-  let names = new Set();
-  var hasDuplicates = fields.some(function(field) {
+  const names = new Set();
+  const hasDuplicates = fields.some(function(field) {
     return names.size === names.add(field.name).size;
   });
 
@@ -51,16 +51,16 @@ function validateColor(color) {
   return /^#[0-9A-F]{6}$/i.test(color);
 }
 
-var permissions = {
+const permissions = {
   OWNER: ['read', 'update', 'delete'],
   MANAGER: ['read', 'update'],
   GUEST: ['read']
 };
 
 function rolesWithPermission(permission) {
-  var roles = [];
+  const roles = [];
 
-  for (var key in permissions) {
+  for (let key in permissions) {
     if (permissions[key].indexOf(permission) !== -1) {
       roles.push(key);
     }
@@ -74,7 +74,7 @@ const FormSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: false },
   default: { type: Boolean, default: false },
-  min: { type: Number, required: false },
+  min: { type: Number, required: false },  
   max: { type: Number, required: false },
   color: { type: String, required: true },
   archived: { type: Boolean, required: true, default: false },
@@ -87,34 +87,34 @@ const FormSchema = new Schema({
   style: { type: Schema.Types.Mixed, required: false }
 });
 
-const EventSchema = new Schema(
-  {
-    _id: { type: Number, required: true },
-    name: { type: String, required: true, unique: 'Event with name "{VALUE}" already exists.' },
-    description: { type: String, required: false },
-    complete: { type: Boolean },
-    collectionName: { type: String, required: true },
-    teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
-    layerIds: [{ type: Number, ref: 'Layer' }],
-    forms: [FormSchema],
-    style: {
-      type: Schema.Types.Mixed,
-      required: true,
-      default: {
-        fill: '#5278A2',
-        stroke: '#5278A2',
-        fillOpacity: 0.2,
-        strokeOpacity: 1,
-        strokeWidth: 2
-      }
-    },
-    acl: {}
+const EventSchema = new Schema({
+  _id: { type: Number, required: true },
+  name: { type: String, required: true, unique: 'Event with name "{VALUE}" already exists.' },
+  description: { type: String, required: false },
+  complete: { type: Boolean },
+  collectionName: { type: String, required: true },
+  teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
+  layerIds: [{ type: Number, ref: 'Layer' }],
+  forms: [FormSchema],
+  minObservationForms: { type: Number },
+  maxObservationForms: { type: Number },
+  style: {
+    type: Schema.Types.Mixed,
+    required: true,
+    default: {
+      fill: '#5278A2',
+      stroke: '#5278A2',
+      fillOpacity: 0.2,
+      strokeOpacity: 1,
+      strokeWidth: 2
+    }
   },
-  {
-    autoIndex: false,
-    minimize: false,
-    versionKey: false
-  });
+  acl: {}
+},{
+  autoIndex: false,
+  minimize: false,
+  versionKey: false
+});
 
 EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
@@ -128,11 +128,11 @@ function validateTeamIds(eventId, teamIds, next) {
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
     if (err) return next(err);
 
-    var containsInvalidTeam = teams.some(function(team) {
+    const containsInvalidTeam = teams.some(function(team) {
       return team.teamEventId && team.teamEventId !== eventId;
     });
     if (containsInvalidTeam) {
-      var error = new Error("Cannot add a team that belongs specifically to another event");
+      const error = new Error("Cannot add a team that belongs specifically to another event");
       error.status = 405;
       return next(error);
     }
@@ -156,7 +156,7 @@ EventSchema.pre('init', function(next, event) {
 });
 
 EventSchema.pre('remove', function(next) {
-  var event = this;
+  let event = this;
 
   async.parallel({
     collection: function(done) {
@@ -192,7 +192,7 @@ EventSchema.post('remove', function(event) {
   Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
     if (err) log.error('Could not get teams for deleted event ' + event.name, err);
 
-    var teamEvents = teams.filter(function(team) {
+    const teamEvents = teams.filter(function(team) {
       return team.teamEventId && team.teamEventId === event._id;
     });
 
@@ -552,7 +552,7 @@ exports.update = function(id, event, options, callback) {
     options = {};
   }
 
-  var update = ['name', 'description', 'complete', 'forms'].reduce(function(o, k) {
+  const update = ['name', 'description', 'maxObservationForms', 'complete', 'forms'].reduce(function(o, k) {
     if (event.hasOwnProperty(k)) {
       o[k] = event[k];
     }

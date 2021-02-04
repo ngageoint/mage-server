@@ -24,7 +24,7 @@
   bottom: 0;
   width: 100%;
   overflow-y: auto;
-  padding-bottom: 70px;
+  padding-bottom: 54px;
 }
 
 .edit-content--scroll-lock {
@@ -53,6 +53,7 @@
 }
 
 .edit-banner-content__title {
+  margin-bottom: 8px;
   font-size: 16px;
   color: rgba(213, 0, 0, 1);
 }
@@ -185,6 +186,10 @@ input[type="file"] {
   padding: unset;
 }
 
+.edit-forms {
+  padding-bottom: 16px;
+}
+
 .form-drag-handle {
   font-size: 16px;
   width: 16px;
@@ -196,28 +201,10 @@ input[type="file"] {
   opacity: 0;
 }
 
-.form-actions__drag {
-  margin-right: -14px;
-  margin-top: -14px;
-  // cursor: grab;
-}
-
-.form-actions__drag:active {
-  // cursor: grabbing;
-}
-
 .cdk-drop-list-dragging {
   cursor: grabbing !important;
 }
 
 .cdk-drag-handle {
-  cursor: grab;
-}
-
-.cdk-drag-handle:active {
-  cursor: grabbing;
-}
-
-.cdk-drag-handle:hover {
   cursor: grab;
 }

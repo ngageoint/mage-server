@@ -17,15 +17,17 @@ MultiSelectField.prototype.validate = function() {
     return { error: 'value', message: `${this.definition.title} must be an Array` }
   }
 
-  this.value.forEach(value => {
+  const invalid = this.value.some(value => {
     const choices = this.definition.choices.filter(choice => {
       return choice.title === value;
     }, this);
 
-    if (choices.length === 0) {
-      return { error: 'value', message: `${this.definition.title} property must be one of; ${this.definition.choices.map(choice => choice.title)}` }
-    }
-  }, this);
+    return choices.length === 0;
+  })
+
+  if (invalid) {
+    return { error: 'value', message: `${this.definition.title} must be one of: ${this.definition.choices.map(choice => choice.title)}` }
+  }
 };
 
 module.exports = MultiSelectField;

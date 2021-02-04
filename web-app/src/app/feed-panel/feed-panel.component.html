@@ -19,19 +19,11 @@
   (close)="onObservationEditClose($event)">
 </observation-edit>
 
-  <!-- [form]="editForm"
-   -->
-
 <observation-edit *ngIf="newObservation" @slide
   class="component__view"
-  [forms]="newObservationForms"
-  [formGroup]="newObservationFormGroup"
   [observation]="newObservation"
   (close)="onObservationEditClose()">
 </observation-edit>
-
-  <!-- [form]="newObservationForm"
-  [observation]="newObservation" -->
 
 <mat-tab-group class="tabs" #tabGroup mat-stretch-tabs [selectedIndex]="0" animationDuration="0ms" (selectedIndexChange)="tabChanged($event)">
   <mat-tab>

@@ -645,4 +645,187 @@ describe("event update tests", function() {
       .end(done);
   });
 
+  it("should update event with valid form restrictions", function (done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sinon.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId, sinon.match.has('name', 'Mock Event'))
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        minObservationForms: 1,
+        maxObservationForms: 5,
+        forms: [{
+          id: 1,
+          min: 1,
+          max: 2
+        },{
+          id: 2,
+          min: 1,
+          max: 2
+        }]
+      })
+      .expect(200)
+      .end(done);
+  });
+
+  it("should fail to update event when minObservationForms greater than maxObservationForms", function (done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        minObservationForms: 2,
+        maxObservationForms: 1
+      })
+      .expect(400)
+      .expect(function (res) {
+        should.exist(res.error.text);
+        const error = JSON.parse(res.error.text);
+        error.errors.minMax.error.should.equal('value')
+        error.errors.minMax.message.should.equal('The minimum forms per observation must be less than or equal to the maximum forms per observation.')
+      })
+      .end(done);
+  });
+
+  it("should fail to update event when maxObservationForms is less then sum of the minimum of all individual forms", function (done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        maxObservationForms: 1,
+        forms: [{
+          id: 1,
+          min: 1
+        }, {
+          id: 2,
+          min: 1
+        }]
+      })
+      .expect(400)
+      .expect(function (res) {
+        should.exist(res.error.text);
+        const error = JSON.parse(res.error.text);
+        error.errors.maxObservationForms.error.should.equal('value')
+        error.errors.maxObservationForms.message.should.equal('The maximum forms per observation must be equal to or greater than the sum of the minimum of all individual forms.')
+      })
+      .end(done);
+  });
+
+  it("should fail to update event when minObservationForms is greater then sum of the maximum of all individual forms", function (done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        minObservationForms: 4,
+        forms: [{
+          id: 1,
+          max: 1
+        }, {
+          id: 2,
+          max: 1
+        }]
+      })
+      .expect(400)
+      .expect(function (res) {
+        should.exist(res.error.text);
+        const error = JSON.parse(res.error.text);
+        error.errors.minObservationForms.error.should.equal('value')
+        error.errors.minObservationForms.message.should.equal('The minimum forms per observation must be equal to or less than the sum of the maximum of all individual forms.')
+      })
+      .end(done);
+  });
+
+  it("should fail to update event when individual form min is greater than max", function (done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        forms: [{
+          id: 1,
+          name: 'Form 1',
+          min: 2,
+          max: 1
+        }, {
+          id: 2,
+          max: 1,
+          min: 1
+        }]
+      })
+      .expect(400)
+      .expect(function (res) {
+        should.exist(res.error.text);
+        const error = JSON.parse(res.error.text);
+        error.errors.form1minMax.error.should.equal('value')
+        error.errors.form1minMax.message.should.equal('Form 1 form minimum must be less than or equal to the maximum.')
+      })
+      .end(done);
+  });
+
 });

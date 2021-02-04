@@ -34,6 +34,7 @@
     "bundle-report": "webpack-bundle-analyzer dist/stats.json"
   },
   "dependencies": {
+    "@angular-material-components/datetime-picker": "2.0.4",
     "@angular/animations": "~8.2.14",
     "@angular/cdk": "~8.2.3",
     "@angular/common": "~8.2.14",
@@ -46,9 +47,9 @@
     "@angular/platform-browser-dynamic": "~8.2.14",
     "@angular/router": "~8.2.14",
     "@angular/upgrade": "~8.2.14",
-    "@ng-select/ng-select": "2.20.0",
     "@mat-datetimepicker/core": "3.0.1",
     "@mat-datetimepicker/moment": "3.0.1",
+    "@ng-select/ng-select": "2.20.0",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",

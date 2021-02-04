@@ -29,15 +29,14 @@
 
     <form class="observation" name="observationForm" novalidate>
       <mat-card class="form">
-        <observation-edit-date [formGroup]="formGroup" [definition]="formGroup.get('timestamp').definition"></observation-edit-date>
+        <observation-edit-date [formGroup]="formGroup.get('properties')" [definition]="timestampDefinition"></observation-edit-date>
       
         <observation-edit-geometry
           [formGroup]="formGroup"
-          [definition]="formGroup.get('geometry').definition"
+          [definition]="geometryDefinition"
           [featureId]="observation.id"
           [featureStyle]="geometryStyle"
-          (onFeatureEdit)="onGeometryEdit($event)"
-          (onFeatureChanged)="onGeometryChanged($event, field)">
+          (onFeatureEdit)="onGeometryEdit($event)">
         </observation-edit-geometry>
       </mat-card>
 
@@ -73,17 +72,18 @@
         </mat-card>
       </div>
 
-      <div class="edit-form-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
-        <ng-container *ngFor="let formGroup of formGroup.get('forms').controls">
-          <div class="form" #form cdkDrag cdkDragBoundary=".edit-form-forms" (cdkDragStarted)="dragStart($event)" (cdkDragEnded)="dragEnd($event)">
+      <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
+        <ng-container *ngFor="let group of formGroup?.get('properties')?.get('forms')?.controls">
+          <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
             <observation-edit-form
-              [formGroup]="formGroup"
+              [formGroup]="group"
+              [definition]="formDefinitions[group.get('formId').value]"
               [geometryStyle]="geometryStyle"
               [options]="formOptions"
               (remove)="removeForm($event)"
               (featureEdit)="onGeometryEdit($event)">
 
-              <div *ngIf="form?.forms?.length > 1" cdkDragHandle>
+              <div *ngIf="formGroup?.get('properties')?.get('forms').length > 1" cdkDragHandle>
                 <mat-icon class="form-drag-handle" svgIcon="handle"></mat-icon>
               </div>
             </observation-edit-form>

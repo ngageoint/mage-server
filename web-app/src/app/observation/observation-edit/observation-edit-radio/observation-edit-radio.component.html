@@ -1,12 +1,12 @@
-<div>
-  <label>{{field.title + (field.required ? ' *' : '')}}</label>
-  <mat-radio-group class="radio-group" [(ngModel)]="field.value" #radio="ngModel" [required]="field.required">
-    <mat-radio-button *ngFor="let choice of field.choices" [value]="choice.title" color="primary" class="radio-button">
+<div [formGroup]="formGroup">
+  <label>{{definition.title + (definition.required ? ' *' : '')}}</label>
+  <mat-radio-group class="radio-group" formControlName="{{definition.name}}">
+    <mat-radio-button *ngFor="let choice of definition.choices" [value]="choice.title" color="primary" class="radio-button">
       {{choice.title}}
     </mat-radio-button>
 
     <mat-error>
-      <span [hidden]="!radio.touched || !radio.invalid">{{field.title}} is required</span>
+      <span [hidden]="!formGroup.get(definition.name).touched || !formGroup.get(definition.name).hasError('required')">{{definition.title}} is required</span>
     </mat-error>
 
   </mat-radio-group>

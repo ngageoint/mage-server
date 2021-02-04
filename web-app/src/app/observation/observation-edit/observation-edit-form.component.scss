@@ -1,8 +1,17 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
 
 .form-header {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.form-header-summary {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
 }
 
 .form-header-content {
@@ -14,44 +23,45 @@
 
 .form-header-title {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   flex: 1 0 auto;
+  margin-bottom: 8px;
 }
 
 .form-header-title__icon {
-  width: 40px;
-  height: 40px;
-  font-size: 40px;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   margin-right: 16px;
 }
 
 .form-header-title__text {
   font-family: Roboto, sans-serif;
-  font-size: 20px;
-  font-weight: 500;
-  padding-bottom: 8px;
-  color: rgba(0, 0, 0, .87);
-}
-
-.form-header__primary {
-  font-family: Roboto, sans-serif;
   font-size: 16px;
   font-weight: 500;
-  color: rgba(0, 0, 0, .87);
+  color: rgba(0, 0, 0, .6);
+}
+
+.form-header-summary__primary {
+  font-family: Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: mat-color($app-primary);
   padding-bottom: 4px;
 }
 
-.form-header__secondary {
+.form-header-summary__secondary {
   font-family: Roboto, sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
-  color: rgba(0, 0, 0, .6);
+  color: rgba(0, 0, 0, .6)
 }
 
 .form-header-actions {
   display: flex;
+  margin-top: -8px;
 }
-
 
 .form-header-actions > * + * {
   margin-left: 8px;
@@ -59,12 +69,7 @@
 
 .form-header-actions__drag {
   margin-right: -14px;
-  margin-top: -14px;
-  // cursor: grab;
-}
-
-.form-header-actions__drag:active {
-  // cursor: grabbing;
+  margin-top: -6px;
 }
 
 .cdk-drag-handle {

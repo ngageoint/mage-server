@@ -1,13 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
-import { ChangeDetectorRef, Component, DoCheck, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
-import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms'
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { MatBottomSheet, MatDialog, MatIconRegistry, MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
+import * as moment from 'moment';
 
 export type ObservationFormControl = FormControl & { definition: any }
 
@@ -36,12 +37,8 @@ export type ObservationFormControl = FormControl & { definition: any }
     ])
   ]
 })
-export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
-  @Input() forms: any[]
-  @Input() formGroup: FormGroup
+export class ObservationEditComponent implements OnInit, OnChanges {
   @Input() preview: boolean
-
-  // @Input() form: any
   @Input() observation: any
 
   @Output() close = new EventEmitter<any>()
@@ -51,6 +48,20 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
   @ViewChildren('form') formElements: QueryList<ElementRef>;
 
   event: any
+  formGroup: FormGroup
+  formDefinitions: any
+  timestampDefinition = {
+    title: '',
+    type: 'date',
+    name: 'timestamp',
+    required: true
+  }
+  geometryDefinition = {
+    title: 'Location',
+    type: 'geometry',
+    name: 'geometry',
+    required: true
+  }
 
   mask = false
   saving = false
@@ -105,41 +116,24 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.observation  && changes.observation.currentValue) {
       this.event = this.eventService.getEventById(this.observation.eventId)
+      this.formDefinitions = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
+        map[form.id] = form
+        return map
+      }, {})
 
       this.isNewObservation = this.observation.id === 'new'
       this.initialObservation = JSON.parse(JSON.stringify(this.observation))
-      this.geometryStyle = { ...this.observation.style }
+
+      if (this.observation.style) {
+        this.geometryStyle = JSON.parse(JSON.stringify(this.observation.style))
+      }
 
       if (this.isNewObservation) {
         this.mapService.addFeaturesToLayer([this.observation], 'Observations')
       }
-    }
 
-    if (changes.forms && changes.forms.currentValue) {
-      const primaryForm = this.forms.length ? this.forms[0] : { fields: [] }
-      this.primaryField = primaryForm.fields.find(field => {
-        return field.name === primaryForm.primaryField
-      }) || {}
-
-      this.secondaryField = primaryForm.fields.find(field => {
-        return field.name === primaryForm.variantField
-      }) || {}
-    }
-  }
-
-  ngDoCheck(): void {
-    if (this.primaryField.value !== this.primaryFieldValue || this.secondaryField.value !== this.secondaryFieldValue) {
-      this.primaryFieldValue = this.primaryField.value
-      this.secondaryFieldValue = this.secondaryField.value
-
-      const observation = JSON.parse(JSON.stringify(this.observation))
-      this.formToObservation(this.formGroup, observation)
-
-      const style = this.observationService.getObservationStyleForForm(observation, this.event, this.forms[0])
-      observation.style = style
-      this.geometryStyle = style
-
-      this.mapService.updateFeatureForLayer(observation, 'Observations')
+      this.toFormGroup(this.observation)
+      this.updatePrimarySecondary()
     }
   }
 
@@ -161,96 +155,90 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     return this.localStorageService.getToken()
   }
 
-  formToObservation(formGroup: FormGroup, observation: any): any {
-    const geometry = formGroup.get('geometry').value
+  // TODO multi-form build out validators here as well for each form control
+  toFormGroup(observation: any): void {
+    const timestampControl = new FormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
+    const geometryControl = new FormControl(observation.geometry, Validators.required);
 
-    // put all coordinates in -180 to 180
-    switch (geometry.type) {
-      case 'Point':
-        if (geometry.coordinates[0] < -180) geometry.coordinates[0] = geometry.coordinates[0] + 360
-        else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360
-        break;
-      case 'LineString':
-        for (let i = 0; i < geometry.coordinates.length; i++) {
-          const coord = geometry.coordinates[i];
-          while (coord[0] < -180) coord[0] = coord[0] + 360
-          while (coord[0] > 180) coord[0] = coord[0] - 360
-        }
-        break;
-      case 'Polygon':
-        for (let p = 0; p < geometry.coordinates.length; p++) {
-          const poly = geometry.coordinates[p];
-          for (let i = 0; i < poly.length; i++) {
-            const coord = poly[i];
-            while (coord[0] < -180) coord[0] = coord[0] + 360
-            while (coord[0] > 180) coord[0] = coord[0] - 360
-          }
-        }
-        break;
-    }
-    observation.geometry = geometry;
-
-    observation.properties.timestamp = formGroup.get('timestamp').value
-
-    observation.properties.forms = [];
-
-    const forms = formGroup.get('forms') as FormGroup
-    Object.keys(forms.controls).forEach(formId => {
-      const propertiesForm = {
-        formId: formId
-      }
-
-      // TODO multi-form filter out archived fields
-      // Do I need to do this if archived field controls
-      // are not added 
-
-      const group = forms.controls[formId] as FormGroup
-      Object.keys(group.controls).forEach(fieldName => {
-        propertiesForm[fieldName] = group.controls[fieldName].value
+    const formArray = new FormArray([])
+    const observationForms = observation.properties.forms || []
+    observationForms.forEach(observationForm => {
+      const formDefinition = this.formDefinitions[observationForm.formId]
+      const fieldGroup = new FormGroup({
+        formId: new FormControl(formDefinition.id)
       })
+
+      formDefinition.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(field => {
+          const value = this.isNewObservation ? field.value : observationForm[field.name]
+          const fieldControl = new FormControl(value, field.required ? Validators.required : null)
+          fieldGroup.addControl(field.name, fieldControl)
+        })
+
+      formArray.push(fieldGroup)
     })
 
-    // form.forms.forEach(observationForm => {
-    //   const propertiesForm = {
-    //     formId: observationForm.id
-    //   };
+    this.formGroup = this.formBuilder.group({
+      id: observation.id,
+      eventId: new FormControl(observation.eventId),
+      type: new FormControl(observation.type),
+      geometry: geometryControl,
+      properties: new FormGroup({
+        timestamp: timestampControl,
+        forms: formArray
+      })
+    })
+  }
 
-    //   const fields = observationForm.fields.filter(field => {
-    //     return !field.archived;
-    //   });
+  updatePrimarySecondary(): void {
+    const forms = this.formGroup.get('properties').get('forms') as FormArray
+    if (forms.length) {
+      const primaryFormGroup = forms.at(0) as FormGroup
+      const definition = this.formDefinitions[primaryFormGroup.get('formId').value]
 
-    //   fields.forEach(field => {
-    //     propertiesForm[field.name] = field.value;
-    //   })
+      if (primaryFormGroup.contains(definition.primaryFeedField)) {
+        this.primaryField = definition.fields.find(field => field.name === definition.primaryFeedField)
+        this.primaryField.value = primaryFormGroup.get(definition.primaryFeedField).value
+      }
 
-    //   observation.properties.forms.push(propertiesForm);
-    // })
+      if (primaryFormGroup.contains(definition.secondaryFeedField)) {
+        this.secondaryField = definition.fields.find(field => field.name === definition.secondaryFeedField)
+        this.secondaryField.value = primaryFormGroup.get(definition.secondaryFeedField).value
+      }
+
+      if (this.primaryField.value !== this.primaryFieldValue || this.secondaryField.value !== this.secondaryFieldValue) {
+        this.primaryFieldValue = this.primaryField ? this.primaryField.value : null
+        this.secondaryFieldValue = this.secondaryField ? this.secondaryField.value : null
+
+        const observation = this.formGroup.value
+
+        const style = this.observationService.getObservationStyleForForm(observation, this.event, definition)
+        observation.style = style
+        this.geometryStyle = style
+
+        this.mapService.updateFeatureForLayer(observation, 'Observations')
+      }
+    }
   }
 
   save(): void {
-    // TODO multi-form validate number of forms or let server?
-
-    // TODO touch all fields so errors show
-    // Maybe just trigger form submit
-    // TODO move to observation failed response
-    this.formGroup.markAllAsTouched()
-
     if (this.formRemoveSnackbar) {
       this.formRemoveSnackbar.dismiss()
     }
 
     this.saving = true
     const markedForDelete = this.observation.attachments ? this.observation.attachments.filter(attachment => attachment.markedForDelete) : []
-    // TODO multi-form, need to parse FormGroup to observation
-    this.formToObservation(this.formGroup, this.observation);
 
     // TODO look at this: this is a hack that will be corrected when we pull ids from the server
-    const id = this.observation.id;
-    if (id === 'new') {
-      delete this.observation.id;
+    const form = this.formGroup.getRawValue()
+    const id = form.id;
+    if (form.id === 'new') {
+      delete form.id;
     }
 
-    this.eventService.saveObservation(this.observation).then(observation => {
+    this.eventService.saveObservation(form).then(observation => {
       // If this feature was added to the map as a new observation, remove it
       // as the event service will add it back to the map based on it new id
       // if it passes the current filter.
@@ -263,7 +251,6 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
       if (this.attachments.length) {
         this.uploadAttachments = true;
       } else {
-        this.forms = null
         this.attachments = []
       }
 
@@ -278,6 +265,8 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
         this.close.emit(observation)
       }
     }, err => {
+      this.formGroup.markAllAsTouched()
+
       if (id === 'new') {
         this.observation.id = 'new'
       }
@@ -369,33 +358,35 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     }
   }
 
-  onGeometryChanged(event): void {
-    this.formGroup.get('geometry').setValue(event.feature ? event.feature.geometry : null)
-  }
-
   pickForm(): void {
     this.formOptions.expand = true
     this.bottomSheet.open(ObservationEditFormPickerComponent, {
       panelClass: 'feed-panel'
     }).afterDismissed().subscribe(form => {
-      // const copy = JSON.parse(JSON.stringify(form))
-      // this.forms.push(copy)
-      const forms = this.formGroup.get('forms') as FormArray
-      const fieldsGroup = new FormArray([])
-      fieldsGroup['definition'] = form
-      forms.push(new FormGroup({
-        [form.id]: fieldsGroup
-      }))
+      const fieldsGroup = new FormGroup({
+        formId: new FormControl(form.id)
+      });
+
+      form.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(field => {
+          const fieldControl = new FormControl(field.value, field.required ? Validators.required : null)
+          fieldsGroup.addControl(field.name, fieldControl)
+        });
+
+      (this.formGroup.get('properties').get('forms') as FormArray).push(fieldsGroup);
 
       this.formElements.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
-        queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' });
+        queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
       })
     })
   }
 
-  removeForm(form: any): void {
-    const index = this.forms.indexOf(form);
-    this.forms.splice(index, 1);
+  removeForm(formGroup: FormGroup): void {
+    const formArray = this.formGroup.get('properties').get('forms') as FormArray
+    const index = formArray.controls.indexOf(formGroup)
+    formArray.removeAt(index)
 
     this.formRemoveSnackbar = this.snackBar.open('Form Removed', 'UNDO', {
       duration: 5000,
@@ -403,15 +394,20 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     })
     
     this.formRemoveSnackbar.onAction().subscribe(() => {
-      this.forms.splice(index, 0, form)
+      formArray.insert(index, formGroup)
     })
   }
 
   reorderForm(event: CdkDragDrop<any, any>): void {
-    // TODO multi-form cannot just move forms, have to move form controls maybe??
     if (event.currentIndex === event.previousIndex) return
 
-    moveItemInArray(this.forms, event.previousIndex, event.currentIndex);
+    const forms = (this.formGroup.get('properties').get('forms') as FormArray).controls
+    moveItemInArray(forms, event.previousIndex, event.currentIndex)
+
+    // re-calculate primary/secondary based new first form
+    if (event.currentIndex === 0 || event.previousIndex === 0) {
+      this.updatePrimarySecondary()
+    }
   }
 
   dragStart(event: DragEvent): void {

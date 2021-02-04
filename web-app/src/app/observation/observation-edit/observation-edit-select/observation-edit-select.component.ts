@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatSelectChange } from '@angular/material';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -11,7 +11,6 @@ export interface Choice {
 interface SelectField {
   title: string,
   name: string,
-  value: string,
   required: boolean,
   choices: Choice[]
 }
@@ -22,7 +21,9 @@ interface SelectField {
   styleUrls: ['./observation-edit-select.component.scss']
 })
 export class ObservationEditSelectComponent implements OnInit {
-  @Input() field: SelectField;
+  @Input() formGroup: FormGroup
+  @Input() definition: SelectField
+
   @Output() selectionChange = new EventEmitter<{value: any}>();
 
   searchControl: FormControl = new FormControl();
@@ -35,7 +36,7 @@ export class ObservationEditSelectComponent implements OnInit {
         return !value || typeof value === 'string' ? value : value.title
       }),
       map(title => {
-        return title ? this.filter(title) : this.field.choices.slice()
+        return title ? this.filter(title) : this.definition.choices.slice()
       })
     );
   }
@@ -49,7 +50,7 @@ export class ObservationEditSelectComponent implements OnInit {
   private filter(title: string): Choice[] {
     const filterValue = title.toLowerCase();
 
-    return this.field.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
+    return this.definition.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
   }
 
 }

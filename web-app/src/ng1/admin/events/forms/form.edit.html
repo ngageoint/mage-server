@@ -45,13 +45,16 @@
         <div class="row top-gap-l">
           <div class="col-md-6">
             <label>Minimum</label>
-            <input class="form-control" type="number" ng-model="$ctrl.form.min">
+            <input class="form-control" name="minimum" type="number" ng-model="$ctrl.form.min" min="1">
             <p class="help-block">Minimum number times this form must be present in an observation.</p>
           </div>
           <div class="col-md-6">
-            <label>Maximum</label>
-            <input class="form-control" type="number" ng-model="$ctrl.form.max">
-            <p class="help-block">Minimum number times this form can be present in an observation.</p>
+            <div class="form-group" ng-class="{'has-error': $ctrl.generalForm.$error.max}">
+              <label>Maximum</label>
+              <input class="form-control" name="maximum" type="number" ng-model="$ctrl.form.max" min="1" max="{{$ctrl.event.maxObservationForms}}">
+              <p class="help-block" ng-if="!$ctrl.generalForm.$error.max">Maximum number times this form can be present in an observation.</p>
+              <p class="help-block" ng-if="$ctrl.generalForm.$error.max">Cannot exceed the maximum number of forms per observation of {{$ctrl.event.maxObservationForms}}</p>
+            </div>
           </div>
         </div>
       </form>

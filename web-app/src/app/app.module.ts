@@ -115,8 +115,6 @@ import {
 } from './observation/observation-view/observation-view';
 
 import {
-  MinValueDirective,
-  MaxValueDirective,
   MGRSValidatorDirective,
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -154,8 +152,6 @@ import { ObservationOptionsComponent } from './observation/observation-view/obse
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
-    MinValueDirective,
-    MaxValueDirective,
     MGRSValidatorDirective,
     ObservationListItemComponent,
     ObservationEditComponent,

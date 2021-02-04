@@ -1456,3 +1456,9 @@ h4.image-delete {
   position: relative;
   top: 9px;
 }
+
+.col-equal-height {
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: wrap;
+}

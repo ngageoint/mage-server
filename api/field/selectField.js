@@ -20,7 +20,7 @@ ComboField.prototype.validate = function() {
   }, this);
 
   if (choices.length === 0) {
-    return { error: 'value', message: `${this.definition.title} property must be one of; ${this.definition.choices.map(choice => choice.title)}` }
+    return { error: 'value', message: `${this.definition.title} must be one of: ${this.definition.choices.map(choice => choice.title)}` }
   }
 };
 

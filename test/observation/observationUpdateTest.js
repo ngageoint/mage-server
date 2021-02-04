@@ -215,7 +215,8 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("'properties.timestamp' param required but not specified");
+        const error = JSON.parse(res.error.text);
+        error.message.should.equal("• Date is required\n");
       })
       .end(done);
   });
@@ -255,7 +256,8 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("'geometry' param required but not specified");
+        const error = JSON.parse(res.error.text);
+        error.message.should.equal("• Location is required\n");
       })
       .end(done);
   });
@@ -299,7 +301,8 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create observation, 'geometry' is not valid.");
+        const error = JSON.parse(res.error.text);
+        error.message.should.equal("• Location must be GeoJSON\n");
       })
       .end(done);
   });

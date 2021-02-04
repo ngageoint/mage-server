@@ -16,10 +16,8 @@ interface DateField {
   styleUrls: ['./observation-edit-date.component.scss']
 })
 export class ObservationEditDateComponent implements OnChanges {
-  @Input() definition: DateField
   @Input() formGroup: FormGroup
-
-  @Input() field: DateField
+  @Input() definition: any
 
   @ViewChild('dateModel', { static: false }) dateModel: NgModel
   @ViewChild('timeModel', { static: false }) timeModel: NgModel
@@ -34,7 +32,7 @@ export class ObservationEditDateComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.formGroup && changes.formGroup.currentValue) {
-      const timestamp = changes.formGroup.currentValue.get(this.definition.name).value
+      const timestamp = this.formGroup.get(this.definition.name).value
       this.date = moment(timestamp)
       this.time = moment(timestamp)
     }

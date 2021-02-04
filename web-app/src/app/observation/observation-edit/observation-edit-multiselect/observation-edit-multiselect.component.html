@@ -1,13 +1,13 @@
-<mat-form-field appearance="fill">
-  <mat-label>{{field.title}}</mat-label>
-  <mat-chip-list #chipList [required]="field.required" [(ngModel)]="field.value" #dropdown="ngModel">
-    <mat-chip *ngFor="let choice of field.value" [removable]="removable" (removed)="remove(choice)">
+<mat-form-field appearance="fill" [formGroup]="formGroup">
+  <mat-label>{{definition.title}}</mat-label>
+  <mat-chip-list #chipList formControlName="{{definition.name}}">
+    <mat-chip *ngFor="let choice of formGroup.get(this.definition.name).value" [removable]="removable" (removed)="remove(choice)">
       {{choice}}
       <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
     </mat-chip>
-    <input #choiceInput
-      #trigger="matAutocompleteTrigger"  
+    <input #choiceInput #trigger="matAutocompleteTrigger"  
       (click)="trigger.openPanel()"
+      [formControl]="choiceControl"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList" 
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
@@ -15,7 +15,7 @@
   </mat-chip-list>
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
     <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
-      <span [ngClass]="{'select__choice--disabled ': field.value && field.value.includes(choice.title)}">{{choice.title}}</span>
+      <span [ngClass]="{'select__choice--disabled ': control.value && control.value.includes(choice.title)}">{{choice.title}}</span>
     </mat-option>
   </mat-autocomplete>
 

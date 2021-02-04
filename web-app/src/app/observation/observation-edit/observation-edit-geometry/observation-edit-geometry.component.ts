@@ -1,5 +1,6 @@
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
 import { FormGroup } from '@angular/forms'
+import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
 
 @Component({
@@ -8,8 +9,6 @@ import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
   styleUrls: ['./observation-edit-geometry.component.scss']
 })
 export class ObservationEditGeometryComponent implements OnChanges {
-  @Input() field: any // TODO remove
-
   @Input() formGroup: FormGroup
   @Input() definition: any
 
@@ -17,7 +16,6 @@ export class ObservationEditGeometryComponent implements OnChanges {
   @Input() featureStyle: any
 
   @Output() onFeatureEdit = new EventEmitter<any>()
-  @Output() onFeatureChanged = new EventEmitter<any>()
 
   @ViewChild('geometry', { static: true }) geometryElement: ElementRef
 
@@ -32,8 +30,16 @@ export class ObservationEditGeometryComponent implements OnChanges {
       this.mapFeature = {
         id: this.featureId,
         type: 'Feature',
-        geometry: changes.formGroup.currentValue.get(this.definition.name).value,
-        style: JSON.parse(JSON.stringify(this.featureStyle))
+        geometry: changes.formGroup.currentValue.get(this.definition.name).value
+      }
+    }
+
+    if (changes.featureStyle && changes.featureStyle.currentValue) {
+      this.mapFeature = {
+        id: this.featureId,
+        type: 'Feature',
+        geometry: this.formGroup.get(this.definition.name).value,
+        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
       }
     }
   }
@@ -47,7 +53,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
         id: this.featureId,
         type: 'Feature',
         geometry: value,
-        style: { ...this.featureStyle }
+        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
       }
     } else {
       const mapPosition = this.localStorageService.getMapPosition();
@@ -57,7 +63,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
           type: 'Point',
           coordinates: [mapPosition.center.lng, mapPosition.center.lat]
         },
-        style: JSON.parse(JSON.stringify(this.featureStyle))
+        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
       }
     }
 
@@ -67,13 +73,12 @@ export class ObservationEditGeometryComponent implements OnChanges {
     })
   }
 
-  saveGeometryEdit($event: any): void {
+  saveGeometryEdit(event: any): void {
     this.edit = false
-    this.mapFeature = $event.feature
+    this.mapFeature = event.feature
 
-    this.onFeatureChanged.emit({
-      feature: $event.feature
-    })
+    // TODO normalize geometry
+    this.formGroup.get(this.definition.name).setValue(this.normalizeGeometry(event.feature))
 
     this.onFeatureEdit.emit({
       action: 'none',
@@ -87,6 +92,37 @@ export class ObservationEditGeometryComponent implements OnChanges {
     this.onFeatureEdit.emit({
       action: 'none'
     })
+  }
+
+  private normalizeGeometry(feature: Feature<Geometry>): Geometry {
+    const geometry = feature ? feature.geometry : null
+    if (!geometry) return geometry
+
+    switch (geometry.type) {
+      case 'Point':
+        if (geometry.coordinates[0] < -180) geometry.coordinates[0] = geometry.coordinates[0] + 360
+        else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360
+        break;
+      case 'LineString':
+        for (let i = 0; i < geometry.coordinates.length; i++) {
+          const coord = geometry.coordinates[i];
+          while (coord[0] < -180) coord[0] = coord[0] + 360
+          while (coord[0] > 180) coord[0] = coord[0] - 360
+        }
+        break;
+      case 'Polygon':
+        for (let p = 0; p < geometry.coordinates.length; p++) {
+          const poly = geometry.coordinates[p];
+          for (let i = 0; i < poly.length; i++) {
+            const coord = poly[i];
+            while (coord[0] < -180) coord[0] = coord[0] + 360
+            while (coord[0] > 180) coord[0] = coord[0] - 360
+          }
+        }
+        break;
+    }
+
+    return geometry
   }
 
 }

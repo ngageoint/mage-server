@@ -51,66 +51,25 @@ Observation.prototype.getById = function(observationId, options, callback) {
   ObservationModel.getObservationById(this._event, observationId, options, callback);
 };
 
-  // const tmp = {
-  //   timestamp: {
-  //       error: 'required',
-  //       message: 'this is required'
-  //       // type: 'value',
-  //       // message: 'not an ISO8601 string'
-
-  //   },
-  //   geometry: {
-  //     error: 'required',
-  //     message: 'this is required'
-  //     // type: 'value',
-  //     // message: 'not valid GeoJSON'
-  //   },
-  //   form: {
-  //     1: {
-  //       error: 'min',
-  //       message: 'does not meet min'
-  //       // error: 'max',
-  //       // message: 'does not meet max'
-  //     }
-  //   },
-  //   forms: [{
-  //     field: {
-  //       field1: {
-  //         required: {
-  //           type: 'required',
-  //           message: 'field1 is required'
-  //         },
-  //         value: {
-  //           type: 'value',
-  //           message: 'value is incorrect'
-  //         }
-  //       },
-  //       field2: {
-
-  //       }
-  //     }
-  //   }]
-  // }
-
 Observation.prototype.validate = function(observation) {
-  const error = {};
+  const errors = {};
   let message = '';
 
   if (observation.type !== 'Feature') {
-    error.type = { error: 'required', message: observation.type ? 'type is required' :  'type must equal "Feature"' };
+    errors.type = { error: 'required', message: observation.type ? 'type is required' :  'type must equal "Feature"' };
     message += observation.type ? '\u2022 type is required\n' : '\u2022 type must equal "Feature"\n'
   }
 
   // validate timestamp
+  const properties = observation.properties || {};
   const timestampError = fieldFactory.createField({
     type: 'date',
     required: true,
     name: 'timestamp',
     title: 'Date'
-  }, observation.properties).validate();
-  console.log('timestamp error', timestampError)
+  }, properties).validate();
   if (timestampError) {
-    error.timestamp = timestampError;
+    errors.timestamp = timestampError;
     message += `\u2022 ${timestampError.message}\n`;
   }
 
@@ -122,17 +81,30 @@ Observation.prototype.validate = function(observation) {
     title: 'Location'
   }, observation).validate();
   if (geometryError) {
-    error.geometry = geometryError;
+    errors.geometry = geometryError;
     message += `\u2022 ${geometryError.message}\n`;
   }
 
-  const forms = observation.properties.forms || [];
+  const forms = properties.forms || [];
   const formCount = forms.reduce((count, form) => {
     count[form.formId] = (count[form.formId] || 0) + 1;
     return count;
   }, {})
   
   const formDefinitions = {};
+
+  // Validate total number of forms
+  if (this._event.minObservationForms != null && forms.length < this._event.minObservationForms) {
+    errors.minObservationForms = new Error("Insufficient number of forms");
+    message += `\u2022 Total number of forms in observation must be at least ${this._event.minObservationForms}\n`;
+  }
+
+  console.log('max obs forms', this._event.maxObservationForms)
+  console.log('forms length', forms.length)
+  if (this._event.maxObservationForms != null && forms.length > this._event.maxObservationForms) {
+    errors.maxObservationForms = new Error("Exceeded maximum number of forms");
+    message += `\u2022 Total number of forms in observation cannot be more than ${this._event.maxObservationForms}\n`;
+  }
 
   // Validate forms min/max occurrences
   const formError = {};
@@ -147,32 +119,33 @@ Observation.prototype.validate = function(observation) {
       }
 
       message += `\u2022 ${formDefinition.name} form must be included in observation at least ${formDefinition.min} times\n`;
-    } else if  (formDefinition.max && (count > formDefinition.min)) {
+    } else if  (formDefinition.max && (count > formDefinition.max)) {
       formError[formDefinition.id] = {
-        error: 'min',
-        message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.min} times`
+        error: 'max',
+        message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times`
       }
 
-      message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.min} times\n`;
+      message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times\n`;
     }
   });
 
   if (Object.keys(formError).length) {
-    error.form = formError;
+    errors.form = formError;
   }
 
   // Validate form fields
   const formErrors = [];
+
   forms.forEach(observationForm => {
     let fieldsMessage = '';
-
-    // Don't validate archived fields
     const fieldsError = {};
+
     formDefinitions[observationForm.formId].fields
       .filter(fieldDefinition => !fieldDefinition.archived)
       .forEach(fieldDefinition => {
         const field = fieldFactory.createField(fieldDefinition, observationForm);
         const fieldError = field.validate();
+
         if (fieldError) {
           fieldsError[field.name] = fieldError;
           fieldsMessage += `    \u2022 ${fieldError.message}\n`;
@@ -181,19 +154,21 @@ Observation.prototype.validate = function(observation) {
 
     if (Object.keys(fieldsError).length) {
       formErrors.push(fieldsError);
-      message += `\n ${formDefinitions[observationForm.formId].name} form is invalid\n`;
+      message += `${formDefinitions[observationForm.formId].name} form is invalid\n`;
       message += fieldsMessage;
     }
   });
 
   if (formErrors.length) {
-    error.forms = formErrors
+    errors.forms = formErrors
   }
 
-  if (Object.keys(error).length) {
+  if (Object.keys(errors).length) {
     const err = new Error('Invalid Observation');
+    err.name = 'ValidationError';
     err.status = 400;
     err.message = message;
+    err.errors = errors;
     return err;
   }
 };

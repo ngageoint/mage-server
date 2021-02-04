@@ -1,6 +1,6 @@
 <div class="geometry-wrapper" #geometry>
   <div class="geometry-field" [ngClass]="{'geometry-field--active': edit}">
-    <div class="geometry-field__label" [ngClass]="{'geometry-field__label--active': edit}">{{field?.title}} {{field?.required ? '*' : ''}}</div>
+    <div class="geometry-field__label" [ngClass]="{'geometry-field__label--active': edit}">{{definition?.title}} {{definition?.required ? '*' : ''}}</div>
   
     <div class="geometry-panel">
       <div class="geometry-panel__contents" [ngClass]="{'geometry-panel__flip': edit}">

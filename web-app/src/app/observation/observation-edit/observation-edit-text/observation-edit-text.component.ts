@@ -1,10 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
 interface TextField {
   title: string,
   name: string,
-  value: string,
   required: boolean
 }
 
@@ -13,12 +12,7 @@ interface TextField {
   templateUrl: './observation-edit-text.component.html',
   styleUrls: ['./observation-edit-text.component.scss']
 })
-export class ObservationEditTextComponent implements OnInit {
-  @Input() control: FormControl
-
-  @Input() field: TextField;
-  
-  ngOnInit(): void {
-    console.log('init text component w/ group ', this.control)
-  }
+export class ObservationEditTextComponent {
+  @Input() formGroup: FormGroup
+  @Input() definition: TextField
 }

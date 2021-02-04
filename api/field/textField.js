@@ -13,7 +13,7 @@ TextField.prototype.validate = function() {
   if (!this.value) return;
 
   if (this.value != null && !isString(this.value)) {
-    return { error: 'value', message: `${this.definition.title} property must a String` }
+    return { error: 'value', message: `${this.definition.title} must be a String` }
   }
 };
 

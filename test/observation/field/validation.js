@@ -37,7 +37,9 @@ describe("field validation tests", function() {
 
     var form = {};
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('required')
+    err.message.should.equal('test is required')
   });
 
   it("should pass validation for date field", function() {
@@ -53,7 +55,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid date field", function() {
@@ -69,7 +71,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be an ISO8601 string')
   });
 
   it("should pass validation for geometry field", function() {
@@ -88,7 +92,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid geometry field", function() {
@@ -107,7 +111,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be GeoJSON')
   });
 
   it("should pass validation for textfield field", function() {
@@ -123,7 +129,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid textfield field", function() {
@@ -139,7 +145,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be a String')
   });
 
   it("should pass validation for textarea field", function() {
@@ -155,7 +163,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid textarea field", function() {
@@ -171,7 +179,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be a String')
   });
 
   it("should pass validation for numberfield field", function() {
@@ -189,7 +199,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid numberfield field that is less than min", function() {
@@ -207,7 +217,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('min')
+    err.message.should.equal('test must be greater than or equal to 5')
   });
 
   it("should throw validation error for invalid numberfield field that is greater than min", function() {
@@ -225,7 +237,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('max')
+    err.message.should.equal('test must be less than or equal to 10')
   });
 
   it("should pass validation for emailfield", function() {
@@ -241,7 +255,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid emailfield", function() {
@@ -257,7 +271,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be valid email address')
   });
 
   it("should pass validation for radiofield", function() {
@@ -278,7 +294,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid radiofield", function() {
@@ -299,7 +315,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be one of: red,blue')
   });
 
   it("should pass validation for dropdown", function() {
@@ -320,12 +338,12 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid dropdown", function() {
     var definition = {
-      name: 'test',
+      name: 'field1',
       title: 'test',
       type: 'dropdown',
       required: true,
@@ -337,11 +355,13 @@ describe("field validation tests", function() {
     };
 
     var form = {
-      field1: "green"
+      field1: 'green'
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be one of: red,blue')
   });
 
   it("should pass validation for multiselectdropdown", function() {
@@ -364,12 +384,12 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid multiselectdropdown type", function() {
     var definition = {
-      name: 'test',
+      name: 'field1',
       title: 'test',
       type: 'multiselectdropdown',
       required: true,
@@ -385,7 +405,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be an Array')
   });
 
   it("should throw validation error for invalid multiselectdropdown choice", function() {
@@ -406,7 +428,10 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    console.log('error is', err)
+    err.error.should.equal('value')
+    err.message.should.equal('test must be one of: red,blue')
   });
 
   it("should pass validation for checkbox", function() {
@@ -422,7 +447,7 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.not.throw(Error);
+    expect(field.validate()).to.be.undefined;
   });
 
   it("should throw validation error for invalid checkbox", function() {
@@ -438,7 +463,9 @@ describe("field validation tests", function() {
     };
 
     var field = factory.createField(definition, form);
-    expect(field.validate.bind(field)).to.throw(Error);
+    var err = field.validate();
+    err.error.should.equal('value')
+    err.message.should.equal('test must be a Boolean')
   });
 
 });
