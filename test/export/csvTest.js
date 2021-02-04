@@ -3,7 +3,8 @@ const sinon = require('sinon')
   , mongoose = require('mongoose')
   , stream = require('stream')
   , util = require('util')
-  , JSZip = require('JSZip')
+  , JSZip = require('jszip')
+  , { unzip } = require('zlib')
   , CsvExporter = require('../../export/csv')
   , MockToken = require('../mockToken')
   , TokenModel = mongoose.model('Token');
@@ -114,8 +115,14 @@ describe("csv export tests", function () {
       const zip = new JSZip(writable.byteArray);
       const observations = zip.files['observations.csv'];
       expect(observations).to.not.be.null;
+      expect(observations._data).to.not.be.null;
 
-      done();
+      const buffer = observations._data.getContent();
+      expect(buffer).to.not.be.null;
+      const decoder = new TextDecoder("utf-8");
+      const csvContent = decoder.decode(buffer);
+
+      console.log(csvContent);
     });
 
     const csvExporter = new CsvExporter(options);
