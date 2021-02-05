@@ -104,7 +104,7 @@ describe("csv export tests", function () {
       const zip = new JSZip(writable.byteArray);
       const observations = zip.files['observations.csv'];
       expect(observations).to.be.undefined;
-      
+
       const locations = zip.files['locations.csv'];
       expect(locations).to.be.undefined;
 
@@ -232,17 +232,8 @@ describe("csv export tests", function () {
 
     sinon.mock(LocationModel)
       .expects('find')
-      .yields(null, [{
-        "eventId": event._id,
-        "geometry": {
-          "type": "Point",
-          "coordinates": [1, 1]
-        },
-        "properties": {
-          "timestamp": Date.now(),
-          "accuracy": 39
-        }
-      }]);
+      .chain('cursor')
+      .returns(new TestCursor());
 
     const writable = new TestWritableStream();
     writable.on('finish', () => {
@@ -269,9 +260,7 @@ describe("csv export tests", function () {
     });
 
     const csvExporter = new CsvExporter(options);
-    //TODO implement cursor mock
-    //csvExporter.export(writable);
-    done();
+    csvExporter.export(writable);
   });
 });
 
@@ -287,4 +276,36 @@ class TestWritableStream {
     done();
   }
 };
-util.inherits(TestWritableStream, stream.Writable); 
+util.inherits(TestWritableStream, stream.Writable);
+
+
+class TestCursor {
+  constructor() {
+    this.i = 0;
+    this.locations = [{
+      "eventId": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [1, 1]
+      },
+      "properties": {
+        "timestamp": Date.now(),
+        "accuracy": 39
+      }
+    }];
+  }
+  eachAsync(fn, opts, callback) {
+    if (typeof opts === 'function') {
+      callback = opts;
+      opts = {};
+    }
+    opts = opts || {};
+
+    if (this.i == 0) {
+      this.t++;
+      return fn(this.locations[this.i], this.i);
+    } else {
+      return Promise.resolve(this.i);
+    }
+  }
+}
