@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject, OnDestroy } from '@angular/core';
 import { MatDatepickerInputEvent } from '@angular/material';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -47,7 +47,8 @@ export class ExportMetadataUI implements ExportMetadata, Undoable {
         flyInOutAnimation
     ]
 })
-export class ExportMetadataDialogComponent implements OnInit {
+export class ExportMetadataDialogComponent implements OnInit, OnDestroy {
+
     @ViewChild(MatPaginator, { static: true })
     paginator: MatPaginator;
     @ViewChild(MatSort, { static: true })
@@ -109,14 +110,17 @@ export class ExportMetadataDialogComponent implements OnInit {
         @Inject(LocalStorageService)
         public storageService: any,
         @Inject(FilterService) private filterService: any) {
+
         this.token = this.storageService.getToken();
+        this.localTime = this.storageService.getTimeZoneView().toUpperCase() === 'LOCAL';
+        this.setOffset();
     }
 
     openExport(): void {
         this.isExportOpen = true;
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
 
@@ -124,9 +128,16 @@ export class ExportMetadataDialogComponent implements OnInit {
         this.sort.sortChange.subscribe(() => this.paginator.firstPage());
         this.loadData();
 
-        this.toggleTime();
         this.exportEvent = { selected: this.filterService.getEvent() };
         this.exportFormat = this.exportFormats[0];
+    }
+
+    ngOnDestroy(): void {
+        this.uiModels.forEach(meta => {
+            if (meta.undoable) {
+                this.exportMetaService.deleteExport(meta._id);
+            }
+        });
     }
 
     loadData(): void {
@@ -153,7 +164,7 @@ export class ExportMetadataDialogComponent implements OnInit {
         });
     }
 
-    applyFilter(event: Event) {
+    applyFilter(event: Event): void {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
 
