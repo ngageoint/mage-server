@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Default admin apporoval was not enabled for new user accounts, causing new user account creation to fail.
 * Login search on device page correctly filters on device.
+* Display device uid, not user-agent, when filtering on devices from admin dashboard.
 
 ## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
 
