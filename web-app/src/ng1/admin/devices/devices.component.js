@@ -67,7 +67,7 @@ class AdminDevicesController {
   iconClass(device) {
     if (device.iconClass) return device.iconClass;
 
-    var userAgent = device.userAgent || "";
+    const userAgent = device.userAgent || "";
 
     if (device.appVersion === 'Web Client') {
       device.iconClass = 'fa-desktop admin-desktop-icon';
@@ -130,7 +130,7 @@ class AdminDevicesController {
   deleteDevice($event, device) {
     $event.stopPropagation();
 
-    var modalInstance = this.$uibModal.open({
+    const modalInstance = this.$uibModal.open({
       resolve: {
         device: () => {
           return device;
