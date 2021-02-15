@@ -1,5 +1,5 @@
 module.exports = function iconUser() {
-  var directive = {
+  const directive = {
     restrict: "A",
     scope: {
       user: '=iconUser',
@@ -18,10 +18,10 @@ function IconUserController($scope, $element, LocalStorageService) {
   if (!$scope.iconWidth) $scope.iconWidth = 42;
   if (!$scope.iconHeight) $scope.iconHeight = 42;
 
-  var image = new Image();
-  var imageElement = $(image);
+  const image = new Image();
+  const imageElement = $(image);
   imageElement.classList = $element[0].classList;
-  for (var i = 0; i < $element[0].classList.length; i++) {
+  for (let i = 0; i < $element[0].classList.length; i++) {
     imageElement.addClass($element[0].classList[i]);
   }
   imageElement.addClass('center-crop');
@@ -30,8 +30,8 @@ function IconUserController($scope, $element, LocalStorageService) {
   imageElement.addClass('circle-avatar');
   $element.replaceWith(image);
 
-  if ($scope.user) {
-    image.src = getIconUrl($scope.user);
+  if ($scope.user && $scope.user.icon && $scope.user.iconUrl) {
+    image.src = getIconUrl($scope.user.iconUrl);
   } else {
     image.src = "/assets/images/person_pin_circle-24px.svg";
     imageElement.addClass('circle-avatar-no-border');
@@ -49,12 +49,12 @@ function IconUserController($scope, $element, LocalStorageService) {
 
   function getIcon(url) {
     $http.get(url, { responseType: 'arraybuffer' }).then(function (response) {
-      var blob = new Blob([response.data], { type: 'image/jpeg' });
+      const blob = new Blob([response.data], { type: 'image/jpeg' });
       EXIF.getData(blob, function () {
-        var orientation = EXIF.getTag(this, 'Orientation');
+        const orientation = EXIF.getTag(this, 'Orientation');
         imageElement.css('transform', orientationMap[orientation] || "");
 
-        var urlCreator = window.URL || window.webkitURL;
+        const urlCreator = window.URL || window.webkitURL;
         image.src = urlCreator.createObjectURL(blob);
       });
     });
