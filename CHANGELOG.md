@@ -13,6 +13,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Default admin apporoval as enabled for new user accounts.  This was causing new user account creation to fail.
+* User map icon now appears on the map.  Default icon is also displayed instead of a missing icon image.
 
 ## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
 
