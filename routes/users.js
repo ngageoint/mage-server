@@ -54,6 +54,7 @@ module.exports = function (app, security) {
       icon = {
         type: 'none'
       };
+      files.icon = [icon];
     }
 
     next();

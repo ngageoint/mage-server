@@ -56,7 +56,7 @@ class AdminUserEditController {
     if (this.$stateParams.userId) {
       this.UserService.getUser(this.$stateParams.userId).then(user => {
         this.user = angular.copy(user);
-  
+
         this.iconMetadata = {
           type: this.user.icon.type,
           text: this.user.icon.text,
@@ -73,7 +73,7 @@ class AdminUserEditController {
 
   cancel() {
     if (this.user.id) {
-      this.$state.go('admin.user', {userId: this.user.id});
+      this.$state.go('admin.user', { userId: this.user.id });
     } else {
       this.$state.go('admin.users');
     }
@@ -115,17 +115,17 @@ class AdminUserEditController {
     };
 
     const progress = e => {
-      if(e.lengthComputable){
+      if (e.lengthComputable) {
         this.$timeout(() => {
           this.uploading = true;
-          this.uploadProgress = (e.loaded/e.total) * 100;
+          this.uploadProgress = (e.loaded / e.total) * 100;
         });
       }
     };
 
     if (this.user.id) {
       this.UserService.updateUser(this.user.id, user, () => {
-        this.$state.go('admin.user', {userId: this.user.id});
+        this.$state.go('admin.user', { userId: this.user.id });
       }, failure, progress);
     } else {
       this.UserService.createUser(user, newUser => {
@@ -185,6 +185,12 @@ class AdminUserEditController {
       if (this.user.icon && this.user.icon.type !== 'upload') {
         this.user.iconUrl = null;
       }
+    } else {
+      this.user.icon = null;
+      this.user.iconUrl = null;
+      this.iconMetadata = {
+        type: 'none'
+      };
     }
   }
 
@@ -200,9 +206,9 @@ class AdminUserEditController {
 
     icon.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
   }
-  
+
   passwordChanged(password) {
-    if(password && password.length > 0) {
+    if (password && password.length > 0) {
       const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
       this.passwordStrengthScore = score + 1;
       this.passwordStrengthType = this.passwordStrengthMap[score].type;
