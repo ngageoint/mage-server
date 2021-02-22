@@ -54,7 +54,7 @@
         <div class="col-md-6">
           <div class="card" ng-if="!$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Complete event</strong>
+              <strong class="text-primary">Complete Event</strong>
               <p class="text-primary">Marking an event as complete will remove it as a selectable event. The event is
                 not destroyed and can be changed back to an active state at any time.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.completeEvent($ctrl.event)">Complete</button>
@@ -63,7 +63,7 @@
 
           <div class="card" ng-if="$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Activate event</strong>
+              <strong class="text-primary">Activate Event</strong>
               <p class="text-primary">Marking an event as active will show it as a selectable event on clients. At that
                 point users can contribute observations and locations to the event.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.activateEvent($ctrl.event)">Activate</button>
@@ -72,7 +72,7 @@
 
           <div class="card top-gap" ng-if="$ctrl.hasDeletePermission">
             <div class="card-content">
-              <strong class="text-danger">Delete event</strong>
+              <strong class="text-danger">Delete Event</strong>
               <p class="text-danger">Deleting event will remove all event information including observation and location
                 data. This cannot be undone, all event data will be unrecoverable.</p>
               <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteEvent($ctrl.event)"> <i
