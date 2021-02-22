@@ -86,7 +86,7 @@
         <div class="col-md-6">
           <div class="card" ng-if="!$ctrl.device.registered && $ctrl.hasDeviceEditPermission">
             <div class="card-content">
-              <strong class="text-success">Register device</strong>
+              <strong class="text-success">Register Device</strong>
               <p class="text-success">Registering will allow device to access MAGE data. The device can be deregistered
                 at any time.</p>
               <button class="btn btn-success top-gap" ng-click="$ctrl.registerDevice($ctrl.device)"> <i
@@ -96,9 +96,9 @@
 
           <div class="card" ng-if="$ctrl.device.registered && $ctrl.hasDeviceEditPermission">
             <div class="card-content">
-              <strong class="text-warning">Unregister device</strong>
+              <strong class="text-warning">Unregister Device</strong>
               <p class="text-warning">Unregistering will deny device from accessing MAGE data. All device information
-                will be retained and the device can be registered again at any time.</p>
+                will be retained, and the device can be registered again at any time.</p>
               <button class="btn btn-warning top-gap" ng-click="$ctrl.unregisterDevice($ctrl.device)"> <i
                   class="fa fa-ban"></i> Unregister</button>
             </div>
@@ -106,8 +106,8 @@
 
           <div class="card top-gap" ng-if="$ctrl.hasDeviceDeletePermission">
             <div class="card-content">
-              <strong class="text-danger">Delete device</strong>
-              <p class="text-danger">Deleting device will remove all device information. This cannot be undone, all
+              <strong class="text-danger">Delete Device</strong>
+              <p class="text-danger">Deleting a device will remove all device information. This cannot be undone, and all
                 device data will be unrecoverable.</p>
               <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteDevice($ctrl.device)"> <i
                   class="fa fa-trash-o"></i> Delete</button>

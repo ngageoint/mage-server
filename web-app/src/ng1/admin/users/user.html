@@ -122,7 +122,7 @@
             <div class="card top-gap" ng-if="$ctrl.hasUserDeletePermission">
               <div class="card-content">
                 <strong class="text-danger">Delete User Account</strong>
-                <p class="text-danger">Deleting the account will remove all associated user information including location data. This cannot be undone and the user's data will be unrecoverable.</p>
+                <p class="text-danger">Deleting the account will remove all associated user information including location data. This cannot be undone, and the user's data will be unrecoverable.</p>
                 <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteUser($ctrl.user)"> <i class="fa fa-trash-o"></i> Delete</button>
               </div>
             </div>
@@ -145,6 +145,14 @@
               </div>
             </div>
 
+            <script type="text/ng-template" id="teamEventTemplate.html">
+              <a>
+                  <i ng-show="match.model.teamEventId" class="fa fa-calendar fa-small"></i>
+                  <i ng-show="!match.model.teamEventId" class="fa fa-users fa-small"></i>
+                  <span ng-bind-html="match.model.name"></span>
+              </a>
+            </script>
+
             <div class="admin-table">
               <div class="well-item">
                 <div class="row">
@@ -152,7 +160,8 @@
                     <input type="text" ng-model="$ctrl.nonUserTeam" placeholder="Search for a team"
                     uib-typeahead="team as team.name for team in $ctrl.searchNonUserTeams($viewValue)"
                     typeahead-loading="$ctrl.nonUserTeamSearchResults" typeahead-no-results="noSearchResults"
-                    typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }">
+                    typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }" 
+                    typeahead-template-url="teamEventTemplate.html">
                   </div>
                 </div>
 

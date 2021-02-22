@@ -54,7 +54,7 @@
         <div class="col-md-6">
           <div class="card" ng-if="!$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Complete event</strong>
+              <strong class="text-primary">Complete Event</strong>
               <p class="text-primary">Marking an event as complete will remove it as a selectable event. The event is
                 not destroyed and can be changed back to an active state at any time.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.completeEvent($ctrl.event)">Complete</button>
@@ -63,7 +63,7 @@
 
           <div class="card" ng-if="$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Activate event</strong>
+              <strong class="text-primary">Activate Event</strong>
               <p class="text-primary">Marking an event as active will show it as a selectable event on clients. At that
                 point users can contribute observations and locations to the event.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.activateEvent($ctrl.event)">Activate</button>
@@ -72,9 +72,9 @@
 
           <div class="card top-gap" ng-if="$ctrl.hasDeletePermission">
             <div class="card-content">
-              <strong class="text-danger">Delete event</strong>
-              <p class="text-danger">Deleting event will remove all event information including observation and location
-                data. This cannot be undone, all event data will be unrecoverable.</p>
+              <strong class="text-danger">Delete Event</strong>
+              <p class="text-danger">Deleting an event will remove all event information including observation and location
+                data. This cannot be undone, and all event data will be unrecoverable.</p>
               <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteEvent($ctrl.event)"> <i
                   class="fa fa-trash-o"></i> Delete</button>
             </div>
@@ -94,7 +94,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add a user or team to the event</a>
+                      <a class="navbar-brand">Add a <i class="fa fa-user fa-small"></i> User or <i class="fa fa-users fa-small"></i> Team to the Event</a>
                     </div>
                   </div>
                 </nav>
@@ -102,12 +102,21 @@
             </div>
 
             <div class="admin-table">
+             <script type="text/ng-template" id="teamUserTemplate.html">
+                <a>
+                     <i ng-show="match.model.type == 'team'" class="fa fa-users fa-small"></i>
+                    <i ng-show="match.model.type == 'user'" class="fa fa-user fa-small"></i>
+                    <span ng-bind-html="match.model.name"></span>
+                </a>
+              </script>
+
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
                     <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user/team to add to event"
                       uib-typeahead="user as user.name for user in $ctrl.searchNonMembers($viewValue)"
-                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }">
+                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }"
+                      typeahead-template-url="teamUserTemplate.html">
                   </div>
                 </div>
 
@@ -129,14 +138,13 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Users/Teams <sup><span
-                          class="badge">{{$ctrl.count()}}</span></sup></a>
+                    <a class="navbar-brand">Users/Teams <sup><span class="badge">{{$ctrl.count()}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
                       <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch"
-                      ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
+                        ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
@@ -151,8 +159,7 @@
           <div class="row">
             <div class="col-md-12">
               <div class="admin-table">
-                <div class="well-item"
-                  ng-repeat="member in $ctrl.eventMembers">
+                <div class="well-item" ng-repeat="member in $ctrl.eventMembers">
                   <div class="row pointer" ng-click="$ctrl.gotoMember(member)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
@@ -197,7 +204,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add layer to the event</a>
+                      <a class="navbar-brand">Add Layer to the Event</a>
                     </div>
                   </div>
                 </nav>
