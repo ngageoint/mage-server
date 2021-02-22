@@ -52,9 +52,9 @@
         <div class="col-sm-6" ng-if="$ctrl.hasDeletePermission">
           <div class="card">
             <div class="card-content">
-              <strong class="text-danger">Delete team</strong>
-              <p class="text-danger">Deleting team will remove all team information including. This cannot be undone,
-                users within team will not be deleted.</p>
+              <strong class="text-danger">Delete Team</strong>
+              <p class="text-danger">Deleting a team will remove all team information. This cannot be undone, and 
+                all team data will be unrecoverable. Users within the team will not be deleted.</p>
               <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteTeam($ctrl.team)"> <i
                   class="fa fa-trash-o"></i> Delete</button>
             </div>
@@ -74,7 +74,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add user to the team</a>
+                      <a class="navbar-brand">Add User to the Team</a>
                     </div>
                   </div>
                 </nav>
@@ -82,13 +82,20 @@
             </div>
 
             <div class="admin-table">
+              <script type="text/ng-template" id="userIconTemplate.html">
+                 <a>
+                    <i class="fa fa-user fa-small"></i>
+                    <span ng-bind-html="match.model.displayName"></span>
+                </a>
+              </script>
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
                     <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user to add to team"
                       uib-typeahead="user as user.displayName for user in $ctrl.searchNonMembers($viewValue)"
                       typeahead-loading="$ctrl.nonMemberSearchResults" typeahead-no-results="noSearchResults"
-                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }">
+                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }"
+                      typeahead-template-url="userIconTemplate.html">
                   </div>
                 </div>
 
@@ -130,8 +137,7 @@
           <div class="row">
             <div class="col-sm-12">
               <div class="admin-table">
-                <div class="well-item"
-                  ng-repeat="user in $ctrl.members">
+                <div class="well-item" ng-repeat="user in $ctrl.members">
                   <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
@@ -171,7 +177,7 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Add team to an event</a>
+                    <a class="navbar-brand">Add Team to an Event</a>
                   </div>
                 </div>
               </nav>
