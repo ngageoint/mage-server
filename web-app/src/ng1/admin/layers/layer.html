@@ -128,8 +128,8 @@
           <div class="col-md-6">
             <div class="card" ng-if="$ctrl.hasLayerDeletePermission">
               <div class="card-content">
-                <strong class="text-danger">Delete layer</strong>
-                <p class="text-danger">Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
+                <strong class="text-danger">Delete Layer</strong>
+                <p class="text-danger">Deleting a layer will remove all information. This cannot be undone, and all layer data will be unrecoverable.</p>
                 <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteLayer($ctrl.layer)"> <i class="fa fa-trash-o"></i> Delete</button>
               </div>
             </div>
@@ -144,7 +144,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add KML data</a>
+                      <a class="navbar-brand">Add KML Data</a>
                     </div>
                   </div>
                 </nav>
@@ -157,7 +157,7 @@
                   <div ng-repeat="upload in $ctrl.uploads" class="bottom-gap">
                     <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete($event)"></file-upload>
 
-                    <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} features from file {{$ctrl.status[$index].name}} </span></div>
+                    <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} Features From File {{$ctrl.status[$index].name}} </span></div>
                   </div>
                 </div>
 
@@ -207,7 +207,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add layer to an event</a>
+                      <a class="navbar-brand">Add Layer to an Event</a>
                     </div>
                   </div>
                 </nav>
