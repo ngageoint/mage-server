@@ -15,7 +15,7 @@ describe("authentication model tests", function () {
 
   it('validate complete model', function (done) {
     const authentication = new AuthenticationModel({
-      password: 'password'
+      type: 'local'
     });
 
     authentication.validate(function (err) {
@@ -27,16 +27,15 @@ describe("authentication model tests", function () {
   it('verify create logic', function (done) {
     const mockAuth = new AuthenticationModel({
       _id: mongoose.Types.ObjectId(),
-      type: 'local',
-      password: 'password'
+      type: 'local'
     });
 
-    sinon.stub(AuthenticationModel.prototype, 'save')
+    sinon.stub(Authentication.Local.prototype, 'save')
       .resolves(mockAuth);
 
     Authentication.createAuthentication(mockAuth).then(auth => {
       expect(auth).to.not.be.null;
-      sinon.assert.calledOnce(AuthenticationModel.prototype.save);
+      sinon.assert.calledOnce(Authentication.Local.prototype.save);
       done();
     }).catch(err => {
       done(err);
