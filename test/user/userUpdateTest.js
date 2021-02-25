@@ -20,8 +20,7 @@ const EventModel = mongoose.model('Event');
 
 const Setting = require('../../models/setting');
 
-require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const Authentication = require('../../models/authentication');
 
 require('sinon-mongoose');
 
@@ -104,7 +103,7 @@ describe("user update tests", function () {
       active: true,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: new AuthenticationModel({
+      authentication: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -120,7 +119,7 @@ describe("user update tests", function () {
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -156,7 +155,7 @@ describe("user update tests", function () {
       active: true,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: new AuthenticationModel({
+      authentication: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -172,7 +171,7 @@ describe("user update tests", function () {
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -317,7 +316,7 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -374,7 +373,7 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
@@ -421,7 +420,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
@@ -704,7 +703,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: AuthenticationModel({
+      authentication: Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -745,7 +744,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: AuthenticationModel({
+      authentication: Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',

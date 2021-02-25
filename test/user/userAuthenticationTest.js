@@ -21,7 +21,7 @@ const DeviceModel = mongoose.model('Device');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-require('../../models/authentication');
+const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
 
 require('../../models/setting');
@@ -52,7 +52,7 @@ describe("user authentication tests", function () {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -82,7 +82,7 @@ describe("user authentication tests", function () {
         }
       });
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -167,7 +167,7 @@ describe("user authentication tests", function () {
       displayName: 'test',
       roleId: mongoose.Types.ObjectId(),
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: {
@@ -236,7 +236,7 @@ describe("user authentication tests", function () {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
@@ -252,7 +252,7 @@ describe("user authentication tests", function () {
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -299,7 +299,7 @@ describe("user authentication tests", function () {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
@@ -331,7 +331,7 @@ describe("user authentication tests", function () {
       });
 
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -400,7 +400,7 @@ describe("user authentication tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
@@ -442,7 +442,7 @@ describe("user authentication tests", function () {
         }
       });
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, false);
 
@@ -473,7 +473,7 @@ describe("user authentication tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
@@ -514,7 +514,7 @@ describe("user authentication tests", function () {
         }
       });
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, false);
 
@@ -548,7 +548,7 @@ describe("user authentication tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
@@ -589,7 +589,7 @@ describe("user authentication tests", function () {
         }
       });
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, false);
 
@@ -631,7 +631,7 @@ describe("user authentication tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
