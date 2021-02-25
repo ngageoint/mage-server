@@ -11,8 +11,20 @@ const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
   id: { type: String, required: false },
-  type: { type: String, required: false },
-  password: { type: String, required: false },
+  type: { type: String, required: true },
+  title: { type: String, required: false },
+  textColor: { type: String, required: false },
+  buttonColor: { type: String, required: false },
+  icon: { type: String, required: false }
+}, {
+  discriminatorKey: 'type',
+  timestamps: {
+    updatedAt: 'lastUpdated'
+  }
+});
+
+const LocalSchema = new Schema({
+  password: { type: String, required: true },
   previousPasswords: { type: [String], required: false },
   security: {
     locked: { type: Boolean },
@@ -20,36 +32,30 @@ const AuthenticationSchema = new Schema({
     invalidLoginAttempts: { type: Number, default: 0 },
     numberOfTimesLocked: { type: Number, default: 0 }
   }
-},{
-  versionKey: false,
-  timestamps: {
-    updatedAt: 'lastUpdated'
-  }
 });
 
-AuthenticationSchema.method('validatePassword', function (password, callback) {
-  var authentication = this;
-  if (authentication.type !== 'local') return callback(null, false);
+LocalSchema.method('validatePassword', function (password, callback) {
+  const authentication = this;
 
   hasher.validPassword(password, authentication.password, callback);
 });
 
 // Encrypt password before save
-AuthenticationSchema.pre('save', function (next) {
+LocalSchema.pre('save', function (next) {
   const authentication = this;
 
   // only hash the password if it has been modified (or is new)
-  if (authentication.type !== 'local' || !authentication.isModified('password')) {
+  if (!authentication.isModified('password')) {
     return next();
   }
 
   async.waterfall([
-    function(done) {
+    function (done) {
       Setting.getSetting('security').then(security => {
         done(null, security.settings.local.passwordPolicy);
       }).catch(err => done(err));
     },
-    function(policy, done) {
+    function (policy, done) {
       const { password, previousPasswords } = authentication;
       PasswordValidator.validate(policy, { password, previousPasswords }).then(validationStatus => {
         if (!validationStatus.valid) {
@@ -61,8 +67,8 @@ AuthenticationSchema.pre('save', function (next) {
         done(null, policy);
       });
     },
-    function(policy, done) {
-      hasher.hashPassword(authentication.password, function(err, password) {
+    function (policy, done) {
+      hasher.hashPassword(authentication.password, function (err, password) {
         done(err, policy, password);
       });
     }
@@ -77,7 +83,7 @@ AuthenticationSchema.pre('save', function (next) {
 });
 
 // Remove Token if password changed
-AuthenticationSchema.pre('save', function (next) {
+LocalSchema.pre('save', function (next) {
   const authentication = this;
 
   // only remove token if password has been modified (or is new)
@@ -113,22 +119,31 @@ AuthenticationSchema.pre('save', function (next) {
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
 
+const LocalAuthentication = Authentication.discriminator('local', LocalSchema);
+exports.Local = LocalAuthentication;
+
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
-  Authentication.findOne({id: uid, type: strategy}, callback);
+  Authentication.findOne({ id: uid, type: strategy }, callback);
 };
 
 exports.createAuthentication = function (authentication) {
-  const newAuth = new Authentication({
-    id: authentication.id,
-    type: authentication.type,
-    password: authentication.password,
-    previousPasswords: [],
-    security: {
-      locked: false,
-      lockedUntil: null
+  let newAuth;
+  switch (authentication.type) {
+    case "local": {
+      newAuth = new LocalAuthentication({
+        id: authentication.id,
+        type: authentication.type,
+        password: authentication.password,
+        previousPasswords: [],
+        security: {
+          locked: false,
+          lockedUntil: null
+        }
+      });
+      break;
     }
-  });
-  
+  }
+
   return newAuth.save();
 };
 
