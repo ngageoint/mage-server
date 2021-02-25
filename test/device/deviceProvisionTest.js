@@ -20,7 +20,7 @@ const DeviceModel = mongoose.model('Device');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-require('../../models/authentication');
+const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
 
 let userId = mongoose.Types.ObjectId();
@@ -48,7 +48,7 @@ async function authenticate() {
     active: true,
     enabled: true,
     roleId: mongoose.Types.ObjectId(),
-    authenticationId: new AuthenticationModel({
+    authenticationId: new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
@@ -69,7 +69,7 @@ async function authenticate() {
     .chain('exec')
     .yields(null, mockUser);
 
-  sinon.mock(AuthenticationModel.prototype)
+  sinon.mock(Authentication.Local.prototype)
     .expects('validatePassword')
     .yields(null, true);
 

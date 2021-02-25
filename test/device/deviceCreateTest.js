@@ -17,7 +17,7 @@ const DeviceModel = mongoose.model('Device');
 const UserOperations = require('../../models/user');
 const UserModel = UserOperations.Model;
 
-require('../../models/authentication');
+const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
 
 describe("device create tests", function() {
@@ -87,7 +87,7 @@ describe("device create tests", function() {
       displayName: 'Unregistered Device Test',
       roleId: mongoose.Types.ObjectId(),
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -153,7 +153,7 @@ describe("device create tests", function() {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
