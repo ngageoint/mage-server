@@ -10,15 +10,15 @@ const chai = require('chai')
 chai.use(sinonChai);
 
 require('../../models/setting');
-var SettingModel = mongoose.model('Setting');
+const SettingModel = mongoose.model('Setting');
 
 require('../../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
 
 require('../../models/token');
-var TokenModel = mongoose.model('Token');
+const TokenModel = mongoose.model('Token');
 
-require('../../models/authentication');
+const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
 
 describe("Password Validator Tests", function() {
@@ -472,8 +472,9 @@ describe("Password Validator Tests", function() {
   it('Should truncate password history', async function() {
     // Need to remove previously loaded model from monogose
     // as proxyquire will skip cache and reload.
+    delete mongoose.connection.models['local'];
     delete mongoose.connection.models['Authentication'];
-
+   
     const hashPassword = util.promisify(hasher.hashPassword);
     const hash1 = await hashPassword('hash1');
     const hash2 = await hashPassword('hash2');
@@ -481,7 +482,7 @@ describe("Password Validator Tests", function() {
 
     const hasherStub = (password, done) => {
       done(null, hash1);
-    }
+    };
 
     const proxyquire = require('proxyquire');
     proxyquire('../../models/authentication', {
@@ -492,7 +493,7 @@ describe("Password Validator Tests", function() {
       }
     });
 
-    require('../../models/authentication');
+    const Authentication = require('../../models/authentication');
     const AuthenticationModel = mongoose.model('Authentication');
 
     sinon.mock(SettingModel)
@@ -515,17 +516,17 @@ describe("Password Validator Tests", function() {
       .expects('findOne')
       .chain('populate')
       .chain('exec')
-      .resolves({})
+      .resolves({});
 
     sinon.mock(TokenModel)
       .expects('remove')
-      .yields(null, {})
+      .yields(null, {});
 
-    const authentication = new AuthenticationModel({
+    const authentication = new Authentication.Local({
       type: 'local',
       password: 'hash1',
       previousPasswords: [hash3, hash2, hash1]
-    })
+    });
 
     sinon.mock(AuthenticationModel.collection)
       .expects('insert')
@@ -537,11 +538,12 @@ describe("Password Validator Tests", function() {
     expect(updatedAuthentication.previousPasswords[0]).to.equal(hash1);
     expect(updatedAuthentication.previousPasswords[1]).to.equal(hash3);
 
+    delete mongoose.connection.models['local'];
     delete mongoose.connection.models['Authentication'];
   });
 
   it('Should remove token if password is reset', async function () {
-    const authentication = new AuthenticationModel({
+    const authentication = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
