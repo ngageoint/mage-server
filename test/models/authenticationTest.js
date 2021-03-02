@@ -3,8 +3,6 @@ const sinon = require('sinon')
   , mongoose = require('mongoose')
   , Authentication = require('../../models/authentication');
 
-const AuthenticationModel = mongoose.model('Authentication');
-
 require('sinon-mongoose');
 
 describe("authentication model tests", function () {
@@ -13,21 +11,28 @@ describe("authentication model tests", function () {
     sinon.restore();
   });
 
-  it('validate complete model', function (done) {
-    const authentication = new AuthenticationModel({
-      type: 'local'
+  it('validate local auth model', function (done) {
+    const authentication = new Authentication.Local({
+      type: 'local',
+      password: 'password'
     });
 
     authentication.validate(function (err) {
       expect(err).to.be.null;
-      done();
+
+      authentication.password = null;
+      authentication.validate(function (err) {
+        expect(err).to.not.be.null;
+        done();
+      });
     });
   });
 
-  it('verify create logic', function (done) {
-    const mockAuth = new AuthenticationModel({
+  it('verify local auth create', function (done) {
+    const mockAuth = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
-      type: 'local'
+      type: 'local',
+      password: 'password'
     });
 
     sinon.stub(Authentication.Local.prototype, 'save')

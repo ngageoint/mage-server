@@ -473,6 +473,9 @@ describe("Password Validator Tests", function() {
     // Need to remove previously loaded model from monogose
     // as proxyquire will skip cache and reload.
     delete mongoose.connection.models['local'];
+    delete mongoose.connection.models['saml'];
+    delete mongoose.connection.models['ldap'];
+    delete mongoose.connection.models['oauth'];
     delete mongoose.connection.models['Authentication'];
    
     const hashPassword = util.promisify(hasher.hashPassword);
@@ -542,6 +545,9 @@ describe("Password Validator Tests", function() {
     expect(updatedAuthentication.previousPasswords[1]).to.equal(hash3);
 
     delete mongoose.connection.models['local'];
+    delete mongoose.connection.models['saml'];
+    delete mongoose.connection.models['ldap'];
+    delete mongoose.connection.models['oauth'];
     delete mongoose.connection.models['Authentication'];
   });
 

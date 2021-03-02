@@ -15,7 +15,8 @@ const AuthenticationSchema = new Schema({
   title: { type: String, required: false },
   textColor: { type: String, required: false },
   buttonColor: { type: String, required: false },
-  icon: { type: String, required: false }
+  icon: { type: String, required: false },
+  enabled: { type: Boolean, default: false }
 }, {
   discriminatorKey: 'type',
   timestamps: {
@@ -32,6 +33,43 @@ const LocalSchema = new Schema({
     invalidLoginAttempts: { type: Number, default: 0 },
     numberOfTimesLocked: { type: Number, default: 0 }
   }
+});
+
+const SamlSchema = new Schema({
+  uidAttribute: { type: String },
+  displayNameAttribute: { type: String },
+  emailAttribute: { type: String },
+  options: {
+    issuer: { type: String },
+    entryPoint: { type: String },
+    callbackPath: { type: String }
+  }
+});
+
+const LdapSchema = new Schema({
+  url: { type: String },
+  baseDN: { type: String },
+  username: { type: String },
+  password: { type: String },
+  ldapUsernameField: { type: String },
+  ldapDisplayNameField: { type: String },
+  ldapEmailField: { type: String }
+});
+
+const OauthSchema = new Schema({
+  callbackURL: { type: String },
+  clientID: { type: String },
+  clientSecret: { type: String },
+  //geoaxis
+  authorizationUrl: { type: String },
+  apiUrl: { type: String },
+  //login-gov
+  loa: { type: String },
+  url: { type: String },
+  client_id: { type: String },
+  acr_values: { type: String },
+  redirect_uri: { type: String },
+  keyFile: { type: String }
 });
 
 LocalSchema.method('validatePassword', function (password, callback) {
@@ -121,6 +159,15 @@ exports.Model = Authentication;
 
 const LocalAuthentication = Authentication.discriminator('local', LocalSchema);
 exports.Local = LocalAuthentication;
+
+const SamlAuthentication = Authentication.discriminator('saml', SamlSchema);
+exports.SAML = SamlAuthentication;
+
+const LdapAuthentication = Authentication.discriminator('ldap', LdapSchema);
+exports.LDAP = LdapAuthentication;
+
+const OauthAuthentication = Authentication.discriminator('oauth', OauthSchema);
+exports.Oauth = OauthAuthentication;
 
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   Authentication.findOne({ id: uid, type: strategy }, callback);
