@@ -1,3 +1,5 @@
+"use strict";
+
 const mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
@@ -178,8 +180,6 @@ exports.createAuthentication = function (authentication) {
   switch (authentication.type) {
     case "local": {
       newAuth = new LocalAuthentication({
-        id: authentication.id,
-        type: authentication.type,
         password: authentication.password,
         previousPasswords: [],
         security: {
@@ -189,6 +189,41 @@ exports.createAuthentication = function (authentication) {
       });
       break;
     }
+    case "saml": {
+      newAuth = new SamlAuthentication({
+        uidAttribute: authentication.uidAttribute,
+        displayNameAttribute: authentication.displayNameAttribute,
+        emailAttribute: authentication.emailAttribute,
+        options: {
+          issuer: authentication.options.issuer,
+          entryPoint: authentication.options.entryPoint,
+          callbackPath: authentication.options.callbackPath
+        }
+      });
+      break;
+    }
+    case "ldap": {
+      newAuth = new LdapAuthentication({
+        url: authentication.url,
+        baseDN: authentication.baseDN,
+        username: authentication.username,
+        password: authentication.password,
+        ldapUsernameField: authentication.ldapUsernameField,
+        ldapDisplayNameField: authentication.ldapUsernameField,
+        ldapEmailField: authentication.ldapEmailField
+      });
+      break;
+    }
+  }
+
+  if (newAuth) {
+    newAuth.id = authentication.id;
+    newAuth.type = authentication.type;
+    newAuth.title = authentication.title;
+    newAuth.textColor = authentication.textColor;
+    newAuth.buttonColor = authentication.buttonColor;
+    newAuth.icon = authentication.icon;
+    newAuth.enabled = authentication.enabled;
   }
 
   return newAuth.save();
