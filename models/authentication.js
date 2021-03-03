@@ -12,7 +12,6 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
-  id: { type: String, required: false },
   type: { type: String, required: true },
   title: { type: String, required: false },
   textColor: { type: String, required: false },
@@ -27,10 +26,11 @@ const AuthenticationSchema = new Schema({
 });
 
 const LocalSchema = new Schema({
+  id: { type: String, required: false },
   password: { type: String, required: true },
   previousPasswords: { type: [String], required: false },
   security: {
-    locked: { type: Boolean },
+    locked: { type: Boolean, default: false },
     lockedUntil: { type: Date },
     invalidLoginAttempts: { type: Number, default: 0 },
     numberOfTimesLocked: { type: Number, default: 0 }
@@ -180,6 +180,7 @@ exports.createAuthentication = function (authentication) {
   switch (authentication.type) {
     case "local": {
       newAuth = new LocalAuthentication({
+        id: authentication.id,
         password: authentication.password,
         previousPasswords: [],
         security: {
@@ -214,10 +215,28 @@ exports.createAuthentication = function (authentication) {
       });
       break;
     }
+    case "oauth": {
+      newAuth = new OauthAuthentication({
+        callbackURL: authentication.callbackURL,
+        clientID: authentication.clientID,
+        clientSecret: authentication.clientSecret,
+        //geoaxis
+        authorizationUrl: authentication.authorizationUrl,
+        apiUrl: authentication.apiUrl,
+        //login-gov
+        loa: authentication.loa,
+        url: authentication.url,
+        client_id: authentication.client_id,
+        acr_values: authentication.acr_values,
+        redirect_uri: authentication.redirect_uri,
+        keyFile: authentication.keyFile
+      });
+      break;
+    }
   }
 
+  //Set base authentication attributes
   if (newAuth) {
-    newAuth.id = authentication.id;
     newAuth.type = authentication.type;
     newAuth.title = authentication.title;
     newAuth.textColor = authentication.textColor;
