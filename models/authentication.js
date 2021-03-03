@@ -209,7 +209,7 @@ exports.createAuthentication = function (authentication) {
         username: authentication.username,
         password: authentication.password,
         ldapUsernameField: authentication.ldapUsernameField,
-        ldapDisplayNameField: authentication.ldapUsernameField,
+        ldapDisplayNameField: authentication.ldapDisplayNameField,
         ldapEmailField: authentication.ldapEmailField
       });
       break;
