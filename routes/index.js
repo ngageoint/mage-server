@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function(app, security) {
+module.exports = function (app, security) {
   const fs = require('fs-extra')
     , extend = require('util')._extend
     , async = require('async')
@@ -13,21 +13,22 @@ module.exports = function(app, security) {
     , Device = require('../models/device')
     , Icon = require('../models/icon')
     , Setting = require('../models/setting')
-    , Authentication = require('../models/authentication');
+    , Authentication = require('../models/authentication')
+    , AuthenticationTransformer = require('../transformers/authentication');
 
-  app.get('/api', function(req, res, next) {
+  app.get('/api', function (req, res, next) {
     async.parallel({
-      initial: function(done) {
-        User.count(function(err, count) {
+      initial: function (done) {
+        User.count(function (err, count) {
           done(err, count === 0);
         });
       },
-      disclaimer: function(done) {
+      disclaimer: function (done) {
         Setting.getSetting('disclaimer')
           .then(disclaimer => done(null, disclaimer || {}))
           .catch(err => done(err));
       }
-    }, function(err, results) {
+    }, function (err, results) {
       if (err) return next(err);
 
       const api = extend({}, config.api);
@@ -40,40 +41,34 @@ module.exports = function(app, security) {
       }
 
       Authentication.Model.find().then(authenticationStrategies => {
-        const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-        authenticationStrategies.forEach(function (strategy) {
-          if (strategy.type === 'local') {
-            api.authenticationStrategies[strategy.type] = extend({}, strategy);
-            return;
-          }
-  
-          api.authenticationStrategies[strategy.type] = Object.keys(strategy)
-            .filter((key) => whitelist.includes(key))
-            .reduce((newObj, key) => Object.assign(newObj, { [key]: strategy[key] }), {});
+        const transformedStrategies = AuthenticationTransformer.transform(authenticationStrategies, { whitelist: true });
+
+        transformedStrategies.forEach(function (strategy) {
+          api.authenticationStrategies[strategy.type] = extend({}, strategy);
         });
-  
+
         res.json(api);
         next();
       }).catch(err => {
         next(err);
       });
-     
+
     });
   });
 
   // Dynamically import all routes
-  fs.readdirSync(__dirname).forEach(function(file) {
+  fs.readdirSync(__dirname).forEach(function (file) {
     if (file[0] === '.' || file === 'index.js') return;
     const route = file.substr(0, file.indexOf('.'));
     require('./' + route)(app, security);
   });
 
   // Grab the event for any endpoint that uses eventId
-  app.param('eventId', function(req, res, next, eventId) {
+  app.param('eventId', function (req, res, next, eventId) {
     if (!/^[0-9]+$/.test(eventId)) {
       return res.status(400).send('Invalid event ID in request path');
     }
-    Event.getById(eventId, {populate: false}, function(err, event) {
+    Event.getById(eventId, { populate: false }, function (err, event) {
       if (!event) return res.status(404).send('Event not found');
       req.event = event;
       next();
@@ -81,11 +76,11 @@ module.exports = function(app, security) {
   });
 
   // Grab the user for any endpoint that uses userId
-  app.param('userId', function(req, res, next, userId) {
+  app.param('userId', function (req, res, next, userId) {
     if (!/^[0-9a-f]{24}$/.test(userId)) {
       return res.status(400).send('Invalid user ID in request path');
     }
-    new api.User().getById(userId, function(err, user) {
+    new api.User().getById(userId, function (err, user) {
       if (!user) return res.status(404).send('User not found');
       req.userParam = user;
       next();
@@ -93,14 +88,14 @@ module.exports = function(app, security) {
   });
 
   // Grab the team for any endpoint that uses teamId
-  app.param('teamId', function(req, res, next, teamId) {
+  app.param('teamId', function (req, res, next, teamId) {
     const options = {};
-    if(req.query) {
+    if (req.query) {
       for (let [key, value] of Object.entries(req.query)) {
         options[key] = value;
       }
     }
-    Team.getTeamById(teamId, options, function(err, team) {
+    Team.getTeamById(teamId, options, function (err, team) {
       if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();
@@ -108,8 +103,8 @@ module.exports = function(app, security) {
   });
 
   // Grab the icon for any endpoint that uses iconId
-  app.param('iconId', function(req, res, next, iconId) {
-    Icon.getById(iconId, function(err, icon) {
+  app.param('iconId', function (req, res, next, iconId) {
+    Icon.getById(iconId, function (err, icon) {
       if (!icon) return res.status(404).send('Icon not found');
       req.icon = icon;
       next();
@@ -117,8 +112,8 @@ module.exports = function(app, security) {
   });
 
   // Grab the device for any endpoint that uses deviceId
-  app.param('deviceId', function(req, res, next, deviceId) {
-    Device.getDeviceById(deviceId, function(err, device) {
+  app.param('deviceId', function (req, res, next, deviceId) {
+    Device.getDeviceById(deviceId, function (err, device) {
       if (!device) return res.status(404).send('Device not found');
       req.device = device;
       next();
@@ -126,8 +121,8 @@ module.exports = function(app, security) {
   });
 
   // Grab the role for any endpoint that uses roleId
-  app.param('roleId', function(req, res, next, roleId) {
-    Role.getRoleById(roleId, function(err, role) {
+  app.param('roleId', function (req, res, next, roleId) {
+    Role.getRoleById(roleId, function (err, role) {
       if (!role) return res.status(404).send('Role ' + roleId + ' not found');
       req.role = role;
       next();
@@ -135,7 +130,7 @@ module.exports = function(app, security) {
   });
 
   // Grab the layer for any endpoint that uses layerId
-  app.param('layerId', function(req, res, next, layerId) {
+  app.param('layerId', function (req, res, next, layerId) {
     new api.Layer().getLayer(layerId)
       .then(layer => {
         if (!layer) {
@@ -149,9 +144,9 @@ module.exports = function(app, security) {
   });
 
   // Grab the feature for any endpoint that uses observationId
-  app.param('observationId', function(req, res, next, observationId) {
+  app.param('observationId', function (req, res, next, observationId) {
     req.observationId = observationId;
-    new api.Observation(req.event).getById(observationId, function(err, observation) {
+    new api.Observation(req.event).getById(observationId, function (err, observation) {
       if (err) {
         return next(err);
       }
