@@ -1,5 +1,7 @@
+"use strict";
+
 module.exports = function(app, security) {
-  var fs = require('fs-extra')
+  const fs = require('fs-extra')
     , extend = require('util')._extend
     , async = require('async')
     , config = require('../config')
@@ -10,7 +12,8 @@ module.exports = function(app, security) {
     , Role = require('../models/role')
     , Device = require('../models/device')
     , Icon = require('../models/icon')
-    , Setting = require('../models/setting');
+    , Setting = require('../models/setting')
+    , Authentication = require('../models/authentication');
 
   app.get('/api', function(req, res, next) {
     async.parallel({
@@ -27,30 +30,41 @@ module.exports = function(app, security) {
     }, function(err, results) {
       if (err) return next(err);
 
-      var api = extend({}, config.api);
+      const api = extend({}, config.api);
+      delete api.authenticationStrategies;
+      api.authenticationStrategies = {};
       api.disclaimer = results.disclaimer.settings;
 
       if (results.initial) {
         api.initial = true;
       }
 
-      let whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-      Object.keys(api.authenticationStrategies).forEach(function (strategyName) {
-        if (strategyName === 'local') return;
-
-        api.authenticationStrategies[strategyName] = Object.keys(api.authenticationStrategies[strategyName])
-          .filter((key) => whitelist.includes(key))
-          .reduce((newObj, key) => Object.assign(newObj, { [key]: api.authenticationStrategies[strategyName][key] }), {});
+      Authentication.Model.find().then(authenticationStrategies => {
+        const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+        authenticationStrategies.forEach(function (strategy) {
+          if (strategy.type === 'local') {
+            api.authenticationStrategies[strategy.type] = extend({}, strategy);
+            return;
+          }
+  
+          api.authenticationStrategies[strategy.type] = Object.keys(strategy)
+            .filter((key) => whitelist.includes(key))
+            .reduce((newObj, key) => Object.assign(newObj, { [key]: strategy[key] }), {});
+        });
+  
+        res.json(api);
+        next();
+      }).catch(err => {
+        next(err);
       });
-
-      res.json(api);
+     
     });
   });
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {
     if (file[0] === '.' || file === 'index.js') return;
-    var route = file.substr(0, file.indexOf('.'));
+    const route = file.substr(0, file.indexOf('.'));
     require('./' + route)(app, security);
   });
 
@@ -80,7 +94,7 @@ module.exports = function(app, security) {
 
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
-    var options = {};
+    const options = {};
     if(req.query) {
       for (let [key, value] of Object.entries(req.query)) {
         options[key] = value;

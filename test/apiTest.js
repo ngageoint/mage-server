@@ -1,41 +1,56 @@
-var request = require('supertest')
+"use strict";
+
+const request = require('supertest')
   , sinon = require('sinon')
   , app = require('../express')
   , mongoose = require('mongoose');
 
 require('../models/setting');
-var SettingModel = mongoose.model('Setting');
+const SettingModel = mongoose.model('Setting');
 
 require('../models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
+
+const Authentication = require('../models/authentication');
 
 require('sinon-mongoose');
 require('chai').should();
 
-describe("api route tests", function() {
+describe("api route tests", function () {
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  it("api should return configuration", function(done) {
+  it("api should return configuration", function (done) {
     sinon.mock(SettingModel)
       .expects('findOne')
-      .withArgs({type: 'disclaimer'})
+      .withArgs({ type: 'disclaimer' })
       .chain('exec')
       .resolves({
-        type : "banner",
-        settings : {
-          footerText : "Footer Text",
-          showFooter : false,
-          headerText : "Header Text",
-          showHeader : false,
-          footerBackgroundColor : "#ffffff",
-          footerTextColor : "#000000",
-          headerBackgroundColor : "#ffffff",
-          headerTextColor : "#000000"
+        type: "banner",
+        settings: {
+          footerText: "Footer Text",
+          showFooter: false,
+          headerText: "Header Text",
+          showHeader: false,
+          footerBackgroundColor: "#ffffff",
+          footerTextColor: "#000000",
+          headerBackgroundColor: "#ffffff",
+          headerTextColor: "#000000"
         }
       });
+
+    const authentication = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      previousPasswords: []
+    });
+
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([authentication]);
 
     sinon.mock(UserModel)
       .expects('count')
@@ -47,7 +62,7 @@ describe("api route tests", function() {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var config = res.body;
         config.should.have.property('version');
         config.should.have.property('authenticationStrategies');
@@ -56,10 +71,10 @@ describe("api route tests", function() {
       .end(done);
   });
 
-  it("api should return initial", function(done) {
+  it("api should return initial", function (done) {
     sinon.mock(SettingModel)
       .expects('findOne')
-      .withArgs({type: 'disclaimer'})
+      .withArgs({ type: 'disclaimer' })
       .chain('exec')
       .resolves({});
 
@@ -68,22 +83,33 @@ describe("api route tests", function() {
       .withArgs({})
       .yields(null, 0);
 
+    const authentication = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      previousPasswords: []
+    });
+
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([authentication]);
+
     request(app)
       .get('/api')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var config = res.body;
         config.should.have.property('initial').that.is.true;
       })
       .end(done);
   });
 
-  it("api should not return initial", function(done) {
+  it("api should not return initial", function (done) {
     sinon.mock(SettingModel)
       .expects('findOne')
-      .withArgs({type: 'disclaimer'})
+      .withArgs({ type: 'disclaimer' })
       .chain('exec')
       .resolves({});
 
@@ -92,12 +118,23 @@ describe("api route tests", function() {
       .withArgs({})
       .yields(null, 2);
 
+    const authentication = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      previousPasswords: []
+    });
+
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([authentication]);
+
     request(app)
       .get('/api')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var config = res.body;
         config.should.not.have.property('initial');
       })
