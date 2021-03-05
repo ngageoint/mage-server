@@ -31,15 +31,13 @@ module.exports = function (app, security) {
       if (err) return next(err);
 
       const api = extend({}, config.api);
-      delete api.authenticationStrategies;
-      api.authenticationStrategies = {};
       api.disclaimer = results.disclaimer.settings;
 
       if (results.initial) {
         api.initial = true;
       }
 
-      AuthenticationApiAppender.append(api).then(appendedApi => {
+      AuthenticationApiAppender.append(api, { whitelist: true }).then(appendedApi => {
         res.json(appendedApi);
         next();
       }).catch(err => {

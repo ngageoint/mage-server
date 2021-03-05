@@ -12,15 +12,22 @@ module.exports = {
  * Appends authenticationStrategies to the config.api object.  These strategies are read from the db.
  * 
  * @param {*} api 
+ * @param {*} options 
  */
-function append(api) {
+function append(api, options) {
+    options = options || {};
+
+    const apiCopy = extend({}, api);
+    delete apiCopy.authenticationStrategies;
+    apiCopy.authenticationStrategies = {};
+
     return Authentication.Model.find().then(authenticationStrategies => {
-        const transformedStrategies = AuthenticationTransformer.transform(authenticationStrategies, { whitelist: true });
+        const transformedStrategies = AuthenticationTransformer.transform(authenticationStrategies, options);
 
         transformedStrategies.forEach(function (strategy) {
-            api.authenticationStrategies[strategy.type] = extend({}, strategy);
+            apiCopy.authenticationStrategies[strategy.type] = extend({}, strategy);
         });
 
-        return Promise.resolve(api);
+        return Promise.resolve(apiCopy);
     });
 }
