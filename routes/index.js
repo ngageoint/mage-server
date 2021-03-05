@@ -13,8 +13,7 @@ module.exports = function (app, security) {
     , Device = require('../models/device')
     , Icon = require('../models/icon')
     , Setting = require('../models/setting')
-    , Authentication = require('../models/authentication')
-    , AuthenticationTransformer = require('../transformers/authentication');
+    , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   app.get('/api', function (req, res, next) {
     async.parallel({
@@ -40,19 +39,12 @@ module.exports = function (app, security) {
         api.initial = true;
       }
 
-      Authentication.Model.find().then(authenticationStrategies => {
-        const transformedStrategies = AuthenticationTransformer.transform(authenticationStrategies, { whitelist: true });
-
-        transformedStrategies.forEach(function (strategy) {
-          api.authenticationStrategies[strategy.type] = extend({}, strategy);
-        });
-
-        res.json(api);
+      AuthenticationApiAppender.append(api).then(appendedApi => {
+        res.json(appendedApi);
         next();
       }).catch(err => {
         next(err);
       });
-
     });
   });
 
