@@ -21,7 +21,6 @@ require('../../models/user');
 const UserModel = mongoose.model('User');
 
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
 
 let userId = mongoose.Types.ObjectId();
 let mockUser = new UserModel({
@@ -35,7 +34,7 @@ let mockUser = new UserModel({
 });
 mockUser.authentication = {
   _id: mockUser.authenticationId,
-  type: 'local', 
+  type: 'local',
   security: {}
 };
 
@@ -57,7 +56,7 @@ async function authenticate() {
   });
   mockUser.authentication = {
     _id: mockUser.authenticationId,
-    type: 'local', 
+    type: 'local',
     security: {}
   };
 
@@ -90,21 +89,21 @@ async function authenticate() {
       sinon.restore();
     });
 
-  return jwt; 
+  return jwt;
 }
 
-describe("device provision tests", function() {
+describe("device provision tests", function () {
   let jwt;
 
   beforeEach(async () => {
     jwt = await authenticate();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  it("should not authorize non provisioned device", function(done) {
+  it("should not authorize non provisioned device", function (done) {
     const deviceId = mongoose.Types.ObjectId();
 
     sinon.mock(UserModel)
@@ -143,7 +142,7 @@ describe("device provision tests", function() {
         userId: userId,
         deviceId: deviceId
       })
-    .yields(null, {});
+      .yields(null, {});
 
     const reqDevice = {
       uid: 'test',
@@ -202,6 +201,16 @@ describe("device provision tests", function() {
         deviceId: deviceId
       })
       .yields(null, {});
+
+    const mockAuth = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password'
+    });
+
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([mockAuth]);
 
     const reqDevice = {
       uid: 'test',
@@ -269,6 +278,16 @@ describe("device provision tests", function() {
         deviceId: deviceId
       })
       .yields(null, {});
+
+    const mockAuth = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password'
+    });
+
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([mockAuth]);
 
     const reqDevice = {
       uid: 'test',

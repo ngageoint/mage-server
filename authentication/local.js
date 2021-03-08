@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, strategyConfig, tokenService) {
 
   const log = require('winston')
     , moment = require('moment')
@@ -8,7 +8,8 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     , Device = require('../models/device')
     , api = require('../api')
     , config = require('../config.js')
-    , userTransformer = require('../transformers/user');
+    , userTransformer = require('../transformers/user')
+    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, _res, next) {
     req.loginOptions = {
@@ -20,8 +21,8 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
   }
 
   passport.use(new LocalStrategy(
-    function(username, password, done) {
-      User.getUserByUsername(username, function(err, user) {
+    function (username, password, done) {
+      User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
 
         if (!user) {
@@ -45,7 +46,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
           return done(null, false, { message: 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.' });
         }
 
-        user.authentication.validatePassword(password, function(err, isValid) {
+        user.authentication.validatePassword(password, function (err, isValid) {
           if (err) return done(err);
 
           if (isValid) {
@@ -55,7 +56,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)
-              .then(() => done(null, false, {message: 'Please check your username and password and try again.'}))
+              .then(() => done(null, false, { message: 'Please check your username and password and try again.' }))
               .catch(err => done(err));
           }
         });
@@ -69,7 +70,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     function authenticate(req, res, next) {
       log.warn('DEPRECATED - The /api/login route will be removed in the next major version, please use /auth/local/signin');
 
-      passport.authenticate('local', function(err, user, info = {}) {
+      passport.authenticate('local', function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) return res.status(401).send(info.message);
@@ -80,13 +81,19 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     },
     provision.check(),
     parseLoginMetadata,
-    function(req, res) {
-      new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, {path: req.getRoot()}),
-          api: config.api
+    function (req, res, next) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
+        if (err) return next(err);
+
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
     }
@@ -95,7 +102,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
   app.post(
     '/auth/local/signin',
     function authenticate(req, res, next) {
-      passport.authenticate('local', function(err, user, info = {}) {
+      passport.authenticate('local', function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) return res.status(401).send(info.message);
@@ -114,7 +121,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
               next(err);
             });
 
-          });
+        });
       })(req, res, next);
     }
   );
@@ -123,14 +130,14 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
   // Create a new device
   // Any authenticated user can create a new device, the registered field will be set to false.
   app.post('/auth/local/devices',
-    function(req, res, next) {
+    function (req, res, next) {
       if (req.user) {
         next();
       } else {
         res.sendStatus(401);
       }
     },
-    function(req, res, next) {
+    function (req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
@@ -166,6 +173,8 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
       }
 
       passport.authenticate('authorization', function (err, user, info = {}) {
+        if (err) return next(err);
+
         if (!user) return res.status(401).send(info.message);
 
         req.user = user;
@@ -174,16 +183,20 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     },
     provision.check('local'),
     parseLoginMetadata,
-    function(req, res, next) {
-      new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
+    function (req, res, next) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, {path: req.getRoot()}),
-          device: req.provisionedDevice,
-          api: config.api
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 

@@ -90,6 +90,10 @@ describe("user authentication tests", function () {
       .expects('save')
       .resolves(mockUser.authentication);
 
+    sinon.mock(Authentication.Model)
+      .expects('find')
+      .resolves([mockUser.authenticationId]);
+
     sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({ uid: '1' })
@@ -540,7 +544,7 @@ describe("user authentication tests", function () {
         done(err);
       });
   });
-  
+
   it("should disable account after invalid logins pass threshold", function (done) {
     const userId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({

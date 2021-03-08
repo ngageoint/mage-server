@@ -2,7 +2,8 @@ const crypto = require('crypto')
   , verification = require('./verification')
   , api = require('../api/')
   , config = require('../config.js')
-  , userTransformer = require('../transformers/user');
+  , userTransformer = require('../transformers/user')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
   
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
@@ -85,12 +86,16 @@ module.exports = function(app, passport, provision, strategies) {
       new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
         if (err) return next(err);
 
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, { path: req.getRoot() }),
-          device: req.provisionedDevice,
-          api: config.api
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 
