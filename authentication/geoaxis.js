@@ -7,7 +7,8 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
-    , log = require('../logger');
+    , log = require('../logger')
+    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   log.info('Configuring GeoAxis authentication');
 
@@ -56,42 +57,42 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     callbackURL: strategyConfig.callbackUrl,
     passReqToCallback: true
   },
-  function(req, accessToken, refreshToken, profile, done) {
-    const geoaxisUser = profile._json;
-    User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function(err, user) {
-      if (err) return done(err);
+    function (req, accessToken, refreshToken, profile, done) {
+      const geoaxisUser = profile._json;
+      User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
+        if (err) return done(err);
 
-      const email = geoaxisUser.email;
+        const email = geoaxisUser.email;
 
-      if (!user) {
-        // Create an account for the user
-        Role.getRole('USER_ROLE', function(err, role) {
-          if (err) return done(err);
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
+            if (err) return done(err);
 
-          const user = {
-            username: email,
-            displayName: email.split("@")[0],
-            email: email,
-            active: false,
-            roleId: role._id,
-            authentication: {
-              type: 'geoaxis',
-              id: email
-            }
-          };
+            const user = {
+              username: email,
+              displayName: email.split("@")[0],
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'geoaxis',
+                id: email
+              }
+            };
 
-          new api.User().create(user).then(newUser => {
-            return done(null, newUser);
-          }).catch(err => done(err));
-        });
-      } else if (!user.active) {
-        log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
-        return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account."} );
-      } else {
-        return done(null, user);
-      }
+            new api.User().create(user).then(newUser => {
+              return done(null, newUser);
+            }).catch(err => done(err));
+          });
+        } else if (!user.active) {
+          log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else {
+          return done(null, user);
+        }
+      });
     });
-  });
 
   passport.use('geoaxis', strategy);
 
@@ -117,7 +118,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
         return res.sendStatus(403);
       }
     },
-    function(req, res, next) {
+    function (req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
@@ -161,26 +162,30 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     },
     provision.check('geoaxis'),
     parseLoginMetadata,
-    function(req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
+    function (req, res, next) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        const api = Object.assign({}, config.api);
-        api.authenticationStrategies['geoaxis'] = {
-          url: api.authenticationStrategies['geoaxis'].url,
-          type: api.authenticationStrategies['geoaxis'].type,
-          title: api.authenticationStrategies['geoaxis'].title,
-          textColor: api.authenticationStrategies['geoaxis'].textColor,
-          buttonColor: api.authenticationStrategies['geoaxis'].buttonColor,
-          icon: api.authenticationStrategies['geoaxis'].icon
-        };
+        authenticationApiAppender.append(config.api).then(apiCopy => {
+          const api = Object.assign({}, apiCopy);
+          api.authenticationStrategies['geoaxis'] = {
+            url: api.authenticationStrategies['geoaxis'].url,
+            type: api.authenticationStrategies['geoaxis'].type,
+            title: api.authenticationStrategies['geoaxis'].title,
+            textColor: api.authenticationStrategies['geoaxis'].textColor,
+            buttonColor: api.authenticationStrategies['geoaxis'].buttonColor,
+            icon: api.authenticationStrategies['geoaxis'].icon
+          };
 
-        res.json({
-          user: req.user,
-          device: req.provisionedDevice,
-          token: token.token,
-          expirationDate: token.expirationDate,
-          api: api
+          res.json({
+            user: req.user,
+            device: req.provisionedDevice,
+            token: token.token,
+            expirationDate: token.expirationDate,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 

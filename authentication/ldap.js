@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, strategyConfig, tokenService) {
 
   const LdapStrategy = require('passport-ldapauth')
     , log = require('winston')
@@ -8,7 +8,8 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
-    , userTransformer = require('../transformers/user');
+    , userTransformer = require('../transformers/user')
+    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -38,46 +39,46 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
       searchFilter: strategyConfig.searchFilter
     }
   },
-  function(profile, done) {
-    const username = profile[strategyConfig.ldapUsernameField];
-    User.getUserByAuthenticationStrategy('ldap', username, function(err, user) {
-      if (err) return done(err);
+    function (profile, done) {
+      const username = profile[strategyConfig.ldapUsernameField];
+      User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
+        if (err) return done(err);
 
-      if (!user) {
-        // Create an account for the user
-        Role.getRole('USER_ROLE', function(err, role) {
-          if (err) return done(err);
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
+            if (err) return done(err);
 
-          const user = {
-            username: username,
-            displayName: profile[strategyConfig.ldapDisplayNameField],
-            email: profile[strategyConfig.ldapEmailField],
-            active: false,
-            roleId: role._id,
-            authentication: {
-              type: 'ldap',
-              id: username
-            }
-          };
+            const user = {
+              username: username,
+              displayName: profile[strategyConfig.ldapDisplayNameField],
+              email: profile[strategyConfig.ldapEmailField],
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'ldap',
+                id: username
+              }
+            };
 
-          new api.User().create(user).then(newUser => {
-            if (newUser.active) {
-              done(null, newUser);
-            } else {
-              done(null, newUser, { status: 403 });
-            }
-          }).catch(err => done(err));
-        });
-      } else {
-        return done(null, user);
-      }
-    });
-  }));
+            new api.User().create(user).then(newUser => {
+              if (newUser.active) {
+                done(null, newUser);
+              } else {
+                done(null, newUser, { status: 403 });
+              }
+            }).catch(err => done(err));
+          });
+        } else {
+          return done(null, user);
+        }
+      });
+    }));
 
   app.post(
     '/auth/ldap/signin',
     function authenticate(req, res, next) {
-      passport.authenticate('ldapauth', authenticationOptions, function(err, user, info = {}) {
+      passport.authenticate('ldapauth', authenticationOptions, function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) {
@@ -94,7 +95,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
         }
 
         // DEPRECATED session authorization, remove req.login which creates session in next version
-        req.login(user, function(err) {
+        req.login(user, function (err) {
           if (err) return next(err);
 
           tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
@@ -110,13 +111,13 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
       })(req, res, next);
     }
   );
- 
+
   // DEPRECATED, this will be removed in next major server version release
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
   app.post('/auth/ldap/devices',
-    function(req, res, next) {
+    function (req, res, next) {
       // check user session
       if (req.user) {
         next();
@@ -124,7 +125,7 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
         return res.sendStatus(403);
       }
     },
-    function(req, res, next) {
+    function (req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
@@ -168,16 +169,20 @@ module.exports = function(app, passport, provision, strategyConfig, tokenService
     },
     provision.check('ldap'),
     parseLoginMetadata,
-    function(req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
+    function (req, res, next) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, {path: req.getRoot()}),
-          device: req.provisionedDevice,
-          api: config.api
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 

@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provision) {
+module.exports = function (app, passport, provision) {
 
   const fs = require('fs')
     , crypto = require('crypto')
@@ -11,7 +11,8 @@ module.exports = function(app, passport, provision) {
     , Role = require('../models/role')
     , api = require('../api')
     , config = require('../config.js')
-    , log = require('../logger');
+    , log = require('../logger')
+    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   Issuer.useRequest();
 
@@ -39,7 +40,7 @@ module.exports = function(app, passport, provision) {
   Promise.all([
     jose.JWK.asKeyStore(keys),
     Issuer.discover(strategyConfig.url)
-  ]).then(function([keystore, issuer]) {
+  ]).then(function ([keystore, issuer]) {
     loginGov.issuer = issuer; // allow subsequent access to issuer.end_session_endpoint (required during RP-Initiated Logout)
 
     client = new issuer.Client({
@@ -51,18 +52,18 @@ module.exports = function(app, passport, provision) {
     client.CLOCK_TOLERANCE = 10;
 
     const params = getParams();
-    passport.use('oidc-loa-1', new Strategy({client: client, params: params, passReqToCallback: true}, function(req, tokenset, userinfo, done) {
+    passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
-      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function(err, user) {
+      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
         if (err) return done(err);
 
         const email = userinfo.email;
 
         if (!user) {
           // Create an account for the user
-          Role.getRole('USER_ROLE', function(err, role) {
+          Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
 
             const user = {
@@ -82,15 +83,15 @@ module.exports = function(app, passport, provision) {
             }).catch(err => done(err));
           });
         } else if (!user.active) {
-          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account."} );
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
         } else {
-          return done(null, user, {access_token: tokenset.access_token});
+          return done(null, user, { access_token: tokenset.access_token });
         }
       });
     }));
 
     log.info("login.gov configuration success");
-  }).catch(function(err) {
+  }).catch(function (err) {
     log.error('login.gov configuration error', err);
   });
 
@@ -104,7 +105,7 @@ module.exports = function(app, passport, provision) {
   }
 
   function authenticate(req, res, next) {
-    passport.authenticate('oidc-loa-1', function(err, user, info) {
+    passport.authenticate('oidc-loa-1', function (err, user, info) {
       if (err) return next(err);
       req.info = info || {};
 
@@ -122,9 +123,9 @@ module.exports = function(app, passport, provision) {
       log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
 
       client.userinfo(token)
-        .then(function(userinfo) {
+        .then(function (userinfo) {
           log.debug('Got userinfo from login.gov');
-          User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
+          User.getUserByAuthenticationId('login-gov', userinfo.email, function (err, user) {
             if (err) return next(err);
 
             if (!user || !user.active) {
@@ -135,7 +136,7 @@ module.exports = function(app, passport, provision) {
             next();
           });
         })
-        .catch(function(err) {
+        .catch(function (err) {
           log.error('not authenticated based on login.gov access token', err);
           res.sendStatus(403);
         });
@@ -146,9 +147,9 @@ module.exports = function(app, passport, provision) {
 
   app.get(
     '/auth/login-gov/signin',
-    function(req, res, next) {
+    function (req, res, next) {
       passport.authenticate('oidc-loa-1', {
-        state: JSON.stringify({type: 'signin', id: crypto.randomBytes(32).toString('hex')})
+        state: JSON.stringify({ type: 'signin', id: crypto.randomBytes(32).toString('hex') })
       })(req, res, next);
     }
   );
@@ -158,7 +159,7 @@ module.exports = function(app, passport, provision) {
   // will be set to false.
   app.post('/auth/login-gov/devices',
     authorizeUser,
-    function(req, res, next) {
+    function (req, res, next) {
       const newDevice = {
         uid: req.param('uid'),
         name: req.param('name'),
@@ -189,26 +190,30 @@ module.exports = function(app, passport, provision) {
     authorizeUser,
     provision.check('login-gov'),
     parseLoginMetadata,
-    function(req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function(err, token) {
+    function (req, res, next) {
+      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        const api = Object.assign({}, config.api);
-        api.authenticationStrategies['login-gov'] = {
-          url: api.authenticationStrategies['login-gov'].url,
-          type: api.authenticationStrategies['login-gov'].type,
-          title: api.authenticationStrategies['login-gov'].title,
-          textColor: api.authenticationStrategies['login-gov'].textColor,
-          buttonColor: api.authenticationStrategies['login-gov'].buttonColor,
-          icon: api.authenticationStrategies['login-gov'].icon
-        };
+        authenticationApiAppender.append(config.api).then(apiCopy => {
+          const api = Object.assign({}, apiCopy);
+          api.authenticationStrategies['login-gov'] = {
+            url: api.authenticationStrategies['login-gov'].url,
+            type: api.authenticationStrategies['login-gov'].type,
+            title: api.authenticationStrategies['login-gov'].title,
+            textColor: api.authenticationStrategies['login-gov'].textColor,
+            buttonColor: api.authenticationStrategies['login-gov'].buttonColor,
+            icon: api.authenticationStrategies['login-gov'].icon
+          };
 
-        res.json({
-          user: req.user,
-          device: req.provisionedDevice,
-          token: token.token,
-          expirationDate: token.expirationDate ,
-          api: api
+          res.json({
+            user: req.user,
+            device: req.provisionedDevice,
+            token: token.token,
+            expirationDate: token.expirationDate,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 
@@ -219,8 +224,8 @@ module.exports = function(app, passport, provision) {
   app.get(
     '/auth/login-gov/callback/loa-1',
     authenticate,
-    function(req, res) {
-      res.render('authentication', { host: req.getRoot(), login: {user: req.user, oauth: { access_token: req.info.access_token}}});
+    function (req, res) {
+      res.render('authentication', { host: req.getRoot(), login: { user: req.user, oauth: { access_token: req.info.access_token } } });
     }
   );
 

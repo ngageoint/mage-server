@@ -8,7 +8,8 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , config = require('../config.js')
-    , userTransformer = require('../transformers/user');
+    , userTransformer = require('../transformers/user')
+    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -72,7 +73,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
       if (err) return next(err);
 
       req.user = user;
-      
+
       // For inactive or disabled accounts don't generate an authorization token
       if (!user.active || !user.enabled) {
         log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
@@ -131,7 +132,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
         .catch(err => next(err));
     }
   );
-  
+
   // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/saml/authorize',
@@ -154,12 +155,16 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, { path: req.getRoot() }),
-          device: req.provisionedDevice,
-          api: config.api
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
+            api: api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 
