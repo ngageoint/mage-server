@@ -42,16 +42,23 @@ User.prototype.login = function(user, device, options, callback) {
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
-    callback(err, token);
-
     LoginModel.createLogin(user, device, function(err) {
-      if (err) log.error('could not add login', err);
-    });
+      if (err) { 
+        log.error('could not add login', err);
+        return callback(err);
+      }
 
-    if (device) {
-      // set user-agent and mage version on device
-      DeviceModel.updateDevice(device._id, { userAgent: options.userAgent, appVersion: options.appVersion });
-    }
+      if (device) {
+        // set user-agent and mage version on device
+        DeviceModel.updateDevice(device._id, { userAgent: options.userAgent, appVersion: options.appVersion }).then(() => {
+          callback(null, token);
+        }).catch(err => {
+          callback(err);
+        });
+      } else {
+        callback(null, token);
+      }
+    });
   });
 };
 

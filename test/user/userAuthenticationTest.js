@@ -103,6 +103,10 @@ describe("user authentication tests", function () {
         registered: true
       });
 
+    sinon.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .resolves({});
+
     sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
@@ -111,10 +115,6 @@ describe("user authentication tests", function () {
 
     sinon.mock(LoginModel)
       .expects('create')
-      .withArgs({
-        userId: userId.toString(),
-        deviceId: '1'
-      })
       .yields(null, {});
 
     request(app)

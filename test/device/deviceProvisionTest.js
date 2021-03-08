@@ -188,6 +188,10 @@ describe("device provision tests", function () {
         registered: true
       });
 
+    sinon.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .resolves({});
+
     sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
@@ -196,10 +200,6 @@ describe("device provision tests", function () {
 
     sinon.mock(LoginModel)
       .expects('create')
-      .withArgs({
-        userId: userId,
-        deviceId: deviceId
-      })
       .yields(null, {});
 
     const mockAuth = new Authentication.Local({
@@ -265,6 +265,10 @@ describe("device provision tests", function () {
         registered: true
       });
 
+    sinon.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .resolves({});
+
     sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
@@ -273,10 +277,6 @@ describe("device provision tests", function () {
 
     sinon.mock(LoginModel)
       .expects('create')
-      .withArgs({
-        userId: userId,
-        deviceId: deviceId
-      })
       .yields(null, {});
 
     const mockAuth = new Authentication.Local({
