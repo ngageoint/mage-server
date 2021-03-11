@@ -12,87 +12,107 @@ module.exports = function (app, passport, provision) {
     , api = require('../api')
     , config = require('../config.js')
     , log = require('../logger')
+    , authentication = require('../models/authentication')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   Issuer.useRequest();
 
-  const strategyConfig = config.api.authenticationStrategies['login-gov'];
-  log.info('Configuring login.gov authentication', strategyConfig);
-  const loginGov = {};
+  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
+    let strategyConfig;
 
-  const key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
-  const jwk = pem2jwk(key);
-  const keys = [jwk];
+    if (strategies) {
+      for (let i = 0; i < strategies.length; i++) {
+        const config = strategies[i];
+        if (config.title.toUpperCae() === 'Login.gov'.toUpperCase()) {
+          strategyConfig = config;
+          break;
+        }
+      }
+    }
 
-  function getParams() {
-    return {
-      response_type: 'code',
-      acr_values: strategyConfig.acr_values,
-      scope: 'openid email',
-      redirect_uri: strategyConfig.redirect_uri,
-      nonce: crypto.randomBytes(32).toString('hex'),
-      state: crypto.randomBytes(32).toString('hex'),
-      prompt: 'select_account',
-    };
-  }
+    if (strategyConfig && strategyConfig.enabled) {
+      log.info('Configuring login.gov authentication', strategyConfig);
+      const loginGov = {};
 
-  let client;
-  Promise.all([
-    jose.JWK.asKeyStore(keys),
-    Issuer.discover(strategyConfig.url)
-  ]).then(function ([keystore, issuer]) {
-    loginGov.issuer = issuer; // allow subsequent access to issuer.end_session_endpoint (required during RP-Initiated Logout)
+      const key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
+      const jwk = pem2jwk(key);
+      const keys = [jwk];
 
-    client = new issuer.Client({
-      client_id: strategyConfig.client_id,
-      token_endpoint_auth_method: 'private_key_jwt',
-      id_token_signed_response_alg: 'RS256'
-    }, keystore);
+      function getParams() {
+        return {
+          response_type: 'code',
+          acr_values: strategyConfig.acr_values,
+          scope: 'openid email',
+          redirect_uri: strategyConfig.redirect_uri,
+          nonce: crypto.randomBytes(32).toString('hex'),
+          state: crypto.randomBytes(32).toString('hex'),
+          prompt: 'select_account',
+        };
+      }
 
-    client.CLOCK_TOLERANCE = 10;
+      let client;
+      Promise.all([
+        jose.JWK.asKeyStore(keys),
+        Issuer.discover(strategyConfig.url)
+      ]).then(function ([keystore, issuer]) {
+        loginGov.issuer = issuer; // allow subsequent access to issuer.end_session_endpoint (required during RP-Initiated Logout)
 
-    const params = getParams();
-    passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
-      userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
-      userinfo.state = params.state; // required for RP-Initiated Logout
+        client = new issuer.Client({
+          client_id: strategyConfig.client_id,
+          token_endpoint_auth_method: 'private_key_jwt',
+          id_token_signed_response_alg: 'RS256'
+        }, keystore);
 
-      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
-        if (err) return done(err);
+        client.CLOCK_TOLERANCE = 10;
 
-        const email = userinfo.email;
+        const params = getParams();
+        passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
+          userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
+          userinfo.state = params.state; // required for RP-Initiated Logout
 
-        if (!user) {
-          // Create an account for the user
-          Role.getRole('USER_ROLE', function (err, role) {
+          User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
             if (err) return done(err);
 
-            const user = {
-              username: email,
-              displayName: email.split("@")[0],
-              email: email,
-              active: false,
-              roleId: role._id,
-              authentication: {
-                type: 'login-gov',
-                id: email
-              }
-            };
+            const email = userinfo.email;
 
-            new api.User().create(user).then(newUser => {
-              return done(null, newUser);
-            }).catch(err => done(err));
+            if (!user) {
+              // Create an account for the user
+              Role.getRole('USER_ROLE', function (err, role) {
+                if (err) return done(err);
+
+                const user = {
+                  username: email,
+                  displayName: email.split("@")[0],
+                  email: email,
+                  active: false,
+                  roleId: role._id,
+                  authentication: {
+                    type: 'login-gov',
+                    id: email
+                  }
+                };
+
+                new api.User().create(user).then(newUser => {
+                  return done(null, newUser);
+                }).catch(err => done(err));
+              });
+            } else if (!user.active) {
+              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+            } else {
+              return done(null, user, { access_token: tokenset.access_token });
+            }
           });
-        } else if (!user.active) {
-          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-        } else {
-          return done(null, user, { access_token: tokenset.access_token });
-        }
-      });
-    }));
+        }));
 
-    log.info("login.gov configuration success");
-  }).catch(function (err) {
-    log.error('login.gov configuration error', err);
+        log.info("login.gov configuration success");
+      }).catch(function (err) {
+        log.error('login.gov configuration error', err);
+      });
+    } else {
+      log.info('login.gov strategy is not configured or enabled');
+    }
+  }).catch(err => {
+    log.error(err);
   });
 
   function parseLoginMetadata(req, res, next) {

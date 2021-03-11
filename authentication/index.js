@@ -1,26 +1,27 @@
 const crypto = require('crypto')
+  , fs = require('fs-extra')
   , verification = require('./verification')
   , api = require('../api/')
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
-  
+
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
 
-module.exports = function(app, passport, provision, strategies) {
+module.exports = function (app, passport, provision) {
   const tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
 
   const BearerStrategy = require('passport-http-bearer').Strategy
     , User = require('../models/user')
     , Token = require('../models/token');
 
-  passport.serializeUser(function(user, done) {
+  passport.serializeUser(function (user, done) {
     done(null, user._id);
   });
 
-  passport.deserializeUser(function(id, done) {
-    User.getUserById(id, function(err, user) {
+  passport.deserializeUser(function (id, done) {
+    User.getUserById(id, function (err, user) {
       done(err, user);
     });
   });
@@ -28,23 +29,23 @@ module.exports = function(app, passport, provision, strategies) {
   passport.use(new BearerStrategy({
     passReqToCallback: true
   },
-  function(req, token, done) {
-    Token.getToken(token, function(err, credentials) {
-      if (err) { return done(err); }
+    function (req, token, done) {
+      Token.getToken(token, function (err, credentials) {
+        if (err) { return done(err); }
 
-      if (!credentials || !credentials.user) {
-        return done(null, false);
-      }
+        if (!credentials || !credentials.user) {
+          return done(null, false);
+        }
 
-      req.token = credentials.token;
+        req.token = credentials.token;
 
-      if (credentials.token.deviceId) {
-        req.provisionedDeviceId = credentials.token.deviceId;
-      }
+        if (credentials.token.deviceId) {
+          req.provisionedDeviceId = credentials.token.deviceId;
+        }
 
-      return done(null, credentials.user, { scope: 'all' });
-    });
-  }));
+        return done(null, credentials.user, { scope: 'all' });
+      });
+    }));
 
   passport.use('authorization', new BearerStrategy(function (token, done) {
     const expectation = {
@@ -61,7 +62,7 @@ module.exports = function(app, passport, provision, strategies) {
   }));
 
   function authorize(req, res, next) {
-    passport.authenticate('authorization', function (err, user, info = {}) {        
+    passport.authenticate('authorization', function (err, user, info = {}) {
       if (!user) return res.status(401).send(info.message);
 
       req.user = user;
@@ -103,13 +104,14 @@ module.exports = function(app, passport, provision, strategies) {
     }
   );
 
-  // Setup passport authentication for each strategy in this directory
-  Object.keys(strategies).forEach(function (name) {
-    require('./' + name)(app, passport, provision, strategies[name], tokenService);
+  // Dynamically import all authentication strategies
+  fs.readdirSync(__dirname).forEach(function (file) {
+    if (file[0] === '.' || file === 'index.js' || file === 'verification.js') return;
+    const strategy = file.substr(0, file.indexOf('.'));
+    require('./' + strategy)(app, passport, provision, tokenService);
   });
 
   return {
-    passport: passport,
-    strategies: strategies
+    passport: passport
   };
 };

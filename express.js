@@ -71,7 +71,7 @@ app.use('/private',
   express.static(path.join(__dirname, 'private')));
   
 // Configure authentication
-const authentication = require('./authentication')(app, passport, provision, config.api.authenticationStrategies);
+const authentication = require('./authentication')(app, passport, provision);
 
 // Configure routes
 require('./routes')(app, { authentication: authentication });

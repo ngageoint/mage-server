@@ -165,16 +165,16 @@ const transform = function (authentication, ret, options) {
     delete ret.__v;
 
     if (options.whitelist) {
-      if(authentication.type === 'local') {
+      if (authentication.type === 'local') {
         return;
       }
 
       Object.keys(ret).forEach(key => {
-        if(!whitelist.includes(key)) {
+        if (!whitelist.includes(key)) {
           delete ret[key];
         }
       });
-    } 
+    }
   }
 };
 
@@ -200,7 +200,12 @@ const OauthAuthentication = Authentication.discriminator('oauth', OauthSchema);
 exports.Oauth = OauthAuthentication;
 
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
-  Authentication.findOne({ id: uid, type: strategy }, callback);
+  if (callback) {
+    Authentication.findOne({ id: uid, type: strategy }, callback);
+  }
+  else {
+    return Authentication.findOne({ id: uid, type: strategy });
+  }
 };
 
 exports.createAuthentication = function (authentication) {

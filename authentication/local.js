@@ -1,4 +1,4 @@
-module.exports = function (app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, tokenService) {
 
   const log = require('winston')
     , moment = require('moment')
@@ -20,6 +20,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     next();
   }
 
+  //TODO read local config from DB and ensure its enabled.
   passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {

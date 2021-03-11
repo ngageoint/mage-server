@@ -6,10 +6,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , config = require('../config.js')
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
+  , authentication = require('../models/authentication')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-module.exports = function (app, passport, provision, googleStrategy, tokenService) {
-  log.info('Configuring Google authentication');
+module.exports = function (app, passport, provision, tokenService) {
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -46,50 +46,71 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
     })(req, res, next);
   }
 
-  passport.use('google', new GoogleStrategy({
-    clientID: googleStrategy.clientID,
-    clientSecret: googleStrategy.clientSecret,
-    callbackURL: googleStrategy.callbackURL
-  },
-    function (accessToken, refreshToken, profile, done) {
-      User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
-        if (err) return done(err);
+  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
+    let googleStrategy;
 
-        if (!user) {
-          // Create an account for the user
-          Role.getRole('USER_ROLE', function (err, role) {
+    if (strategies) {
+      for (let i = 0; i < strategies.length; i++) {
+        const config = strategies[i];
+        if (config.title.toUpperCae() === 'google'.toUpperCase()) {
+          googleStrategy = config;
+          break;
+        }
+      }
+    }
+
+    if (googleStrategy && googleStrategy.enabled) {
+      log.info('Configuring Google authentication');
+      passport.use('google', new GoogleStrategy({
+        clientID: googleStrategy.clientID,
+        clientSecret: googleStrategy.clientSecret,
+        callbackURL: googleStrategy.callbackURL
+      },
+        function (accessToken, refreshToken, profile, done) {
+          User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
             if (err) return done(err);
 
-            let email = null;
-            profile.emails.forEach(function (e) {
-              if (e.verified) {
-                email = e.value;
-              }
-            });
+            if (!user) {
+              // Create an account for the user
+              Role.getRole('USER_ROLE', function (err, role) {
+                if (err) return done(err);
 
-            const user = {
-              username: email,
-              displayName: profile.name.givenName + ' ' + profile.name.familyName,
-              email: email,
-              active: false,
-              roleId: role._id,
-              authentication: {
-                type: 'google',
-                id: profile.id
-              }
-            };
+                let email = null;
+                profile.emails.forEach(function (e) {
+                  if (e.verified) {
+                    email = e.value;
+                  }
+                });
 
-            new api.User().create(user).then(newUser => {
-              return done(null, newUser);
-            }).catch(err => done(err));
+                const user = {
+                  username: email,
+                  displayName: profile.name.givenName + ' ' + profile.name.familyName,
+                  email: email,
+                  active: false,
+                  roleId: role._id,
+                  authentication: {
+                    type: 'google',
+                    id: profile.id
+                  }
+                };
+
+                new api.User().create(user).then(newUser => {
+                  return done(null, newUser);
+                }).catch(err => done(err));
+              });
+            } else if (!user.active) {
+              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+            } else {
+              return done(null, user);
+            }
           });
-        } else if (!user.active) {
-          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-        } else {
-          return done(null, user);
-        }
-      });
-    }));
+        }));
+    } else {
+      log.info('google strategy is not configured or enabled');
+    }
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.get(
     '/auth/google/signin',

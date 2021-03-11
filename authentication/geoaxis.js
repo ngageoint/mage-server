@@ -1,4 +1,4 @@
-module.exports = function (app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, tokenService) {
 
   const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
     , User = require('../models/user')
@@ -8,9 +8,8 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     , api = require('../api')
     , config = require('../config.js')
     , log = require('../logger')
+    , authentication = require('../models/authentication')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
-
-  log.info('Configuring GeoAxis authentication');
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -48,53 +47,75 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     })(req, res, next);
   }
 
-  const strategy = new GeoaxisStrategy({
-    authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-    tokenURL: strategyConfig.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-    userProfileURL: strategyConfig.apiUrl + '/ms_oauth/resources/userprofile/me',
-    clientID: strategyConfig.clientID,
-    clientSecret: strategyConfig.clientSecret,
-    callbackURL: strategyConfig.callbackUrl,
-    passReqToCallback: true
-  },
-    function (req, accessToken, refreshToken, profile, done) {
-      const geoaxisUser = profile._json;
-      User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
-        if (err) return done(err);
+  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
 
-        const email = geoaxisUser.email;
+    let strategyConfig;
 
-        if (!user) {
-          // Create an account for the user
-          Role.getRole('USER_ROLE', function (err, role) {
+    if (strategies) {
+      for (let i = 0; i < strategies.length; i++) {
+        const config = strategies[i];
+        if (config.title.toUpperCae() === 'geoaxis'.toUpperCase()) {
+          strategyConfig = config;
+          break;
+        }
+      }
+    }
+
+    if (strategyConfig && strategyConfig.enabled) {
+      log.info('Configuring GeoAxis authentication');
+      const strategy = new GeoaxisStrategy({
+        authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+        tokenURL: strategyConfig.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+        userProfileURL: strategyConfig.apiUrl + '/ms_oauth/resources/userprofile/me',
+        clientID: strategyConfig.clientID,
+        clientSecret: strategyConfig.clientSecret,
+        callbackURL: strategyConfig.callbackUrl,
+        passReqToCallback: true
+      },
+        function (req, accessToken, refreshToken, profile, done) {
+          const geoaxisUser = profile._json;
+          User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
             if (err) return done(err);
 
-            const user = {
-              username: email,
-              displayName: email.split("@")[0],
-              email: email,
-              active: false,
-              roleId: role._id,
-              authentication: {
-                type: 'geoaxis',
-                id: email
-              }
-            };
+            const email = geoaxisUser.email;
 
-            new api.User().create(user).then(newUser => {
-              return done(null, newUser);
-            }).catch(err => done(err));
+            if (!user) {
+              // Create an account for the user
+              Role.getRole('USER_ROLE', function (err, role) {
+                if (err) return done(err);
+
+                const user = {
+                  username: email,
+                  displayName: email.split("@")[0],
+                  email: email,
+                  active: false,
+                  roleId: role._id,
+                  authentication: {
+                    type: 'geoaxis',
+                    id: email
+                  }
+                };
+
+                new api.User().create(user).then(newUser => {
+                  return done(null, newUser);
+                }).catch(err => done(err));
+              });
+            } else if (!user.active) {
+              log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
+              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+            } else {
+              return done(null, user);
+            }
           });
-        } else if (!user.active) {
-          log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
-          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-        } else {
-          return done(null, user);
-        }
-      });
-    });
+        });
 
-  passport.use('geoaxis', strategy);
+      passport.use('geoaxis', strategy);
+    } else {
+      log.info('geoaxis strategy is not configured or enabled');
+    }
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.get(
     '/auth/geoaxis/signin',

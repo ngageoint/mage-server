@@ -1,4 +1,4 @@
-module.exports = function (app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, tokenService) {
 
   const LdapStrategy = require('passport-ldapauth')
     , log = require('winston')
@@ -9,6 +9,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user')
+    , authentication = require('../models/authentication')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
@@ -19,61 +20,85 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
 
     next();
   }
-  const authenticationOptions = {
-    invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
-    invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
-    passwordExpired: `${strategyConfig.title} password expired.`,
-    accountDisabled: `${strategyConfig.title} account disabled.`,
-    accountExpired: `${strategyConfig.title} account expired.`,
-    passwordMustChange: `User must reset ${strategyConfig.title} password.`,
-    accountLockedOut: `${strategyConfig.title} user account locked.`,
-    invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
+
+  let authenticationOptions = {
   };
 
-  passport.use(new LdapStrategy({
-    server: {
-      url: strategyConfig.url,
-      bindDN: strategyConfig.bindDN,
-      bindCredentials: strategyConfig.bindCredentials,
-      searchBase: strategyConfig.searchBase,
-      searchFilter: strategyConfig.searchFilter
-    }
-  },
-    function (profile, done) {
-      const username = profile[strategyConfig.ldapUsernameField];
-      User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
-        if (err) return done(err);
+  authentication.getAuthenticationByStrategy('ldap').then(strategies => {
+    let strategyConfig;
 
-        if (!user) {
-          // Create an account for the user
-          Role.getRole('USER_ROLE', function (err, role) {
+    if (strategies) {
+      for (let i = 0; i < strategies.length; i++) {
+        const config = strategies[i];
+        if (config.title.toUpperCae() === 'ldap'.toUpperCase()) {
+          strategyConfig = config;
+          break;
+        }
+      }
+    }
+
+    if (strategyConfig && strategyConfig.enabled) {
+      authenticationOptions = {
+        invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
+        invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
+        passwordExpired: `${strategyConfig.title} password expired.`,
+        accountDisabled: `${strategyConfig.title} account disabled.`,
+        accountExpired: `${strategyConfig.title} account expired.`,
+        passwordMustChange: `User must reset ${strategyConfig.title} password.`,
+        accountLockedOut: `${strategyConfig.title} user account locked.`,
+        invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
+      };
+
+      passport.use(new LdapStrategy({
+        server: {
+          url: strategyConfig.url,
+          bindDN: strategyConfig.bindDN,
+          bindCredentials: strategyConfig.bindCredentials,
+          searchBase: strategyConfig.searchBase,
+          searchFilter: strategyConfig.searchFilter
+        }
+      },
+        function (profile, done) {
+          const username = profile[strategyConfig.ldapUsernameField];
+          User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
             if (err) return done(err);
 
-            const user = {
-              username: username,
-              displayName: profile[strategyConfig.ldapDisplayNameField],
-              email: profile[strategyConfig.ldapEmailField],
-              active: false,
-              roleId: role._id,
-              authentication: {
-                type: 'ldap',
-                id: username
-              }
-            };
+            if (!user) {
+              // Create an account for the user
+              Role.getRole('USER_ROLE', function (err, role) {
+                if (err) return done(err);
 
-            new api.User().create(user).then(newUser => {
-              if (newUser.active) {
-                done(null, newUser);
-              } else {
-                done(null, newUser, { status: 403 });
-              }
-            }).catch(err => done(err));
+                const user = {
+                  username: username,
+                  displayName: profile[strategyConfig.ldapDisplayNameField],
+                  email: profile[strategyConfig.ldapEmailField],
+                  active: false,
+                  roleId: role._id,
+                  authentication: {
+                    type: 'ldap',
+                    id: username
+                  }
+                };
+
+                new api.User().create(user).then(newUser => {
+                  if (newUser.active) {
+                    done(null, newUser);
+                  } else {
+                    done(null, newUser, { status: 403 });
+                  }
+                }).catch(err => done(err));
+              });
+            } else {
+              return done(null, user);
+            }
           });
-        } else {
-          return done(null, user);
-        }
-      });
-    }));
+        }));
+    } else {
+      log.info('ldap strategy is not configured or enabled');
+    }
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.post(
     '/auth/ldap/signin',

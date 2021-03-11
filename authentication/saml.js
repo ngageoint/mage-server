@@ -1,4 +1,4 @@
-module.exports = function (app, passport, provision, strategyConfig, tokenService) {
+module.exports = function (app, passport, provision, tokenService) {
 
   const SamlStrategy = require('passport-saml').Strategy
     , log = require('winston')
@@ -9,6 +9,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user')
+    , authentication = require('../models/authentication')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
@@ -20,39 +21,90 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
     next();
   }
 
-  passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
-    const uid = profile[strategyConfig.uidAttribute];
-    User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
-      if (err) return done(err);
 
-      if (!user) {
-        // Create an account for the user
-        Role.getRole('USER_ROLE', function (err, role) {
+  authentication.getAuthenticationByStrategy('saml').then(strategies => {
+    let strategyConfig;
+
+    if (strategies) {
+      for (let i = 0; i < strategies.length; i++) {
+        const config = strategies[i];
+        if (config.title.toUpperCae() === 'saml'.toUpperCase()) {
+          strategyConfig = config;
+          break;
+        }
+      }
+    }
+
+    if (strategyConfig && strategyConfig.enabled) {
+      passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
+        const uid = profile[strategyConfig.uidAttribute];
+        User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
           if (err) return done(err);
 
-          const user = {
-            username: uid,
-            displayName: profile[strategyConfig.displayNameAttribute],
-            email: profile[strategyConfig.emailAttribute],
-            active: false,
-            roleId: role._id,
-            authentication: {
-              type: 'saml',
-              id: uid
-            }
-          };
+          if (!user) {
+            // Create an account for the user
+            Role.getRole('USER_ROLE', function (err, role) {
+              if (err) return done(err);
 
-          new api.User().create(user).then(newUser => {
-            return done(null, newUser);
-          }).catch(err => done(err));
+              const user = {
+                username: uid,
+                displayName: profile[strategyConfig.displayNameAttribute],
+                email: profile[strategyConfig.emailAttribute],
+                active: false,
+                roleId: role._id,
+                authentication: {
+                  type: 'saml',
+                  id: uid
+                }
+              };
+
+              new api.User().create(user).then(newUser => {
+                return done(null, newUser);
+              }).catch(err => done(err));
+            });
+          } else if (!user.active) {
+            return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+          } else {
+            return done(null, user);
+          }
         });
-      } else if (!user.active) {
-        return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-      } else {
-        return done(null, user);
-      }
-    });
-  }));
+      }));
+
+      app.post(
+        strategyConfig.options.callbackPath,
+        authenticate,
+        function (req, res) {
+          const state = JSON.parse(req.body.RelayState) || {};
+
+          if (state.initiator === 'mage') {
+            if (state.client === 'mobile') {
+              let uri;
+              if (!req.user.active || !req.user.enabled) {
+                uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
+              } else {
+                uri = `mage://app/authentication?token=${req.token}`
+              }
+
+              res.redirect(uri);
+            } else {
+              res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+            }
+          } else {
+            if (req.user.active && req.user.enabled) {
+              res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
+            } else {
+              const action = !req.user.active ? 'inactive-account' : 'disabled-account';
+              res.redirect(`/#/signin?strategy=saml&action=${action}`);
+            }
+          }
+        }
+      );
+    } else {
+      log.info('saml strategy is not configured or enabled');
+    }
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.get(
     '/auth/saml/signin',
@@ -67,6 +119,7 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
       })(req, res, next);
     }
   );
+
 
   function authenticate(req, res, next) {
     passport.authenticate('saml', function (err, user, info = {}) {
@@ -169,36 +222,6 @@ module.exports = function (app, passport, provision, strategyConfig, tokenServic
       });
 
       req.session = null;
-    }
-  );
-
-  app.post(
-    strategyConfig.options.callbackPath,
-    authenticate,
-    function (req, res) {
-      const state = JSON.parse(req.body.RelayState) || {};
-
-      if (state.initiator === 'mage') {
-        if (state.client === 'mobile') {
-          let uri;
-          if (!req.user.active || !req.user.enabled) {
-            uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
-          } else {
-            uri = `mage://app/authentication?token=${req.token}`
-          }
-
-          res.redirect(uri);
-        } else {
-          res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
-        }
-      } else {
-        if (req.user.active && req.user.enabled) {
-          res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
-        } else {
-          const action = !req.user.active ? 'inactive-account' : 'disabled-account';
-          res.redirect(`/#/signin?strategy=saml&action=${action}`);
-        }
-      }
     }
   );
 
