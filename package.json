@@ -62,6 +62,7 @@
     "pem2jwk": "1.0.1",
     "pug": "2.0.4",
     "shp-write": "https://github.com/newmanw/shp-write.git#fix-polygon-export",
+    "svg-captcha": "^1.4.0",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
     "walk": "2.3.4",

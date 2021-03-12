@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Local user signup captcha
 
 ##### Bug Fixes
 * Default admin apporoval was not enabled for new user accounts, causing new user account creation to fail.
