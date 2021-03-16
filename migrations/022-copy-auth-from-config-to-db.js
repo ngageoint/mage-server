@@ -45,10 +45,12 @@ function createDBObjectsFromConfig() {
       if (authStratConfig) {
         log.debug("Copying " + authStratName + " auth strategy");
 
-        const authDbObject = {};
+        const authDbObject = {
+          name: authStratName
+        };
         const authStratConfigKeys = Object.keys(authStratConfig);
         for (let j = 0; j < authStratConfigKeys.length; j++) {
-          const key = authStratConfigKeys[i];
+          const key = authStratConfigKeys[j];
           authDbObject[key] = authStratConfig[key];
         }
         log.debug('Strategy ' + authStratName + ' DB object:' + JSON.stringify(authDbObject));
