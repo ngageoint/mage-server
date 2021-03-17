@@ -9,9 +9,6 @@ const chai = require('chai')
 
 chai.use(sinonChai);
 
-require('../../models/setting');
-const SettingModel = mongoose.model('Setting');
-
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
@@ -20,23 +17,24 @@ const TokenModel = mongoose.model('Token');
 
 const Authentication = require('../../models/authentication');
 const AuthenticationModel = mongoose.model('Authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("Password Validator Tests", function() {
+describe("Password Validator Tests", function () {
 
   afterEach(function () {
     sinon.restore();
   });
 
-  it('Should fail on null password', async function() {
+  it('Should fail on null password', async function () {
     const authentication = {
       password: null
     }
-    
+
     const validationStatus = await PasswordValidator.validate({}, authentication);
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should meet minimum password length', async function() {
+  it('Should meet minimum password length', async function () {
     const policy = {
       passwordMinLength: 3,
       passwordMinLengthEnabled: true
@@ -50,7 +48,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should fail minimum password length', async function() {
+  it('Should fail minimum password length', async function () {
     const policy = {
       passwordMinLength: 3,
       passwordMinLengthEnabled: true
@@ -64,7 +62,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum password length', async function() {
+  it('Should ignore minimum password length', async function () {
     const policy = {
       passwordMinLength: 10,
       passwordMinLengthEnabled: false
@@ -78,7 +76,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet minimum characters', async function() {
+  it('Should meet minimum characters', async function () {
     const policy = {
       minChars: 3,
       minCharsEnabled: true
@@ -106,7 +104,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum characters', async function() {
+  it('Should ignore minimum characters', async function () {
     const policy = {
       minChars: 3,
       minCharsEnabled: false
@@ -120,7 +118,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet maximum consecutive character count', async function() {
+  it('Should meet maximum consecutive character count', async function () {
     const policy = {
       maxConChars: 2,
       maxConCharsEnabled: true
@@ -148,7 +146,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore maximum consecutive character count', async function() {
+  it('Should ignore maximum consecutive character count', async function () {
     const policy = {
       maxConChars: 1,
       maxConCharsEnabled: false
@@ -162,7 +160,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet minimum number of lowercase characters', async function() {
+  it('Should meet minimum number of lowercase characters', async function () {
     const policy = {
       lowLetters: 2,
       lowLettersEnabled: true
@@ -190,7 +188,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum number of lowercase characters disabled', async function() {
+  it('Should ignore minimum number of lowercase characters disabled', async function () {
     const policy = {
       lowLetters: 10,
       lowLettersEnabled: false
@@ -204,7 +202,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet minimum number of uppercase characters', async function() {
+  it('Should meet minimum number of uppercase characters', async function () {
     const policy = {
       highLetters: 2,
       highLettersEnabled: true
@@ -232,7 +230,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum number of uppercase characters', async function() {
+  it('Should ignore minimum number of uppercase characters', async function () {
     const policy = {
       highLetters: 10,
       highLettersEnabled: false
@@ -246,7 +244,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet minimum number of numbers', async function() {
+  it('Should meet minimum number of numbers', async function () {
     const policy = {
       numbers: 2,
       numbersEnabled: true
@@ -260,7 +258,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should fail minimum number of numbers', async function() {
+  it('Should fail minimum number of numbers', async function () {
     const policy = {
       numbers: 2,
       numbersEnabled: true
@@ -274,7 +272,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum number of numbers', async function() {
+  it('Should ignore minimum number of numbers', async function () {
     const policy = {
       numbers: 10,
       numbersEnabled: false
@@ -288,7 +286,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should meet minimum number of special characters', async function() {
+  it('Should meet minimum number of special characters', async function () {
     const policy = {
       specialChars: 2,
       specialCharsEnabled: true
@@ -316,7 +314,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should ignore minimum number of special characters disabled', async function() {
+  it('Should ignore minimum number of special characters disabled', async function () {
     const policy = {
       specialChars: 10,
       specialCharsEnabled: false
@@ -330,7 +328,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should fail with restricted special characters', async function() {
+  it('Should fail with restricted special characters', async function () {
     const policy = {
       specialChars: 1,
       specialCharsEnabled: true,
@@ -346,7 +344,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should pass with unrestricted special characters', async function() {
+  it('Should pass with unrestricted special characters', async function () {
     const policy = {
       specialChars: 1,
       specialCharsEnabled: true,
@@ -362,7 +360,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Should ignore special characters', async function() {
+  it('Should ignore special characters', async function () {
     const policy = {
       specialChars: 10,
       specialCharsEnabled: false
@@ -376,7 +374,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.true;
   });
 
-  it('Test complex password policy', async function() {
+  it('Test complex password policy', async function () {
     const policy = {
       minCharsEnabled: true,
       minChars: 1,
@@ -396,7 +394,7 @@ describe("Password Validator Tests", function() {
       passwordMinLengthEnabled: true
     }
 
-    let validationStatus = await PasswordValidator.validate(policy, { password: 'ab1cD3F~~~'});
+    let validationStatus = await PasswordValidator.validate(policy, { password: 'ab1cD3F~~~' });
     expect(validationStatus.valid).to.be.true;
 
     // Fail min letters
@@ -428,7 +426,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should pass password history', async function() {
+  it('Should pass password history', async function () {
     const policy = {
       passwordHistoryCount: 2,
       passwordHistoryCountEnabled: true
@@ -469,7 +467,7 @@ describe("Password Validator Tests", function() {
     expect(validationStatus.valid).to.be.false;
   });
 
-  it('Should truncate password history', async function() {
+  it('Should truncate password history', async function () {
     // Need to remove previously loaded model from monogose
     // as proxyquire will skip cache and reload.
     delete mongoose.connection.models['local'];
@@ -477,7 +475,7 @@ describe("Password Validator Tests", function() {
     delete mongoose.connection.models['ldap'];
     delete mongoose.connection.models['oauth'];
     delete mongoose.connection.models['Authentication'];
-   
+
     const hashPassword = util.promisify(hasher.hashPassword);
     const hash1 = await hashPassword('hash1');
     const hash2 = await hashPassword('hash2');
@@ -499,18 +497,15 @@ describe("Password Validator Tests", function() {
     const Authentication = require('../../models/authentication');
     const AuthenticationModel = mongoose.model('Authentication');
 
-    sinon.mock(SettingModel)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'security' })
+      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
-        type: 'security',
         settings: {
-          local: {
-            passwordPolicy: {
-              passwordHistoryCount: 2,
-              passwordHistoryCountEnabled: true
-            }
+          passwordPolicy: {
+            passwordHistoryCount: 2,
+            passwordHistoryCountEnabled: true
           }
         }
       });
@@ -563,25 +558,22 @@ describe("Password Validator Tests", function() {
       _id: mongoose.Types.ObjectId()
     }
 
-    sinon.mock(SettingModel)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'security' })
+      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
-        type: 'security',
         settings: {
-          local: {
-            passwordPolicy: {
-              passwordHistoryCount: 2,
-              passwordHistoryCountEnabled: true
-            }
+          passwordPolicy: {
+            passwordHistoryCount: 2,
+            passwordHistoryCountEnabled: true
           }
         }
       });
 
     sinon.mock(UserModel)
       .expects('findOne')
-      .withArgs({ authenticationId: authentication._id})
+      .withArgs({ authenticationId: authentication._id })
       .chain('populate')
       .withArgs('authenticationId')
       .chain('exec')

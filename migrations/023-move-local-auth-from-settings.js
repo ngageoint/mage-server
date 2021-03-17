@@ -7,14 +7,26 @@ exports.up = function (done) {
 
     const settings = this.db.collection('settings');
     settings.findOneAndDelete({ type: 'security' }).then(result => {
+        const localSettings = result.value.settings.local;
+
         const authDbObject = {
             name: 'local',
-            type: 'local'
+            type: 'local',
+            title: localSettings.title,
+            textColor: localSettings.textColor,
+            buttonColor: localSettings.buttonColor,
+            icon: localSettings.icon,
+            settings: {}
         };
-        const authStratConfigKeys = Object.keys(result.value.settings.local);
-        for (let i = 0; i < authStratConfigKeys.length; i++) {
-            const key = authStratConfigKeys[i];
-            authDbObject[key] = result.value.settings.local[key];
+
+        const nonSettingsKeys = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+        const allKeys = Object.keys(localSettings);
+        for (let i = 0; i < allKeys.length; i++) {
+            const key = allKeys[i];
+            if (nonSettingsKeys.includes(key)) {
+                continue
+            };
+            authDbObject.settings[key] = localSettings[key];
         }
         log.debug('Strategy ' + 'local' + ' DB object:' + JSON.stringify(authDbObject));
         this.db.collection('authenticationconfigurations').insertOne(authDbObject, {}, done);

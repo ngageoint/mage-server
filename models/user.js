@@ -3,7 +3,6 @@
 const mongoose = require('mongoose')
   , async = require("async")
   , moment = require('moment')
-  , Setting = require('./setting')
   , Token = require('./token')
   , Login = require('./login')
   , Event = require('./event')
@@ -12,6 +11,7 @@ const mongoose = require('mongoose')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
+  , AuthenticationConfiguration = require('./authenticationconfiguration')
   , Paging = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
 
@@ -305,8 +305,8 @@ exports.deleteUser = function (user, callback) {
 };
 
 exports.invalidLogin = async function (user) {
-  const { settings } = await Setting.getSetting('security');
-  const { accountLock = {} } = settings.local;
+  const local = await AuthenticationConfiguration.getConfiguration('local', 'local');
+  const { accountLock = {} } = local.settings;
 
   if (!accountLock.enabled) return user;
 

@@ -14,9 +14,11 @@ exports.up = function (done) {
 
     //Save DB objects to DB
     this.db.createCollection('authenticationconfigurations').then(collection => {
+      return collection.createIndex(['type', 'name'], { unique: true });
+    }).then(result => {
       if (authDbObjects.length > 0) {
         log.info('Inserting ' + authDbObjects.length + ' authentication strategies into the DB');
-        collection.insertMany(authDbObjects, {}, done);
+        result.result.insertMany(authDbObjects, {}, done);
       } else {
         done();
       }
@@ -46,12 +48,23 @@ function createDBObjectsFromConfig() {
         log.debug("Copying " + authStratName + " auth strategy");
 
         const authDbObject = {
-          name: authStratName
+          name: authStratName,
+          type: authStratConfig.type,
+          title: authStratConfig.title,
+          textColor: authStratConfig.textColor,
+          buttonColor: authStratConfig.buttonColor,
+          icon: authStratConfig.icon,
+          settings: {}
         };
-        const authStratConfigKeys = Object.keys(authStratConfig);
-        for (let j = 0; j < authStratConfigKeys.length; j++) {
-          const key = authStratConfigKeys[j];
-          authDbObject[key] = authStratConfig[key];
+
+        const nonSettingsKeys = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+        const allKeys = Object.keys(authStratConfig);
+        for (let i = 0; i < allKeys.length; i++) {
+          const key = allKeys[i];
+          if (nonSettingsKeys.includes(key)) {
+            continue
+          };
+          authDbObject.settings[key] = authStratConfig[key];
         }
         log.debug('Strategy ' + authStratName + ' DB object:' + JSON.stringify(authDbObject));
         authDbObjects.push(authDbObject);

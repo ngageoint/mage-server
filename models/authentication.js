@@ -5,19 +5,14 @@ const mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , User = require('./user')
   , Token = require('./token')
-  , Setting = require('./setting')
+  , AuthenticationConfiguration = require('./authenticationconfiguration')
   , PasswordValidator = require('../utilities/passwordValidator');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
-  type: { type: String, required: true },
-  title: { type: String, required: false },
-  textColor: { type: String, required: false },
-  buttonColor: { type: String, required: false },
-  icon: { type: String, required: false },
-  enabled: { type: Boolean, default: false }
+  type: { type: String, required: true }
 }, {
   discriminatorKey: 'type',
   timestamps: {
@@ -28,7 +23,7 @@ const AuthenticationSchema = new Schema({
 const LocalSchema = new Schema({
   id: { type: String, required: false },
   password: { type: String, required: true },
-  previousPasswords: { type: [String], required: false },
+  previousPasswords: { type: [String], default: [] },
   security: {
     locked: { type: Boolean, default: false },
     lockedUntil: { type: Date },
@@ -91,8 +86,8 @@ LocalSchema.pre('save', function (next) {
 
   async.waterfall([
     function (done) {
-      Setting.getSetting('security').then(security => {
-        done(null, security.settings.local.passwordPolicy);
+      AuthenticationConfiguration.getConfiguration('local', 'local').then(localConfiguration => {
+        done(null, localConfiguration.settings.passwordPolicy);
       }).catch(err => done(err));
     },
     function (policy, done) {
@@ -215,9 +210,7 @@ exports.createAuthentication = function (authentication) {
       newAuth = new LocalAuthentication({
         id: authentication.id,
         password: authentication.password,
-        previousPasswords: [],
         security: {
-          locked: false,
           lockedUntil: null
         }
       });
@@ -266,16 +259,6 @@ exports.createAuthentication = function (authentication) {
       });
       break;
     }
-  }
-
-  //Set base authentication attributes
-  if (newAuth) {
-    newAuth.type = authentication.type;
-    newAuth.title = authentication.title;
-    newAuth.textColor = authentication.textColor;
-    newAuth.buttonColor = authentication.buttonColor;
-    newAuth.icon = authentication.icon;
-    newAuth.enabled = authentication.enabled;
   }
 
   return newAuth.save();
