@@ -8,7 +8,7 @@ module.exports = function (app, passport, provision, tokenService) {
     , api = require('../api')
     , config = require('../config.js')
     , log = require('../logger')
-    , authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
@@ -47,21 +47,9 @@ module.exports = function (app, passport, provision, tokenService) {
     })(req, res, next);
   }
 
-  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
+  AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis') .then(strategyConfig => {
 
-    let strategyConfig;
-
-    if (strategies) {
-      for (let i = 0; i < strategies.length; i++) {
-        const config = strategies[i];
-        if (config.title.toUpperCae() === 'geoaxis'.toUpperCase()) {
-          strategyConfig = config;
-          break;
-        }
-      }
-    }
-
-    if (strategyConfig && strategyConfig.enabled) {
+    if (strategyConfig.enabled) {
       log.info('Configuring GeoAxis authentication');
       const strategy = new GeoaxisStrategy({
         authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',

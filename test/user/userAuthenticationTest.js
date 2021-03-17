@@ -86,7 +86,7 @@ describe("user authentication tests", function () {
       .expects('save')
       .resolves(mockUser.authentication);
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([mockUser.authenticationId]);
 

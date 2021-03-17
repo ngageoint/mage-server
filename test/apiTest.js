@@ -12,6 +12,7 @@ require('../models/user');
 const UserModel = mongoose.model('User');
 
 const Authentication = require('../models/authentication');
+const AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
 require('sinon-mongoose');
 require('chai').should();
@@ -48,7 +49,7 @@ describe("api route tests", function () {
       previousPasswords: []
     });
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([authentication]);
 
@@ -90,7 +91,7 @@ describe("api route tests", function () {
       previousPasswords: []
     });
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([authentication]);
 
@@ -125,7 +126,7 @@ describe("api route tests", function () {
       previousPasswords: []
     });
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([authentication]);
 

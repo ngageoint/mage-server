@@ -21,6 +21,7 @@ require('../../models/user');
 const UserModel = mongoose.model('User');
 
 const Authentication = require('../../models/authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 let userId = mongoose.Types.ObjectId();
 let mockUser = new UserModel({
@@ -208,7 +209,7 @@ describe("device provision tests", function () {
       password: 'password'
     });
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([mockAuth]);
 
@@ -285,7 +286,7 @@ describe("device provision tests", function () {
       password: 'password'
     });
 
-    sinon.mock(Authentication.Model)
+    sinon.mock(AuthenticationConfiguration.Model)
       .expects('find')
       .resolves([mockAuth]);
 

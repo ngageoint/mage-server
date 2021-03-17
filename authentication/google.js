@@ -6,7 +6,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , config = require('../config.js')
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
-  , authentication = require('../models/authentication')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 module.exports = function (app, passport, provision, tokenService) {
@@ -46,20 +46,9 @@ module.exports = function (app, passport, provision, tokenService) {
     })(req, res, next);
   }
 
-  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
-    let googleStrategy;
-
-    if (strategies) {
-      for (let i = 0; i < strategies.length; i++) {
-        const config = strategies[i];
-        if (config.title.toUpperCae() === 'google'.toUpperCase()) {
-          googleStrategy = config;
-          break;
-        }
-      }
-    }
-
-    if (googleStrategy && googleStrategy.enabled) {
+  AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
+    
+    if (googleStrategy.enabled) {
       log.info('Configuring Google authentication');
       passport.use('google', new GoogleStrategy({
         clientID: googleStrategy.clientID,

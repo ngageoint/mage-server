@@ -9,7 +9,7 @@ module.exports = function (app, passport, provision, tokenService) {
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user')
-    , authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
@@ -24,20 +24,10 @@ module.exports = function (app, passport, provision, tokenService) {
   let authenticationOptions = {
   };
 
-  authentication.getAuthenticationByStrategy('ldap').then(strategies => {
-    let strategyConfig;
-
-    if (strategies) {
-      for (let i = 0; i < strategies.length; i++) {
-        const config = strategies[i];
-        if (config.title.toUpperCae() === 'ldap'.toUpperCase()) {
-          strategyConfig = config;
-          break;
-        }
-      }
-    }
-
-    if (strategyConfig && strategyConfig.enabled) {
+  
+  AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
+  
+    if (strategyConfig.enabled) {
       authenticationOptions = {
         invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
         invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,

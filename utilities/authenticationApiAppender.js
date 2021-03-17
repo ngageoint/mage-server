@@ -1,7 +1,7 @@
 "use strict";
 
 const extend = require('util')._extend
-    , Authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationTransformer = require('../transformers/authentication');
 
 module.exports = {
@@ -23,10 +23,10 @@ async function append(api, options) {
     delete apiCopy.authenticationStrategies;
     apiCopy.authenticationStrategies = {};
 
-    const authenticationStrategies = await Authentication.Model.find();
-    const transformedStrategies = AuthenticationTransformer.transform(authenticationStrategies, options);
-    transformedStrategies.forEach(function (strategy) {
-        apiCopy.authenticationStrategies[strategy.type] = extend({}, strategy);
+    const authenticationConfigurations = await AuthenticationConfiguration.Model.find();
+    const transformedConfigurations = AuthenticationTransformer.transform(authenticationConfigurations, options);
+    transformedConfigurations.forEach(function (configuration) {
+        apiCopy.authenticationStrategies[configuration.type] = extend({}, configuration);
     });
     return Promise.resolve(apiCopy);
 }

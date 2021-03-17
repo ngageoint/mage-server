@@ -12,25 +12,15 @@ module.exports = function (app, passport, provision) {
     , api = require('../api')
     , config = require('../config.js')
     , log = require('../logger')
-    , authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   Issuer.useRequest();
 
-  authentication.getAuthenticationByStrategy('oauth').then(strategies => {
-    let strategyConfig;
+  
+  AuthenticationConfiguration.getConfiguration('oauth', 'Login.gov').then(strategyConfig => {
 
-    if (strategies) {
-      for (let i = 0; i < strategies.length; i++) {
-        const config = strategies[i];
-        if (config.title.toUpperCae() === 'Login.gov'.toUpperCase()) {
-          strategyConfig = config;
-          break;
-        }
-      }
-    }
-
-    if (strategyConfig && strategyConfig.enabled) {
+    if (strategyConfig.enabled) {
       log.info('Configuring login.gov authentication', strategyConfig);
       const loginGov = {};
 

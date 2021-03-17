@@ -4,7 +4,7 @@ const UserModel = require('../models/user')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')
   , TeamModel = require('../models/team')
-  , Setting = require('../models/setting')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , path = require('path')
   , fs = require('fs-extra')
   , util = require('util')
@@ -99,7 +99,8 @@ User.prototype.getById = function(id, callback) {
 };
 
 User.prototype.create = async function(user, options = {}) {
-  const { settings = {} } = await Setting.getSetting('security') || {};
+  //TODO get by users authentication
+  const { settings = {} } = await AuthenticationConfiguration.Model.find();
   let defaultTeams;
   let defaultEvents
   const authenticationType = user.authentication.type;

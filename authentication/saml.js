@@ -9,7 +9,7 @@ module.exports = function (app, passport, provision, tokenService) {
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user')
-    , authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
   function parseLoginMetadata(req, res, next) {
@@ -21,21 +21,9 @@ module.exports = function (app, passport, provision, tokenService) {
     next();
   }
 
+  AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
 
-  authentication.getAuthenticationByStrategy('saml').then(strategies => {
-    let strategyConfig;
-
-    if (strategies) {
-      for (let i = 0; i < strategies.length; i++) {
-        const config = strategies[i];
-        if (config.title.toUpperCae() === 'saml'.toUpperCase()) {
-          strategyConfig = config;
-          break;
-        }
-      }
-    }
-
-    if (strategyConfig && strategyConfig.enabled) {
+    if (strategyConfig.enabled) {
       passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
         const uid = profile[strategyConfig.uidAttribute];
         User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {

@@ -151,34 +151,6 @@ LocalSchema.pre('save', function (next) {
 
 });
 
-const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-
-const transform = function (authentication, ret, options) {
-  if ('function' !== typeof authentication.ownerDocument) {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
-
-    if (options.whitelist) {
-      if (authentication.type === 'local') {
-        return;
-      }
-
-      Object.keys(ret).forEach(key => {
-        if (!whitelist.includes(key)) {
-          delete ret[key];
-        }
-      });
-    }
-  }
-};
-
-AuthenticationSchema.set("toObject", {
-  transform: transform
-});
-
-exports.transform = transform;
-
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
 

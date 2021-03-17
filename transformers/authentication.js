@@ -1,25 +1,25 @@
 "use strict";
 
-const Authentication = require('../models/authentication');
+const AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
-function transformAuthentication(authentication, options) {
-    if (!authentication) return null;
+function transformAuthenticationConfiguration(authenticationConfiguration, options) {
+    if (!authenticationConfiguration) return null;
 
-    authentication = authentication.toObject ? authentication.toObject({ whitelist: options.whitelist, path: options.path, transform: Authentication.transform }) : authentication;
+    authenticationConfiguration = authenticationConfiguration.toObject ? authenticationConfiguration.toObject({ whitelist: options.whitelist, path: options.path, transform: AuthenticationConfiguration.transform }) : authenticationConfiguration;
 
-    return authentication;
+    return authenticationConfiguration;
 };
 
-function transformAuthentications(authentications, options) {
-    authentications = authentications.map(function (authentication) {
-        return transformAuthentication(authentication, options);
+function transformAuthenticationConfigurations(authenticationConfigurations, options) {
+    authenticationConfigurations = authenticationConfigurations.map(function (authenticationConfiguration) {
+        return transformAuthenticationConfiguration(authenticationConfiguration, options);
     });
 
-    return authentications;
+    return authenticationConfigurations;
 };
 
-exports.transform = function (authentications, options) {
+exports.transform = function (authenticationConfigurations, options) {
     options = options || {};
 
-    return Array.isArray(authentications) ? transformAuthentications(authentications, options) : transformAuthentication(authentications, options);
+    return Array.isArray(authenticationConfigurations) ? transformAuthenticationConfigurations(authenticationConfigurations, options) : transformAuthenticationConfiguration(authenticationConfigurations, options);
 };
