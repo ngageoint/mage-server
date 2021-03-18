@@ -99,19 +99,18 @@ User.prototype.getById = function(id, callback) {
 };
 
 User.prototype.create = async function(user, options = {}) {
-  //TODO get by users authentication
-  const { settings = {} } = await AuthenticationConfiguration.Model.find();
+  
+  const authenticationConfig = await AuthenticationConfiguration.Model.findById(user.authentication.authenticationConfigurationId);
   let defaultTeams;
   let defaultEvents
-  const authenticationType = user.authentication.type;
-  if (settings[authenticationType]) {
-    const requireAdminActivation = settings[authenticationType].usersReqAdmin || { enabled: true };
+  if (authenticationConfig) {
+    const requireAdminActivation = authenticationConfig.settings.usersReqAdmin || { enabled: true };
     if (requireAdminActivation) {
       user.active = user.active || !requireAdminActivation.enabled;
     }
 
-    defaultTeams = settings[authenticationType].newUserTeams;
-    defaultEvents = settings[authenticationType].newUserEvents;
+    defaultTeams = authenticationConfig.settings.newUserTeams;
+    defaultEvents = authenticationConfig.settings.newUserEvents;
   }
 
   const newUser = await util.promisify(UserModel.createUser)(user);

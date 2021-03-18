@@ -12,7 +12,8 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
-  type: { type: String, required: true }
+  type: { type: String, required: true },
+  authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: true }
 }, {
   discriminatorKey: 'type',
   timestamps: {
@@ -86,7 +87,7 @@ LocalSchema.pre('save', function (next) {
 
   async.waterfall([
     function (done) {
-      AuthenticationConfiguration.getConfiguration('local', 'local').then(localConfiguration => {
+      AuthenticationConfiguration.Model.findById(authentication.authenticationConfigurationId).then(localConfiguration => {
         done(null, localConfiguration.settings.passwordPolicy);
       }).catch(err => done(err));
     },

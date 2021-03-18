@@ -48,7 +48,7 @@ module.exports = function (app, passport, provision, tokenService) {
 
   AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
     
-    if (googleStrategy.enabled) {
+    if (googleStrategy && googleStrategy.enabled) {
       log.info('Configuring Google authentication');
       passport.use('google', new GoogleStrategy({
         clientID: googleStrategy.clientID,

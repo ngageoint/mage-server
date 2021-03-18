@@ -23,7 +23,7 @@ module.exports = function (app, passport, provision, tokenService) {
 
   AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
 
-    if (strategyConfig.enabled) {
+    if (strategyConfig && strategyConfig.enabled) {
       passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
         const uid = profile[strategyConfig.uidAttribute];
         User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {

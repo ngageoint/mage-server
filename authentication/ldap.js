@@ -27,7 +27,7 @@ module.exports = function (app, passport, provision, tokenService) {
   
   AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
   
-    if (strategyConfig.enabled) {
+    if (strategyConfig && strategyConfig.enabled) {
       authenticationOptions = {
         invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
         invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,

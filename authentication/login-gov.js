@@ -20,7 +20,7 @@ module.exports = function (app, passport, provision) {
   
   AuthenticationConfiguration.getConfiguration('oauth', 'Login.gov').then(strategyConfig => {
 
-    if (strategyConfig.enabled) {
+    if (strategyConfig && strategyConfig.enabled) {
       log.info('Configuring login.gov authentication', strategyConfig);
       const loginGov = {};
 

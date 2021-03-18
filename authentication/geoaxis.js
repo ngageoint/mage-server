@@ -49,7 +49,7 @@ module.exports = function (app, passport, provision, tokenService) {
 
   AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis') .then(strategyConfig => {
 
-    if (strategyConfig.enabled) {
+    if (strategyConfig && strategyConfig.enabled) {
       log.info('Configuring GeoAxis authentication');
       const strategy = new GeoaxisStrategy({
         authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
