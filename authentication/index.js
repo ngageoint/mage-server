@@ -71,7 +71,7 @@ module.exports = function (app, passport, provision) {
   }
 
   function provisionDevice(req, res, next) {
-    provision.check(req.user.authentication.type)(req, res, next);
+    provision.check(req.user.authentication.authenticationConfigurationId)(req, res, next);
   }
 
   app.post(

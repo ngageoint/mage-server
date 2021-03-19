@@ -147,6 +147,17 @@ const transform = function (user, ret, options) {
       ret.authentication = ret.authenticationId;
       delete ret.authentication.password;
       delete ret.authenticationId;
+
+      if (user.authentication.populated('authenticationConfigurationId')) {
+        const keys = Object.keys(ret.authentication.authenticationConfigurationId);
+        keys.forEach(key => {
+          if (key !== 'settings') {
+            ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
+          }
+        });
+        delete ret.authentication.authenticationConfigurationId;
+      }
+     
     }
 
     if (user.avatar && user.avatar.relativePath) {
@@ -176,7 +187,7 @@ const User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
 exports.getUserById = function (id, callback) {
-  let result = User.findById(id).populate('roleId').populate('authenticationId');
+  let result = User.findById(id).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
   if (typeof callback === 'function') {
     result = result.then(
       user => {
@@ -190,20 +201,20 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate('authenticationId').exec(function (err, user) {
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(function (err, user) {
     callback(err, user);
   });
 };
 
-exports.getUserByAuthenticationId = function(id) {
-  return User.findOne({ authenticationId: id} ).exec();
+exports.getUserByAuthenticationId = function (id) {
+  return User.findOne({ authenticationId: id }).exec();
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
-  Authentication.getAuthenticationByStrategy(strategy, uid, function(err, authentication) {
+  Authentication.getAuthenticationByStrategy(strategy, uid, function (err, authentication) {
     if (err || !authentication) return callback(err);
 
-    User.findOne({authenticationId: authentication._id}).populate('roleId').populate('authenticationId').exec(callback);
+    User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
   });
 }
 
@@ -234,7 +245,7 @@ exports.getUsers = function (options, callback) {
 
   const conditions = createQueryConditions(filter);
 
-  let query = User.find(conditions).populate('authenticationId');
+  let query = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
 
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     query = query.populate('roleId');

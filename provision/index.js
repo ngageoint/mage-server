@@ -1,5 +1,5 @@
-const fs = require('fs');
-const Setting = require('../models/setting');
+const fs = require('fs')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
 /**
  * `Provision` constructor.
@@ -10,7 +10,7 @@ function Provision() {
   this.strategies = {};
 }
 
-Provision.prototype.use = function(name, strategy) {
+Provision.prototype.use = function (name, strategy) {
   if (!strategy) {
     strategy = name;
     name = strategy.name;
@@ -21,30 +21,27 @@ Provision.prototype.use = function(name, strategy) {
   return this;
 };
 
-Provision.prototype.check = function(type, options) {
+Provision.prototype.check = function (authConfig, options) {
   options = options || {};
 
   const strategies = this.strategies;
 
-  return function(req, res, next) {
-    Setting.getSetting('security').then(({settings}) => {
-      const localAuthentication = settings[type] || {};
-      const localDeviceSettings = localAuthentication.devicesReqAdmin || {};
-      const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
+  return function (req, res, next) {
+    const localDeviceSettings = authConfig.settings.devicesReqAdmin || {};
+    const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
 
-      const provision = strategies[strategy];
-      if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
+    const provision = strategies[strategy];
+    if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
 
-      provision.check(req, options, function (err, device, info = {}) {
-        if (err) return next(err);
+    provision.check(req, options, function (err, device, info = {}) {
+      if (err) return next(err);
 
-        req.provisionedDevice = device;
+      req.provisionedDevice = device;
 
-        if (!device || !device.registered) return res.status(403).send(info.message);
+      if (!device || !device.registered) return res.status(403).send(info.message);
 
-        next();
-      });
-    })
+      next();
+    });
   };
 };
 
