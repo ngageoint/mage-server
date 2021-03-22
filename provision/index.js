@@ -1,4 +1,5 @@
-const fs = require('fs');
+const fs = require('fs')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
 /**
  * `Provision` constructor.
@@ -20,26 +21,30 @@ Provision.prototype.use = function (name, strategy) {
   return this;
 };
 
-Provision.prototype.check = function (authConfig, options) {
+Provision.prototype.check = function (type, name, options) {
   options = options || {};
 
   const strategies = this.strategies;
 
   return function (req, res, next) {
-    const localDeviceSettings = authConfig.settings.devicesReqAdmin || {};
-    const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
+    AuthenticationConfiguration.getConfiguration(type, name).then(authConfig => {
+      const localDeviceSettings = authConfig.settings.devicesReqAdmin || {};
+      const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
 
-    const provision = strategies[strategy];
-    if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
+      const provision = strategies[strategy];
+      if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
 
-    provision.check(req, options, function (err, device, info = {}) {
-      if (err) return next(err);
+      provision.check(req, options, function (err, device, info = {}) {
+        if (err) return next(err);
 
-      req.provisionedDevice = device;
+        req.provisionedDevice = device;
 
-      if (!device || !device.registered) return res.status(403).send(info.message);
+        if (!device || !device.registered) return res.status(403).send(info.message);
 
-      next();
+        next();
+      });
+    }).catch(err => {
+      next(err);;
     });
   };
 };

@@ -2,7 +2,7 @@
 
 const extend = require('util')._extend
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-    , AuthenticationTransformer = require('../transformers/authentication');
+    , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration');
 
 module.exports = {
     append
@@ -24,7 +24,7 @@ async function append(api, options) {
     apiCopy.authenticationStrategies = {};
 
     const authenticationConfigurations = await AuthenticationConfiguration.Model.find();
-    const transformedConfigurations = AuthenticationTransformer.transform(authenticationConfigurations, options);
+    const transformedConfigurations = AuthenticationConfigurationTransformer.transform(authenticationConfigurations, options);
     transformedConfigurations.forEach(function (configuration) {
         apiCopy.authenticationStrategies[configuration.type] = extend({}, configuration);
     });

@@ -182,7 +182,7 @@ module.exports = function (app, passport, provision, tokenService) {
         next();
       })(req, res, next);
     },
-    provision.check('local'),
+    provision.check('local', 'local'),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {

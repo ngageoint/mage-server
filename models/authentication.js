@@ -152,6 +152,10 @@ LocalSchema.pre('save', function (next) {
 
 });
 
+AuthenticationSchema.virtual('authenticationConfiguration').get(function () {
+  return this.populated('authenticationConfigurationId') ? this.authenticationConfigurationId : null;
+});
+
 const Authentication = mongoose.model('Authentication', AuthenticationSchema);
 exports.Model = Authentication;
 
