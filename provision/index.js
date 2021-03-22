@@ -1,5 +1,4 @@
-const fs = require('fs')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
+const fs = require('fs');
 
 /**
  * `Provision` constructor.
