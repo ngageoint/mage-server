@@ -25,8 +25,6 @@ const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
-    ret.id = ret._id;
-    delete ret._id;
     delete ret.__v;
 
     if (options.whitelist) {
