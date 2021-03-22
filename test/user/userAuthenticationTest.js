@@ -21,7 +21,6 @@ require('../../models/user');
 const UserModel = mongoose.model('User');
 
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 require('sinon-mongoose');
@@ -53,24 +52,21 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {}
+        security: {},
+        authenticationConfigurationId: mongoose.Types.ObjectId()
       })
     });
-    mockUser.authentication = {
-      security: {}
-    };
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
         settings: {
@@ -143,7 +139,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -180,7 +176,7 @@ describe("user authentication tests", function () {
       })
     });
 
-    sinon.mock(AuthenticationModel)
+    sinon.mock(Authentication.Model)
       .expects('findById')
       .withArgs(mockUser.authenticationId._id)
       .chain('exec')
@@ -237,7 +233,8 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
-        security: {}
+        security: {},
+        authenticationConfigurationId: mongoose.Types.ObjectId()
       })
     });
 
@@ -245,7 +242,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -261,7 +258,6 @@ describe("user authentication tests", function () {
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
         settings: {
@@ -297,25 +293,21 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
-        security: {}
+        security: {},
+        authenticationConfigurationId: mongoose.Types.ObjectId()
       })
     });
-    mockUser.authentication = {
-      type: 'local',
-      security: {}
-    }
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
         settings: {
@@ -402,7 +394,7 @@ describe("user authentication tests", function () {
       })
     });
 
-    sinon.mock(AuthenticationModel)
+    sinon.mock(Authentication.Model)
       .expects('findById')
       .withArgs(mockUser.authenticationId._id)
       .chain('exec')
@@ -473,7 +465,7 @@ describe("user authentication tests", function () {
       })
     });
 
-    sinon.mock(AuthenticationModel)
+    sinon.mock(Authentication.Model)
       .expects('findById')
       .withArgs(mockUser.authenticationId._id)
       .chain('exec')
@@ -547,7 +539,7 @@ describe("user authentication tests", function () {
       })
     });
 
-    sinon.mock(AuthenticationModel)
+    sinon.mock(Authentication.Model)
       .expects('findById')
       .withArgs(mockUser.authenticationId._id)
       .chain('exec')

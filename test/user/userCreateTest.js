@@ -17,7 +17,7 @@ const UserModel = mongoose.model('User');
 const Setting = require('../../models/setting');
 
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
@@ -49,27 +49,30 @@ describe("user create tests", function () {
       password: 'password',
       passwordconfirm: 'password',
       roleId: roleId,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: true
+          }
+        }),
         security: {}
       })
     });
 
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
+
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
-
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        settings: {
-          [mockUser.authentication.type]: {
-            usersReqAdmin: true
-          }
-        }
-      })
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -113,13 +116,12 @@ describe("user create tests", function () {
   it('should fail to create user as admin w/o roleId', function (done) {
     mockTokenWithPermission('CREATE_USER');
 
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
       .resolves({
         settings: {
-          local: {
-            usersReqAdmin: true
-          }
+          usersReqAdmin: { enabled: true }
         }
       });
 
@@ -157,31 +159,34 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: true
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        local: {
-          usersReqAdmin: {
-            enabled: true
-          }
-        }
-      }
-    }));
-
     sinon.mock(mockUser)
-      .expects('populate')
-      .withArgs('roleId')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -228,7 +233,7 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Model({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -296,7 +301,7 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Model({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',

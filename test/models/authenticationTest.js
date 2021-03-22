@@ -16,7 +16,8 @@ describe("authentication model tests", function () {
   it('validate local auth model', function (done) {
     const authentication = new Authentication.Local({
       type: 'local',
-      password: 'password'
+      password: 'password',
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     authentication.validate(function (err) {
@@ -34,7 +35,8 @@ describe("authentication model tests", function () {
     const mockAuth = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
-      password: 'password'
+      password: 'password',
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     sinon.stub(Authentication.Local.prototype, 'save')
@@ -52,7 +54,8 @@ describe("authentication model tests", function () {
   it('verify saml auth create', function (done) {
     const mockAuth = new Authentication.SAML({
       _id: mongoose.Types.ObjectId(),
-      type: 'saml'
+      type: 'saml',
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     sinon.stub(Authentication.SAML.prototype, 'save')
@@ -70,7 +73,8 @@ describe("authentication model tests", function () {
   it('verify ldap auth create', function (done) {
     const mockAuth = new Authentication.LDAP({
       _id: mongoose.Types.ObjectId(),
-      type: 'ldap'
+      type: 'ldap',
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     sinon.stub(Authentication.LDAP.prototype, 'save')

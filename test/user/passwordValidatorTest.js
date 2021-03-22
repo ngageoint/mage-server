@@ -16,7 +16,6 @@ require('../../models/token');
 const TokenModel = mongoose.model('Token');
 
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 describe("Password Validator Tests", function () {
@@ -499,7 +498,6 @@ describe("Password Validator Tests", function () {
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
         settings: {
@@ -513,6 +511,7 @@ describe("Password Validator Tests", function () {
     sinon.mock(UserModel)
       .expects('findOne')
       .chain('populate')
+      .chain('populate')
       .chain('exec')
       .resolves({});
 
@@ -523,7 +522,8 @@ describe("Password Validator Tests", function () {
     const authentication = new Authentication.Local({
       type: 'local',
       password: 'hash1',
-      previousPasswords: [hash3, hash2, hash1]
+      previousPasswords: [hash3, hash2, hash1],
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     sinon.mock(AuthenticationModel.collection)
@@ -551,7 +551,8 @@ describe("Password Validator Tests", function () {
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
-      previousPasswords: []
+      previousPasswords: [],
+      authenticationConfigurationId: mongoose.Types.ObjectId()
     });
 
     const user = {
@@ -560,7 +561,6 @@ describe("Password Validator Tests", function () {
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
       .resolves({
         settings: {
@@ -584,7 +584,7 @@ describe("Password Validator Tests", function () {
       .withArgs({ userId: user._id })
       .yields(null, {})
 
-    sinon.mock(AuthenticationModel.collection)
+    sinon.mock(Authentication.Model.collection)
       .expects('insert')
       .yields(null, authentication);
 
