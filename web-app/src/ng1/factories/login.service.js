@@ -6,7 +6,7 @@ LoginService.$inject = ['$http', '$httpParamSerializer'];
 
 function LoginService($http, $httpParamSerializer) {
 
-  var service = {
+  const service = {
     query: query
   };
 
@@ -14,9 +14,9 @@ function LoginService($http, $httpParamSerializer) {
 
   function query(options) {
     options = options || {};
-    var filter = options.filter || {};
+    const filter = options.filter || {};
 
-    var parameters = {};
+    const parameters = {};
     if (filter.user) {
       parameters.userId = filter.user.id;
     }
