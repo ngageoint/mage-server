@@ -238,6 +238,8 @@ exports.createAuthentication = function (authentication) {
     }
   }
 
+  newAuth.authenticationConfigurationId = authentication.authenticationConfigurationId;
+
   return newAuth.save();
 };
 
