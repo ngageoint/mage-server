@@ -100,10 +100,11 @@ User.prototype.getById = function(id, callback) {
 
 User.prototype.create = async function(user, options = {}) {
   
-  const authenticationConfig = await AuthenticationConfiguration.Model.findById(user.authentication.authenticationConfigurationId);
+  const authenticationConfig = await AuthenticationConfiguration.getConfiguration(user.authentication.type);
   let defaultTeams;
   let defaultEvents
   if (authenticationConfig) {
+    user.authentication.authenticationConfigurationId = authenticationConfig._id;
     const requireAdminActivation = authenticationConfig.settings.usersReqAdmin || { enabled: true };
     if (requireAdminActivation) {
       user.active = user.active || !requireAdminActivation.enabled;
@@ -111,6 +112,8 @@ User.prototype.create = async function(user, options = {}) {
 
     defaultTeams = authenticationConfig.settings.newUserTeams;
     defaultEvents = authenticationConfig.settings.newUserEvents;
+  } else {
+    throw new Error('No configuration defined for ' + user.authentication.type);
   }
 
   const newUser = await util.promisify(UserModel.createUser)(user);

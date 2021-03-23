@@ -6,19 +6,19 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const AuthenticationConfigurationSchema = new Schema({
-    name: { type: String, required: true },
-    type: { type: String, required: true },
-    title: { type: String, required: false },
-    textColor: { type: String, required: false },
-    buttonColor: { type: String, required: false },
-    icon: { type: String, required: false },
-    enabled: { type: Boolean, default: false },
-    settings: Schema.Types.Mixed
+  name: { type: String, required: true },
+  type: { type: String, required: true },
+  title: { type: String, required: false },
+  textColor: { type: String, required: false },
+  buttonColor: { type: String, required: false },
+  icon: { type: String, required: false },
+  enabled: { type: Boolean, default: false },
+  settings: Schema.Types.Mixed
 }, {
-    discriminatorKey: 'type',
-    timestamps: {
-        updatedAt: 'lastUpdated'
-    }
+  discriminatorKey: 'type',
+  timestamps: {
+    updatedAt: 'lastUpdated'
+  }
 });
 
 const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
@@ -50,6 +50,9 @@ exports.transform = transform;
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
 exports.Model = AuthenticationConfiguration;
 
-exports.getConfiguration = function(type, name) {
-    return AuthenticationConfiguration.findOne({type: type, name: name}).exec();
+exports.getConfiguration = function (type, name) {
+  if (name === undefined) {
+    return AuthenticationConfiguration.findOne({ type: type }).exec();
+  }
+  return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
 };

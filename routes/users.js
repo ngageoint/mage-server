@@ -137,15 +137,6 @@ module.exports = function (app, security) {
     }
 
     account.password = password;
-
-    AuthenticationConfiguration.getConfiguration('local', 'local').then(authConfig => {
-      user.authentication.authenticationConfigurationId = authConfig._id;
-      req.newUser = user;
-      next();
-    }).catch(err => {
-      next(err);
-    })
-
     req.account = account;
     next();
   }
