@@ -42,7 +42,7 @@ class AdminDeviceController {
       this.device = device;
     });
   
-    this.LoginService.query({filter: this.$stateParamsfilter, limit: this.loginResultsLimit}).success(loginPage => {
+    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
       this.loginPage = loginPage;
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
@@ -50,6 +50,13 @@ class AdminDeviceController {
     });
 
     this.UserPagingService.refresh(this.stateAndData);
+  }
+
+  userSearchChanged() {
+    if (this.user === "") {
+      this.user = null;
+      this.filterLogins()
+    }
   }
 
   searchLogins(searchString) {
@@ -63,7 +70,7 @@ class AdminDeviceController {
       this.loginSearchResults = users;
 
       if(this.loginSearchResults.length == 0) {
-        let noUser = {
+        const noUser = {
           displayName: "No Results Found"
         };
         this.loginSearchResults.push(noUser);
@@ -80,7 +87,7 @@ class AdminDeviceController {
 
     if (device.iconClass) return device.iconClass;
 
-    let userAgent = device.userAgent || "";
+    const userAgent = device.userAgent || "";
 
     if (device.appVersion === 'Web Client') {
       device.iconClass = 'fa-desktop admin-desktop-icon';
@@ -104,7 +111,7 @@ class AdminDeviceController {
   }
 
   deleteDevice(device) {
-    let modalInstance = this.$uibModal.open({
+    const modalInstance = this.$uibModal.open({
       resolve: {
         device: () => {
           return device;
@@ -150,9 +157,8 @@ class AdminDeviceController {
     });
   }
 
-  filterLogins(item, model, label, event) {
+  filterLogins() {
     this.filter.user = this.user;
-    this.filter.device = this.device.selected;
     this.filter.startDate = this.login.startDate;
     if (this.login.endDate) {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();

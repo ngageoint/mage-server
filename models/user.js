@@ -72,7 +72,7 @@ UserSchema.pre('save', function (next) {
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
       const error = new Error('username already exists');
-      error.status = 400;
+      error.status = 409;
       return next(error);
     }
 
