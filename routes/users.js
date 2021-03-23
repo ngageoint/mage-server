@@ -4,6 +4,7 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , Event = require('../models/event')
     , Authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
@@ -32,7 +33,7 @@ module.exports = function (app, security) {
   }
 
   function parseIconUpload(req, res, next) {
-    var iconMetadata = req.param('iconMetadata') || {};
+    let iconMetadata = req.param('iconMetadata') || {};
     if (typeof iconMetadata === 'string' || iconMetadata instanceof String) {
       iconMetadata = JSON.parse(iconMetadata);
     }
@@ -122,8 +123,13 @@ module.exports = function (app, security) {
       password: password
     };
 
-    req.newUser = user;
-    next();
+    AuthenticationConfiguration.getConfiguration('local', 'local').then(authConfig => {
+      user.authentication.authenticationConfigurationId = authConfig._id;
+      req.newUser = user;
+      next();
+    }).catch(err => {
+      next(err);
+    })
   }
 
   // Create a new user (ADMIN)
