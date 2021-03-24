@@ -3,9 +3,7 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , User = require('../models/user')
     , Device = require('../models/device')
-    , Setting = require('../models/setting')
-    , userTransformer = require('../transformers/user')
-    , passwordValidator = require('../utilities/passwordValidator');
+    , userTransformer = require('../transformers/user');
 
   function authorizeSetup(req, res, next) {
     User.count(function (err, count) {
