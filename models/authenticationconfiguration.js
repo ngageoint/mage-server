@@ -56,3 +56,7 @@ exports.getConfiguration = function (type, name) {
   }
   return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
 };
+
+exports.getAllConfigurations = function () {
+  return  AuthenticationConfiguration.find({}).exec();
+};
