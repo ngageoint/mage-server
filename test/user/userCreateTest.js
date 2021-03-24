@@ -14,8 +14,6 @@ const RoleModel = mongoose.model('Role');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-const Setting = require('../../models/setting');
-
 const Authentication = require('../../models/authentication');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
