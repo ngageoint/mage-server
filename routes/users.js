@@ -7,7 +7,6 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , Event = require('../models/event')
     , Authentication = require('../models/authentication')
-    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , api = require('../api')
     , access = require('../access')
     , verification = require('../authentication/verification')
