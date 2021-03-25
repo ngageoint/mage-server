@@ -1,13 +1,13 @@
 import _ from 'underscore';
 
 class AdminSettingsController {
-  constructor($q, $timeout, Api, Settings, LocalStorageService, Event, Team) {
+  constructor($q, $timeout, Settings, LocalStorageService, Event, Team, AuthenticationConfigurationService) {
     this.$q = $q;
     this.$timeout = $timeout;
-    this.Api = Api;
     this.Settings = Settings;
     this.Event = Event;
     this.Team = Team;
+    this.AuthenticationConfigurationService = AuthenticationConfigurationService;
 
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
@@ -74,16 +74,15 @@ class AdminSettingsController {
 
   $onInit() {
     this.$q.all({
-      api: this.Api.get().$promise,
+      configs: this.AuthenticationConfigurationService.getAllConfigurations(),
       settings: this.Settings.query().$promise,
       teams: this.Team.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise,
       events: this.Event.query({ state: 'all', populate: false, projection: JSON.stringify(this.projection) }).$promise
     }).then(result => {
-      const api = result.api;
       this.teams = _.reject(result.teams, team => { return team.teamEventId; });
       this.events = result.events;
 
-      this.authenticationStrategies = api.authenticationStrategies || {};
+      this.authenticationStrategies = result.configs || {};
       this.pill = Object.keys(this.authenticationStrategies).length ? 'security' : 'banner';
 
       let strategy = {};
@@ -213,7 +212,7 @@ class AdminSettingsController {
   }
 }
 
-AdminSettingsController.$inject = ['$q', '$timeout', 'Api', 'Settings', 'LocalStorageService', 'Event', 'Team'];
+AdminSettingsController.$inject = ['$q', '$timeout', 'Settings', 'LocalStorageService', 'Event', 'Team', 'AuthenticationConfigurationService'];
 
 export default {
   template: require('./settings.html'),
