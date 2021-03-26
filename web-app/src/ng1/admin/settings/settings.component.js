@@ -14,7 +14,6 @@ class AdminSettingsController {
 
     this.teams = [];
     this.strategies = [];
-    this.authenticationStrategies = {};
 
     this.usersReqAdminChoices = [{
       title: 'Enabled',
@@ -46,7 +45,9 @@ class AdminSettingsController {
       value: true
     }];
 
-    this.maxLock = {};
+    this.maxLock = {
+      enabled: false
+    };
     this.maxLockChoices = [{
       title: 'Off',
       description: 'Do not disable MAGE user accounts.',
@@ -82,77 +83,67 @@ class AdminSettingsController {
       this.teams = _.reject(result.teams, team => { return team.teamEventId; });
       this.events = result.events;
 
-      this.authenticationStrategies = result.configs || {};
-      this.pill = Object.keys(this.authenticationStrategies).length ? 'security' : 'banner';
-
-      let strategy = {};
-        for (strategy in this.authenticationStrategies) {
-        this.strategies.push(strategy);
-      }
+      this.strategies = result.configs || {};
+      this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
 
       this.settings = _.indexBy(result.settings, 'type');
 
       this.banner = this.settings.banner ? this.settings.banner.settings : {};
       this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
-      this.security = this.settings.security ? this.settings.security.settings : {};
-
-      if (!this.security.local.accountLock) {
-        this.security.local.accountLock = {
-          enabled: false
-        };
-      }
-      
-      this.buildPasswordHelp();
+      this.security = {};
 
       this.strategies.forEach(strategy => {
-        if (!this.security[strategy]) {
-          this.security[strategy] = {
+        if (strategy.enabled) {
+          this.security[strategy.type] = {
             devicesReqAdmin: { enabled: true },
             usersReqAdmin: { enabled: true },
             newUserEvents: [],
-            newUserTeams: []
+            newUserTeams: [],
+            accountLock: { enabled: false }
           }
-        } else {
-          if (this.security[strategy].devicesReqAdmin === undefined) {
-            this.security[strategy].devicesReqAdmin = { enabled: true };
+          if (strategy.settings.devicesReqAdmin) {
+            this.security[strategy.type].devicesReqAdmin = strategy.settings.devicesReqAdmin;
           }
-          if (this.security[strategy].usersReqAdmin === undefined) {
-            this.security[strategy].usersReqAdmin = { enabled: true };
+          if (strategy.settings.usersReqAdmin) {
+            this.security[strategy.type].usersReqAdmin = strategy.settings.usersReqAdmin;
           }
-
-          if (this.security[strategy].newUserTeams) {
-            // Remove any teams and events that no longer exist
-            this.security[strategy].newUserTeams = this.security[strategy].newUserTeams.filter(id => {
-              return this.teams.some(team => team.id === id)
-            });
-          } else {
-            this.security[strategy].newUserTeams = [];
-          }
-
-          if (this.security[strategy].newUserEvents) {
-            this.security[strategy].newUserEvents = this.security[strategy].newUserEvents.filter(id => {
+          if (strategy.settings.newUserEvents) {
+            this.security[strategy.type].newUserEvents = strategy.settings.newUserEvents.filter(id => {
               return this.events.some(event => event.id === id)
             });
-          } else {
-            this.security[strategy].newUserEvents = [];
+          }
+          if (strategy.settings.newUserTeams) {
+            // Remove any teams and events that no longer exist
+            this.security[strategy.type].newUserTeams = strategy.settings.newUserTeams.filter(id => {
+              return this.teams.some(team => team.id === id)
+            });
+          }
+          if (strategy.settings.accountLock) {
+            this.security[strategy.type] = strategy.settings.accountLock;
           }
         }
       });
 
-      this.maxLock.enabled = this.security.local.accountLock && this.security.local.accountLock.max !== undefined;
+      if (this.security.local) {
+        this.maxLock.enabled = this.security.local.accountLock && this.security.local.accountLock.max !== undefined;
+      }
+
+      this.buildPasswordHelp();
     });
   }
 
   buildPasswordHelp() {
-    if (!this.security.local.passwordPolicy.customizeHelpText) {
-      const policy = this.security.local.passwordPolicy
-      const templates = Object.entries(policy.helpTextTemplate)
-        .filter(([key]) => policy[`${key}Enabled`] === true)
-        .map(([key, value]) => {
-          return value.replace('#', policy[key])
-        });
+    if (this.security.local && this.security.local.passwordPolicy) {
+      if (!this.security.local.passwordPolicy.customizeHelpText) {
+        const policy = this.security.local.passwordPolicy
+        const templates = Object.entries(policy.helpTextTemplate)
+          .filter(([key]) => policy[`${key}Enabled`] === true)
+          .map(([key, value]) => {
+            return value.replace('#', policy[key])
+          });
 
-      this.security.local.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
+        this.security.local.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
+      }
     }
   }
 

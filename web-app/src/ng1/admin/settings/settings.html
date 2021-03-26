@@ -31,7 +31,7 @@
           <div ng-if="$ctrl.pill === 'security'">
             <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
 
-            <form ng-if="$ctrl.authenticationStrategies" ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
+            <form ng-if="$ctrl.strategies" ng-submit="$ctrl.saveSecurity()" id="security-form" class="form">
               <div ng-repeat="strategy in $ctrl.strategies">
                 <div class="row" style="padding-bottom: 25px;">
                   <div class="col-sm-11">
@@ -39,7 +39,7 @@
                       <div class="card-content">
                         <div class="row">
                           <div class="col-md-12 bottom-gap">
-                            <h3>{{strategy.toUpperCase()}} Authentication</h3>
+                            <h3>{{strategy.type.toUpperCase()}} Authentication</h3>
                             <hr>
                           </div>
                         </div>
@@ -48,7 +48,7 @@
                           <div class="col-sm-12">
                             <div class="form-group">
                               <label class="control-label" for="type">New User Accounts Require Admin Approval</label>
-                              <ui-select ng-model="$ctrl.security[strategy].usersReqAdmin.enabled" theme="bootstrap">
+                              <ui-select ng-model="$ctrl.security[strategy.type].usersReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
                                 <ui-select-choices
                                   repeat="usersReqAdminChoice.value as usersReqAdminChoice in $ctrl.usersReqAdminChoices">
@@ -62,12 +62,12 @@
                           </div>
                         </div>
 
-                        <div ng-if="!$ctrl.security[strategy].usersReqAdmin.enabled">
+                        <div ng-if="!$ctrl.security[strategy.type].usersReqAdmin.enabled">
                           <div class="row">
                             <div class="col-sm-12">
                               <label class="control-label" for="type">New Users Default Event(s)</label>
                               <div class="form-group">
-                                <ui-select multiple ng-model="$ctrl.security[strategy].newUserEvents" theme="bootstrap">
+                                <ui-select multiple ng-model="$ctrl.security[strategy.type].newUserEvents" theme="bootstrap">
                                   <ui-select-match>{{$item.name}}</ui-select-match>
                                   <ui-select-choices repeat="event.id as event in $ctrl.events">
                                     <div ng-bind-html="event.name"></div>
@@ -86,7 +86,7 @@
                             <div class="col-sm-12">
                               <label class="control-label" for="type">New Users Default Team(s)</label>
                               <div class="form-group">
-                                <ui-select multiple ng-model="$ctrl.security[strategy].newUserTeams" theme="bootstrap">
+                                <ui-select multiple ng-model="$ctrl.security[strategy.type].newUserTeams" theme="bootstrap">
                                   <ui-select-match>{{$item.name}}</ui-select-match>
                                   <ui-select-choices repeat="team.id as team in $ctrl.teams">
                                     <div ng-bind-html="team.name"></div>
@@ -107,7 +107,7 @@
                           <div class="col-sm-12">
                             <div class="form-group">
                               <label class="control-label" for="type">New Devices Require Admin Approval</label>
-                              <ui-select ng-model="$ctrl.security[strategy].devicesReqAdmin.enabled" theme="bootstrap">
+                              <ui-select ng-model="$ctrl.security[strategy.type].devicesReqAdmin.enabled" theme="bootstrap">
                                 <ui-select-match>{{$select.selected.title}}</ui-select-match>
                                 <ui-select-choices
                                   repeat="devicesReqAdminChoice.value as devicesReqAdminChoice in $ctrl.devicesReqAdminChoices">

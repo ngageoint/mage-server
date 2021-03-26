@@ -10,6 +10,7 @@ exports.up = function (done) {
         const localSettings = result.value.settings.local;
 
         const authDbObject = {
+            enabled: true,
             name: 'local',
             type: 'local',
             title: localSettings.title,

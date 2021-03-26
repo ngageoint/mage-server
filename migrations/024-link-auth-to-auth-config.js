@@ -33,7 +33,7 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
 
         const authentication = await cursor.next();
 
-        if (!authentication.hasOwnProperty('authenticationConfigurationId')) {
+        if (authentication.hasOwnProperty('authenticationConfigurationId')) {
             const authenticationConfiguration = await authenticationConfigurationsCollection.findOne({ type: authentication.type });
             authentication.authenticationConfigurationId = authenticationConfiguration._id;
 

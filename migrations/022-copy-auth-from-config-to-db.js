@@ -48,6 +48,7 @@ function createDBObjectsFromConfig() {
         log.debug("Copying " + authStratName + " auth strategy");
 
         const authDbObject = {
+          enabled: true,
           name: authStratName,
           type: authStratConfig.type,
           title: authStratConfig.title,
