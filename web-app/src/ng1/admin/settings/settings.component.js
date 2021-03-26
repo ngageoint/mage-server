@@ -99,7 +99,8 @@ class AdminSettingsController {
             usersReqAdmin: { enabled: true },
             newUserEvents: [],
             newUserTeams: [],
-            accountLock: { enabled: false }
+            accountLock: { enabled: false },
+            passwordPolicy: {}
           }
           if (strategy.settings.devicesReqAdmin) {
             this.security[strategy.type].devicesReqAdmin = strategy.settings.devicesReqAdmin;
@@ -119,7 +120,13 @@ class AdminSettingsController {
             });
           }
           if (strategy.settings.accountLock) {
-            this.security[strategy.type] = strategy.settings.accountLock;
+            this.security[strategy.type].accountLock = strategy.settings.accountLock;
+          }
+          if (strategy.settings.passwordPolicy) {
+            this.security[strategy.type].passwordPolicy = strategy.settings.passwordPolicy;
+            if (strategy.type === 'local') {
+              this.buildPasswordHelp(strategy);
+            }
           }
         }
       });
@@ -127,22 +134,20 @@ class AdminSettingsController {
       if (this.security.local) {
         this.maxLock.enabled = this.security.local.accountLock && this.security.local.accountLock.max !== undefined;
       }
-
-      this.buildPasswordHelp();
     });
   }
 
-  buildPasswordHelp() {
-    if (this.security.local && this.security.local.passwordPolicy) {
-      if (!this.security.local.passwordPolicy.customizeHelpText) {
-        const policy = this.security.local.passwordPolicy
+  buildPasswordHelp(strategy) {
+    if (strategy.settings.passwordPolicy) {
+      if (!strategy.settings.passwordPolicy.customizeHelpText) {
+        const policy = strategy.settings.passwordPolicy
         const templates = Object.entries(policy.helpTextTemplate)
           .filter(([key]) => policy[`${key}Enabled`] === true)
           .map(([key, value]) => {
             return value.replace('#', policy[key])
           });
 
-        this.security.local.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
+        strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
       }
     }
   }
