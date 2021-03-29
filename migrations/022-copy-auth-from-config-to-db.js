@@ -16,9 +16,16 @@ exports.up = function (done) {
     this.db.createCollection('authenticationconfigurations').then(collection => {
       return collection.createIndex(['type', 'name'], { unique: true });
     }).then(result => {
+      if (result.error) {
+        log.error(result.error);
+        return done(result.error);
+      }
+
+      return Promise.resolve(this.db.collection('authenticationconfigurations'));
+    }).then(collection => {
       if (authDbObjects.length > 0) {
         log.info('Inserting ' + authDbObjects.length + ' authentication strategies into the DB');
-        result.result.insertMany(authDbObjects, {}, done);
+        collection.insertMany(authDbObjects, {}, done);
       } else {
         done();
       }
