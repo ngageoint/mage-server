@@ -13,6 +13,7 @@ const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
   type: { type: String, required: true },
+  id: { type: String, required: false },
   authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: true }
 }, {
   discriminatorKey: 'type',
@@ -22,7 +23,6 @@ const AuthenticationSchema = new Schema({
 });
 
 const LocalSchema = new Schema({
-  id: { type: String, required: false },
   password: { type: String, required: true },
   previousPasswords: { type: [String], default: [] },
   security: {
@@ -70,7 +70,7 @@ const OauthSchema = new Schema({
   keyFile: { type: String }
 });
 
-LocalSchema.method('validatePassword', function (password, callback) {
+AuthenticationSchema.method('validatePassword', function (password, callback) {
   const authentication = this;
 
   hasher.validPassword(password, authentication.password, callback);
@@ -185,7 +185,9 @@ exports.createAuthentication = function (authentication) {
   switch (authentication.type) {
     case "local": {
       newAuth = new LocalAuthentication({
+        type: 'local',
         id: authentication.id,
+        authenticationConfigurationId: authentication.authenticationConfigurationId,
         password: authentication.password,
         security: {
           lockedUntil: null
@@ -195,6 +197,9 @@ exports.createAuthentication = function (authentication) {
     }
     case "saml": {
       newAuth = new SamlAuthentication({
+        type: 'saml',
+        id: authentication.id,
+        authenticationConfigurationId: authentication.authenticationConfigurationId,
         uidAttribute: authentication.uidAttribute,
         displayNameAttribute: authentication.displayNameAttribute,
         emailAttribute: authentication.emailAttribute,
@@ -208,6 +213,9 @@ exports.createAuthentication = function (authentication) {
     }
     case "ldap": {
       newAuth = new LdapAuthentication({
+        type: 'ldap', 
+        id: authentication.id,
+        authenticationConfigurationId: authentication.authenticationConfigurationId,
         url: authentication.url,
         baseDN: authentication.baseDN,
         username: authentication.username,
@@ -220,6 +228,9 @@ exports.createAuthentication = function (authentication) {
     }
     case "oauth": {
       newAuth = new OauthAuthentication({
+        type: 'oauth',
+        id: authentication.id,
+        authenticationConfigurationId: authentication.authenticationConfigurationId,
         callbackURL: authentication.callbackURL,
         clientID: authentication.clientID,
         clientSecret: authentication.clientSecret,
@@ -237,8 +248,6 @@ exports.createAuthentication = function (authentication) {
       break;
     }
   }
-
-  newAuth.authenticationConfigurationId = authentication.authenticationConfigurationId;
 
   return newAuth.save();
 };
