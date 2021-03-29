@@ -24,8 +24,8 @@ module.exports = function (app, passport, provision, tokenService) {
   AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
 
     if (strategyConfig && strategyConfig.enabled) {
-      passport.use(new SamlStrategy(strategyConfig.options, function (profile, done) {
-        const uid = profile[strategyConfig.uidAttribute];
+      passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
+        const uid = profile[strategyConfig.settings.uidAttribute];
         User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
           if (err) return done(err);
 
@@ -36,8 +36,8 @@ module.exports = function (app, passport, provision, tokenService) {
 
               const user = {
                 username: uid,
-                displayName: profile[strategyConfig.displayNameAttribute],
-                email: profile[strategyConfig.emailAttribute],
+                displayName: profile[strategyConfig.settings.displayNameAttribute],
+                email: profile[strategyConfig.settings.emailAttribute],
                 active: false,
                 roleId: role._id,
                 authentication: {
@@ -59,7 +59,7 @@ module.exports = function (app, passport, provision, tokenService) {
       }));
 
       app.post(
-        strategyConfig.options.callbackPath,
+        strategyConfig.settings.options.callbackPath,
         authenticate,
         function (req, res) {
           const state = JSON.parse(req.body.RelayState) || {};

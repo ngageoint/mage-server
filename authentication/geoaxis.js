@@ -52,12 +52,12 @@ module.exports = function (app, passport, provision, tokenService) {
     if (strategyConfig && strategyConfig.enabled) {
       log.info('Configuring GeoAxis authentication');
       const strategy = new GeoaxisStrategy({
-        authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-        tokenURL: strategyConfig.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-        userProfileURL: strategyConfig.apiUrl + '/ms_oauth/resources/userprofile/me',
-        clientID: strategyConfig.clientID,
-        clientSecret: strategyConfig.clientSecret,
-        callbackURL: strategyConfig.callbackUrl,
+        authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+        tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+        userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
+        clientID: strategyConfig.settings.clientID,
+        clientSecret: strategyConfig.settings.clientSecret,
+        callbackURL: strategyConfig.settings.callbackUrl,
         passReqToCallback: true
       },
         function (req, accessToken, refreshToken, profile, done) {

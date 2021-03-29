@@ -41,15 +41,15 @@ module.exports = function (app, passport, provision, tokenService) {
 
       passport.use(new LdapStrategy({
         server: {
-          url: strategyConfig.url,
-          bindDN: strategyConfig.bindDN,
-          bindCredentials: strategyConfig.bindCredentials,
-          searchBase: strategyConfig.searchBase,
-          searchFilter: strategyConfig.searchFilter
+          url: strategyConfig.settings.url,
+          bindDN: strategyConfig.settings.bindDN,
+          bindCredentials: strategyConfig.settings.bindCredentials,
+          searchBase: strategyConfig.settings.searchBase,
+          searchFilter: strategyConfig.settings.searchFilter
         }
       },
         function (profile, done) {
-          const username = profile[strategyConfig.ldapUsernameField];
+          const username = profile[strategyConfig.settings.ldapUsernameField];
           User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
             if (err) return done(err);
 
@@ -60,8 +60,8 @@ module.exports = function (app, passport, provision, tokenService) {
 
                 const user = {
                   username: username,
-                  displayName: profile[strategyConfig.ldapDisplayNameField],
-                  email: profile[strategyConfig.ldapEmailField],
+                  displayName: profile[strategyConfig.settings.ldapDisplayNameField],
+                  email: profile[strategyConfig.settings.ldapEmailField],
                   active: false,
                   roleId: role._id,
                   authentication: {

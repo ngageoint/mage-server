@@ -51,9 +51,9 @@ module.exports = function (app, passport, provision, tokenService) {
     if (googleStrategy && googleStrategy.enabled) {
       log.info('Configuring Google authentication');
       passport.use('google', new GoogleStrategy({
-        clientID: googleStrategy.clientID,
-        clientSecret: googleStrategy.clientSecret,
-        callbackURL: googleStrategy.callbackURL
+        clientID: googleStrategy.settings.clientID,
+        clientSecret: googleStrategy.settings.clientSecret,
+        callbackURL: googleStrategy.settings.callbackURL
       },
         function (accessToken, refreshToken, profile, done) {
           User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {

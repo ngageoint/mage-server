@@ -24,16 +24,16 @@ module.exports = function (app, passport, provision) {
       log.info('Configuring login.gov authentication', strategyConfig);
       const loginGov = {};
 
-      const key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
+      const key = fs.readFileSync(strategyConfig.settings.keyFile, 'ascii');
       const jwk = pem2jwk(key);
       const keys = [jwk];
 
       function getParams() {
         return {
           response_type: 'code',
-          acr_values: strategyConfig.acr_values,
+          acr_values: strategyConfig.settings.acr_values,
           scope: 'openid email',
-          redirect_uri: strategyConfig.redirect_uri,
+          redirect_uri: strategyConfig.settings.redirect_uri,
           nonce: crypto.randomBytes(32).toString('hex'),
           state: crypto.randomBytes(32).toString('hex'),
           prompt: 'select_account',
