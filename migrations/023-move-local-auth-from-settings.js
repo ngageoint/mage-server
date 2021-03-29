@@ -17,7 +17,19 @@ exports.up = function (done) {
             textColor: localSettings.textColor,
             buttonColor: localSettings.buttonColor,
             icon: localSettings.icon,
-            settings: {}
+            settings: {
+                newUserEvents: [],
+                newUserTeams: [],
+                usersReqAdmin: {
+                    enabled: true
+                },
+                devicesReqAdmin: {
+                    enabled: true
+                },
+                accountLock: {
+                    enabled: false
+                }
+            }
         };
 
         const nonSettingsKeys = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];

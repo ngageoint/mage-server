@@ -83,57 +83,35 @@ class AdminSettingsController {
       this.teams = _.reject(result.teams, team => { return team.teamEventId; });
       this.events = result.events;
 
-      this.strategies = result.configs || {};
+      this.strategies = result.configs || [];
       this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
 
       this.settings = _.indexBy(result.settings, 'type');
 
       this.banner = this.settings.banner ? this.settings.banner.settings : {};
       this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
-      this.security = {};
 
       this.strategies.forEach(strategy => {
         if (strategy.enabled) {
-          this.security[strategy.type] = {
-            devicesReqAdmin: { enabled: true },
-            usersReqAdmin: { enabled: true },
-            newUserEvents: [],
-            newUserTeams: [],
-            accountLock: { enabled: false },
-            passwordPolicy: {}
-          }
-          if (strategy.settings.devicesReqAdmin) {
-            this.security[strategy.type].devicesReqAdmin = strategy.settings.devicesReqAdmin;
-          }
-          if (strategy.settings.usersReqAdmin) {
-            this.security[strategy.type].usersReqAdmin = strategy.settings.usersReqAdmin;
-          }
           if (strategy.settings.newUserEvents) {
-            this.security[strategy.type].newUserEvents = strategy.settings.newUserEvents.filter(id => {
+            strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
               return this.events.some(event => event.id === id)
             });
           }
           if (strategy.settings.newUserTeams) {
             // Remove any teams and events that no longer exist
-            this.security[strategy.type].newUserTeams = strategy.settings.newUserTeams.filter(id => {
+            strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
               return this.teams.some(team => team.id === id)
             });
           }
-          if (strategy.settings.accountLock) {
-            this.security[strategy.type].accountLock = strategy.settings.accountLock;
-          }
           if (strategy.settings.passwordPolicy) {
-            this.security[strategy.type].passwordPolicy = strategy.settings.passwordPolicy;
             if (strategy.type === 'local') {
+              this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
               this.buildPasswordHelp(strategy);
             }
           }
         }
       });
-
-      if (this.security.local) {
-        this.maxLock.enabled = this.security.local.accountLock && this.security.local.accountLock.max !== undefined;
-      }
     });
   }
 
@@ -177,26 +155,28 @@ class AdminSettingsController {
   }
 
   saveSecurity() {
-    if (!this.maxLock.enabled) {
-      delete this.security.local.accountLock.max;
-    }
+    let chain = Promise.resolve();
 
     this.strategies.forEach(strategy => {
-      if (this.security[strategy].usersReqAdmin.enabled) {
-        delete this.security[strategy].newUserEvents;
-        delete this.security[strategy].newUserTeams;
+      if (strategy.settings.usersReqAdmin.enabled) {
+        strategy.newUserEvents = [];
+        strategy.newUserTeams = [];
       }
+      if (strategy.type === 'local') {
+        if (!this.maxLock.enabled) {
+          delete strategy.settings.accountLock.max;
+        }
+      }
+      chain = chain.then(this.AuthenticationConfigurationService.updateConfiguration(strategy));
     });
 
-    this.Settings.update({ type: 'security' }, this.security, () => {
-      this.saved = true;
-      this.saving = false;
-      this.saveStatus = 'Security settings successfully saved.';
-      this.debounceHideSave();
-    }, () => {
-      this.saving = false;
-      this.saveStatus = 'Failed to save security settings.';
-    });
+    this.saved = true;
+    this.saving = false;
+    this.saveStatus = 'Security settings successfully saved.';
+    this.debounceHideSave();
+
+    //this.saving = false;
+    //this.saveStatus = 'Failed to save security settings.';
   }
 
   debounceHideSave() {

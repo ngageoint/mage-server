@@ -196,7 +196,7 @@ describe("user create tests", function () {
       .end(done);
   });
 
-  it('should create user', async function () {
+  /*it('should create user', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     let jwt = await captcha();
@@ -270,7 +270,7 @@ describe("user create tests", function () {
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       });
-  });
+  });*/
 
   it('should create user and default admin approval to true', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');

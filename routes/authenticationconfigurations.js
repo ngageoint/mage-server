@@ -28,6 +28,31 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         //access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
-            //TODO implement update
+            const updatedConfig = {
+                _id: req.body._id,
+                name: req.body.name,
+                type: req.body.type,
+                title: req.body.title,
+                textColor: req.body.textColor,
+                buttonColor: req.body.buttonColor,
+                icon: req.body.icon,
+                enabled: req.body.enabled,
+                settings: {}
+            };
+
+            const settings = JSON.parse(req.body.settings);
+
+            Object.keys(settings).forEach(key => {
+                updatedConfig.settings[key] = settings[key];
+            });
+
+            AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
+                 //TODO use whitelist??
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                res.json(transformedConfig);
+                next();
+            }).catch(err => {
+                next(err);
+            });
         });
 };

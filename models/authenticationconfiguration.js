@@ -60,3 +60,7 @@ exports.getConfiguration = function (type, name) {
 exports.getAllConfigurations = function () {
   return  AuthenticationConfiguration.find({}).exec();
 };
+
+exports.update = function(id, config) {
+  return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
+};
