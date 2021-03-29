@@ -3,7 +3,8 @@ module.exports = function (app, security) {
     , Role = require('../models/role')
     , User = require('../models/user')
     , Device = require('../models/device')
-    , userTransformer = require('../transformers/user');
+    , userTransformer = require('../transformers/user')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
   function authorizeSetup(req, res, next) {
     User.count(function (err, count) {
@@ -56,7 +57,6 @@ module.exports = function (app, security) {
         password: password
       }
     };
-
     next();
   }
 
@@ -73,6 +73,17 @@ module.exports = function (app, security) {
         },
         function (role, done) {
           req.user.roleId = role._id;
+          done();
+        },
+        function (done) {
+          AuthenticationConfiguration.getConfiguration('local').then(config => {
+            req.user.authentication.authenticationConfigurationId = config._id;
+            done();
+          }).catch(err => {
+            done(err);
+          });
+        },
+        function (done) {
           User.createUser(req.user, function (err, user) {
             done(err, user);
           });
