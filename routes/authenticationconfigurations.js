@@ -11,7 +11,7 @@ module.exports = function (app, security) {
     app.get(
         '/api/authentication/configuration/all',
         passport.authenticate('bearer'),
-        //access.authorize('READ_AUTH_CONFIG'),
+        access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 //TODO use whitelist??
@@ -26,7 +26,7 @@ module.exports = function (app, security) {
     app.put(
         '/api/authentication/configuration/:id',
         passport.authenticate('bearer'),
-        //access.authorize('UPDATE_AUTH_CONFIG'),
+        access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
             const updatedConfig = {
                 _id: req.body._id,
