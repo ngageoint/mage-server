@@ -52,8 +52,14 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {},
-        authenticationConfigurationId: mongoose.Types.ObjectId()
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
+          }
+        })
       })
     });
 
@@ -68,11 +74,7 @@ describe("user authentication tests", function () {
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
       .chain('exec')
-      .resolves({
-        settings: {
-          usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -172,7 +174,19 @@ describe("user authentication tests", function () {
           iterations: 1,
           derivedKeyLength: 1
         },
-        security: {}
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
+          }
+        })
       })
     });
 
@@ -186,7 +200,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -194,16 +208,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(mockUser.authentication)
       .expects('save')
@@ -233,8 +238,12 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
-        security: {},
-        authenticationConfigurationId: mongoose.Types.ObjectId()
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {}
+        })
       })
     });
 
@@ -259,10 +268,7 @@ describe("user authentication tests", function () {
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
       .chain('exec')
-      .resolves({
-        settings: {
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(mockUser.authentication)
       .expects('save')
@@ -294,7 +300,14 @@ describe("user authentication tests", function () {
         type: 'local',
         password: 'none',
         security: {},
-        authenticationConfigurationId: mongoose.Types.ObjectId()
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
+          }
+        })
       })
     });
 
@@ -309,11 +322,7 @@ describe("user authentication tests", function () {
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
       .chain('exec')
-      .resolves({
-        settings: {
-          usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -388,6 +397,19 @@ describe("user authentication tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'none',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
+          }
+        }),
         security: {
           invalidLoginAttempts: 1
         }
@@ -404,7 +426,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -412,16 +434,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -461,7 +474,20 @@ describe("user authentication tests", function () {
         security: {
           numberOfTimesLocked: 0,
           invalidLoginAttempts: 2
-        }
+        },
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
+          }
+        })
       })
     });
 
@@ -475,24 +501,14 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
     sinon.mock(AuthenticationConfiguration.Model)
       .expects('findOne')
-      .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -535,7 +551,20 @@ describe("user authentication tests", function () {
         security: {
           numberOfTimesLocked: 0,
           invalidLoginAttempts: 2
-        }
+        },
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 1,
+              interval: 60
+            }
+          }
+        })
       })
     });
 
@@ -549,7 +578,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -558,16 +587,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 1,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
@@ -618,15 +638,27 @@ describe("user authentication tests", function () {
         security: {
           locked: true,
           lockedUntil: moment().add(5, 'minutes')
-        }
+        },
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
+          }
+        })
       })
     });
 
     sinon.mock(UserModel)
       .expects('findOne')
-      .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -634,16 +666,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(mockUser.authentication)
       .expects('save')
@@ -672,8 +695,24 @@ describe("user authentication tests", function () {
       displayName: 'test',
       active: true,
       enabled: false,
-      authentication: {
-      }
+      authenticationId: new Authentication.Local({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            accountLock: {
+              enabled: true,
+              threshold: 3,
+              max: 3,
+              interval: 60
+            }
+          }
+        })
+      })
     });
 
     sinon.mock(UserModel)
@@ -687,16 +726,7 @@ describe("user authentication tests", function () {
       .expects('findOne')
       .withArgs({ type: 'local', name: 'local' })
       .chain('exec')
-      .resolves({
-        settings: {
-          accountLock: {
-            enabled: true,
-            threshold: 3,
-            max: 3,
-            interval: 60
-          }
-        }
-      });
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(mockUser)
       .expects('save')

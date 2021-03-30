@@ -41,8 +41,8 @@ module.exports = function (app, passport, provision, tokenService) {
           return done(null, false, { message: 'Your account has been disabled, please contact a MAGE administrator for assistance.' });
         }
 
-        const settings = user.authentication.authenticationConfiguration.settings;
-        if (settings.locked && moment().isBefore(moment(settings.lockedUntil))) {
+        const settings = user.authentication.security;
+        if (settings && settings.locked && moment().isBefore(moment(settings.lockedUntil))) {
           log.warn('Failed user login attempt: User ' + user.username + ' account is locked until ' + settings.lockedUntil);
           return done(null, false, { message: 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.' });
         }
