@@ -12,7 +12,7 @@ const AuthenticationConfigurationSchema = new Schema({
   textColor: { type: String, required: false },
   buttonColor: { type: String, required: false },
   icon: { type: String, required: false },
-  enabled: { type: Boolean, default: false },
+  enabled: { type: Boolean, default: true },
   settings: Schema.Types.Mixed
 }, {
   discriminatorKey: 'type',
