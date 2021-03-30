@@ -21,7 +21,7 @@ const AuthenticationConfigurationSchema = new Schema({
   }
 });
 
-const whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+const whitelist = ['url', 'name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {

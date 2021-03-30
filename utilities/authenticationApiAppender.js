@@ -26,7 +26,7 @@ async function append(api, options) {
     const authenticationConfigurations = await AuthenticationConfiguration.Model.find();
     const transformedConfigurations = AuthenticationConfigurationTransformer.transform(authenticationConfigurations, options);
     transformedConfigurations.forEach(function (configuration) {
-        apiCopy.authenticationStrategies[configuration.type] = extend({}, configuration);
+        apiCopy.authenticationStrategies[configuration.name] = extend({}, configuration);
     });
     return Promise.resolve(apiCopy);
 }
