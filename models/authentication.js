@@ -34,39 +34,20 @@ const LocalSchema = new Schema({
 });
 
 const SamlSchema = new Schema({
-  uidAttribute: { type: String },
-  displayNameAttribute: { type: String },
-  emailAttribute: { type: String },
-  options: {
-    issuer: { type: String },
-    entryPoint: { type: String },
-    callbackPath: { type: String }
-  }
 });
 
 const LdapSchema = new Schema({
-  url: { type: String },
-  baseDN: { type: String },
   username: { type: String },
-  password: { type: String },
-  ldapUsernameField: { type: String },
-  ldapDisplayNameField: { type: String },
-  ldapEmailField: { type: String }
+  password: { type: String }
 });
 
 const OauthSchema = new Schema({
-  callbackURL: { type: String },
   clientID: { type: String },
   clientSecret: { type: String },
-  //geoaxis
-  authorizationUrl: { type: String },
-  apiUrl: { type: String },
   //login-gov
   loa: { type: String },
-  url: { type: String },
   client_id: { type: String },
   acr_values: { type: String },
-  redirect_uri: { type: String },
   keyFile: { type: String }
 });
 
@@ -199,15 +180,7 @@ exports.createAuthentication = function (authentication) {
       newAuth = new SamlAuthentication({
         type: 'saml',
         id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId,
-        uidAttribute: authentication.uidAttribute,
-        displayNameAttribute: authentication.displayNameAttribute,
-        emailAttribute: authentication.emailAttribute,
-        options: {
-          issuer: authentication.options.issuer,
-          entryPoint: authentication.options.entryPoint,
-          callbackPath: authentication.options.callbackPath
-        }
+        authenticationConfigurationId: authentication.authenticationConfigurationId
       });
       break;
     }
@@ -216,13 +189,8 @@ exports.createAuthentication = function (authentication) {
         type: 'ldap', 
         id: authentication.id,
         authenticationConfigurationId: authentication.authenticationConfigurationId,
-        url: authentication.url,
-        baseDN: authentication.baseDN,
         username: authentication.username,
-        password: authentication.password,
-        ldapUsernameField: authentication.ldapUsernameField,
-        ldapDisplayNameField: authentication.ldapDisplayNameField,
-        ldapEmailField: authentication.ldapEmailField
+        password: authentication.password
       });
       break;
     }
@@ -231,18 +199,12 @@ exports.createAuthentication = function (authentication) {
         type: 'oauth',
         id: authentication.id,
         authenticationConfigurationId: authentication.authenticationConfigurationId,
-        callbackURL: authentication.callbackURL,
         clientID: authentication.clientID,
         clientSecret: authentication.clientSecret,
-        //geoaxis
-        authorizationUrl: authentication.authorizationUrl,
-        apiUrl: authentication.apiUrl,
         //login-gov
         loa: authentication.loa,
-        url: authentication.url,
         client_id: authentication.client_id,
         acr_values: authentication.acr_values,
-        redirect_uri: authentication.redirect_uri,
         keyFile: authentication.keyFile
       });
       break;
