@@ -105,7 +105,13 @@ describe("user update tests", function () {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {}
+        security: {},
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {}
+        })
       })
     }
 
@@ -113,7 +119,7 @@ describe("user update tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
