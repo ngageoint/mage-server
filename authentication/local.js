@@ -9,7 +9,8 @@ module.exports = function (app, passport, provision, tokenService) {
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+    , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
+    , Authentication = require('../models/authentication')
 
   function parseLoginMetadata(req, _res, next) {
     req.loginOptions = {
@@ -20,7 +21,6 @@ module.exports = function (app, passport, provision, tokenService) {
     next();
   }
 
-  //TODO read local config from DB and ensure its enabled.
   passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {
@@ -45,6 +45,16 @@ module.exports = function (app, passport, provision, tokenService) {
         if (settings && settings.locked && moment().isBefore(moment(settings.lockedUntil))) {
           log.warn('Failed user login attempt: User ' + user.username + ' account is locked until ' + settings.lockedUntil);
           return done(null, false, { message: 'Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.' });
+        }
+
+        if (!(user.authentication instanceof Authentication.Local)) {
+          log.warn(user.username + " is not a local account");
+          return done(null, false, { message: 'You do not have a local account, please contact a MAGE administrator for assistance.' });
+        }
+
+        if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
         }
 
         user.authentication.validatePassword(password, function (err, isValid) {
@@ -86,7 +96,7 @@ module.exports = function (app, passport, provision, tokenService) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        authenticationApiAppender.append(config.api).then(api => {
+        AuthenticationApiAppender.append(config.api).then(api => {
           res.json({
             token: token.token,
             expirationDate: token.expirationDate,
@@ -188,7 +198,7 @@ module.exports = function (app, passport, provision, tokenService) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        authenticationApiAppender.append(config.api).then(api => {
+        AuthenticationApiAppender.append(config.api).then(api => {
           res.json({
             token: token.token,
             expirationDate: token.expirationDate,
