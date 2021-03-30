@@ -18,11 +18,11 @@ const UserOperations = require('../../models/user');
 const UserModel = UserOperations.Model;
 
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("device create tests", function() {
+describe("device create tests", function () {
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -31,13 +31,13 @@ describe("device create tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate')
       .chain('exec')
       .yields(null, createToken(userId, [permission]));
   }
 
-  it("allows an admin to create a registered device", async function() {
+  it("allows an admin to create a registered device", async function () {
     mockTokenWithPermission('CREATE_DEVICE');
 
     sinon.mock(UserOperations)
@@ -78,7 +78,7 @@ describe("device create tests", function() {
     });
   });
 
-  it("DEPRECATED: creates an unregistered device with local auth", async function() {
+  it("DEPRECATED: creates an unregistered device with local auth", async function () {
     mockTokenWithPermission('NO_PERMISSION');
 
     const user = new UserModel({
@@ -91,7 +91,12 @@ describe("device create tests", function() {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {}
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {}
+        })
       })
     });
 
@@ -106,6 +111,11 @@ describe("device create tests", function() {
       _id: mongoose.Types.ObjectId(),
       ...reqDevice
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(user.authentication.authenticationConfiguration);
 
     sinon.mock(user.authentication)
       .expects('validatePassword').withArgs('test')
@@ -143,7 +153,7 @@ describe("device create tests", function() {
     expect(res.body.registered).to.be.false
   });
 
-  it("should skip create unregistered device if exists", function(done) {
+  it("should skip create unregistered device if exists", function (done) {
     mockTokenWithPermission('NO_PERMISSION');
 
     const userId = mongoose.Types.ObjectId();
@@ -157,7 +167,12 @@ describe("device create tests", function() {
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {}
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {}
+        })
       })
     });
 
@@ -165,11 +180,16 @@ describe("device create tests", function() {
       .expects('validatePassword')
       .yields(null, true);
 
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
+
     sinon.mock(UserModel)
       .expects('findOne')
-      .withArgs({username: 'test'})
+      .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
@@ -201,7 +221,7 @@ describe("device create tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         const device = res.body;
         should.exist(device);
         device.should.have.property('uid').that.equals('12345');
@@ -209,7 +229,7 @@ describe("device create tests", function() {
       .end(done);
   });
 
-  it("should fail to create registered device w/o uid", function(done) {
+  it("should fail to create registered device w/o uid", function (done) {
     mockTokenWithPermission('CREATE_DEVICE');
 
     request(app)
@@ -222,7 +242,7 @@ describe("device create tests", function() {
         userId: userId.toString()
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         console.log('res', res.text);
         // res.text.should.equal("missing required param 'uid'");
       })
