@@ -161,6 +161,20 @@ paths:
         403:
           description: Failure to provision the device.  This typically means the device needs to be registered.
 
+  /api/authentication/configuration/all:
+    get:
+      tags: [Authentication & Authorization]
+      summary: Authentication Configurations
+      description: Get all authentication configurations.
+      operationId: getAllAuthConfigs
+      security:
+        - authenticationToken: []
+      responses:
+        200:
+          description: A list of all authentication configurations.
+        401:
+          description: User is not authorized to view authentication configurations.
+          
   /api/users:
     post:
       tags: [ User ]
