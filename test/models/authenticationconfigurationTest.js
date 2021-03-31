@@ -29,4 +29,19 @@ describe("authentication configuration model tests", function () {
             });
         });
     });
+
+    it('test whitelist', function (done) {
+        const authConfig = new AuthenticationConfiguration.Model({
+            name: 'ldap',
+            type: 'ldap',
+            settings: {
+                fake: 'should not be here'
+            }
+        });
+
+        const whitelistedConfig = authConfig.toObject({ whitelist: true, transform: AuthenticationConfiguration.transform });
+
+        expect(whitelistedConfig.settings).to.be.undefined;
+        done();
+    });
 });
