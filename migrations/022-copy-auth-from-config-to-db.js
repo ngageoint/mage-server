@@ -62,7 +62,19 @@ function createDBObjectsFromConfig() {
           textColor: authStratConfig.textColor,
           buttonColor: authStratConfig.buttonColor,
           icon: authStratConfig.icon,
-          settings: {}
+          settings: {
+            newUserEvents: [],
+            newUserTeams: [],
+            usersReqAdmin: {
+              enabled: true
+            },
+            devicesReqAdmin: {
+              enabled: true
+            },
+            accountLock: {
+              enabled: false
+            }
+          }
         };
 
         const nonSettingsKeys = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
