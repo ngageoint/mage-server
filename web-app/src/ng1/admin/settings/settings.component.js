@@ -103,9 +103,9 @@ class AdminSettingsController {
           });
         }
         if (strategy.settings.passwordPolicy) {
+          this.buildPasswordHelp(strategy);
           if (strategy.type === 'local') {
             this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
-            this.buildPasswordHelp(strategy);
           }
         }
       });
@@ -152,8 +152,7 @@ class AdminSettingsController {
   }
 
   saveSecurity() {
-    let chain = Promise.resolve();
-
+    const promises = [];
     this.strategies.forEach(strategy => {
       if (strategy.settings.usersReqAdmin.enabled) {
         strategy.newUserEvents = [];
@@ -164,16 +163,18 @@ class AdminSettingsController {
           delete strategy.settings.accountLock.max;
         }
       }
-      chain = chain.then(this.AuthenticationConfigurationService.updateConfiguration(strategy));
+      promises.push(this.AuthenticationConfigurationService.updateConfiguration(strategy));
     });
 
-    this.saved = true;
-    this.saving = false;
-    this.saveStatus = 'Security settings successfully saved.';
-    this.debounceHideSave();
-
-    //this.saving = false;
-    //this.saveStatus = 'Failed to save security settings.';
+    Promise.all(promises).then(() => {
+      this.saved = true;
+      this.saving = false;
+      this.saveStatus = 'Security settings successfully saved.';
+      this.debounceHideSave();
+    }).catch(err => {
+      this.saving = false;
+      this.saveStatus = 'Failed to save security settings.';
+    });
   }
 
   debounceHideSave() {
