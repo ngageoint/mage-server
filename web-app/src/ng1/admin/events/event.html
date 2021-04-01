@@ -380,7 +380,7 @@
                   </div>
                   <div class="admin-event-restriction-list-item-content">
                     <div class="admin-event-restriction-list-item-content__title">
-                      {{form.name}} Form Restrictions
+                      {{form.name}}
                     </div>
                     <div class="form-inline">
                       <div class="form-group right-gap" ng-class="{'has-error': $ctrl.restrictions.maxObservationForms.$error.formsMin || $ctrl.restrictions['form{{form.id}}_min'].$invalid}">
@@ -393,7 +393,8 @@
                         <p class="help-block" ng-if="$ctrl.generalForm.$error.max">Cannot exceed the maximum number of forms per observation of {{$ctrl.event.maxObservationForms}}</p>
                       </div>
                     </div>
-                    <div class="text-danger admin-event-restriction-list-item-content__error" ng-if="$ctrl.restrictions['form' + form.id + '_min'].$invalid">Min greater than Max</div>
+                    <div class="text-danger admin-event-restriction-list-item-content__error" ng-if="$ctrl.restrictions['form' + form.id + '_min'].$error.min">Min must be greater than 0</div>
+                    <div class="text-danger admin-event-restriction-list-item-content__error" ng-if="$ctrl.restrictions['form' + form.id + '_min'].$error.max">Min greater than Max</div>
                   </div>
                 </div>
               </div>

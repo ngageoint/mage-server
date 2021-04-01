@@ -70,7 +70,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 72px;
+  height: 80px;
   border-bottom: 1px solid rgba(0, 0, 0, .2);
 }
 
@@ -86,15 +86,14 @@
 
 .admin-event-restriction-list-item-content {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
   flex: 1 0 auto;
 }
 
 .admin-event-restriction-list-item-content__title {
   font-size: 16px;
   font-weight: 500;
-  margin-right: 16px;
+  margin-bottom: 8px;
   color: rgba(0, 0, 0, .87);
 }
 
@@ -106,7 +105,8 @@
 .admin-event-restriction-list-item-content__label {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(0, 0, 0, .87);
+  margin-right: 4px;
+  color: rgba(0, 0, 0, .6);
 }
 
 .admin-event-restriction-list-item-content__error {
