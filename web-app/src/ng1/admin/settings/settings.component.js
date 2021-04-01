@@ -64,7 +64,6 @@ class AdminSettingsController {
     };
 
     this.setting = "banner";
-    this.settings = {};
     this.banner = {
       headerTextColor: '#000000',
       headerBackgroundColor: 'FFFFFF',
@@ -86,29 +85,27 @@ class AdminSettingsController {
       this.strategies = result.configs || [];
       this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
 
-      this.settings = _.indexBy(result.settings, 'type');
+      const settings = _.indexBy(result.settings, 'type');
 
-      this.banner = this.settings.banner ? this.settings.banner.settings : {};
-      this.disclaimer = this.settings.disclaimer ? this.settings.disclaimer.settings : {};
+      this.banner = settings.banner ? settings.banner.settings : {};
+      this.disclaimer = settings.disclaimer ? settings.disclaimer.settings : {};
 
       this.strategies.forEach(strategy => {
-        if (strategy.enabled) {
-          if (strategy.settings.newUserEvents) {
-            strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
-              return this.events.some(event => event.id === id)
-            });
-          }
-          if (strategy.settings.newUserTeams) {
-            // Remove any teams and events that no longer exist
-            strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
-              return this.teams.some(team => team.id === id)
-            });
-          }
-          if (strategy.settings.passwordPolicy) {
-            if (strategy.type === 'local') {
-              this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
-              this.buildPasswordHelp(strategy);
-            }
+        if (strategy.settings.newUserEvents) {
+          strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
+            return this.events.some(event => event.id === id)
+          });
+        }
+        if (strategy.settings.newUserTeams) {
+          // Remove any teams and events that no longer exist
+          strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
+            return this.teams.some(team => team.id === id)
+          });
+        }
+        if (strategy.settings.passwordPolicy) {
+          if (strategy.type === 'local') {
+            this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
+            this.buildPasswordHelp(strategy);
           }
         }
       });
