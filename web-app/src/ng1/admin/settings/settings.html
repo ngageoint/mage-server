@@ -46,6 +46,17 @@
 
                         <div class="row">
                           <div class="col-sm-12">
+                            <div class="checkbox">
+                              <label>
+                                <input type="checkbox" ng-model="strategy.enabled">
+                                Enabled
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-sm-12">
                             <div class="form-group">
                               <label class="control-label" for="type">New User Accounts Require Admin Approval</label>
                               <ui-select ng-model="strategy.settings.usersReqAdmin.enabled" theme="bootstrap">
@@ -190,7 +201,8 @@
                                           <small ng-bind-html="maxLockChoice.description"></small>
                                         </ui-select-choices>
                                       </ui-select>
-                                      <p class="help-block">MAGE can disable user accounts if a user locks their account a
+                                      <p class="help-block">MAGE can disable user accounts if a user locks their account
+                                        a
                                         certain number of times.</p>
                                     </div>
                                   </div>
@@ -232,8 +244,7 @@
                                 <div class="col-sm-12">
                                   <div class="form-inline bottom-gap">
                                     <div class="form-group">
-                                      <input type="checkbox"
-                                        ng-model="strategy.settings.passwordPolicy.minCharsEnabled"
+                                      <input type="checkbox" ng-model="strategy.settings.passwordPolicy.minCharsEnabled"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                       <input type="number" id="minChars" aria-labelledby="minCharsLabel"
                                         ng-disabled="!strategy.settings.passwordPolicy.minCharsEnabled"
@@ -300,8 +311,7 @@
                                 <div class="col-sm-12">
                                   <div class="form-inline bottom-gap">
                                     <div class="form-group">
-                                      <input type="checkbox"
-                                        ng-model="strategy.settings.passwordPolicy.numbersEnabled"
+                                      <input type="checkbox" ng-model="strategy.settings.passwordPolicy.numbersEnabled"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" />
                                       <input type="number" id="numbers" aria-labelledby="numbersLabel"
                                         ng-disabled="!strategy.settings.passwordPolicy.numbersEnabled"
@@ -329,8 +339,7 @@
                                   </div>
                                 </div>
                               </div>
-                              <div class="row"
-                                ng-show="strategy.settings.passwordPolicy.specialCharsEnabled == true">
+                              <div class="row" ng-show="strategy.settings.passwordPolicy.specialCharsEnabled == true">
                                 <div class="col-sm-12">
                                   <div class="form-inline bottom-gap">
                                     <div class="form-group">
@@ -367,7 +376,8 @@
                                         id="passwordMinLength" aria-labelledby="passwordMinLengthLabel"
                                         ng-model="strategy.settings.passwordPolicy.passwordMinLength" min="0"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                      <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password Length</label>
+                                      <label for="passwordMinLength" id="passwordMinLengthLabel">Minimum Password
+                                        Length</label>
                                     </div>
                                   </div>
                                 </div>
@@ -385,7 +395,8 @@
                                         id="passwordHistoryCount" aria-labelledby="passwordHistoryCountLabel"
                                         ng-model="strategy.settings.passwordPolicy.passwordHistoryCount" min="0"
                                         ng-click="$ctrl.buildPasswordHelp(strategy)" class="form-control left-gap" />
-                                      <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous Passwords Remembered</label>
+                                      <label for="passwordHistoryCount" id="passwordHistoryCountLabel">Previous
+                                        Passwords Remembered</label>
                                     </div>
                                   </div>
                                 </div>
@@ -416,10 +427,11 @@
                                   <div class="form-group">
                                     <textarea placeholder="Password Policy Help"
                                       ng-model="strategy.settings.passwordPolicy.helpText" class="form-control"
-                                      ng-disabled="!strategy.settings.passwordPolicy.customizeHelpText" 
+                                      ng-disabled="!strategy.settings.passwordPolicy.customizeHelpText"
                                       aria-describedby="passwordHelpBlock">
                                     </textarea>
-                                    <span id="passwordHelpBlock" class="help-block">This is the help text that is displayed
+                                    <span id="passwordHelpBlock" class="help-block">This is the help text that is
+                                      displayed
                                       to the user during password creation/update, when their password fails to meet the
                                       password policy.</span>
                                   </div>
