@@ -86,7 +86,6 @@ app
 
 app
   .component('filterPanel', require('./filter/filter'))
-  .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
