@@ -27,6 +27,7 @@ import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
 import { ExportsComponent } from '../app/export/exports.component';
+import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
 
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { MapPopupService } from '../app/map/map-popup.service'
@@ -82,7 +83,8 @@ app
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
-  .directive('exports', downgradeComponent({ component: ExportsComponent }));
+  .directive('exports', downgradeComponent({ component: ExportsComponent }))
+  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))
@@ -381,7 +383,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   // Admin settings routes
   $stateProvider.state('admin.settings', {
     url: '/settings',
-    component: "adminSettings",
+    component: "upgradedAdminSettings",
     resolve: resolveAdmin()
   });
 

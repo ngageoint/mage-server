@@ -74,6 +74,7 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent } from './export/exports.component';
 import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
+import { AdminSettingsModule } from "./admin//admin-settings/admin-settings.module";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -254,7 +255,8 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     MatNativeDateModule,
     NgxMatDatetimePickerModule, 
     NgxMatTimepickerModule,
-    NgxMatNativeDateModule
+    NgxMatNativeDateModule,
+    AdminSettingsModule
   ],
   providers: [
     mapServiceProvider,
