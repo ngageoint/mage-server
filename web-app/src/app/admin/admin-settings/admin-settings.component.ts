@@ -10,11 +10,22 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build'
-      }]
+    }];
+    pill: String = 'security';
+    strategies: any[] = [];
 
     ngOnInit(): void {
     }
 
     ngOnDestroy(): void {
+    }
+
+    saveBanner(): void {
+    }
+
+    saveDisclaimer(): void {
+    }
+
+    saveSecurity(): void {
     }
 }

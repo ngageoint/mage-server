@@ -1,4 +1,55 @@
 <section class="mat-typography">
     <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
-    <h2>Security Settings</h2>
+</section>
+<section class="mat-typography">
+    <mat-sidenav-container class="example-container" autosize>
+        <mat-sidenav [fixedInViewport]=true mode="side" [fixedTopGap]=125 opened>
+            <ul class="nav nav-pills">
+                <li [ngClass]="{active: pill === 'security'}"><a (click)="pill = 'security'"
+                    href="javascript:void(0);">Security</a></li>
+            </ul>
+            <ul class="nav nav-pills">
+                <li [ngClass]="{active: pill === 'banner'}"><a (click)="pill = 'banner'"
+                    href="javascript:void(0);">Banner</a></li>
+            </ul>
+            <ul class="nav nav-pills">
+                <li [ngClass]="{active: pill === 'disclaimer'}"><a (click)="pill = 'disclaimer'"
+                    href="javascript:void(0);">Disclaimer</a></li>
+            </ul>
+        </mat-sidenav>
+        <mat-sidenav-content class="example-sidenav-content">
+            <div *ngIf="pill === 'security'">
+                <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
+                <form *ngIf="strategies" (ngSubmit)="saveSecurity()" id="security-form">
+                    <div *ngFor="let strategy of strategies">
+                        <mat-card>
+                            <mat-card-title>{{strategy.name.toUpperCase()}} Authentication</mat-card-title>
+                        </mat-card>
+                    </div>
+                </form>
+            </div>
+            <div *ngIf="pill == 'banner'">
+                <form (ngSubmit)="saveBanner()" id="banner-form">
+                    <div class="row">
+                        <span class="help-block">
+                            MAGE can add a header and footer to all views. Below you can specify whether or not you
+                            want a header and/or footer, text, text color and background color.
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div *ngIf="pill == 'disclaimer'">
+                <form (ngSubmit)="saveDisclaimer()" id="banner-form">
+                    <div class="row">
+                        <span class="help-block">
+                            MAGE can present a disclaimer after login. If the disclaimer is shown users will have to
+                            accept
+                            to continue into MAGE. The disclaimer will be shown on all clients, i.e. Android, iOS,
+                            and the Web.
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </mat-sidenav-content>
+    </mat-sidenav-container>
 </section>
