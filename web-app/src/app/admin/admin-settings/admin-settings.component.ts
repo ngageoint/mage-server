@@ -2,17 +2,7 @@ import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, EventService } from '../../upgrade/ajs-upgraded-providers';
-
-export interface Banner {
-    headerTextColor: string,
-    headerText: string
-    headerBackgroundColor: string,
-    footerTextColor: string,
-    footerText: string,
-    footerBackgroundColor: string,
-    showHeader: boolean,
-    showFooter: boolean
-}
+import { Banner } from './admin-settings.model';
 
 @Component({
     selector: 'admin-settings',
