@@ -30,6 +30,7 @@
 
 color-picker {
   display: block;
+  width: 25%;
 }
   
 a {
@@ -48,13 +49,14 @@ mat-sidenav-container {
   
 mat-sidenav {
   padding: 20px;
+  width: 25%;
 }
 
 mat-sidenav-content {
   padding: 20px;
   display: flex;
   height: 100%;
-  width: 100%;
+  width: 75%;
   align-items: left;
   justify-content: left;
 }

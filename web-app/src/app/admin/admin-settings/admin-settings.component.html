@@ -42,20 +42,20 @@
                     </div>
                     <div class="row">
                         <mat-label for="headerText">Header Text</mat-label>
-                        <mat-form-field appearance="fill" id="headerText">
+                        <mat-form-field dense appearance="outline" id="headerText">
                             <input matInput [(ngModel)]="banner.headerText" #text="ngModel" class="form-control"
                                 name="headerText">
                         </mat-form-field>
                     </div>
                     <div class="row">
                         <mat-label for="headerTextColor">Header Text Color</mat-label>
-                        <color-picker label="Header Text Color" [hexColor]="banner.headerTextColor"
+                        <color-picker [hexColor]="banner.headerTextColor"
                             (onColorChanged)="colorChanged($event, 'headerTextColor')">
                         </color-picker>
                     </div>
                     <div class="row">
                         <mat-label for="headerBlackgroundColor">Header Background Color</mat-label>
-                        <color-picker label="Header Background Color" [hexColor]="banner.headerBackgroundColor"
+                        <color-picker [hexColor]="banner.headerBackgroundColor"
                             (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
                         </color-picker>
                     </div>
@@ -65,20 +65,20 @@
                     </div>
                     <div class="row">
                         <mat-label for="footerText">Footer Text</mat-label>
-                        <mat-form-field appearance="fill" id="footerText">
+                        <mat-form-field dense appearance="outline" id="footerText">
                             <input matInput [(ngModel)]="banner.footerText" #text="ngModel" class="form-control"
                                 name="footerText">
                         </mat-form-field>
                     </div>
                     <div class="row">
                         <mat-label for="footerTextColor">Footer Text Color</mat-label>
-                        <color-picker label="Footer Text Color" [hexColor]="banner.footerTextColor"
+                        <color-picker [hexColor]="banner.footerTextColor"
                             (onColorChanged)="colorChanged($event, 'footerTextColor')">
                         </color-picker>
                     </div>
                     <div class="row">
                         <mat-label for="footerBackgroundColor">Footer Background Color</mat-label>
-                        <color-picker label="Footer Background Color" [hexColor]="banner.footerBackgroundColor"
+                        <color-picker [hexColor]="banner.footerBackgroundColor"
                             (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
                         </color-picker>
                     </div>
