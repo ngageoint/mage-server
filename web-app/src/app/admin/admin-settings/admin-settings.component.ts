@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
+import { Settings, Team, EventService } from '../../upgrade/ajs-upgraded-providers';
 
 export interface Banner {
     headerTextColor: string,
@@ -35,6 +36,16 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         showHeader: false,
         showFooter: false
     };
+
+    constructor(
+        @Inject(Settings)
+        public settings: any,
+        @Inject(Team)
+        public team: any,
+        @Inject(EventService)
+        public eventService: any) {
+
+    }
 
     ngOnInit(): void {
     }

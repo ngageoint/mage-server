@@ -6,6 +6,8 @@ export const EventService = new InjectionToken<any>('EventService');
 export const GeometryService = new InjectionToken<any>('GeometryService');
 export const ObservationService = new InjectionToken<any>('ObservationService');
 export const LocalStorageService = new InjectionToken<any>('LocalStorageService');
+export const Settings = new InjectionToken<any>('Settings');
+export const Team = new InjectionToken<any>('Team');
 
 export function mapServiceFactory(i: any): any {
   return i.get('MapService');
@@ -75,5 +77,25 @@ export function localStorageServiceFactory(i: any): any {
 export const localStorageServiceProvider = {
   provide: LocalStorageService,
   useFactory: localStorageServiceFactory,
+  deps: ['$injector']
+};
+
+export function settingsFactory(i: any): any {
+  return i.get('Settings');
+}
+
+export const settingsProvider = {
+  provide: Settings,
+  useFactory: settingsFactory,
+  deps: ['$injector']
+};
+
+export function teamFactory(i: any): any {
+  return i.get('Team');
+}
+
+export const teamProvider = {
+  provide: Team,
+  useFactory: teamFactory,
   deps: ['$injector']
 };

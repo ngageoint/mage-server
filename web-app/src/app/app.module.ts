@@ -103,7 +103,10 @@ import {
   geometryServiceProvider,
   observationServiceProvider,
   filterServiceProvider,
-  userServiceProvider } from './upgrade/ajs-upgraded-providers';
+  userServiceProvider,
+  settingsProvider,
+  teamProvider
+} from './upgrade/ajs-upgraded-providers';
 
 import { 
   ObservationViewCheckboxComponent,
@@ -267,6 +270,8 @@ import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb
     geometryServiceProvider,
     observationServiceProvider,
     localStorageServiceProvider,
+    settingsProvider,
+    teamProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
