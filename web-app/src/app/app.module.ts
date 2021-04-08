@@ -74,7 +74,6 @@ import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
 import { ExportsComponent } from './export/exports.component';
 import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
-import { AdminSettingsModule } from "./admin//admin-settings/admin-settings.module";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -138,6 +137,8 @@ import {
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
+import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
+import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 
 @NgModule({
   declarations: [
@@ -195,10 +196,10 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     FeedPanelComponent,
     ObservationPopupComponent,
     UserPopupComponent,
-    ColorPickerComponent,
     ExportsComponent,
     ExportMetadataDialogComponent,
-    CdkDetailRowDirective
+    CdkDetailRowDirective,
+    AdminSettingsComponent
   ],
   imports: [
     BrowserModule,
@@ -256,7 +257,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     NgxMatDatetimePickerModule, 
     NgxMatTimepickerModule,
     NgxMatNativeDateModule,
-    AdminSettingsModule
+    AdminBreadcrumbModule
   ],
   providers: [
     mapServiceProvider,
@@ -296,7 +297,8 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     SwaggerComponent,
     ColorPickerComponent,
     ExportsComponent,
-    ExportMetadataDialogComponent
+    ExportMetadataDialogComponent,
+    AdminSettingsComponent
   ]
 })
 export class AppModule {

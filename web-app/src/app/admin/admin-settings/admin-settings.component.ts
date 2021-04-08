@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
+import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 
 export interface Banner {
     headerTextColor: string,
@@ -48,5 +49,9 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     }
 
     saveSecurity(): void {
+    }
+
+    colorChanged(event: ColorEvent, key: string): void {
+
     }
 }

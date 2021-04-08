@@ -27,9 +27,18 @@
   color: #fff;
   background-color: #1E88E5;
 }
+
+color-picker {
+  display: block;
+}
   
 a {
   color: #1E88E5;
+}
+
+label {
+  font-weight: unset;
+  margin-left: 8px;
 }
 
 mat-sidenav-container {
@@ -48,4 +57,10 @@ mat-sidenav-content {
   width: 100%;
   align-items: left;
   justify-content: left;
+}
+
+mat-form-field {
+  font-size: 14px;
+  width: 100%;
+  font-weight: unset;
 }
