@@ -4,8 +4,10 @@ import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 
 export interface Banner {
     headerTextColor: string,
+    headerText: string
     headerBackgroundColor: string,
     footerTextColor: string,
+    footerText: string,
     footerBackgroundColor: string,
     showHeader: boolean,
     showFooter: boolean
@@ -25,15 +27,13 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     strategies: any[] = [];
     banner: Banner = {
         headerTextColor: '#000000',
+        headerText: '',
         headerBackgroundColor: 'FFFFFF',
         footerTextColor: '#000000',
+        footerText: '',
         footerBackgroundColor: 'FFFFFF',
         showHeader: false,
         showFooter: false
-    };
-    minicolorSettings: any = {
-        position: 'bottom right',
-        control: 'wheel'
     };
 
     ngOnInit(): void {

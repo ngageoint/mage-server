@@ -38,13 +38,15 @@
                     </div>
                     <div class="row">
                         <legend>Header</legend>
-                        <mat-checkbox [checked]="banner.showHeader" color="primary">Show Header</mat-checkbox>
+                        <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
+                            name="headerCheck">Show Header
+                        </mat-checkbox>
                     </div>
                     <div class="row">
                         <mat-label for="headerText">Header Text</mat-label>
                         <mat-form-field dense appearance="outline" id="headerText">
-                            <input matInput [(ngModel)]="banner.headerText" #text="ngModel" class="form-control"
-                                name="headerText">
+                            <input matInput [(ngModel)]="banner.headerText" class="form-control" name="headerTextInput"
+                                [disabled]="!banner.showHeader">
                         </mat-form-field>
                     </div>
                     <div class="row">
@@ -61,13 +63,15 @@
                     </div>
                     <div class="row">
                         <legend>Footer</legend>
-                        <mat-checkbox [checked]="banner.showFooter" color="primary">Show Footer</mat-checkbox>
+                        <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
+                            name="footerCheck">Show Footer
+                        </mat-checkbox>
                     </div>
                     <div class="row">
                         <mat-label for="footerText">Footer Text</mat-label>
                         <mat-form-field dense appearance="outline" id="footerText">
-                            <input matInput [(ngModel)]="banner.footerText" #text="ngModel" class="form-control"
-                                name="footerText">
+                            <input matInput [(ngModel)]="banner.footerText" class="form-control" name="footerTextInput"
+                                [disabled]="!banner.showFooter">
                         </mat-form-field>
                     </div>
                     <div class="row">
