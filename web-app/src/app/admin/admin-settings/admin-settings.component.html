@@ -86,6 +86,10 @@
                             (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
                         </color-picker>
                     </div>
+                    <div class="row">
+                        <button mat-flat-button color="primary" id="save-button" (click)="saveBanner()"><i
+                                class="fa fa-check"></i> Save</button>
+                    </div>
                 </form>
             </div>
             <div *ngIf="pill == 'disclaimer'">
