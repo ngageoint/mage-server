@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { Settings, Team, EventService, LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
+import { Settings, Team, Event, LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
 import { Banner, AdminChoice, MaxLock } from './admin-settings.model';
 
 @Component({
@@ -75,15 +75,23 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         public settings: any,
         @Inject(Team)
         public team: any,
-        @Inject(EventService)
-        public eventService: any,
+        @Inject(Event)
+        public event: any,
         @Inject(LocalStorageService)
         public localStorageService: any) {
-
         this.token = localStorageService.getToken();
     }
 
     ngOnInit(): void {
+        const settingsPromise = this.settings.query().$promise;
+        const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
+        const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
+
+        Promise.all([settingsPromise, teamsPromise, eventsPromise]).then(values => {
+
+        }).catch(err => {
+            console.log(err);
+        })
     }
 
     ngOnDestroy(): void {
