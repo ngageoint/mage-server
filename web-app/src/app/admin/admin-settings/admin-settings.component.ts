@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { Settings, Team, EventService } from '../../upgrade/ajs-upgraded-providers';
-import { Banner } from './admin-settings.model';
+import { Settings, Team, EventService, LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
+import { Banner, AdminChoice, MaxLock } from './admin-settings.model';
 
 @Component({
     selector: 'admin-settings',
@@ -14,8 +14,51 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         title: 'Settings',
         icon: 'build'
     }];
-    pill: String = 'security';
+    token: any;
+    pill: string = 'security';
+    teams: any[] = [];
     strategies: any[] = [];
+    usersReqAdminChoices: AdminChoice[] = [{
+        title: 'Enabled',
+        description: 'New user accounts require admin approval.',
+        value: true
+    }, {
+        title: 'Disabled',
+        description: 'New user accounts do not require admin approval.',
+        value: false
+    }];
+    devicesReqAdminChoices: AdminChoice[] = [{
+        title: 'Enabled',
+        description: 'New devices require admin approval.',
+        value: true
+    }, {
+        title: 'Disabled',
+        description: 'New devices do not require admin approval.',
+        value: false
+    }];
+    accountLock: any = {};
+    accountLockChoices: AdminChoice[] = [{
+        title: 'Off',
+        description: 'Do not lock MAGE user accounts.',
+        value: false
+    }, {
+        title: 'On',
+        description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
+        value: true
+    }];
+    maxLock: MaxLock = {
+        enabled: false
+    };
+    maxLockChoices: AdminChoice[] = [{
+        title: 'Off',
+        description: 'Do not disable MAGE user accounts.',
+        value: false
+    }, {
+        title: 'On',
+        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
+        value: true
+    }];
+    setting: string = 'banner';
     banner: Banner = {
         headerTextColor: '#000000',
         headerText: '',
@@ -33,8 +76,11 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         @Inject(Team)
         public team: any,
         @Inject(EventService)
-        public eventService: any) {
+        public eventService: any,
+        @Inject(LocalStorageService)
+        public localStorageService: any) {
 
+        this.token = localStorageService.getToken();
     }
 
     ngOnInit(): void {

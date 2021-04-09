@@ -8,3 +8,13 @@ export interface Banner {
     showHeader: boolean,
     showFooter: boolean
 }
+
+export interface AdminChoice {
+    title: string,
+    description: string,
+    value: boolean
+}
+
+export interface MaxLock {
+    enabled: boolean
+}
