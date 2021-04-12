@@ -106,7 +106,8 @@ import {
   userServiceProvider,
   settingsProvider,
   teamProvider,
-  eventProvider
+  eventProvider,
+  authenticationConfigurationServiceProvider
 } from './upgrade/ajs-upgraded-providers';
 
 import { 
@@ -274,6 +275,7 @@ import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb
     settingsProvider,
     teamProvider,
     eventProvider,
+    authenticationConfigurationServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],

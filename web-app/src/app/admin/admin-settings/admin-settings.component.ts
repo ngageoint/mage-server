@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { Settings, Team, Event, LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
+import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
 import { Banner, AdminChoice, MaxLock } from './admin-settings.model';
 
 @Component({
@@ -17,6 +17,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     token: any;
     pill: string = 'security';
     teams: any[] = [];
+    events: any[] = [];
     strategies: any[] = [];
     usersReqAdminChoices: AdminChoice[] = [{
         title: 'Enabled',
@@ -78,17 +79,23 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         @Inject(Event)
         public event: any,
         @Inject(LocalStorageService)
-        public localStorageService: any) {
+        public localStorageService: any,
+        @Inject(AuthenticationConfigurationService)
+        public authenticationConfigurationService: any) {
         this.token = localStorageService.getToken();
     }
 
     ngOnInit(): void {
+        const configsPromise = this.authenticationConfigurationService.getAllConfigurations()
         const settingsPromise = this.settings.query().$promise;
         const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
         const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
 
-        Promise.all([settingsPromise, teamsPromise, eventsPromise]).then(values => {
-
+        Promise.all([configsPromise, settingsPromise, teamsPromise, eventsPromise]).then(result => {
+            this.teams = result[2].filter(function (team: any): boolean {
+                return team.teamEventId !== undefined;
+            });
+            this.events = result[3];
         }).catch(err => {
             console.log(err);
         })

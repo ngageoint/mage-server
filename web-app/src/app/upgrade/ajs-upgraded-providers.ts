@@ -9,6 +9,7 @@ export const LocalStorageService = new InjectionToken<any>('LocalStorageService'
 export const Settings = new InjectionToken<any>('Settings');
 export const Team = new InjectionToken<any>('Team');
 export const Event = new InjectionToken<any>('Event');
+export const AuthenticationConfigurationService = new InjectionToken<any>('AuthenticationConfigurationService');
 
 export function mapServiceFactory(i: any): any {
   return i.get('MapService');
@@ -108,5 +109,15 @@ export function eventFactory(i: any): any {
 export const eventProvider = {
   provide: Event,
   useFactory: eventFactory,
+  deps: ['$injector']
+};
+
+export function authenticationConfigurationServiceFactory(i: any): any {
+  return i.get('AuthenticationConfigurationService');
+}
+
+export const authenticationConfigurationServiceProvider = {
+  provide: AuthenticationConfigurationService,
+  useFactory: authenticationConfigurationServiceFactory,
   deps: ['$injector']
 };
