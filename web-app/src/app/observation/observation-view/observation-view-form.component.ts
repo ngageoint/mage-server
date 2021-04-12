@@ -24,6 +24,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 })
 export class ObservationViewFormComponent implements OnInit, OnChanges {
   @Input() form: any
+  @Input() expand: boolean
 
   primaryField: any = {}
   secondaryField: any = {}

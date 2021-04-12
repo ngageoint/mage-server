@@ -127,8 +127,8 @@
       </mat-grid-list>
     </mat-card>
 
-    <div class="form-card" *ngFor="let form of observationForm.forms">
-      <observation-view-form [form]="form"></observation-view-form>
+    <div class="form-card" *ngFor="let form of observationForm.forms; let i = index">
+      <observation-view-form [form]="form" [expand]="i === 0"></observation-view-form>
     </div>
   </div>
 </div>
