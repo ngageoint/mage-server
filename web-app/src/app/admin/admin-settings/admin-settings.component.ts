@@ -70,6 +70,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         showHeader: false,
         showFooter: false
     };
+    disclaimer: any;
 
     constructor(
         @Inject(Settings)
@@ -96,9 +97,63 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
                 return team.teamEventId !== undefined;
             });
             this.events = result[3];
+
+            this.strategies = result[0] || [];
+            this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
+
+            const settings: any = {};
+
+            if (result[1].length > 0) {
+                result[1].forEach(element => {
+                    settings[element.type] = {};
+                    Object.keys(element).forEach(key => {
+                        if (key !== 'type') {
+                            settings[element.type][key] = element[key];
+                        }
+                    });
+                });
+            }
+
+            this.banner = settings.banner ? settings.banner.settings : this.banner;
+            this.disclaimer = settings.disclaimer ? settings.disclaimer.settings : this.disclaimer;
+
+            this.strategies.forEach(strategy => {
+                if (strategy.settings.newUserEvents) {
+                    strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
+                        return this.events.some(event => event.id === id)
+                    });
+                }
+                if (strategy.settings.newUserTeams) {
+                    // Remove any teams and events that no longer exist
+                    strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
+                        return this.teams.some(team => team.id === id)
+                    });
+                }
+                if (strategy.settings.passwordPolicy) {
+                    this.buildPasswordHelp(strategy);
+                    if (strategy.type === 'local') {
+                        this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
+                    }
+                }
+            });
         }).catch(err => {
             console.log(err);
         })
+    }
+
+    buildPasswordHelp(strategy): void {
+        if (strategy.settings.passwordPolicy) {
+            if (!strategy.settings.passwordPolicy.customizeHelpText) {
+                const policy = strategy.settings.passwordPolicy
+                const templates = Object.entries(policy.helpTextTemplate)
+                    .filter(([key]) => policy[`${key}Enabled`] === true)
+                    .map(([key, value]) => {
+                        return (value as string).replace('#', policy[key])
+                    });
+
+                strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
+            }
+        }
     }
 
     ngOnDestroy(): void {
