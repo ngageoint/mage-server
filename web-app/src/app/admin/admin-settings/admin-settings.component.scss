@@ -42,6 +42,10 @@ label {
   margin-left: 8px;
 }
 
+h1, h2, h3, h4, h5 {
+	color: #1E88E5;
+}
+
 mat-sidenav-container {
   width: 100%;
   height: 100%;
@@ -65,4 +69,17 @@ mat-form-field {
   font-size: 14px;
   width: 100%;
   font-weight: unset;
+}
+
+mat-card-title {
+  color: #1E88E5;
+}
+
+mat-card {
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
+  width: 100%;
+}
+
+mat-card > mat-card-content {
+  padding: 16px;
 }

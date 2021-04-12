@@ -20,11 +20,33 @@
         <mat-sidenav-content>
             <div *ngIf="pill === 'security'">
                 <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
-                <form *ngIf="strategies" (ngSubmit)="saveSecurity()" id="security-form">
+                <form (ngSubmit)="saveSecurity()" id="security-form">
                     <div *ngFor="let strategy of strategies">
-                        <mat-card>
-                            <mat-card-title>{{strategy.name.toUpperCase()}} Authentication</mat-card-title>
-                        </mat-card>
+                        <div class="row" style="padding-bottom: 25px;">
+                            <mat-card>
+                                <mat-card-title>{{strategy.name.toUpperCase()}} Authentication</mat-card-title>
+                                <hr>
+                                <mat-card-content>
+                                    <div class="row">
+                                        <mat-checkbox [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
+                                            color="primary" name="enabledCheck">Enabled
+                                        </mat-checkbox>
+                                    </div>
+                                    <div class="row">
+                                        <mat-label>New User Accounts Require Admin Approval</mat-label>
+                                    </div>
+                                    <div class="row">
+                                        <mat-label>New Devices Require Admin Approval</mat-label>
+                                    </div>
+                                    <div *ngIf="strategy.type == 'local'">
+                                        <div class="row">
+                                            <h4>Account Lock</h4>
+                                            <hr>
+                                        </div>
+                                    </div>
+                                </mat-card-content>
+                            </mat-card>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -87,7 +109,7 @@
                         </color-picker>
                     </div>
                     <div class="row">
-                        <button mat-flat-button color="primary" id="save-button" (click)="saveBanner()"><i
+                        <button mat-flat-button color="primary" id="save-banner-button" (click)="saveBanner()"><i
                                 class="fa fa-check"></i> Save</button>
                     </div>
                 </form>
@@ -100,6 +122,30 @@
                             accept to continue into MAGE. The disclaimer will be shown on all clients, i.e. Android,
                             iOS, and the Web.
                         </span>
+                    </div>
+                    <div class="row">
+                        <legend>Disclaimer</legend>
+                        <mat-checkbox [(ngModel)]="banner.showDisclaimer" [checked]="banner.showDisclaimer"
+                            color="primary" name="disclaimerCheck">Show Disclaimer
+                        </mat-checkbox>
+                    </div>
+                    <div class="row">
+                        <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
+                        <mat-form-field dense appearance="outline" id="disclaimerTitle">
+                            <input matInput [(ngModel)]="banner.disclaimerTitle" class="form-control"
+                                name="disclaimerTitleInput" [disabled]="!banner.showDisclaimer">
+                        </mat-form-field>
+                    </div>
+                    <div class="row">
+                        <mat-label for="disclaimerText">Disclaimer Text</mat-label>
+                        <mat-form-field dense appearance="outline" id="disclaimerText">
+                            <input matInput [(ngModel)]="banner.disclaimerText" class="form-control"
+                                name="disclaimerTextInput" [disabled]="!banner.showDisclaimer">
+                        </mat-form-field>
+                    </div>
+                    <div class="row">
+                        <button mat-flat-button color="primary" id="save-disclaimer-button" (click)="saveBisclaimer()"><i
+                                class="fa fa-check"></i> Save</button>
                     </div>
                 </form>
             </div>
