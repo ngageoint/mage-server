@@ -64,7 +64,7 @@
                     </div>
                 </form>
             </div>
-            <div *ngIf="pill == 'banner'">
+            <div *ngIf="pill === 'banner'">
                 <form (ngSubmit)="saveBanner()" id="banner-form">
                     <div class="row admin-settings-gap">
                         <span class="help-block">
@@ -128,7 +128,7 @@
                     </div>
                 </form>
             </div>
-            <div *ngIf="pill == 'disclaimer'">
+            <div *ngIf="pill === 'disclaimer'">
                 <form (ngSubmit)="saveDisclaimer()" id="disclaimer-form">
                     <div class="row admin-settings-gap">
                         <span class="help-block">
