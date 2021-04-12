@@ -93,7 +93,7 @@
     </form>
   </div>
 
-  <div class="add-form">
+  <div class="add-form" *ngIf="hasForms()">
     <button class="extended-fab-button" mat-fab color="accent" (click)="pickForm()">
       <mat-icon>note_add</mat-icon>
       <span class="extended-fab-button__text">Add Form</span>

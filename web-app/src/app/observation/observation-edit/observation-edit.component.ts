@@ -190,6 +190,10 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         forms: formArray
       })
     })
+
+    if (observation.properties.forms.length === 0 && this.hasForms()) {
+      this.pickForm()
+    }
   }
 
   updatePrimarySecondary(): void {
@@ -208,7 +212,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         this.secondaryField.value = primaryFormGroup.get(definition.secondaryFeedField).value
       }
 
-      if (this.primaryField.value !== this.primaryFieldValue || this.secondaryField.value !== this.secondaryFieldValue) {
+      if ((this.primaryField && this.primaryField.value !== this.primaryFieldValue) || 
+          ((this.secondaryField && this.secondaryField.value !== this.secondaryFieldValue))) {
         this.primaryFieldValue = this.primaryField ? this.primaryField.value : null
         this.secondaryFieldValue = this.secondaryField ? this.secondaryField.value : null
 
@@ -298,6 +303,11 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     this.close.emit()
   }
 
+  hasForms(): boolean {
+    const definitions = this.formDefinitions || {}
+    return Object.keys(definitions).length > 0
+  }
+
   trackByAttachment(index: number, attachment: any): any {
     return attachment.id;
   }
@@ -363,6 +373,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     this.bottomSheet.open(ObservationEditFormPickerComponent, {
       panelClass: 'feed-panel'
     }).afterDismissed().subscribe(form => {
+      if (!form) return
+
       const fieldsGroup = new FormGroup({
         formId: new FormControl(form.id)
       });
@@ -388,7 +400,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     const index = formArray.controls.indexOf(formGroup)
     formArray.removeAt(index)
 
-    this.formRemoveSnackbar = this.snackBar.open('Form Removed', 'UNDO', {
+    this.formRemoveSnackbar = this.snackBar.open('Form Deleted', 'UNDO', {
       duration: 5000,
       panelClass: 'form-remove-snackbar',
     })

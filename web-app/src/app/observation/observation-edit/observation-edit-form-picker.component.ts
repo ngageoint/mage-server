@@ -22,4 +22,8 @@ export class ObservationEditFormPickerComponent {
   formPicked(form: any): void {
     this.bottomSheetRef.dismiss(form)
   }
+
+  cancel(): void {
+    this.bottomSheetRef.dismiss()
+  }
 }

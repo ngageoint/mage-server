@@ -13,7 +13,7 @@ import { FeedPanelService } from './feed-panel.service';
     trigger('slide', [
       transition(':enter', [
         style({ transform: 'translateX(100%)' }),
-        animate('250ms', style({ transform: 'translateX(0%)' })),
+        animate('150ms', style({ transform: 'translateX(0%)' })),
       ]),
       transition(':leave', [
         animate('250ms', style({ transform: 'translateX(100%)' }))
