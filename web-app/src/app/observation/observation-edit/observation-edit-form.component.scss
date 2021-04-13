@@ -11,7 +11,8 @@
 .form-header-summary {
   display: flex;
   flex-direction: column;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .form-header-content {
@@ -33,13 +34,19 @@
   width: 24px;
   height: 24px;
   font-size: 24px;
-  margin-right: 16px;
+  margin-right: 8px;
 }
 
 .form-header-title__text {
   font-family: Roboto, sans-serif;
-  font-size: 16px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 0.75rem;
+  line-height: 2rem;
   font-weight: 500;
+  letter-spacing: 0.1666666667em;
+  text-decoration: none;
+  text-transform: uppercase;
   color: rgba(0, 0, 0, .6);
 }
 
@@ -47,15 +54,21 @@
   font-family: Roboto, sans-serif;
   font-size: 20px;
   font-weight: 500;
-  color: mat-color($app-primary);
+  color: rgba(0, 0, 0, .87);
   padding-bottom: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .form-header-summary__secondary {
   font-family: Roboto, sans-serif;
   font-size: 16px;
   font-weight: 400;
-  color: rgba(0, 0, 0, .6)
+  color: rgba(0, 0, 0, .6);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .form-header-actions {

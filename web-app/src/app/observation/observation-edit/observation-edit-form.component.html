@@ -6,14 +6,14 @@
         <div class="form-header-title__text">{{definition.name}}</div>
       </div>
       <div *ngIf="primaryField.value" class="form-header-summary__primary">
-        <div [ngSwitch]="primaryField?.type">
-          <div *ngSwitchCase="geometry">
+        <span [ngSwitch]="primaryField?.type">
+          <span *ngSwitchCase="geometry">
             {{primaryField?.value | geometry:5}}
-          </div>
-          <div *ngSwitchDefault>
+          </span>
+          <span *ngSwitchDefault>
             {{primaryField?.value}}
-          </div>
-        </div>
+          </span>
+        </span>
       </div>
       <div *ngIf="secondaryField.value" class="form-header-summary__secondary">
         <span [ngSwitch]="secondaryField?.type">
