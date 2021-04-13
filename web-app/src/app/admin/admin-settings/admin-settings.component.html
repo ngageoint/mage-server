@@ -48,9 +48,29 @@
                                     </div>
                                     <div class="row">
                                         <mat-label>New User Accounts Require Admin Approval</mat-label>
+                                        <mat-form-field appearance="outline">
+                                            <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled"
+                                                name="usersReqAdminSelect">
+                                                <mat-option *ngFor="let option of usersReqAdminChoices"
+                                                    [value]="option.value">{{option.title}}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <p class="help-block">If disabled, new user accounts do <b>NOT</b> require admin
+                                            approval to access MAGE.</p>
                                     </div>
                                     <div class="row">
                                         <mat-label>New Devices Require Admin Approval</mat-label>
+                                        <mat-form-field appearance="outline">
+                                            <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled"
+                                                name="devicesReqAdminSelect">
+                                                <mat-option *ngFor="let option of devicesReqAdminChoices"
+                                                    [value]="option.value">{{option.title}}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <p class="help-block">If disabled, new devices do <b>NOT</b> require admin
+                                            approval to access MAGE.</p>
                                     </div>
                                     <div *ngIf="strategy.type == 'local'">
                                         <div class="row">

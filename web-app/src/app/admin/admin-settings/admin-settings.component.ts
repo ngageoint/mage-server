@@ -99,6 +99,19 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
             this.events = result[3];
 
             this.strategies = result[0] || [];
+            this.strategies.sort(function (a: any, b: any): number {
+                const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+                const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                // names must be equal
+                return 0;
+            });
             this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
 
             const settings: any = {};
