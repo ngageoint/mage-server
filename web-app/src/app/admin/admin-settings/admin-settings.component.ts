@@ -94,7 +94,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
 
         Promise.all([configsPromise, settingsPromise, teamsPromise, eventsPromise]).then(result => {
             this.teams = result[2].filter(function (team: any): boolean {
-                return team.teamEventId !== undefined;
+                return team.teamEventId === undefined;
             });
             this.events = result[3];
 

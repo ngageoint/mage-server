@@ -47,7 +47,8 @@
                                         </mat-checkbox>
                                     </div>
                                     <div class="row">
-                                        <mat-label>New User Accounts Require Admin Approval</mat-label>
+                                        <mat-label>New User Accounts Require Admin
+                                            Approval</mat-label>
                                         <mat-form-field appearance="outline">
                                             <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled"
                                                 name="usersReqAdminSelect">
@@ -56,8 +57,36 @@
                                                 </mat-option>
                                             </mat-select>
                                         </mat-form-field>
-                                        <p class="help-block">If disabled, new user accounts do <b>NOT</b> require admin
-                                            approval to access MAGE.</p>
+                                        <p class="help-block">If disabled, new user accounts do <b>NOT</b> require
+                                            admin approval to access MAGE.</p>
+                                    </div>
+                                    <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
+                                        <div class="row">
+                                            <mat-label>New Users Default Event(s)</mat-label>
+                                            <mat-form-field appearance="outline">
+                                                <mat-select [(ngModel)]="strategy.settings.newUserEvents"
+                                                    name="eventsSelect" multiple>
+                                                    <mat-option *ngFor="let event of events" [value]="event.id">
+                                                        {{event.name}}
+                                                    </mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <p class="help-block">When new users are created, this is the event that
+                                                they will be added to by default.</p>
+                                        </div>
+                                        <div class="row">
+                                            <mat-label>New Users Default Team(s)</mat-label>
+                                            <mat-form-field appearance="outline">
+                                                <mat-select [(ngModel)]="strategy.settings.newUserTeams"
+                                                    name="teamsSelect" multiple>
+                                                    <mat-option *ngFor="let team of teams" [value]="team.name">
+                                                        {{team.name}}
+                                                    </mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <p class="help-block">When new users are created, this is the team that they
+                                                will be added to by default.</p>
+                                        </div>
                                     </div>
                                     <div class="row">
                                         <mat-label>New Devices Require Admin Approval</mat-label>
