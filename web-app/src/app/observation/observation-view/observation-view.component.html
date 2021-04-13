@@ -36,14 +36,14 @@
       
           <div *ngIf="primaryFeedField.value">
             <div class="item-header-text">
-              <div [ngSwitch]="primaryFeedField.field?.type">
-                <div *ngSwitchCase="geometry">
+              <span [ngSwitch]="primaryFeedField.field?.type">
+                <span *ngSwitchCase="geometry">
                   {{primaryFeedField?.value | geometry:5}}
-                </div>
-                <div *ngSwitchDefault>
+                </span>
+                <span *ngSwitchDefault>
                   {{primaryFeedField?.value}}
-                </div>
-              </div>
+                </span>
+              </span>
             </div>
           </div>
       
