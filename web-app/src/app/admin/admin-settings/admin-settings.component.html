@@ -174,8 +174,182 @@
                                     </div>
                                     <div *ngIf="strategy.type == 'local'">
                                         <div class="row">
-                                            <h4>Password Policy</h4>
+                                            <h4>Password Policies</h4>
                                             <hr>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap">
+                                                <h5>Minimum Password Requirements for User Accounts:</h5>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.minCharsEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="minCharsEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="minChars"
+                                                        [disabled]="!strategy.settings.passwordPolicy.minCharsEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.minChars" min="0"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="minCharsInput">
+                                                    <label for="minChars">Minimum Letters</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.maxConCharsEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="maxConCharsEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="maxConChars"
+                                                        [disabled]="!strategy.settings.passwordPolicy.maxConCharsEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.maxConChars"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="maxConCharsInput">
+                                                    <label for="maxConChars">Maximum Consecutive Letters</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.lowLettersEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="lowLettersEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="lowLetters"
+                                                        [disabled]="!strategy.settings.passwordPolicy.lowLettersEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.lowLetters"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="lowLettersInput">
+                                                    <label for="lowLetters">Lowercase Letters</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.highLettersEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="highLettersEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="highLetters"
+                                                        [disabled]="!strategy.settings.passwordPolicy.highLettersEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.highLetters"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="highLettersInput">
+                                                    <label for="highLetters">Uppercase Letters</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.numbersEnabled"
+                                                        (click)="buildPasswordHelp(strategy)" name="numbersEnabledCheck"
+                                                        color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="numbers"
+                                                        [disabled]="!strategy.settings.passwordPolicy.numbersEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.numbers" min="0"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="numbersInput">
+                                                    <label for="numbers">Numbers</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.specialCharsEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="specialCharsEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="specialChars"
+                                                        [disabled]="!strategy.settings.passwordPolicy.specialCharsEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.specialChars"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="specialCharsInput">
+                                                    <label for="specialChars">Special Characters</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap">
+                                                <h5>User Password Policies:</h5>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.passwordMinLengthEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="passwordMinLengthEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="passwordMinLength"
+                                                        [disabled]="!strategy.settings.passwordPolicy.passwordMinLengthEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.passwordMinLength"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="passwordMinLengthInput">
+                                                    <label for="passwordMinLength">Minimum Password Length</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <mat-checkbox
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
+                                                        (click)="buildPasswordHelp(strategy)"
+                                                        name="passwordHistoryCountEnabledCheck" color="primary">
+                                                    </mat-checkbox>
+                                                    <input matInput type="number" id="passwordHistoryCount"
+                                                        [disabled]="!strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.passwordHistoryCount"
+                                                        min="0" (click)="buildPasswordHelp(strategy)"
+                                                        class="form-control left-gap" name="passwordHistoryCountInput">
+                                                    <label for="passwordHistoryCount">Previous Passwords
+                                                        Remembered</label>
+                                                </mat-form-field>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap">
+                                                <h5>User Password Policy Help:</h5>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <mat-checkbox
+                                                [(ngModel)]="strategy.settings.passwordPolicy.customizeHelpText"
+                                                [checked]="strategy.settings.passwordPolicy.customizeHelpText"
+                                                color="primary" name="customizeHelpCheck" id="customize-help"
+                                                (click)="buildPasswordHelp(strategy)">
+                                            </mat-checkbox>
+                                            <label for="customize-help">Customize password help message</label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="bottom-gap form-inline">
+                                                <mat-form-field>
+                                                    <textarea placeholder="Password Policy Help" id="helpText"
+                                                        [disabled]="!strategy.settings.passwordPolicy.customizeHelpText"
+                                                        [(ngModel)]="strategy.settings.passwordPolicy.helpText"
+                                                        class="form-control left-gap" name="helpTextInput"></textarea>
+                                                </mat-form-field>
+                                                <span id="passwordHelpBlock" class="help-block">This is the help text
+                                                    that is displayed to the user during password creation/update, 
+                                                    when their password fails to meet the password policy.</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </mat-card-content>
