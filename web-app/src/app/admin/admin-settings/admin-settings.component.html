@@ -43,12 +43,13 @@
                                 <mat-card-content class="admin-settings-gap">
                                     <div class="row">
                                         <mat-checkbox [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
-                                            color="primary" name="enabledCheck">Enabled
+                                            color="primary" name="enabledCheck" id="security-enabled">
                                         </mat-checkbox>
+                                        <label for="security-enabled">Enabled</label>
                                     </div>
                                     <div class="row">
-                                        <mat-label>New User Accounts Require Admin
-                                            Approval</mat-label>
+                                        <mat-label><b>New User Accounts Require Admin
+                                                Approval</b></mat-label>
                                         <mat-form-field appearance="outline">
                                             <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled"
                                                 name="usersReqAdminSelect">
@@ -62,7 +63,7 @@
                                     </div>
                                     <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
                                         <div class="row">
-                                            <mat-label>New Users Default Event(s)</mat-label>
+                                            <mat-label><b>New Users Default Event(s)</b></mat-label>
                                             <mat-form-field appearance="outline">
                                                 <mat-select [(ngModel)]="strategy.settings.newUserEvents"
                                                     name="eventsSelect" multiple>
@@ -75,7 +76,7 @@
                                                 they will be added to by default.</p>
                                         </div>
                                         <div class="row">
-                                            <mat-label>New Users Default Team(s)</mat-label>
+                                            <mat-label><b>New Users Default Team(s)</b></mat-label>
                                             <mat-form-field appearance="outline">
                                                 <mat-select [(ngModel)]="strategy.settings.newUserTeams"
                                                     name="teamsSelect" multiple>
@@ -89,7 +90,7 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <mat-label>New Devices Require Admin Approval</mat-label>
+                                        <mat-label><b>New Devices Require Admin Approval</b></mat-label>
                                         <mat-form-field appearance="outline">
                                             <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled"
                                                 name="devicesReqAdminSelect">
@@ -107,9 +108,19 @@
                                             <hr>
                                         </div>
                                     </div>
+                                    <div *ngIf="strategy.type == 'local'">
+                                        <div class="row">
+                                            <h4>Password Policy</h4>
+                                            <hr>
+                                        </div>
+                                    </div>
                                 </mat-card-content>
                             </mat-card>
                         </div>
+                    </div>
+                    <div class="row admin-settings-gap">
+                        <button mat-flat-button color="primary" id="save-security-button" (click)="saveSecurity()"><i
+                                class="fa fa-check"></i> Save</button>
                     </div>
                 </form>
             </div>
@@ -124,24 +135,25 @@
                     <div class="row admin-settings-gap">
                         <legend>Header</legend>
                         <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
-                            name="headerCheck">Show Header
+                            name="headerCheck" id="show-header">
                         </mat-checkbox>
+                        <label for="show-header">Show Header</label>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="headerText">Header Text</mat-label>
+                        <mat-label for="headerText"><b>Header Text</b></mat-label>
                         <mat-form-field dense appearance="outline" id="headerText">
                             <input matInput [(ngModel)]="banner.headerText" class="form-control" name="headerTextInput"
                                 [disabled]="!banner.showHeader">
                         </mat-form-field>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="headerTextColor">Header Text Color</mat-label>
+                        <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
                         <color-picker [hexColor]="banner.headerTextColor"
                             (onColorChanged)="colorChanged($event, 'headerTextColor')">
                         </color-picker>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="headerBlackgroundColor">Header Background Color</mat-label>
+                        <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
                         <color-picker [hexColor]="banner.headerBackgroundColor"
                             (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
                         </color-picker>
@@ -149,24 +161,25 @@
                     <div class="row admin-settings-gap">
                         <legend>Footer</legend>
                         <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
-                            name="footerCheck">Show Footer
+                            name="footerCheck" id="show-footer">
                         </mat-checkbox>
+                        <label for="show-footer">Show Footer</label>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="footerText">Footer Text</mat-label>
+                        <mat-label for="footerText"><b>Footer Text</b></mat-label>
                         <mat-form-field dense appearance="outline" id="footerText">
                             <input matInput [(ngModel)]="banner.footerText" class="form-control" name="footerTextInput"
                                 [disabled]="!banner.showFooter">
                         </mat-form-field>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="footerTextColor">Footer Text Color</mat-label>
+                        <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
                         <color-picker [hexColor]="banner.footerTextColor"
                             (onColorChanged)="colorChanged($event, 'footerTextColor')">
                         </color-picker>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="footerBackgroundColor">Footer Background Color</mat-label>
+                        <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
                         <color-picker [hexColor]="banner.footerBackgroundColor"
                             (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
                         </color-picker>
@@ -189,18 +202,19 @@
                     <div class="row admin-settings-gap">
                         <legend>Disclaimer</legend>
                         <mat-checkbox [(ngModel)]="banner.showDisclaimer" [checked]="banner.showDisclaimer"
-                            color="primary" name="disclaimerCheck">Show Disclaimer
+                            color="primary" name="disclaimerCheck" id="show-disclaimer">
                         </mat-checkbox>
+                        <label for="show-disclaimer">Show Disclaimer</label>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
+                        <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
                         <mat-form-field dense appearance="outline" id="disclaimerTitle">
                             <input matInput [(ngModel)]="banner.disclaimerTitle" class="form-control"
                                 name="disclaimerTitleInput" [disabled]="!banner.showDisclaimer">
                         </mat-form-field>
                     </div>
                     <div class="row admin-settings-gap">
-                        <mat-label for="disclaimerText">Disclaimer Text</mat-label>
+                        <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
                         <mat-form-field dense appearance="outline" id="disclaimerText">
                             <textarea matInput [(ngModel)]="banner.disclaimerText" class="form-control"
                                 name="disclaimerTextInput" [disabled]="!banner.showDisclaimer"> </textarea>
@@ -208,7 +222,7 @@
                     </div>
                     <div class="row admin-settings-gap">
                         <button mat-flat-button color="primary" id="save-disclaimer-button"
-                            (click)="saveBisclaimer()"><i class="fa fa-check"></i> Save</button>
+                            (click)="saveDisclaimer()"><i class="fa fa-check"></i> Save</button>
                     </div>
                 </form>
             </div>
