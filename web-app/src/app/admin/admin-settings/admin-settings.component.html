@@ -339,9 +339,9 @@
                                             <label for="customize-help">Customize password help message</label>
                                         </div>
                                         <div class="row">
-                                            <div class="bottom-gap form-inline">
-                                                <mat-form-field>
-                                                    <textarea placeholder="Password Policy Help" id="helpText"
+                                            <div class="bottom-gap">
+                                                <mat-form-field dense appearance="outline">
+                                                    <textarea matInput id="helpText"
                                                         [disabled]="!strategy.settings.passwordPolicy.customizeHelpText"
                                                         [(ngModel)]="strategy.settings.passwordPolicy.helpText"
                                                         class="form-control left-gap" name="helpTextInput"></textarea>
