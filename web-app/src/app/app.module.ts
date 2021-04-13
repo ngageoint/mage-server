@@ -137,6 +137,7 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
+import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
 
 @NgModule({
   declarations: [
@@ -196,7 +197,8 @@ import { ObservationOptionsComponent } from './observation/observation-view/obse
     ExportMetadataDialogComponent,
     CdkDetailRowDirective,
     ObservationEditFormPickerComponent,
-    ObservationOptionsComponent
+    ObservationOptionsComponent,
+    ObservationEditDiscardComponent
   ],
   imports: [
     BrowserModule,
@@ -280,6 +282,7 @@ import { ObservationOptionsComponent } from './observation/observation-view/obse
     FeedPanelComponent,
     ObservationOptionsComponent,
     ObservationDeleteComponent,
+    ObservationEditDiscardComponent,
     ObservationFavoritesComponent,
     ObservationListItemComponent,
     ObservationPopupComponent,

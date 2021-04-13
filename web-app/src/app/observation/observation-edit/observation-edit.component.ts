@@ -9,6 +9,7 @@ import { first } from 'rxjs/operators'
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
 import * as moment from 'moment';
+import { ObservationEditDiscardComponent } from './observation-edit-discard/observation-edit-discard.component'
 
 export type ObservationFormControl = FormControl & { definition: any }
 
@@ -191,7 +192,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       })
     })
 
-    if (observation.properties.forms.length === 0 && this.hasForms()) {
+    if (observation.properties.forms.length === 0 && this.hasForms() && observation.id === 'new') {
       this.pickForm()
     }
   }
@@ -300,7 +301,15 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       this.formRemoveSnackbar.dismiss()
     }
 
-    this.close.emit()
+    this.dialog.open(ObservationEditDiscardComponent, {
+      width: '300px',
+      autoFocus: false,
+      position: { left: '75px' }
+    }).afterClosed().subscribe(result => {
+      if (result === 'discard') {
+        this.close.emit()
+      }
+    })
   }
 
   hasForms(): boolean {
