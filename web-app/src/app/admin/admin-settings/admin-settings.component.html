@@ -187,7 +187,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.minCharsEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.minCharsEnabled"
-                                                    (click)="buildPasswordHelp(strategy)" name="minCharsEnabledCheck"
+                                                    (change)="buildPasswordHelp(strategy)" name="minCharsEnabledCheck"
                                                     color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="minChars"
@@ -203,7 +203,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.maxConCharsEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.maxConCharsEnabled"
-                                                    (click)="buildPasswordHelp(strategy)" name="maxConCharsEnabledCheck"
+                                                    (change)="buildPasswordHelp(strategy)" name="maxConCharsEnabledCheck"
                                                     color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="maxConChars"
@@ -219,7 +219,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.lowLettersEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.lowLettersEnabled"
-                                                    (click)="buildPasswordHelp(strategy)" name="lowLettersEnabledCheck"
+                                                    (change)="buildPasswordHelp(strategy)" name="lowLettersEnabledCheck"
                                                     color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="lowLetters"
@@ -235,7 +235,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.highLettersEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.highLettersEnabled"
-                                                    (click)="buildPasswordHelp(strategy)" name="highLettersEnabledCheck"
+                                                    (change)="buildPasswordHelp(strategy)" name="highLettersEnabledCheck"
                                                     color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="highLetters"
@@ -251,7 +251,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.numbersEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.numbersEnabled"
-                                                    (click)="buildPasswordHelp(strategy)" name="numbersEnabledCheck"
+                                                    (change)="buildPasswordHelp(strategy)" name="numbersEnabledCheck"
                                                     color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="numbers"
@@ -267,7 +267,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.specialCharsEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.specialCharsEnabled"
-                                                    (click)="buildPasswordHelp(strategy)"
+                                                    (change)="buildPasswordHelp(strategy)"
                                                     name="specialCharsEnabledCheck" color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="specialChars"
@@ -288,7 +288,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.passwordMinLengthEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.passwordMinLengthEnabled"
-                                                    (click)="buildPasswordHelp(strategy)"
+                                                    (change)="buildPasswordHelp(strategy)"
                                                     name="passwordMinLengthEnabledCheck" color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="passwordMinLength"
@@ -304,7 +304,7 @@
                                                 <mat-checkbox
                                                     [(ngModel)]="strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
                                                     [checked]="strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
-                                                    (click)="buildPasswordHelp(strategy)"
+                                                    (change)="buildPasswordHelp(strategy)"
                                                     name="passwordHistoryCountEnabledCheck" color="primary">
                                                 </mat-checkbox>
                                                 <input matInput type="number" id="passwordHistoryCount"
@@ -326,7 +326,7 @@
                                                 [(ngModel)]="strategy.settings.passwordPolicy.customizeHelpText"
                                                 [checked]="strategy.settings.passwordPolicy.customizeHelpText"
                                                 color="primary" name="customizeHelpCheck" id="customize-help"
-                                                (click)="buildPasswordHelp(strategy)">
+                                                (change)="buildPasswordHelp(strategy)">
                                             </mat-checkbox>
                                             <label for="customize-help">Customize password help message</label>
                                         </div>
@@ -435,7 +435,7 @@
                         <input matInput [(ngModel)]="banner.disclaimerTitle" class="form-control"
                             name="disclaimerTitleInput" [disabled]="!banner.showDisclaimer">
                     </div>
-                    <div class="row admin-settings-gap">
+                    <div class="row admin-settings-gap bottom-gap">
                         <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
                         <textarea matInput [(ngModel)]="banner.disclaimerText" class="form-control"
                             name="disclaimerTextInput" [disabled]="!banner.showDisclaimer"> </textarea>
