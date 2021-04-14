@@ -38,7 +38,7 @@
       <span class="user__location--accuracy">
         <span class="user__location--provider">{{user.location.properties.provider}} </span>
         <span>&#177;</span>
-        <span> {{user.location.properties.accuracy}}m</span>
+        <span> {{user.location.properties.accuracy | number:'0.0-5'}}m</span>
       </span>
     </div>
 
