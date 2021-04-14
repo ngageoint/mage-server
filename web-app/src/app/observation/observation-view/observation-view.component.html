@@ -76,6 +76,11 @@
         <button mat-button color="primary" (click)="onObservationLocationClick($event)" class="actions__location-button">
           <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
         </button>
+        <span class="item-location-accuracy" *ngIf="observation?.properties?.accuracy">
+          <span class="item-location-provider">{{observation.properties?.provider}} </span>
+          <span>&#177;</span>
+          <span> {{observation.properties?.accuracy | number:'0.0-5'}}m</span>
+        </span>
       </div>
 
       <mat-divider></mat-divider>

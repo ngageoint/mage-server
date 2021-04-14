@@ -129,6 +129,19 @@
   box-sizing: border-box;
 }
 
+.item-location-accuracy {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 16px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.item-location-provider {
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
 .actions {
   display: flex;
   flex-direction: row;
