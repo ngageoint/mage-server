@@ -35,7 +35,9 @@ export class ObservationEditFormComponent {
   fieldNames: string[]
   fieldDefinitions: {}
   primaryField: any = {}
+  primaryFieldValue: any
   secondaryField: any = {}
+  secondaryFieldValue: any
 
   expand: boolean
 
@@ -72,12 +74,12 @@ export class ObservationEditFormComponent {
   private updateView(): void {
     if (this.definition.primaryFeedField) {
       this.primaryField = this.definition.fields.find(field => field.name === this.definition.primaryFeedField)
-      this.primaryField.value = this.getValue(this.definition.primaryFeedField)
+      this.primaryFieldValue = this.getValue(this.definition.primaryFeedField)
     }
 
     if (this.definition.secondaryFeedField) {
       this.secondaryField = this.definition.fields.find(field => field.name === this.definition.secondaryFeedField)
-      this.secondaryField.value = this.getValue(this.definition.secondaryFeedField)
+      this.secondaryFieldValue = this.getValue(this.definition.secondaryFeedField)
     }
   }
 

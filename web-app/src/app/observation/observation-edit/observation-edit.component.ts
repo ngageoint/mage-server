@@ -203,20 +203,22 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       const primaryFormGroup = forms.at(0) as FormGroup
       const definition = this.formDefinitions[primaryFormGroup.get('formId').value]
 
+      let primaryFieldValue
       if (primaryFormGroup.contains(definition.primaryFeedField)) {
         this.primaryField = definition.fields.find(field => field.name === definition.primaryFeedField)
-        this.primaryField.value = primaryFormGroup.get(definition.primaryFeedField).value
+        primaryFieldValue = primaryFormGroup.get(definition.primaryFeedField).value
       }
 
+      let secondaryFieldValue
       if (primaryFormGroup.contains(definition.secondaryFeedField)) {
         this.secondaryField = definition.fields.find(field => field.name === definition.secondaryFeedField)
-        this.secondaryField.value = primaryFormGroup.get(definition.secondaryFeedField).value
+        secondaryFieldValue = primaryFormGroup.get(definition.secondaryFeedField).value
       }
 
-      if ((this.primaryField && this.primaryField.value !== this.primaryFieldValue) || 
-          ((this.secondaryField && this.secondaryField.value !== this.secondaryFieldValue))) {
-        this.primaryFieldValue = this.primaryField ? this.primaryField.value : null
-        this.secondaryFieldValue = this.secondaryField ? this.secondaryField.value : null
+      if ((this.primaryField && primaryFieldValue !== this.primaryFieldValue) || 
+          ((this.secondaryField && secondaryFieldValue !== this.secondaryFieldValue))) {
+        this.primaryFieldValue = this.primaryField ? primaryFieldValue : null
+        this.secondaryFieldValue = this.secondaryField ? secondaryFieldValue : null
 
         const observation = this.formGroup.value
 

@@ -73,13 +73,13 @@
       </div>
 
       <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
-        <ng-container *ngFor="let group of formGroup?.get('properties')?.get('forms')?.controls">
+        <ng-container *ngFor="let group of formGroup?.get('properties')?.get('forms')?.controls; let i = index">
           <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
             <observation-edit-form
               [formGroup]="group"
               [definition]="formDefinitions[group.get('formId').value]"
               [geometryStyle]="geometryStyle"
-              [options]="formOptions"
+              [options]="i === 0 ? {expand: true} : formOptions"
               (remove)="removeForm($event)"
               (featureEdit)="onGeometryEdit($event)">
 

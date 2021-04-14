@@ -5,23 +5,23 @@
         <mat-icon class="form-header-title__icon" [style.color]="definition.color">description</mat-icon>
         <div class="form-header-title__text">{{definition.name}}</div>
       </div>
-      <div *ngIf="primaryField.value" class="form-header-summary__primary">
+      <div *ngIf="primaryFieldValue" class="form-header-summary__primary">
         <span [ngSwitch]="primaryField?.type">
           <span *ngSwitchCase="geometry">
-            {{primaryField?.value | geometry:5}}
+            {{primaryFieldValue | geometry:5}}
           </span>
           <span *ngSwitchDefault>
-            {{primaryField?.value}}
+            {{primaryFieldValue}}
           </span>
         </span>
       </div>
-      <div *ngIf="secondaryField.value" class="form-header-summary__secondary">
+      <div *ngIf="secondaryFieldValue" class="form-header-summary__secondary">
         <span [ngSwitch]="secondaryField?.type">
           <span *ngSwitchCase="geometry">
-            {{secondaryField?.value | geometry:5}}
+            {{secondaryFieldValue | geometry:5}}
           </span>
           <span *ngSwitchDefault>
-            {{secondaryField?.value}}
+            {{secondaryFieldValue}}
           </span>
         </span>
       </div>
