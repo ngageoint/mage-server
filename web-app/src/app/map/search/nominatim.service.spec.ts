@@ -23,7 +23,7 @@ describe('NominatimService', () => {
   });
 
   it('should be created', () => {
-    const service: NominatimService = TestBed.get(NominatimService);
+    const service: NominatimService = TestBed.inject(NominatimService);
     expect(service).toBeTruthy();
   });
 

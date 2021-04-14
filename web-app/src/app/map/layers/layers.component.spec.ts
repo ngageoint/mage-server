@@ -3,7 +3,13 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LayersComponent } from './layers.component';
 import { LayerHeaderComponent } from './layer-header.component';
 import { LayerContentComponent } from './layer-content.component';
-import { MatExpansionModule, MatCheckboxModule, MatRadioModule, MatFormFieldModule, MatIconModule, MatSliderModule, MatCardModule } from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { FormsModule } from '@angular/forms';
 import { CheckboardModule, HueModule, SaturationModule, AlphaModule } from 'ngx-color';
@@ -25,7 +31,7 @@ class TestHostComponent {
   tileOverlays = [];
   featureOverlays = [];
 
-  @ViewChild(LayersComponent, { static: false }) layers: LayersComponent;
+  @ViewChild(LayersComponent) layers: LayersComponent;
 }
 
 

@@ -2,7 +2,11 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 
 import { ObservationEditMultiselectComponent } from './observation-edit-multiselect.component'
-import { MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule, MatChipInputEvent, MatChipList, MatError } from '@angular/material'
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatChipsModule, MatChipInputEvent, MatChipList } from '@angular/material/chips';
+import { MatFormFieldModule, MatError } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'

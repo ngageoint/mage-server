@@ -37,8 +37,8 @@ export class UserViewComponent implements OnInit {
     this.close.emit(this.user)
   }
 
-  onUserLocationClick(user: any): void {
-    this.mapService.zoomToFeatureInLayer(user, 'People');
+  onUserLocationClick(): void {
+    this.mapService.zoomToFeatureInLayer(this.user, 'People');
   }
 
   onObservationsChanged(changed): void {

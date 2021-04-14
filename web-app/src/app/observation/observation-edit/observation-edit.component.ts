@@ -1,6 +1,6 @@
 import { animate, style, transition, trigger } from '@angular/animations'
 import { ChangeDetectorRef, Component, DoCheck, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core'
-import { MatDialog } from '@angular/material'
+import { MatDialog } from '@angular/material/dialog';
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component'
 
@@ -50,7 +50,8 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
 
   isNewObservation: boolean
   canDeleteObservation: boolean
-  observationForm = {}
+  // TODO: define type in forms model
+  observationForm: any = {}
 
   initialObservation: any
   geometryStyle: any
@@ -305,7 +306,7 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     }
   }
 
-  deleteObservation(): void {
+  onDeleteObservation(): void {
     this.dialog.open(ObservationDeleteComponent, {
       width: '500px',
       data: this.observation,
@@ -319,7 +320,7 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     })
   }
 
-  onGeometryEdit(event): void {
+  onGeometryEdit(event: any): void {
     this.mask = event.action === 'edit';
 
     if (this.mask) {
@@ -331,7 +332,7 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     }
   }
 
-  onGeometryChanged(event): void {
+  onGeometryChanged(event: any): void {
     this.form.geometryField.value = event.feature ? event.feature.geometry : null;
   }
 

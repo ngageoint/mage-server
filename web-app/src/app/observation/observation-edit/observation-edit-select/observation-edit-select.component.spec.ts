@@ -6,7 +6,9 @@ import { By } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatError, MatInputModule, MatSelect, MatSelectModule } from '@angular/material';
+import { MatError } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 
 @Component({
   template: `<observation-edit-dropdown [field]="field"></observation-edit-dropdown>`
@@ -23,7 +25,7 @@ class TestHostComponent {
     }]
   }
 
-  @ViewChild(ObservationEditSelectComponent, { static: false }) component: ObservationEditSelectComponent
+  @ViewChild(ObservationEditSelectComponent) component: ObservationEditSelectComponent
 }
 
 describe('ObservationEditSelectComponent', () => {

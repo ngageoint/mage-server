@@ -7,7 +7,8 @@ interface FileUpload {
   file: File,
   preview?: string,
   uploading?: boolean,
-  uploadProgress?: number
+  uploadProgress?: number,
+  markedForDelete?: boolean
 }
 
 @Component({

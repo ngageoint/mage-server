@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormsModule } from '@angular/forms'
-import { MatCheckbox, MatCheckboxModule, MatError, MatFormFieldModule } from '@angular/material'
+import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser'
 
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component'
@@ -17,7 +18,7 @@ class TestHostComponent {
     name: 'field1'
   }
 
-  @ViewChild(ObservationEditCheckboxComponent, { static: false }) component: ObservationEditCheckboxComponent
+  @ViewChild(ObservationEditCheckboxComponent) component: ObservationEditCheckboxComponent
 }
 
 describe('ObservationEditCheckboxComponent', () => {

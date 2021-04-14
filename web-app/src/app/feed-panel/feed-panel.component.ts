@@ -1,6 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog, MatTabGroup } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTabGroup } from '@angular/material/tabs';
 import * as moment from 'moment';
 import { EventService, FilterService, MapService, ObservationService, UserService } from '../upgrade/ajs-upgraded-providers';
 import { FeedPanelService } from './feed-panel.service';
@@ -28,11 +29,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   @Output() toggle = new EventEmitter<any>()
 
-  @ViewChild('tabGroup', { static: false }) tabGroup: MatTabGroup
-  @ViewChild('permissionDialog', { static: false }) permissionDialog: TemplateRef<any>
+  @ViewChild('tabGroup') tabGroup: MatTabGroup
+  @ViewChild('permissionDialog') permissionDialog: TemplateRef<any>
 
   currentFeedPanel = 'observations'
-  
+
   edit = false
   editForm: any
 
@@ -48,6 +49,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   editObservation: any
 
   viewUser: any
+  userBadge?: any
 
   constructor(
     public dialog: MatDialog,
@@ -231,7 +233,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   getIconUrl(event, form): void {
     // const primaryForm = forms.length ? forms[0] : {};
     const fields = form.fields || []
-    
+
     const primary = fields.find(field => {
       return field.name === form.primaryField
     }) || {}
@@ -257,7 +259,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.viewObservation = null;
   }
 
-  onObservationEditClose(observation): void {
+  onObservationEditClose(observation?: any): void {
     this.newObservation = null;
     this.editObservation = null;
 

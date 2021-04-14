@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatError, MatFormField, MatFormFieldModule, MatInput, MatInputModule } from '@angular/material';
+import { MatError, MatFormField, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaxValueDirective } from './max-value.directive';
@@ -20,7 +21,7 @@ class TestHostComponent {
     name: 'field1'
   }
 
-  @ViewChild(ObservationEditNumberComponent, { static: false }) component: ObservationEditNumberComponent
+  @ViewChild(ObservationEditNumberComponent) component: ObservationEditNumberComponent
 }
 
 describe('ObservationEditNumberComponent', () => {
