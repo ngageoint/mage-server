@@ -103,7 +103,8 @@ import {
   geometryServiceProvider,
   observationServiceProvider,
   filterServiceProvider,
-  userServiceProvider } from './upgrade/ajs-upgraded-providers';
+  userServiceProvider, 
+  locationServiceProvider} from './upgrade/ajs-upgraded-providers';
 
 import { 
   ObservationViewCheckboxComponent,
@@ -266,6 +267,7 @@ import { ObservationEditDiscardComponent } from './observation/observation-edit/
     geometryServiceProvider,
     observationServiceProvider,
     localStorageServiceProvider,
+    locationServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [],
