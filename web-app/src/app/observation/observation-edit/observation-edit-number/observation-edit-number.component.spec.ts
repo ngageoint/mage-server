@@ -48,7 +48,7 @@ describe('ObservationEditNumberComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  fit('should not indicate required', () => {
+  it('should not indicate required', () => {
     component.field.required = false
     fixture.detectChanges()
     const input = fixture.debugElement.query(By.directive(MatFormField)).componentInstance
