@@ -154,30 +154,21 @@ export class AdminSettingsComponent implements OnInit {
         });
 
         Promise.all(promises).then(() => {
-            this.saved = true;
-            this.saving = false;
-            this.saveStatus = 'Security settings successfully saved.';
-            this.debounceHideSave();
+            this._snackBar.open('Security successfully saved', null, {
+                duration: 2000,
+            });
         }).catch(err => {
-            this.saving = false;
-            this.saveStatus = 'Failed to save security settings.';
+            this._snackBar.open('Failed to save security', null, {
+                duration: 2000,
+            });
         });*/
     }
 
     colorChanged(event: ColorEvent, key: string): void {
-        switch (key) {
-            case "headerTextColor":
-                this.banner.headerTextColor = event.color;
-                break;
-            case "headerBackgroundColor":
-                this.banner.headerBackgroundColor =  event.color;
-                break;
-            case "footerTextColor":
-                this.banner.footerTextColor = event.color;
-                break;
-            case "footerBackgroundColor":
-                this.banner.footerBackgroundColor = event.color;
-                break;
+        if (this.banner.hasOwnProperty(key)) {
+            this.banner[key] = event.color;
+        } else {
+            console.log(key + ' is not a valid banner property');
         }
     }
 }
