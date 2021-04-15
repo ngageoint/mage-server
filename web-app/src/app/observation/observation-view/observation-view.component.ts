@@ -3,7 +3,7 @@ import { EventService, LocalStorageService, MapService, UserService } from 'src/
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { animate, style, transition, trigger } from '@angular/animations';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 
 @Component({
@@ -40,9 +40,10 @@ export class ObservationViewComponent implements OnChanges {
     description?: string
   } = { open: false }
 
+  // TODO: define types for these
   observationForm: any
-  primaryFeedField = {}
-  secondaryFeedField = {}
+  primaryFeedField: any = {}
+  secondaryFeedField: any = {}
 
   constructor(
     public dialog: MatDialog,
@@ -153,7 +154,7 @@ export class ObservationViewComponent implements OnChanges {
       },
       forms: []
     }
-    
+
     this.observation.properties.forms.forEach(form => {
       const observationForm = this.eventService.createForm(this.observation, formMap[form.formId])
       observationForm.name = formMap[form.formId].name

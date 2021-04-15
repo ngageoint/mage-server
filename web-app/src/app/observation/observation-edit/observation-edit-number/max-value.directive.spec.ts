@@ -12,7 +12,7 @@ class TestHostComponent {
   number: number
   max: number
 
-  @ViewChild(MaxValueDirective, { static: false }) directive: MaxValueDirective
+  @ViewChild(MaxValueDirective) directive: MaxValueDirective
 }
 
 describe('MaxValueDirective', () => {

@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { NominatimService } from '../search/nominatim.service';
-import { MatList } from '@angular/material';
+import { MatList } from '@angular/material/list';
 import { DomEvent } from 'leaflet';
 
 export enum SearchState {
@@ -20,7 +20,7 @@ export interface SearchEvent {
 export class SearchComponent implements AfterViewInit {
 
   @ViewChild('searchInput', { static: true }) searchInput: any;
-  @ViewChild(MatList, { read: ElementRef, static: false }) matList: ElementRef;
+  @ViewChild(MatList, { read: ElementRef }) matList: ElementRef;
 
   @Output() onSearch = new EventEmitter<SearchEvent>();
   @Output() onSearchClear = new EventEmitter<void>();

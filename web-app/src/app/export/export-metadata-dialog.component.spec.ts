@@ -1,7 +1,24 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 import { ExportMetadataDialogComponent, ExportMetadataUI } from './export-metadata-dialog.component';
-import { MatDialogModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, MatDialogRef, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule, MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, MatChipsModule } from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportMetadataService, ExportMetadata, ExportRequest, ExportResponse } from './services/export-metadata.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -98,10 +115,10 @@ describe('Export Metadata Dialog Component', () => {
     }));
 
     beforeEach(() => {
-        expect(TestBed.get(LocalStorageService)).toBeTruthy();
-        expect(TestBed.get(ExportMetadataService)).toBeTruthy();
-        expect(TestBed.get(EventService)).toBeTruthy();
-        expect(TestBed.get(FilterService)).toBeTruthy();
+        expect(TestBed.inject(LocalStorageService)).toBeTruthy();
+        expect(TestBed.inject(ExportMetadataService)).toBeTruthy();
+        expect(TestBed.inject(EventService)).toBeTruthy();
+        expect(TestBed.inject(FilterService)).toBeTruthy();
 
         fixture = TestBed.createComponent(ExportMetadataDialogComponent);
         component = fixture.componentInstance;

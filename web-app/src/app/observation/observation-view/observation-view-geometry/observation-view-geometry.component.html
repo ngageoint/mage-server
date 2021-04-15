@@ -1,6 +1,7 @@
 <div [hidden]="!field?.value">
   <div class="mat-body-1">{{field?.title}}</div>
-  <div class="map-view" (click)="onLocation()">
+  <!-- TODO: angular9 - removed click handler with missing reference onLocation() -->
+  <div class="map-view">
     <map-clip class="geometry-map" [feature]="feature"></map-clip>
   </div>
   <div class="location">

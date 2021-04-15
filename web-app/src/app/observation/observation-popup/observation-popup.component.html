@@ -24,7 +24,7 @@
       <div *ngIf="primaryField?.value">
         <div class="item-header-text">
           <div [ngSwitch]="primaryField?.field?.type">
-            <div *ngSwitchCase="geometry">
+            <div *ngSwitchCase="'geometry'">
               {{primaryField?.value | geometry:5}}
             </div>
             <div *ngSwitchDefault>
@@ -37,7 +37,7 @@
       <div *ngIf="secondaryField?.value">
         <div class="item-subhead">
           <span [ngSwitch]="secondaryField?.field?.type">
-            <span *ngSwitchCase="geometry">
+            <span *ngSwitchCase="'geometry'">
               {{secondaryField?.value | geometry:5}}
             </span>
             <span *ngSwitchDefault>
@@ -55,7 +55,7 @@
         <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
       </button>
     </div>
-  
+
     <div class="actions-icons">
       <button mat-icon-button (click)="onInfo()" class="actions--inactive">
         <mat-icon>info_outline</mat-icon>

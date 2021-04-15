@@ -14,8 +14,8 @@ describe('ExportMetadataService', () => {
     });
 
     // Inject the http service and test controller for each test
-    httpClient = TestBed.get(HttpClient);
-    httpTestingController = TestBed.get(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
+    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
@@ -35,7 +35,7 @@ describe('ExportMetadataService', () => {
       options: {}
     }];
 
-    const service: ExportMetadataService = TestBed.get(ExportMetadataService);
+    const service: ExportMetadataService = TestBed.inject(ExportMetadataService);
     expect(service).toBeTruthy();
 
     service.getMyExportMetadata().subscribe(metas => {
@@ -61,7 +61,7 @@ describe('ExportMetadataService', () => {
   it('should fail to get my metadata due to error', () => {
     const emsg = 'deliberate 404 error';
 
-    const service: ExportMetadataService = TestBed.get(ExportMetadataService);
+    const service: ExportMetadataService = TestBed.inject(ExportMetadataService);
     expect(service).toBeTruthy();
     service.getMyExportMetadata().subscribe(data => fail('should have failed with the 404 error'),
       (error: HttpErrorResponse) => {

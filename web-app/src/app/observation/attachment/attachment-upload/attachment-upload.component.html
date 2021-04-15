@@ -1,5 +1,5 @@
 <div>
-  <mat-spinner *ngIf="!attachment?.preview" [color]="primary"></mat-spinner>
+  <mat-spinner *ngIf="!attachment?.preview" [color]="'primary'"></mat-spinner>
   <img *ngIf="attachment?.preview" class="upload-preview" [src]="attachment?.preview" />
 </div>
 <div class="upload-delete" *ngIf="attachment?.preview">

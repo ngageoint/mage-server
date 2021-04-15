@@ -1,7 +1,12 @@
 import { async, ComponentFixture, TestBed, getTestBed, tick, fakeAsync } from '@angular/core/testing';
 
 import { SearchComponent, SearchState } from './search.component';
-import { MatIconModule, MatButtonModule, MatInputModule, MatProgressSpinnerModule, MatListModule, MatCardModule, MatListItem } from '@angular/material';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule, MatListItem } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NominatimService } from '../search/nominatim.service';
 import { By } from '@angular/platform-browser';

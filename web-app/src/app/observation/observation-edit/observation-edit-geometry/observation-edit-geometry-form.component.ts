@@ -2,7 +2,7 @@ import { Component, Directive, EventEmitter, Inject, Input, OnChanges, Output, S
 import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 import mgrs from 'mgrs';
 import { AbstractControl, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -37,8 +37,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   @Output() save = new EventEmitter<any>()
   @Output() cancel = new EventEmitter<any>()
 
-  @ViewChild('mgrsModel', { static: false }) mgrsModel: NgModel;
-  @ViewChild('snackbarContainer', { read: ViewContainerRef, static: false }) snackBarContainer: ViewContainerRef;
+  @ViewChild('mgrsModel') mgrsModel: NgModel;
+  @ViewChild('snackbarContainer', { read: ViewContainerRef }) snackBarContainer: ViewContainerRef;
 
   selectedShapeType = 'Point'
   coordinateSystem = 'wgs84'
@@ -95,7 +95,6 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         });
         return;
       }
-
       this.featureEdit.save();
       this.save.emit({ feature: this.feature });
     } else {
@@ -202,7 +201,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     }
   }
 
-  shapeTypeChanged(shapeType: string): void {
+  shapeTypeChanged(shapeType?: string): void {
     this.selectedShapeType = shapeType
     console.log('selected', shapeType)
 
@@ -227,8 +226,9 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         this.featureEdit.cancel()
         break;
     }
-
-    if (shapeType) this.onEditShape()
+    if (shapeType) {
+      this.onEditShape()
+    }
   }
 
   onEditShape(): void {
