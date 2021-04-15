@@ -1,15 +1,15 @@
-import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
-import { Banner, AdminChoice, MaxLock } from './admin-settings.model';
+import { Banner, Disclaimer } from './admin-settings.model';
 
 @Component({
     selector: 'admin-settings',
     templateUrl: 'admin-settings.component.html',
     styleUrls: ['./admin-settings.component.scss']
 })
-export class AdminSettingsComponent implements OnInit, OnDestroy {
+export class AdminSettingsComponent implements OnInit {
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build'
@@ -19,46 +19,6 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     teams: any[] = [];
     events: any[] = [];
     strategies: any[] = [];
-    usersReqAdminChoices: AdminChoice[] = [{
-        title: 'Enabled',
-        description: 'New user accounts require admin approval.',
-        value: true
-    }, {
-        title: 'Disabled',
-        description: 'New user accounts do not require admin approval.',
-        value: false
-    }];
-    devicesReqAdminChoices: AdminChoice[] = [{
-        title: 'Enabled',
-        description: 'New devices require admin approval.',
-        value: true
-    }, {
-        title: 'Disabled',
-        description: 'New devices do not require admin approval.',
-        value: false
-    }];
-    accountLock: any = {};
-    accountLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not lock MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
-        value: true
-    }];
-    maxLock: MaxLock = {
-        enabled: false
-    };
-    maxLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not disable MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
-        value: true
-    }];
     setting: string = 'banner';
     banner: Banner = {
         headerTextColor: '#000000',
@@ -68,12 +28,13 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         footerText: '',
         footerBackgroundColor: 'FFFFFF',
         showHeader: false,
-        showFooter: false,
+        showFooter: false
+    };
+    disclaimer: Disclaimer = {
         showDisclaimer: false,
         disclaimerTitle: '',
         disclaimerText: ''
-    };
-    disclaimer: any;
+    }
 
     constructor(
         @Inject(Settings)
@@ -96,6 +57,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
 
         Promise.all([configsPromise, settingsPromise, teamsPromise, eventsPromise]).then(result => {
+            //Remove event teams
             this.teams = result[2].filter(function (team: any): boolean {
                 return team.teamEventId === undefined;
             });
@@ -103,8 +65,8 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
 
             this.strategies = result[0] || [];
             this.strategies.sort(function (a: any, b: any): number {
-                const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-                const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+                const nameA = a.name.toUpperCase(); 
+                const nameB = b.name.toUpperCase();
                 if (nameA < nameB) {
                     return -1;
                 }
@@ -112,7 +74,6 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
                     return 1;
                 }
 
-                // names must be equal
                 return 0;
             });
             this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
@@ -145,34 +106,10 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
                         return this.teams.some(team => team.id === id)
                     });
                 }
-                if (strategy.settings.passwordPolicy) {
-                    this.buildPasswordHelp(strategy);
-                    if (strategy.type === 'local') {
-                        this.maxLock.enabled = strategy.settings.accountLock && strategy.settings.accountLock.max !== undefined;
-                    }
-                }
             });
         }).catch(err => {
             console.log(err);
-        })
-    }
-
-    buildPasswordHelp(strategy): void {
-        if (strategy.settings.passwordPolicy) {
-            if (!strategy.settings.passwordPolicy.customizeHelpText) {
-                const policy = strategy.settings.passwordPolicy
-                const templates = Object.entries(policy.helpTextTemplate)
-                    .filter(([key]) => policy[`${key}Enabled`] === true)
-                    .map(([key, value]) => {
-                        return (value as string).replace('#', policy[key])
-                    });
-
-                strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
-            }
-        }
-    }
-
-    ngOnDestroy(): void {
+        });
     }
 
     saveBanner(): void {

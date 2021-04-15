@@ -1,0 +1,268 @@
+<section class="mat-typography">
+
+    <div class="row">
+        <mat-label><b>New User Accounts Require Admin
+                Approval</b></mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+                <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <p class="help-block">If disabled, new user accounts do <b>NOT</b>
+            require admin approval to access MAGE.</p>
+    </div>
+    <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
+        <div class="row">
+            <mat-label><b>New Users Default Event(s)</b></mat-label>
+            <mat-form-field appearance="outline">
+                <mat-select [(ngModel)]="strategy.settings.newUserEvents" [ngModelOptions]="{standalone: true}"
+                    multiple>
+                    <mat-option *ngFor="let event of events" [value]="event.id">
+                        {{event.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <p class="help-block">When new users are created, this is the event
+                that they will be added to by default.</p>
+        </div>
+        <div class="row">
+            <mat-label><b>New Users Default Team(s)</b></mat-label>
+            <mat-form-field appearance="outline">
+                <mat-select [(ngModel)]="strategy.settings.newUserTeams" [ngModelOptions]="{standalone: true}" multiple>
+                    <mat-option *ngFor="let team of teams" [value]="team.name">
+                        {{team.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <p class="help-block">When new users are created, this is the team
+                that they will be added to by default.</p>
+        </div>
+    </div>
+    <div class="row">
+        <mat-label><b>New Devices Require Admin Approval</b></mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+                <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <p class="help-block">If disabled, new devices do <b>NOT</b> require
+            admin approval to access MAGE.</p>
+    </div>
+    <div *ngIf="strategy.type == 'local'">
+        <div class="row">
+            <h4>Account Lock</h4>
+            <hr>
+        </div>
+        <div class="row">
+            <mat-label><b>Enabled</b></mat-label>
+            <mat-form-field appearance="outline">
+                <mat-select [(ngModel)]="strategy.settings.accountLock.enabled" [ngModelOptions]="{standalone: true}">
+                    <mat-option *ngFor="let accountLockChoice of accountLockChoices" [value]="accountLockChoice.value">
+                        {{accountLockChoice.title}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <p class="help-block">MAGE can lock user accounts after a number of
+                invalid login attempts for a certain amount of time.</p>
+        </div>
+        <div *ngIf="strategy.settings.accountLock.enabled">
+            <div class="row">
+                <mat-label><b>Account Lockout Threshold</b></mat-label>
+                <mat-form-field appearance="outline">
+                    <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.threshold"
+                        [ngModelOptions]="{standalone: true}">
+                </mat-form-field>
+                <p class="help-block">Number of invalid login attempts, after
+                    which the users account will be locked.</p>
+            </div>
+            <div class="row">
+                <mat-label><b>Account Lockout Interval (Seconds)</b></mat-label>
+                <mat-form-field appearance="outline">
+                    <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.interval"
+                        [ngModelOptions]="{standalone: true}">
+                </mat-form-field>
+                <p class="help-block">Amount of time in seconds a users account
+                    will remain locked after reaching number of invalid login
+                    attempts.</p>
+            </div>
+            <div class="row">
+                <mat-label><b>Enable Max Lockout</b></mat-label>
+                <mat-form-field appearance="outline">
+                    <mat-select [(ngModel)]="maxLock.enabled" [ngModelOptions]="{standalone: true}">
+                        <mat-option *ngFor="let maxLockChoice of maxLockChoices" [value]="maxLockChoice.value">
+                            {{maxLockChoice.title}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <p class="help-block">MAGE can disable user accounts if a user
+                    locks their account a certain number of times.</p>
+            </div>
+            <div *ngIf="maxLock.enabled">
+                <div class="row">
+                    <mat-label><b>Max Lockout Threshold</b></mat-label>
+                    <mat-form-field appearance="outline">
+                        <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.max"
+                            [ngModelOptions]="{standalone: true}">
+                    </mat-form-field>
+                    <p class="help-block">Number of times a user account can be
+                        locked before it is disabled.
+                        Disabled accounts must be re-enabled by an admin. If
+                        left blank this feature is disabled.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="strategy.type == 'local'">
+        <div class="row">
+            <h4>Password Policies</h4>
+            <hr>
+        </div>
+        <div class="row">
+            <div class="bottom-gap">
+                <h5>Minimum Password Requirements for User Accounts:</h5>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.minCharsEnabled"
+                    [checked]="strategy.settings.passwordPolicy.minCharsEnabled" (change)="buildPasswordHelp(strategy)"
+                    [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="minChars"
+                    [disabled]="!strategy.settings.passwordPolicy.minCharsEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.minChars" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="minChars">Minimum Letters</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.maxConCharsEnabled"
+                    [checked]="strategy.settings.passwordPolicy.maxConCharsEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="maxConChars"
+                    [disabled]="!strategy.settings.passwordPolicy.maxConCharsEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.maxConChars" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="maxConChars">Maximum Consecutive Letters</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.lowLettersEnabled"
+                    [checked]="strategy.settings.passwordPolicy.lowLettersEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="lowLetters"
+                    [disabled]="!strategy.settings.passwordPolicy.lowLettersEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.lowLetters" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="lowLetters">Lowercase Letters</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.highLettersEnabled"
+                    [checked]="strategy.settings.passwordPolicy.highLettersEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="highLetters"
+                    [disabled]="!strategy.settings.passwordPolicy.highLettersEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.highLetters" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="highLetters">Uppercase Letters</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.numbersEnabled"
+                    [checked]="strategy.settings.passwordPolicy.numbersEnabled" (change)="buildPasswordHelp(strategy)"
+                    [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="numbers" [disabled]="!strategy.settings.passwordPolicy.numbersEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.numbers" min="0" (click)="buildPasswordHelp(strategy)"
+                    class="form-control left-gap" [ngModelOptions]="{standalone: true}">
+                <label for="numbers">Numbers</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.specialCharsEnabled"
+                    [checked]="strategy.settings.passwordPolicy.specialCharsEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="specialChars"
+                    [disabled]="!strategy.settings.passwordPolicy.specialCharsEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.specialChars" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="specialChars">Special Characters</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap">
+                <h5>User Password Policies:</h5>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.passwordMinLengthEnabled"
+                    [checked]="strategy.settings.passwordPolicy.passwordMinLengthEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="passwordMinLength"
+                    [disabled]="!strategy.settings.passwordPolicy.passwordMinLengthEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.passwordMinLength" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="passwordMinLength">Minimum Password Length</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap form-inline">
+                <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
+                    [checked]="strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
+                    (change)="buildPasswordHelp(strategy)" [ngModelOptions]="{standalone: true}" color="primary">
+                </mat-checkbox>
+                <input matInput type="number" id="passwordHistoryCount"
+                    [disabled]="!strategy.settings.passwordPolicy.passwordHistoryCountEnabled"
+                    [(ngModel)]="strategy.settings.passwordPolicy.passwordHistoryCount" min="0"
+                    (click)="buildPasswordHelp(strategy)" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}">
+                <label for="passwordHistoryCount">Previous Passwords
+                    Remembered</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="bottom-gap">
+                <h5>User Password Policy Help:</h5>
+            </div>
+        </div>
+        <div class="row">
+            <mat-checkbox [(ngModel)]="strategy.settings.passwordPolicy.customizeHelpText"
+                [checked]="strategy.settings.passwordPolicy.customizeHelpText" color="primary"
+                [ngModelOptions]="{standalone: true}" id="customize-help" (change)="buildPasswordHelp(strategy)">
+            </mat-checkbox>
+            <label for="customize-help">Customize password help message</label>
+        </div>
+        <div class="row">
+            <div class="bottom-gap">
+                <textarea matInput id="helpText" [disabled]="!strategy.settings.passwordPolicy.customizeHelpText"
+                    [(ngModel)]="strategy.settings.passwordPolicy.helpText" class="form-control left-gap"
+                    [ngModelOptions]="{standalone: true}"></textarea>
+                <span id="passwordHelpBlock" class="help-block">This is the help
+                    text that is displayed to the user during password
+                    creation/update, when their password fails to meet the password
+                    policy.</span>
+            </div>
+        </div>
+    </div>
+</section>

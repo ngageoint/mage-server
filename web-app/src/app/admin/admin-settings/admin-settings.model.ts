@@ -6,7 +6,10 @@ export interface Banner {
     footerText: string,
     footerBackgroundColor: string,
     showHeader: boolean,
-    showFooter: boolean,
+    showFooter: boolean
+}
+
+export interface Disclaimer {
     showDisclaimer: boolean,
     disclaimerTitle: string,
     disclaimerText: string

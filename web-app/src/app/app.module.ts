@@ -133,6 +133,7 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
+import { AuthenticationSettingsComponent } from './admin/admin-settings/admin-settings';
 
 @NgModule({
   declarations: [
@@ -193,7 +194,8 @@ import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb
     ExportsComponent,
     ExportMetadataDialogComponent,
     CdkDetailRowDirective,
-    AdminSettingsComponent
+    AdminSettingsComponent,
+    AuthenticationSettingsComponent
   ],
   imports: [
     BrowserModule,
