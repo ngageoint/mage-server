@@ -49,7 +49,7 @@
         <p class="help-block">If disabled, new devices do <b>NOT</b> require
             admin approval to access MAGE.</p>
     </div>
-    <div *ngIf="strategy.type == 'local'">
+    <div *ngIf="strategy.settings.accountLock">
         <div class="row">
             <h4>Account Lock</h4>
             <hr>
