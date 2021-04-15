@@ -1,10 +1,17 @@
 import { Component, Input } from '@angular/core';
 
+/**
+ * TODO: move to forms model module (which doesn't exist yet)
+ */
 interface RadioField {
   title: string,
   name: string,
   value: string,
   required: boolean,
+  /*
+  TODO: angular9 - added to fix template errors; verify correct;
+  */
+  choices: { title: string }[]
 }
 
 @Component({

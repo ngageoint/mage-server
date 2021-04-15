@@ -1,7 +1,8 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatChipInputEvent, MatAutocompleteSelectedEvent, MatAutocompleteTrigger, MatChipList } from '@angular/material';
+import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatChipInputEvent, MatChipList } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 
@@ -25,10 +26,10 @@ interface MultiSelectField {
 export class ObservationEditMultiselectComponent implements AfterViewInit {
   @Input() field: MultiSelectField
 
-  @ViewChild('dropdown', { static: false }) dropdown: FormControl
-  @ViewChild('chipList', { static: false }) chipList: MatChipList
-  @ViewChild('choiceInput', { static: false }) choiceInput: ElementRef<HTMLInputElement>
-  @ViewChild(MatAutocompleteTrigger, {static: false}) autocomplete: MatAutocompleteTrigger
+  @ViewChild('dropdown') dropdown: FormControl
+  @ViewChild('chipList') chipList: MatChipList
+  @ViewChild('choiceInput') choiceInput: ElementRef<HTMLInputElement>
+  @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger
 
   visible = true
   removable = true

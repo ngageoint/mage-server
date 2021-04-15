@@ -12,7 +12,7 @@ class TestHostComponent {
   number: number
   min: number
 
-  @ViewChild(MinValueDirective, { static: false }) directive: MinValueDirective
+  @ViewChild(MinValueDirective) directive: MinValueDirective
 }
 
 describe('MinValidatorDirective', () => {

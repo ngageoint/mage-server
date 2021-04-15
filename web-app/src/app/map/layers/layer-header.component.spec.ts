@@ -1,7 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LayerHeaderComponent } from './layer-header.component';
-import { MatCheckboxModule, MatRadioModule, MatIconModule, MatFormFieldModule } from '@angular/material';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from '@angular/material/radio';
 import { Component, ViewChild } from '@angular/core';
 import { LayerService } from './layer.service';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -19,7 +22,7 @@ class TestHostComponent {
     }
   };
 
-  @ViewChild(LayerHeaderComponent, { static: false }) layerHeader: LayerHeaderComponent;
+  @ViewChild(LayerHeaderComponent) layerHeader: LayerHeaderComponent;
 }
 
 describe('LayerHeaderComponent', () => {

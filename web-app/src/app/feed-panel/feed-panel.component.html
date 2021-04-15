@@ -1,11 +1,11 @@
 <user-view *ngIf="viewUser" @slide
   class="component__view"
   [user]="viewUser"
-  [event]="event" 
+  [event]="event"
   (close)="onUserViewClose()">
 </user-view>
 
-<observation-view *ngIf="viewObservation" @slide 
+<observation-view *ngIf="viewObservation" @slide
   class="component__view"
   [event]="event"
   [observation]="viewObservation"
@@ -13,10 +13,10 @@
 </observation-view>
 
 <observation-edit *ngIf="editObservation" @slide
-  class="component__view" 
-  [form]="editForm" 
+  class="component__view"
+  [form]="editForm"
   [observation]="editObservation"
-  (close)="onObservationEditClose($event)" 
+  (close)="onObservationEditClose($event)"
   (delete)="onObservationDelete($event)">
 </observation-edit>
 
@@ -27,7 +27,7 @@
   (close)="onObservationEditClose()">
 </observation-edit>
 
-<observation-form *ngIf="newObservationForms" @slide 
+<observation-form *ngIf="newObservationForms" @slide
   class="component__view"
   [forms]="newObservationForms"
   (selected)="createObservation($event)"
@@ -48,6 +48,7 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon class="tabs__icon">people</mat-icon>
+      <!-- TODO: angular9 - userBadge property did not exist in component class -->
       <div [matBadge]="userBadge" matBadgeOverlap="false">People</div>
     </ng-template>
 
@@ -58,11 +59,11 @@
 </mat-tab-group>
 
 <ng-template #permissionDialog>
-  <h1 mat-dialog-title>Cannot Create Observation</h1>
-  <div mat-dialog-content>
+  <h1 matDialogTitle>Cannot Create Observation</h1>
+  <div matDialogContent>
     <p>You are not part of this event. Please contact you MAGE administrator if you need access to this event.</p>
   </div>
-  <div mat-dialog-actions class="permission__actions">
-    <button mat-button color="primary" [mat-dialog-close]="ok">Ok</button>
+  <div matDialogActions class="permission__actions">
+    <button matButtonColor="primary" matDialogClose="ok">Ok</button>
   </div>
 </ng-template>

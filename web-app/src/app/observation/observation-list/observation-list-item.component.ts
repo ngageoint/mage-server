@@ -2,7 +2,7 @@ import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@
 import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import * as moment from 'moment'
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service'
-import { MatRipple } from '@angular/material'
+import { MatRipple } from '@angular/material/core';
 import { animate, style, transition, trigger } from '@angular/animations'
 
 @Component({
@@ -26,7 +26,7 @@ export class ObservationListItemComponent implements OnChanges {
   @Input() form: any
   @Input() observation: any
 
-  @ViewChild(MatRipple, { static: false }) ripple: MatRipple
+  @ViewChild(MatRipple) ripple: MatRipple
 
   edit = false
   canEdit = false
@@ -40,9 +40,10 @@ export class ObservationListItemComponent implements OnChanges {
     description?: string
   } = { open: false}
 
+  // TODO: define some types for these
   observationForm: any
-  primaryFeedField = {}
-  secondaryFeedField = {}
+  primaryFeedField: any = {}
+  secondaryFeedField: any = {}
 
   constructor(
     @Inject(MapService) private mapService: any,
@@ -107,7 +108,7 @@ export class ObservationListItemComponent implements OnChanges {
     })
   }
 
-  viewObservation(): void {    
+  viewObservation(): void {
     this.onObservationLocationClick()
     this.feedPanelService.viewObservation(this.observation)
   }
@@ -118,7 +119,7 @@ export class ObservationListItemComponent implements OnChanges {
 
   updateItem(): void {
     if (!this.observation || !this.event) return
-    
+
     this.isUserFavorite = this.observation.favoriteUserIds && this.observation.favoriteUserIds.includes(this.userService.myself.id)
     this.canEdit = this.userService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.userService.hasPermission('UPDATE_OBSERVATION_ALL')
 

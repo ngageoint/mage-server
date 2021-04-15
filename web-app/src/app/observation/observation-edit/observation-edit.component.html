@@ -19,7 +19,7 @@
         <mat-icon>error_outline</mat-icon>
         <div class="edit-banner--content__text">{{error?.message}}.</div>
       </div>
-    
+
       <div class="edit-banner--actions">
         <button mat-button color="primary" (click)="error = null;">OK</button>
       </div>
@@ -28,13 +28,13 @@
     <form class="observation" name="observationForm" novalidate>
       <mat-card class="form">
         <observation-edit-date [field]="form?.timestampField"></observation-edit-date>
-      
+
         <observation-edit-geometry
           [field]="form?.geometryField"
           [featureId]="observation.id"
           [featureStyle]="geometryStyle"
           (onFeatureEdit)="onGeometryEdit($event)"
-          (onFeatureChanged)="onGeometryChanged($event, field)">
+          (onFeatureChanged)="onGeometryChanged($event)">
         </observation-edit-geometry>
       </mat-card>
 
@@ -71,7 +71,7 @@
         </mat-card>
 
         <div *ngIf="observation.id && canDeleteObservation" class="delete">
-          <button mat-flat-button color="warn" type="button" (click)="deleteObservation(observation)" class="delete__button">
+          <button mat-flat-button color="warn" type="button" (click)="onDeleteObservation()" class="delete__button">
             Delete Observation
           </button>
         </div>

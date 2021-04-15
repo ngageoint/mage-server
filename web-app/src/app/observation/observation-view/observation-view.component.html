@@ -25,7 +25,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="item-header">
         <div class="item-header-content">
           <div class="item-overline">
@@ -35,11 +35,11 @@
               <span>{{observation?.properties?.timestamp | moment}}</span>
             </div>
           </div>
-      
+
           <div *ngIf="primaryFeedField.value">
             <div class="item-header-text">
               <div [ngSwitch]="primaryFeedField.field?.type">
-                <div *ngSwitchCase="geometry">
+                <div *ngSwitchCase="'geometry'">
                   {{primaryFeedField?.value | geometry:5}}
                 </div>
                 <div *ngSwitchDefault>
@@ -48,11 +48,11 @@
               </div>
             </div>
           </div>
-      
+
           <div *ngIf="secondaryFeedField.value">
             <div class="item-subhead">
               <span [ngSwitch]="secondaryFeedField.field?.type">
-                <span *ngSwitchCase="geometry">
+                <span *ngSwitchCase="'geometry'">
                   {{secondaryFeedField?.value | geometry:5}}
                 </span>
                 <span *ngSwitchDefault>
@@ -62,7 +62,7 @@
             </div>
           </div>
         </div>
-      
+
         <div class="item-thumbnail">
           <img [src]="observation.style.iconUrl" />
         </div>
@@ -75,7 +75,7 @@
       </div>
 
       <div class="item-location">
-        <button mat-button color="primary" (click)="onObservationLocationClick($event)" class="actions__location-button">
+        <button mat-button color="primary" (click)="onObservationLocationClick()" class="actions__location-button">
           <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
         </button>
       </div>
@@ -105,14 +105,14 @@
                 <mat-icon>{{observation.important ? 'flag' : 'outlined_flag'}}</mat-icon>
               </button>
             </div>
-        
+
             <div class="actions__favorite">
               <button mat-icon-button (click)="toggleFavorite()" class="actions--inactive" [ngClass]="{'actions__favorite--active': isUserFavorite}" matTooltip="Add To Favorites" matTooltipPosition="above">
                 <mat-icon>{{isUserFavorite ? 'favorite' : 'favorite_border'}}</mat-icon>
               </button>
               <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
             </div>
-        
+
             <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download" matTooltipPosition="above">
               <mat-icon>save_alt</mat-icon>
             </a>

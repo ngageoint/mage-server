@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
-import { MatSliderChange } from '@angular/material';
+import { MatSliderChange } from '@angular/material/slider';
 import { LayerService, SimpleStyle } from './layer.service';
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { trigger, style, transition, animate } from '@angular/animations';
@@ -24,7 +24,7 @@ export class LayerContentComponent {
   @Input() layer: any;
   @Input() style: SimpleStyle;
 
-  @ViewChild('color', { static: false }) color: ElementRef;
+  @ViewChild('color') color: ElementRef;
 
   showColorPicker = false;
   stroke = '#000000';

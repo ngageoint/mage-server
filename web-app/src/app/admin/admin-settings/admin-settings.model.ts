@@ -6,7 +6,10 @@ export interface Banner {
     footerText: string,
     footerBackgroundColor: string,
     showHeader: boolean,
-    showFooter: boolean
+    showFooter: boolean,
+    showDisclaimer: boolean,
+    disclaimerTitle: string,
+    disclaimerText: string
 }
 
 export interface AdminChoice {

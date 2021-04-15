@@ -1,7 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatError, MatFormField, MatFormFieldControl, MatFormFieldModule, MatInput, MatInputModule, MatSelect } from '@angular/material';
+import { MatError, MatFormField, MatFormFieldControl, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatSelect } from '@angular/material/select';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -18,7 +20,7 @@ class TestHostComponent {
     name: 'field1'
   }
 
-  @ViewChild(ObservationEditEmailComponent, { static: false }) component: ObservationEditEmailComponent
+  @ViewChild(ObservationEditEmailComponent) component: ObservationEditEmailComponent
 }
 
 describe('ObservationEditEmailComponent', () => {

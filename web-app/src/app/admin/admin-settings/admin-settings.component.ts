@@ -68,7 +68,10 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         footerText: '',
         footerBackgroundColor: 'FFFFFF',
         showHeader: false,
-        showFooter: false
+        showFooter: false,
+        showDisclaimer: false,
+        disclaimerTitle: '',
+        disclaimerText: ''
     };
     disclaimer: any;
 
