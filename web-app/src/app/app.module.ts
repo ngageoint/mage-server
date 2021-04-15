@@ -134,6 +134,7 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { AuthenticationSettingsComponent } from './admin/admin-settings/admin-settings';
+import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 
 @NgModule({
   declarations: [
@@ -195,7 +196,8 @@ import { AuthenticationSettingsComponent } from './admin/admin-settings/admin-se
     ExportMetadataDialogComponent,
     CdkDetailRowDirective,
     AdminSettingsComponent,
-    AuthenticationSettingsComponent
+    AuthenticationSettingsComponent,
+    PasswordPolicyComponent
   ],
   imports: [
     BrowserModule,

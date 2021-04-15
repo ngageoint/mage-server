@@ -1,6 +1,5 @@
-import { Component, OnInit, Input, Inject } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { AdminChoice, MaxLock } from '../admin-settings.model';
-import { Team } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
     selector: 'authentication-settings',
@@ -11,7 +10,7 @@ export class AuthenticationSettingsComponent implements OnInit {
     @Input() strategy: any;
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
-    
+
     usersReqAdminChoices: AdminChoice[] = [{
         title: 'Enabled',
         description: 'New user accounts require admin approval.',
@@ -54,27 +53,8 @@ export class AuthenticationSettingsComponent implements OnInit {
     }];
 
     ngOnInit(): void {
-
-        if (this.strategy.settings.passwordPolicy) {
-            this.buildPasswordHelp(this.strategy);
-            if (this.strategy.type === 'local') {
-                this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
-            }
-        }
-    }
-
-    buildPasswordHelp(strategy): void {
-        if (strategy.settings.passwordPolicy) {
-            if (!strategy.settings.passwordPolicy.customizeHelpText) {
-                const policy = strategy.settings.passwordPolicy
-                const templates = Object.entries(policy.helpTextTemplate)
-                    .filter(([key]) => policy[`${key}Enabled`] === true)
-                    .map(([key, value]) => {
-                        return (value as string).replace('#', policy[key])
-                    });
-
-                strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
-            }
+        if (this.strategy.type === 'local') {
+            this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
         }
     }
 }
