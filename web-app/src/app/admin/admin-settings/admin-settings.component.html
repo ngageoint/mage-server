@@ -71,7 +71,7 @@
                         </mat-checkbox>
                         <label for="show-header">Show Header</label>
                     </div>
-                    <div class="row admin-settings-gap">
+                    <div class="row admin-settings-gap bottom-gap">
                         <mat-label for="headerText"><b>Header Text</b></mat-label>
                         <input matInput [(ngModel)]="banner.headerText" class="form-control"
                             [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader">
@@ -95,7 +95,7 @@
                         </mat-checkbox>
                         <label for="show-footer">Show Footer</label>
                     </div>
-                    <div class="row admin-settings-gap">
+                    <div class="row admin-settings-gap bottom-gap">
                         <mat-label for="footerText"><b>Footer Text</b></mat-label>
                         <input matInput [(ngModel)]="banner.footerText" class="form-control"
                             [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter">

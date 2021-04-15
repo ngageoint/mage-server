@@ -165,6 +165,19 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     colorChanged(event: ColorEvent, key: string): void {
-
+        switch (key) {
+            case "headerTextColor":
+                this.banner.headerTextColor = event.color;
+                break;
+            case "headerBackgroundColor":
+                this.banner.headerBackgroundColor =  event.color;
+                break;
+            case "footerTextColor":
+                this.banner.footerTextColor = event.color;
+                break;
+            case "footerBackgroundColor":
+                this.banner.footerBackgroundColor = event.color;
+                break;
+        }
     }
 }
