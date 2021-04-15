@@ -3,6 +3,7 @@ import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
 import { Banner, Disclaimer } from './admin-settings.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'admin-settings',
@@ -37,6 +38,7 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     constructor(
+        private _snackBar: MatSnackBar,
         @Inject(Settings)
         public settings: any,
         @Inject(Team)
@@ -65,7 +67,7 @@ export class AdminSettingsComponent implements OnInit {
 
             this.strategies = result[0] || [];
             this.strategies.sort(function (a: any, b: any): number {
-                const nameA = a.name.toUpperCase(); 
+                const nameA = a.name.toUpperCase();
                 const nameB = b.name.toUpperCase();
                 if (nameA < nameB) {
                     return -1;
@@ -113,12 +115,53 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     saveBanner(): void {
+        this.settings.update({ type: 'banner' }, this.banner, () => {
+            this._snackBar.open('Banner successfully saved', null, {
+                duration: 2000,
+            });
+        }, () => {
+            this._snackBar.open('Failed to save banner', null, {
+                duration: 2000,
+            });
+        });
     }
 
     saveDisclaimer(): void {
+        this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
+            this._snackBar.open('Disclaimer successfully saved', null, {
+                duration: 2000,
+            });
+        }, () => {
+            this._snackBar.open('Failed to save diclaimer', null, {
+                duration: 2000,
+            });
+        });
     }
 
     saveSecurity(): void {
+        /*const promises = [];
+        this.strategies.forEach(strategy => {
+            if (strategy.settings.usersReqAdmin.enabled) {
+                strategy.newUserEvents = [];
+                strategy.newUserTeams = [];
+            }
+            if (strategy.type === 'local') {
+                if (!this.maxLock.enabled) {
+                    delete strategy.settings.accountLock.max;
+                }
+            }
+            promises.push(this.AuthenticationConfigurationService.updateConfiguration(strategy));
+        });
+
+        Promise.all(promises).then(() => {
+            this.saved = true;
+            this.saving = false;
+            this.saveStatus = 'Security settings successfully saved.';
+            this.debounceHideSave();
+        }).catch(err => {
+            this.saving = false;
+            this.saveStatus = 'Failed to save security settings.';
+        });*/
     }
 
     colorChanged(event: ColorEvent, key: string): void {
