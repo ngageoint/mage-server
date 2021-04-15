@@ -135,6 +135,7 @@ import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.co
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { AuthenticationSettingsComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
+import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 
 @NgModule({
   declarations: [
@@ -197,7 +198,8 @@ import { PasswordPolicyComponent } from './admin/admin-settings/authentication-s
     CdkDetailRowDirective,
     AdminSettingsComponent,
     AuthenticationSettingsComponent,
-    PasswordPolicyComponent
+    PasswordPolicyComponent,
+    GenericSettingsComponent
   ],
   imports: [
     BrowserModule,

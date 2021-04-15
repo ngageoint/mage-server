@@ -117,4 +117,10 @@
     <div *ngIf="strategy.settings.passwordPolicy">
         <password-policy [strategy]="strategy"></password-policy>
     </div>
+    <div class="row">
+        <div class="bottom-gap">
+            <h5>Additional Settings:</h5>
+        </div>
+    </div>
+    <generic-settings [strategy]="strategy"></generic-settings>
 </section>
