@@ -20,7 +20,7 @@
         <mat-sidenav-content>
             <div *ngIf="pill === 'security'">
                 <h2 class="bottom-gap-l admin-settings-gap"><i class="fa fa-shield"></i> Security Settings</h2>
-                <form (ngSubmit)="saveSecurity()" id="security-form">
+                <form id="security-form">
                     <div *ngFor="let strategy of strategies">
                         <div class="row admin-settings-gap" style="padding-bottom: 25px;">
                             <mat-card>
@@ -57,7 +57,7 @@
                 </form>
             </div>
             <div *ngIf="pill === 'banner'">
-                <form (ngSubmit)="saveBanner()" id="banner-form">
+                <form id="banner-form">
                     <div class="row admin-settings-gap">
                         <span class="help-block">
                             MAGE can add a header and footer to all views. Below you can specify whether or not you
@@ -119,7 +119,7 @@
                 </form>
             </div>
             <div *ngIf="pill === 'disclaimer'">
-                <form (ngSubmit)="saveDisclaimer()" id="disclaimer-form">
+                <form id="disclaimer-form">
                     <div class="row admin-settings-gap">
                         <span class="help-block">
                             MAGE can present a disclaimer after login. If the disclaimer is shown users will have to
