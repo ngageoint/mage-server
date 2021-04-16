@@ -1,18 +1,23 @@
-import { OnInit, Component, Input } from '@angular/core';
+import { OnInit, Component, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { GenericSetting } from './generic-settings.model';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 @Component({
     selector: 'generic-settings',
     templateUrl: 'generic-settings.component.html',
     styleUrls: ['./generic-settings.component.scss']
 })
-export class GenericSettingsComponent implements OnInit {
+export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: any;
-    dataSource: GenericSetting[] = [];
+    dataSource: MatTableDataSource<GenericSetting>;
     displayedColumns: string[] = ['key', 'value'];
     settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
 
+    @ViewChild(MatSort) sort: MatSort;
+
     ngOnInit(): void {
+        const settings: GenericSetting[] = [];
         for (const [key, value] of Object.entries(this.strategy.settings)) {
 
             if (this.settingsKeysToIgnore.includes(key)) {
@@ -21,7 +26,7 @@ export class GenericSettingsComponent implements OnInit {
 
             let castedValue: string;
 
-            if(value instanceof String){
+            if (value instanceof String) {
                 castedValue = value as string;
             } else {
                 castedValue = JSON.stringify(value);
@@ -31,7 +36,13 @@ export class GenericSettingsComponent implements OnInit {
                 key: key,
                 value: castedValue
             };
-            this.dataSource.push(gs);
+            settings.push(gs);
         }
+
+        this.dataSource = new MatTableDataSource(settings);
+    }
+
+    ngAfterViewInit() {
+        this.dataSource.sort = this.sort;
     }
 }

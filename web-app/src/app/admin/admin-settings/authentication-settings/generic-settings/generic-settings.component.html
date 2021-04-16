@@ -1,12 +1,12 @@
 <section class="mat-typography">
-    <table mat-table [dataSource]="dataSource">
+    <table mat-table [dataSource]="dataSource" matSort>
         <ng-container matColumnDef="key">
-            <th mat-header-cell *matHeaderCellDef> Key </th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
             <td mat-cell *matCellDef="let element">{{element.key}}</td>
         </ng-container>
 
         <ng-container matColumnDef="value">
-            <th mat-header-cell *matHeaderCellDef> Value </th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
             <td mat-cell *matCellDef="let element">{{element.value}}</td>
         </ng-container>
 
