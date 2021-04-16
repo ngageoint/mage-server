@@ -2,6 +2,7 @@ import { OnInit, Component, Input, ViewChild, AfterViewInit } from '@angular/cor
 import { GenericSetting } from './generic-settings.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
     selector: 'generic-settings',
@@ -14,6 +15,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['key', 'value'];
     settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
 
+    @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
 
     ngOnInit(): void {
@@ -43,6 +45,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
+        this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
     }
 }
