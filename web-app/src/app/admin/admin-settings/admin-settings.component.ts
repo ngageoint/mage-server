@@ -139,18 +139,19 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     saveSecurity(): void {
-        /*const promises = [];
+        const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {
                 strategy.newUserEvents = [];
                 strategy.newUserTeams = [];
             }
             if (strategy.type === 'local') {
-                if (!this.maxLock.enabled) {
-                    delete strategy.settings.accountLock.max;
-                }
+                //TODO figure this out since its in a child page
+                //if (!this.maxLock.enabled) {
+                //    delete strategy.settings.accountLock.max;
+                //}
             }
-            promises.push(this.AuthenticationConfigurationService.updateConfiguration(strategy));
+            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
         });
 
         Promise.all(promises).then(() => {
@@ -161,7 +162,7 @@ export class AdminSettingsComponent implements OnInit {
             this._snackBar.open('Failed to save security', null, {
                 duration: 2000,
             });
-        });*/
+        });
     }
 
     colorChanged(event: ColorEvent, key: string): void {
