@@ -11,7 +11,7 @@ export class AuthenticationSettingsComponent implements OnInit {
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
 
-    usersReqAdminChoices: AdminChoice[] = [{
+    readonly usersReqAdminChoices: AdminChoice[] = [{
         title: 'Enabled',
         description: 'New user accounts require admin approval.',
         value: true
@@ -20,7 +20,7 @@ export class AuthenticationSettingsComponent implements OnInit {
         description: 'New user accounts do not require admin approval.',
         value: false
     }];
-    devicesReqAdminChoices: AdminChoice[] = [{
+    readonly devicesReqAdminChoices: AdminChoice[] = [{
         title: 'Enabled',
         description: 'New devices require admin approval.',
         value: true
@@ -29,8 +29,7 @@ export class AuthenticationSettingsComponent implements OnInit {
         description: 'New devices do not require admin approval.',
         value: false
     }];
-    accountLock: any = {};
-    accountLockChoices: AdminChoice[] = [{
+    readonly accountLockChoices: AdminChoice[] = [{
         title: 'Off',
         description: 'Do not lock MAGE user accounts.',
         value: false
@@ -42,7 +41,7 @@ export class AuthenticationSettingsComponent implements OnInit {
     maxLock: MaxLock = {
         enabled: false
     };
-    maxLockChoices: AdminChoice[] = [{
+    readonly maxLockChoices: AdminChoice[] = [{
         title: 'Off',
         description: 'Do not disable MAGE user accounts.',
         value: false

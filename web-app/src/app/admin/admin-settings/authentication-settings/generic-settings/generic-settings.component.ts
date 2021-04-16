@@ -12,8 +12,8 @@ import { MatPaginator } from '@angular/material/paginator';
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: any;
     dataSource: MatTableDataSource<GenericSetting>;
-    displayedColumns: string[] = ['key', 'value'];
-    settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
+    readonly displayedColumns: string[] = ['key', 'value'];
+    readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
