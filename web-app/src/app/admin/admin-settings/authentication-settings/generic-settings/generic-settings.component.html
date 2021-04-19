@@ -1,16 +1,44 @@
 <section class="mat-typography">
+    <legend class="scheduler-border">Add Property</legend>
+    <form class="form-inline">
+        <div class="form-group">
+            <label for="inputKey" class="right-gap">Key</label>
+            <input type="text" class="form-control" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
+                placeholder="Key">
+        </div>
+        <div class="form-group">
+            <label for="inputValue" class="right-gap">Value</label>
+            <input type="text" class="form-control right-gap" id="inputValue" name="inputValue"
+                [(ngModel)]="newRow.value" placeholder="Value" />
+        </div>
+        <button type="button" class="btn btn-primary" (click)="addProperty()"><i
+                class="glyphicon glyphicon-plus"></i>Add Row</button>
+    </form>
+
+</section>
+<section class="mat-typography">
     <table mat-table [dataSource]="dataSource" matSort>
         <ng-container matColumnDef="key">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
-            <td mat-cell *matCellDef="let element">{{element.key}}</td>
+            <td mat-cell *matCellDef="let setting">{{setting.key}}</td>
         </ng-container>
 
         <ng-container matColumnDef="value">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-            <td mat-cell *matCellDef="let element" contenteditable="true" (keyup)="changeValue(element, $event)">{{element.value}}</td>
+            <td mat-cell *matCellDef="let setting" contenteditable="true" (keyup)="changeValue(setting, $event)">
+                {{setting.value}}</td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <ng-container matColumnDef="delete">
+            <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
+            <mat-cell *matCellDef="let setting">
+                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); delete(setting)">
+                    <mat-icon class="mat-18">delete</mat-icon>
+                </button>
+            </mat-cell>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 

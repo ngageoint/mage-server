@@ -12,8 +12,12 @@ import { MatPaginator } from '@angular/material/paginator';
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: any;
     dataSource: MatTableDataSource<GenericSetting>;
-    readonly displayedColumns: string[] = ['key', 'value'];
+    readonly displayedColumns: string[] = ['key', 'value', 'delete'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
+    newRow: GenericSetting = {
+        key: '',
+        value: ''
+    }
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -49,11 +53,31 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.dataSource.sort = this.sort;
     }
 
-    changeValue(element: GenericSetting, $event: any): void {
-        const idx = this.dataSource.data.indexOf(element);
+    changeValue(setting: GenericSetting, $event: any): void {
+        const idx = this.dataSource.data.indexOf(setting);
         if (idx > -1) {
             this.dataSource.data[idx].value = $event.target.textContent;
-            this.strategy.settings[element.key] = JSON.parse($event.target.textContent);
+            this.strategy.settings[setting.key] = JSON.parse($event.target.textContent);
         }
+    }
+
+    addProperty(): void {
+        const settings = this.dataSource.data;
+        settings.push({ key: this.newRow.key, value: this.newRow.value });
+        this.dataSource.data = settings;
+        this.strategy.settings[this.newRow.key] = this.newRow.value;
+        this.dataSource.paginator.firstPage();
+        this.newRow.key = '';
+        this.newRow.value = ''
+    }
+
+    delete(setting: GenericSetting): void {
+        const settings = this.dataSource.data;
+        const filtered = settings.filter(function (value, index, arr) {
+            return value !== setting;
+        });
+        delete this.strategy.settings[setting.key];
+        this.dataSource.data = filtered;
+        this.dataSource.paginator.firstPage();
     }
 }
