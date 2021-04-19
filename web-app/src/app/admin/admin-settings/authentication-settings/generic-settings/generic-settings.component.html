@@ -1,5 +1,5 @@
 <section class="mat-typography">
-    <legend class="scheduler-border">Add Property</legend>
+    <legend class="scheduler-border">Add Setting</legend>
     <form class="form-inline">
         <div class="form-group">
             <label for="inputKey" class="right-gap">Key</label>
@@ -11,7 +11,7 @@
             <input type="text" class="form-control right-gap" id="inputValue" name="inputValue"
                 [(ngModel)]="newRow.value" placeholder="Value" />
         </div>
-        <button type="button" class="btn btn-primary" (click)="addProperty()"><i
+        <button type="button" class="btn btn-primary" (click)="addSetting()"><i
                 class="glyphicon glyphicon-plus"></i>Add Row</button>
     </form>
 
@@ -32,7 +32,7 @@
         <ng-container matColumnDef="delete">
             <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
             <mat-cell *matCellDef="let setting">
-                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); delete(setting)">
+                <button mat-icon-button color="warn" (click)="$event.stopPropagation(); deleteSetting(setting)">
                     <mat-icon class="mat-18">delete</mat-icon>
                 </button>
             </mat-cell>

@@ -61,23 +61,25 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         }
     }
 
-    addProperty(): void {
+    addSetting(): void {
         const settings = this.dataSource.data;
         settings.push({ key: this.newRow.key, value: this.newRow.value });
         this.dataSource.data = settings;
+        
         this.strategy.settings[this.newRow.key] = this.newRow.value;
         this.dataSource.paginator.firstPage();
         this.newRow.key = '';
         this.newRow.value = ''
     }
 
-    delete(setting: GenericSetting): void {
+    deleteSetting(setting: GenericSetting): void {
         const settings = this.dataSource.data;
         const filtered = settings.filter(function (value, index, arr) {
             return value !== setting;
         });
-        delete this.strategy.settings[setting.key];
         this.dataSource.data = filtered;
+
+        delete this.strategy.settings[setting.key];
         this.dataSource.paginator.firstPage();
     }
 }
