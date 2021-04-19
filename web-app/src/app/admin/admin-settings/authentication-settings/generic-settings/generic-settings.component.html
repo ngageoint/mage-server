@@ -7,7 +7,7 @@
 
         <ng-container matColumnDef="value">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-            <td mat-cell *matCellDef="let element">{{element.value}}</td>
+            <td mat-cell *matCellDef="let element" contenteditable="true" (keyup)="changeValue(element, $event)">{{element.value}}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

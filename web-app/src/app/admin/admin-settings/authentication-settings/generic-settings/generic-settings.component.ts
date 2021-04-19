@@ -48,4 +48,12 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
     }
+
+    changeValue(element: GenericSetting, $event: any): void {
+        const idx = this.dataSource.data.indexOf(element);
+        if (idx > -1) {
+            this.dataSource.data[idx].value = $event.target.textContent;
+            this.strategy.settings[element.key] = JSON.parse($event.target.textContent);
+        }
+    }
 }
