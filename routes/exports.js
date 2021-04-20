@@ -50,7 +50,6 @@ module.exports = function (app, security) {
    */
   app.post('/api/exports',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     parseQueryParams,
     getEvent,
     validateEventAccess,
@@ -108,7 +107,6 @@ module.exports = function (app, security) {
    */
   app.get('/api/exports/myself',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     function (req, res, next) {
       ExportMetadata.getExportMetadatasByUserId(req.user._id).then(metas => {
         res.json(metas);
@@ -125,7 +123,6 @@ module.exports = function (app, security) {
   */
   app.get('/api/exports/download/:exportId',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     function (req, res, next) {
       ExportMetadata.getExportMetadataById(req.param("exportId")).then(meta => {
         const file = meta.physicalPath;
@@ -146,7 +143,6 @@ module.exports = function (app, security) {
    */
   app.delete('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    access.authorize('DELETE_EXPORT'),
     function (req, res, next) {
       ExportMetadata.removeMetadata(req.param("exportId")).then(meta => {
         fs.unlinkSync(meta.physicalPath);
@@ -162,7 +158,6 @@ module.exports = function (app, security) {
    */
   app.post('/api/exports/retry',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     loadExportMetadata,
     getEvent,
     validateEventAccess,
