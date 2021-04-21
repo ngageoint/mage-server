@@ -1,28 +1,35 @@
 module.exports = function(app, security) {
-  var api = require('../api')
+  const api = require('../api')
     , access = require('../access')
     , fs = require('fs-extra')
     , {default: upload} = require('../upload')
+    , DOMParser = require('xmldom').DOMParser
     , toGeoJson = require('../utilities/togeojson');
 
-  var passport = security.authentication.passport;
+  const passport = security.authentication.passport;
 
-  function verifyLayer(req, res, next) {
+  function validate(req, res, next) {
     if (req.layer.type !== 'Feature') {
-      return res.status(400).send('Cannot import data, layer type is not "Static"');
+      return res.status(400).send('Cannot import data, layer type is not "Static".');
     }
 
-    if (req.file.mimetype !== 'application/vnd.google-earth.kml+xml') {
-      return res.status(400).send('Cannot import data, upload file must be KML');
+    if (!req.file) {
+      return res.status(400).send('Invalid file, please upload a KML file.');
     }
 
-    return next();
-  }
+    fs.readFile(req.file.path, 'utf8', function (err, data) {
+      if (err) return next(err);
 
-  function readImportFile(req, res, next) {
-    fs.readFile(req.file.path, 'utf8', function(err, data) {
-      req.importData = data;
-      return next(err);
+      const kml = new DOMParser({
+        errorHandler: () => { /* ignore */ }
+      }).parseFromString(data);
+
+      if (!kml || kml.documentElement.nodeName !== 'kml') {
+        return res.status(400).send('Invalid file, please upload a KML file.');
+      }
+
+      req.kml = kml;
+      return next();
     });
   }
 
@@ -31,17 +38,16 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('CREATE_LAYER'),
     upload.single('file'),
-    verifyLayer,
-    readImportFile,
+    validate,
     function(req, res, next) {
-      var features = toGeoJson.kml(req.importData);
+      const features = toGeoJson.kml(req.kml);
       new api.Feature(req.layer).createFeatures(features)
         .then(newFeatures => {
-          var response = {
+          const response = {
             files: [{
               name: req.file.originalname,
               size: req.file.size,
-              features: newFeatures.length
+              features: newFeatures ? newFeatures.length : 0
             }]
           };
 

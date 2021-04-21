@@ -13,6 +13,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Adding icons to search results on admin pages.
 
 ##### Bug Fixes
+* Fix bug detecting invalid KML files on upload in some web clients.
 * Login search on device page correctly filters on device.
 * Display device uid, not user-agent, when filtering on devices from admin dashboard.
 * Default admin approval as enabled for new user accounts.  This was causing new user account creation to fail.

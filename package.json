@@ -1,6 +1,6 @@
 {
   "name": "mage-server",
-  "version": "5.4.4",
+  "version": "5.4.5",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [
@@ -68,7 +68,7 @@
     "winston": "1.0.1",
     "wkx": "0.4.1",
     "wms-capabilities": "^0.4.0",
-    "xmldom": "0.1.22",
+    "xmldom": "0.6.0",
     "xpath": "0.0.23"
   },
   "devDependencies": {
