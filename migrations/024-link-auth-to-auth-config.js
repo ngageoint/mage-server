@@ -32,14 +32,12 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
         if (hasNext !== true) break;
 
         const authentication = await cursor.next();
+        const authenticationConfiguration = await authenticationConfigurationsCollection.findOne({ type: authentication.type });
+        authentication.authenticationConfigurationId = authenticationConfiguration._id;
 
-        if (authentication.hasOwnProperty('authenticationConfigurationId')) {
-            const authenticationConfiguration = await authenticationConfigurationsCollection.findOne({ type: authentication.type });
-            authentication.authenticationConfigurationId = authenticationConfiguration._id;
+        log.info('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
+        await authenticationCollection.updateOne({ _id: authentication._id }, authentication);
 
-            log.info('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
-            await authenticationCollection.updateOne({ _id: authentication._id }, authentication);
-        }
     }
 
     // Close the cursor, this is the same as reseting the query
