@@ -61,6 +61,10 @@ function configure(passport) {
                 };
 
                 new api.User().create(user).then(newUser => {
+                  if (!newUser.authentication.authenticationConfiguration.enabled) {
+                    log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
+                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+                  }
                   if (newUser.active) {
                     done(null, newUser);
                   } else {
@@ -68,6 +72,9 @@ function configure(passport) {
                   }
                 }).catch(err => done(err));
               });
+            } else if (!user.authentication.authenticationConfiguration.enabled) {
+              log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
             } else {
               return done(null, user);
             }
