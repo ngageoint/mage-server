@@ -1,4 +1,4 @@
-const angular = require('angular')
+var angular = require('angular')
   , EventResource = require('./event.resource')
   , TeamResource = require('./team.resource')
   , FormResource = require('./form.resource')

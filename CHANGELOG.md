@@ -6,7 +6,6 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Local user signup captcha
 * Ability to export as a GeoPackage.
 * New export UI to view previous exports.
 * Exports are now done in the background to allow for larger exports.
