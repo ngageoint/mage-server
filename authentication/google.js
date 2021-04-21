@@ -9,45 +9,9 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-module.exports = function (app, passport, provision, tokenService) {
-
-  function parseLoginMetadata(req, res, next) {
-    const options = {};
-    options.userAgent = req.headers['user-agent'];
-    options.appVersion = req.param('appVersion');
-
-    req.loginOptions = options;
-    next();
-  }
-
-  function authenticate(req, res, next) {
-    passport.authenticate('google', function (err, user) {
-      if (err) return next(err);
-
-      req.user = user;
-
-      // For inactive or disabled accounts don't generate an authorization token
-      if (!user.active || !user.enabled) {
-        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
-        return next();
-      }
-
-      // DEPRECATED session authorization, remove req.login which creates session in next version
-      req.login(user, function (err) {
-        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-          .then(token => {
-            req.token = token;
-            req.user = user;
-            next();
-          }).catch(err => {
-            next(err);
-          });
-      });
-    })(req, res, next);
-  }
-
+function configure(passport) {
   AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
-    
+
     if (googleStrategy && googleStrategy.enabled) {
       log.info('Configuring Google authentication');
       passport.use('google', new GoogleStrategy({
@@ -100,6 +64,46 @@ module.exports = function (app, passport, provision, tokenService) {
   }).catch(err => {
     log.error(err);
   });
+}
+
+function init(app, passport, provision, tokenService) {
+
+  function parseLoginMetadata(req, res, next) {
+    const options = {};
+    options.userAgent = req.headers['user-agent'];
+    options.appVersion = req.param('appVersion');
+
+    req.loginOptions = options;
+    next();
+  }
+
+  function authenticate(req, res, next) {
+    passport.authenticate('google', function (err, user) {
+      if (err) return next(err);
+
+      req.user = user;
+
+      // For inactive or disabled accounts don't generate an authorization token
+      if (!user.active || !user.enabled) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
+        return next();
+      }
+
+      // DEPRECATED session authorization, remove req.login which creates session in next version
+      req.login(user, function (err) {
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            req.token = token;
+            req.user = user;
+            next();
+          }).catch(err => {
+            next(err);
+          });
+      });
+    })(req, res, next);
+  }
+
+  configure(passport);
 
   app.get(
     '/auth/google/signin',
@@ -170,3 +174,8 @@ module.exports = function (app, passport, provision, tokenService) {
   );
 
 };
+
+module.exports = {
+  init,
+  configure
+}

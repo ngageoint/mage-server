@@ -1,32 +1,22 @@
-module.exports = function (app, passport, provision, tokenService) {
+const LdapStrategy = require('passport-ldapauth')
+  , log = require('winston')
+  , User = require('../models/user')
+  , Role = require('../models/role')
+  , Device = require('../models/device')
+  , TokenAssertion = require('./verification').TokenAssertion
+  , api = require('../api')
+  , config = require('../config.js')
+  , userTransformer = require('../transformers/user')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-  const LdapStrategy = require('passport-ldapauth')
-    , log = require('winston')
-    , User = require('../models/user')
-    , Role = require('../models/role')
-    , Device = require('../models/device')
-    , TokenAssertion = require('./verification').TokenAssertion
-    , api = require('../api')
-    , config = require('../config.js')
-    , userTransformer = require('../transformers/user')
-    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+let authenticationOptions = {
+};
 
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
+function configure(passport) {
 
-    next();
-  }
-
-  let authenticationOptions = {
-  };
-
-  
   AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
-  
+
     if (strategyConfig && strategyConfig.enabled) {
       authenticationOptions = {
         invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
@@ -89,6 +79,20 @@ module.exports = function (app, passport, provision, tokenService) {
   }).catch(err => {
     log.error(err);
   });
+}
+
+function init(app, passport, provision, tokenService) {
+
+  function parseLoginMetadata(req, res, next) {
+    req.loginOptions = {
+      userAgent: req.headers['user-agent'],
+      appVersion: req.param('appVersion')
+    };
+
+    next();
+  }
+
+  configure(passport);
 
   app.post(
     '/auth/ldap/signin',
@@ -205,3 +209,8 @@ module.exports = function (app, passport, provision, tokenService) {
     }
   );
 };
+
+module.exports = {
+  init,
+  configure
+}

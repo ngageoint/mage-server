@@ -1,4 +1,4 @@
-module.exports = function(app, passport) {
+function init(app, passport) {
 
   const AnonymousStrategy = require('passport-anonymous').Strategy;
   passport.use(new AnonymousStrategy());
@@ -9,3 +9,7 @@ module.exports = function(app, passport) {
     passport: passport
   };
 };
+
+module.exports = {
+  init
+}

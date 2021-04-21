@@ -1,53 +1,16 @@
-module.exports = function (app, passport, provision, tokenService) {
+const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
+  , User = require('../models/user')
+  , Device = require('../models/device')
+  , Role = require('../models/role')
+  , TokenAssertion = require('./verification').TokenAssertion
+  , api = require('../api')
+  , config = require('../config.js')
+  , log = require('../logger')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-  const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
-    , User = require('../models/user')
-    , Device = require('../models/device')
-    , Role = require('../models/role')
-    , TokenAssertion = require('./verification').TokenAssertion
-    , api = require('../api')
-    , config = require('../config.js')
-    , log = require('../logger')
-    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
-
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.header['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
-
-  function authenticate(req, res, next) {
-    passport.authenticate('geoaxis', function (err, user, info = {}) {
-      if (err) return next(err);
-
-      req.user = user;
-
-      // For inactive or disabled accounts don't generate an authorization token
-      if (!user.active || !user.enabled) {
-        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
-        return next();
-      }
-
-      // DEPRECATED session authorization, remove req.login which creates session in next version
-      req.login(user, function (err) {
-        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-          .then(token => {
-            req.token = token;
-            req.user = user;
-            req.info = info;
-            next();
-          }).catch(err => {
-            next(err);
-          });
-      });
-    })(req, res, next);
-  }
-
-  AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis') .then(strategyConfig => {
+function configure(passport) {
+  AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
 
     if (strategyConfig && strategyConfig.enabled) {
       log.info('Configuring GeoAxis authentication');
@@ -104,6 +67,47 @@ module.exports = function (app, passport, provision, tokenService) {
   }).catch(err => {
     log.error(err);
   });
+}
+
+function init(app, passport, provision, tokenService) {
+
+  function parseLoginMetadata(req, res, next) {
+    req.loginOptions = {
+      userAgent: req.header['user-agent'],
+      appVersion: req.param('appVersion')
+    };
+
+    next();
+  }
+
+  function authenticate(req, res, next) {
+    passport.authenticate('geoaxis', function (err, user, info = {}) {
+      if (err) return next(err);
+
+      req.user = user;
+
+      // For inactive or disabled accounts don't generate an authorization token
+      if (!user.active || !user.enabled) {
+        log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
+        return next();
+      }
+
+      // DEPRECATED session authorization, remove req.login which creates session in next version
+      req.login(user, function (err) {
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            req.token = token;
+            req.user = user;
+            req.info = info;
+            next();
+          }).catch(err => {
+            next(err);
+          });
+      });
+    })(req, res, next);
+  }
+
+  configure(passport);
 
   app.get(
     '/auth/geoaxis/signin',
@@ -222,3 +226,8 @@ module.exports = function (app, passport, provision, tokenService) {
   );
 
 };
+
+module.exports = {
+  init,
+  configure
+}

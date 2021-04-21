@@ -1,23 +1,19 @@
-module.exports = function (app, passport, provision) {
+const fs = require('fs')
+  , crypto = require('crypto')
+  , pem2jwk = require('pem-jwk').pem2jwk
+  , jose = require('node-jose')
+  , Issuer = require('openid-client').Issuer
+  , Strategy = require('openid-client').Strategy
+  , User = require('../models/user')
+  , Device = require('../models/device')
+  , Role = require('../models/role')
+  , api = require('../api')
+  , config = require('../config.js')
+  , log = require('../logger')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-  const fs = require('fs')
-    , crypto = require('crypto')
-    , pem2jwk = require('pem-jwk').pem2jwk
-    , jose = require('node-jose')
-    , Issuer = require('openid-client').Issuer
-    , Strategy = require('openid-client').Strategy
-    , User = require('../models/user')
-    , Device = require('../models/device')
-    , Role = require('../models/role')
-    , api = require('../api')
-    , config = require('../config.js')
-    , log = require('../logger')
-    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
-
-  Issuer.useRequest();
-
-  
+function configure(passport) {
   AuthenticationConfiguration.getConfiguration('oauth', 'Login.gov').then(strategyConfig => {
 
     if (strategyConfig && strategyConfig.enabled) {
@@ -104,6 +100,13 @@ module.exports = function (app, passport, provision) {
   }).catch(err => {
     log.error(err);
   });
+}
+
+function init(app, passport, provision) {
+
+  Issuer.useRequest();
+
+  configure(passport);
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -240,3 +243,8 @@ module.exports = function (app, passport, provision) {
   );
 
 };
+
+module.exports = {
+  init,
+  configure
+}

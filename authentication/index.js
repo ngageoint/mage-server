@@ -108,7 +108,8 @@ module.exports = function (app, passport, provision) {
   fs.readdirSync(__dirname).forEach(function (file) {
     if (file[0] === '.' || file === 'index.js' || file === 'verification.js') return;
     const strategy = file.substr(0, file.indexOf('.'));
-    require('./' + strategy)(app, passport, provision, tokenService);
+    const authentication = require('./' + strategy);
+    authentication.init(app, passport, provision, tokenService);
   });
 
   return {

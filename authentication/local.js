@@ -1,26 +1,16 @@
-module.exports = function (app, passport, provision, tokenService) {
+const log = require('winston')
+  , moment = require('moment')
+  , LocalStrategy = require('passport-local').Strategy
+  , TokenAssertion = require('./verification').TokenAssertion
+  , User = require('../models/user')
+  , Device = require('../models/device')
+  , api = require('../api')
+  , config = require('../config.js')
+  , userTransformer = require('../transformers/user')
+  , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , Authentication = require('../models/authentication');
 
-  const log = require('winston')
-    , moment = require('moment')
-    , LocalStrategy = require('passport-local').Strategy
-    , TokenAssertion = require('./verification').TokenAssertion
-    , User = require('../models/user')
-    , Device = require('../models/device')
-    , api = require('../api')
-    , config = require('../config.js')
-    , userTransformer = require('../transformers/user')
-    , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
-    , Authentication = require('../models/authentication')
-
-  function parseLoginMetadata(req, _res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
-
+function configure(passport) {
   passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {
@@ -74,6 +64,20 @@ module.exports = function (app, passport, provision, tokenService) {
       });
     }
   ));
+}
+
+function init(app, passport, provision, tokenService) {
+
+  function parseLoginMetadata(req, _res, next) {
+    req.loginOptions = {
+      userAgent: req.headers['user-agent'],
+      appVersion: req.param('appVersion')
+    };
+
+    next();
+  }
+
+  configure(passport);
 
   // DEPRECATED retain old routes as deprecated until next major version.
   app.post(
@@ -215,3 +219,8 @@ module.exports = function (app, passport, provision, tokenService) {
     }
   );
 };
+
+module.exports = {
+  init,
+  configure
+}

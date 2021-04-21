@@ -1,26 +1,16 @@
-module.exports = function (app, passport, provision, tokenService) {
+const SamlStrategy = require('passport-saml').Strategy
+  , log = require('winston')
+  , User = require('../models/user')
+  , Role = require('../models/role')
+  , Device = require('../models/device')
+  , TokenAssertion = require('./verification').TokenAssertion
+  , api = require('../api')
+  , config = require('../config.js')
+  , userTransformer = require('../transformers/user')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-  const SamlStrategy = require('passport-saml').Strategy
-    , log = require('winston')
-    , User = require('../models/user')
-    , Role = require('../models/role')
-    , Device = require('../models/device')
-    , TokenAssertion = require('./verification').TokenAssertion
-    , api = require('../api')
-    , config = require('../config.js')
-    , userTransformer = require('../transformers/user')
-    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
-
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
-
+function configure(passport) {
   AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
 
     if (strategyConfig && strategyConfig.enabled) {
@@ -93,6 +83,20 @@ module.exports = function (app, passport, provision, tokenService) {
   }).catch(err => {
     log.error(err);
   });
+}
+
+function init(app, passport, provision, tokenService) {
+
+  function parseLoginMetadata(req, res, next) {
+    req.loginOptions = {
+      userAgent: req.headers['user-agent'],
+      appVersion: req.param('appVersion')
+    };
+
+    next();
+  }
+
+  configure(passport);
 
   app.get(
     '/auth/saml/signin',
@@ -214,3 +218,8 @@ module.exports = function (app, passport, provision, tokenService) {
   );
 
 };
+
+module.exports = {
+  init,
+  configure
+}

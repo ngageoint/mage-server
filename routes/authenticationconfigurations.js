@@ -47,6 +47,9 @@ module.exports = function (app, security) {
             });
 
             AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
+                log.info("Reconfiguring authentication strategy " + config.name);
+                const strategy = require('../authentication/' + config.name);
+                strategy.configure(passport);
                  //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
