@@ -157,10 +157,10 @@ export class AdminSettingsComponent implements OnInit {
             }
             if (strategy.state === undefined) {
                 promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            } else if (strategy.state == StrategyState.New) {
-                //TODO implement
+            } else if (strategy.state === StrategyState.New) {
+                promises.push(this.authenticationConfigurationService.createConfiguration(strategy));
             } else {
-                //TODO implement
+                promises.push(this.authenticationConfigurationService.deleteConfiguration(strategy));
             }
         });
 
@@ -169,6 +169,7 @@ export class AdminSettingsComponent implements OnInit {
                 duration: 2000,
             });
         }).catch(err => {
+            console.log(err);
             this._snackBar.open('Failed to save security', null, {
                 duration: 2000,
             });
