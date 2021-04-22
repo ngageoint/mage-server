@@ -19,7 +19,11 @@
         </mat-sidenav>
         <mat-sidenav-content>
             <div *ngIf="pill === 'security'">
-                <h1 class="bottom-gap-l admin-settings-gap"><i class="fa fa-shield"></i> Security Settings</h1>
+                <div class="row">
+                    <h1 class="bottom-gap-l admin-settings-gap"><i class="fa fa-shield"></i> Security Settings</h1>
+                    <button mat-flat-button color="primary" id="create-strategy-button" class="pull-right admin-settings-gap"
+                        (click)="$event.stopPropagation(); createStrategy()">New</button>
+                </div>
                 <form id="security-form">
                     <div *ngFor="let strategy of strategies">
                         <div class="row admin-settings-gap" style="padding-bottom: 25px;">

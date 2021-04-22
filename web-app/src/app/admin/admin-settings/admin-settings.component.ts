@@ -6,6 +6,7 @@ import { Banner, Disclaimer } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
+import { AuthenticationCreateComponent } from './admin-settings';
 
 @Component({
     selector: 'admin-settings',
@@ -23,6 +24,7 @@ export class AdminSettingsComponent implements OnInit {
     events: any[] = [];
     strategies: any[] = [];
     deletedStrategies: any[] = [];
+    newStrategies: any[] = [];
     setting: string = 'banner';
     banner: Banner = {
         headerTextColor: '#000000',
@@ -143,6 +145,8 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     saveSecurity(): void {
+        //TODO save deleted and new strategies
+
         const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {
@@ -194,6 +198,22 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     createStrategy(): void {
-
+        const strategy = {
+            name: '',
+            type: ''
+        }
+        this.dialog.open(AuthenticationCreateComponent, {
+            width: '500px',
+            data: strategy,
+            autoFocus: false
+        }).afterClosed().subscribe(result => {
+            if (result === 'create') {
+                this.newStrategies.push(strategy);
+                const index = this.strategies.indexOf(strategy);
+                if (index > -1) {
+                    this.strategies.splice(index, 1);
+                }
+            }
+        });
     }
 }

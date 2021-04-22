@@ -133,7 +133,7 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { AuthenticationSettingsComponent } from './admin/admin-settings/admin-settings';
+import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 
@@ -199,7 +199,9 @@ import { GenericSettingsComponent } from './admin/admin-settings/authentication-
     AdminSettingsComponent,
     AuthenticationSettingsComponent,
     PasswordPolicyComponent,
-    GenericSettingsComponent
+    GenericSettingsComponent,
+    AuthenticationCreateComponent,
+    AuthenticationDeleteComponent
   ],
   imports: [
     BrowserModule,
