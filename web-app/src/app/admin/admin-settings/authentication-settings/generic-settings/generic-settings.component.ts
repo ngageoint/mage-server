@@ -3,6 +3,7 @@ import { GenericSetting } from './generic-settings.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
+import { Strategy } from '../../admin-settings.model';
 
 @Component({
     selector: 'generic-settings',
@@ -10,7 +11,7 @@ import { MatPaginator } from '@angular/material/paginator';
     styleUrls: ['./generic-settings.component.scss']
 })
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
-    @Input() strategy: any;
+    @Input() strategy: Strategy;
     dataSource: MatTableDataSource<GenericSetting>;
     readonly displayedColumns: string[] = ['key', 'value', 'delete'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];

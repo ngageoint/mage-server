@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AdminChoice, MaxLock } from '../admin-settings.model';
+import { AdminChoice, MaxLock, Strategy } from '../admin-settings.model';
 
 @Component({
     selector: 'authentication-settings',
@@ -7,7 +7,7 @@ import { AdminChoice, MaxLock } from '../admin-settings.model';
     styleUrls: ['./authentication-settings.component.scss']
 })
 export class AuthenticationSettingsComponent implements OnInit {
-    @Input() strategy: any;
+    @Input() strategy: Strategy;
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
 

@@ -2,7 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
-import { Banner, Disclaimer } from './admin-settings.model';
+import { Banner, Disclaimer, Strategy } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
@@ -22,9 +22,7 @@ export class AdminSettingsComponent implements OnInit {
     pill: string = 'security';
     teams: any[] = [];
     events: any[] = [];
-    strategies: any[] = [];
-    deletedStrategies: any[] = [];
-    newStrategies: any[] = [];
+    strategies: Strategy[] = [];
     setting: string = 'banner';
     banner: Banner = {
         headerTextColor: '#000000',
@@ -150,8 +148,8 @@ export class AdminSettingsComponent implements OnInit {
         const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {
-                strategy.newUserEvents = [];
-                strategy.newUserTeams = [];
+                strategy.settings.newUserEvents = [];
+                strategy.settings.newUserTeams = [];
             }
             if (strategy.type === 'local') {
                 //TODO figure this out since its in a child page
@@ -188,11 +186,7 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
-                this.deletedStrategies.push(strategy);
-                const index = this.strategies.indexOf(strategy);
-                if (index > -1) {
-                    this.strategies.splice(index, 1);
-                }
+              
             }
         });
     }
@@ -208,11 +202,7 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'create') {
-                this.newStrategies.push(strategy);
-                const index = this.strategies.indexOf(strategy);
-                if (index > -1) {
-                    this.strategies.splice(index, 1);
-                }
+                
             }
         });
     }

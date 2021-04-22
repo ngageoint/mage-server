@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { Strategy } from '../../admin-settings.model';
 
 @Component({
     selector: 'password-policy',
@@ -6,7 +7,7 @@ import { Component, OnInit, Input } from '@angular/core';
     styleUrls: ['./password-policy.component.scss']
 })
 export class PasswordPolicyComponent implements OnInit {
-    @Input() strategy: any;
+    @Input() strategy: Strategy;
 
     ngOnInit(): void {
         if (this.strategy.settings.passwordPolicy) {

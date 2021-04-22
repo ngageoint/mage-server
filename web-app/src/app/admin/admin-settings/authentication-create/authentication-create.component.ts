@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Strategy } from '../admin-settings.model';
 
 
 @Component({
@@ -33,7 +34,7 @@ export class AuthenticationCreateComponent {
 
     constructor(
         public dialogRef: MatDialogRef<AuthenticationCreateComponent>,
-        @Inject(MAT_DIALOG_DATA) public strategy: any) {
+        @Inject(MAT_DIALOG_DATA) public strategy: Strategy) {
 
     }
 
