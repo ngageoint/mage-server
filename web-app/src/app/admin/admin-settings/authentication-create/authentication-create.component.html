@@ -4,31 +4,27 @@
 <section class="mat-typography">
     <mat-dialog-content>
         <div class="row">
-            <div class="bottom-gap form-inline">
-                <label for="name" class="right-gap">Name</label>
-                <mat-form-field appearance="outline">
-                    <input matInput type="text" id="name" [(ngModel)]="strategy.name" class="form-control"
-                        [ngModelOptions]="{standalone: true}" required>
-                </mat-form-field>
-            </div>
+            <label for="name" class="bottom-gap">Name</label>
+            <mat-form-field appearance="outline">
+                <input matInput type="text" id="name" [(ngModel)]="strategy.name" class="form-control"
+                    [ngModelOptions]="{standalone: true}" required>
+            </mat-form-field>
         </div>
         <div class="row">
-            <div class="bottom-gap form-inline">
-                <label for="type" class="right-gap">Type</label>
-                <mat-form-field appearance="outline">
-                    <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}">
-                        <mat-option *ngFor="let type of types" [value]="type.value">
-                            {{type.title}}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+            <label for="type" class="bottom-gap">Type</label>
+            <mat-form-field appearance="outline">
+                <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}">
+                    <mat-option *ngFor="let type of types" [value]="type.value">
+                        {{type.title}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
         </div>
     </mat-dialog-content>
 </section>
 <section class="mat-typography">
     <mat-dialog-actions>
-        <button class="mat-button mat-primary" (click)="close()">CANCEL</button>
-        <button class="mat-button mat-primary" (click)="delete()">OK</button>
+        <button class="mat-button" id="cancel-button" (click)="close()">CANCEL</button>
+        <button class="mat-button mat-primary" id="ok-button" (click)="delete()" cdkFocusInitial>OK</button>
     </mat-dialog-actions>
 </section>
