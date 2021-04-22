@@ -24,7 +24,7 @@ module.exports = function (app, security) {
         });
 
     app.put(
-        '/api/authentication/configuration/:id',
+        '/api/authentication/configuration/update/:id',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
@@ -50,12 +50,26 @@ module.exports = function (app, security) {
                 log.info("Reconfiguring authentication strategy " + config.name);
                 const strategy = require('../authentication/' + config.name);
                 strategy.configure(passport);
-                 //TODO use whitelist??
+                //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
                 next();
             }).catch(err => {
                 next(err);
             });
+        });
+
+    app.post(
+        '/api/authentication/configuration/create',
+        passport.authenticate('bearer'),
+        function (req, res, next) {
+            next();
+        });
+
+    app.delete(
+        '/api/authentication/configuration/delete/:id',
+        passport.authenticate('bearer'),
+        function (req, res, next) {
+            next();
         });
 };
