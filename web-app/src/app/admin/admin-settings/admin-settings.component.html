@@ -19,16 +19,21 @@
         </mat-sidenav>
         <mat-sidenav-content>
             <div *ngIf="pill === 'security'">
-                <div class="row">
-                    <h1 class="bottom-gap-l admin-settings-gap"><i class="fa fa-shield"></i> Security Settings</h1>
-                    <button mat-flat-button color="primary" id="create-strategy-button" class="pull-right admin-settings-gap"
+                <mat-toolbar>
+                    <span>
+                        <h1><i class="fa fa-shield"></i> Security Settings</h1>
+                    </span>
+                    <span class="spacer"></span>
+                    <button mat-flat-button color="primary" id="create-strategy-button"
+                        class="pull-right admin-settings-gap"
                         (click)="$event.stopPropagation(); createStrategy()">New</button>
-                </div>
+                </mat-toolbar>
                 <form id="security-form">
                     <div *ngFor="let strategy of strategies">
                         <div class="row admin-settings-gap" style="padding-bottom: 25px;">
                             <mat-card>
-                                <mat-card-title>{{strategy.name.toUpperCase()}} Authentication
+                                <mat-card-title>
+                                    {{strategy.name.toUpperCase()}} Authentication
                                     <button mat-flat-button color="warn" id="delete-strategy-button" class="pull-right"
                                         (click)="$event.stopPropagation(); deleteStrategy(strategy)">Delete</button>
                                 </mat-card-title>
