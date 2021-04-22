@@ -63,13 +63,41 @@ module.exports = function (app, security) {
         '/api/authentication/configuration/create',
         passport.authenticate('bearer'),
         function (req, res, next) {
-            next();
+            const newConfig = {
+                name: req.body.name,
+                type: req.body.type,
+                title: req.body.title,
+                textColor: req.body.textColor,
+                buttonColor: req.body.buttonColor,
+                icon: req.body.icon,
+                enabled: req.body.enabled,
+                settings: {}
+            };
+
+            const settings = JSON.parse(req.body.settings);
+
+            Object.keys(settings).forEach(key => {
+                newConfig.settings[key] = settings[key];
+            });
+
+            AuthenticationConfiguration.Model.create(newConfig).then(model => {
+                log.info("Creating new authentication strategy " + config.name);
+                const strategy = require('../authentication/' + config.name);
+                strategy.configure(passport);
+                //TODO use whitelist??
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(model);
+                res.json(transformedConfig);
+                next();
+            }).catch(err => {
+                next(err);
+            })
         });
 
     app.delete(
         '/api/authentication/configuration/delete/:id',
         passport.authenticate('bearer'),
         function (req, res, next) {
+            //TODO implement
             next();
         });
 };
