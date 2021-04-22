@@ -30,7 +30,7 @@
                 </mat-toolbar>
                 <form id="security-form">
                     <div *ngFor="let strategy of strategies">
-                        <div class="row admin-settings-gap" style="padding-bottom: 25px;">
+                        <div *ngIf="strategy.state != 1" class="row admin-settings-gap" style="padding-bottom: 25px;">
                             <mat-card>
                                 <mat-card-title>
                                     {{strategy.name.toUpperCase()}} Authentication

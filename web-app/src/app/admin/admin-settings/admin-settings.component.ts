@@ -2,7 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
-import { Banner, Disclaimer, Strategy } from './admin-settings.model';
+import { Banner, Disclaimer, Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
@@ -143,8 +143,6 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     saveSecurity(): void {
-        //TODO save deleted and new strategies
-
         const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {
@@ -157,7 +155,13 @@ export class AdminSettingsComponent implements OnInit {
                 //    delete strategy.settings.accountLock.max;
                 //}
             }
-            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            if (strategy.state === undefined) {
+                promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            } else if (strategy.state == StrategyState.New) {
+                //TODO implement
+            } else {
+                //TODO implement
+            }
         });
 
         Promise.all(promises).then(() => {
@@ -186,15 +190,25 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
-              
+                strategy.state = StrategyState.Removed;
             }
         });
     }
 
     createStrategy(): void {
         const strategy = {
+            state: StrategyState.New,
+            enabled: false,
             name: '',
-            type: ''
+            type: '',
+            settings: {
+                usersReqAdmin: {
+                    enabled: true
+                },
+                devicesReqAdmin: {
+                    enabled: true
+                }
+            }
         }
         this.dialog.open(AuthenticationCreateComponent, {
             width: '500px',
@@ -202,7 +216,7 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'create') {
-                
+                this.strategies.push(strategy);
             }
         });
     }
