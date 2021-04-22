@@ -1,0 +1,14 @@
+<section class="mat-typography">
+  <h1 mat-dialog-title>Delete Authentication</h1>
+</section>
+<section class="mat-typography">
+  <div mat-dialog-content>
+    <p>Are you sure you would like to delete {{strategy.name.toUpperCase()}} Authentication?</p>
+  </div>
+</section>
+<section class="mat-typography">
+  <div mat-dialog-actions>
+    <button class="mat-button mat-primary" (click)="close()">CANCEL</button>
+    <button class="mat-button mat-primary" (click)="delete()">OK</button>
+  </div>
+</section>

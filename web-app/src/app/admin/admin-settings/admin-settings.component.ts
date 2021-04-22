@@ -4,6 +4,8 @@ import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
 import { Banner, Disclaimer } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
 
 @Component({
     selector: 'admin-settings',
@@ -38,6 +40,7 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     constructor(
+        private dialog: MatDialog,
         private _snackBar: MatSnackBar,
         @Inject(Settings)
         public settings: any,
@@ -171,5 +174,21 @@ export class AdminSettingsComponent implements OnInit {
         } else {
             console.log(key + ' is not a valid banner property');
         }
+    }
+
+    deleteStrategy(strategy: any): void {
+        this.dialog.open(AuthenticationDeleteComponent, {
+            width: '500px',
+            data: strategy,
+            autoFocus: false
+        }).afterClosed().subscribe(result => {
+            if (result === 'delete') {
+
+            }
+        });
+    }
+
+    createStrategy(): void {
+
     }
 }
