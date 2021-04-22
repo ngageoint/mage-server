@@ -22,6 +22,7 @@ export class AdminSettingsComponent implements OnInit {
     teams: any[] = [];
     events: any[] = [];
     strategies: any[] = [];
+    deletedStrategies: any[] = [];
     setting: string = 'banner';
     banner: Banner = {
         headerTextColor: '#000000',
@@ -183,7 +184,11 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
-
+                this.deletedStrategies.push(strategy);
+                const index = this.strategies.indexOf(strategy);
+                if (index > -1) {
+                    this.strategies.splice(index, 1);
+                }
             }
         });
     }
