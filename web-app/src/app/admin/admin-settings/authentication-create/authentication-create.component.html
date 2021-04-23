@@ -6,25 +6,37 @@
         <div class="row">
             <label for="name" class="bottom-gap">Name</label>
             <mat-form-field appearance="outline">
-                <input matInput type="text" id="name" [(ngModel)]="strategy.name" class="form-control"
-                    [ngModelOptions]="{standalone: true}" required>
+                <input matInput type="text" id="name" name="name" [(ngModel)]="strategy.name" class="form-control"
+                    [ngModelOptions]="{standalone: true}" required #name="ngModel">
             </mat-form-field>
+            <div *ngIf="name.invalid && (name.dirty || name.touched)" class="alert alert-danger">
+                <div *ngIf="name.errors.required">
+                    Name is required.
+                </div>
+            </div>
         </div>
         <div class="row">
             <label for="type" class="bottom-gap">Type</label>
             <mat-form-field appearance="outline">
-                <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}">
+                <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}" id="type" name="type"
+                    required #type="ngModel">
                     <mat-option *ngFor="let typeChoice of typeChoices" [value]="typeChoice.type">
                         {{typeChoice.title}}
                     </mat-option>
                 </mat-select>
             </mat-form-field>
+            <div *ngIf="type.invalid && (type.dirty || type.touched)" class="alert alert-danger">
+                <div *ngIf="type.errors.required">
+                    Type is required.
+                </div>
+            </div>
         </div>
     </mat-dialog-content>
 </section>
 <section class="mat-typography">
     <mat-dialog-actions>
         <button class="mat-button" id="cancel-button" (click)="close()">CANCEL</button>
-        <button class="mat-button mat-primary" id="ok-button" (click)="delete()" cdkFocusInitial>OK</button>
+        <button class="mat-button mat-primary" id="ok-button" (click)="delete()"
+            [disabled]="name.invalid || type.invalid" cdkFocusInitial>OK</button>
     </mat-dialog-actions>
 </section>
