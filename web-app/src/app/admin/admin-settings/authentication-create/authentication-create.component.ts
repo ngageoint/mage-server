@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../admin-settings.model';
-
+import { TypeChoice } from './admin-create.model';
 
 @Component({
     selector: 'authentication-create',
@@ -10,26 +10,30 @@ import { Strategy } from '../admin-settings.model';
 })
 export class AuthenticationCreateComponent {
 
-    readonly types: any[] = [{
+    readonly typeChoices: TypeChoice[] = [{
         title: 'Local',
         description: 'Local account.',
-        value: 'local'
+        type: 'local'
     }, {
-        title: 'OAuth',
-        description: 'OAuth account.',
-        value: 'oauth'
+        title: 'Google',
+        description: 'Google account.',
+        type: 'google'
+    }, {
+        title: 'GeoAxis',
+        description: 'GeoAxis account.',
+        type: 'geoaxis'
     }, {
         title: 'LDAP',
         description: 'LDAP account.',
-        value: 'ldap'
+        type: 'ldap'
     }, {
         title: 'Login-gov',
         description: 'Login-gov account.',
-        value: 'login-gov'
+        type: 'login-gov'
     }, {
         title: 'SAML',
         description: 'SAML account.',
-        value: 'saml'
+        type: 'saml'
     }];
 
     constructor(

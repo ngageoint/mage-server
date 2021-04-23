@@ -14,8 +14,8 @@
             <label for="type" class="bottom-gap">Type</label>
             <mat-form-field appearance="outline">
                 <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}">
-                    <mat-option *ngFor="let type of types" [value]="type.value">
-                        {{type.title}}
+                    <mat-option *ngFor="let typeChoice of typeChoices" [value]="typeChoice.type">
+                        {{typeChoice.title}}
                     </mat-option>
                 </mat-select>
             </mat-form-field>
