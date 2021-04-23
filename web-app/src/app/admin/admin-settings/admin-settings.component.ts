@@ -69,7 +69,7 @@ export class AdminSettingsComponent implements OnInit {
             });
             this.events = result[3];
 
-            this.strategies = result[0] || [];
+            this.strategies = result[0] ? result[0].data : [];
             this.strategies.sort(function (a: any, b: any): number {
                 const nameA = a.name.toUpperCase();
                 const nameB = b.name.toUpperCase();

@@ -81,8 +81,8 @@ module.exports = function (app, security) {
             });
 
             AuthenticationConfiguration.Model.create(newConfig).then(model => {
-                log.info("Creating new authentication strategy " + config.name);
-                const strategy = require('../authentication/' + config.name);
+                log.info("Creating new authentication strategy " + model.name);
+                const strategy = require('../authentication/' + model.name);
                 strategy.configure(passport);
                 //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(model);

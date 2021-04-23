@@ -1,8 +1,8 @@
 module.exports = AuthenticationConfigurationService;
 
-AuthenticationConfigurationService.$inject = ['$http', '$q', '$httpParamSerializer'];
+AuthenticationConfigurationService.$inject = ['$http', '$httpParamSerializer'];
 
-function AuthenticationConfigurationService($http, $q, $httpParamSerializer) {
+function AuthenticationConfigurationService($http, $httpParamSerializer) {
 
     const service = {
         getAllConfigurations: getAllConfigurations,
@@ -16,57 +16,22 @@ function AuthenticationConfigurationService($http, $q, $httpParamSerializer) {
     function getAllConfigurations(options) {
         options = options || {};
 
-        const deferred = $q.defer();
-
-        $http.get('/api/authentication/configuration/all', { params: options })
-            .success(function (configs) {
-                deferred.resolve(configs);
-            }).error(function () {
-                deferred.reject();
-            });
-
-        return deferred.promise;
+        return $http.get('/api/authentication/configuration/all', { params: options });
     }
 
     function updateConfiguration(config) {
-        const deferred = $q.defer();
-
-        $http.put('/api/authentication/configuration/update/' + config._id, $httpParamSerializer(config), {
+        return $http.put('/api/authentication/configuration/update/' + config._id, $httpParamSerializer(config), {
             headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        }).success(function () {
-            deferred.resolve(config);
-        }).error(function () {
-            deferred.reject();
         });
-
-        return deferred.promise;
     }
 
     function deleteConfiguration(config) {
-        const deferred = $q.defer();
-
-        $http.delete('/api/authentication/configuration/delete/' + config._id, {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        }).success(function () {
-            deferred.resolve(config);
-        }).error(function () {
-            deferred.reject();
-        });
-
-        return deferred.promise;
+        return $http.delete('/api/authentication/configuration/delete/' + config._id);
     }
 
     function createConfiguration(config) {
-        const deferred = $q.defer();
-
-        $http.put('/api/authentication/configuration/create/' + config._id, $httpParamSerializer(config), {
+        return $http.post('/api/authentication/configuration/create/', $httpParamSerializer(config), {
             headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        }).success(function () {
-            deferred.resolve(config);
-        }).error(function () {
-            deferred.reject();
         });
-
-        return deferred.promise;
     }
 };
