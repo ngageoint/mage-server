@@ -62,6 +62,7 @@ module.exports = function (app, security) {
     app.post(
         '/api/authentication/configuration/create',
         passport.authenticate('bearer'),
+        access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
             const newConfig = {
                 name: req.body.name,
@@ -96,8 +97,18 @@ module.exports = function (app, security) {
     app.delete(
         '/api/authentication/configuration/delete/:id',
         passport.authenticate('bearer'),
+        access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
-            //TODO implement
-            next();
+            AuthenticationConfiguration.remove(req.param("id")).then(config => {
+                log.info("Successfully removed strategy with id " + req.param("id"));
+                //TODO not sure how to disable passport strategy
+                 //TODO use whitelist??
+                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                 res.json(transformedConfig);
+                next();
+            }).catch(err => {
+                next(err);
+            })
+           
         });
 };

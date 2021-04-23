@@ -1,6 +1,7 @@
 "use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+    , log = require('winston');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
@@ -50,6 +51,10 @@ exports.transform = transform;
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
 exports.Model = AuthenticationConfiguration;
 
+exports.getById = function (id) {
+  return AuthenticationConfiguration.findById(id).exec();
+};
+
 exports.getConfiguration = function (type, name) {
   if (name === undefined) {
     return AuthenticationConfiguration.findOne({ type: type }).exec();
@@ -63,4 +68,13 @@ exports.getAllConfigurations = function () {
 
 exports.update = function(id, config) {
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
+};
+
+exports.remove = function (id) {
+  return this.getById(id).then(config => {
+      return config.remove();
+  }).catch(err => {
+      log.warn(err);
+      return Promise.reject(err);
+  });
 };
