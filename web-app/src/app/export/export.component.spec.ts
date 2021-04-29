@@ -1,21 +1,21 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ExportsComponent } from './exports.component';
+import { ExportComponent } from './export.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
 describe('Exports Component', () => {
 
-    let component: ExportsComponent;
-    let fixture: ComponentFixture<ExportsComponent>;
+    let component: ExportComponent;
+    let fixture: ComponentFixture<ExportComponent>;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [MatDialogModule],
-            declarations: [ExportsComponent]
+            declarations: [ExportComponent]
         }).compileComponents();
     }));
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(ExportsComponent);
+        fixture = TestBed.createComponent(ExportComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

@@ -24,11 +24,8 @@ module.exports = Kml;
 Kml.prototype.export = function (streamable) {
   const self = this;
 
-  streamable.type('application/zip');
-  streamable.attachment('mage-kml.zip');
-
-  // Known bug in Google Earth makes embedded images from a kmz file not render properly.
-  // Treating it as a zip file for now.
+  // Known limitation in Google Earth, embedded images from a kmz file not render.
+  // Treating it as a zip, rather than a kmz.
   const archive = archiver('zip');
   archive.pipe(streamable);
   const kmlStream = new stream.PassThrough();
@@ -40,7 +37,6 @@ Kml.prototype.export = function (streamable) {
   async.series([
     function (done) {
       if (!self._filter.exportObservations) return done();
-
       self.streamObservations(kmlStream, archive, function (err) {
         done(err);
       });

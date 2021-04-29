@@ -61,8 +61,8 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
-import { ExportsComponent } from './export/exports.component';
-import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
+import { ExportComponent } from './export/export.component';
+import { ExportDialogComponent } from "./export/export-dialog.component";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -125,7 +125,7 @@ import {
 
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
-import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 
 @NgModule({
   declarations: [
@@ -184,9 +184,9 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ObservationPopupComponent,
     UserPopupComponent,
     ColorPickerComponent,
-    ExportsComponent,
-    ExportMetadataDialogComponent,
-    CdkDetailRowDirective
+    ExportComponent,
+    ExportDialogComponent,
+    DatetimePickerComponent
   ],
   imports: [
     BrowserModule,

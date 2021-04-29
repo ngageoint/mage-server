@@ -31,9 +31,6 @@ module.exports = Shapefile;
 Shapefile.prototype.export = function (stream) {
   const self = this;
 
-  stream.type('application/zip');
-  stream.attachment('mage-shapefile.zip');
-
   const archive = archiver('zip');
   archive.pipe(stream);
 

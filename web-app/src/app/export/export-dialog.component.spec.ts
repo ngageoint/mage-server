@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Observable } from 'rxjs';
-import { ExportMetadataDialogComponent, ExportMetadataUI } from './export-metadata-dialog.component';
+import { ExportDialogComponent } from './export-dialog.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
@@ -20,32 +20,31 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
-import { ExportMetadataService, ExportMetadata, ExportRequest, ExportResponse } from './services/export-metadata.service';
+import { ExportService, Export, ExportRequest, ExportResponse } from './services/export.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CdkDetailRowDirective } from './directives/cdk-detail-row.directive';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { FormsModule } from '@angular/forms';
 
 describe('Export Metadata Dialog Component', () => {
 
-    let component: ExportMetadataDialogComponent;
-    let fixture: ComponentFixture<ExportMetadataDialogComponent>;
-    const tokenString: string = '1234567890';
-    let exportMetadataServiceSpy: jasmine.SpyObj<ExportMetadataService>;
+    let component: ExportDialogComponent;
+    let fixture: ComponentFixture<ExportDialogComponent>;
+    const tokenString = '1234567890';
+    let exportServiceSpy: jasmine.SpyObj<ExportService>;
 
     beforeEach(async(() => {
-        const fakeLocalStorageService = { getToken: () => tokenString };
+        const fakeLocalStorageService = { getToken: (): string => tokenString };
         const event = {
             id: 1
         };
-        const fakeFilterService = { getEvent: () => event };
-        const fakeDialogRef = { close: () => { } };
+        const fakeFilterService = { getEvent: (): any => event };
+        const fakeDialogRef = { close: (): any => { } };
 
-        exportMetadataServiceSpy =
-            jasmine.createSpyObj('ExportMetadataService', ['getMyExportMetadata', 'performExport', 'retryExport']);
-        const myMetadata: ExportMetadata[] = [{
-            _id: 1,
+        exportServiceSpy =
+            jasmine.createSpyObj('ExportService', ['getExportMetadata', 'export', 'retryExport']);
+        const myMetadata: Export[] = [{
+            id: 1,
             userId: 1,
             physicalPath: '/tmp/test.kml',
             filename: 'test.kml',
@@ -57,7 +56,7 @@ describe('Export Metadata Dialog Component', () => {
             }
         },
         {
-            _id: 2,
+            id: 2,
             userId: 1,
             physicalPath: '/tmp/test.csv',
             filename: 'test.csv',
@@ -69,7 +68,7 @@ describe('Export Metadata Dialog Component', () => {
             }
         },
         {
-            _id: 3,
+            id: 3,
             userId: 1,
             physicalPath: '/tmp/test.json',
             filename: 'test.json',
@@ -81,7 +80,7 @@ describe('Export Metadata Dialog Component', () => {
             }
         }];
 
-        const metaObservable: Observable<ExportMetadata[]> = new Observable<ExportMetadata[]>(
+        const metaObservable: Observable<Export[]> = new Observable<Export[]>(
             function subscribe(subscriber) {
                 try {
                     subscriber.next(myMetadata);
@@ -92,7 +91,7 @@ describe('Export Metadata Dialog Component', () => {
             }
         );
 
-        exportMetadataServiceSpy.getMyExportMetadata.and.returnValue(metaObservable);
+        exportServiceSpy.getExports.and.returnValue(metaObservable);
 
         const eventServiceSpy = jasmine.createSpyObj('EventService', ['getEventById']);
         eventServiceSpy.getEventById.withArgs(1).and.returnValue("Test Event Name");
@@ -107,20 +106,20 @@ describe('Export Metadata Dialog Component', () => {
                 { provide: EventService, useValue: eventServiceSpy },
                 { provide: LocalStorageService, useValue: fakeLocalStorageService },
                 { provide: MatDialogRef, useValue: fakeDialogRef },
-                { provide: ExportMetadataService, useValue: exportMetadataServiceSpy },
+                { provide: ExportService, useValue: exportServiceSpy },
                 { provide: FilterService, useValue: fakeFilterService }
             ],
-            declarations: [CdkDetailRowDirective, ExportMetadataDialogComponent]
+            declarations: [ExportDialogComponent]
         }).compileComponents();
     }));
 
     beforeEach(() => {
         expect(TestBed.inject(LocalStorageService)).toBeTruthy();
-        expect(TestBed.inject(ExportMetadataService)).toBeTruthy();
+        expect(TestBed.inject(ExportService)).toBeTruthy();
         expect(TestBed.inject(EventService)).toBeTruthy();
         expect(TestBed.inject(FilterService)).toBeTruthy();
 
-        fixture = TestBed.createComponent(ExportMetadataDialogComponent);
+        fixture = TestBed.createComponent(ExportDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -147,7 +146,7 @@ describe('Export Metadata Dialog Component', () => {
         component.applyFilter(event);
         expect(component.dataSource.paginator.pageIndex).toBe(0);
         expect(component.dataSource.filteredData.length).toBe(1);
-        expect(component.dataSource.filteredData[0]._id).toBe(1);
+        expect(component.dataSource.filteredData[0].id).toBe(1);
     });
 
     it('should open export view', () => {
@@ -157,23 +156,23 @@ describe('Export Metadata Dialog Component', () => {
     });
 
     it('should retry export', () => {
-        const meta: ExportMetadataUI = {
-            _id: '1',
+        const meta: Export = {
+            id: '1',
             userId: '1',
             physicalPath: '/tmp',
             exportType: 'GeoJSON',
             location: '/export',
             status: 'Failed',
-            options: {},
-            eventName: 'Test Event',
-            undoable: false
+            options: {
+                eventName: 'Test Event'
+            }
         };
 
         const responseObs: Observable<ExportResponse> = new Observable<ExportResponse>(
             function subscribe(subscriber) {
                 try {
                     const response: ExportResponse = {
-                        exportId: '11111'
+                        id: '11111'
                     };
                     subscriber.next(response);
                     subscriber.complete();
@@ -183,9 +182,9 @@ describe('Export Metadata Dialog Component', () => {
             }
         );
 
-        exportMetadataServiceSpy.retryExport.withArgs(meta).and.returnValue(responseObs);
+        exportServiceSpy.retryExport.withArgs(meta).and.returnValue(responseObs);
         component.retryExport(meta);
-        expect(exportMetadataServiceSpy.retryExport).toHaveBeenCalled();
+        expect(exportServiceSpy.retryExport).toHaveBeenCalled();
     });
 
     it('should delete', () => {
@@ -199,18 +198,19 @@ describe('Export Metadata Dialog Component', () => {
         //TODO wait 10seconds
     });
 
-    it('should undo delete', () => {
-        const meta: any = {
-            undoable: false,
-            undoTimerHandle: null
-        };
-        component.scheduleDeleteExport(meta);
-        expect(meta.undoable).toEqual(true);
-        expect(meta.undoTimerHandle).toBeTruthy();
-        component.undoDelete(meta);
-        expect(meta.undoable).toEqual(false);
-        expect(meta.undoTimerHandle).toBeFalsy();
-    });
+    // TODO click undo action on snackbar
+    // it('should undo delete', () => {
+    //     const meta: any = {
+    //         undoable: false,
+    //         undoTimerHandle: null
+    //     };
+    //     component.scheduleDeleteExport(meta);
+    //     expect(meta.undoable).toEqual(true);
+    //     expect(meta.undoTimerHandle).toBeTruthy();
+    //     component.undoDelete(meta);
+    //     expect(meta.undoable).toEqual(false);
+    //     expect(meta.undoTimerHandle).toBeFalsy();
+    // });
 
     it('should set start date', () => {
         const start = new Date();
@@ -230,14 +230,6 @@ describe('Export Metadata Dialog Component', () => {
         expect(component.endDate).toEqual(end);
     });
 
-    it('should toggle time', () => {
-        expect(component.localTime).toBeTruthy();
-        expect(component.currentOffset).toContain('LOCAL');
-        component.toggleTime();
-        expect(component.localTime).toBeFalsy();
-        expect(component.currentOffset).toContain('GMT');
-    });
-
     it('should export', () => {
         const start = new Date();
         const end = new Date();
@@ -250,7 +242,7 @@ describe('Export Metadata Dialog Component', () => {
         const exportFormat = component.exportFormats[1];
         component.changeFormat(exportFormat);
 
-        exportMetadataServiceSpy.performExport.and.callFake(fakeExport);
+        exportServiceSpy.export.and.callFake(fakeExport);
         component.exportData({});
     });
 
@@ -268,7 +260,7 @@ describe('Export Metadata Dialog Component', () => {
             function subscribe(subscriber) {
                 try {
                     const response: ExportResponse = {
-                        exportId: '0987'
+                        id: '0987'
                     }
                     subscriber.next(response);
                     subscriber.complete();

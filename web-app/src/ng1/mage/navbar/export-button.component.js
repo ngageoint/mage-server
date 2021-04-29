@@ -15,7 +15,7 @@ function ExportButtonController(Event, ExportService) {
 
   this.$onInit = function () {
     this.count = 0;
-    setInterval(this.checkCompletedExports.bind(this), 10000);
+    setInterval(this.checkCompletedExports.bind(this), 5 * 60 * 1000);
   };
 
   this.$onChanges = function (changes) {
