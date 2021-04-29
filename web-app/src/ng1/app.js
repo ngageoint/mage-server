@@ -28,6 +28,7 @@ import { AddObservationComponent } from '../app/map/controls/add-observation.com
 import { LeafletComponent } from '../app/map/leaflet.component';
 import { ExportComponent } from '../app/export/export.component';
 
+import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { MapPopupService } from '../app/map/map-popup.service'
 
@@ -57,6 +58,7 @@ const app = angular.module('mage', [
 
 // Downgraded Angular services 
 app
+  .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService));
 
