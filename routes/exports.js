@@ -311,9 +311,6 @@ function mapDevices(req, res, next) {
 }
 
 async function exportData(exportId, event, users, devices) {
-  // TODO look into kicking off a worker thread to do this work
-  await fs.promises.mkdir(exportDirectory, { recursive: true });
-
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
 
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
