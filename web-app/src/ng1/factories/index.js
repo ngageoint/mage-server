@@ -1,4 +1,4 @@
-var angular = require('angular')
+const angular = require('angular')
   , EventResource = require('./event.resource')
   , TeamResource = require('./team.resource')
   , FormResource = require('./form.resource')
@@ -37,4 +37,3 @@ angular.module('mage')
   .factory('UserPagingService', require('./user-paging.service'))
   .factory('DevicePagingService', require('./device-paging.service'))
   .factory('TeamPagingService', require('./team-paging.service'))
-  .factory('ExportService', require('./export.service'));

@@ -20,7 +20,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
-import { ExportService, Export, ExportRequest, ExportResponse } from './services/export.service';
+import { ExportService, Export, ExportRequest, ExportResponse } from './export.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';

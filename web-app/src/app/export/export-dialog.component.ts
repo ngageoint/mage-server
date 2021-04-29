@@ -3,7 +3,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ExportService, Export, ExportResponse, ExportRequest } from './services/export.service';
+import { ExportService, Export, ExportResponse, ExportRequest } from './export.service';
 import { EventService, LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import * as moment from 'moment'
