@@ -121,9 +121,6 @@ export class ObservationViewComponent implements OnChanges {
       panelClass: 'feed-panel'
     }).afterDismissed().subscribe((option: ObservationOption) => {
       switch(option) {
-        case ObservationOption.EDIT:
-          this.editObservation()
-          break;
         case ObservationOption.DOWNLOAD: 
           this.downloadObservation()
           break;

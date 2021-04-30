@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { MatBottomSheetRef } from '@angular/material';
 
 export enum ObservationOption {
-  EDIT,
   DOWNLOAD,
   DELETE
 }
