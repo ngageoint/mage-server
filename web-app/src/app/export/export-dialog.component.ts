@@ -4,7 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, Export, ExportResponse, ExportRequest } from './export.service';
-import { EventService, LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
+import { LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import * as moment from 'moment'
 import { Observable, Subscription, timer } from 'rxjs';
@@ -123,12 +123,8 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
 	constructor(public dialogRef: MatDialogRef<ExportDialogComponent>,
 		public snackBar: MatSnackBar,
-		@Inject(ExportService)
-		public exportService: ExportService,
-		@Inject(EventService)
-		public eventService: any,
-		@Inject(LocalStorageService)
-		public storageService: any,
+		@Inject(ExportService) public exportService: ExportService,
+		@Inject(LocalStorageService) public storageService: any,
 		@Inject(FilterService) private filterService: any) {
 
 		this.token = this.storageService.getToken();
@@ -181,10 +177,10 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		this.dataSource.filter = filterValue.trim().toLowerCase();
 	}
 
-	retryExport(exp: Export): void {
-		this.exportService.retryExport(exp).subscribe((response: ExportResponse) => {
+	retryExport(retry: Export): void {
+		this.exportService.retryExport(retry).subscribe((response: ExportResponse) => {
 			this.snackBar.open('Retrying Export', null, { duration: 3000 })
-			const retryExport = this.dataSource.data.find(data => data.id === exp.id)
+			const retryExport = this.dataSource.data.find(data => data.id === retry.id)
 			retryExport.status = 'Running'
 		});
 	}
@@ -197,9 +193,12 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 			this.dataSource.data = exports
 		}
 
-		this.snackBar.open("Export Deleted", "Undo", {
-			duration: 8000,
-		}).afterDismissed().subscribe(event => {
+		const ref = this.snackBar.open("Export Deleted", "Undo", {
+			duration: 5000,
+		})
+		
+		ref.afterDismissed().subscribe(event => {
+			console.log('CODE = snackbar dismissed', event)
 			if (event.dismissedByAction) {
 				exports.splice(index, 0, exp);
 				this.dataSource.data = exports
@@ -229,7 +228,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		})
 	}
 
-	exportData($event: any): void {
+	exportData(): void {
 		let exportTimeOption: ExportTimeOption;
 		for (let i = 0; i < this.exportTimeOptions.length; i++) {
 			exportTimeOption = this.exportTimeOptions[i];

@@ -30,7 +30,7 @@ describe('ExportService', () => {
       physicalPath: '/tmp/test.kml',
       filename: 'test.kml',
       exportType: 'kml',
-      location: '/api/exports/1',
+      url: '/api/exports/1',
       status: 'Running',
       options: {}
     }];

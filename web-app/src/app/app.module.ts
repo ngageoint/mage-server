@@ -45,8 +45,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
 
-import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
-
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
@@ -235,15 +233,11 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     AlphaModule,
     CheckboardModule,
     MatTableModule,
-    MatDialogModule,
     MatPaginatorModule,
     MatSortModule,
     MatSnackBarModule,
     MatDatepickerModule,
-    MatNativeDateModule,
-    NgxMatDatetimePickerModule,
-    NgxMatTimepickerModule,
-    NgxMatNativeDateModule
+    MatNativeDateModule
   ],
   providers: [
     mapServiceProvider,

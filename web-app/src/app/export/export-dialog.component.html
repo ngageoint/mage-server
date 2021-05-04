@@ -58,31 +58,31 @@
                       <mat-icon class="export-details-icon">calendar_today</mat-icon>Time Range
                     </div>
                     <mat-list-item class="export-details-info">
-                      <div matLine *ngIf="export.options.filter.startDate">
+                      <div matLine *ngIf="export.options.filter?.startDate">
                         Start: {{export.options.filter.startDate | moment}}
                       </div>
-                      <div matLine *ngIf="export.options.filter.endDate">
+                      <div matLine *ngIf="export.options.filter?.endDate">
                         End: {{export.options.filter.endDate | moment}}
                       </div>
-                      <div matLine *ngIf="!export.options.filter.startDate && !export.options.filter.endDate">ALL</div>
+                      <div matLine *ngIf="!export.options.filter?.startDate && !export.options.filter?.endDate">ALL</div>
                     </mat-list-item>
                   </div>
                   <div mat-subheader>
                     <mat-icon class="export-details-icon">tune</mat-icon>Export Options
                   </div>
-                  <mat-list-item *ngIf="export.options.filter.exportLocations" class="export-details-info">
+                  <mat-list-item *ngIf="export.options.filter?.exportLocations" class="export-details-info">
                     <mat-checkbox [checked]="true" color="primary" disabled>Export Locations</mat-checkbox>
                   </mat-list-item>
-                  <mat-list-item *ngIf="export.options.filter.exportObservations" class="export-details-info">
+                  <mat-list-item *ngIf="export.options.filter?.exportObservations" class="export-details-info">
                     <mat-checkbox [checked]="true" color="primary" disabled>Export Observations</mat-checkbox>
                   </mat-list-item>
-                  <mat-list-item *ngIf="export.options.filter.attachments" class="export-details-info">
+                  <mat-list-item *ngIf="export.options.filter?.attachments" class="export-details-info">
                     <mat-checkbox [checked]="true" color="primary" disabled>Exclude All Attachments</mat-checkbox>
                   </mat-list-item>
-                  <mat-list-item *ngIf="export.options.filter.favorites" class="export-details-info">
+                  <mat-list-item *ngIf="export.options.filter?.favorites" class="export-details-info">
                     <mat-checkbox [checked]="true" color="primary" disabled>Export Only Your Favorite Observations</mat-checkbox>
                   </mat-list-item>
-                  <mat-list-item *ngIf="export.options.filter.important" class="export-details-info">
+                  <mat-list-item *ngIf="export.options.filter?.important" class="export-details-info">
                     <mat-checkbox [checked]="true" color="primary" disabled>Export Only Observations Flagged Important</mat-checkbox>
                   </mat-list-item>
                 </mat-list>
