@@ -7,9 +7,15 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Local user signup captcha
-* Ability to export as a GeoPackage.
-* New export UI to view previous exports.
-* Exports are now done in the background to allow for larger exports.
+
+##### Bug Fixes
+
+## [5.5.0](https://github.com/ngageoint/mage-server/releases/tag/5.5.0)
+
+##### Features
+* Export as GeoPackage.
+* New export UI, allowing users to view previous exports.
+* Exports are now done in the background, this will eliminate client timeouts for larger exports. 
 * Minor performance enhancements to existing export types.
 * Adding icons to search results on admin pages.
 
