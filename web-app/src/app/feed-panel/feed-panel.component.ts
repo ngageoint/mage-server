@@ -49,7 +49,6 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   editObservation: any
 
   viewUser: any
-  userBadge?: any
 
   constructor(
     public dialog: MatDialog,
