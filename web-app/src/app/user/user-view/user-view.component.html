@@ -30,8 +30,7 @@
 
     <div class="user__divider"></div>
 
-    <!-- TODO: angular9 - ensure click handler works as expected -->
-    <div class="user__row" (click)="onUserLocationClick()">
+    <div class="user__row" (click)="onUserLocationClick()" matRipple>
       <mat-icon class="user__icon user__icon--location">my_location</mat-icon>
       <div class="user__text">
         <span>{{user.location.geometry | geometry:5}}</span>

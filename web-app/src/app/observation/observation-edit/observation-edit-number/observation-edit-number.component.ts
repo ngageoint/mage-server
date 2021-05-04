@@ -5,11 +5,6 @@ interface NumberField {
   name: string,
   value: number,
   required: boolean,
-  /*
-  TODO: angular9 - added these to fix template errors; are they really
-  optional? nullable? should probably move to this interface to a forms
-  model module anyway
-  */
   min?: number,
   max?: number
 }
