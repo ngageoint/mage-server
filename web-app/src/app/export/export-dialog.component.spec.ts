@@ -1,12 +1,11 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { Observable } from 'rxjs';
+import { async, ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from './export-dialog.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,271 +15,293 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarDismiss, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { LocalStorageService, EventService, FilterService } from '../upgrade/ajs-upgraded-providers';
+import { LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportService, Export, ExportRequest, ExportResponse } from './export.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
 import { FormsModule } from '@angular/forms';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
-describe('Export Metadata Dialog Component', () => {
+class MockExportService {
+  getExports(): Observable<any> {
+    return of([{
+      id: 1,
+      userId: 1,
+      physicalPath: '/tmp/test.kml',
+      filename: 'test.kml',
+      exportType: 'kml',
+      url: '/api/exports/1',
+      status: 'Running',
+      options: {
+        event: {
+          name: 'Test Event'
+        }
+      }
+    },{
+      id: 2,
+      userId: 1,
+      physicalPath: '/tmp/test.csv',
+      filename: 'test.csv',
+      exportType: 'csv',
+      url: '/api/exports/2',
+      status: 'Completed',
+      options: {
+        event: {
+          name: 'Test Event'
+        }
+      }
+    },{
+      id: 3,
+      userId: 1,
+      physicalPath: '/tmp/test.json',
+      filename: 'test.json',
+      exportType: 'json',
+      url: '/api/exports/3',
+      status: 'Failed',
+      options: {
+        event: {
+          name: 'Test Event'
+        }
+      }
+    }])
+  }
 
-    let component: ExportDialogComponent;
-    let fixture: ComponentFixture<ExportDialogComponent>;
-    const tokenString = '1234567890';
-    let exportServiceSpy: jasmine.SpyObj<ExportService>;
+  export(request: ExportRequest): Observable<ExportResponse> {
+    return of({ id: '1' })
+  }
 
-    beforeEach(async(() => {
-        const fakeLocalStorageService = { getToken: (): string => tokenString };
-        const event = {
-            id: 1
-        };
-        const fakeFilterService = { getEvent: (): any => event };
-        const fakeDialogRef = { close: (): any => { } };
+  retryExport(retry: Export): Observable<ExportResponse> {
+    return of({id: retry.id})
+  }
 
-        exportServiceSpy =
-            jasmine.createSpyObj('ExportService', ['getExportMetadata', 'export', 'retryExport']);
-        const myMetadata: Export[] = [{
-            id: 1,
-            userId: 1,
-            physicalPath: '/tmp/test.kml',
-            filename: 'test.kml',
-            exportType: 'kml',
-            location: '/api/exports/1',
-            status: 'Running',
-            options: {
-                eventId: event.id
-            }
-        },
-        {
-            id: 2,
-            userId: 1,
-            physicalPath: '/tmp/test.csv',
-            filename: 'test.csv',
-            exportType: 'csv',
-            location: '/api/exports/2',
-            status: 'Completed',
-            options: {
-                eventId: event.id
-            }
-        },
-        {
-            id: 3,
-            userId: 1,
-            physicalPath: '/tmp/test.json',
-            filename: 'test.json',
-            exportType: 'json',
-            location: '/api/exports/3',
-            status: 'Failed',
-            options: {
-                eventId: event.id
-            }
-        }];
+  deleteExport(id: string): Observable<{id: string}> {
+    return of({id})
+  }
+}
 
-        const metaObservable: Observable<Export[]> = new Observable<Export[]>(
-            function subscribe(subscriber) {
-                try {
-                    subscriber.next(myMetadata);
-                    subscriber.complete();
-                } catch (e) {
-                    subscriber.error(e);
-                }
-            }
-        );
+class MockSnackbarRef {
+  private readonly _afterDismissed = new Subject<MatSnackBarDismiss>()
 
-        exportServiceSpy.getExports.and.returnValue(metaObservable);
+  afterDismissed(): Observable<MatSnackBarDismiss> {
+    return this._afterDismissed
+  }
 
-        const eventServiceSpy = jasmine.createSpyObj('EventService', ['getEventById']);
-        eventServiceSpy.getEventById.withArgs(1).and.returnValue("Test Event Name");
+  dismiss(): void {
+    this._afterDismissed.next({ dismissedByAction: false })
+    this._afterDismissed.complete()
+  }
 
-        TestBed.configureTestingModule({
-            imports: [MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
-                MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
-                NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule,
-                MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule,
-                NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule, FormsModule, MatChipsModule],
-            providers: [
-                { provide: EventService, useValue: eventServiceSpy },
-                { provide: LocalStorageService, useValue: fakeLocalStorageService },
-                { provide: MatDialogRef, useValue: fakeDialogRef },
-                { provide: ExportService, useValue: exportServiceSpy },
-                { provide: FilterService, useValue: fakeFilterService }
-            ],
-            declarations: [ExportDialogComponent]
-        }).compileComponents();
-    }));
+  dismissWithAction(): void {
+    this._afterDismissed.next({ dismissedByAction: true })
+    this._afterDismissed.complete()
+  }
+}
 
-    beforeEach(() => {
-        expect(TestBed.inject(LocalStorageService)).toBeTruthy();
-        expect(TestBed.inject(ExportService)).toBeTruthy();
-        expect(TestBed.inject(EventService)).toBeTruthy();
-        expect(TestBed.inject(FilterService)).toBeTruthy();
+class MockSnackbar {
+  private snackbarRef = new MockSnackbarRef()
 
-        fixture = TestBed.createComponent(ExportDialogComponent);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+  get _openedSnackBarRef(): any {
+    return this.snackbarRef
+  }
 
-    it('should create component', () => {
-        expect(component).toBeTruthy();
-    });
+  open(): any {
+    return this.snackbarRef
+  }
+}
 
-    it('should wire up components to datasource', () => {
-        expect(component.dataSource.paginator).toBeTruthy();
-        expect(component.dataSource.sort).toBeTruthy();
-        expect(component.token).toEqual(tokenString);
+describe('ExportDialogComponent', () => {
 
-        expect(component.dataSource.data.length).toBe(3);
-    });
+  let component: ExportDialogComponent;
+  let fixture: ComponentFixture<ExportDialogComponent>;
 
-    it('should filter', () => {
-        const event: any = {
-            target: {
-                value: 'kml'
-            }
-        };
-        expect(component.dataSource.filteredData.length).toBe(3);
-        component.applyFilter(event);
-        expect(component.dataSource.paginator.pageIndex).toBe(0);
-        expect(component.dataSource.filteredData.length).toBe(1);
-        expect(component.dataSource.filteredData[0].id).toBe(1);
-    });
+  beforeEach(async(() => {
+    const mockLocalStorageService = { getToken: (): string => '1' };
+    const mockFilterService = { getEvent: (): any => { return { id: 1 } } };
+    const mockDialogRef = { close: (): void => { } };
 
-    it('should open export view', () => {
-        expect(component.isExportOpen).toBe(false);
-        component.openExport();
-        expect(component.isExportOpen).toBe(true);
-    });
+    TestBed.configureTestingModule({
+      imports: [NoopAnimationsModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
+        MatProgressSpinnerModule, MatInputModule, MatFormFieldModule, MatIconModule, HttpClientTestingModule,
+        NoopAnimationsModule, MatCheckboxModule, MatListModule, MatCardModule, MatExpansionModule, MatRadioModule,
+        MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, FormsModule, MatChipsModule],
+      providers: [
+        { provide: LocalStorageService, useValue: mockLocalStorageService },
+        { provide: ExportService, useClass: MockExportService },
+        { provide: FilterService, useValue: mockFilterService },
+        { provide: MatDialogRef, useValue: mockDialogRef },
+        { provide: MatSnackBar, useClass: MockSnackbar }
+      ],
+      declarations: [ExportDialogComponent]
+    }).compileComponents();
+  }));
 
-    it('should retry export', () => {
-        const meta: Export = {
-            id: '1',
-            userId: '1',
-            physicalPath: '/tmp',
-            exportType: 'GeoJSON',
-            location: '/export',
-            status: 'Failed',
-            options: {
-                eventName: 'Test Event'
-            }
-        };
+  beforeEach(() => {
+    fixture = TestBed.createComponent(ExportDialogComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-        const responseObs: Observable<ExportResponse> = new Observable<ExportResponse>(
-            function subscribe(subscriber) {
-                try {
-                    const response: ExportResponse = {
-                        id: '11111'
-                    };
-                    subscriber.next(response);
-                    subscriber.complete();
-                } catch (e) {
-                    subscriber.error(e);
-                }
-            }
-        );
+  it('should create component', () => {
+    expect(component).toBeTruthy();
+  });
 
-        exportServiceSpy.retryExport.withArgs(meta).and.returnValue(responseObs);
-        component.retryExport(meta);
-        expect(exportServiceSpy.retryExport).toHaveBeenCalled();
-    });
+  it('should wire up components to datasource', () => {
+    expect(component.dataSource.sort).toBeTruthy();
+    expect(component.dataSource.data.length).toBe(3);
+  });
 
-    it('should delete', () => {
-        const meta: any = {
-            undoable: false,
-            undoTimerHandle: null
-        };
-        component.scheduleDeleteExport(meta);
-        expect(meta.undoable).toEqual(true);
-        expect(meta.undoTimerHandle).toBeTruthy();
-        //TODO wait 10seconds
-    });
+  it('should filter', () => {
+    const event: any = {
+      target: {
+        value: 'kml'
+      }
+    };
+    expect(component.dataSource.filteredData.length).toBe(3);
+    component.applyFilter(event);
+    expect(component.dataSource.filteredData.length).toBe(1);
+    expect(component.dataSource.filteredData[0].id).toBe(1);
+  });
 
-    // TODO click undo action on snackbar
-    // it('should undo delete', () => {
-    //     const meta: any = {
-    //         undoable: false,
-    //         undoTimerHandle: null
-    //     };
-    //     component.scheduleDeleteExport(meta);
-    //     expect(meta.undoable).toEqual(true);
-    //     expect(meta.undoTimerHandle).toBeTruthy();
-    //     component.undoDelete(meta);
-    //     expect(meta.undoable).toEqual(false);
-    //     expect(meta.undoTimerHandle).toBeFalsy();
-    // });
+  it('should open export view', () => {
+    expect(component.isExportOpen).toBe(false);
+    component.openExport();
+    expect(component.isExportOpen).toBe(true);
+  });
 
-    it('should set start date', () => {
-        const start = new Date();
-        const event: any = {
-            value: start
-        };
-        component.onStartDate(event);
-        expect(component.startDate).toEqual(start);
-    });
+  it('should retry export', () => {
+    const exportService: ExportService = fixture.debugElement.injector.get(ExportService);
+    const retrySpy = spyOn(exportService, 'retryExport').and.callThrough()
 
-    it('should set end date', () => {
-        const end = new Date();
-        const event: any = {
-            value: end
-        };
-        component.onEndDate(event);
-        expect(component.endDate).toEqual(end);
-    });
+    const retry: Export = {
+      id: 1,
+      userId: '1',
+      physicalPath: '/tmp',
+      exportType: 'GeoJSON',
+      url: '/export',
+      status: 'Failed',
+      options: {
+        eventName: 'Test Event'
+      }
+    };
 
-    it('should export', () => {
-        const start = new Date();
-        const end = new Date();
-        const event: any = {
-            value: start
-        };
-        component.onStartDate(event);
-        event.value = end;
-        component.onEndDate(event);
-        const exportFormat = component.exportFormats[1];
-        component.changeFormat(exportFormat);
+    component.retryExport(retry);
+    expect(retrySpy).toHaveBeenCalled();
+  });
 
-        exportServiceSpy.export.and.callFake(fakeExport);
-        component.exportData({});
-    });
+  it('should schedule export delete', () => {
+    component.dataSource.data = [{
+      id: '1',
+      userId: '1',
+      physicalPath: '',
+      exportType: 'KML',
+      options: {},
+      url: '/api/exports/1',
+      status: 'Completed'
+    }]
 
-    function fakeExport(request: ExportRequest): Observable<ExportResponse> {
-        expect(request).toBeTruthy();
-        expect(request.exportType).toEqual(component.exportFormat);
-        expect(request.eventId).toEqual(1);
-        expect(request.observations).toEqual(component.exportObservations);
-        expect(request.locations).toEqual(component.exportLocations);
-        expect(request.attachments).toEqual(component.excludeObservationsAttachments);
-        expect(request.favorites).toEqual(component.exportFavoriteObservations);
-        expect(request.important).toEqual(component.exportImportantObservations);
+    const exp  = component.dataSource.data[0];
+    component.scheduleDeleteExport(exp);
+    expect(component.dataSource.data.length).toEqual(0);
+  });
 
-        const obs: Observable<ExportResponse> = new Observable<ExportResponse>(
-            function subscribe(subscriber) {
-                try {
-                    const response: ExportResponse = {
-                        id: '0987'
-                    }
-                    subscriber.next(response);
-                    subscriber.complete();
-                } catch (e) {
-                    subscriber.error(e);
-                }
-            }
-        );
+  it('should delete export', fakeAsync(() => {
+    const exportService: ExportService = fixture.debugElement.injector.get(ExportService);
+    const deleteSpy = spyOn(exportService, 'deleteExport').and.callThrough()
 
-        return obs;
-    }
+    component.dataSource.data = [{
+      id: '1',
+      userId: '1',
+      physicalPath: '',
+      exportType: 'KML',
+      options: {},
+      url: '/api/exports/1',
+      status: 'Completed'
+    }]
 
-    it('should change export format', () => {
-        const badFormat = "test";
-        expect(function () {
-            component.changeFormat(badFormat);
-        }).toThrowError(Error);
+    const exp = component.dataSource.data[0];
+    component.scheduleDeleteExport(exp);
+    fixture.detectChanges()
 
-        const goodFormat = component.exportFormats[0];
-        component.changeFormat(goodFormat);
-        expect(component.exportFormat).toEqual(goodFormat);
-    });
+    component.snackBar._openedSnackBarRef.dismiss()
+
+    expect(deleteSpy).toHaveBeenCalled()
+  }));
+
+  it('should undo delete export', fakeAsync(() => {
+    const exportService: ExportService = fixture.debugElement.injector.get(ExportService);
+    const deleteSpy = spyOn(exportService, 'deleteExport').and.callThrough()
+
+    component.dataSource.data = [{
+      id: '1',
+      userId: '1',
+      physicalPath: '',
+      exportType: 'KML',
+      options: {},
+      url: '/api/exports/1',
+      status: 'Completed'
+    }]
+
+    const exp = component.dataSource.data[0];
+    component.scheduleDeleteExport(exp);
+    fixture.detectChanges()
+    expect(component.dataSource.data.length).toBe(0)
+
+    component.snackBar._openedSnackBarRef.dismissWithAction()
+    expect(deleteSpy).toHaveBeenCalledTimes(0)
+    expect(component.dataSource.data.length).toBe(1)
+  }));
+
+  it('should set start date', () => {
+    const date = new Date();
+    component.onStartDate(date);
+    expect(component.startDate).toEqual(date);
+  });
+
+  it('should set end date', () => {
+    const date = new Date();
+    component.onEndDate(date);
+    expect(component.endDate).toEqual(date);
+  });
+
+  it('should export', () => {
+    const exportService: ExportService = fixture.debugElement.injector.get(ExportService)
+    const exportSpy = spyOn(exportService, 'export').and.callThrough()
+
+    const start = '2021-05-04T00:00:00.000Z'
+    component.onStartDate(new Date(Date.parse(start)))
+
+    const end = '2021-05-05T00:00:00.000Z'
+    component.onEndDate(new Date(Date.parse(end)))
+
+    component.exportTime = 'custom'
+
+    component.changeFormat('KML');
+
+    component.exportData();
+    expect(exportSpy).toHaveBeenCalledWith({
+      exportType: 'KML',
+      eventId: 1,
+      observations: true,
+      locations: true,
+      startDate: start,
+      endDate: end,
+      attachments: undefined,
+      favorites: undefined,
+      important: undefined
+    })
+  })
+
+  it('should change export format', () => {
+    const badFormat = "test";
+    expect(function () {
+      component.changeFormat(badFormat);
+    }).toThrowError(Error);
+
+    const goodFormat = component.exportFormats[0];
+    component.changeFormat(goodFormat);
+    expect(component.exportFormat).toEqual(goodFormat);
+  });
 });

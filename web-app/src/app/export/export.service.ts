@@ -8,7 +8,7 @@ export interface Export {
   physicalPath: string,
   filename?: string,
   exportType: string,
-  location: string,
+  url: string,
   status: string,
   options: any
 }

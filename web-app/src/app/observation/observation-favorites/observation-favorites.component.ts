@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core'
+import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { EventService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 
@@ -17,7 +17,6 @@ export class ObservationFavoritesComponent {
   observation: any
 
   constructor(
-    changeDetector: ChangeDetectorRef,
     public dialogRef: MatDialogRef<ObservationFavoritesComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Data,
     @Inject(UserService) userService: any,
