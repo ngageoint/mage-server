@@ -1,14 +1,11 @@
-const DOMParser = require('xmldom').DOMParser
-  , xpath = require('xpath')
+const xpath = require('xpath')
   , log = require('winston');
 
 exports.kml = kml;
 
-function kml(data, o) {
-  o = o || {};
-  log.info('Generate KML with options', o);
+function kml(document) {
+  log.info('Generate KML');
 
-  const document = new DOMParser().parseFromString(data);
   const styleIndex = getStyles(document);
 
   // Pull all placemarks regards of depth level

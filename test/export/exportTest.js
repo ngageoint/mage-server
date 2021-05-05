@@ -24,8 +24,8 @@ const DeviceModel = mongoose.model('Device');
 const Observation = require('../../models/observation');
 const observationModel = Observation.observationModel;
 
-require('../../models/exportmetadata');
-const ExportMetadataModel = mongoose.model('ExportMetadata');
+require('../../models/export');
+const ExportModel = mongoose.model('Export');
 
 describe("export tests", function () {
 
@@ -131,7 +131,7 @@ describe("export tests", function () {
       });
   });
 
-  it("should export observations as kml - background", function (done) {
+  it("should export observations as kml", function (done) {
 
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
@@ -192,7 +192,7 @@ describe("export tests", function () {
       .chain('exec')
       .yields(null, [mockObservation]);
 
-    const exportMeta = new ExportMetadataModel({
+    const exportMeta = new ExportModel({
       _id: mongoose.Types.ObjectId(),
       userId: mongoose.Types.ObjectId(),
       physicalPath: '/tmp',
@@ -204,9 +204,8 @@ describe("export tests", function () {
       }
     });
 
-    sinon.mock(ExportMetadataModel.prototype)
-      .expects('save')
-      .twice()
+    sinon.mock(ExportModel)
+      .expects('create')
       .resolves(exportMeta);
 
     sinon.mock(IconModel)
@@ -234,7 +233,7 @@ describe("export tests", function () {
       .expect(201)
       .expect(function (res) {
         res.headers.should.have.property('content-type').that.contains('application/json');
-        res.headers.should.have.property('location').that.equals('/api/exports/download/' + exportMeta._id);
+        res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
       })
       .end(function (err) {
         mockfs.restore();

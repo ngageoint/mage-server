@@ -20,6 +20,5 @@ describe('mage openapi document', function() {
     }
 
     expect(error).to.be.undefined;
-    // expect(warning).to.be.undefined;
   });
 });

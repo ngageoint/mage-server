@@ -26,9 +26,10 @@ import { SearchComponent } from '../app/map/controls/search.component';
 import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
-import { ExportsComponent } from '../app/export/exports.component';
+import { ExportComponent } from '../app/export/export.component';
 import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
 
+import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { MapPopupService } from '../app/map/map-popup.service'
 
@@ -58,6 +59,7 @@ const app = angular.module('mage', [
 
 // Downgraded Angular services 
 app
+  .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService));
 
@@ -83,7 +85,7 @@ app
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
-  .directive('exports', downgradeComponent({ component: ExportsComponent }))
+  .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }));
 
 app

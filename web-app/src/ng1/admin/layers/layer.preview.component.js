@@ -63,7 +63,6 @@ class LayerPreviewController {
         this.createTileLayer(layer.url);
       });
     } else {
-      console.log('this', this);
       if (this.url && this.type === 'Feature') {
         this.mapLayer = this.createKmlLayer(this.url);
         return;
@@ -79,16 +78,15 @@ class LayerPreviewController {
   }
 
   createKmlLayer(url) {
-    this.FeatureService.loadFeatureUrl(url + '/features').then(response => {
+    const featuresUrl = new URL(url);
+    featuresUrl.pathname += '/features'
+    this.FeatureService.loadFeatureUrl(featuresUrl.toString()).then(response => {
       const gjLayer = L.geoJson(response, {
         pointToLayer: (feature, latlng) => {
-          const options = {
-            pane: this.MARKER_OVERLAY_PANE,
-          };
+          const options = {};
           if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl;
           }
-          options.tooltip = editMode;
           return L.fixedWidthMarker(latlng, options);
         },
         style: function(feature) {
@@ -96,7 +94,10 @@ class LayerPreviewController {
         },
       });
       gjLayer.addTo(this.map);
-      this.map.fitBounds(gjLayer.getBounds());
+      const bounds = gjLayer.getBounds();
+      if (bounds.isValid()) {
+        this.map.fitBounds(bounds);
+      }
     });
   }
 

@@ -15,7 +15,7 @@ function ExportButtonController(Event, ExportService) {
 
   this.$onInit = function () {
     this.count = 0;
-    setInterval(this.checkCompletedExports.bind(this), 10000);
+    setInterval(this.checkCompletedExports.bind(this), 5 * 60 * 1000);
   };
 
   this.$onChanges = function (changes) {
@@ -23,9 +23,9 @@ function ExportButtonController(Event, ExportService) {
   }
 
   this.export = function () {
-    Event.query().$promise.then(function (events) {
+    Event.query().$promise.then(events => {
       this.events = events;
-    }.bind(this));
+    });
     this.exportOpen = { opened: true };
   };
 
@@ -35,11 +35,9 @@ function ExportButtonController(Event, ExportService) {
 
   this.checkCompletedExports = function () {
     if (this.myself) {
-      ExportService.getMyExports().then(response => {
-        this.count = response.data.length;
-      }).catch(err => {
-        console.log(err);
-      });
+      ExportService.getExports().subscribe(exports => {
+        this.count = exports.length;
+      })
     }
   };
 }

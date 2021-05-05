@@ -45,8 +45,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
 
-import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
-
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
@@ -61,8 +59,8 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
-import { ExportsComponent } from './export/exports.component';
-import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
+import { ExportComponent } from './export/export.component';
+import { ExportDialogComponent } from "./export/export-dialog.component";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -130,12 +128,12 @@ import {
 
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
-import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 
 @NgModule({
   declarations: [
@@ -193,15 +191,15 @@ import { GenericSettingsComponent } from './admin/admin-settings/authentication-
     FeedPanelComponent,
     ObservationPopupComponent,
     UserPopupComponent,
-    ExportsComponent,
-    ExportMetadataDialogComponent,
-    CdkDetailRowDirective,
     AdminSettingsComponent,
     AuthenticationSettingsComponent,
     PasswordPolicyComponent,
     GenericSettingsComponent,
     AuthenticationCreateComponent,
-    AuthenticationDeleteComponent
+    AuthenticationDeleteComponent,
+    DatetimePickerComponent,
+    ExportComponent,
+    ExportDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -250,15 +248,11 @@ import { GenericSettingsComponent } from './admin/admin-settings/authentication-
     AlphaModule,
     CheckboardModule,
     MatTableModule,
-    MatDialogModule,
     MatPaginatorModule,
     MatSortModule,
     MatSnackBarModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    NgxMatDatetimePickerModule,
-    NgxMatTimepickerModule,
-    NgxMatNativeDateModule,
     AdminBreadcrumbModule
   ],
   providers: [

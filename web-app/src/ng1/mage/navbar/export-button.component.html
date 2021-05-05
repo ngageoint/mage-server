@@ -2,11 +2,11 @@
   ng-click="$ctrl.export()"
   tabindex="0">
   <i class="material-icons">save_alt</i>
-  <span style="padding-left: 10px;" class="mdc-button__label">Exports<sup><span ng-if="$ctrl.count > 0" class="badge badge-accent">{{$ctrl.count}}</span></sup>
+  <span class="mdc-button__label navbar-export__title">Exports<span class="navbar-export__badge"><span ng-if="$ctrl.count > 0" class="badge badge-accent">{{$ctrl.count}}</span></span>
 </a>
-<exports 
+<export 
   ng-if="$ctrl.exportOpen" 
   [open]="$ctrl.exportOpen" 
   (on-export-close)="$ctrl.onExportClose()" 
   [events]="$ctrl.events"
-  myself="$ctrl.myself"></exports>
+  myself="$ctrl.myself"></export>

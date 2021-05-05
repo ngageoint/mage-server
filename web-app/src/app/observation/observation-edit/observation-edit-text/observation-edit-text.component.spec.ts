@@ -15,7 +15,7 @@ import { ObservationEditTextComponent } from './observation-edit-text.component'
 class TestHostComponent {
 
   field = {
-    title: 'Number',
+    title: 'Text',
     name: 'field1'
   }
 
@@ -32,7 +32,7 @@ describe('ObservationEditTextComponent', () => {
       imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
       declarations: [ObservationEditTextComponent, TestHostComponent]
     })
-      .compileComponents()
+    .compileComponents()
   }))
 
   beforeEach(() => {
@@ -63,7 +63,7 @@ describe('ObservationEditTextComponent', () => {
   it('should show error on invalid and touched', async () => {
     component.field.required = true
 
-    const input = fixture.debugElement.query(By.directive(MatInput)).references['number']
+    const input = fixture.debugElement.query(By.directive(MatInput)).references['text']
     input.control.markAsTouched()
 
     fixture.detectChanges()

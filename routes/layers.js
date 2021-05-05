@@ -448,9 +448,8 @@ module.exports = function(app, security) {
       new api.Layer()
         .create(req.newLayer)
         .then(layer => {
-          req.layer = layer;
-            const response = layerXform.transform(layer, { path: req.getPath() });
-            return res.location(layer._id.toString()).json(response);
+          const response = layerXform.transform(layer, { path: `${req.getPath()}/${layer.id}` });
+          return res.location(layer._id.toString()).json(response);
         })
         .catch(err => next(err));
     }

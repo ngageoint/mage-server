@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { ExportMetadataService, ExportMetadata } from './export-metadata.service';
+import { ExportService, Export } from './export.service';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
-describe('ExportMetadataService', () => {
+describe('ExportService', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ExportMetadataService],
+      providers: [ExportService],
       imports: [HttpClientTestingModule]
     });
 
@@ -24,22 +24,22 @@ describe('ExportMetadataService', () => {
   });
 
   it('should get my metadata', () => {
-    const myMetadata: ExportMetadata[] = [{
-      _id: 1,
+    const data: Export[] = [{
+      id: 1,
       userId: 1,
       physicalPath: '/tmp/test.kml',
       filename: 'test.kml',
       exportType: 'kml',
-      location: '/api/exports/1',
+      url: '/api/exports/1',
       status: 'Running',
       options: {}
     }];
 
-    const service: ExportMetadataService = TestBed.inject(ExportMetadataService);
+    const service: ExportService = TestBed.inject(ExportService);
     expect(service).toBeTruthy();
 
-    service.getMyExportMetadata().subscribe(metas => {
-      expect(metas).toEqual(myMetadata, 'expected metadata');
+    service.getExports().subscribe(exports => {
+      expect(exports).toEqual(data, 'expected metadata');
     });
 
     // The following `expectOne()` will match the request's URL.
@@ -52,7 +52,7 @@ describe('ExportMetadataService', () => {
 
     // Respond with mock data, causing Observable to resolve.
     // Subscribe callback asserts that correct data was returned.
-    req.flush(myMetadata);
+    req.flush(data);
 
     // Finally, assert that there are no outstanding requests.
     httpTestingController.verify();
@@ -61,9 +61,9 @@ describe('ExportMetadataService', () => {
   it('should fail to get my metadata due to error', () => {
     const emsg = 'deliberate 404 error';
 
-    const service: ExportMetadataService = TestBed.inject(ExportMetadataService);
+    const service: ExportService = TestBed.inject(ExportService);
     expect(service).toBeTruthy();
-    service.getMyExportMetadata().subscribe(data => fail('should have failed with the 404 error'),
+    service.getExports().subscribe(data => fail('should have failed with the 404 error'),
       (error: HttpErrorResponse) => {
         expect(error.status).toEqual(404, 'status');
         expect(error.error).toEqual(emsg, 'message');

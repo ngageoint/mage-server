@@ -8,9 +8,6 @@ interface RadioField {
   name: string,
   value: string,
   required: boolean,
-  /*
-  TODO: angular9 - added to fix template errors; verify correct;
-  */
   choices: { title: string }[]
 }
 
