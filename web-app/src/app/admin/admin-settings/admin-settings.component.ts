@@ -195,6 +195,14 @@ export class AdminSettingsComponent implements OnInit {
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
                 strategy.state = StrategyState.Removed;
+
+                if (strategy._id == null) {
+                    strategy.state = StrategyState.New;
+                    const idx = this.strategies.indexOf(strategy);
+                    if (idx > -1) {
+                        this.strategies.splice(idx, 1);
+                    }
+                }
             }
         });
     }
