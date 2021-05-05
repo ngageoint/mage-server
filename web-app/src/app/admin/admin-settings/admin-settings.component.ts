@@ -57,7 +57,7 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const configsPromise = this.authenticationConfigurationService.getAllConfigurations()
+        const configsPromise = this.authenticationConfigurationService.getAllConfigurations();
         const settingsPromise = this.settings.query().$promise;
         const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
         const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
@@ -165,6 +165,9 @@ export class AdminSettingsComponent implements OnInit {
         });
 
         Promise.all(promises).then(() => {
+            return this.authenticationConfigurationService.getAllConfigurations();
+        }).then(strategies => {
+            this.strategies = strategies.data;
             this._snackBar.open('Security successfully saved', null, {
                 duration: 2000,
             });

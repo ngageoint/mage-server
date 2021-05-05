@@ -82,8 +82,12 @@ module.exports = function (app, security) {
             });
 
             AuthenticationConfiguration.Model.create(newConfig).then(model => {
-                log.info("Creating new authentication strategy " + model.name);
-                const strategy = require('../authentication/' + model.name);
+                log.info("Creating new authentication strategy " + model.type + " (" + model.name + ")");
+                let strategyType = model.type;
+                if(model.type === 'oauth') {
+                    strategyType = model.name.toLowerCase();
+                }
+                const strategy = require('../authentication/' + strategyType);
                 strategy.configure(passport);
                 //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(model);
