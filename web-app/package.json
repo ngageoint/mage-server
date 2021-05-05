@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage-web",
-  "version": "5.4.4",
+  "version": "5.5.0",
   "description": "MAGE Web",
   "keywords": [
     "NGA",
@@ -34,7 +34,6 @@
     "bundle-report": "webpack-bundle-analyzer dist/stats.json"
   },
   "dependencies": {
-    "@angular-material-components/datetime-picker": "^2.0.4",
     "@angular/animations": "~9.1.13",
     "@angular/cdk": "~9.2.4",
     "@angular/common": "~9.1.13",

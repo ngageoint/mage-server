@@ -25,9 +25,6 @@ GeoPackage.prototype.export = function (streamable) {
 
   const downloadedFileName = 'mage-' + self._event.name;
 
-  streamable.type('application/zip');
-  streamable.attachment(downloadedFileName + '.zip');
-
   const archive = archiver('zip');
   archive.pipe(streamable);
 
@@ -104,12 +101,13 @@ GeoPackage.prototype.getLocations = function (lastLocationId, startDate, endDate
   });
 }
 
-var iconMap = {};
+const iconMap = {};
 
 GeoPackage.prototype.createObservationTable = function (geopackage) {
   log.info('Create Observation Table');
-  let columns = [];
+  const columns = [];
 
+  // TODO columns should be the same as KML file
   columns.push({
     name: 'lastModified',
     dataType: 'DATETIME'
@@ -142,6 +140,7 @@ GeoPackage.prototype.createObservationTable = function (geopackage) {
     name: 'variantField',
     dataType: 'TEXT'
   });
+
   return geopackage.createFeatureTableFromProperties('Observations', columns);
 }
 
@@ -175,12 +174,11 @@ GeoPackage.prototype.createIconTable = function (geopackage) {
   return geopackage.createMediaTable('Icons', columns);
 }
 
-var usersLastLocation = {
-};
+const usersLastLocation = {};
 
 GeoPackage.prototype.addUsersToUsersTable = function (geopackage) {
   const self = this;
-  let userIds = Object.keys(self._users);
+  const userIds = Object.keys(self._users);
   return userIds.reduce(function (sequence, userId) {
     return sequence.then(function () {
       if (!usersLastLocation[userId]) {
@@ -220,7 +218,7 @@ GeoPackage.prototype.addUsersToUsersTable = function (geopackage) {
 }
 
 GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) {
-  let columns = [];
+  const columns = [];
 
   columns.push({
     name: 'mageId',
@@ -270,7 +268,7 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, last
           }
         }
 
-        let locationTablesCreated = {};
+        const locationTablesCreated = {};
         for (let i = 0; i < locations.length; i++) {
           const location = locations[i];
 
@@ -280,7 +278,7 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, last
           }
 
           usersLastLocation[location.userId.toString()] = location;
-          let geojson = {
+          const geojson = {
             type: 'Feature',
             geometry: location.geometry,
             properties: location.properties
@@ -313,7 +311,7 @@ GeoPackage.prototype.createFormAttributeTables = function (geopackage) {
 
   log.info('Create Form Attribute Tables');
   return Object.keys(self._event.formMap).reduce(function (sequence, formId) {
-    let columns = [];
+    const columns = [];
     const form = self._event.formMap[formId];
     if (form.primaryField) {
       columns.push({
@@ -347,9 +345,9 @@ GeoPackage.prototype.createFormAttributeTables = function (geopackage) {
     }
     return geopackage.createAttributeTable('Form_' + formId, columns);
   }, Promise.resolve())
-    .then(function () {
-      return geopackage;
-    });
+  .then(function () {
+    return geopackage;
+  });
 }
 
 GeoPackage.prototype.createUserTable = function (geopackage) {
@@ -405,7 +403,7 @@ GeoPackage.prototype.createUserTable = function (geopackage) {
 GeoPackage.prototype.addFormDataToGeoPackage = function (geopackage) {
   const self = this;
 
-  let columns = [];
+  const columns = [];
   columns.push({
     name: 'formName',
     dataType: 'TEXT'
@@ -427,115 +425,106 @@ GeoPackage.prototype.addFormDataToGeoPackage = function (geopackage) {
     dataType: 'TEXT'
   });
 
-  return geopackage.createAttributeTable('Forms', columns)
-    .then(function (dao) {
-      for (let formId in self._event.formMap) {
-        const form = self._event.formMap[formId];
-        const row = {
-          formName: form.name,
-          primaryField: form.primaryField,
-          variantField: form.variantField,
-          color: form.color,
-          formId: formId
-        };
+  return geopackage.createAttributeTable('Forms', columns).then(function (dao) {
+    for (let formId in self._event.formMap) {
+      const form = self._event.formMap[formId];
+      const row = {
+        formName: form.name,
+        primaryField: form.primaryField,
+        variantField: form.variantField,
+        color: form.color,
+        formId: formId
+      };
 
-        geopackage.addAttributeRow('Forms', row);
-      }
-    })
-    .then(function () {
-      return geopackage;
-    });
+      geopackage.addAttributeRow('Forms', row);
+    }
+  }).then(function () {
+    return geopackage;
+  });
 }
 
 GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
   log.info('Add Observations');
   const self = this;
-  return this.getObservations()
-    .then(function (observations) {
-      const firstObs = observations[0];
-      return self.createObservationTable(geopackage, {
+  return this.getObservations().then(function (observations) {
+    const firstObs = observations[0];
+    return self.createObservationTable(geopackage, {
+    }).then(function () {
+      self.createAttachmentTable(geopackage);
+    }).then(function () {
+      return observations.reduce(function (sequence, observation) {
+        return sequence.then(function () {
 
-      })
-        .then(function () {
-          self.createAttachmentTable(geopackage);
-        })
-        .then(function () {
-          return observations.reduce(function (sequence, observation) {
-            return sequence.then(function () {
+          let primary;
+          let variant;
 
-              let primary;
-              let variant;
+          if (observation.properties.forms[0]) {
+            const form = self._event.formMap[observation.properties.forms[0].formId];
+            primary = observation.properties.forms[0][form.primaryField];
+            variant = observation.properties.forms[0][form.variantField];
+          }
 
-              if (observation.properties.forms[0]) {
-                const form = self._event.formMap[observation.properties.forms[0].formId];
-                primary = observation.properties.forms[0][form.primaryField];
-                variant = observation.properties.forms[0][form.variantField];
-              }
+          const properties = {
+            lastModified: observation.lastModified,
+            timestamp: observation.properties.timestamp,
+            mageId: observation._id.toString(),
+            userId: observation.userId.toString(),
+            deviceId: observation.deviceId.toString(),
+            createdAt: observation.createdAt,
+            primaryField: primary,
+            variantField: variant
+          }
+          const geojson = {
+            type: 'Feature',
+            geometry: observation.geometry,
+            properties: properties
+          };
 
-              const properties = {
-                lastModified: observation.lastModified,
-                timestamp: observation.properties.timestamp,
-                mageId: observation._id.toString(),
-                userId: observation.userId.toString(),
-                deviceId: observation.deviceId.toString(),
-                createdAt: observation.createdAt,
-                primaryField: primary,
-                variantField: variant
-              }
-              const geojson = {
-                type: 'Feature',
-                geometry: observation.geometry,
-                properties: properties
-              };
+          const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
-              const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
+          let promise;
 
-              let promise;
+          if (observation.properties.forms[0]) {
+            // insert the icon link
+            const iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
+            if (primary) {
+              iconId = iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
+            }
+            if (variant) {
+              iconId = iconMap[observation.properties.forms[0].formId][primary][variant];
+            }
+            promise = geopackage.linkMedia('Observations', featureId, 'Icons', iconId);
+          } else {
+            promise = Promise.resolve();
+          }
 
-              if (observation.properties.forms[0]) {
-                // insert the icon link
-                const iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
-                if (primary) {
-                  iconId = iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
-                }
-                if (variant) {
-                  iconId = iconMap[observation.properties.forms[0].formId][primary][variant];
-                }
-                promise = geopackage.linkMedia('Observations', featureId, 'Icons', iconId);
-              } else {
-                promise = Promise.resolve();
-              }
-
-              return promise
-                .then(function () {
-                  // insert all attachments and link them
-                  if (observation.attachments) {
-                    return self.addAttachments(geopackage, observation.attachments, featureId);
-                  }
-                })
-                .then(function () {
-                  // insert all of the forms as linked attribute tables
-                  return observation.properties.forms.reduce(function (sequence, form) {
-                    return sequence.then(function () {
-                      form.primaryField = primary;
-                      form.variantField = variant;
-                      form.formId = form.formId.toString();
-                      const rowId = geopackage.addAttributeRow('Form_' + form.formId, form);
-                      const relatedTables = geopackage.relatedTablesExtension;
-                      return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + form.formId, rowId, {
-                        name: 'simple_attributes',
-                        dataType: 'ATTRIBUTES'
-                      });
-                    });
-                  }, Promise.resolve());
+          return promise.then(function () {
+            // insert all attachments and link them
+            if (observation.attachments) {
+              return self.addAttachments(geopackage, observation.attachments, featureId);
+            }
+          }).then(function () {
+            // insert all of the forms as linked attribute tables
+            return observation.properties.forms.reduce(function (sequence, form) {
+              return sequence.then(function () {
+                form.primaryField = primary;
+                form.variantField = variant;
+                form.formId = form.formId.toString();
+                const rowId = geopackage.addAttributeRow('Form_' + form.formId, form);
+                const relatedTables = geopackage.relatedTablesExtension;
+                return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + form.formId, rowId, {
+                  name: 'simple_attributes',
+                  dataType: 'ATTRIBUTES'
                 });
-            });
-          }, Promise.resolve());
+              });
+            }, Promise.resolve());
+          });
         });
-    })
-    .then(function () {
-      return geopackage;
+      }, Promise.resolve());
     });
+  }).then(function () {
+    return geopackage;
+  });
 }
 
 GeoPackage.prototype.addAttachments = function (geopackage, attachments, observationId) {
@@ -566,7 +555,7 @@ GeoPackage.prototype.addObservationIcons = function (geopackage) {
   log.info('Add Icons', rootDir);
   this.createIconTable(geopackage);
 
-  let formDirs = fs.readdirSync(path.join(rootDir));
+  const formDirs = fs.readdirSync(path.join(rootDir));
   return formDirs.reduce(function (formSequence, formDir) {
     return formSequence.then(function () {
       iconMap[formDir] = iconMap[formDir] || {};
@@ -634,8 +623,7 @@ GeoPackage.prototype.addObservationIcons = function (geopackage) {
         }, Promise.resolve());
       }
     });
-  }, Promise.resolve())
-    .then(function () {
-      return geopackage;
-    });
+  }, Promise.resolve()).then(function () {
+    return geopackage;
+  });
 }

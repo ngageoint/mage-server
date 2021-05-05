@@ -33,33 +33,27 @@ fs.mkdirp(iconBase, function (err) {
   }
 });
 
-require('./migrate').runDatabaseMigrations()
-  .then(() => {
-    log.info('database initialized; loading plugins ...');
-
-    const plugins = require('./plugins');
-    const scheduleJobs = require('./schedule');
-    plugins.initialize(app, function (err) {
-      if (err) {
-        throw err;
-      }
-
-      log.info('plugins loaded; loading scheduled jobs ...');
-      scheduleJobs.initialize(app, function (err) {
-        if (err) {
-          throw new Error(err);
-        }
-
-        log.info('opening app for connections ...');
-        app.emit('comingOfMage');
-      });
-    });
-
-  })
-  .catch(err => {
-    log.error('error initializing database: ', err);
-    process.exitCode = 1;
+require('./migrate').runDatabaseMigrations().then(() => {
+  log.info('loading plugins ...');
+  const plugins = require('./plugins');
+  return plugins.initialize(app, function (err) {
+    if (err)  {
+      return Promise.reject(err);
+    } else {
+      return Promise.resolve()
+    }
   });
+}).then(() => {
+  log.info('loading scheduled jobs ...');
+  const scheduleJobs = require('./schedule');
+  return scheduleJobs.initialize(app);
+}).then(() => {
+  log.info('opening app for connections ...');
+  app.emit('comingOfMage');
+}).catch(err => {
+  log.error('error initializing database: ', err);
+  process.exitCode = 1;
+});
 
 const app = require('./express.js');
 

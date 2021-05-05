@@ -80,14 +80,20 @@
 }
 
 .user__row {
-  padding: 16px 16px 0;
+  margin-left: 16px;
+  padding: 8px 16px;
   display: flex;
   flex-direction: row;
-  margin-bottom: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user__row:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .user__icon {
-  margin: 0 16px;
+  margin-right: 16px;
 }
 
 .user__icon--location {

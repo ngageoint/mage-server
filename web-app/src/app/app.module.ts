@@ -45,8 +45,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
 
-import { NgxMatDatetimePickerModule, NgxMatTimepickerModule, NgxMatNativeDateModule } from '@angular-material-components/datetime-picker';
-
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
@@ -61,8 +59,8 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
-import { ExportsComponent } from './export/exports.component';
-import { ExportMetadataDialogComponent } from "./export/export-metadata-dialog.component";
+import { ExportComponent } from './export/export.component';
+import { ExportDialogComponent } from "./export/export-dialog.component";
 
 import { MapClipComponent } from './map/clip/clip.component';
 import { GeometryModule } from './geometry/geometry.module';
@@ -125,7 +123,7 @@ import {
 
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
-import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.directive';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 
 @NgModule({
   declarations: [
@@ -184,9 +182,9 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     ObservationPopupComponent,
     UserPopupComponent,
     ColorPickerComponent,
-    ExportsComponent,
-    ExportMetadataDialogComponent,
-    CdkDetailRowDirective
+    ExportComponent,
+    ExportDialogComponent,
+    DatetimePickerComponent
   ],
   imports: [
     BrowserModule,
@@ -235,15 +233,11 @@ import { CdkDetailRowDirective } from './export/directives/cdk-detail-row.direct
     AlphaModule,
     CheckboardModule,
     MatTableModule,
-    MatDialogModule,
     MatPaginatorModule,
     MatSortModule,
     MatSnackBarModule,
     MatDatepickerModule,
-    MatNativeDateModule,
-    NgxMatDatetimePickerModule,
-    NgxMatTimepickerModule,
-    NgxMatNativeDateModule
+    MatNativeDateModule
   ],
   providers: [
     mapServiceProvider,

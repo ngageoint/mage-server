@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
-  version: 5.4.3
+  version: 5.5.0
 servers: []
 security:
   - mageToken: []
@@ -2148,7 +2148,7 @@ paths:
     get:
       deprecated: true
       tags: [ Export ]
-      operationId: export
+      operationId: exportStream
       description: >
         Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
@@ -2210,15 +2210,29 @@ paths:
       responses:
         200:
           description: export response
-  /api/exports:
+  /api/exports/:
+    get:
+      tags: [ Export ]
+      operationId: getAllExports
+      description: >
+        Get all exports regardless of user.
+      summary: Get a list of all exports.
+      responses:
+        200:
+          description: all exports.
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Export' }
     post:
       tags: [ Export ]
-      operationId: exportBackground
+      operationId: export
       description: >
-        Export mage data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
-        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
+        Export MAGE data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
+        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
-      summary: Export mage data using a background task.
+      summary: Export MAGE data using a background task.
       parameters:
       - name: exportType
         in: query
@@ -2285,37 +2299,22 @@ paths:
             text/plain:
               schema:
                 type: string
-  /api/exports/all:
-    get:
-      tags: [ Export ]
-      operationId: getAllExports
-      description: >
-        Get all export metadata regardless of user.
-      summary: Get a list of all export metadata.
-      responses:
-        200:
-          description: all export metadata
-          content: 
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/ExportMetadata' }
   /api/exports/myself:
     get:
       tags: [ Export ]
-      operationId: getMyExports
+      operationId: getExports
       description: >
-        Get only my export metadata.
-      summary: Get my export metadata.
+        Get only exports for current token holder.
+      summary: Get exports.
       responses:
         200:
-          description: my export metadata
+          description: exports
           content: 
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/ExportMetadata' }
-  /api/exports/download/{exportId}:
+                items: { $ref: '#/components/schemas/Export' }
+  /api/exports/{exportId}:
     get:
       tags: [ Export ]
       operationId: getExportById
@@ -3228,7 +3227,7 @@ components:
           type: string
         settings:
           type: object
-    ExportMetadata:
+    Export:
       required:
         - type
       type: object

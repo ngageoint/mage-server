@@ -22,7 +22,7 @@ class TestHostComponent {
   @ViewChild(ObservationEditTextareaComponent) component: ObservationEditTextareaComponent
 }
 
-describe('ObservationEditTextComponent', () => {
+describe('ObservationEditTextareaComponent', () => {
   let component: ObservationEditTextareaComponent
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
@@ -63,7 +63,7 @@ describe('ObservationEditTextComponent', () => {
   it('should show error on invalid and touched', async () => {
     component.field.required = true
 
-    const input = fixture.debugElement.query(By.directive(MatInput)).references['number']
+    const input = fixture.debugElement.query(By.directive(MatInput)).references['text']
     input.control.markAsTouched()
 
     fixture.detectChanges()

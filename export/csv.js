@@ -105,9 +105,6 @@ Csv.prototype.export = function (streamable) {
     'device'
   ];
 
-  streamable.type('application/zip');
-  streamable.attachment("mage-export-csv.zip");
-
   const archive = archiver('zip');
   archive.pipe(streamable);
 

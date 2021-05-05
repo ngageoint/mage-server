@@ -21,9 +21,6 @@ module.exports = GeoJson;
 GeoJson.prototype.export = function (streamable) {
   const self = this;
 
-  streamable.type('application/zip');
-  streamable.attachment("mage-geojson.zip");
-
   const archive = archiver('zip');
   archive.pipe(streamable);
 

@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import { snackbar } from 'material-components-web';
 
 class AdminLayerController {
   constructor($uibModal, $state, $stateParams, $filter, $timeout, Layer, Event, LocalStorageService, UserService) {
@@ -73,6 +74,10 @@ class AdminLayerController {
     });
   }
 
+  $postLink() {
+    this.uploadSnackbar = new snackbar.MDCSnackbar(document.querySelector('#upload-snackbar'));
+  }
+
   _filterEvents(event) {
     const filteredEvents = this.$filter('filter')([event], this.eventSearch);
     return filteredEvents && filteredEvents.length;
@@ -143,11 +148,26 @@ class AdminLayerController {
   }
 
   confirmUpload() {
-    this.uploadConfirmed = true;
+    this.$timeout(() => {
+      this.uploadConfirmed = true;
+    })
   }
 
   uploadComplete($event) {
-    this.status[$event.id] = $event.response.files[0];
+    this.$timeout(() => {
+      this.uploadConfirmed = false;
+
+      this.status[$event.id] = $event.response.files[0];
+
+      const url = new URL(this.layer.url);
+      url.searchParams.set('_dc', new Date().getTime())
+      this.layer.url = url.toString();
+    })
+  }
+
+  uploadFailed($event) {
+    this.uploadMessage = $event.response.responseText;
+    this.uploadSnackbar.open();
   }
 
   confirmCreateLayer() {
