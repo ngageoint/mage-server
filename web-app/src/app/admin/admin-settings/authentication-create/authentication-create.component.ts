@@ -46,7 +46,7 @@ export class AuthenticationCreateComponent {
         this.dialogRef.close('cancel');
     }
 
-    delete(): void {
+    create(): void {
         this.dialogRef.close('create');
     }
 
