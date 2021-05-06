@@ -118,7 +118,17 @@ export class AdminSettingsComponent implements OnInit {
         });
     }
 
-    saveBanner(): void {
+    save(): void {
+        if (this.pill === 'banner') {
+            this.saveBanner();
+        } else if (this.pill === 'disclaimer') {
+            this.saveDisclaimer();
+        } else {
+            this.saveSecurity();
+        }
+    }
+
+    private saveBanner(): void {
         this.settings.update({ type: 'banner' }, this.banner, () => {
             this._snackBar.open('Banner successfully saved', null, {
                 duration: 2000,
@@ -130,7 +140,7 @@ export class AdminSettingsComponent implements OnInit {
         });
     }
 
-    saveDisclaimer(): void {
+    private saveDisclaimer(): void {
         this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
             this._snackBar.open('Disclaimer successfully saved', null, {
                 duration: 2000,
@@ -142,7 +152,7 @@ export class AdminSettingsComponent implements OnInit {
         });
     }
 
-    saveSecurity(): void {
+    private saveSecurity(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {

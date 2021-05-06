@@ -65,10 +65,6 @@
                             </mat-card>
                         </div>
                     </div>
-                    <div class="pull-right admin-settings-gap">
-                        <button mat-button color="primary" (click)="saveSecurity()"><i class="fa fa-check"></i>
-                            Save</button>
-                    </div>
                 </form>
             </div>
             <div *ngIf="pill === 'banner'">
@@ -127,10 +123,6 @@
                             (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
                         </color-picker>
                     </div>
-                    <div class="row admin-settings-gap">
-                        <button mat-flat-button color="primary" id="save-banner-button" (click)="saveBanner()"><i
-                                class="fa fa-check"></i> Save</button>
-                    </div>
                 </form>
             </div>
             <div *ngIf="pill === 'disclaimer'">
@@ -159,12 +151,15 @@
                         <textarea matInput [(ngModel)]="disclaimer.disclaimerText" class="form-control"
                             [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"> </textarea>
                     </div>
-                    <div class="row admin-settings-gap">
-                        <button mat-flat-button color="primary" id="save-disclaimer-button"
-                            (click)="saveDisclaimer()"><i class="fa fa-check"></i> Save</button>
-                    </div>
                 </form>
             </div>
         </mat-drawer-content>
     </mat-drawer-container>
+</section>
+<section class="mat-typography">
+    <form id="save-form">
+        <div class="row pull-right right-gap">
+            <button mat-button color="primary" (click)="save()"><i class="fa fa-check"></i> Save</button>
+        </div>
+    </form>
 </section>

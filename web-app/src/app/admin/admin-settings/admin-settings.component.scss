@@ -30,7 +30,7 @@
 
 .admin-settings-gap {
   //top right bottom left
-  margin: 0px 20px 0px 20px;
+  margin: 0px 10px 0px 10px;
 }
 
 .top-gap {
@@ -73,6 +73,17 @@ mat-card-title {
 
 mat-drawer-container {
   background-color: unset;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  overflow: auto;
+}
+
+mat-drawer {
+  display: flex;
+  flex-direction: column;
+  width: 20%;
 }
 
 mat-toolbar {
