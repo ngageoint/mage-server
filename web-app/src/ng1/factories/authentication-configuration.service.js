@@ -16,21 +16,21 @@ function AuthenticationConfigurationService($http, $httpParamSerializer) {
     function getAllConfigurations(options) {
         options = options || {};
 
-        return $http.get('/api/authentication/configuration/all', { params: options });
+        return $http.get('/api/authentication/configuration/', { params: options });
     }
 
     function updateConfiguration(config) {
-        return $http.put('/api/authentication/configuration/update/' + config._id, $httpParamSerializer(config), {
+        return $http.put('/api/authentication/configuration/' + config._id, $httpParamSerializer(config), {
             headers: { "Content-Type": "application/x-www-form-urlencoded" }
         });
     }
 
     function deleteConfiguration(config) {
-        return $http.delete('/api/authentication/configuration/delete/' + config._id);
+        return $http.delete('/api/authentication/configuration/' + config._id);
     }
 
     function createConfiguration(config) {
-        return $http.post('/api/authentication/configuration/create/', $httpParamSerializer(config), {
+        return $http.post('/api/authentication/configuration/', $httpParamSerializer(config), {
             headers: { "Content-Type": "application/x-www-form-urlencoded" }
         });
     }

@@ -9,7 +9,7 @@ module.exports = function (app, security) {
         , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration');
 
     app.get(
-        '/api/authentication/configuration/all',
+        '/api/authentication/configuration/',
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
@@ -17,14 +17,13 @@ module.exports = function (app, security) {
                 //TODO use whitelist??
                 const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
                 res.json(transformedConfigs);
-                next();
             }).catch(err => {
                 next(err);
             });
         });
 
     app.put(
-        '/api/authentication/configuration/update/:id',
+        '/api/authentication/configuration/:id',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
@@ -53,14 +52,13 @@ module.exports = function (app, security) {
                 //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
-                next();
             }).catch(err => {
                 next(err);
             });
         });
 
     app.post(
-        '/api/authentication/configuration/create',
+        '/api/authentication/configuration/',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
@@ -92,14 +90,13 @@ module.exports = function (app, security) {
                 //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(model);
                 res.json(transformedConfig);
-                next();
             }).catch(err => {
                 next(err);
             })
         });
 
     app.delete(
-        '/api/authentication/configuration/delete/:id',
+        '/api/authentication/configuration/:id',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
@@ -109,10 +106,8 @@ module.exports = function (app, security) {
                  //TODO use whitelist??
                  const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                  res.json(transformedConfig);
-                next();
             }).catch(err => {
                 next(err);
             })
-           
         });
 };
