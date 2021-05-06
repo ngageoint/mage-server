@@ -25,8 +25,7 @@
                             <h1><i class="fa fa-shield"></i> Security Settings</h1>
                         </span>
                         <span class="spacer"></span>
-                        <button mat-flat-button color="primary" id="create-strategy-button"
-                            class="pull-right admin-settings-gap"
+                        <button mat-button color="primary" class="pull-right"
                             (click)="$event.stopPropagation(); createStrategy()">New</button>
                     </mat-toolbar>
                     <div *ngFor="let strategy of strategies">
@@ -67,8 +66,8 @@
                         </div>
                     </div>
                     <div class="pull-right admin-settings-gap">
-                        <button mat-flat-button color="primary" id="save-security-button" (click)="saveSecurity()"><i
-                                class="fa fa-check"></i> Save</button>
+                        <button mat-button color="primary" (click)="saveSecurity()"><i class="fa fa-check"></i>
+                            Save</button>
                     </div>
                 </form>
             </div>
