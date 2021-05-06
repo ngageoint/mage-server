@@ -2,8 +2,8 @@
     <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
 </section>
 <section class="mat-typography">
-    <mat-sidenav-container>
-        <mat-sidenav [fixedInViewport]=true mode="side" [fixedTopGap]=125 opened>
+    <mat-drawer-container>
+        <mat-drawer mode="side" opened>
             <ul class="nav nav-pills nav-stacked">
                 <li [ngClass]="{active: pill === 'security'}"><a (click)="pill = 'security'"
                         href="javascript:void(0);">Security</a></li>
@@ -16,30 +16,30 @@
                 <li [ngClass]="{active: pill === 'disclaimer'}"><a (click)="pill = 'disclaimer'"
                         href="javascript:void(0);">Disclaimer</a></li>
             </ul>
-        </mat-sidenav>
-        <mat-sidenav-content>
+        </mat-drawer>
+        <mat-drawer-content>
             <div *ngIf="pill === 'security'">
-                <mat-toolbar>
-                    <span>
-                        <h1><i class="fa fa-shield"></i> Security Settings</h1>
-                    </span>
-                    <span class="spacer"></span>
-                    <button mat-flat-button color="primary" id="create-strategy-button"
-                        class="pull-right admin-settings-gap"
-                        (click)="$event.stopPropagation(); createStrategy()">New</button>
-                </mat-toolbar>
                 <form id="security-form">
+                    <mat-toolbar>
+                        <span>
+                            <h1><i class="fa fa-shield"></i> Security Settings</h1>
+                        </span>
+                        <span class="spacer"></span>
+                        <button mat-flat-button color="primary" id="create-strategy-button"
+                            class="pull-right admin-settings-gap"
+                            (click)="$event.stopPropagation(); createStrategy()">New</button>
+                    </mat-toolbar>
                     <div *ngFor="let strategy of strategies">
                         <div *ngIf="strategy.state != 1" class="row admin-settings-gap" style="padding-bottom: 25px;">
                             <mat-card>
-                                <mat-card-title>
-                                    {{strategy.name.toUpperCase()}} Authentication
-                                    <button mat-flat-button color="warn" id="delete-strategy-button" class="pull-right"
-                                        (click)="$event.stopPropagation(); deleteStrategy(strategy)">Delete</button>
-                                </mat-card-title>
-                                <hr>
-                                <mat-card-content class="admin-settings-gap">
-                                    <div class="row">
+                                <mat-card-header>
+                                    <mat-card-title>
+                                        {{strategy.name.toUpperCase()}} Authentication
+                                    </mat-card-title>
+                                </mat-card-header>
+                                <mat-divider class="bottom-gap"></mat-divider>
+                                <mat-card-content class="top-gap">
+                                    <div class="row left-gap">
                                         <mat-checkbox [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
                                             color="primary" [ngModelOptions]="{standalone: true}">
                                         </mat-checkbox>
@@ -59,10 +59,14 @@
                                         </mat-expansion-panel>
                                     </mat-accordion>
                                 </mat-card-content>
+                                <mat-card-actions>
+                                    <button mat-flat-button color="warn" id="delete-strategy-button"
+                                        (click)="$event.stopPropagation(); deleteStrategy(strategy)">Delete</button>
+                                </mat-card-actions>
                             </mat-card>
                         </div>
                     </div>
-                    <div class="row admin-settings-gap">
+                    <div class="pull-right admin-settings-gap">
                         <button mat-flat-button color="primary" id="save-security-button" (click)="saveSecurity()"><i
                                 class="fa fa-check"></i> Save</button>
                     </div>
@@ -162,6 +166,6 @@
                     </div>
                 </form>
             </div>
-        </mat-sidenav-content>
-    </mat-sidenav-container>
+        </mat-drawer-content>
+    </mat-drawer-container>
 </section>
