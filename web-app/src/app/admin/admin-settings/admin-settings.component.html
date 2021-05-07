@@ -26,7 +26,10 @@
                         </span>
                         <span class="spacer"></span>
                         <button mat-stroked-button color="primary" class="pull-right"
-                            (click)="$event.stopPropagation(); createStrategy()">New</button>
+                            (click)="$event.stopPropagation(); createStrategy()">
+                            <mat-icon>add</mat-icon>
+                            <span>New Authentication</span>
+                        </button>
                     </mat-toolbar>
                     <div *ngFor="let strategy of strategies">
                         <div *ngIf="strategy.state != 1" class="row admin-settings-gap" style="padding-bottom: 25px;">
@@ -59,8 +62,10 @@
                                     </mat-accordion>
                                 </mat-card-content>
                                 <mat-card-actions>
-                                    <button mat-flat-button color="warn" id="delete-strategy-button"
-                                        (click)="$event.stopPropagation(); deleteStrategy(strategy)">Delete</button>
+                                    <button mat-button color="warn" id="delete-strategy-button"
+                                        (click)="$event.stopPropagation(); deleteStrategy(strategy)">
+                                        <mat-icon>delete</mat-icon>Delete
+                                    </button>
                                 </mat-card-actions>
                             </mat-card>
                         </div>
@@ -146,7 +151,7 @@
                     <div class="row admin-settings-gap">
                         <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
                         <input matInput [(ngModel)]="disclaimer.disclaimerTitle" class="form-control"
-                            [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer" 
+                            [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
                             placeholder="Disclaimer title">
                     </div>
                     <div class="row admin-settings-gap bottom-gap">

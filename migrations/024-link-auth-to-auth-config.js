@@ -4,25 +4,6 @@ const log = require('winston');
 
 exports.id = 'link-auth-to-auth-config';
 
-exports.up = function (done) {
-    log.info('Linking authentications to their authentication configuration');
-
-    const self = this;
-    this.db.collection('authentications', { strict: true }, function (err, authenticationCollection) {
-        if (err) return done(err);
-
-        self.db.collection('authenticationconfigurations', { strict: true }, function (err, authenticationConfigurationsCollection) {
-            if (err) return done(err);
-
-            link(authenticationCollection, authenticationConfigurationsCollection).then(() => {
-                done();
-            }).catch(err => {
-                done(err);
-            });
-        });
-    });
-};
-
 async function link(authenticationCollection, authenticationConfigurationsCollection) {
     const cursor = authenticationCollection.find();
 
@@ -45,6 +26,24 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
         if (err) log.warn("Failed closing authentications cursor", err);
     });
 }
+
+exports.up = function (done) {
+    log.info('Linking authentications to their authentication configuration');
+
+    this.db.collection('authentications', { strict: true }, function (err, authenticationCollection) {
+        if (err) return done(err);
+
+        this.db.collection('authenticationconfigurations', { strict: true }, function (err, authenticationConfigurationsCollection) {
+            if (err) return done(err);
+
+            link(authenticationCollection, authenticationConfigurationsCollection).then(() => {
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+    });
+};
 
 exports.down = function (done) {
     done();

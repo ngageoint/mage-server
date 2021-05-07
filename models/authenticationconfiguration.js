@@ -1,7 +1,6 @@
 "use strict";
 
-const mongoose = require('mongoose')
-  , log = require('winston');
+const mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
