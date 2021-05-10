@@ -24,8 +24,8 @@ export class AdminSettingsComponent implements OnInit {
     selected = new FormControl(0);
     teams: any[] = [];
     events: any[] = [];
+    
     strategies: Strategy[] = [];
-
     banner: Banner = {
         headerTextColor: '#000000',
         headerText: '',

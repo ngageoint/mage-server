@@ -23,44 +23,41 @@
                             <div *ngFor="let strategy of strategies">
                                 <div *ngIf="strategy.state != 1" class="row admin-settings-gap"
                                     style="padding-bottom: 25px;">
-                                    <mat-card>
-                                        <mat-nav-list>
-                                            <mat-list-item>
-                                                <mat-icon mat-list-icon>lock</mat-icon>
-                                                <div mat-line>{{strategy.name.toUpperCase()}}
-                                                    Authentication</div>
-                                                <button mat-icon-button id="delete-strategy-button"
+                                    <mat-accordion class="top-gap">
+                                        <mat-expansion-panel class="mat-elevation-z0">
+                                            <mat-expansion-panel-header>
+                                                <mat-panel-title>
+                                                    <mat-icon mat-list-icon>lock</mat-icon>
+                                                    <div mat-line>{{strategy.name.toUpperCase()}}
+                                                        Authentication</div>
+                                                </mat-panel-title>
+                                                <mat-panel-description>
+                                                    <div *ngIf="strategy.enabled">Enabled</div>
+                                                    <div *ngIf="!strategy.enabled">Disabled</div>
+                                                </mat-panel-description>
+                                            </mat-expansion-panel-header>
+                                            <div class="row bottom-gap">
+                                                <mat-slide-toggle [(ngModel)]="strategy.enabled"
+                                                    [checked]="strategy.enabled" color="primary"
+                                                    [ngModelOptions]="{standalone: true}"
+                                                    *ngIf="hasAuthConfigEditPermission"
+                                                    (click)="$event.stopPropagation()"
+                                                    [disabled]="strategy.name.toLowerCase() === 'local'">
+                                                </mat-slide-toggle>
+                                                <label>Enable Authentication</label>
+                                                <mat-divider class="bottom-gap"></mat-divider>
+                                            </div>
+                                            <authentication-settings [strategy]="strategy" [teams]="teams"
+                                                [events]="events"></authentication-settings>
+                                            <div class="row top-gap">
+                                                <button mat-button color="warn" id="delete-strategy-button"
                                                     (click)="$event.stopPropagation(); deleteStrategy(strategy)"
                                                     *ngIf="hasAuthConfigEditPermission">
-                                                    <mat-icon class="action__icon">delete_outline</mat-icon>
+                                                    <mat-icon>delete</mat-icon>Delete
                                                 </button>
-                                            </mat-list-item>
-                                        </mat-nav-list>
-                                        <mat-divider class="bottom-gap"></mat-divider>
-                                        <mat-card-content class="top-gap">
-                                            <mat-slide-toggle [(ngModel)]="strategy.enabled"
-                                                [checked]="strategy.enabled" color="primary"
-                                                [ngModelOptions]="{standalone: true}"
-                                                *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation()">
-                                            </mat-slide-toggle>
-                                            <label>Enable Authentication</label>
-                                            <mat-accordion>
-                                                <mat-expansion-panel class="mat-elevation-z0">
-                                                    <mat-expansion-panel-header>
-                                                        <mat-panel-title>
-                                                            Settings
-                                                        </mat-panel-title>
-                                                        <mat-panel-description>
-                                                        </mat-panel-description>
-                                                    </mat-expansion-panel-header>
-                                                    <authentication-settings [strategy]="strategy" [teams]="teams"
-                                                        [events]="events"></authentication-settings>
-                                                </mat-expansion-panel>
-                                            </mat-accordion>
-                                        </mat-card-content>
-                                        <mat-card-actions>
-                                        </mat-card-actions>
-                                    </mat-card>
+                                            </div>
+                                        </mat-expansion-panel>
+                                    </mat-accordion>
                                 </div>
                             </div>
                         </form>

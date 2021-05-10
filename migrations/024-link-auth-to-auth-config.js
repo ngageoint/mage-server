@@ -30,10 +30,10 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
 exports.up = function (done) {
     log.info('Linking authentications to their authentication configuration');
 
-    this.db.collection('authentications', { strict: true }, function (err, authenticationCollection) {
+    this.db.collection('authentications', { strict: true }, (err, authenticationCollection) => {
         if (err) return done(err);
 
-        this.db.collection('authenticationconfigurations', { strict: true }, function (err, authenticationConfigurationsCollection) {
+        this.db.collection('authenticationconfigurations', { strict: true }, (err, authenticationConfigurationsCollection) => {
             if (err) return done(err);
 
             link(authenticationCollection, authenticationConfigurationsCollection).then(() => {
