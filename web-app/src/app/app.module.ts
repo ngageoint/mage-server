@@ -41,6 +41,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
@@ -253,7 +254,8 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     MatSnackBarModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    AdminBreadcrumbModule
+    AdminBreadcrumbModule,
+    MatSlideToggleModule
   ],
   providers: [
     mapServiceProvider,

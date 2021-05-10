@@ -1,7 +1,8 @@
+import _ from 'underscore'
 import { Component, OnInit, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { ColorEvent } from 'src/app/color-picker/color-picker.component';
-import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService } from '../../upgrade/ajs-upgraded-providers';
+import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
 import { Banner, Disclaimer, Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -40,6 +41,8 @@ export class AdminSettingsComponent implements OnInit {
         disclaimerText: ''
     }
 
+    hasAuthConfigEditPermission: boolean;
+
     constructor(
         private dialog: MatDialog,
         private _snackBar: MatSnackBar,
@@ -52,8 +55,11 @@ export class AdminSettingsComponent implements OnInit {
         @Inject(LocalStorageService)
         public localStorageService: any,
         @Inject(AuthenticationConfigurationService)
-        public authenticationConfigurationService: any) {
+        public authenticationConfigurationService: any,
+        @Inject(UserService) 
+        userService: { myself: { role: {permissions: Array<string>}}}) {
         this.token = localStorageService.getToken();
+        this.hasAuthConfigEditPermission = _.contains(userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
     }
 
     ngOnInit(): void {
