@@ -8,6 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
 import { AuthenticationCreateComponent } from './admin-settings';
+import { FormControl } from '@angular/forms';
 
 @Component({
     selector: 'admin-settings',
@@ -20,11 +21,11 @@ export class AdminSettingsComponent implements OnInit {
         icon: 'build'
     }];
     token: any;
-    pill: string = 'security';
+    selected = new FormControl(0);
     teams: any[] = [];
     events: any[] = [];
     strategies: Strategy[] = [];
-    setting: string = 'banner';
+
     banner: Banner = {
         headerTextColor: '#000000',
         headerText: '',
@@ -58,6 +59,7 @@ export class AdminSettingsComponent implements OnInit {
         public authenticationConfigurationService: any,
         @Inject(UserService) 
         userService: { myself: { role: {permissions: Array<string>}}}) {
+
         this.token = localStorageService.getToken();
         this.hasAuthConfigEditPermission = _.contains(userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
     }
@@ -88,7 +90,6 @@ export class AdminSettingsComponent implements OnInit {
 
                 return 0;
             });
-            this.pill = Object.keys(this.strategies).length ? 'security' : 'banner';
 
             const settings: any = {};
 
@@ -125,12 +126,12 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     save(): void {
-        if (this.pill === 'banner') {
+        if (this.selected.value === 1) {
             this.saveBanner();
-        } else if (this.pill === 'disclaimer') {
+        } else if (this.selected.value === 2) {
             this.saveDisclaimer();
         } else {
-            this.saveSecurity();
+            this.saveAuthentication();
         }
     }
 
@@ -158,7 +159,7 @@ export class AdminSettingsComponent implements OnInit {
         });
     }
 
-    private saveSecurity(): void {
+    private saveAuthentication(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
             if (strategy.settings.usersReqAdmin.enabled) {
@@ -184,12 +185,12 @@ export class AdminSettingsComponent implements OnInit {
             return this.authenticationConfigurationService.getAllConfigurations();
         }).then(strategies => {
             this.strategies = strategies.data;
-            this._snackBar.open('Security successfully saved', null, {
+            this._snackBar.open('Authentication successfully saved', null, {
                 duration: 2000,
             });
         }).catch(err => {
             console.log(err);
-            this._snackBar.open('Failed to save security', null, {
+            this._snackBar.open('Failed to save authentication', null, {
                 duration: 2000,
             });
         });

@@ -2,175 +2,171 @@
     <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
 </section>
 <section class="mat-typography">
-    <mat-drawer-container>
-        <mat-drawer mode="side" opened>
-            <ul class="nav nav-pills nav-stacked">
-                <li [ngClass]="{active: pill === 'security'}"><a (click)="pill = 'security'"
-                        href="javascript:void(0);">Security</a></li>
-            </ul>
-            <ul class="nav nav-pills nav-stacked">
-                <li [ngClass]="{active: pill === 'banner'}"><a (click)="pill = 'banner'"
-                        href="javascript:void(0);">Banner</a></li>
-            </ul>
-            <ul class="nav nav-pills nav-stacked">
-                <li [ngClass]="{active: pill === 'disclaimer'}"><a (click)="pill = 'disclaimer'"
-                        href="javascript:void(0);">Disclaimer</a></li>
-            </ul>
-        </mat-drawer>
-        <mat-drawer-content>
-            <div *ngIf="pill === 'security'">
-                <form id="security-form">
-                    <mat-toolbar>
-                        <span>
-                            <h1><i class="fa fa-shield"></i> Security Settings</h1>
-                        </span>
-                        <span class="spacer"></span>
-                        <button mat-stroked-button color="primary" class="pull-right"
-                            (click)="$event.stopPropagation(); createStrategy()" *ngIf="hasAuthConfigEditPermission">
-                            <mat-icon>add</mat-icon>
-                            <span>New Authentication</span>
-                        </button>
-                    </mat-toolbar>
-                    <div *ngFor="let strategy of strategies">
-                        <div *ngIf="strategy.state != 1" class="row admin-settings-gap" style="padding-bottom: 25px;">
-                            <mat-card>
-                                <mat-nav-list>
-                                    <mat-list-item>
-                                        <mat-icon mat-list-icon>lock</mat-icon>
-                                        <div mat-line>{{strategy.name.toUpperCase()}}
-                                            Authentication</div>
-                                        <button mat-icon-button id="delete-strategy-button"
-                                            (click)="$event.stopPropagation(); deleteStrategy(strategy)"
-                                            *ngIf="hasAuthConfigEditPermission">
-                                            <mat-icon class="action__icon">delete_outline</mat-icon>
-                                        </button>
-                                    </mat-list-item>
-                                </mat-nav-list>
-                                <mat-divider class="bottom-gap"></mat-divider>
-                                <mat-card-content class="top-gap">
-                                    <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
-                                        color="primary" [ngModelOptions]="{standalone: true}"
-                                        *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation()">
-                                    </mat-slide-toggle>
-                                    <label>Enable Authentication</label>
-                                    <mat-accordion>
-                                        <mat-expansion-panel class="mat-elevation-z0">
-                                            <mat-expansion-panel-header>
-                                                <mat-panel-title>
-                                                    Settings
-                                                </mat-panel-title>
-                                                <mat-panel-description>
-                                                </mat-panel-description>
-                                            </mat-expansion-panel-header>
-                                            <authentication-settings [strategy]="strategy" [teams]="teams"
-                                                [events]="events"></authentication-settings>
-                                        </mat-expansion-panel>
-                                    </mat-accordion>
-                                </mat-card-content>
-                                <mat-card-actions>
-                                </mat-card-actions>
-                            </mat-card>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div *ngIf="pill === 'banner'">
-                <form id="banner-form">
-                    <div class="row admin-settings-gap">
-                        <span class="help-block">
-                            MAGE can add a header and footer to all views. Below you can specify whether or not you
-                            want a header and/or footer, text, text color and background color.
-                        </span>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <legend>Header</legend>
-                        <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
-                            [ngModelOptions]="{standalone: true}" id="show-header">
-                        </mat-checkbox>
-                        <label for="show-header">Show Header</label>
-                    </div>
-                    <div class="row admin-settings-gap bottom-gap">
-                        <mat-label for="headerText"><b>Header Text</b></mat-label>
-                        <input matInput [(ngModel)]="banner.headerText" class="form-control"
-                            [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader"
-                            placeholder="Header text">
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
-                        <color-picker [hexColor]="banner.headerTextColor"
-                            (onColorChanged)="colorChanged($event, 'headerTextColor')">
-                        </color-picker>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
-                        <color-picker [hexColor]="banner.headerBackgroundColor"
-                            (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
-                        </color-picker>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <legend>Footer</legend>
-                        <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
-                            [ngModelOptions]="{standalone: true}" id="show-footer">
-                        </mat-checkbox>
-                        <label for="show-footer">Show Footer</label>
-                    </div>
-                    <div class="row admin-settings-gap bottom-gap">
-                        <mat-label for="footerText"><b>Footer Text</b></mat-label>
-                        <input matInput [(ngModel)]="banner.footerText" class="form-control"
-                            [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter"
-                            placeholder="Footer text">
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
-                        <color-picker [hexColor]="banner.footerTextColor"
-                            (onColorChanged)="colorChanged($event, 'footerTextColor')">
-                        </color-picker>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
-                        <color-picker [hexColor]="banner.footerBackgroundColor"
-                            (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
-                        </color-picker>
-                    </div>
-                </form>
-            </div>
-            <div *ngIf="pill === 'disclaimer'">
-                <form id="disclaimer-form">
-                    <div class="row admin-settings-gap">
-                        <span class="help-block">
-                            MAGE can present a disclaimer after login. If the disclaimer is shown users will have to
-                            accept to continue into MAGE. The disclaimer will be shown on all clients, i.e. Android,
-                            iOS, and the Web.
-                        </span>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <legend>Disclaimer</legend>
-                        <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer"
-                            color="primary" [ngModelOptions]="{standalone: true}" id="show-disclaimer">
-                        </mat-checkbox>
-                        <label for="show-disclaimer">Show Disclaimer</label>
-                    </div>
-                    <div class="row admin-settings-gap">
-                        <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
-                        <input matInput [(ngModel)]="disclaimer.disclaimerTitle" class="form-control"
-                            [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                            placeholder="Disclaimer title">
-                    </div>
-                    <div class="row admin-settings-gap bottom-gap">
-                        <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
-                        <textarea matInput [(ngModel)]="disclaimer.disclaimerText" class="form-control"
-                            [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                            placeholder="Disclaimer text"> </textarea>
-                    </div>
-                </form>
-            </div>
-        </mat-drawer-content>
-    </mat-drawer-container>
-</section>
-<section class="mat-typography">
-    <form id="save-form">
-        <div class="row pull-right right-gap">
-            <button mat-flat-button color="primary" (click)="save()"><i class="fa fa-check"></i> Save</button>
+    <div class="page-container">
+        <div class="content">
+            <mat-card>
+                <mat-tab-group color="primary" mat-stretch-tabs (selectedIndexChange)="selected.setValue($event)">
+                    <mat-tab label="Authentication">
+                        <form id="authentication-form">
+                            <mat-toolbar>
+                                <span>
+                                    <h1><i class="fa fa-shield"></i> Authentication</h1>
+                                </span>
+                                <span class="spacer"></span>
+                                <button mat-stroked-button color="primary" class="pull-right"
+                                    (click)="$event.stopPropagation(); createStrategy()"
+                                    *ngIf="hasAuthConfigEditPermission">
+                                    <mat-icon>add</mat-icon>
+                                    <span>New Authentication</span>
+                                </button>
+                            </mat-toolbar>
+                            <div *ngFor="let strategy of strategies">
+                                <div *ngIf="strategy.state != 1" class="row admin-settings-gap"
+                                    style="padding-bottom: 25px;">
+                                    <mat-card>
+                                        <mat-nav-list>
+                                            <mat-list-item>
+                                                <mat-icon mat-list-icon>lock</mat-icon>
+                                                <div mat-line>{{strategy.name.toUpperCase()}}
+                                                    Authentication</div>
+                                                <button mat-icon-button id="delete-strategy-button"
+                                                    (click)="$event.stopPropagation(); deleteStrategy(strategy)"
+                                                    *ngIf="hasAuthConfigEditPermission">
+                                                    <mat-icon class="action__icon">delete_outline</mat-icon>
+                                                </button>
+                                            </mat-list-item>
+                                        </mat-nav-list>
+                                        <mat-divider class="bottom-gap"></mat-divider>
+                                        <mat-card-content class="top-gap">
+                                            <mat-slide-toggle [(ngModel)]="strategy.enabled"
+                                                [checked]="strategy.enabled" color="primary"
+                                                [ngModelOptions]="{standalone: true}"
+                                                *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation()">
+                                            </mat-slide-toggle>
+                                            <label>Enable Authentication</label>
+                                            <mat-accordion>
+                                                <mat-expansion-panel class="mat-elevation-z0">
+                                                    <mat-expansion-panel-header>
+                                                        <mat-panel-title>
+                                                            Settings
+                                                        </mat-panel-title>
+                                                        <mat-panel-description>
+                                                        </mat-panel-description>
+                                                    </mat-expansion-panel-header>
+                                                    <authentication-settings [strategy]="strategy" [teams]="teams"
+                                                        [events]="events"></authentication-settings>
+                                                </mat-expansion-panel>
+                                            </mat-accordion>
+                                        </mat-card-content>
+                                        <mat-card-actions>
+                                        </mat-card-actions>
+                                    </mat-card>
+                                </div>
+                            </div>
+                        </form>
+                    </mat-tab>
+                    <mat-tab label="Banner">
+                        <form id="banner-form">
+                            <div class="row admin-settings-gap">
+                                <span class="help-block">
+                                    MAGE can add a header and footer to all views. Below you can specify whether or
+                                    not you
+                                    want a header and/or footer, text, text color and background color.
+                                </span>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <legend>Header</legend>
+                                <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader"
+                                    color="primary" [ngModelOptions]="{standalone: true}" id="show-header">
+                                </mat-checkbox>
+                                <label for="show-header">Show Header</label>
+                            </div>
+                            <div class="row admin-settings-gap bottom-gap">
+                                <mat-label for="headerText"><b>Header Text</b></mat-label>
+                                <input matInput [(ngModel)]="banner.headerText" class="form-control"
+                                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader"
+                                    placeholder="Header text">
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
+                                <color-picker [hexColor]="banner.headerTextColor"
+                                    (onColorChanged)="colorChanged($event, 'headerTextColor')">
+                                </color-picker>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
+                                <color-picker [hexColor]="banner.headerBackgroundColor"
+                                    (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
+                                </color-picker>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <legend>Footer</legend>
+                                <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter"
+                                    color="primary" [ngModelOptions]="{standalone: true}" id="show-footer">
+                                </mat-checkbox>
+                                <label for="show-footer">Show Footer</label>
+                            </div>
+                            <div class="row admin-settings-gap bottom-gap">
+                                <mat-label for="footerText"><b>Footer Text</b></mat-label>
+                                <input matInput [(ngModel)]="banner.footerText" class="form-control"
+                                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter"
+                                    placeholder="Footer text">
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
+                                <color-picker [hexColor]="banner.footerTextColor"
+                                    (onColorChanged)="colorChanged($event, 'footerTextColor')">
+                                </color-picker>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
+                                <color-picker [hexColor]="banner.footerBackgroundColor"
+                                    (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
+                                </color-picker>
+                            </div>
+                        </form>
+                    </mat-tab>
+                    <mat-tab label="Disclaimer">
+                        <form id="disclaimer-form">
+                            <div class="row admin-settings-gap">
+                                <span class="help-block">
+                                    MAGE can present a disclaimer after login. If the disclaimer is shown users will
+                                    have to
+                                    accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
+                                    Android,
+                                    iOS, and the Web.
+                                </span>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <legend>Disclaimer</legend>
+                                <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer"
+                                    [checked]="disclaimer.showDisclaimer" color="primary"
+                                    [ngModelOptions]="{standalone: true}" id="show-disclaimer">
+                                </mat-checkbox>
+                                <label for="show-disclaimer">Show Disclaimer</label>
+                            </div>
+                            <div class="row admin-settings-gap">
+                                <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
+                                <input matInput [(ngModel)]="disclaimer.disclaimerTitle" class="form-control"
+                                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
+                                    placeholder="Disclaimer title">
+                            </div>
+                            <div class="row admin-settings-gap bottom-gap">
+                                <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
+                                <textarea matInput [(ngModel)]="disclaimer.disclaimerText" class="form-control"
+                                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
+                                    placeholder="Disclaimer text"> </textarea>
+                            </div>
+                        </form>
+                    </mat-tab>
+                </mat-tab-group>
+                <mat-card-actions>
+                    <button mat-flat-button color="primary" (click)="save()">
+                        <mat-icon>save</mat-icon>
+                        <span>Save</span>
+                    </button>
+                </mat-card-actions>
+            </mat-card>
         </div>
-    </form>
+    </div>
 </section>

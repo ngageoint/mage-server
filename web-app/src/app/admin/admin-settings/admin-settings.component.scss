@@ -1,31 +1,20 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-.nav-stacked > li {
-  float: none;
-}
-.nav-stacked > li + li {
-  margin-top: 2px;
-  margin-left: 0;
-}
-
-.nav>li>a {
-  color: #FFFFFF;
-}
-  
-.nav-pills>li>a {
-  color: #1E88E5;
-}
-  
-.nav>li>a:hover, .nav>li>a:focus {
-  text-decoration: none;
-  color: #1565C0;
-  background: transparent;
+.page-container {
+  display: flex;
+  padding: 0 16px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 16px;
+  max-width: 1170px;
 }
 
-.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
-  color: #fff;
-  background-color: #1E88E5;
+.content {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  background-color: white;
 }
 
 .admin-settings-gap {
@@ -53,37 +42,10 @@ color-picker {
   display: block;
   width: 25%;
 }
-  
-a {
-  color: #1E88E5;
-}
 
 label {
   font-weight: unset;
   margin-left: 8px;
-}
-
-h1, h2, h3, h4, h5 {
-	color: #1E88E5;
-}
-
-mat-card-title {
-  color: #1E88E5;
-}
-
-mat-drawer-container {
-  background-color: unset;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  flex: 1;
-  overflow: auto;
-}
-
-mat-drawer {
-  display: flex;
-  flex-direction: column;
-  width: 20%;
 }
 
 mat-toolbar {
