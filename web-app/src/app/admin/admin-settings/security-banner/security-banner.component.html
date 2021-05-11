@@ -6,55 +6,51 @@
     <legend>Header</legend>
 </section>
 <section class="mat-typography">
-    <form id="banner-form">
-        <mat-list-item>
-            <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
-                [ngModelOptions]="{standalone: true}" id="show-header">
-            </mat-checkbox>
-            <label for="show-header">Show Header</label>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="headerText"><b>Header Text</b></mat-label>
-            <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.headerText"
-                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader" placeholder="Header text">
-            </mat-form-field>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
-            <color-picker [hexColor]="banner.headerTextColor"
-                (onColorChanged)="colorChanged($event, 'headerTextColor')">
-            </color-picker>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
-            <color-picker [hexColor]="banner.headerBackgroundColor"
-                (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
-            </color-picker>
-        </mat-list-item>
-        <mat-list-item>
-            <legend>Footer</legend>
-            <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
-                [ngModelOptions]="{standalone: true}" id="show-footer">
-            </mat-checkbox>
-            <label for="show-footer">Show Footer</label>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="footerText"><b>Footer Text</b></mat-label>
-            <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.footerText"
-                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter" placeholder="Footer text">
-            </mat-form-field>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
-            <color-picker [hexColor]="banner.footerTextColor"
-                (onColorChanged)="colorChanged($event, 'footerTextColor')">
-            </color-picker>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
-            <color-picker [hexColor]="banner.footerBackgroundColor"
-                (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
-            </color-picker>
-        </mat-list-item>
-    </form>
+    <mat-list-item>
+        <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
+            [ngModelOptions]="{standalone: true}" id="show-header">
+        </mat-checkbox>
+        <label for="show-header">Show Header</label>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="headerText"><b>Header Text</b></mat-label>
+        <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.headerText"
+                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader" placeholder="Header text">
+        </mat-form-field>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
+        <color-picker [hexColor]="banner.headerTextColor" (onColorChanged)="colorChanged($event, 'headerTextColor')">
+        </color-picker>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
+        <color-picker [hexColor]="banner.headerBackgroundColor"
+            (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
+        </color-picker>
+    </mat-list-item>
+    <mat-list-item>
+        <legend>Footer</legend>
+        <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
+            [ngModelOptions]="{standalone: true}" id="show-footer">
+        </mat-checkbox>
+        <label for="show-footer">Show Footer</label>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="footerText"><b>Footer Text</b></mat-label>
+        <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.footerText"
+                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter" placeholder="Footer text">
+        </mat-form-field>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
+        <color-picker [hexColor]="banner.footerTextColor" (onColorChanged)="colorChanged($event, 'footerTextColor')">
+        </color-picker>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
+        <color-picker [hexColor]="banner.footerBackgroundColor"
+            (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
+        </color-picker>
+    </mat-list-item>
 </section>

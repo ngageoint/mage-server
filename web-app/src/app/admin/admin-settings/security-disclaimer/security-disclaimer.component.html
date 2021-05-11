@@ -7,28 +7,24 @@
     <legend>Disclaimer</legend>
 </section>
 <section class="mat-typography">
-    <form id="disclaimer-form">
-        <mat-list-item>
-            <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer" color="primary"
-                [ngModelOptions]="{standalone: true}" id="show-disclaimer">
-            </mat-checkbox>
-            <label for="show-disclaimer">Show Disclaimer</label>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
-            <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="disclaimer.disclaimerTitle"
-                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                    placeholder="Disclaimer title">
-            </mat-form-field>
-        </mat-list-item>
-        <mat-list-item>
-            <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
-            <mat-form-field appearance="outline">
-                <textarea matInput [(ngModel)]="disclaimer.disclaimerText"
-                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                    placeholder="Disclaimer text"> </textarea>
-            </mat-form-field>
-        </mat-list-item>
-    </form>
+    <mat-list-item>
+        <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer" color="primary"
+            [ngModelOptions]="{standalone: true}" id="show-disclaimer">
+        </mat-checkbox>
+        <label for="show-disclaimer">Show Disclaimer</label>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
+        <mat-form-field appearance="outline">
+            <input matInput [(ngModel)]="disclaimer.disclaimerTitle" [ngModelOptions]="{standalone: true}"
+                [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer title">
+        </mat-form-field>
+    </mat-list-item>
+    <mat-list-item>
+        <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
+        <mat-form-field appearance="outline">
+            <textarea matInput [(ngModel)]="disclaimer.disclaimerText" [ngModelOptions]="{standalone: true}"
+                [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer text"> </textarea>
+        </mat-form-field>
+    </mat-list-item>
 </section>
