@@ -1,59 +1,60 @@
 <section class="mat-typography">
+    <span class="help-block">
+        MAGE can add a header and footer to all views. Below you can specify whether or
+        not you want a header and/or footer, text, text color and background color.
+    </span>
+    <legend>Header</legend>
+</section>
+<section class="mat-typography">
     <form id="banner-form">
-        <div class="row admin-settings-gap">
-            <span class="help-block">
-                MAGE can add a header and footer to all views. Below you can specify whether or
-                not you
-                want a header and/or footer, text, text color and background color.
-            </span>
-        </div>
-        <div class="row admin-settings-gap">
-            <legend>Header</legend>
+        <mat-list-item>
             <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
                 [ngModelOptions]="{standalone: true}" id="show-header">
             </mat-checkbox>
             <label for="show-header">Show Header</label>
-        </div>
-        <div class="row admin-settings-gap bottom-gap">
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="headerText"><b>Header Text</b></mat-label>
-            <input matInput [(ngModel)]="banner.headerText" class="form-control" [ngModelOptions]="{standalone: true}"
-                [disabled]="!banner.showHeader" placeholder="Header text">
-        </div>
-        <div class="row admin-settings-gap">
+            <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.headerText"
+                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader" placeholder="Header text">
+            </mat-form-field>
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
             <color-picker [hexColor]="banner.headerTextColor"
                 (onColorChanged)="colorChanged($event, 'headerTextColor')">
             </color-picker>
-        </div>
-        <div class="row admin-settings-gap">
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
             <color-picker [hexColor]="banner.headerBackgroundColor"
                 (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
             </color-picker>
-        </div>
-        <div class="row admin-settings-gap">
+        </mat-list-item>
+        <mat-list-item>
             <legend>Footer</legend>
             <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
                 [ngModelOptions]="{standalone: true}" id="show-footer">
             </mat-checkbox>
             <label for="show-footer">Show Footer</label>
-        </div>
-        <div class="row admin-settings-gap bottom-gap">
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="footerText"><b>Footer Text</b></mat-label>
-            <input matInput [(ngModel)]="banner.footerText" class="form-control" [ngModelOptions]="{standalone: true}"
-                [disabled]="!banner.showFooter" placeholder="Footer text">
-        </div>
-        <div class="row admin-settings-gap">
+            <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.footerText"
+                    [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter" placeholder="Footer text">
+            </mat-form-field>
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
             <color-picker [hexColor]="banner.footerTextColor"
                 (onColorChanged)="colorChanged($event, 'footerTextColor')">
             </color-picker>
-        </div>
-        <div class="row admin-settings-gap">
+        </mat-list-item>
+        <mat-list-item>
             <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
             <color-picker [hexColor]="banner.footerBackgroundColor"
                 (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
             </color-picker>
-        </div>
+        </mat-list-item>
     </form>
 </section>
