@@ -17,7 +17,7 @@
         <mat-list-item>
             <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
             <mat-form-field appearance="outline">
-                <input matInput [(ngModel)]="disclaimer.disclaimerTitle" class="form-control"
+                <input matInput [(ngModel)]="disclaimer.disclaimerTitle"
                     [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
                     placeholder="Disclaimer title">
             </mat-form-field>
@@ -25,7 +25,7 @@
         <mat-list-item>
             <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
             <mat-form-field appearance="outline">
-                <textarea matInput [(ngModel)]="disclaimer.disclaimerText" class="form-control"
+                <textarea matInput [(ngModel)]="disclaimer.disclaimerText"
                     [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
                     placeholder="Disclaimer text"> </textarea>
             </mat-form-field>
