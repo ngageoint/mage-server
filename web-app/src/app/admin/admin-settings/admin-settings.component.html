@@ -9,9 +9,7 @@
                     <mat-tab label="Authentication">
                         <form id="authentication-form">
                             <mat-toolbar>
-                                <span>
-                                    <h1><i class="fa fa-shield"></i> Authentication</h1>
-                                </span>
+                                <span>Authentication</span>
                                 <span class="spacer"></span>
                                 <button mat-stroked-button color="primary" class="pull-right"
                                     (click)="$event.stopPropagation(); createStrategy()"
@@ -53,7 +51,7 @@
                                                 <button mat-button color="warn" id="delete-strategy-button"
                                                     (click)="$event.stopPropagation(); deleteStrategy(strategy)"
                                                     *ngIf="hasAuthConfigEditPermission">
-                                                    <mat-icon>delete</mat-icon>Delete
+                                                    <mat-icon>delete</mat-icon>Delete Authentication
                                                 </button>
                                             </div>
                                         </mat-expansion-panel>
@@ -159,7 +157,7 @@
                 </mat-tab-group>
                 <mat-card-actions>
                     <button mat-flat-button color="primary" (click)="save()">
-                        <mat-icon>save</mat-icon>
+                        <mat-icon>check</mat-icon>
                         <span>Save</span>
                     </button>
                 </mat-card-actions>
