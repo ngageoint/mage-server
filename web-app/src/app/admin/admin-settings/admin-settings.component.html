@@ -34,17 +34,19 @@
                                                     <div *ngIf="!strategy.enabled">Disabled</div>
                                                 </mat-panel-description>
                                             </mat-expansion-panel-header>
-                                            <div class="row bottom-gap">
-                                                <mat-slide-toggle [(ngModel)]="strategy.enabled"
-                                                    [checked]="strategy.enabled" color="primary"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    *ngIf="hasAuthConfigEditPermission"
-                                                    (click)="$event.stopPropagation()"
-                                                    [disabled]="strategy.name.toLowerCase() === 'local'">
-                                                </mat-slide-toggle>
-                                                <label>Enable Authentication</label>
-                                                <mat-divider class="bottom-gap"></mat-divider>
-                                            </div>
+                                            <section class="mat-typography">
+                                                <div class="row">
+                                                    <mat-slide-toggle [(ngModel)]="strategy.enabled"
+                                                        [checked]="strategy.enabled" color="primary"
+                                                        [ngModelOptions]="{standalone: true}"
+                                                        *ngIf="hasAuthConfigEditPermission"
+                                                        (click)="$event.stopPropagation()"
+                                                        [disabled]="strategy.name.toLowerCase() === 'local'">
+                                                    </mat-slide-toggle>
+                                                    <label>Enable Authentication</label>
+                                                    <hr>
+                                                </div>
+                                            </section>
                                             <authentication-settings [strategy]="strategy" [teams]="teams"
                                                 [events]="events"></authentication-settings>
                                             <div class="row top-gap">
@@ -61,7 +63,7 @@
                         </form>
                     </mat-tab>
                     <mat-tab label="Banner">
-                       <security-banner (saveEvent)="onBannerSaved($event)"></security-banner>
+                        <security-banner (saveEvent)="onBannerSaved($event)"></security-banner>
                     </mat-tab>
                     <mat-tab label="Disclaimer">
                         <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>
