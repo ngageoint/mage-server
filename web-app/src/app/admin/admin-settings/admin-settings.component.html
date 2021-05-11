@@ -7,7 +7,7 @@
             <mat-card>
                 <mat-tab-group color="primary" mat-stretch-tabs (selectedIndexChange)="selected.setValue($event)">
                     <mat-tab label="Authentication">
-                        <div class="top-gap auth__action--new">
+                        <div class="top-gap bottom-gap auth__action--new">
                             <button mat-stroked-button color="primary"
                                 (click)="$event.stopPropagation(); createStrategy()"
                                 *ngIf="hasAuthConfigEditPermission">
