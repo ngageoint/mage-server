@@ -1,14 +1,14 @@
 import _ from 'underscore'
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
-import { ColorEvent } from 'src/app/color-picker/color-picker.component';
 import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
-import { Banner, Disclaimer, Strategy, StrategyState } from './admin-settings.model';
+import { Disclaimer, Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
 import { AuthenticationCreateComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
+import { SecurityBannerComponent } from './security-banner/security-banner.component';
 
 @Component({
     selector: 'admin-settings',
@@ -20,22 +20,13 @@ export class AdminSettingsComponent implements OnInit {
         title: 'Settings',
         icon: 'build'
     }];
+    @ViewChild(SecurityBannerComponent) securityBannerView: SecurityBannerComponent;
     token: any;
     selected = new FormControl(0);
     teams: any[] = [];
     events: any[] = [];
-    
+
     strategies: Strategy[] = [];
-    banner: Banner = {
-        headerTextColor: '#000000',
-        headerText: '',
-        headerBackgroundColor: 'FFFFFF',
-        footerTextColor: '#000000',
-        footerText: '',
-        footerBackgroundColor: 'FFFFFF',
-        showHeader: false,
-        showFooter: false
-    };
     disclaimer: Disclaimer = {
         showDisclaimer: false,
         disclaimerTitle: '',
@@ -57,8 +48,8 @@ export class AdminSettingsComponent implements OnInit {
         public localStorageService: any,
         @Inject(AuthenticationConfigurationService)
         public authenticationConfigurationService: any,
-        @Inject(UserService) 
-        userService: { myself: { role: {permissions: Array<string>}}}) {
+        @Inject(UserService)
+        userService: { myself: { role: { permissions: Array<string> } } }) {
 
         this.token = localStorageService.getToken();
         this.hasAuthConfigEditPermission = _.contains(userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
@@ -104,7 +95,6 @@ export class AdminSettingsComponent implements OnInit {
                 });
             }
 
-            this.banner = settings.banner ? settings.banner.settings : this.banner;
             this.disclaimer = settings.disclaimer ? settings.disclaimer.settings : this.disclaimer;
 
             this.strategies.forEach(strategy => {
@@ -127,7 +117,7 @@ export class AdminSettingsComponent implements OnInit {
 
     save(): void {
         if (this.selected.value === 1) {
-            this.saveBanner();
+            this.securityBannerView.save();
         } else if (this.selected.value === 2) {
             this.saveDisclaimer();
         } else {
@@ -135,16 +125,16 @@ export class AdminSettingsComponent implements OnInit {
         }
     }
 
-    private saveBanner(): void {
-        this.settings.update({ type: 'banner' }, this.banner, () => {
+    onBannerSaved(status: boolean): void {
+        if (status) {
             this._snackBar.open('Banner successfully saved', null, {
                 duration: 2000,
             });
-        }, () => {
+        } else {
             this._snackBar.open('Failed to save banner', null, {
                 duration: 2000,
             });
-        });
+        };
     }
 
     private saveDisclaimer(): void {
@@ -194,14 +184,6 @@ export class AdminSettingsComponent implements OnInit {
                 duration: 2000,
             });
         });
-    }
-
-    colorChanged(event: ColorEvent, key: string): void {
-        if (this.banner.hasOwnProperty(key)) {
-            this.banner[key] = event.color;
-        } else {
-            console.log(key + ' is not a valid banner property');
-        }
     }
 
     deleteStrategy(strategy: any): void {
