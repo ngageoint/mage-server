@@ -1,12 +1,12 @@
 import _ from 'underscore'
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
-import { Settings, Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
-import { Disclaimer, Strategy, StrategyState } from './admin-settings.model';
+import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
+import { Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
-import { AuthenticationCreateComponent } from './admin-settings';
+import { AuthenticationCreateComponent, SecurityDisclaimerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
 import { SecurityBannerComponent } from './security-banner/security-banner.component';
 
@@ -21,25 +21,19 @@ export class AdminSettingsComponent implements OnInit {
         icon: 'build'
     }];
     @ViewChild(SecurityBannerComponent) securityBannerView: SecurityBannerComponent;
+    @ViewChild(SecurityDisclaimerComponent) securityDisclaimerView: SecurityDisclaimerComponent;
     token: any;
     selected = new FormControl(0);
     teams: any[] = [];
     events: any[] = [];
 
     strategies: Strategy[] = [];
-    disclaimer: Disclaimer = {
-        showDisclaimer: false,
-        disclaimerTitle: '',
-        disclaimerText: ''
-    }
 
     hasAuthConfigEditPermission: boolean;
 
     constructor(
         private dialog: MatDialog,
         private _snackBar: MatSnackBar,
-        @Inject(Settings)
-        public settings: any,
         @Inject(Team)
         public team: any,
         @Inject(Event)
@@ -57,16 +51,15 @@ export class AdminSettingsComponent implements OnInit {
 
     ngOnInit(): void {
         const configsPromise = this.authenticationConfigurationService.getAllConfigurations();
-        const settingsPromise = this.settings.query().$promise;
         const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
         const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
 
-        Promise.all([configsPromise, settingsPromise, teamsPromise, eventsPromise]).then(result => {
+        Promise.all([configsPromise, teamsPromise, eventsPromise]).then(result => {
             //Remove event teams
-            this.teams = result[2].filter(function (team: any): boolean {
+            this.teams = result[1].filter(function (team: any): boolean {
                 return team.teamEventId === undefined;
             });
-            this.events = result[3];
+            this.events = result[2];
 
             this.strategies = result[0] ? result[0].data : [];
             this.strategies.sort(function (a: any, b: any): number {
@@ -81,21 +74,6 @@ export class AdminSettingsComponent implements OnInit {
 
                 return 0;
             });
-
-            const settings: any = {};
-
-            if (result[1].length > 0) {
-                result[1].forEach(element => {
-                    settings[element.type] = {};
-                    Object.keys(element).forEach(key => {
-                        if (key !== 'type') {
-                            settings[element.type][key] = element[key];
-                        }
-                    });
-                });
-            }
-
-            this.disclaimer = settings.disclaimer ? settings.disclaimer.settings : this.disclaimer;
 
             this.strategies.forEach(strategy => {
                 if (strategy.settings.newUserEvents) {
@@ -119,7 +97,7 @@ export class AdminSettingsComponent implements OnInit {
         if (this.selected.value === 1) {
             this.securityBannerView.save();
         } else if (this.selected.value === 2) {
-            this.saveDisclaimer();
+            this.securityDisclaimerView.save();
         } else {
             this.saveAuthentication();
         }
@@ -137,16 +115,16 @@ export class AdminSettingsComponent implements OnInit {
         };
     }
 
-    private saveDisclaimer(): void {
-        this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
+    onDisclaimerSaved(status: boolean): void {
+        if (status) {
             this._snackBar.open('Disclaimer successfully saved', null, {
                 duration: 2000,
             });
-        }, () => {
-            this._snackBar.open('Failed to save diclaimer', null, {
+        } else {
+            this._snackBar.open('Failed to save disclaimer', null, {
                 duration: 2000,
             });
-        });
+        };
     }
 
     private saveAuthentication(): void {

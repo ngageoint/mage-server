@@ -64,37 +64,7 @@
                        <security-banner (saveEvent)="onBannerSaved($event)"></security-banner>
                     </mat-tab>
                     <mat-tab label="Disclaimer">
-                        <form id="disclaimer-form">
-                            <div class="row admin-settings-gap">
-                                <span class="help-block">
-                                    MAGE can present a disclaimer after login. If the disclaimer is shown users will
-                                    have to
-                                    accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
-                                    Android,
-                                    iOS, and the Web.
-                                </span>
-                            </div>
-                            <div class="row admin-settings-gap">
-                                <legend>Disclaimer</legend>
-                                <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer"
-                                    [checked]="disclaimer.showDisclaimer" color="primary"
-                                    [ngModelOptions]="{standalone: true}" id="show-disclaimer">
-                                </mat-checkbox>
-                                <label for="show-disclaimer">Show Disclaimer</label>
-                            </div>
-                            <div class="row admin-settings-gap">
-                                <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
-                                <input matInput [(ngModel)]="disclaimer.disclaimerTitle" class="form-control"
-                                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                                    placeholder="Disclaimer title">
-                            </div>
-                            <div class="row admin-settings-gap bottom-gap">
-                                <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
-                                <textarea matInput [(ngModel)]="disclaimer.disclaimerText" class="form-control"
-                                    [ngModelOptions]="{standalone: true}" [disabled]="!disclaimer.showDisclaimer"
-                                    placeholder="Disclaimer text"> </textarea>
-                            </div>
-                        </form>
+                        <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>
                     </mat-tab>
                 </mat-tab-group>
                 <mat-card-actions>
