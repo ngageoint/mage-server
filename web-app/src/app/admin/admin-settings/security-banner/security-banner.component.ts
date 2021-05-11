@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, Output, EventEmitter } from '@angular/core';
-import { Banner } from '../admin-settings.model';
+import { Banner } from './security-banner.model';
 import { ColorEvent } from 'ngx-color';
 import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 

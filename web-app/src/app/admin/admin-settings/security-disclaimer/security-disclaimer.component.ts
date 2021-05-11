@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, Output, EventEmitter } from '@angular/core';
-import { Disclaimer } from '../admin-settings.model';
+import { Disclaimer } from './security-disclaimer.model';
 import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({

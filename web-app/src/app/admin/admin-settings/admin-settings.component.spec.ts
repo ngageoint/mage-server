@@ -22,7 +22,7 @@ import { MatOptionModule, MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
-import { LocalStorageService, Settings, Team, Event, AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { LocalStorageService, Settings, Team, Event, AuthenticationConfigurationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { Subject, Observable } from 'rxjs';
 
 class MockSnackbarRef {
@@ -88,6 +88,7 @@ describe('AdminSettingsComponent', () => {
     beforeEach(async(() => {
         const mockLocalStorageService = { getToken: (): string => '1' };
         const mockDialogRef = { close: (): void => { } };
+        const mockUserService =  { myself: { role: { permissions: ['UPDATE_AUTH_CONFIG'] } } };
 
         TestBed.configureTestingModule({
             imports: [NoopAnimationsModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatTableModule, MatDialogModule,
@@ -101,7 +102,8 @@ describe('AdminSettingsComponent', () => {
                 { provide: Event, useClass: MockEvent },
                 { provide: AuthenticationConfigurationService, useClass: MockAuthenticationConfigurationService },
                 { provide: MatDialogRef, useValue: mockDialogRef },
-                { provide: MatSnackBar, useClass: MockSnackbar }
+                { provide: MatSnackBar, useClass: MockSnackbar },
+                { provide: UserService, useValue: mockUserService }
             ],
             declarations: [AdminSettingsComponent]
         }).compileComponents();
