@@ -17,10 +17,6 @@
 .right-gap {
   margin-right: 10px;
 }
-  
-a {
-  color: #1E88E5;
-}
 
 label {
   font-weight: unset;
@@ -33,4 +29,7 @@ h1, h2, h3, h4, h5 {
 
 table {
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 500px;
 }
