@@ -1,60 +1,49 @@
 <section class="mat-typography">
-    <div class="row">
-        <h4>New Accounts</h4>
-        <hr>
-    </div>
+    <h4>New Accounts</h4>
+    <hr>
 </section>
 <section class="mat-typography">
-    <div class="row">
-        <mat-label><b>New User Accounts Require Admin
-                Approval</b></mat-label>
-        <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
-                <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-        <p class="help-block">If disabled, new user accounts do <b>NOT</b>
-            require admin approval to access MAGE.</p>
-    </div>
+    <mat-label><b>New User Accounts Require Admin
+            Approval</b></mat-label>
+    <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+            <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+    <p class="help-block">If disabled, new user accounts do <b>NOT</b>
+        require admin approval to access MAGE.</p>
     <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
-        <div class="row">
-            <mat-label><b>New Users Default Event(s)</b></mat-label>
-            <mat-form-field appearance="outline">
-                <mat-select [(ngModel)]="strategy.settings.newUserEvents" [ngModelOptions]="{standalone: true}"
-                    multiple>
-                    <mat-option *ngFor="let event of events" [value]="event.id">
-                        {{event.name}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-            <p class="help-block">When new users are created, this is the event
-                that they will be added to by default.</p>
-        </div>
-        <div class="row">
-            <mat-label><b>New Users Default Team(s)</b></mat-label>
-            <mat-form-field appearance="outline">
-                <mat-select [(ngModel)]="strategy.settings.newUserTeams" [ngModelOptions]="{standalone: true}" multiple>
-                    <mat-option *ngFor="let team of teams" [value]="team.name">
-                        {{team.name}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-            <p class="help-block">When new users are created, this is the team
-                that they will be added to by default.</p>
-        </div>
-    </div>
-    <div class="row">
-        <mat-label><b>New Devices Require Admin Approval</b></mat-label>
+        <mat-label><b>New Users Default Event(s)</b></mat-label>
         <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
-                <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
+            <mat-select [(ngModel)]="strategy.settings.newUserEvents" [ngModelOptions]="{standalone: true}" multiple>
+                <mat-option *ngFor="let event of events" [value]="event.id">
+                    {{event.name}}
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        <p class="help-block">If disabled, new devices do <b>NOT</b> require
-            admin approval to access MAGE.</p>
+        <p class="help-block">When new users are created, this is the event
+            that they will be added to by default.</p>
+        <mat-label><b>New Users Default Team(s)</b></mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.newUserTeams" [ngModelOptions]="{standalone: true}" multiple>
+                <mat-option *ngFor="let team of teams" [value]="team.name">
+                    {{team.name}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <p class="help-block">When new users are created, this is the team
+            that they will be added to by default.</p>
     </div>
+    <mat-label><b>New Devices Require Admin Approval</b></mat-label>
+    <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+            <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+    <p class="help-block">If disabled, new devices do <b>NOT</b> require
+        admin approval to access MAGE.</p>
     <div *ngIf="strategy.settings.accountLock">
         <account-lock [strategy]="strategy"></account-lock>
     </div>

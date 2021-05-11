@@ -15,8 +15,7 @@
                             </button>
                         </div>
                         <div *ngFor="let strategy of strategies">
-                            <div *ngIf="strategy.state != 1" class="row admin-settings-gap"
-                                style="padding-bottom: 25px;">
+                            <div *ngIf="strategy.state != 1" class="admin-settings-gap" style="padding-bottom: 25px;">
                                 <mat-accordion class="top-gap">
                                     <mat-expansion-panel class="mat-elevation-z0">
                                         <mat-expansion-panel-header>
@@ -31,21 +30,18 @@
                                             </mat-panel-description>
                                         </mat-expansion-panel-header>
                                         <section class="mat-typography">
-                                            <div class="row">
-                                                <mat-slide-toggle [(ngModel)]="strategy.enabled"
-                                                    [checked]="strategy.enabled" color="primary"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    *ngIf="hasAuthConfigEditPermission"
-                                                    (click)="$event.stopPropagation()"
-                                                    [disabled]="strategy.name.toLowerCase() === 'local'">
-                                                </mat-slide-toggle>
-                                                <label>Enable Authentication</label>
-                                                <hr>
-                                            </div>
+                                            <mat-slide-toggle [(ngModel)]="strategy.enabled"
+                                                [checked]="strategy.enabled" color="primary"
+                                                [ngModelOptions]="{standalone: true}"
+                                                *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation()"
+                                                [disabled]="strategy.name.toLowerCase() === 'local'">
+                                            </mat-slide-toggle>
+                                            <label>Enable Authentication</label>
+                                            <hr>
                                         </section>
                                         <authentication-settings [strategy]="strategy" [teams]="teams"
                                             [events]="events"></authentication-settings>
-                                        <div class="row top-gap">
+                                        <div class="top-gap">
                                             <button mat-button color="warn" id="delete-strategy-button"
                                                 (click)="$event.stopPropagation(); deleteStrategy(strategy)"
                                                 *ngIf="hasAuthConfigEditPermission">
