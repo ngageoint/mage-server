@@ -4,10 +4,6 @@ export interface AdminChoice {
     value: boolean
 }
 
-export interface MaxLock {
-    enabled: boolean
-}
-
 export interface Strategy {
     state?: StrategyState,
     enabled: boolean, 
