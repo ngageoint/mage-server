@@ -5,10 +5,9 @@ import { Team, Event, LocalStorageService, AuthenticationConfigurationService, U
 import { Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { AuthenticationDeleteComponent } from './authentication-delete/authentication-delete.component';
-import { AuthenticationCreateComponent, SecurityDisclaimerComponent } from './admin-settings';
+import { AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
-import { SecurityBannerComponent } from './security-banner/security-banner.component';
+import { StateService } from '@uirouter/angular'
 
 @Component({
     selector: 'admin-settings',
@@ -23,7 +22,7 @@ export class AdminSettingsComponent implements OnInit {
     @ViewChild(SecurityBannerComponent) securityBannerView: SecurityBannerComponent;
     @ViewChild(SecurityDisclaimerComponent) securityDisclaimerView: SecurityDisclaimerComponent;
     token: any;
-    selected = new FormControl(0);
+    selectedTab = new FormControl(0);
     teams: any[] = [];
     events: any[] = [];
 
@@ -34,6 +33,7 @@ export class AdminSettingsComponent implements OnInit {
     constructor(
         private dialog: MatDialog,
         private _snackBar: MatSnackBar,
+        private stateService: StateService,
         @Inject(Team)
         public team: any,
         @Inject(Event)
@@ -94,9 +94,9 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     save(): void {
-        if (this.selected.value === 1) {
+        if (this.selectedTab.value === 1) {
             this.securityBannerView.save();
-        } else if (this.selected.value === 2) {
+        } else if (this.selectedTab.value === 2) {
             this.securityDisclaimerView.save();
         } else {
             this.saveAuthentication();
@@ -182,6 +182,24 @@ export class AdminSettingsComponent implements OnInit {
                 }
             }
         });
+    }
+
+    newAuthentication(): void {
+        const strategy = {
+            state: StrategyState.New,
+            enabled: false,
+            name: '',
+            type: '',
+            settings: {
+                usersReqAdmin: {
+                    enabled: true
+                },
+                devicesReqAdmin: {
+                    enabled: true
+                }
+            }
+        }
+        this.stateService.go('admin.authenticationCreate', { data: strategy })
     }
 
     createStrategy(): void {

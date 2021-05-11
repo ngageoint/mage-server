@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { LocalStorageService, Settings, Team, Event, AuthenticationConfigurationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { Subject, Observable } from 'rxjs';
+import { StateService } from '@uirouter/core';
 
 class MockSnackbarRef {
     private readonly _afterDismissed = new Subject<MatSnackBarDismiss>()
@@ -81,6 +82,10 @@ class MockAuthenticationConfigurationService {
     }
 }
 
+class MockStateService {
+
+}
+
 describe('AdminSettingsComponent', () => {
     let component: AdminSettingsComponent;
     let fixture: ComponentFixture<AdminSettingsComponent>;
@@ -103,7 +108,8 @@ describe('AdminSettingsComponent', () => {
                 { provide: AuthenticationConfigurationService, useClass: MockAuthenticationConfigurationService },
                 { provide: MatDialogRef, useValue: mockDialogRef },
                 { provide: MatSnackBar, useClass: MockSnackbar },
-                { provide: UserService, useValue: mockUserService }
+                { provide: UserService, useValue: mockUserService },
+                { provide: StateService, useClass: MockStateService }
             ],
             declarations: [AdminSettingsComponent]
         }).compileComponents();
