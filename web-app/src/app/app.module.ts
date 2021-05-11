@@ -134,6 +134,7 @@ import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb
 import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
+import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 
 @NgModule({
@@ -196,6 +197,7 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     AuthenticationSettingsComponent,
     PasswordPolicyComponent,
     GenericSettingsComponent,
+    AccountLockComponent,
     AuthenticationCreateComponent,
     AuthenticationDeleteComponent,
     SecurityBannerComponent,

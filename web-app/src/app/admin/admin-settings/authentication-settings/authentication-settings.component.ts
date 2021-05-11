@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AdminChoice, MaxLock, Strategy } from '../admin-settings.model';
+import { AdminChoice, Strategy } from '../admin-settings.model';
 
 @Component({
     selector: 'authentication-settings',
@@ -29,31 +29,8 @@ export class AuthenticationSettingsComponent implements OnInit {
         description: 'New devices do not require admin approval.',
         value: false
     }];
-    readonly accountLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not lock MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
-        value: true
-    }];
-    maxLock: MaxLock = {
-        enabled: false
-    };
-    readonly maxLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not disable MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
-        value: true
-    }];
 
     ngOnInit(): void {
-        if (this.strategy.type === 'local') {
-            this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
-        }
+      
     }
 }

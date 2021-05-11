@@ -1,0 +1,65 @@
+<section class="mat-typography">
+    <h4>Account Lock</h4>
+    <hr>
+</section>
+<section class="mat-typography">
+    <div class="row">
+        <mat-label><b>Enabled</b></mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.accountLock.enabled" [ngModelOptions]="{standalone: true}">
+                <mat-option *ngFor="let accountLockChoice of accountLockChoices" [value]="accountLockChoice.value">
+                    {{accountLockChoice.title}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <p class="help-block">MAGE can lock user accounts after a number of
+            invalid login attempts for a certain amount of time.</p>
+    </div>
+    <div *ngIf="strategy.settings.accountLock.enabled">
+        <div class="row">
+            <mat-label><b>Account Lockout Threshold</b></mat-label>
+            <mat-form-field appearance="outline">
+                <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.threshold"
+                    [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <p class="help-block">Number of invalid login attempts, after
+                which the users account will be locked.</p>
+        </div>
+        <div class="row">
+            <mat-label><b>Account Lockout Interval (Seconds)</b></mat-label>
+            <mat-form-field appearance="outline">
+                <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.interval"
+                    [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <p class="help-block">Amount of time in seconds a users account
+                will remain locked after reaching number of invalid login
+                attempts.</p>
+        </div>
+        <div class="row">
+            <mat-label><b>Enable Max Lockout</b></mat-label>
+            <mat-form-field appearance="outline">
+                <mat-select [(ngModel)]="maxLock.enabled" [ngModelOptions]="{standalone: true}">
+                    <mat-option *ngFor="let maxLockChoice of maxLockChoices" [value]="maxLockChoice.value">
+                        {{maxLockChoice.title}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <p class="help-block">MAGE can disable user accounts if a user
+                locks their account a certain number of times.</p>
+        </div>
+        <div *ngIf="maxLock.enabled">
+            <div class="row">
+                <mat-label><b>Max Lockout Threshold</b></mat-label>
+                <mat-form-field appearance="outline">
+                    <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.max"
+                        [ngModelOptions]="{standalone: true}">
+                </mat-form-field>
+                <p class="help-block">Number of times a user account can be
+                    locked before it is disabled.
+                    Disabled accounts must be re-enabled by an admin. If
+                    left blank this feature is disabled.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
