@@ -55,10 +55,7 @@
     <div *ngIf="strategy.settings.passwordPolicy">
         <password-policy [strategy]="strategy"></password-policy>
     </div>
-    <div class="row">
-        <div class="bottom-gap">
-            <h4>Additional Settings:</h4>
-        </div>
+    <div *ngIf="strategy.type.toLowerCase() !== 'local'">
+        <generic-settings [strategy]="strategy"></generic-settings>
     </div>
-    <generic-settings [strategy]="strategy"></generic-settings>
 </section>

@@ -1,4 +1,9 @@
 <section class="mat-typography">
+    <div class="bottom-gap">
+        <h4>Additional Settings:</h4>
+    </div>
+</section>
+<section class="mat-typography">
     <legend class="scheduler-border">Add Setting</legend>
     <form name="add-setting-form">
         <mat-list-item>
@@ -12,7 +17,8 @@
                 <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
                     [ngModelOptions]="{standalone: true}" placeholder="Value" />
             </mat-form-field>
-            <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()" [disabled]="inputKey.invalid">
+            <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
+                [disabled]="inputKey.invalid">
                 <mat-icon>add</mat-icon>Add Row
             </button>
         </mat-list-item>
