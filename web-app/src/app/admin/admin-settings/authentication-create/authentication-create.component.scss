@@ -1,7 +1,6 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-  
 .page-container {
     display: flex;
     padding: 0 16px;
@@ -34,6 +33,9 @@
     margin-top: 8px;
 }
   
-.mat-form-field {
-    margin-top: 16px;
+table {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-width: 500px;
 }
