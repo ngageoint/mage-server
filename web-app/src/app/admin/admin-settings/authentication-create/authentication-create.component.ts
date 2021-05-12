@@ -1,16 +1,37 @@
-import { Component, Inject } from '@angular/core'
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Strategy } from '../admin-settings.model';
+import { Component } from '@angular/core'
+import { Strategy, StrategyState } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 
 @Component({
     selector: 'authentication-create',
     templateUrl: './authentication-create.component.html',
-    styleUrls: ['./authentication-create.component.scss']
+    styleUrls: ['./authentication-create.component.scss'],
+    animations: [
+        trigger('slide', [
+          state('1', style({ height: '*', opacity: 1, })),
+          state('0', style({ height: '0', opacity: 0 })),
+          transition('1 => 0', animate('400ms ease-in-out')),
+          transition('0 => 1', animate('400ms ease-in-out'))
+        ]),
+        trigger('rotate', [
+          state('0', style({ transform: 'rotate(0)' })),
+          state('1', style({ transform: 'rotate(45deg)' })),
+          transition('1 => 0', animate('250ms ease-out')),
+          transition('0 => 1', animate('250ms ease-in'))
+        ])
+      ]
 })
 export class AuthenticationCreateComponent {
-
+    breadcrumbs: AdminBreadcrumb[] = [{
+        title: 'Settings',
+        icon: 'build',
+        state: {
+          name: 'admin.authenticationCreate'
+        }
+      }]
+      
     readonly typeChoices: TypeChoice[] = [{
         title: 'Local',
         description: 'Local account.',
@@ -37,18 +58,26 @@ export class AuthenticationCreateComponent {
         type: 'saml'
     }];
 
-    firstFormGroup: FormGroup;
-    secondFormGroup: FormGroup;
-    isEditable = false;
+    strategy: Strategy;
 
-    constructor(private _formBuilder: FormBuilder) { }
+    constructor() { 
+        this.breadcrumbs.push({ title: 'New' })
+    }
 
     ngOnInit() {
-        this.firstFormGroup = this._formBuilder.group({
-            firstCtrl: ['', Validators.required]
-        });
-        this.secondFormGroup = this._formBuilder.group({
-            secondCtrl: ['', Validators.required]
-        });
+        this.strategy = {
+            state: StrategyState.New,
+            enabled: false,
+            name: '',
+            type: '',
+            settings: {
+                usersReqAdmin: {
+                    enabled: true
+                },
+                devicesReqAdmin: {
+                    enabled: true
+                }
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@ import { Team, Event, LocalStorageService, AuthenticationConfigurationService, U
 import { Strategy, StrategyState } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
+import { AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
 import { StateService } from '@uirouter/angular'
 
@@ -173,47 +173,7 @@ export class AdminSettingsComponent implements OnInit {
         });
     }
 
-    newAuthentication(): void {
-        const strategy = {
-            state: StrategyState.New,
-            enabled: false,
-            name: '',
-            type: '',
-            settings: {
-                usersReqAdmin: {
-                    enabled: true
-                },
-                devicesReqAdmin: {
-                    enabled: true
-                }
-            }
-        }
-        this.stateService.go('admin.authenticationCreate', { data: strategy })
-    }
-
     createAuthentication(): void {
-        const strategy = {
-            state: StrategyState.New,
-            enabled: false,
-            name: '',
-            type: '',
-            settings: {
-                usersReqAdmin: {
-                    enabled: true
-                },
-                devicesReqAdmin: {
-                    enabled: true
-                }
-            }
-        }
-        this.dialog.open(AuthenticationCreateComponent, {
-            width: '500px',
-            data: strategy,
-            autoFocus: false
-        }).afterClosed().subscribe(result => {
-            if (result === 'create') {
-                this.strategies.push(strategy);
-            }
-        });
+        this.stateService.go('admin.authenticationCreate')
     }
 }
