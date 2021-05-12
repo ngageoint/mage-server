@@ -2,41 +2,43 @@
     <h1 mat-dialog-title>Create Authentication</h1>
 </section>
 <section class="mat-typography">
-    <mat-dialog-content>
-        <div class="row">
-            <label for="name" class="bottom-gap">Name</label>
-            <mat-form-field appearance="outline">
-                <input matInput type="text" id="name" name="name" [(ngModel)]="strategy.name" class="form-control"
-                    [ngModelOptions]="{standalone: true}" required #name="ngModel">
-            </mat-form-field>
-            <div *ngIf="name.invalid && (name.dirty || name.touched)" class="alert alert-danger">
-                <div *ngIf="name.errors.required">
-                    Name is required.
+    <button mat-raised-button (click)="isEditable = !isEditable">
+        {{!isEditable ? 'Enable edit mode' : 'Disable edit mode'}}
+    </button>
+
+    <mat-horizontal-stepper linear #stepper>
+        <mat-step [stepControl]="firstFormGroup" [editable]="isEditable">
+            <form [formGroup]="firstFormGroup">
+                <ng-template matStepLabel>Fill out your name</ng-template>
+                <mat-form-field>
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="firstCtrl" placeholder="Last name, First name" required>
+                </mat-form-field>
+                <div>
+                    <button mat-button matStepperNext>Next</button>
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <label for="type" class="bottom-gap">Type</label>
-            <mat-form-field appearance="outline">
-                <mat-select [(ngModel)]="strategy.type" [ngModelOptions]="{standalone: true}" id="type" name="type"
-                    required #type="ngModel">
-                    <mat-option *ngFor="let typeChoice of typeChoices" [value]="typeChoice.type">
-                        {{typeChoice.title}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-            <div *ngIf="type.invalid && (type.dirty || type.touched)" class="alert alert-danger">
-                <div *ngIf="type.errors.required">
-                    Type is required.
+            </form>
+        </mat-step>
+        <mat-step [stepControl]="secondFormGroup" [editable]="isEditable">
+            <form [formGroup]="secondFormGroup">
+                <ng-template matStepLabel>Fill out your address</ng-template>
+                <mat-form-field>
+                    <mat-label>Address</mat-label>
+                    <input matInput formControlName="secondCtrl" placeholder="Ex. 1 Main St, New York, NY" required>
+                </mat-form-field>
+                <div>
+                    <button mat-button matStepperPrevious>Back</button>
+                    <button mat-button matStepperNext>Next</button>
                 </div>
+            </form>
+        </mat-step>
+        <mat-step>
+            <ng-template matStepLabel>Done</ng-template>
+            <p>You are now done.</p>
+            <div>
+                <button mat-button matStepperPrevious>Back</button>
+                <button mat-button (click)="stepper.reset()">Reset</button>
             </div>
-        </div>
-    </mat-dialog-content>
-</section>
-<section class="mat-typography">
-    <mat-dialog-actions>
-        <button class="mat-button" id="cancel-button" (click)="close()">CANCEL</button>
-        <button class="mat-button mat-primary" id="ok-button" (click)="create()"
-            [disabled]="name.invalid || type.invalid" cdkFocusInitial>OK</button>
-    </mat-dialog-actions>
+        </mat-step>
+    </mat-horizontal-stepper>
 </section>

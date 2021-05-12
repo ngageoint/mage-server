@@ -40,6 +40,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
 
 require('angular-minicolors');
 require('select2');
@@ -86,7 +87,8 @@ app
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
   .directive('export', downgradeComponent({ component: ExportComponent }))
-  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }));
+  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
+  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))
@@ -386,6 +388,12 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   $stateProvider.state('admin.settings', {
     url: '/settings',
     component: "upgradedAdminSettings",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.authenticationCreate', {
+    url: '/settings/new',
+    component: "authenticationCreate",
     resolve: resolveAdmin()
   });
 

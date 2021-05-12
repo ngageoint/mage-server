@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
     selector: 'authentication-create',
@@ -36,18 +37,18 @@ export class AuthenticationCreateComponent {
         type: 'saml'
     }];
 
-    constructor(
-        public dialogRef: MatDialogRef<AuthenticationCreateComponent>,
-        @Inject(MAT_DIALOG_DATA) public strategy: Strategy) {
+    firstFormGroup: FormGroup;
+    secondFormGroup: FormGroup;
+    isEditable = false;
 
+    constructor(private _formBuilder: FormBuilder) { }
+
+    ngOnInit() {
+        this.firstFormGroup = this._formBuilder.group({
+            firstCtrl: ['', Validators.required]
+        });
+        this.secondFormGroup = this._formBuilder.group({
+            secondCtrl: ['', Validators.required]
+        });
     }
-
-    close(): void {
-        this.dialogRef.close('cancel');
-    }
-
-    create(): void {
-        this.dialogRef.close('create');
-    }
-
 }

@@ -13,25 +13,10 @@
     margin-right: 10px;
 }
 
-#cancel-button {
-    margin-right: 8px;
-    color: #1E88E5;
+.mat-stepper-horizontal {
+    margin-top: 8px;
 }
   
-#ok-button {
-    margin-left: 8px;
-}
-  
-#ok-button:not(:disabled) {
-    background-color: #1E88E5 !important;
-    color: white;
-}
-
-mat-form-field {
-    width: 100%;
-}
-
-mat-dialog-actions {
-    display: flex;
-    justify-content: right;
+.mat-form-field {
+    margin-top: 16px;
 }
