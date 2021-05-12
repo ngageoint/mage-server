@@ -119,4 +119,8 @@ export class AuthenticationCreateComponent {
 
         delete this.strategy.settings[setting.key];
     }
+
+    save(): void {
+        
+    }
 }

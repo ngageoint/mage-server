@@ -16,10 +16,10 @@
                     <ng-template matStepLabel>Name</ng-template>
                     <mat-form-field>
                         <mat-label>Authentication Name</mat-label>
-                        <input matInput placeholder="Local LDAP" required>
+                        <input matInput placeholder="Local LDAP" [(ngModel)]="strategy.name" required>
                     </mat-form-field>
                     <div>
-                        <button mat-button matStepperNext>Next</button>
+                        <button [disabled]="!strategy.name.length" mat-button matStepperNext>Next</button>
                     </div>
                 </mat-step>
                 <mat-step>
@@ -34,7 +34,7 @@
                     </mat-form-field>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
-                        <button mat-button matStepperNext>Next</button>
+                        <button [disabled]="!strategy.type.length" mat-button matStepperNext>Next</button>
                     </div>
                 </mat-step>
                 <mat-step>
@@ -112,10 +112,11 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
-                    <p>You are now done.</p>
+                    <legend>Summary</legend>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button (click)="stepper.reset()">Reset</button>
+                        <button mat-button (click)="save()">Save</button>
                     </div>
                 </mat-step>
             </mat-horizontal-stepper>
