@@ -9,15 +9,15 @@
                     <mat-tab label="Authentication">
                         <div class="top-gap bottom-gap auth__action--new">
                             <button mat-stroked-button color="primary"
-                                (click)="$event.stopPropagation(); newAuthentication()"
+                                (click)="$event.stopPropagation(); createAuthentication()"
                                 *ngIf="hasAuthConfigEditPermission">
                                 <mat-icon>add</mat-icon>New Authentication
                             </button>
                         </div>
-                        <div *ngFor="let strategy of strategies">
+                        <div *ngFor="let strategy of strategies; index as i; first as isFirst">
                             <div *ngIf="strategy.state != 1" class="admin-settings-gap" style="padding-bottom: 25px;">
                                 <mat-accordion class="top-gap">
-                                    <mat-expansion-panel class="mat-elevation-z0">
+                                    <mat-expansion-panel class="mat-elevation-z0" [expanded]="isFirst">
                                         <mat-expansion-panel-header>
                                             <mat-panel-title>
                                                 <mat-icon mat-list-icon>lock</mat-icon>

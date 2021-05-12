@@ -61,19 +61,8 @@ export class AdminSettingsComponent implements OnInit {
             });
             this.events = result[2];
 
-            this.strategies = result[0] ? result[0].data : [];
-            this.strategies.sort(function (a: any, b: any): number {
-                const nameA = a.name.toUpperCase();
-                const nameB = b.name.toUpperCase();
-                if (nameA < nameB) {
-                    return -1;
-                }
-                if (nameA > nameB) {
-                    return 1;
-                }
-
-                return 0;
-            });
+            const unsortedStrategies = result[0] ? result[0].data : [];
+            this.strategies = _.sortBy(unsortedStrategies, 'name');
 
             this.strategies.forEach(strategy => {
                 if (strategy.settings.newUserEvents) {
@@ -202,7 +191,7 @@ export class AdminSettingsComponent implements OnInit {
         this.stateService.go('admin.authenticationCreate', { data: strategy })
     }
 
-    createStrategy(): void {
+    createAuthentication(): void {
         const strategy = {
             state: StrategyState.New,
             enabled: false,
