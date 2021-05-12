@@ -57,23 +57,7 @@
                         </div>
                         <div *ngSwitchDefault></div>
                     </div>
-                    <legend>Add Setting</legend>
-                    <mat-list-item>
-                        <label for="inputKey" class="right-gap">Key</label>
-                        <mat-form-field appearance="outline">
-                            <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
-                                [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel" required>
-                        </mat-form-field>
-                        <label for="inputValue" class="right-gap">Value</label>
-                        <mat-form-field appearance="outline">
-                            <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
-                                [ngModelOptions]="{standalone: true}" placeholder="Value" />
-                        </mat-form-field>
-                        <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
-                            [disabled]="inputKey.invalid">
-                            <mat-icon>add</mat-icon>Add Row
-                        </button>
-                    </mat-list-item>
+                    <legend>Settings</legend>
                     <table mat-table [dataSource]="dataSource" matSort>
                         <ng-container matColumnDef="key">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
@@ -100,6 +84,27 @@
                         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                     </table>
+                    <section class="mat-typography">
+
+                        <legend class="top-gap">Add Setting</legend>
+                        <mat-list-item>
+                            <label for="inputKey" class="right-gap">Key</label>
+                            <mat-form-field appearance="outline">
+                                <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
+                                    [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel"
+                                    required>
+                            </mat-form-field>
+                            <label for="inputValue" class="left-gap right-gap">Value</label>
+                            <mat-form-field appearance="outline">
+                                <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
+                                    [ngModelOptions]="{standalone: true}" placeholder="Value" />
+                            </mat-form-field>
+                            <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
+                                [disabled]="inputKey.invalid">
+                                <mat-icon>add</mat-icon>Add Row
+                            </button>
+                        </mat-list-item>
+                    </section>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext>Next</button>
