@@ -38,6 +38,17 @@
                     </div>
                 </mat-step>
                 <mat-step>
+                    <ng-template matStepLabel>Settings</ng-template>
+                    <mat-form-field>
+                        <mat-label>Settings</mat-label>
+                        <input matInput placeholder="Local LDAP" required>
+                    </mat-form-field>
+                    <div>
+                        <button mat-button matStepperPrevious>Back</button>
+                        <button mat-button matStepperNext>Next</button>
+                    </div>
+                </mat-step>
+                <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
                     <p>You are now done.</p>
                     <div>

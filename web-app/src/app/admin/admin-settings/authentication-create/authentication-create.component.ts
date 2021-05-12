@@ -28,7 +28,7 @@ export class AuthenticationCreateComponent {
         title: 'Settings',
         icon: 'build',
         state: {
-          name: 'admin.authenticationCreate'
+          name: 'admin.settings'
         }
       }]
       
