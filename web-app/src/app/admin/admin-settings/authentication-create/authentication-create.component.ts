@@ -44,6 +44,7 @@ export class AuthenticationCreateComponent {
     }
 
     readonly displayedColumns: string[] = ['key', 'value', 'delete'];
+    readonly summaryColumns: string[] = ['key', 'value'];
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
         description: 'Google account.',

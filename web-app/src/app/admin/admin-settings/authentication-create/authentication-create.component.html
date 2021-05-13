@@ -14,9 +14,9 @@
             <mat-horizontal-stepper linear #stepper>
                 <mat-step>
                     <ng-template matStepLabel>Name</ng-template>
-                    <mat-form-field>
+                    <mat-form-field appearance="outline">
                         <mat-label>Authentication Name</mat-label>
-                        <input matInput placeholder="Local LDAP" [(ngModel)]="strategy.name" required>
+                        <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.name" required>
                     </mat-form-field>
                     <div>
                         <button [disabled]="!strategy.name.length" mat-button matStepperNext>Next</button>
@@ -114,7 +114,23 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
-                    <legend>Summary</legend>
+                    <legend>Summary of {{strategy.name}}</legend>
+                    <table mat-table [dataSource]="dataSource" matSort>
+                        <ng-container matColumnDef="key">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
+                            <td mat-cell *matCellDef="let setting">{{setting.key}}</td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="value">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
+                            <td mat-cell *matCellDef="let setting">
+                                {{setting.value}}</td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="summaryColumns; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; columns: summaryColumns;"></tr>
+                    </table>
+                    <mat-divider></mat-divider>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button (click)="reset(); stepper.reset()">Reset</button>
