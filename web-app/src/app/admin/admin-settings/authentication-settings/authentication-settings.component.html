@@ -6,7 +6,8 @@
     <mat-label><b>New User Accounts Require Admin
             Approval</b></mat-label>
     <mat-form-field appearance="outline">
-        <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+        <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}"
+            (selectionChange)="setDirty()">
             <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
             </mat-option>
         </mat-select>
@@ -16,7 +17,8 @@
     <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
         <mat-label><b>New Users Default Event(s)</b></mat-label>
         <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.newUserEvents" [ngModelOptions]="{standalone: true}" multiple>
+            <mat-select [(ngModel)]="strategy.settings.newUserEvents" [ngModelOptions]="{standalone: true}" multiple
+                (selectionChange)="setDirty()">
                 <mat-option *ngFor="let event of events" [value]="event.id">
                     {{event.name}}
                 </mat-option>
@@ -26,7 +28,8 @@
             that they will be added to by default.</p>
         <mat-label><b>New Users Default Team(s)</b></mat-label>
         <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.newUserTeams" [ngModelOptions]="{standalone: true}" multiple>
+            <mat-select [(ngModel)]="strategy.settings.newUserTeams" [ngModelOptions]="{standalone: true}" multiple
+                (selectionChange)="setDirty()">
                 <mat-option *ngFor="let team of teams" [value]="team.name">
                     {{team.name}}
                 </mat-option>
@@ -37,7 +40,8 @@
     </div>
     <mat-label><b>New Devices Require Admin Approval</b></mat-label>
     <mat-form-field appearance="outline">
-        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" [ngModelOptions]="{standalone: true}">
+        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" [ngModelOptions]="{standalone: true}"
+            (selectionChange)="setDirty()">
             <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
             </mat-option>
         </mat-select>

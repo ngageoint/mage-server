@@ -31,6 +31,10 @@ export class AuthenticationSettingsComponent implements OnInit {
     }];
 
     ngOnInit(): void {
-      
+
+    }
+
+    setDirty() {
+        this.strategy.isDirty = true;
     }
 }

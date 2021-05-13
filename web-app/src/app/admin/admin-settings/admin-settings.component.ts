@@ -122,28 +122,33 @@ export class AdminSettingsComponent implements OnInit {
             if (strategy.settings.usersReqAdmin.enabled) {
                 strategy.settings.newUserEvents = [];
                 strategy.settings.newUserTeams = [];
-                strategy.isDirty = true;
             }
-    
-            //TODO set dirty flag on changes
-            //if(strategy.isDirty) {
-            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            // }
+
+            if (strategy.isDirty) {
+                promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            }
         });
 
-        Promise.all(promises).then(() => {
-            return this.authenticationConfigurationService.getAllConfigurations();
-        }).then(strategies => {
-            this.strategies = strategies.data;
-            this._snackBar.open('Authentication successfully saved', null, {
+        if (promises.length > 0) {
+            Promise.all(promises).then(() => {
+                return this.authenticationConfigurationService.getAllConfigurations();
+            }).then(strategies => {
+                this.strategies = strategies.data;
+                this._snackBar.open('Authentication successfully saved', null, {
+                    duration: 2000,
+                });
+            }).catch(err => {
+                console.log(err);
+                this._snackBar.open('Failed to save authentication', null, {
+                    duration: 2000,
+                });
+            });
+        } else {
+            this._snackBar.open('No authentication changes to be saved', null, {
                 duration: 2000,
             });
-        }).catch(err => {
-            console.log(err);
-            this._snackBar.open('Failed to save authentication', null, {
-                duration: 2000,
-            });
-        });
+        }
+
     }
 
     deleteStrategy(strategy: any): void {

@@ -59,6 +59,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         if (idx > -1) {
             this.dataSource.data[idx].value = $event.target.textContent;
             this.strategy.settings[setting.key] = JSON.parse($event.target.textContent);
+            this.strategy.isDirty = true;
         }
     }
 
@@ -68,6 +69,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.dataSource.data = settings;
         
         this.strategy.settings[this.newRow.key] = this.newRow.value;
+        this.strategy.isDirty = true;
         this.dataSource.paginator.firstPage();
         this.newRow.key = '';
         this.newRow.value = ''
@@ -81,6 +83,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.dataSource.data = filtered;
 
         delete this.strategy.settings[setting.key];
+        this.strategy.isDirty = true;
         this.dataSource.paginator.firstPage();
     }
 }
