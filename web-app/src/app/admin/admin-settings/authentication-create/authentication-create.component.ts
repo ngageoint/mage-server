@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core'
-import { Strategy, StrategyState } from '../admin-settings.model';
+import { Strategy } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
@@ -127,7 +127,6 @@ export class AuthenticationCreateComponent {
 
     reset() {
         this.strategy = {
-            state: StrategyState.New,
             enabled: false,
             name: '',
             type: '',

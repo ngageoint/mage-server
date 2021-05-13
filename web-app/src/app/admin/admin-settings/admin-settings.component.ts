@@ -2,7 +2,7 @@ import _ from 'underscore'
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
-import { Strategy, StrategyState } from './admin-settings.model';
+import { Strategy } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
@@ -122,16 +122,13 @@ export class AdminSettingsComponent implements OnInit {
             if (strategy.settings.usersReqAdmin.enabled) {
                 strategy.settings.newUserEvents = [];
                 strategy.settings.newUserTeams = [];
+                strategy.isDirty = true;
             }
-            if (strategy.type === 'local') {
-                //TODO figure this out since its in a child page
-                //if (!this.maxLock.enabled) {
-                //    delete strategy.settings.accountLock.max;
-                //}
-            }
-            if (strategy.state === undefined) {
-                promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            }
+    
+            //TODO set dirty flag on changes
+            //if(strategy.isDirty) {
+            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            // }
         });
 
         Promise.all(promises).then(() => {
@@ -156,15 +153,8 @@ export class AdminSettingsComponent implements OnInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
-                strategy.state = StrategyState.Removed;
-
-                if (strategy._id == null) {
-                    strategy.state = StrategyState.New;
-                    const idx = this.strategies.indexOf(strategy);
-                    if (idx > -1) {
-                        this.strategies.splice(idx, 1);
-                    }
-                }
+                //TODO
+                this.ngOnInit();
             }
         });
     }

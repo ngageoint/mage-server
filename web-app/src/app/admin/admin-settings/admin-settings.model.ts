@@ -5,14 +5,9 @@ export interface AdminChoice {
 }
 
 export interface Strategy {
-    state?: StrategyState,
+    isDirty?: boolean,
     enabled: boolean, 
     name: string,
     type: string,
     settings: any
-}
-
-export enum StrategyState {
-    New,
-    Removed
 }

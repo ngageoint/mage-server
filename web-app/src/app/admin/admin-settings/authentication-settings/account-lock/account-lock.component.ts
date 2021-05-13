@@ -36,6 +36,10 @@ export class AccountLockComponent implements OnInit {
     ngOnInit(): void {
         if (this.strategy.type === 'local') {
             this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
+
+            if (!this.maxLock.enabled) {
+                delete this.strategy.settings.accountLock.max;
+            }
         }
     }
 }
