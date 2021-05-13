@@ -41,12 +41,12 @@ export class AdminSettingsComponent implements OnInit {
         @Inject(LocalStorageService)
         public localStorageService: any,
         @Inject(AuthenticationConfigurationService)
-        public authenticationConfigurationService: any,
+        private authenticationConfigurationService: any,
         @Inject(UserService)
-        userService: { myself: { role: { permissions: Array<string> } } }) {
+        private userService: { myself: { role: { permissions: Array<string> } } }) {
 
         this.token = localStorageService.getToken();
-        this.hasAuthConfigEditPermission = _.contains(userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
+        this.hasAuthConfigEditPermission = _.contains(this.userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
     }
 
     ngOnInit(): void {
@@ -131,10 +131,6 @@ export class AdminSettingsComponent implements OnInit {
             }
             if (strategy.state === undefined) {
                 promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            } else if (strategy.state === StrategyState.New) {
-                promises.push(this.authenticationConfigurationService.createConfiguration(strategy));
-            } else {
-                promises.push(this.authenticationConfigurationService.deleteConfiguration(strategy));
             }
         });
 

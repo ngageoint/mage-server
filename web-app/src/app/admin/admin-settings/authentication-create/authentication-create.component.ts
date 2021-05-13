@@ -72,7 +72,7 @@ export class AuthenticationCreateComponent {
     constructor(
         private stateService: StateService,
         @Inject(AuthenticationConfigurationService)
-        public authenticationConfigurationService: any) {
+        private authenticationConfigurationService: any) {
         this.breadcrumbs.push({ title: 'New' });
     }
 

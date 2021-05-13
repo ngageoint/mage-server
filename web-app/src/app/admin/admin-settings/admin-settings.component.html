@@ -44,7 +44,7 @@
                                         <div class="top-gap">
                                             <button mat-button color="warn" id="delete-strategy-button"
                                                 (click)="$event.stopPropagation(); deleteStrategy(strategy)"
-                                                *ngIf="hasAuthConfigEditPermission">
+                                                *ngIf="hasAuthConfigEditPermission && strategy.type.toLowerCase() !== 'local'">
                                                 <mat-icon>delete</mat-icon>Delete Authentication
                                             </button>
                                         </div>
