@@ -34,32 +34,11 @@
                     </mat-form-field>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
-                        <button [disabled]="!strategy.type.length" mat-button matStepperNext>Next</button>
+                        <button [disabled]="!strategy.type.length" mat-button (click)="loadTemplate()" matStepperNext>Next</button>
                     </div>
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Settings</ng-template>
-                    <div [ngSwitch]="strategy.type.toLowerCase()">
-                        <div *ngSwitchCase="'google'">
-
-                        </div>
-                        <div *ngSwitchCase="'geoaxis'">
-
-                        </div>
-                        <div *ngSwitchCase="'login-gov'">
-
-                        </div>
-                        <div *ngSwitchCase="'ldap'">
-
-                        </div>
-                        <div *ngSwitchCase="'saml'">
-
-                        </div>
-                        <div *ngSwitchCase="'oauth'">
-
-                        </div>
-                        <div *ngSwitchDefault></div>
-                    </div>
                     <legend>Settings</legend>
                     <table mat-table [dataSource]="dataSource" matSort>
                         <ng-container matColumnDef="key">

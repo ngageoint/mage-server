@@ -1,10 +1,12 @@
-import { Component } from '@angular/core'
+import { Component, Inject } from '@angular/core'
 import { Strategy, StrategyState } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { MatTableDataSource } from '@angular/material/table';
+import { StateService } from '@uirouter/core';
+import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
     selector: 'authentication-create',
@@ -67,8 +69,11 @@ export class AuthenticationCreateComponent {
         type: 'saml'
     }];
 
-    constructor() {
-        this.breadcrumbs.push({ title: 'New' })
+    constructor(
+        private stateService: StateService,
+        @Inject(AuthenticationConfigurationService)
+        public authenticationConfigurationService: any) {
+        this.breadcrumbs.push({ title: 'New' });
     }
 
     ngOnInit() {
@@ -108,8 +113,16 @@ export class AuthenticationCreateComponent {
         delete this.strategy.settings[setting.key];
     }
 
+    loadTemplate() {
+        console.log("loading template");
+    }
+
     save(): void {
-        
+        this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
+            this.stateService.go('admin.settings', { strategy: newStrategy });
+        }).catch(err => {
+            console.error(err);
+        });
     }
 
     reset() {
