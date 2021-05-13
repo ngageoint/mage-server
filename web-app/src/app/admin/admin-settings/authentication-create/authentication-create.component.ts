@@ -71,20 +71,7 @@ export class AuthenticationCreateComponent {
     }
 
     ngOnInit() {
-        this.strategy = {
-            state: StrategyState.New,
-            enabled: false,
-            name: '',
-            type: '',
-            settings: {
-                usersReqAdmin: {
-                    enabled: true
-                },
-                devicesReqAdmin: {
-                    enabled: true
-                }
-            }
-        }
+        this.reset();
 
         const settings: any[] = [];
 
@@ -122,5 +109,22 @@ export class AuthenticationCreateComponent {
 
     save(): void {
         
+    }
+
+    reset() {
+        this.strategy = {
+            state: StrategyState.New,
+            enabled: false,
+            name: '',
+            type: '',
+            settings: {
+                usersReqAdmin: {
+                    enabled: true
+                },
+                devicesReqAdmin: {
+                    enabled: true
+                }
+            }
+        }
     }
 }

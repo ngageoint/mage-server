@@ -55,6 +55,9 @@
                         <div *ngSwitchCase="'saml'">
 
                         </div>
+                        <div *ngSwitchCase="'oauth'">
+
+                        </div>
                         <div *ngSwitchDefault></div>
                     </div>
                     <legend>Settings</legend>
@@ -85,7 +88,6 @@
                         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                     </table>
                     <section class="mat-typography">
-
                         <legend class="top-gap">Add Setting</legend>
                         <mat-list-item>
                             <label for="inputKey" class="right-gap">Key</label>
@@ -115,7 +117,7 @@
                     <legend>Summary</legend>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
-                        <button mat-button (click)="stepper.reset()">Reset</button>
+                        <button mat-button (click)="reset(); stepper.reset()">Reset</button>
                         <button mat-button (click)="save()"
                             [disabled]="!strategy.type.length || !strategy.name.length">Save</button>
                     </div>
