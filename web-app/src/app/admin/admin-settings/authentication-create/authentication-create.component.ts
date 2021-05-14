@@ -203,6 +203,7 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
     }
 
     save(): void {
+        this.strategy.title = this.strategy.name;
         this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
             this.stateService.go('admin.settings', { strategy: newStrategy });
         }).catch(err => {
