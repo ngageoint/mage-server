@@ -9,5 +9,8 @@ export interface Strategy {
     enabled: boolean, 
     name: string,
     type: string,
+    textColor: string,
+    buttonColor: string,
+    icon?: any,
     settings: any
 }

@@ -135,22 +135,28 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         switch (this.strategy.type) {
             case 'google': {
                 template = new OAuthTemplate();
+                this.strategy.buttonColor = '#4285F4';
                 break;
             }
             case 'geoaxis': {
                 template = new OAuthTemplate();
+                this.strategy.buttonColor = '#163043';
                 break;
             }
             case 'ldap': {
                 template = new LdapTemplate();
+                this.strategy.buttonColor = '#5E35B1';
                 break;
             }
             case 'login-gov': {
                 template = new LoginGovTemplate();
+                this.strategy.buttonColor = '#E21D3E';
                 break;
             }
             case 'saml': {
                 template = new SamlTemplate();
+                this.strategy.textColor = '#000000';
+                this.strategy.buttonColor = '#EF6C00';
                 break;
             }
             default: {
@@ -209,6 +215,8 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             enabled: false,
             name: '',
             type: '',
+            textColor: '#FFFFFF',
+            buttonColor: '',
             settings: {
                 usersReqAdmin: {
                     enabled: true
