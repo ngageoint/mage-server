@@ -11,82 +11,83 @@ const SamlStrategy = require('passport-saml').Strategy
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function configure(passport) {
-  AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
+  AuthenticationConfiguration.getConfigurationsByType('saml').then(strategyConfigs => {
 
-    if (strategyConfig && strategyConfig.enabled) {
-      passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
-        const uid = profile[strategyConfig.settings.uidAttribute];
-        User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
-          if (err) return done(err);
+    strategyConfigs.forEach(strategyConfig => {
+      if (strategyConfig && strategyConfig.enabled) {
+        passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
+          const uid = profile[strategyConfig.settings.uidAttribute];
+          User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
+            if (err) return done(err);
 
-          if (!user) {
-            // Create an account for the user
-            Role.getRole('USER_ROLE', function (err, role) {
-              if (err) return done(err);
+            if (!user) {
+              // Create an account for the user
+              Role.getRole('USER_ROLE', function (err, role) {
+                if (err) return done(err);
 
-              const user = {
-                username: uid,
-                displayName: profile[strategyConfig.settings.displayNameAttribute],
-                email: profile[strategyConfig.settings.emailAttribute],
-                active: false,
-                roleId: role._id,
-                authentication: {
-                  type: 'saml',
-                  id: uid
+                const user = {
+                  username: uid,
+                  displayName: profile[strategyConfig.settings.displayNameAttribute],
+                  email: profile[strategyConfig.settings.emailAttribute],
+                  active: false,
+                  roleId: role._id,
+                  authentication: {
+                    type: 'saml',
+                    id: uid
+                  }
+                };
+
+                new api.User().create(user).then(newUser => {
+                  if (!newUser.authentication.authenticationConfiguration.enabled) {
+                    log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
+                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+                  }
+                  return done(null, newUser);
+                }).catch(err => done(err));
+              });
+            } else if (!user.active) {
+              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+            } else if (!user.authentication.authenticationConfiguration.enabled) {
+              log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+            } else {
+              return done(null, user);
+            }
+          });
+        }));
+
+        app.post(
+          strategyConfig.settings.options.callbackPath,
+          authenticate,
+          function (req, res) {
+            const state = JSON.parse(req.body.RelayState) || {};
+
+            if (state.initiator === 'mage') {
+              if (state.client === 'mobile') {
+                let uri;
+                if (!req.user.active || !req.user.enabled) {
+                  uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
+                } else {
+                  uri = `mage://app/authentication?token=${req.token}`
                 }
-              };
 
-              new api.User().create(user).then(newUser => {
-                if (!newUser.authentication.authenticationConfiguration.enabled) {
-                  log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
-                  return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-                }
-                return done(null, newUser);
-              }).catch(err => done(err));
-            });
-          } else if (!user.active) {
-            return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-          } else if (!user.authentication.authenticationConfiguration.enabled) {
-            log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
-            return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-          } else {
-            return done(null, user);
-          }
-        });
-      }));
-
-      app.post(
-        strategyConfig.settings.options.callbackPath,
-        authenticate,
-        function (req, res) {
-          const state = JSON.parse(req.body.RelayState) || {};
-
-          if (state.initiator === 'mage') {
-            if (state.client === 'mobile') {
-              let uri;
-              if (!req.user.active || !req.user.enabled) {
-                uri = `mage://app/invalid_account?active=${req.user.active}&enabled=${req.user.enabled}`;
+                res.redirect(uri);
               } else {
-                uri = `mage://app/authentication?token=${req.token}`
+                res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
               }
-
-              res.redirect(uri);
             } else {
-              res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
-            }
-          } else {
-            if (req.user.active && req.user.enabled) {
-              res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
-            } else {
-              const action = !req.user.active ? 'inactive-account' : 'disabled-account';
-              res.redirect(`/#/signin?strategy=saml&action=${action}`);
+              if (req.user.active && req.user.enabled) {
+                res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
+              } else {
+                const action = !req.user.active ? 'inactive-account' : 'disabled-account';
+                res.redirect(`/#/signin?strategy=saml&action=${action}`);
+              }
             }
           }
-        }
-      );
-    } else {
-      log.info('saml strategy is not configured or enabled');
-    }
+        );
+      }
+    });
+
   }).catch(err => {
     log.error(err);
   });
@@ -130,6 +131,11 @@ function init(app, passport, provision, tokenService) {
       if (!user.active || !user.enabled) {
         log.warn('Failed user login attempt: User ' + user.username + ' account is inactive or disabled.');
         return next();
+      }
+
+      if (!user.authentication.authenticationConfiguration.enabled) {
+        log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.name + ' is disabled.');
+        return res.status(401).send(user.authentication.authenticationConfiguration.name + ' authentication is disabled, please contact a MAGE administrator for assistance.')
       }
 
       // DEPRECATED session authorization, remove req.login which creates session in next version
