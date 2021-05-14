@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, Inject, ViewChild, OnInit, AfterViewInit } from '@angular/core'
 import { Strategy } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -7,6 +7,9 @@ import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { MatTableDataSource } from '@angular/material/table';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './templates/settings-templates';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 
 @Component({
     selector: 'authentication-create',
@@ -30,7 +33,10 @@ import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded
         provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true }
     }]
 })
-export class AuthenticationCreateComponent {
+export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
+    @ViewChild(MatPaginator) paginator: MatPaginator;
+    @ViewChild(MatSort) sort: MatSort;
+
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build',
@@ -47,6 +53,7 @@ export class AuthenticationCreateComponent {
 
     readonly displayedColumns: string[] = ['key', 'value', 'delete'];
     readonly summaryColumns: string[] = ['key', 'value'];
+    readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
         description: 'Google account.',
@@ -84,6 +91,11 @@ export class AuthenticationCreateComponent {
         this.dataSource = new MatTableDataSource(settings);
     }
 
+    ngAfterViewInit() {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+    }
+
     changeValue(setting: any, $event: any): void {
         const idx = this.dataSource.data.indexOf(setting);
         if (idx > -1) {
@@ -109,12 +121,72 @@ export class AuthenticationCreateComponent {
             return value !== setting;
         });
         this.dataSource.data = filtered;
-
+        this.dataSource.paginator.firstPage();
         delete this.strategy.settings[setting.key];
     }
 
-    loadTemplate() {
-        console.log("loading template");
+    loadTemplate(): void {
+        let template: any;
+        switch (this.strategy.type) {
+            case 'google': {
+                template = new OAuthTemplate();
+                break;
+            }
+            case 'geoaxis': {
+                template = new OAuthTemplate();
+                break;
+            }
+            case 'ldap': {
+                template = new LdapTemplate();
+                break;
+            }
+            case 'login-gov': {
+                template = new LoginGovTemplate();
+                break;
+            }
+            case 'saml': {
+                template = new SamlTemplate();
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
+        this.strategy.settings = {
+            usersReqAdmin: {
+                enabled: true
+            },
+            devicesReqAdmin: {
+                enabled: true
+            }
+        };
+
+        const settings: any[] = [];
+        for (const [key, value] of Object.entries(template.settings)) {
+
+            if (this.settingsKeysToIgnore.includes(key)) {
+                continue;
+            }
+
+            let castedValue: string;
+
+            if (value instanceof String) {
+                castedValue = value as string;
+            } else {
+                castedValue = JSON.stringify(value);
+            }
+
+            const gs: any = {
+                key: key,
+                value: castedValue
+            };
+            this.strategy.settings[key] = castedValue;
+            settings.push(gs);
+        }
+
+        this.dataSource.data = settings;
+        this.dataSource.paginator.firstPage();
     }
 
     save(): void {
@@ -125,7 +197,7 @@ export class AuthenticationCreateComponent {
         });
     }
 
-    reset() {
+    reset(): void {
         this.strategy = {
             enabled: false,
             name: '',
