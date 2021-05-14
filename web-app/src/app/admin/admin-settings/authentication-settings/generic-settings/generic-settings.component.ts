@@ -33,7 +33,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
             let castedValue: string;
 
-            if (value instanceof String) {
+            if (typeof value == 'string') {
                 castedValue = value as string;
             } else {
                 castedValue = JSON.stringify(value);

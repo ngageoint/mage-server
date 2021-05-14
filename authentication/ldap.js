@@ -15,74 +15,74 @@ let authenticationOptions = {
 
 function configure(passport) {
 
-  AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
+  AuthenticationConfiguration.getConfigurationsByType('ldap').then(strategyConfigs => {
 
-    if (strategyConfig && strategyConfig.enabled) {
-      authenticationOptions = {
-        invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
-        invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
-        passwordExpired: `${strategyConfig.title} password expired.`,
-        accountDisabled: `${strategyConfig.title} account disabled.`,
-        accountExpired: `${strategyConfig.title} account expired.`,
-        passwordMustChange: `User must reset ${strategyConfig.title} password.`,
-        accountLockedOut: `${strategyConfig.title} user account locked.`,
-        invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
-      };
+    strategyConfigs.forEach(strategyConfig => {
+      if (strategyConfig && strategyConfig.enabled) {
+        authenticationOptions = {
+          invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
+          invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
+          passwordExpired: `${strategyConfig.title} password expired.`,
+          accountDisabled: `${strategyConfig.title} account disabled.`,
+          accountExpired: `${strategyConfig.title} account expired.`,
+          passwordMustChange: `User must reset ${strategyConfig.title} password.`,
+          accountLockedOut: `${strategyConfig.title} user account locked.`,
+          invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
+        };
 
-      passport.use(new LdapStrategy({
-        server: {
-          url: strategyConfig.settings.url,
-          bindDN: strategyConfig.settings.bindDN,
-          bindCredentials: strategyConfig.settings.bindCredentials,
-          searchBase: strategyConfig.settings.searchBase,
-          searchFilter: strategyConfig.settings.searchFilter
-        }
-      },
-        function (profile, done) {
-          const username = profile[strategyConfig.settings.ldapUsernameField];
-          User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
-            if (err) return done(err);
+        passport.use(new LdapStrategy({
+          server: {
+            url: strategyConfig.settings.url,
+            bindDN: strategyConfig.settings.bindDN,
+            bindCredentials: strategyConfig.settings.bindCredentials,
+            searchBase: strategyConfig.settings.searchBase,
+            searchFilter: strategyConfig.settings.searchFilter
+          }
+        },
+          function (profile, done) {
+            const username = profile[strategyConfig.settings.ldapUsernameField];
+            User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
+              if (err) return done(err);
 
-            if (!user) {
-              // Create an account for the user
-              Role.getRole('USER_ROLE', function (err, role) {
-                if (err) return done(err);
+              if (!user) {
+                // Create an account for the user
+                Role.getRole('USER_ROLE', function (err, role) {
+                  if (err) return done(err);
 
-                const user = {
-                  username: username,
-                  displayName: profile[strategyConfig.settings.ldapDisplayNameField],
-                  email: profile[strategyConfig.settings.ldapEmailField],
-                  active: false,
-                  roleId: role._id,
-                  authentication: {
-                    type: 'ldap',
-                    id: username
-                  }
-                };
+                  const user = {
+                    username: username,
+                    displayName: profile[strategyConfig.settings.ldapDisplayNameField],
+                    email: profile[strategyConfig.settings.ldapEmailField],
+                    active: false,
+                    roleId: role._id,
+                    authentication: {
+                      type: 'ldap',
+                      id: username
+                    }
+                  };
 
-                new api.User().create(user).then(newUser => {
-                  if (!newUser.authentication.authenticationConfiguration.enabled) {
-                    log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
-                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-                  }
-                  if (newUser.active) {
-                    done(null, newUser);
-                  } else {
-                    done(null, newUser, { status: 403 });
-                  }
-                }).catch(err => done(err));
-              });
-            } else if (!user.authentication.authenticationConfiguration.enabled) {
-              log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
-              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-            } else {
-              return done(null, user);
-            }
-          });
-        }));
-    } else {
-      log.info('ldap strategy is not configured or enabled');
-    }
+                  new api.User().create(user).then(newUser => {
+                    if (!newUser.authentication.authenticationConfiguration.enabled) {
+                      log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
+                      return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+                    }
+                    if (newUser.active) {
+                      done(null, newUser);
+                    } else {
+                      done(null, newUser, { status: 403 });
+                    }
+                  }).catch(err => done(err));
+                });
+              } else if (!user.authentication.authenticationConfiguration.enabled) {
+                log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              } else {
+                return done(null, user);
+              }
+            });
+          }));
+      }
+    });
   }).catch(err => {
     log.error(err);
   });
@@ -118,6 +118,11 @@ function init(app, passport, provision, tokenService) {
         if (!user.enabled) {
           log.warn('Failed user login attempt: User ' + user.username + ' account is disabled.');
           return res.status(401).send('Your account has been disabled, please contact a MAGE administrator for assistance.')
+        }
+
+        if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.name + ' is disabled.');
+          return res.status(401).send(user.authentication.authenticationConfiguration.name + ' authentication is disabled, please contact a MAGE administrator for assistance.')
         }
 
         // DEPRECATED session authorization, remove req.login which creates session in next version

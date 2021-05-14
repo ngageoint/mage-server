@@ -18,7 +18,8 @@ const AuthenticationConfigurationSchema = new Schema({
   discriminatorKey: 'type',
   timestamps: {
     updatedAt: 'lastUpdated'
-  }
+  },
+  versionKey: false
 });
 
 const whitelist = ['url', 'name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
@@ -59,6 +60,10 @@ exports.getConfiguration = function (type, name) {
     return AuthenticationConfiguration.findOne({ type: type }).exec();
   }
   return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
+};
+
+exports.getConfigurationsByType = function (type) {
+  return AuthenticationConfiguration.find({ type: type}).exec();
 };
 
 exports.getAllConfigurations = function () {

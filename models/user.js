@@ -157,7 +157,7 @@ const transform = function (user, ret, options) {
         });
         delete ret.authentication.authenticationConfigurationId;
       }
-     
+
     }
 
     if (user.avatar && user.avatar.relativePath) {
@@ -292,7 +292,7 @@ exports.createUser = function (user, callback) {
     User.create(newUser, function (err, user) {
       if (err) return callback(err);
 
-      user.populate('roleId', function (err, user) {
+      user.populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).then(user => {
         callback(err, user);
       });
     });
