@@ -110,7 +110,10 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         this.dataSource.data = settings;
 
         this.strategy.settings[this.newRow.key] = this.newRow.value;
-        this.dataSource.paginator.firstPage();
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
+
         this.newRow.key = '';
         this.newRow.value = ''
     }
@@ -121,7 +124,9 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             return value !== setting;
         });
         this.dataSource.data = filtered;
-        this.dataSource.paginator.firstPage();
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
         delete this.strategy.settings[setting.key];
     }
 
@@ -186,7 +191,9 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         }
 
         this.dataSource.data = settings;
-        this.dataSource.paginator.firstPage();
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
     }
 
     save(): void {
