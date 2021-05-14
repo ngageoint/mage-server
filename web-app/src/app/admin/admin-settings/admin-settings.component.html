@@ -31,7 +31,7 @@
                                     <section class="mat-typography">
                                         <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
                                             color="primary" [ngModelOptions]="{standalone: true}"
-                                            *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation()"
+                                            *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation(); strategy.isDirty = 'true'"
                                             [disabled]="strategy.name.toLowerCase() === 'local'">
                                         </mat-slide-toggle>
                                         <label>Enable Authentication</label>
