@@ -1,7 +1,8 @@
-import { Component, OnInit, Inject, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Inject, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Banner } from './security-banner.model';
 import { ColorEvent } from 'ngx-color';
 import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
+import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 
 @Component({
     selector: 'security-banner',
@@ -20,6 +21,10 @@ export class SecurityBannerComponent implements OnInit {
         showHeader: false,
         showFooter: false
     };
+    @ViewChild('headerTextColor') headerTextColorPicker: ColorPickerComponent;
+    @ViewChild('headerBackgroundColor') headerBackgroundColorPicker: ColorPickerComponent;
+    @ViewChild('footerTextColor') footerTextColorPicker: ColorPickerComponent;
+    @ViewChild('footerBackgroundColor') footerBackgroundColoricker: ColorPickerComponent;
 
     constructor(
         @Inject(Settings)
@@ -42,6 +47,16 @@ export class SecurityBannerComponent implements OnInit {
             });
 
             this.banner = settings.banner ? settings.banner.settings : this.banner;
+
+            //TODO dont call ngoninit
+            this.headerTextColorPicker.hexColor = this.banner.headerTextColor;
+            this.headerTextColorPicker.ngOnInit();
+            this.headerBackgroundColorPicker.hexColor = this.banner.headerBackgroundColor;
+            this.headerBackgroundColorPicker.ngOnInit();
+            this.footerTextColorPicker.hexColor = this.banner.footerTextColor;
+            this.footerTextColorPicker.ngOnInit();
+            this.footerBackgroundColoricker.hexColor = this.banner.footerBackgroundColor;
+            this.footerBackgroundColoricker.ngOnInit();
         }).catch(err => {
             console.log(err);
         });

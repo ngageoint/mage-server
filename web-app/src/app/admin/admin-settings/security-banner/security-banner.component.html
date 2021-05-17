@@ -20,13 +20,15 @@
     </mat-list-item>
     <mat-list-item>
         <mat-label for="headerTextColor"><b>Header Text Color</b></mat-label>
-        <color-picker [hexColor]="banner.headerTextColor" (onColorChanged)="colorChanged($event, 'headerTextColor')">
+        <color-picker [hexColor]="banner.headerTextColor" (onColorChanged)="colorChanged($event, 'headerTextColor')"
+            id="headerTextColor" #headerTextColor>
         </color-picker>
     </mat-list-item>
     <mat-list-item>
-        <mat-label for="headerBlackgroundColor"><b>Header Background Color</b></mat-label>
+        <mat-label for="headerBackgroundColor"><b>Header Background Color</b></mat-label>
         <color-picker [hexColor]="banner.headerBackgroundColor"
-            (onColorChanged)="colorChanged($event, 'headerBackgroundColor')">
+            (onColorChanged)="colorChanged($event, 'headerBackgroundColor')" id="headerBackgroundColor"
+            #headerBackgroundColor>
         </color-picker>
     </mat-list-item>
     <mat-list-item>
@@ -44,13 +46,15 @@
     </mat-list-item>
     <mat-list-item>
         <mat-label for="footerTextColor"><b>Footer Text Color</b></mat-label>
-        <color-picker [hexColor]="banner.footerTextColor" (onColorChanged)="colorChanged($event, 'footerTextColor')">
+        <color-picker [hexColor]="banner.footerTextColor" (onColorChanged)="colorChanged($event, 'footerTextColor')"
+            id="footerTextColor" #footerTextColor>
         </color-picker>
     </mat-list-item>
     <mat-list-item>
         <mat-label for="footerBackgroundColor"><b>Footer Background Color</b></mat-label>
         <color-picker [hexColor]="banner.footerBackgroundColor"
-            (onColorChanged)="colorChanged($event, 'footerBackgroundColor')">
+            (onColorChanged)="colorChanged($event, 'footerBackgroundColor')" id="footerBackgroundColor"
+            #footerBackgroundColor>
         </color-picker>
     </mat-list-item>
 </section>
