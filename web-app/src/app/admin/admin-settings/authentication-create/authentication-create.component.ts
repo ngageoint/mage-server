@@ -10,6 +10,7 @@ import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded
 import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './templates/settings-templates';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { ColorEvent } from 'ngx-color';
 
 @Component({
     selector: 'authentication-create',
@@ -199,6 +200,14 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         this.dataSource.data = settings;
         if (this.dataSource.paginator) {
             this.dataSource.paginator.firstPage();
+        }
+    }
+
+    colorChanged(event: ColorEvent, key: string): void {
+        if (this.strategy.hasOwnProperty(key)) {
+            this.strategy[key] = event.color;
+        } else {
+            console.log(key + ' is not a valid strategy property');
         }
     }
 

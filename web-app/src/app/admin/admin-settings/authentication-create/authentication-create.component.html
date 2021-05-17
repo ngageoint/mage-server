@@ -34,7 +34,8 @@
                     </mat-form-field>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
-                        <button [disabled]="!strategy.type.length" mat-button (click)="loadTemplate()" matStepperNext>Next</button>
+                        <button [disabled]="!strategy.type.length" mat-button (click)="loadTemplate()"
+                            matStepperNext>Next</button>
                     </div>
                 </mat-step>
                 <mat-step>
@@ -86,6 +87,29 @@
                             </button>
                         </mat-list-item>
                     </section>
+                    <div>
+                        <button mat-button matStepperPrevious>Back</button>
+                        <button mat-button matStepperNext>Next</button>
+                    </div>
+                </mat-step>
+                <mat-step>
+                    <ng-template matStepLabel>Colors</ng-template>
+                    <mat-list-item>
+                        <mat-label for="textColor"><b>Text Color</b></mat-label>
+                        <color-picker [hexColor]="strategy.textColor"
+                            (onColorChanged)="colorChanged($event, 'textColor')">
+                        </color-picker>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-label for="buttonColor"><b>Button Color</b></mat-label>
+                        <color-picker [hexColor]="strategy.buttonColor"
+                            (onColorChanged)="colorChanged($event, 'buttonColor')">
+                        </color-picker>
+                    </mat-list-item>
+                    <mat-list-item>
+                        <mat-label for="icon"><b>Icon</b></mat-label>
+                        <!--TODO-->
+                    </mat-list-item>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext>Next</button>
