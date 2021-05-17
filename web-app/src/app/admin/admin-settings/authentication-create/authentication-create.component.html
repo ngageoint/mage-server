@@ -95,15 +95,16 @@
                 <mat-step>
                     <ng-template matStepLabel>Colors</ng-template>
                     <mat-list-item>
-                        <mat-label for="textColor"><b>Text Color</b></mat-label>
+                        <mat-label for="textColorPicker"><b>Text Color</b></mat-label>
                         <color-picker [hexColor]="strategy.textColor"
-                            (onColorChanged)="colorChanged($event, 'textColor')">
+                            (onColorChanged)="colorChanged($event, 'textColor')" id="textColorPicker" #textColorPicker>
                         </color-picker>
                     </mat-list-item>
                     <mat-list-item>
-                        <mat-label for="buttonColor"><b>Button Color</b></mat-label>
+                        <mat-label for="buttonColorPicker"><b>Button Color</b></mat-label>
                         <color-picker [hexColor]="strategy.buttonColor"
-                            (onColorChanged)="colorChanged($event, 'buttonColor')">
+                            (onColorChanged)="colorChanged($event, 'buttonColor')" id="buttonColorPicker"
+                            #buttonColorPicker>
                         </color-picker>
                     </mat-list-item>
                     <mat-list-item>

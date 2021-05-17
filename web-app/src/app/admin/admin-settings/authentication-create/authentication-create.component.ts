@@ -11,6 +11,7 @@ import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './t
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { ColorEvent } from 'ngx-color';
+import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 
 @Component({
     selector: 'authentication-create',
@@ -37,6 +38,8 @@ import { ColorEvent } from 'ngx-color';
 export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
+    @ViewChild('buttonColorPicker') buttonColorPicker: ColorPickerComponent;
+    @ViewChild('textColorPicker') textColorPicker: ColorPickerComponent;
 
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
@@ -88,7 +91,6 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         this.reset();
 
         const settings: any[] = [];
-
         this.dataSource = new MatTableDataSource(settings);
     }
 
@@ -164,6 +166,12 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
                 break;
             }
         }
+
+        //TODO dont call ngoninit
+        this.buttonColorPicker.hexColor =  this.strategy.buttonColor;
+        this.buttonColorPicker.ngOnInit();
+        this.textColorPicker.hexColor =  this.strategy.textColor;
+        this.textColorPicker.ngOnInit();
 
         this.strategy.settings = {
             usersReqAdmin: {
