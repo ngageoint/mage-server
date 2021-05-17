@@ -575,7 +575,6 @@ describe("Password Validator Tests", function () {
       .expects('findOne')
       .withArgs({ authenticationId: authentication._id })
       .chain('populate')
-      .withArgs('authenticationId')
       .chain('exec')
       .resolves(user)
 

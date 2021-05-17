@@ -31,7 +31,7 @@ function page(count, query, options, dataKey, dataConverter) {
   const start = (Math.abs(options.start) || 0);
   const page = Math.ceil(start / limit);
 
-  return query.sort(sort).limit(limit).skip(limit * page).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(data => {
+  return query.sort(sort).limit(limit).skip(limit * page).exec().then(data => {
     if (dataConverter) {
       data = dataConverter(data);
     }

@@ -97,8 +97,6 @@ describe("user create tests", function () {
 
     sinon.mock(mockUser)
       .expects('populate')
-      .twice()
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -247,6 +245,10 @@ describe("user create tests", function () {
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
+      .expects('populate')
+      .yields(null, mockUser);
+
+    sinon.mock(UserModel)
       .expects('create')
       .yields(null, mockUser);
 
@@ -322,7 +324,6 @@ describe("user create tests", function () {
 
     sinon.mock(mockUser)
       .expects('populate')
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -403,7 +404,6 @@ describe("user create tests", function () {
 
     sinon.mock(mockUser)
       .expects('populate')
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
