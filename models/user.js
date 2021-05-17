@@ -201,13 +201,11 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(function (err, user) {
-    callback(err, user);
-  });
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 };
 
 exports.getUserByAuthenticationId = function (id) {
-  return User.findOne({ authenticationId: id }).exec();
+  return User.findOne({ authenticationId: id }).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec();
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
@@ -217,6 +215,19 @@ exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
     User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
   });
 }
+
+function createQueryConditions(filter) {
+  const conditions = FilterParser.parse(filter);
+
+  if (filter.active) {
+    conditions.active = filter.active == 'true';
+  }
+  if (filter.enabled) {
+    conditions.enabled = filter.enabled == 'true';
+  }
+
+  return conditions;
+};
 
 exports.count = function (options, callback) {
   if (typeof options === 'function') {
@@ -262,19 +273,6 @@ exports.getUsers = function (options, callback) {
   }
 };
 
-function createQueryConditions(filter) {
-  const conditions = FilterParser.parse(filter);
-
-  if (filter.active) {
-    conditions.active = filter.active == 'true';
-  }
-  if (filter.enabled) {
-    conditions.enabled = filter.enabled == 'true';
-  }
-
-  return conditions;
-};
-
 exports.createUser = function (user, callback) {
   Authentication.createAuthentication(user.authentication).then(authentication => {
     const newUser = {
@@ -292,7 +290,7 @@ exports.createUser = function (user, callback) {
     User.create(newUser, function (err, user) {
       if (err) return callback(err);
 
-      user.populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).then(user => {
+      user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
         callback(err, user);
       });
     });
@@ -303,7 +301,7 @@ exports.updateUser = function (user, callback) {
   user.save(function (err, user) {
     if (err) return callback(err);
 
-    user.populate('roleId', function (err, user) {
+    user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
       callback(err, user);
     });
   });

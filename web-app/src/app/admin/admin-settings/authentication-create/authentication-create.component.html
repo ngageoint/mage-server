@@ -107,8 +107,17 @@
                         </color-picker>
                     </mat-list-item>
                     <mat-list-item>
-                        <mat-label for="icon"><b>Icon</b></mat-label>
+                        <mat-label for="icon"><b>Icon--TODO Implement</b></mat-label>
                         <!--TODO-->
+                    </mat-list-item>
+                    <legend class="top-gap">Preview</legend>
+                    <mat-list-item>
+                        <button mat-raised-button
+                            [ngStyle]="{'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}">
+                            <mat-icon>shield</mat-icon>
+                            <span [ngStyle]="{color: strategy.textColor}">Sign In With {{strategy.name}}
+                            </span>
+                        </button>
                     </mat-list-item>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
