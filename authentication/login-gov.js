@@ -14,7 +14,7 @@ const fs = require('fs')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function configure(passport) {
-  AuthenticationConfiguration.getConfiguration('oauth', 'Login.gov').then(strategyConfig => {
+  AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
 
     if (strategyConfig && strategyConfig.enabled) {
       log.info('Configuring login.gov authentication', strategyConfig);
@@ -80,7 +80,7 @@ function configure(passport) {
 
                 new api.User().create(user).then(newUser => {
                   if (!newUser.authentication.authenticationConfiguration.enabled) {
-                    log.warn(newUser.authentication.authenticationConfiguration.type + " authentication is not enabled");
+                    log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
                     return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
                   }
 
@@ -90,7 +90,7 @@ function configure(passport) {
             } else if (!user.active) {
               return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
             } else if (!user.authentication.authenticationConfiguration.enabled) {
-              log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+              log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
               return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
             } else {
               return done(null, user, { access_token: tokenset.access_token });
@@ -151,6 +151,11 @@ function init(app, passport, provision) {
 
             if (!user || !user.active) {
               return res.sendStatus(403);
+            }
+
+            if (!user.authentication.authenticationConfiguration.enabled) {
+              log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
             }
 
             req.user = user;

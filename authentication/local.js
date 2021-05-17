@@ -43,7 +43,7 @@ function configure(passport) {
         }
 
         if (!user.authentication.authenticationConfiguration.enabled) {
-          log.warn(user.authentication.authenticationConfiguration.type + " authentication is not enabled");
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
           return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
         }
 
