@@ -13,13 +13,13 @@
         <div class="content">
             <mat-horizontal-stepper linear #stepper>
                 <mat-step>
-                    <ng-template matStepLabel>Name</ng-template>
+                    <ng-template matStepLabel>Title</ng-template>
                     <mat-form-field appearance="outline">
-                        <mat-label>Authentication Name</mat-label>
-                        <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.name" required>
+                        <mat-label>Authentication Title</mat-label>
+                        <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title" required>
                     </mat-form-field>
                     <div>
-                        <button [disabled]="!strategy.name.length" mat-button matStepperNext>Next</button>
+                        <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
                     </div>
                 </mat-step>
                 <mat-step>

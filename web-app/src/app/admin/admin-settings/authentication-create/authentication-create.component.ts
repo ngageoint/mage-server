@@ -139,27 +139,32 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             case 'google': {
                 template = new OAuthTemplate();
                 this.strategy.buttonColor = '#4285F4';
+                this.strategy.name = 'google';
                 break;
             }
             case 'geoaxis': {
                 template = new OAuthTemplate();
                 this.strategy.buttonColor = '#163043';
+                this.strategy.name = 'geoaxis';
                 break;
             }
             case 'ldap': {
                 template = new LdapTemplate();
                 this.strategy.buttonColor = '#5E35B1';
+                this.strategy.name = 'ldap';
                 break;
             }
             case 'login-gov': {
                 template = new LoginGovTemplate();
                 this.strategy.buttonColor = '#E21D3E';
+                this.strategy.name = 'login-gov';
                 break;
             }
             case 'saml': {
                 template = new SamlTemplate();
                 this.strategy.textColor = '#000000';
                 this.strategy.buttonColor = '#EF6C00';
+                this.strategy.name = 'saml';
                 break;
             }
             default: {
@@ -220,7 +225,6 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
     }
 
     save(): void {
-        this.strategy.title = this.strategy.name;
         this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
             this.stateService.go('admin.settings', { strategy: newStrategy });
         }).catch(err => {
@@ -233,6 +237,7 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             enabled: false,
             name: '',
             type: '',
+            title: '',
             textColor: '#FFFFFF',
             buttonColor: '',
             settings: {

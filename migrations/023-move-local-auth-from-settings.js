@@ -13,7 +13,7 @@ exports.up = function (done) {
             enabled: true,
             name: 'local',
             type: 'local',
-            title: localSettings.title,
+            title: 'local',
             textColor: localSettings.textColor,
             buttonColor: localSettings.buttonColor,
             icon: localSettings.icon,
