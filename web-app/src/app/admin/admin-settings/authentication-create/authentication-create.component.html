@@ -70,6 +70,7 @@
                         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
                         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                     </table>
+                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
                     <section class="mat-typography">
                         <legend class="top-gap">Add Setting</legend>
                         <mat-list-item>
