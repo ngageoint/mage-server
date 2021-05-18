@@ -57,7 +57,7 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
 
     readonly displayedColumns: string[] = ['key', 'value', 'delete'];
     readonly summaryColumns: string[] = ['key', 'value'];
-    readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
+    readonly settingsKeysToIgnore: string[] = ['devicesReqAdmin', 'usersReqAdmin'];
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
         description: 'Google account.',
@@ -174,6 +174,7 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
                 break;
             }
             default: {
+                console.error('Unknown authentication type: ' + this.strategy.type);
                 break;
             }
         }
