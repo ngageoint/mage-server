@@ -18,7 +18,7 @@ function configure(passport) {
   AuthenticationConfiguration.getConfigurationsByType('ldap').then(strategyConfigs => {
 
     strategyConfigs.forEach(strategyConfig => {
-      if (strategyConfig && strategyConfig.enabled) {
+      if (strategyConfig) {
         authenticationOptions = {
           invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
           invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,

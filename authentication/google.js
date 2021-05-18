@@ -12,7 +12,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
 function configure(passport) {
   AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
 
-    if (googleStrategy && googleStrategy.enabled) {
+    if (googleStrategy) {
       log.info('Configuring Google authentication');
       passport.use('google', new GoogleStrategy({
         clientID: googleStrategy.settings.clientID,
@@ -65,9 +65,7 @@ function configure(passport) {
             }
           });
         }));
-    } else {
-      log.info('google strategy is not configured or enabled');
-    }
+    } 
   }).catch(err => {
     log.error(err);
   });

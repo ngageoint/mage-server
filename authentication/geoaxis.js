@@ -12,7 +12,7 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
 function configure(passport) {
   AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
 
-    if (strategyConfig && strategyConfig.enabled) {
+    if (strategyConfig) {
       log.info('Configuring GeoAxis authentication');
       const strategy = new GeoaxisStrategy({
         authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
@@ -68,9 +68,7 @@ function configure(passport) {
         });
 
       passport.use('geoaxis', strategy);
-    } else {
-      log.info('geoaxis strategy is not configured or enabled');
-    }
+    } 
   }).catch(err => {
     log.error(err);
   });

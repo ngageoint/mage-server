@@ -14,7 +14,7 @@ function configure(passport) {
   AuthenticationConfiguration.getConfigurationsByType('saml').then(strategyConfigs => {
 
     strategyConfigs.forEach(strategyConfig => {
-      if (strategyConfig && strategyConfig.enabled) {
+      if (strategyConfig) {
         passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
           const uid = profile[strategyConfig.settings.uidAttribute];
           User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {

@@ -16,7 +16,7 @@ const fs = require('fs')
 function configure(passport) {
   AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
 
-    if (strategyConfig && strategyConfig.enabled) {
+    if (strategyConfig) {
       log.info('Configuring login.gov authentication', strategyConfig);
       const loginGov = {};
 
@@ -102,9 +102,7 @@ function configure(passport) {
       }).catch(function (err) {
         log.error('login.gov configuration error', err);
       });
-    } else {
-      log.info('login.gov strategy is not configured or enabled');
-    }
+    } 
   }).catch(err => {
     log.error(err);
   });
