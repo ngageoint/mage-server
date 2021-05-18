@@ -17,6 +17,9 @@
                     <mat-form-field appearance="outline">
                         <mat-label>Authentication Title</mat-label>
                         <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title" required>
+                        <button mat-button *ngIf="strategy.title" matSuffix mat-icon-button (click)="strategy.title=''">
+                            <mat-icon>close</mat-icon>
+                        </button>
                     </mat-form-field>
                     <div>
                         <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
@@ -118,7 +121,7 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
-                    <legend>Summary of {{strategy.name}}</legend>
+                    <legend>Summary of {{strategy.title}}</legend>
                     <table mat-table [dataSource]="dataSource" matSort>
                         <ng-container matColumnDef="key">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
