@@ -138,12 +138,18 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         switch (this.strategy.type) {
             case 'google': {
                 template = new OAuthTemplate();
+                template._settings.callbackURL = '/auth/google/callback';
+
                 this.strategy.buttonColor = '#4285F4';
                 this.strategy.name = 'google';
                 break;
             }
             case 'geoaxis': {
                 template = new OAuthTemplate();
+                template._settings.callbackURL = 'https://magegeoaxis.geointservices.io/auth/geoaxis/callback';
+                template._settings.authorizationUrl = 'https://geoaxis.gxaws.com';
+                template._settings.apiUrl = 'https://geoaxis.gxaws.com';
+
                 this.strategy.buttonColor = '#163043';
                 this.strategy.name = 'geoaxis';
                 break;
