@@ -62,23 +62,27 @@ export class AdminSettingsComponent implements OnInit {
             this.events = result[2];
 
             const unsortedStrategies = result[0] ? result[0].data : [];
-            this.strategies = _.sortBy(unsortedStrategies, 'name');
-
-            this.strategies.forEach(strategy => {
-                if (strategy.settings.newUserEvents) {
-                    strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
-                        return this.events.some(event => event.id === id)
-                    });
-                }
-                if (strategy.settings.newUserTeams) {
-                    // Remove any teams and events that no longer exist
-                    strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
-                        return this.teams.some(team => team.id === id)
-                    });
-                }
-            });
+            this.processUnsortedStrategies(unsortedStrategies);
         }).catch(err => {
             console.log(err);
+        });
+    }
+
+    private processUnsortedStrategies(unsortedStrategies: Strategy[]): void {
+        this.strategies = _.sortBy(unsortedStrategies, 'title');
+
+        this.strategies.forEach(strategy => {
+            if (strategy.settings.newUserEvents) {
+                strategy.settings.newUserEvents = strategy.settings.newUserEvents.filter(id => {
+                    return this.events.some(event => event.id === id)
+                });
+            }
+            if (strategy.settings.newUserTeams) {
+                // Remove any teams and events that no longer exist
+                strategy.settings.newUserTeams = strategy.settings.newUserTeams.filter(id => {
+                    return this.teams.some(team => team.id === id)
+                });
+            }
         });
     }
 
@@ -128,7 +132,7 @@ export class AdminSettingsComponent implements OnInit {
             Promise.all(promises).then(() => {
                 return this.authenticationConfigurationService.getAllConfigurations();
             }).then(strategies => {
-                this.strategies = strategies.data;
+                this.processUnsortedStrategies(strategies.data);
                 this._snackBar.open('Authentication successfully saved', null, {
                     duration: 2000,
                 });
@@ -146,15 +150,18 @@ export class AdminSettingsComponent implements OnInit {
 
     }
 
-    deleteStrategy(strategy: any): void {
+    deleteStrategy(strategy: Strategy): void {
         this.dialog.open(AuthenticationDeleteComponent, {
             width: '500px',
             data: strategy,
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result === 'delete') {
-                //TODO
-                this.ngOnInit();
+                this.authenticationConfigurationService.getAllConfigurations().then(configs => {
+                    this.processUnsortedStrategies(configs.data);
+                }).catch(err => {
+                    console.error(err);
+                })
             }
         });
     }
