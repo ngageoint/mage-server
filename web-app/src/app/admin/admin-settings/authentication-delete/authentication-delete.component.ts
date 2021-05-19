@@ -21,6 +21,7 @@ export class AuthenticationDeleteComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    //TODO poor performance on large set of users
     this.userService.getAllUsers().then(allUsers => {
       Object.keys(allUsers).forEach(key => {
         const user = allUsers[key];
@@ -38,12 +39,18 @@ export class AuthenticationDeleteComponent implements OnInit {
   }
 
   delete(): void {
-    this.authenticationConfigurationService.deleteConfiguration(this.strategy).then(() => {
+    const userPromises = [];
+    this.users.forEach(user => {
+      userPromises.push(this.userService.deleteUser(user));
+    });
+
+    Promise.all(userPromises).then(() => {
+      return this.authenticationConfigurationService.deleteConfiguration(this.strategy);
+    }).then(() => {
       this.dialogRef.close('delete');
     }).catch(err => {
       console.error(err);
       this.dialogRef.close('cancel');
     });
   }
-
 }
