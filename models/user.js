@@ -149,12 +149,14 @@ const transform = function (user, ret, options) {
       delete ret.authenticationId;
 
       if (user.authentication.populated('authenticationConfigurationId')) {
-        const keys = Object.keys(ret.authentication.authenticationConfigurationId);
+        ret.authentication.authenticationConfiguration = ret.authentication.authenticationConfigurationId;
+        //TODO remove settings?
+        /*const keys = Object.keys(ret.authentication.authenticationConfigurationId);
         keys.forEach(key => {
           if (key !== 'settings') {
             ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
           }
-        });
+        });*/
         delete ret.authentication.authenticationConfigurationId;
       }
 

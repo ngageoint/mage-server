@@ -4,6 +4,14 @@
 <section class="mat-typography">
   <mat-dialog-content>
     <p>"{{strategy.title}}" authentication will be deleted.</p>
+    <div *ngIf="users.length > 0">
+      <p>The following users will also be deleted:</p>
+      <mat-list>
+        <div *ngFor="let user of users">
+          <mat-list-item>{{user.username}}</mat-list-item>
+        </div>
+      </mat-list>
+    </div>
   </mat-dialog-content>
 </section>
 <section class="mat-typography">
