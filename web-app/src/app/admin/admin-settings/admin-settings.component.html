@@ -20,8 +20,7 @@
                                     <mat-expansion-panel-header>
                                         <mat-panel-title>
                                             <mat-icon mat-list-icon>lock</mat-icon>
-                                            <div mat-line>{{strategy.title.toUpperCase()}}
-                                                Authentication</div>
+                                            <div mat-line>{{strategy.title}} Authentication</div>
                                         </mat-panel-title>
                                         <mat-panel-description>
                                             <div *ngIf="strategy.enabled">Enabled</div>
@@ -31,7 +30,8 @@
                                     <section class="mat-typography">
                                         <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
                                             color="primary" [ngModelOptions]="{standalone: true}"
-                                            *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation(); strategy.isDirty = 'true'"
+                                            *ngIf="hasAuthConfigEditPermission"
+                                            (click)="$event.stopPropagation(); strategy.isDirty = 'true'"
                                             [disabled]="strategy.name.toLowerCase() === 'local'">
                                         </mat-slide-toggle>
                                         <label>Enable Authentication</label>
