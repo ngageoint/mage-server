@@ -55,7 +55,7 @@
             <mat-grid-tile *ngFor="let attachment of allAttachments(); trackBy: trackByAttachment; first as isFirst" [rowspan]="1" [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1">
               <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" [observation]="observation" edit="true"></observation-attachment>
               <attachment-upload *ngIf="attachment.file"
-                [url]="observation.url + '/attachments'"
+                [url]="observation.url"
                 [attachment]="attachment"
                 [allowUpload]="uploadAttachments"
                 (remove)="onAttachmentRemove($event)"

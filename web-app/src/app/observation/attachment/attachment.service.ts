@@ -13,6 +13,6 @@ export class AttachmentService {
     const formData = new FormData();
     formData.append('attachment', file);
     
-    return this.httpClient.post<HttpResponse<Object>>(url, formData, { observe: 'events' })
+    return this.httpClient.post<HttpResponse<Object>>(`${url}/attachments`, formData, { observe: 'events' })
   }
 }

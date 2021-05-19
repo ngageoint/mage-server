@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fixed attachment upload regression when creating a new observation.
 
 ## [5.5.0](https://github.com/ngageoint/mage-server/releases/tag/5.5.0)
 

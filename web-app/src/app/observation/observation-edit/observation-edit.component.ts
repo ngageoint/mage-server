@@ -212,6 +212,7 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
       }
 
       this.error = null;
+      this.observation = observation
 
       if (this.attachments.length) {
         this.uploadAttachments = true;
