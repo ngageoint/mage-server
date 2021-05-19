@@ -32,7 +32,7 @@
                                             color="primary" [ngModelOptions]="{standalone: true}"
                                             *ngIf="hasAuthConfigEditPermission"
                                             (click)="$event.stopPropagation(); strategy.isDirty = 'true'"
-                                            [disabled]="strategy.name.toLowerCase() === 'local'">
+                                            [disabled]="strategy.type.toLowerCase() === 'local'">
                                         </mat-slide-toggle>
                                         <label>Enable Authentication</label>
                                         <hr>
