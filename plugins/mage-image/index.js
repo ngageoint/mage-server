@@ -18,7 +18,6 @@ exports.initialize = function(app, callback) {
 };
 
 function start() {
-  if(true)return;
   // start worker
   var worker = child.fork(__dirname + '/process');
 
