@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AdminChoice, Strategy } from '../admin-settings.model';
 
 @Component({
@@ -6,7 +6,7 @@ import { AdminChoice, Strategy } from '../admin-settings.model';
     templateUrl: 'authentication-settings.component.html',
     styleUrls: ['./authentication-settings.component.scss']
 })
-export class AuthenticationSettingsComponent implements OnInit {
+export class AuthenticationSettingsComponent {
     @Input() strategy: Strategy;
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
@@ -30,11 +30,14 @@ export class AuthenticationSettingsComponent implements OnInit {
         value: false
     }];
 
-    ngOnInit(): void {
-
+    setDirty(): void {
+        this.strategy.isDirty = true;
     }
 
-    setDirty() {
-        this.strategy.isDirty = true;
+    userReqAdminChanged(): void {
+        if (this.strategy.settings.usersReqAdmin.enabled) {
+            this.strategy.settings.newUserEvents = [];
+            this.strategy.settings.newUserTeams = [];
+        }
     }
 }

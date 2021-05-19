@@ -119,11 +119,6 @@ export class AdminSettingsComponent implements OnInit {
     private saveAuthentication(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
-            if (strategy.settings.usersReqAdmin.enabled) {
-                strategy.settings.newUserEvents = [];
-                strategy.settings.newUserTeams = [];
-            }
-
             if (strategy.isDirty) {
                 promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
             }

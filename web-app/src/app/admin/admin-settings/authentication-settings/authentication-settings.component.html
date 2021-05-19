@@ -3,11 +3,10 @@
     <hr>
 </section>
 <section class="mat-typography">
-    <mat-label><b>New User Accounts Require Admin
-            Approval</b></mat-label>
+    <mat-label><b>New User Accounts Require Admin Approval</b></mat-label>
     <mat-form-field appearance="outline">
         <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled" [ngModelOptions]="{standalone: true}"
-            (selectionChange)="setDirty()">
+            (selectionChange)="setDirty(); userReqAdminChanged()">
             <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
             </mat-option>
         </mat-select>
