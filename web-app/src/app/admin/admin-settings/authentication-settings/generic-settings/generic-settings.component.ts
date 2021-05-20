@@ -4,6 +4,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { Strategy } from '../../admin-settings.model';
+import { MatDialog } from '@angular/material/dialog';
+import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 
 @Component({
     selector: 'generic-settings',
@@ -23,6 +25,10 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
+
+    constructor(private dialog: MatDialog) {
+
+    }
 
     ngOnInit(): void {
         const settings: GenericSetting[] = [];
@@ -66,11 +72,43 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     addSetting(): void {
+        if (this.strategy.settings[this.newRow.key]) {
+            this.dialog.open(DuplicateKeyComponent, {
+                width: '500px',
+                data: this.newRow,
+                autoFocus: false
+            }).afterClosed().subscribe(result => {
+                if (result === 'confirm') {
+                   this.doAddSetting();
+                }
+            });
+        } else {
+           this.doAddSetting();
+        }
+    }
+
+    private doAddSetting(): void {
         const settings = this.dataSource.data;
-        settings.push({ key: this.newRow.key, value: this.newRow.value, required: this.newRow.required });
+
+        let idx = -1;
+        for (let i = 0; i < settings.length; i++) {
+            const gs = settings[i];
+            if(gs.key == this.newRow.key) {
+                idx = i;
+                break;
+            }
+        }
+
+        const cloneRow = { key: this.newRow.key, value: this.newRow.value, required: this.newRow.required };
+        if (idx > -1) {
+            settings[idx] = cloneRow;
+        } else {
+            settings.push(cloneRow);
+        }
+
         this.strategy.settings[this.newRow.key] = this.newRow.value;
         this.newRow.key = '';
-        this.newRow.value = ''
+        this.newRow.value = '';
 
         this.dataSource.data = settings;
         this.strategy.isDirty = true;
