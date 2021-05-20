@@ -17,7 +17,8 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     newRow: GenericSetting = {
         key: '',
-        value: ''
+        value: '',
+        required: false
     }
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -41,7 +42,8 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
             const gs: GenericSetting = {
                 key: key,
-                value: castedValue
+                value: castedValue,
+                required: true
             };
             settings.push(gs);
         }
@@ -65,14 +67,14 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
     addSetting(): void {
         const settings = this.dataSource.data;
-        settings.push({ key: this.newRow.key, value: this.newRow.value });
-        this.dataSource.data = settings;
-        
+        settings.push({ key: this.newRow.key, value: this.newRow.value, required: this.newRow.required });
         this.strategy.settings[this.newRow.key] = this.newRow.value;
-        this.strategy.isDirty = true;
-        this.dataSource.paginator.firstPage();
         this.newRow.key = '';
         this.newRow.value = ''
+
+        this.dataSource.data = settings;
+        this.strategy.isDirty = true;
+        this.dataSource.paginator.firstPage();
     }
 
     deleteSetting(setting: GenericSetting): void {

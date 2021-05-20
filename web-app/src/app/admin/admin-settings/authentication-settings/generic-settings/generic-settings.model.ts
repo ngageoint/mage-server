@@ -1,4 +1,5 @@
 export interface GenericSetting {
     key: string,
-    value: string
+    value: string,
+    required: boolean
 }
