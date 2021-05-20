@@ -98,6 +98,9 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Colors</ng-template>
+                    <div class="bottom-gap">
+                        These are the colors for the login button that the users will see.
+                    </div>
                     <mat-list-item>
                         <mat-label for="textColorPicker"><b>Text Color</b></mat-label>
                         <color-picker [hexColor]="strategy.textColor"
