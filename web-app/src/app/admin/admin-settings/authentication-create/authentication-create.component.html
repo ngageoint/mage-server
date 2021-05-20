@@ -43,54 +43,7 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Settings</ng-template>
-                    <legend>Settings</legend>
-                    <table mat-table [dataSource]="dataSource" matSort>
-                        <ng-container matColumnDef="key">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
-                            <td mat-cell *matCellDef="let setting">{{setting.key}}</td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="value">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-                            <td mat-cell *matCellDef="let setting" contenteditable="true"
-                                (keyup)="changeValue(setting, $event)">
-                                {{setting.value}}</td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="delete">
-                            <th mat-header-cell *matHeaderCellDef> Delete </th>
-                            <td mat-cell *matCellDef="let setting">
-                                <button mat-icon-button color="warn"
-                                    (click)="$event.stopPropagation(); deleteSetting(setting)">
-                                    <mat-icon class="mat-18">delete</mat-icon>
-                                </button>
-                            </td>
-                        </ng-container>
-
-                        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                    </table>
-                    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
-                    <section class="mat-typography">
-                        <legend class="top-gap">Add Setting</legend>
-                        <mat-list-item>
-                            <label for="inputKey" class="right-gap">Key</label>
-                            <mat-form-field appearance="outline">
-                                <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
-                                    [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel"
-                                    required>
-                            </mat-form-field>
-                            <label for="inputValue" class="left-gap right-gap">Value</label>
-                            <mat-form-field appearance="outline">
-                                <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
-                                    [ngModelOptions]="{standalone: true}" placeholder="Value" />
-                            </mat-form-field>
-                            <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
-                                [disabled]="inputKey.invalid">
-                                <mat-icon>add</mat-icon>Add Row
-                            </button>
-                        </mat-list-item>
-                    </section>
+                    <generic-settings [strategy]="strategy" id="settings" #settings></generic-settings>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext>Next</button>
@@ -131,21 +84,6 @@
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
                     <legend>Summary of {{strategy.title}}</legend>
-                    <table mat-table [dataSource]="dataSource" matSort>
-                        <ng-container matColumnDef="key">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
-                            <td mat-cell *matCellDef="let setting">{{setting.key}}</td>
-                        </ng-container>
-
-                        <ng-container matColumnDef="value">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-                            <td mat-cell *matCellDef="let setting">
-                                {{setting.value}}</td>
-                        </ng-container>
-
-                        <tr mat-header-row *matHeaderRowDef="summaryColumns; sticky: true"></tr>
-                        <tr mat-row *matRowDef="let row; columns: summaryColumns;"></tr>
-                    </table>
                     <mat-divider></mat-divider>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>

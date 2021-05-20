@@ -1,25 +1,6 @@
 <section class="mat-typography">
-    <h4>Additional Settings</h4>
+    <h4>Settings</h4>
     <hr>
-</section>
-<section class="mat-typography">
-    <legend>Add Setting</legend>
-    <mat-list-item>
-        <label for="inputKey" class="right-gap">Key</label>
-        <mat-form-field appearance="outline">
-            <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
-                [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel" required>
-        </mat-form-field>
-        <label for="inputValue" class="right-gap">Value</label>
-        <mat-form-field appearance="outline">
-            <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
-                [ngModelOptions]="{standalone: true}" placeholder="Value" />
-        </mat-form-field>
-        <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
-            [disabled]="inputKey.invalid">
-            <mat-icon>add</mat-icon>Add Row
-        </button>
-    </mat-list-item>
 </section>
 <section class="mat-typography">
     <table mat-table [dataSource]="dataSource" matSort>
@@ -48,4 +29,23 @@
     </table>
 
     <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+</section>
+<section class="mat-typography">
+    <legend>Add Setting</legend>
+    <mat-list-item>
+        <label for="inputKey" class="right-gap">Key</label>
+        <mat-form-field appearance="outline">
+            <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
+                [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel" required>
+        </mat-form-field>
+        <label for="inputValue" class="right-gap">Value</label>
+        <mat-form-field appearance="outline">
+            <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
+                [ngModelOptions]="{standalone: true}" placeholder="Value" />
+        </mat-form-field>
+        <button class="left-gap" mat-stroked-button color="primary" (click)="addSetting()"
+            [disabled]="inputKey.invalid">
+            <mat-icon>add</mat-icon>Add Row
+        </button>
+    </mat-list-item>
 </section>

@@ -4,14 +4,12 @@ import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { MatTableDataSource } from '@angular/material/table';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './templates/settings-templates';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { ColorEvent } from 'ngx-color';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
+import { GenericSettingsComponent } from '../authentication-settings/generic-settings/generic-settings.component';
 
 @Component({
     selector: 'authentication-create',
@@ -35,11 +33,10 @@ import { ColorPickerComponent } from 'src/app/color-picker/color-picker.componen
         provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true }
     }]
 })
-export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
+export class AuthenticationCreateComponent implements OnInit {
     @ViewChild('buttonColorPicker') buttonColorPicker: ColorPickerComponent;
     @ViewChild('textColorPicker') textColorPicker: ColorPickerComponent;
+    @ViewChild('settings') settings: GenericSettingsComponent;
 
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
@@ -48,16 +45,8 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             name: 'admin.settings'
         }
     }];
-    dataSource: MatTableDataSource<any>;
     strategy: Strategy;
-    newRow: any = {
-        key: '',
-        value: ''
-    }
 
-    readonly displayedColumns: string[] = ['key', 'value', 'delete'];
-    readonly summaryColumns: string[] = ['key', 'value'];
-    readonly settingsKeysToIgnore: string[] = ['devicesReqAdmin', 'usersReqAdmin'];
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
         description: 'Google account.',
@@ -89,49 +78,8 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         this.reset();
-
-        const settings: any[] = [];
-        this.dataSource = new MatTableDataSource(settings);
     }
 
-    ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-    }
-
-    changeValue(setting: any, $event: any): void {
-        const idx = this.dataSource.data.indexOf(setting);
-        if (idx > -1) {
-            this.dataSource.data[idx].value = $event.target.textContent;
-            this.strategy.settings[setting.key] = JSON.parse($event.target.textContent);
-        }
-    }
-
-    addSetting(): void {
-        const settings = this.dataSource.data;
-        settings.push({ key: this.newRow.key, value: this.newRow.value });
-        this.dataSource.data = settings;
-
-        this.strategy.settings[this.newRow.key] = this.newRow.value;
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
-
-        this.newRow.key = '';
-        this.newRow.value = ''
-    }
-
-    deleteSetting(setting: any): void {
-        const settings = this.dataSource.data;
-        const filtered = settings.filter(function (value, index, arr) {
-            return value !== setting;
-        });
-        this.dataSource.data = filtered;
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
-        delete this.strategy.settings[setting.key];
-    }
 
     loadTemplate(): void {
         let template: any;
@@ -180,9 +128,9 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
         }
 
         //TODO dont call ngoninit
-        this.buttonColorPicker.hexColor =  this.strategy.buttonColor;
+        this.buttonColorPicker.hexColor = this.strategy.buttonColor;
         this.buttonColorPicker.ngOnInit();
-        this.textColorPicker.hexColor =  this.strategy.textColor;
+        this.textColorPicker.hexColor = this.strategy.textColor;
         this.textColorPicker.ngOnInit();
 
         this.strategy.settings = {
@@ -194,12 +142,7 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
             }
         };
 
-        const settings: any[] = [];
         for (const [key, value] of Object.entries(template.settings)) {
-
-            if (this.settingsKeysToIgnore.includes(key)) {
-                continue;
-            }
 
             let castedValue: string;
 
@@ -209,18 +152,10 @@ export class AuthenticationCreateComponent implements OnInit, AfterViewInit {
                 castedValue = JSON.stringify(value);
             }
 
-            const gs: any = {
-                key: key,
-                value: castedValue
-            };
             this.strategy.settings[key] = castedValue;
-            settings.push(gs);
         }
 
-        this.dataSource.data = settings;
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
+        this.settings.ngOnInit();
     }
 
     colorChanged(event: ColorEvent, key: string): void {
