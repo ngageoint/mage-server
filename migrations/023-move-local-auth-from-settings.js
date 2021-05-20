@@ -13,7 +13,7 @@ exports.up = function (done) {
             enabled: true,
             name: 'local',
             type: 'local',
-            title: 'local',
+            title: 'MAGE Username/Password',
             textColor: localSettings.textColor,
             buttonColor: localSettings.buttonColor,
             icon: localSettings.icon,

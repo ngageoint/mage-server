@@ -20,14 +20,14 @@
                                     <mat-expansion-panel-header>
                                         <mat-panel-title>
                                             <mat-icon mat-list-icon>lock</mat-icon>
-                                            <div mat-line>{{strategy.title}} Authentication</div>
+                                            <div mat-line class="left-gap">{{strategy.title}}</div>
                                         </mat-panel-title>
                                         <mat-panel-description>
                                             <div *ngIf="strategy.enabled">Enabled</div>
                                             <div *ngIf="!strategy.enabled">Disabled</div>
                                         </mat-panel-description>
                                     </mat-expansion-panel-header>
-                                    <section class="mat-typography">
+                                    <section class="mat-typography" *ngIf="strategy.type !== 'local'">
                                         <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
                                             color="primary" [ngModelOptions]="{standalone: true}"
                                             *ngIf="hasAuthConfigEditPermission"
