@@ -74,8 +74,13 @@
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Icon</ng-template>
-                    <mat-list-item>
-                    </mat-list-item>
+                    <div class="bottom-gap">
+                        This is the icon for the login button that the users will see.
+                    </div>
+                    <legend>Default Icon</legend>
+                    <mat-icon id="defaultIcon">shield</mat-icon>
+                    <legend>Custom Icon</legend>
+                    <input type="file" class="file-upload" onchange="console.log(event.target.files)">
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext>Next</button>
