@@ -40,3 +40,8 @@ color-picker {
     display: block;
     width: 25%;
 }
+
+mat-icon {
+    color: mat-color($app-primary);
+    margin-right: 4px;
+}
