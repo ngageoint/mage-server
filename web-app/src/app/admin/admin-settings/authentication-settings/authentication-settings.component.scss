@@ -1,11 +1,6 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-.admin-settings-gap {
-  //top right bottom left
-  margin: 0px 20px 0px 20px;
-}
-
 .bottom-gap {
   margin-bottom: 16px;
 }
@@ -13,21 +8,11 @@
 .left-gap {
   margin-left: 10px;
 }
-  
-a {
-  color: #1E88E5;
-}
-
-label {
-  font-weight: unset;
-  margin-left: 8px;
-}
 
 h1, h2, h3, h4, h5 {
 	color: #1E88E5;
 }
 
 mat-form-field {
-  font-size: 14px;
   width: 100%;
 }
