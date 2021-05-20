@@ -5,12 +5,12 @@
   <mat-dialog-content>
     <p>"{{strategy.title}}" authentication will be deleted.</p>
     <div *ngIf="users.length > 0">
-      <p>The following users will also be deleted:</p>
-      <mat-list>
+      <p>The following {{users.length}} users will also be deleted:</p>
+      <mat-selection-list [multiple]="false">
         <div *ngFor="let user of users">
-          <mat-list-item>{{user.username}}</mat-list-item>
+          <mat-list-option (click)="onUserSelected(user)">{{user.username}}</mat-list-option>
         </div>
-      </mat-list>
+      </mat-selection-list>
     </div>
   </mat-dialog-content>
 </section>

@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../admin-settings.model';
 import { AuthenticationConfigurationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { StateService } from '@uirouter/core';
 
 @Component({
   selector: 'authentication-delete',
@@ -13,6 +14,7 @@ export class AuthenticationDeleteComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
+    private stateService: StateService,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
     @Inject(AuthenticationConfigurationService)
     private authenticationConfigurationService: any,
@@ -52,5 +54,9 @@ export class AuthenticationDeleteComponent implements OnInit {
       console.error(err);
       this.dialogRef.close('cancel');
     });
+  }
+
+  onUserSelected(user: any): void {
+    this.stateService.go('admin.user', { userId: user.id });
   }
 }
