@@ -155,7 +155,7 @@ export class AuthenticationCreateComponent implements OnInit {
             this.strategy.settings[key] = castedValue;
         }
 
-        this.settings.ngOnInit();
+        this.settings.refresh();
     }
 
     colorChanged(event: ColorEvent, key: string): void {

@@ -83,12 +83,13 @@
                     <input type="file" class="file-upload" onchange="console.log(event.target.files)">
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
-                        <button mat-button matStepperNext>Next</button>
+                        <button mat-button matStepperNext (click)="summary.refresh()">Next</button>
                     </div>
                 </mat-step>
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
                     <legend>Summary of {{strategy.title}}</legend>
+                    <generic-settings [strategy]="strategy" [editable]="false" id="summary" #summary></generic-settings>
                     <mat-divider></mat-divider>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>

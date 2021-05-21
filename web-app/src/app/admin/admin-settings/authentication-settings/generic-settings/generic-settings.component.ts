@@ -14,6 +14,7 @@ import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 })
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: Strategy;
+    @Input() editable: boolean = true;
     dataSource: MatTableDataSource<GenericSetting>;
     readonly displayedColumns: string[] = ['key', 'value', 'delete'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
@@ -31,6 +32,16 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        this.dataSource = new MatTableDataSource([]);
+        this.refresh();
+    }
+
+    ngAfterViewInit() {
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+    }
+
+    refresh() {
         const settings: GenericSetting[] = [];
         for (const [key, value] of Object.entries(this.strategy.settings)) {
 
@@ -53,13 +64,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             };
             settings.push(gs);
         }
-
-        this.dataSource = new MatTableDataSource(settings);
-    }
-
-    ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        this.dataSource.data = settings;
     }
 
     changeValue(setting: GenericSetting, $event: any): void {
