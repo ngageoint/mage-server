@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, OnInit, AfterViewInit } from '@angular/core'
+import { Component, Inject, ViewChild, OnInit } from '@angular/core'
 import { Strategy } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -79,7 +79,6 @@ export class AuthenticationCreateComponent implements OnInit {
     ngOnInit() {
         this.reset();
     }
-
 
     loadTemplate(): void {
         let template: any;

@@ -80,7 +80,7 @@
                     <legend>Default Icon</legend>
                     <mat-icon id="defaultIcon">shield</mat-icon>
                     <legend>Custom Icon</legend>
-                    <input type="file" class="file-upload" onchange="console.log(event.target.files)">
+                    <input type="file" class="file-upload bottom-gap" onchange="console.log(event.target.files)">
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext (click)="summary.refresh()">Next</button>
@@ -89,7 +89,19 @@
                 <mat-step>
                     <ng-template matStepLabel>Done</ng-template>
                     <legend>Summary of {{strategy.title}}</legend>
-                    <generic-settings [strategy]="strategy" [editable]="false" id="summary" #summary></generic-settings>
+                    <section class="mat-typography">
+                        <h4>Login Button</h4>
+                        <hr>
+                        <button mat-raised-button
+                            [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor}"
+                            class="bottom-gap">
+                            <mat-icon>shield</mat-icon>
+                            Sign In With {{strategy.title}}
+                        </button>
+                        <mat-divider></mat-divider>
+                    </section>
+                    <generic-settings [strategy]="strategy" [editable]="false" class="top-gap" id="summary" #summary>
+                    </generic-settings>
                     <mat-divider></mat-divider>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
