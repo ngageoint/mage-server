@@ -143,15 +143,15 @@ export class AuthenticationCreateComponent implements OnInit {
 
         for (const [key, value] of Object.entries(template.settings)) {
 
-            let castedValue: string;
-
             if (typeof value == 'string') {
-                castedValue = value as string;
+                const castedValue = value as string;
+                this.strategy.settings[key] = castedValue;
             } else {
-                castedValue = JSON.stringify(value);
+                this.strategy.settings[key] = {};
+                for (const [a, b] of Object.entries(value)) {
+                    this.strategy.settings[key][a] = b;
+                }
             }
-
-            this.strategy.settings[key] = castedValue;
         }
 
         this.settings.refresh();
