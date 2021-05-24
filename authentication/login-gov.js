@@ -13,99 +13,108 @@ const fs = require('fs')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function configure(passport) {
-  AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
+function doConfigure(passport, strategyConfig) {
+  log.info('Configuring login.gov authentication', strategyConfig);
+  const loginGov = {};
 
-    if (strategyConfig) {
-      log.info('Configuring login.gov authentication', strategyConfig);
-      const loginGov = {};
+  const key = fs.readFileSync(strategyConfig.settings.keyFile, 'ascii');
+  const jwk = pem2jwk(key);
+  const keys = [jwk];
 
-      const key = fs.readFileSync(strategyConfig.settings.keyFile, 'ascii');
-      const jwk = pem2jwk(key);
-      const keys = [jwk];
+  function getParams() {
+    return {
+      response_type: 'code',
+      acr_values: strategyConfig.settings.acr_values,
+      scope: 'openid email',
+      redirect_uri: strategyConfig.settings.redirect_uri,
+      nonce: crypto.randomBytes(32).toString('hex'),
+      state: crypto.randomBytes(32).toString('hex'),
+      prompt: 'select_account',
+    };
+  }
 
-      function getParams() {
-        return {
-          response_type: 'code',
-          acr_values: strategyConfig.settings.acr_values,
-          scope: 'openid email',
-          redirect_uri: strategyConfig.settings.redirect_uri,
-          nonce: crypto.randomBytes(32).toString('hex'),
-          state: crypto.randomBytes(32).toString('hex'),
-          prompt: 'select_account',
-        };
-      }
+  let client;
+  Promise.all([
+    jose.JWK.asKeyStore(keys),
+    Issuer.discover(strategyConfig.url)
+  ]).then(function ([keystore, issuer]) {
+    loginGov.issuer = issuer; // allow subsequent access to issuer.end_session_endpoint (required during RP-Initiated Logout)
 
-      let client;
-      Promise.all([
-        jose.JWK.asKeyStore(keys),
-        Issuer.discover(strategyConfig.url)
-      ]).then(function ([keystore, issuer]) {
-        loginGov.issuer = issuer; // allow subsequent access to issuer.end_session_endpoint (required during RP-Initiated Logout)
+    client = new issuer.Client({
+      client_id: strategyConfig.client_id,
+      token_endpoint_auth_method: 'private_key_jwt',
+      id_token_signed_response_alg: 'RS256'
+    }, keystore);
 
-        client = new issuer.Client({
-          client_id: strategyConfig.client_id,
-          token_endpoint_auth_method: 'private_key_jwt',
-          id_token_signed_response_alg: 'RS256'
-        }, keystore);
+    client.CLOCK_TOLERANCE = 10;
 
-        client.CLOCK_TOLERANCE = 10;
+    const params = getParams();
+    passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
+      userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
+      userinfo.state = params.state; // required for RP-Initiated Logout
 
-        const params = getParams();
-        passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
-          userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
-          userinfo.state = params.state; // required for RP-Initiated Logout
+      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
+        if (err) return done(err);
 
-          User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
+        const email = userinfo.email;
+
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
 
-            const email = userinfo.email;
+            const user = {
+              username: email,
+              displayName: email.split("@")[0],
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'login-gov',
+                id: email
+              }
+            };
 
-            if (!user) {
-              // Create an account for the user
-              Role.getRole('USER_ROLE', function (err, role) {
-                if (err) return done(err);
+            new api.User().create(user).then(newUser => {
+              if (!newUser.authentication.authenticationConfiguration.enabled) {
+                log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              }
 
-                const user = {
-                  username: email,
-                  displayName: email.split("@")[0],
-                  email: email,
-                  active: false,
-                  roleId: role._id,
-                  authentication: {
-                    type: 'login-gov',
-                    id: email
-                  }
-                };
-
-                new api.User().create(user).then(newUser => {
-                  if (!newUser.authentication.authenticationConfiguration.enabled) {
-                    log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
-                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-                  }
-
-                  return done(null, newUser);
-                }).catch(err => done(err));
-              });
-            } else if (!user.active) {
-              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-            } else if (!user.authentication.authenticationConfiguration.enabled) {
-              log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-            } else {
-              return done(null, user, { access_token: tokenset.access_token });
-            }
+              return done(null, newUser);
+            }).catch(err => done(err));
           });
-        }));
-
-        log.info("login.gov configuration success");
-      }).catch(function (err) {
-        log.error('login.gov configuration error', err);
+        } else if (!user.active) {
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+        } else {
+          return done(null, user, { access_token: tokenset.access_token });
+        }
       });
-    } 
-  }).catch(err => {
-    log.error(err);
+    }));
+
+    log.info("login.gov configuration success");
+  }).catch(function (err) {
+    log.error('login.gov configuration error', err);
   });
+
+
+}
+
+function configure(passport, config) {
+  if (config) {
+    doConfigure(passport, config);
+  } else {
+    AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
+      if (strategyConfig) {
+        doConfigure(passport, strategyConfig);
+      }
+    }).catch(err => {
+      log.error(err);
+    });
+  }
 }
 
 function init(app, passport, provision) {

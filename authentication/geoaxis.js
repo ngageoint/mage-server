@@ -9,69 +9,77 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function configure(passport) {
-  AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
+function doConfigure(passport, strategyConfig) {
+  log.info('Configuring GeoAxis authentication');
+  const strategy = new GeoaxisStrategy({
+    authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+    tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+    userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
+    clientID: strategyConfig.settings.clientID,
+    clientSecret: strategyConfig.settings.clientSecret,
+    callbackURL: strategyConfig.settings.callbackUrl,
+    passReqToCallback: true
+  },
+    function (req, accessToken, refreshToken, profile, done) {
+      const geoaxisUser = profile._json;
+      User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
+        if (err) return done(err);
 
-    if (strategyConfig) {
-      log.info('Configuring GeoAxis authentication');
-      const strategy = new GeoaxisStrategy({
-        authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-        tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-        userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
-        clientID: strategyConfig.settings.clientID,
-        clientSecret: strategyConfig.settings.clientSecret,
-        callbackURL: strategyConfig.settings.callbackUrl,
-        passReqToCallback: true
-      },
-        function (req, accessToken, refreshToken, profile, done) {
-          const geoaxisUser = profile._json;
-          User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
+        const email = geoaxisUser.email;
+
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
 
-            const email = geoaxisUser.email;
+            const user = {
+              username: email,
+              displayName: email.split("@")[0],
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'geoaxis',
+                id: email
+              }
+            };
 
-            if (!user) {
-              // Create an account for the user
-              Role.getRole('USER_ROLE', function (err, role) {
-                if (err) return done(err);
-
-                const user = {
-                  username: email,
-                  displayName: email.split("@")[0],
-                  email: email,
-                  active: false,
-                  roleId: role._id,
-                  authentication: {
-                    type: 'geoaxis',
-                    id: email
-                  }
-                };
-
-                new api.User().create(user).then(newUser => {
-                  if (!newUser.authentication.authenticationConfiguration.enabled) {
-                    log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
-                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-                  }
-                  return done(null, newUser);
-                }).catch(err => done(err));
-              });
-            } else if (!user.active) {
-              log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
-              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-            } else if (!user.authentication.authenticationConfiguration.enabled) {
-              log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-            } else {
-              return done(null, user);
-            }
+            new api.User().create(user).then(newUser => {
+              if (!newUser.authentication.authenticationConfiguration.enabled) {
+                log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              }
+              return done(null, newUser);
+            }).catch(err => done(err));
           });
-        });
+        } else if (!user.active) {
+          log.warn('Failed user login attempt: User ' + user.username + ' account is not active.');
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+        } else {
+          return done(null, user);
+        }
+      });
+    });
 
-      passport.use('geoaxis', strategy);
-    } 
-  }).catch(err => {
-    log.error(err);
-  });
+  passport.use('geoaxis', strategy);
+
+}
+
+function configure(passport, config) {
+  if (config) {
+    doConfigure(passport, config);
+  } else {
+    AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
+      if (strategyConfig) {
+        doConfigure(passport, strategyConfig);
+      }
+    }).catch(err => {
+      log.error(err);
+    });
+  }
 }
 
 function init(app, passport, provision, tokenService) {

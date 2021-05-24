@@ -52,7 +52,7 @@ module.exports = function (app, security) {
                     strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
-                strategy.configure(passport);
+                strategy.configure(passport, config);
                 //TODO use whitelist??
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
@@ -83,16 +83,16 @@ module.exports = function (app, security) {
                 newConfig.settings[key] = settings[key];
             });
 
-            AuthenticationConfiguration.Model.create(newConfig).then(model => {
-                log.info("Creating new authentication strategy " + model.type + " (" + model.name + ")");
-                let strategyType = model.type;
-                if(model.type === 'oauth') {
-                    strategyType = model.name.toLowerCase();
+            AuthenticationConfiguration.Model.create(newConfig).then(config => {
+                log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
+                let strategyType = config.type;
+                if(config.type === 'oauth') {
+                    strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
-                strategy.configure(passport);
+                strategy.configure(passport, config);
                 //TODO use whitelist??
-                const transformedConfig = AuthenticationConfigurationTransformer.transform(model);
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
                 next(err);

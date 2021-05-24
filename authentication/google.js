@@ -9,66 +9,75 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function configure(passport) {
-  AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
+function doConfigure(passport, googleStrategy) {
+  log.info('Configuring Google authentication');
+  passport.use('google', new GoogleStrategy({
+    clientID: googleStrategy.settings.clientID,
+    clientSecret: googleStrategy.settings.clientSecret,
+    callbackURL: googleStrategy.settings.callbackURL
+  },
+    function (accessToken, refreshToken, profile, done) {
+      User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
+        if (err) return done(err);
 
-    if (googleStrategy) {
-      log.info('Configuring Google authentication');
-      passport.use('google', new GoogleStrategy({
-        clientID: googleStrategy.settings.clientID,
-        clientSecret: googleStrategy.settings.clientSecret,
-        callbackURL: googleStrategy.settings.callbackURL
-      },
-        function (accessToken, refreshToken, profile, done) {
-          User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
 
-            if (!user) {
-              // Create an account for the user
-              Role.getRole('USER_ROLE', function (err, role) {
-                if (err) return done(err);
+            let email = null;
+            profile.emails.forEach(function (e) {
+              if (e.verified) {
+                email = e.value;
+              }
+            });
 
-                let email = null;
-                profile.emails.forEach(function (e) {
-                  if (e.verified) {
-                    email = e.value;
-                  }
-                });
+            const user = {
+              username: email,
+              displayName: profile.name.givenName + ' ' + profile.name.familyName,
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'google',
+                id: profile.id
+              }
+            };
 
-                const user = {
-                  username: email,
-                  displayName: profile.name.givenName + ' ' + profile.name.familyName,
-                  email: email,
-                  active: false,
-                  roleId: role._id,
-                  authentication: {
-                    type: 'google',
-                    id: profile.id
-                  }
-                };
-
-                new api.User().create(user).then(newUser => {
-                  if (!newUser.authentication.authenticationConfiguration.enabled) {
-                    log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
-                    return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-                  }
-                  return done(null, newUser);
-                }).catch(err => done(err));
-              });
-            } else if (!user.active) {
-              return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-            } else if (!user.authentication.authenticationConfiguration.enabled) {
-              log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-              return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
-            } else {
-              return done(null, user);
-            }
+            new api.User().create(user).then(newUser => {
+              if (!newUser.authentication.authenticationConfiguration.enabled) {
+                log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              }
+              return done(null, newUser);
+            }).catch(err => done(err));
           });
-        }));
-    } 
-  }).catch(err => {
-    log.error(err);
-  });
+        } else if (!user.active) {
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+        } else {
+          return done(null, user);
+        }
+      });
+    }
+  ));
+
+}
+
+function configure(passport, config) {
+  if (config) {
+    doConfigure(passport, config);
+  } else {
+    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
+      if (googleStrategy) {
+        doConfigure(passport, googleStrategy);
+      }
+    }).catch(err => {
+      log.error(err);
+    });
+  }
 }
 
 function init(app, passport, provision, tokenService) {
