@@ -78,7 +78,7 @@
                         This is the icon for the login button that the users will see.
                     </div>
                     <legend>Default Icon</legend>
-                    <mat-icon id="defaultIcon">shield</mat-icon>
+                    <mat-icon id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}">shield</mat-icon>
                     <legend>Custom Icon</legend>
                     <input type="file" class="file-upload bottom-gap" onchange="console.log(event.target.files)">
                     <div>
@@ -92,12 +92,20 @@
                     <section class="mat-typography">
                         <h4>Login Button</h4>
                         <hr>
-                        <button mat-raised-button
-                            [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor}"
-                            class="bottom-gap">
-                            <mat-icon>shield</mat-icon>
-                            Sign In With {{strategy.title}}
-                        </button>
+                        <div class="auth-button-container">
+                            <button mat-raised-button
+                                [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
+                                class="bottom-gap third-party-button">
+                                <span class="third-party-button-content">
+                                    <mat-icon [ngStyle]="{'color': strategy.buttonColor}" class="third-party-logo">
+                                        shield
+                                    </mat-icon>
+                                    <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
+                                        Sign In With {{strategy.title}}
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
                         <mat-divider></mat-divider>
                     </section>
                     <generic-settings [strategy]="strategy" [editable]="false" class="top-gap" id="summary" #summary>
