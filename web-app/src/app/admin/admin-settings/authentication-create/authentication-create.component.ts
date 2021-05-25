@@ -50,23 +50,28 @@ export class AuthenticationCreateComponent implements OnInit {
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
         description: 'Google account.',
-        type: 'google'
+        type: 'oauth',
+        name: 'google'
     }, {
         title: 'GeoAxis',
         description: 'GeoAxis account.',
-        type: 'geoaxis'
+        type: 'oauth',
+        name: 'geoaxis'
     }, {
         title: 'LDAP',
         description: 'LDAP account.',
-        type: 'ldap'
+        type: 'ldap',
+        name: 'ldap'
     }, {
         title: 'Login-gov',
         description: 'Login-gov account.',
-        type: 'login-gov'
+        type: 'oauth',
+        name: 'login-gov'
     }, {
         title: 'SAML',
         description: 'SAML account.',
-        type: 'saml'
+        type: 'saml',
+        name: 'saml'
     }];
 
     constructor(
@@ -82,13 +87,13 @@ export class AuthenticationCreateComponent implements OnInit {
 
     loadTemplate(): void {
         let template: any;
-        switch (this.strategy.type) {
+        switch (this.strategy.name) {
             case 'google': {
                 template = new OAuthTemplate();
                 template._settings.callbackURL = '/auth/google/callback';
 
                 this.strategy.buttonColor = '#4285F4';
-                this.strategy.name = 'google';
+                this.strategy.type = 'oauth';
                 break;
             }
             case 'geoaxis': {
@@ -98,26 +103,26 @@ export class AuthenticationCreateComponent implements OnInit {
                 template._settings.apiUrl = 'https://geoaxis.gxaws.com';
 
                 this.strategy.buttonColor = '#163043';
-                this.strategy.name = 'geoaxis';
+                this.strategy.type = 'oauth';
                 break;
             }
             case 'ldap': {
                 template = new LdapTemplate();
                 this.strategy.buttonColor = '#5E35B1';
-                this.strategy.name = 'ldap';
+                this.strategy.type = 'ldap';
                 break;
             }
             case 'login-gov': {
                 template = new LoginGovTemplate();
                 this.strategy.buttonColor = '#E21D3E';
-                this.strategy.name = 'login-gov';
+                this.strategy.type = 'oauth';
                 break;
             }
             case 'saml': {
                 template = new SamlTemplate();
                 this.strategy.textColor = '#000000';
                 this.strategy.buttonColor = '#EF6C00';
-                this.strategy.name = 'saml';
+                this.strategy.type = 'saml';
                 break;
             }
             default: {
