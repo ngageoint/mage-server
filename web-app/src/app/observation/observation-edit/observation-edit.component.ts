@@ -118,7 +118,7 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
   }
 
   hasEventUpdatePermission(): boolean {
-    return this.userService.myself.role.permissions.includes('DELETE_OBSERVAION')
+    return this.userService.myself.role.permissions.includes('DELETE_OBSERVATION')
   }
 
   isCurrentUsersObservation(): boolean {
@@ -126,8 +126,8 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
   }
 
   hasUpdatePermissionsInEventAcl(): boolean {
-    const myAccess = this.filterService.getEvent().acl[this.userService.myself.id]
-    const aclPermissions = myAccess ? myAccess.permissions : []
+    const myAccess = this.filterService.getEvent().acl[this.userService.myself.id] || {}
+    const aclPermissions = myAccess.permissions || []
     return aclPermissions.includes('update')
   }
 
