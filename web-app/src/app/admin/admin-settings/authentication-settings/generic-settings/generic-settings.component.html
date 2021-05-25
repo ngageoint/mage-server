@@ -11,17 +11,19 @@
 
         <ng-container matColumnDef="value">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-            <td mat-cell *matCellDef="let setting" contenteditable="true" (keyup)="changeValue(setting, $event)">
-                {{setting.value}}</td>
+            <td mat-cell *matCellDef="let setting">{{setting.value}}</td>
         </ng-container>
 
-        <ng-container matColumnDef="delete">
-            <th mat-header-cell *matHeaderCellDef> Delete </th>
+        <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef> Action </th>
             <td mat-cell *matCellDef="let setting">
-                <button *ngIf="!setting.required" mat-icon-button color="warn"
-                    (click)="$event.stopPropagation(); deleteSetting(setting)">
-                    <mat-icon class="mat-18">delete</mat-icon>
-                </button>
+                <div *ngIf="setting.required">
+                    <a (click)="editSetting(setting)">Edit</a>
+                </div>
+                <div *ngIf="!setting.required">
+                    <a (click)="editSetting(setting)">Edit</a> |
+                    <a (click)="deleteSetting(setting)">Delete</a>
+                </div>
             </td>
         </ng-container>
 

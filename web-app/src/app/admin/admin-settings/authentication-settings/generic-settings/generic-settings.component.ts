@@ -6,6 +6,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
+import { EditValueComponent } from './edit-value/edit-value.component';
 
 @Component({
     selector: 'generic-settings',
@@ -16,7 +17,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: Strategy;
     @Input() editable: boolean = true;
     dataSource: MatTableDataSource<GenericSetting>;
-    readonly displayedColumns: string[] = ['key', 'value', 'delete'];
+    readonly displayedColumns: string[] = ['key', 'value', 'action'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     newRow: GenericSetting = {
         key: '',
@@ -65,15 +66,23 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             settings.push(gs);
         }
         this.dataSource.data = settings;
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
     }
 
-    changeValue(setting: GenericSetting, $event: any): void {
-        const idx = this.dataSource.data.indexOf(setting);
-        if (idx > -1) {
-            this.dataSource.data[idx].value = $event.target.textContent;
-            this.strategy.settings[setting.key] = JSON.parse($event.target.textContent);
-            this.strategy.isDirty = true;
-        }
+    editSetting(setting: GenericSetting): void {
+        this.dialog.open(EditValueComponent, {
+            width: '500px',
+            data: setting,
+            autoFocus: false
+        }).afterClosed().subscribe(result => {
+            if (result.event === 'confirm') {
+                const updatedSetting = result.data;
+                this.strategy.settings[updatedSetting.key] = updatedSetting.value;
+                this.refresh();
+            }
+        });
     }
 
     addSetting(): void {
@@ -84,11 +93,11 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                 autoFocus: false
             }).afterClosed().subscribe(result => {
                 if (result === 'confirm') {
-                   this.doAddSetting();
+                    this.doAddSetting();
                 }
             });
         } else {
-           this.doAddSetting();
+            this.doAddSetting();
         }
     }
 
@@ -98,7 +107,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         let idx = -1;
         for (let i = 0; i < settings.length; i++) {
             const gs = settings[i];
-            if(gs.key == this.newRow.key) {
+            if (gs.key == this.newRow.key) {
                 idx = i;
                 break;
             }
