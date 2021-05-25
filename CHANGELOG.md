@@ -8,6 +8,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+
+## [5.5.1](https://github.com/ngageoint/mage-server/releases/tag/5.5.1)
+
+##### Features
+
+##### Bug Fixes
 * Fixed attachment upload regression when creating a new observation.
 * Fixed user role not seeing observation details
 * Fixed admin observation delete button missing
