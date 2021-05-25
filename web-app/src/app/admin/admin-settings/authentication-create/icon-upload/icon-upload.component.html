@@ -1,0 +1,9 @@
+<section class="mat-typography">
+    <form [formGroup]="uploadForm">
+        <div *ngIf="imgFile">
+            <img [src]="imgFile" style="width:32px; height:32px">
+        </div>
+
+        <input type="file" id="file" formControlName="file" (change)="onImageChange($event)" accept="image/*">
+    </form>
+</section>

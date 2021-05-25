@@ -80,7 +80,7 @@
                     <legend>Default Icon</legend>
                     <mat-icon id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}">shield</mat-icon>
                     <legend>Custom Icon</legend>
-                    <input type="file" class="file-upload bottom-gap" onchange="console.log(event.target.files)">
+                    <icon-upload></icon-upload>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext (click)="summary.refresh()">Next</button>
