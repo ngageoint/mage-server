@@ -59,6 +59,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                 castedValue = JSON.stringify(value);
             }
 
+            //TODO detect if this field is required
             const gs: GenericSetting = {
                 key: key,
                 value: castedValue,
