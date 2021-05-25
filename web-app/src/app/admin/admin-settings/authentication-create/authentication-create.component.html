@@ -80,7 +80,7 @@
                     <legend>Default Icon</legend>
                     <mat-icon id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}">shield</mat-icon>
                     <legend>Custom Icon</legend>
-                    <icon-upload></icon-upload>
+                    <icon-upload [strategy]="strategy"></icon-upload>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button matStepperNext (click)="summary.refresh()">Next</button>
@@ -97,9 +97,13 @@
                                 [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
                                 class="bottom-gap third-party-button">
                                 <span class="third-party-button-content">
-                                    <mat-icon [ngStyle]="{'color': strategy.buttonColor}" class="third-party-logo">
+                                    <mat-icon *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
+                                        class="third-party-logo">
                                         shield
                                     </mat-icon>
+                                    <span *ngIf="strategy.icon" class="third-party-logo">
+                                        <!-- <img [src]="data:image/png;base64,{{strategy.icon}}" style="width:32px; height:32px"> -->
+                                    </span>
                                     <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
                                         Sign In With {{strategy.title}}
                                     </span>

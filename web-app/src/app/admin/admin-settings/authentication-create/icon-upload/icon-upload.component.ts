@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Strategy } from '../../admin-settings.model';
 
 @Component({
   selector: 'icon-upload',
@@ -7,7 +8,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
   styleUrls: ['./icon-upload.component.scss']
 })
 export class IconUploadComponent {
-
+  @Input() strategy: Strategy;
   imgFile: string;
 
   uploadForm = new FormGroup({
@@ -30,8 +31,9 @@ export class IconUploadComponent {
 
         const img = new Image();
         img.src = e.target.result;
-        img.onload = res => {
-          const imgBase64Path = e.target.result;
+        img.onload = (res: any) => {
+          const imgBase64Path = res.target.src;
+          this.strategy.icon = imgBase64Path;
         };
 
       };
