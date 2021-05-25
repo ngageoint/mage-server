@@ -102,7 +102,7 @@
                                         shield
                                     </mat-icon>
                                     <span *ngIf="strategy.icon" class="third-party-logo">
-                                        <!-- <img [src]="data:image/png;base64,{{strategy.icon}}" style="width:32px; height:32px"> -->
+                                        <img [src]="strategy.icon" style="width:32px; height:32px">
                                     </span>
                                     <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
                                         Sign In With {{strategy.title}}
