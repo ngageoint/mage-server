@@ -3,14 +3,14 @@ import { GenericSetting } from '../generic-settings.model';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
-  selector: 'duplicate-key',
-  templateUrl: './duplicate-key.component.html',
-  styleUrls: ['./duplicate-key.component.scss']
+  selector: 'delete-setting',
+  templateUrl: './delete-setting.component.html',
+  styleUrls: ['./delete-setting.component.scss']
 })
-export class DuplicateKeyComponent {
+export class DeleteSettingComponent {
 
   constructor(
-    public dialogRef: MatDialogRef<DuplicateKeyComponent>,
+    public dialogRef: MatDialogRef<DeleteSettingComponent>,
     @Inject(MAT_DIALOG_DATA) public setting: GenericSetting) {
   }
 

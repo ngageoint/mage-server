@@ -7,6 +7,7 @@ import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 import { EditSettingComponent } from './edit-setting/edit-setting.component';
+import { DeleteSettingComponent } from './delete-setting/delete-setting.component';
 
 @Component({
     selector: 'generic-settings',
@@ -92,7 +93,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                 data: this.newRow,
                 autoFocus: false
             }).afterClosed().subscribe(result => {
-                if (result === 'confirm') {
+                if (result.event === 'confirm') {
                     this.doAddSetting();
                 }
             });
@@ -130,14 +131,15 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     deleteSetting(setting: GenericSetting): void {
-        const settings = this.dataSource.data;
-        const filtered = settings.filter(function (value, index, arr) {
-            return value !== setting;
+        this.dialog.open(DeleteSettingComponent, {
+            width: '500px',
+            data: setting,
+            autoFocus: false
+        }).afterClosed().subscribe(result => {
+            if (result.event === 'confirm') {
+                delete this.strategy.settings[setting.key];
+                this.refresh();
+            }
         });
-        this.dataSource.data = filtered;
-
-        delete this.strategy.settings[setting.key];
-        this.strategy.isDirty = true;
-        this.dataSource.paginator.firstPage();
     }
 }
