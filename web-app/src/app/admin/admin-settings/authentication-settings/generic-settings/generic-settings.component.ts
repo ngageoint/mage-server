@@ -6,7 +6,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
-import { EditValueComponent } from './edit-value/edit-value.component';
+import { EditSettingComponent } from './edit-setting/edit-setting.component';
 
 @Component({
     selector: 'generic-settings',
@@ -72,7 +72,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     editSetting(setting: GenericSetting): void {
-        this.dialog.open(EditValueComponent, {
+        this.dialog.open(EditSettingComponent, {
             width: '500px',
             data: setting,
             autoFocus: false
