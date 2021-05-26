@@ -78,7 +78,8 @@
                         This is the icon for the login button that the users will see.
                     </div>
                     <legend>Default Icon</legend>
-                    <mat-icon id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}">shield</mat-icon>
+                    <i id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}"
+                        class="fa fa-lg fa-shield"></i>
                     <legend>Custom Icon</legend>
                     <icon-upload [strategy]="strategy"></icon-upload>
                     <div>
@@ -97,10 +98,8 @@
                                 [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
                                 class="bottom-gap third-party-button">
                                 <span class="third-party-button-content">
-                                    <mat-icon *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
-                                        class="third-party-logo">
-                                        shield
-                                    </mat-icon>
+                                    <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
+                                        class="third-party-logo fa fa-lg fa-shield"></i>
                                     <span *ngIf="strategy.icon" class="third-party-logo">
                                         <img [src]="strategy.icon" style="width:32px; height:32px">
                                     </span>
