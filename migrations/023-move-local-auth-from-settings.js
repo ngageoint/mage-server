@@ -9,6 +9,11 @@ exports.up = function (done) {
     settings.findOneAndDelete({ type: 'security' }).then(result => {
         const localSettings = result.value.settings.local;
 
+        const binIcon;
+        if(localSettings.icon) {
+           binIcon = new Buffer(localSettings.icon, 'base64');
+        }
+
         const authDbObject = {
             enabled: true,
             name: 'local',
@@ -16,7 +21,7 @@ exports.up = function (done) {
             title: 'MAGE Username/Password',
             textColor: localSettings.textColor,
             buttonColor: localSettings.buttonColor,
-            icon: localSettings.icon,
+            icon: binIcon,
             settings: {
                 newUserEvents: [],
                 newUserTeams: [],

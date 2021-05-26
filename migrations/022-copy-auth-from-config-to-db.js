@@ -17,6 +17,11 @@ function createDBObjectsFromConfig() {
       if (authStratConfig) {
         log.debug("Copying " + authStratName + " auth strategy");
 
+        const binIcon;
+        if(authStratConfig.icon) {
+           binIcon = new Buffer(authStratConfig.icon, 'base64');
+        }
+
         const authDbObject = {
           enabled: true,
           name: authStratName,
@@ -24,7 +29,7 @@ function createDBObjectsFromConfig() {
           title: authStratConfig.title,
           textColor: authStratConfig.textColor,
           buttonColor: authStratConfig.buttonColor,
-          icon: authStratConfig.icon,
+          icon: binIcon,
           settings: {
             newUserEvents: [],
             newUserTeams: [],
