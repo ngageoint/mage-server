@@ -9,7 +9,7 @@ exports.up = function (done) {
     settings.findOneAndDelete({ type: 'security' }).then(result => {
         const localSettings = result.value.settings.local;
 
-        const binIcon;
+        let binIcon;
         if(localSettings.icon) {
            binIcon = new Buffer(localSettings.icon, 'base64');
         }

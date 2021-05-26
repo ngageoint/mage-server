@@ -17,7 +17,7 @@ function createDBObjectsFromConfig() {
       if (authStratConfig) {
         log.debug("Copying " + authStratName + " auth strategy");
 
-        const binIcon;
+        let binIcon;
         if(authStratConfig.icon) {
            binIcon = new Buffer(authStratConfig.icon, 'base64');
         }
