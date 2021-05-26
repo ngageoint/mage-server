@@ -41,8 +41,18 @@
   margin-left: 10px;
 }
 
-.spacer {
-  flex: 1 1 auto;
+.headers-align .mat-expansion-panel-header-title,
+.headers-align .mat-expansion-panel-header-description {
+  flex-basis: 0;
+}
+
+.headers-align .mat-expansion-panel-header-description {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headers-align .mat-form-field + .mat-form-field {
+  margin-left: 8px;
 }
 
 color-picker {
