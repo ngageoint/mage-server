@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Strategy } from '../../admin-settings.model';
 
 @Component({
@@ -11,31 +10,16 @@ export class IconUploadComponent {
   @Input() strategy: Strategy;
   imgFile: string;
 
-  uploadForm = new FormGroup({
-    file: new FormControl('', [Validators.required]),
-    imgSrc: new FormControl('', [Validators.required])
-  });
-
-  onImageChange(e) {
+  onImageChange(e: any) {
     const reader = new FileReader();
 
     if (e.target.files && e.target.files.length) {
-      const [file] = e.target.files;
+      const file = e.target.files[0];
       reader.readAsDataURL(file);
 
       reader.onload = (e: any) => {
         this.imgFile = reader.result as string;
-        this.uploadForm.patchValue({
-          imgSrc: reader.result
-        });
-
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = (res: any) => {
-          const imgBase64Path = res.target.src;
-          this.strategy.icon = imgBase64Path;
-        };
-
+        this.strategy.icon = this.imgFile;
       };
     }
   }

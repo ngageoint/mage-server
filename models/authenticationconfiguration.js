@@ -11,7 +11,7 @@ const AuthenticationConfigurationSchema = new Schema({
   title: { type: String, required: false },
   textColor: { type: String, required: false },
   buttonColor: { type: String, required: false },
-  icon: { type: String, required: false },
+  icon: { type: Buffer, required: false },
   enabled: { type: Boolean, default: true },
   settings: Schema.Types.Mixed
 }, {
@@ -39,6 +39,8 @@ const transform = function (config, ret, options) {
         }
       });
     }
+
+    ret.icon = ret.icon ? ret.icon.toString('base64') : null;
   }
 };
 
@@ -63,11 +65,20 @@ exports.getConfiguration = function (type, name) {
 };
 
 exports.getConfigurationsByType = function (type) {
-  return AuthenticationConfiguration.find({ type: type}).exec();
+  return AuthenticationConfiguration.find({ type: type }).exec();
 };
 
 exports.getAllConfigurations = function () {
   return AuthenticationConfiguration.find({}).exec();
+};
+
+exports.create = function (config)  {
+  if (config.icon.startsWith('data')) {
+    config.icon = new Buffer(config.icon.split(",")[1], "base64");
+  } else {
+    config.icon = new Buffer(config.icon, 'base64');
+  }
+  return AuthenticationConfiguration.create(config);
 };
 
 exports.update = function (id, config) {

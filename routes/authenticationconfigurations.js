@@ -83,7 +83,7 @@ module.exports = function (app, security) {
                 newConfig.settings[key] = settings[key];
             });
 
-            AuthenticationConfiguration.Model.create(newConfig).then(config => {
+            AuthenticationConfiguration.create(newConfig).then(config => {
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if(config.type === 'oauth') {
