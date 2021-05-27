@@ -17,7 +17,7 @@ function doConfigure(passport, googleStrategy) {
     callbackURL: googleStrategy.settings.callbackURL
   },
     function (accessToken, refreshToken, profile, done) {
-      User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
+      User.getUserByAuthenticationStrategy('oauth', profile.id, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
