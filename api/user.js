@@ -100,7 +100,7 @@ User.prototype.getById = function(id, callback) {
 
 User.prototype.create = async function(user, options = {}) {
   
-  const authenticationConfig = await AuthenticationConfiguration.getConfiguration(user.authentication.type);
+  const authenticationConfig = await AuthenticationConfiguration.getConfiguration(null, user.authentication.type);
   let defaultTeams;
   let defaultEvents
   if (authenticationConfig) {
