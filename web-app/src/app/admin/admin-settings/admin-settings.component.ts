@@ -83,6 +83,9 @@ export class AdminSettingsComponent implements OnInit {
                     return this.teams.some(team => team.id === id)
                 });
             }
+            if (strategy.icon) {
+                strategy.icon = "data:image/png;base64," + strategy.icon;
+            }
         });
     }
 

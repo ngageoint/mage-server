@@ -15,11 +15,16 @@
                             </button>
                         </div>
                         <div *ngFor="let strategy of strategies; index as i; first as isFirst">
-                            <mat-accordion class="top-gap admin-settings-gap headers-align" style="padding-bottom: 25px;">
+                            <mat-accordion class="top-gap admin-settings-gap headers-align"
+                                style="padding-bottom: 25px;">
                                 <mat-expansion-panel class="mat-elevation-z0" [expanded]="isFirst">
                                     <mat-expansion-panel-header>
                                         <mat-panel-title>
-                                            <div class="fa fa-lg fa-shield right-gap"></div>
+                                            <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
+                                                class="fa fa-lg fa-shield right-gap"></i>
+                                            <span *ngIf="strategy.icon" class="right-gap">
+                                                <img [src]="strategy.icon" style="width:24px; height:24px">
+                                            </span>
                                             {{strategy.title}}
                                         </mat-panel-title>
                                         <mat-panel-description>
