@@ -82,6 +82,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             if (result.event === 'confirm') {
                 const updatedSetting = result.data;
                 this.strategy.settings[updatedSetting.key] = updatedSetting.value;
+                this.strategy.isDirty = true;
                 this.refresh();
             }
         });
