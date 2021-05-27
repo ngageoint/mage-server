@@ -58,8 +58,10 @@ exports.getById = function (id) {
 };
 
 exports.getConfiguration = function (type, name) {
-  if (name === undefined) {
+  if (name === null) {
     return AuthenticationConfiguration.findOne({ type: type }).exec();
+  } else if (type === null) {
+    return AuthenticationConfiguration.findOne({ name: name }).exec();
   }
   return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
 };
