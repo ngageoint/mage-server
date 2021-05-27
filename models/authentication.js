@@ -194,6 +194,9 @@ exports.createAuthentication = function (authentication) {
       });
       break;
     }
+    case 'google':
+    case 'geoaxis':
+    case 'login-gov':
     case "oauth": {
       newAuth = new OauthAuthentication({
         type: 'oauth',
