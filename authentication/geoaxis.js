@@ -22,7 +22,7 @@ function doConfigure(passport, strategyConfig) {
   },
     function (req, accessToken, refreshToken, profile, done) {
       const geoaxisUser = profile._json;
-      User.getUserByAuthenticationStrategy('geoaxis', geoaxisUser.email, function (err, user) {
+      User.getUserByAuthenticationStrategy('oauth', geoaxisUser.email, function (err, user) {
         if (err) return done(err);
 
         const email = geoaxisUser.email;

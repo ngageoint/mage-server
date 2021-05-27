@@ -53,7 +53,7 @@ function doConfigure(passport, strategyConfig) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
-      User.getUserByAuthenticationStrategy('login-gov', userinfo.email, function (err, user) {
+      User.getUserByAuthenticationStrategy('oauth', userinfo.email, function (err, user) {
         if (err) return done(err);
 
         const email = userinfo.email;
