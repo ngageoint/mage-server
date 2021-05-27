@@ -39,8 +39,11 @@ function doConfigure(passport, strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'geoaxis',
-                id: email
+                type: 'oauth',
+                id: email,
+                authenticationConfiguration: {
+                  name: 'geoaxis'
+                }
               }
             };
 

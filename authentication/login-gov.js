@@ -70,8 +70,11 @@ function doConfigure(passport, strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'login-gov',
-                id: email
+                type: 'oauth',
+                id: email,
+                authenticationConfiguration: {
+                  name: 'login-gov'
+                }
               }
             };
 

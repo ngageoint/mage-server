@@ -39,8 +39,11 @@ function doConfigure(passport, googleStrategy) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'google',
-                id: profile.id
+                type: 'oauth',
+                id: profile.id,
+                authenticationConfiguration: {
+                  name: 'google'
+                }
               }
             };
 

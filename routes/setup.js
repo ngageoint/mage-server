@@ -54,7 +54,10 @@ module.exports = function (app, security) {
       active: true,
       authentication: {
         type: 'local',
-        password: password
+        password: password,
+        authenticationConfiguration: {
+          name: 'local'
+        }
       }
     };
     next();
@@ -76,7 +79,7 @@ module.exports = function (app, security) {
           done();
         },
         function (done) {
-          AuthenticationConfiguration.getConfiguration('local').then(config => {
+          AuthenticationConfiguration.getConfiguration('local', 'local').then(config => {
             req.user.authentication.authenticationConfigurationId = config._id;
             done();
           }).catch(err => {

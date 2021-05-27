@@ -52,7 +52,10 @@ function doConfigure(passport, strategyConfig) {
               roleId: role._id,
               authentication: {
                 type: 'ldap',
-                id: username
+                id: username,
+                authenticationConfiguration: {
+                  name: 'ldap'
+                }
               }
             };
 

@@ -164,7 +164,10 @@ module.exports = function (app, security) {
         phones: req.account.phones,
         authentication: {
           type: 'local',
-          password: req.account.password
+          password: req.account.password,
+          authenticationConfiguration: {
+            name: 'local'
+          }
         }
       };
 
@@ -248,7 +251,10 @@ module.exports = function (app, security) {
           phones: req.account.phones,
           authentication: {
             type: 'local',
-            password: req.account.password
+            password: req.account.password,
+            authenticationConfiguration: {
+              name: 'local'
+            }
           }
         };
 

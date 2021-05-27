@@ -32,7 +32,10 @@ function doConfigure(passport, strategyConfig) {
             roleId: role._id,
             authentication: {
               type: 'saml',
-              id: uid
+              id: uid,
+              authenticationConfiguration: {
+                name: 'saml'
+              }
             }
           };
 

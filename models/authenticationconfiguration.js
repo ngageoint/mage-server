@@ -15,7 +15,6 @@ const AuthenticationConfigurationSchema = new Schema({
   enabled: { type: Boolean, default: true },
   settings: Schema.Types.Mixed
 }, {
-  discriminatorKey: 'type',
   timestamps: {
     updatedAt: 'lastUpdated'
   },
@@ -58,11 +57,6 @@ exports.getById = function (id) {
 };
 
 exports.getConfiguration = function (type, name) {
-  if (name === null) {
-    return AuthenticationConfiguration.findOne({ type: type }).exec();
-  } else if (type === null) {
-    return AuthenticationConfiguration.findOne({ name: name }).exec();
-  }
   return AuthenticationConfiguration.findOne({ type: type, name: name }).exec();
 };
 
@@ -87,6 +81,14 @@ exports.create = function (config) {
 };
 
 exports.update = function (id, config) {
+  if (config.icon) {
+    if (config.icon.startsWith('data')) {
+      config.icon = new Buffer(config.icon.split(",")[1], "base64");
+    } else {
+      config.icon = new Buffer(config.icon, 'base64');
+    }
+  }
+  
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };
 
