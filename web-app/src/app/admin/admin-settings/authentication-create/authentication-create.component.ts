@@ -102,7 +102,7 @@ export class AuthenticationCreateComponent implements OnInit {
                 template = new OAuthTemplate();
                 template._settings.callbackURL = 'https://magegeoaxis.geointservices.io/auth/geoaxis/callback';
                 template._settings.authorizationUrl = 'https://geoaxis.gxaws.com';
-                template._settings.apiUrl = 'https://geoaxis.gxaws.com';
+                template._settings.apiUrl = 'https://gxisapi.gxaws.com';
 
                 this.strategy.buttonColor = '#163043';
                 this.strategy.type = 'oauth';
