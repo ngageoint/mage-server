@@ -281,7 +281,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
       this.saving = false;
       this.error = {
-        message: err.data
+        message: err.data.message
       }
     })
   }
