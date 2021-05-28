@@ -89,6 +89,8 @@ export class AuthenticationCreateComponent implements OnInit {
 
     loadTemplate(): void {
         let template: any;
+
+        //TODO move hardcoded template values to config or db.
         switch (this.strategy.name) {
             case 'google': {
                 template = new OAuthTemplate();
