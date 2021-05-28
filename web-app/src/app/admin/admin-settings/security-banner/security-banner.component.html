@@ -5,13 +5,13 @@
                 MAGE can add a header and footer to all views. Below you can specify whether or
                 not you want a header and/or footer, text, text color and background color.
             </span>
-            <legend>Header</legend>
         </div>
     </div>
 </section>
 <section class="mat-typography">
     <div class="page-container">
         <div class="content">
+            <legend>Header</legend>
             <mat-list-item>
                 <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
                     [ngModelOptions]="{standalone: true}" id="show-header">
@@ -37,8 +37,14 @@
                     #headerBackgroundColor>
                 </color-picker>
             </mat-list-item>
+        </div>
+    </div>
+</section>
+<section class="mat-typography">
+    <div class="page-container">
+        <div class="content">
+            <legend>Footer</legend>
             <mat-list-item>
-                <legend>Footer</legend>
                 <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
                     [ngModelOptions]="{standalone: true}" id="show-footer">
                 </mat-checkbox>
