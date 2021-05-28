@@ -53,7 +53,7 @@ export class ObservationEditFormComponent {
     this.fieldNames = this.definition.fields
       .filter(field => !field.archived)
       .filter(field => controlNames.includes(field.name))
-      .sort((a, b) => a - b)
+      .sort((a, b) => a.id - b.id)
       .map(field => field.name)
 
     this.updateView()
