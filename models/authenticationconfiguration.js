@@ -21,6 +21,8 @@ const AuthenticationConfigurationSchema = new Schema({
   versionKey: false
 });
 
+AuthenticationConfigurationSchema.path('name').index({ unique: true });
+
 const whitelist = ['url', 'name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 
 const transform = function (config, ret, options) {

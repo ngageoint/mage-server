@@ -10,6 +10,7 @@ import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './t
 import { ColorEvent } from 'ngx-color';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { GenericSettingsComponent } from '../authentication-settings/generic-settings/generic-settings.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'authentication-create',
@@ -76,6 +77,7 @@ export class AuthenticationCreateComponent implements OnInit {
 
     constructor(
         private stateService: StateService,
+        private _snackBar: MatSnackBar,
         @Inject(AuthenticationConfigurationService)
         private authenticationConfigurationService: any) {
         this.breadcrumbs.push({ title: 'New' });
@@ -175,6 +177,9 @@ export class AuthenticationCreateComponent implements OnInit {
             this.stateService.go('admin.settings', { strategy: newStrategy });
         }).catch(err => {
             console.error(err);
+            this._snackBar.open('Failed to create ' + this.strategy.title, null, {
+                duration: 2000,
+            });
         });
     }
 
