@@ -75,6 +75,8 @@ exports.create = function (config) {
     } else {
       config.icon = new Buffer(config.icon, 'base64');
     }
+  } else {
+    config.icon = null;
   }
 
   return AuthenticationConfiguration.create(config);
@@ -87,6 +89,8 @@ exports.update = function (id, config) {
     } else {
       config.icon = new Buffer(config.icon, 'base64');
     }
+  } else {
+    config.icon = null;
   }
   
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
