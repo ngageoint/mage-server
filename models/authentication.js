@@ -37,13 +37,9 @@ const SamlSchema = new Schema({
 });
 
 const LdapSchema = new Schema({
-  username: { type: String },
-  password: { type: String }
 });
 
 const OauthSchema = new Schema({
-  clientID: { type: String },
-  clientSecret: { type: String },
   //login-gov
   loa: { type: String },
   client_id: { type: String },
@@ -188,9 +184,7 @@ exports.createAuthentication = function (authentication) {
       newAuth = new LdapAuthentication({
         type: 'ldap', 
         id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId,
-        username: authentication.username,
-        password: authentication.password
+        authenticationConfigurationId: authentication.authenticationConfigurationId
       });
       break;
     }
@@ -202,8 +196,6 @@ exports.createAuthentication = function (authentication) {
         type: 'oauth',
         id: authentication.id,
         authenticationConfigurationId: authentication.authenticationConfigurationId,
-        clientID: authentication.clientID,
-        clientSecret: authentication.clientSecret,
         //login-gov
         loa: authentication.loa,
         client_id: authentication.client_id,
