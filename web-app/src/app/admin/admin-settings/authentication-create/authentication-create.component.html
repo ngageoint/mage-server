@@ -28,6 +28,7 @@
                 <mat-step>
                     <ng-template matStepLabel>Type</ng-template>
                     <mat-form-field appearance="outline">
+                        <mat-label>Choose a type</mat-label>
                         <mat-select [(ngModel)]="strategy.name" [ngModelOptions]="{standalone: true}" id="type"
                             name="type" required #type="ngModel">
                             <mat-option *ngFor="let typeChoice of typeChoices" [value]="typeChoice.name">
@@ -78,8 +79,7 @@
                         This is the icon for the login button that the users will see.
                     </div>
                     <legend>Default Icon</legend>
-                    <i id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}"
-                        class="fa fa-lg fa-shield"></i>
+                    <i id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}" class="fa fa-lg fa-shield"></i>
                     <legend>Custom Icon</legend>
                     <icon-upload [strategy]="strategy"></icon-upload>
                     <div>
