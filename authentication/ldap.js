@@ -14,6 +14,7 @@ let authenticationOptions = {
 };
 
 function doConfigure(passport, strategyConfig) {
+  log.info('Configuring LDAP authentication');
   authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
     invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,

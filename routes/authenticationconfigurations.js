@@ -14,7 +14,6 @@ module.exports = function (app, security) {
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
-                //TODO use whitelist??
                 const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
                 res.json(transformedConfigs);
             }).catch(err => {
@@ -48,12 +47,12 @@ module.exports = function (app, security) {
             AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
                 log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
-                if(config.type === 'oauth') {
+                if (config.type === 'oauth') {
                     strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
                 strategy.configure(passport, config);
-                //TODO use whitelist??
+
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
@@ -86,12 +85,12 @@ module.exports = function (app, security) {
             AuthenticationConfiguration.create(newConfig).then(config => {
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
-                if(config.type === 'oauth') {
+                if (config.type === 'oauth') {
                     strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
                 strategy.configure(passport, config);
-                //TODO use whitelist??
+
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
@@ -106,10 +105,9 @@ module.exports = function (app, security) {
         function (req, res, next) {
             AuthenticationConfiguration.remove(req.param("id")).then(config => {
                 log.info("Successfully removed strategy with id " + req.param("id"));
-                //TODO not sure how to disable passport strategy
-                 //TODO use whitelist??
-                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
-                 res.json(transformedConfig);
+                //TODO not sure how to disable passport strategy, but this will effectively disable it
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                res.json(transformedConfig);
             }).catch(err => {
                 next(err);
             })

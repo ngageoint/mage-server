@@ -14,6 +14,7 @@ let cachedApp;
 let cachedTokenService;
 
 function doConfigure(passport, strategyConfig) {
+  log.info('Configuring SAML authentication');
   passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
     const uid = profile[strategyConfig.settings.uidAttribute];
     User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
