@@ -24,6 +24,7 @@ export class AuthenticationDeleteComponent implements OnInit {
 
   ngOnInit(): void {
     //TODO poor performance on large set of users
+    //TODO get all users based on where their authentication config id matches
     this.userService.getAllUsers().then(allUsers => {
       Object.keys(allUsers).forEach(key => {
         const user = allUsers[key];
