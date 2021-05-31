@@ -167,8 +167,6 @@ paths:
       summary: Get an array of all authentication configurations
       description: Get all authentication configurations.  This requires an admin user.
       operationId: getAllAuthConfigs
-      security:
-        - authenticationToken: []
       responses:
         200:
           description: A list of all authentication configurations.
@@ -186,8 +184,6 @@ paths:
       description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
                    This requires an admin user.
       operationId: createNewAuthConfig
-      security:
-        - authenticationToken: []
       requestBody:
         required: true
         content:
