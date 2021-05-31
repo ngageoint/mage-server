@@ -164,8 +164,8 @@ paths:
   /api/authentication/configuration/:
     get:
       tags: [Authentication & Authorization]
-      summary: Authentication Configurations
-      description: Get all authentication configurations.
+      summary: Get an array of all authentication configurations
+      description: Get all authentication configurations.  This requires an admin user.
       operationId: getAllAuthConfigs
       security:
         - authenticationToken: []
@@ -180,6 +180,28 @@ paths:
                   $ref: '#/components/schemas/AuthenticationConfiguration'
         401:
           description: User is not authorized to view authentication configurations.
+    post:
+      tags: [Authentication & Authorization]
+      summary: Create a new authentication configuration
+      description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
+                   This requires an admin user.
+      operationId: createNewAuthConfig
+      security:
+        - authenticationToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: The created authentication configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+        401:
+          description: User is not authorized to create authentication configurations.
           
   /api/users:
     post:
