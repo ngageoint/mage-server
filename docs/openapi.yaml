@@ -198,6 +198,38 @@ paths:
                 $ref: '#/components/schemas/AuthenticationConfiguration'
         401:
           description: User is not authorized to create authentication configurations.
+  /api/authentication/configuration/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/authenticationConfigurationIdInPath' }
+    put:
+      tags: [ Authentication & Authorization ]
+      summary: Update an authentication configuration
+      description: >
+        Update the authentication configuration.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: updateAuthConfigById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: authentication configuration update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+    delete:
+      tags: [ Authentication & Authorization ]
+      summary: Delete  an authentication configuration
+      description: >
+        Delete the authentiction configuration document by `id`.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: deleteAutheConfig
+      responses:
+        204:
+          description: Success - authentication configuration
           
   /api/users:
     post:
@@ -3466,6 +3498,13 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/SortKey'
+    authenticationConfigurationIdInPath:
+      in: path
+      name: id
+      description: The id of the authentication configuration
+      required: true
+      schema:
+        type: string
 
   responses:
     FormIconInfo:
