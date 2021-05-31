@@ -27,9 +27,16 @@ h1, h2, h3, h4, h5 {
 	color: #1E88E5;
 }
 
+td , th {
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 200px;
+}
+
 table {
   width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   min-width: 500px;
 }
