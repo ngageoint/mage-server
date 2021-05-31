@@ -5,8 +5,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
-import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { OAuthTemplate, LdapTemplate, SamlTemplate, LoginGovTemplate } from './templates/settings-templates';
+import { AuthenticationConfigurationService, Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 import { ColorEvent } from 'ngx-color';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { GenericSettingsComponent } from '../authentication-settings/generic-settings/generic-settings.component';
@@ -75,72 +74,43 @@ export class AuthenticationCreateComponent implements OnInit {
         name: 'saml'
     }];
 
+    setupDefaults: any;
+
     constructor(
         private stateService: StateService,
         private _snackBar: MatSnackBar,
         @Inject(AuthenticationConfigurationService)
-        private authenticationConfigurationService: any) {
-        this.breadcrumbs.push({ title: 'New' });
-    }
+        private authenticationConfigurationService: any,
+        @Inject(Settings)
+        public settingsService: any) {
 
-    ngOnInit() {
+        this.breadcrumbs.push({ title: 'New' });
         this.reset();
     }
 
+    ngOnInit() {
+        this.setupDefaults = {};
+        const settingsPromise = this.settingsService.query().$promise;
+
+        settingsPromise.then(result => {
+            const settings: any = {};
+
+            result.forEach(element => {
+                settings[element.type] = {};
+                Object.keys(element).forEach(key => {
+                    if (key !== 'type') {
+                        settings[element.type][key] = element[key];
+                    }
+                });
+            });
+
+            this.setupDefaults = settings.authconfigsetup ? settings.authconfigsetup.settings : {};
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
     loadTemplate(): void {
-        let template: any;
-
-        //TODO move hardcoded template values to config or db.
-        switch (this.strategy.name) {
-            case 'google': {
-                template = new OAuthTemplate();
-                template._settings.callbackURL = '/auth/google/callback';
-
-                this.strategy.buttonColor = '#4285F4';
-                this.strategy.type = 'oauth';
-                break;
-            }
-            case 'geoaxis': {
-                template = new OAuthTemplate();
-                template._settings.callbackURL = 'https://magegeoaxis.geointservices.io/auth/geoaxis/callback';
-                template._settings.authorizationUrl = 'https://geoaxis.gxaws.com';
-                template._settings.apiUrl = 'https://gxisapi.gxaws.com';
-
-                this.strategy.buttonColor = '#163043';
-                this.strategy.type = 'oauth';
-                break;
-            }
-            case 'ldap': {
-                template = new LdapTemplate();
-                this.strategy.buttonColor = '#5E35B1';
-                this.strategy.type = 'ldap';
-                break;
-            }
-            case 'login-gov': {
-                template = new LoginGovTemplate();
-                this.strategy.buttonColor = '#E21D3E';
-                this.strategy.type = 'oauth';
-                break;
-            }
-            case 'saml': {
-                template = new SamlTemplate();
-                this.strategy.textColor = '#000000';
-                this.strategy.buttonColor = '#EF6C00';
-                this.strategy.type = 'saml';
-                break;
-            }
-            default: {
-                console.error('Unknown authentication type: ' + this.strategy.type);
-                break;
-            }
-        }
-
-        //TODO dont call ngoninit
-        this.buttonColorPicker.hexColor = this.strategy.buttonColor;
-        this.buttonColorPicker.ngOnInit();
-        this.textColorPicker.hexColor = this.strategy.textColor;
-        this.textColorPicker.ngOnInit();
-
         this.strategy.settings = {
             usersReqAdmin: {
                 enabled: true
@@ -150,18 +120,31 @@ export class AuthenticationCreateComponent implements OnInit {
             }
         };
 
-        for (const [key, value] of Object.entries(template.settings)) {
+        for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
 
-            if (typeof value == 'string') {
-                const castedValue = value as string;
-                this.strategy.settings[key] = castedValue;
+            if (key === 'buttonColor') {
+                this.strategy.buttonColor = value as string;
+            } else if (key === 'textColor') {
+                this.strategy.textColor = value as string;
             } else {
-                this.strategy.settings[key] = {};
-                for (const [a, b] of Object.entries(value)) {
-                    this.strategy.settings[key][a] = b;
+                if (typeof value == 'string') {
+                    const castedValue = value as string;
+                    this.strategy.settings[key] = castedValue;
+                } else {
+                    this.strategy.settings[key] = {};
+                    for (const [a, b] of Object.entries(value)) {
+                        this.strategy.settings[key][a] = b;
+                    }
                 }
             }
+
         }
+
+        //TODO dont call ngoninit
+        this.buttonColorPicker.hexColor = this.strategy.buttonColor;
+        this.buttonColorPicker.ngOnInit();
+        this.textColorPicker.hexColor = this.strategy.textColor;
+        this.textColorPicker.ngOnInit();
 
         this.settings.refresh();
     }
