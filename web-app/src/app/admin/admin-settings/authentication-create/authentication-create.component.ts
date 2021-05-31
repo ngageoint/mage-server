@@ -120,6 +120,16 @@ export class AuthenticationCreateComponent implements OnInit {
             }
         };
 
+        switch (this.strategy.name) {
+            case 'google':
+            case 'geoaxis':
+            case 'login-gov':
+                this.strategy.type = 'oauth';
+                break;
+            default:
+                this.strategy.type = this.strategy.name;
+        }
+
         for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
 
             if (key === 'buttonColor') {
