@@ -165,7 +165,7 @@ paths:
     get:
       tags: [Authentication & Authorization]
       summary: Get an array of all authentication configurations
-      description: Get all authentication configurations.  This requires an admin user.
+      description: Get all authentication configurations.  The client must have `READ_AUTH_CONFIG` permission.
       operationId: getAllAuthConfigs
       responses:
         200:
@@ -182,7 +182,7 @@ paths:
       tags: [Authentication & Authorization]
       summary: Create a new authentication configuration
       description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
-                   This requires an admin user.
+                   The client must have `UPDATE_AUTH_CONFIG` permission.
       operationId: createNewAuthConfig
       requestBody:
         required: true
