@@ -38,9 +38,6 @@ function createDBObjectsFromConfig() {
             },
             devicesReqAdmin: {
               enabled: true
-            },
-            accountLock: {
-              enabled: false
             }
           }
         };
