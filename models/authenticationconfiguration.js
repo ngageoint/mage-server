@@ -21,7 +21,7 @@ const AuthenticationConfigurationSchema = new Schema({
   versionKey: false
 });
 
-AuthenticationConfigurationSchema.path('name').index({ unique: true });
+AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['url', 'name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 
@@ -94,7 +94,7 @@ exports.update = function (id, config) {
   } else {
     config.icon = null;
   }
-  
+
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };
 
