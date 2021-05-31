@@ -1,21 +1,5 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
-
-@import '~@angular/material/theming';
-@import "variables.scss";
-
-.admin-settings-gap {
-  //top right bottom left
-  margin: 0px 20px 0px 20px;
-}
-
-.bottom-gap {
-  margin-bottom: 16px;
-}
-
-.left-gap {
-  margin-left: 10px;
-}
   
 a {
   color: #1E88E5;
