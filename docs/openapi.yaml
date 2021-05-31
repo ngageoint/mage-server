@@ -161,7 +161,7 @@ paths:
         403:
           description: Failure to provision the device.  This typically means the device needs to be registered.
 
-  /api/authentication/configuration/all:
+  /api/authentication/configuration/:
     get:
       tags: [Authentication & Authorization]
       summary: Authentication Configurations
@@ -172,6 +172,12 @@ paths:
       responses:
         200:
           description: A list of all authentication configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthenticationConfiguration'
         401:
           description: User is not authorized to view authentication configurations.
           
@@ -3263,6 +3269,30 @@ components:
           type: string
         options:
           type: string
+    AuthenticationConfiguration:
+      required:
+        - name
+        - type
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        title: 
+          type: string
+        textColor:
+          type: string
+        buttonColor:
+          type: string
+        icon:
+          type: string
+          format: byte
+        enabled:
+          type: boolean
+        settings:
+          type: object
+
   parameters:
     userIdInPath:
       in: path
