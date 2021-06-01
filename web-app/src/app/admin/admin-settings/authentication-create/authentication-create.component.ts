@@ -111,6 +111,7 @@ export class AuthenticationCreateComponent implements OnInit {
     }
 
     loadTemplate(): void {
+        //Clear out any settings in case a user navigated back
         this.strategy.settings = {
             usersReqAdmin: {
                 enabled: true
@@ -184,7 +185,7 @@ export class AuthenticationCreateComponent implements OnInit {
             name: '',
             type: '',
             title: '',
-            textColor: '#FFFFFF',
+            textColor: '',
             buttonColor: '',
             settings: {
                 usersReqAdmin: {
