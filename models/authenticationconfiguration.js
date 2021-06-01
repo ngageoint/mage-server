@@ -23,7 +23,7 @@ const AuthenticationConfigurationSchema = new Schema({
 
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
-const whitelist = ['url', 'name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -52,7 +52,6 @@ AuthenticationConfigurationSchema.set("toObject", {
 exports.transform = transform;
 
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
-exports.Model = AuthenticationConfiguration;
 
 exports.getById = function (id) {
   return AuthenticationConfiguration.findById(id).exec();
