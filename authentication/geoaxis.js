@@ -60,7 +60,7 @@ function doConfigure(passport, strategyConfig) {
           return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
         } else if (!user.authentication.authenticationConfiguration.enabled) {
           log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
-          return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+          return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
         } else {
           return done(null, user);
         }
@@ -110,7 +110,7 @@ function init(app, passport, provision, tokenService) {
 
       if (!user.authentication.authenticationConfiguration.enabled) {
         log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
-        return res.status(401).send(user.authentication.authenticationConfiguration.title + ' authentication is disabled, please contact a MAGE administrator for assistance.')
+        return next();
       }
 
       // DEPRECATED session authorization, remove req.login which creates session in next version
