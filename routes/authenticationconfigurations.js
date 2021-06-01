@@ -44,7 +44,18 @@ module.exports = function (app, security) {
                 updatedConfig.settings[key] = settings[key];
             });
 
-            AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
+            AuthenticationConfiguration.getById(req.param('id')).then(originalConfig => {
+                // add back blacklisted settings, unless the client updated them
+                if (originalConfig.settings) {
+                    Object.keys(originalConfig.settings).forEach(key => {
+                        //TODO what if the client deleted the setting alltogether??
+                        if (!updatedConfig.settings[key] && AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
+                            updatedConfig.settings[key] = originalConfig.settings[key];
+                        }
+                    });
+                }
+                return AuthenticationConfiguration.update(req.param('id'), updatedConfig);
+            }).then(config => {
                 log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if (config.type === 'oauth') {
@@ -57,7 +68,7 @@ module.exports = function (app, security) {
                 res.json(transformedConfig);
             }).catch(err => {
                 next(err);
-            });
+            })
         });
 
     app.post(
