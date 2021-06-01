@@ -11,7 +11,15 @@
 
         <ng-container matColumnDef="value">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Value </th>
-            <td mat-cell *matCellDef="let setting">{{setting.value}}</td>
+            <td mat-cell *matCellDef="let setting">
+                <ng-container *ngIf='setting.value; then visible else hidden'></ng-container>
+                <ng-template #visible>
+                    {{setting.value}}
+                </ng-template>
+                <ng-template #hidden>
+                    *****
+                </ng-template>
+            </td>
         </ng-container>
 
         <ng-container matColumnDef="action">

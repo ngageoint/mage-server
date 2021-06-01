@@ -53,10 +53,12 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
             let castedValue: string;
 
-            if (typeof value == 'string') {
-                castedValue = value as string;
-            } else {
-                castedValue = JSON.stringify(value);
+            if (value) {
+                if (typeof value == 'string') {
+                    castedValue = value as string;
+                } else {
+                    castedValue = JSON.stringify(value);
+                }
             }
 
             //TODO detect if this field is required
