@@ -131,24 +131,25 @@ export class AuthenticationCreateComponent implements OnInit {
                 this.strategy.type = this.strategy.name;
         }
 
-        for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
+        if (this.setupDefaults[this.strategy.name]) {
+            for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
 
-            if (key === 'buttonColor') {
-                this.strategy.buttonColor = value as string;
-            } else if (key === 'textColor') {
-                this.strategy.textColor = value as string;
-            } else {
-                if (typeof value == 'string') {
-                    const castedValue = value as string;
-                    this.strategy.settings[key] = castedValue;
+                if (key === 'buttonColor') {
+                    this.strategy.buttonColor = value as string;
+                } else if (key === 'textColor') {
+                    this.strategy.textColor = value as string;
                 } else {
-                    this.strategy.settings[key] = {};
-                    for (const [a, b] of Object.entries(value)) {
-                        this.strategy.settings[key][a] = b;
+                    if (typeof value == 'string') {
+                        const castedValue = value as string;
+                        this.strategy.settings[key] = castedValue;
+                    } else {
+                        this.strategy.settings[key] = {};
+                        for (const [a, b] of Object.entries(value)) {
+                            this.strategy.settings[key][a] = b;
+                        }
                     }
                 }
             }
-
         }
 
         //TODO dont call ngoninit
