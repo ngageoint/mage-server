@@ -52,6 +52,7 @@ AuthenticationConfigurationSchema.set("toObject", {
 exports.transform = transform;
 
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
+exports.Model = AuthenticationConfiguration;
 
 exports.getById = function (id) {
   return AuthenticationConfiguration.findById(id).exec();
