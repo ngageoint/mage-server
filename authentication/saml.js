@@ -17,6 +17,12 @@ function doConfigure(passport, strategyConfig) {
   log.info('Configuring SAML authentication');
   passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
     const uid = profile[strategyConfig.settings.uidAttribute];
+
+    if (!uid) {
+      log.warn('Failed to find property ' + strategyConfig.settings.uidAttribute + '. SAML profile keys ' + Object.keys(profile));
+      return done('Failed to load user id from SAML profile');
+    }
+
     User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
       if (err) return done(err);
 
