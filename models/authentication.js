@@ -161,6 +161,10 @@ exports.getAuthenticationsByType = function (type) {
   return Authentication.find({ type: type }).exec();
 };
 
+exports.getAuthenticationsByAuthConfigId = function (authConfigId) {
+  return Authentication.find({ authenticationConfigurationId: authConfigId }).exec();
+};
+
 exports.createAuthentication = function (authentication) {
   let newAuth;
   switch (authentication.type) {
