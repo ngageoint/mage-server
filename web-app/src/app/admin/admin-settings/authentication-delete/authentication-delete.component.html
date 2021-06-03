@@ -4,19 +4,9 @@
 <section class="mat-typography">
   <mat-dialog-content>
     <p>"{{strategy.title}}" authentication will be deleted.</p>
-    <div *ngIf="users.length > 0">
-      <strong>This will remove all associated user information including location data. This cannot be undone, and the user's
-        data will be unrecoverable.
-      </strong>
-      <br>
-      <br>
-      <p>The following {{users.length}} users will also be deleted:</p>
-      <mat-selection-list [multiple]="false">
-        <div *ngFor="let user of users">
-          <mat-list-option (click)="onUserSelected(user)">{{user.username}}</mat-list-option>
-        </div>
-      </mat-selection-list>
-    </div>
+    <strong>This will remove all associated user information including location data. This cannot be undone, and the
+      user's data will be unrecoverable.
+    </strong>
   </mat-dialog-content>
 </section>
 <section class="mat-typography">

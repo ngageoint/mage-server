@@ -157,6 +157,10 @@ exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   }
 };
 
+exports.getAuthenticationsByType = function (type) {
+  return Authentication.find({ type: type }).exec();
+};
+
 exports.createAuthentication = function (authentication) {
   let newAuth;
   switch (authentication.type) {
@@ -182,7 +186,7 @@ exports.createAuthentication = function (authentication) {
     }
     case "ldap": {
       newAuth = new LdapAuthentication({
-        type: 'ldap', 
+        type: 'ldap',
         id: authentication.id,
         authenticationConfigurationId: authentication.authenticationConfigurationId
       });

@@ -5,8 +5,10 @@ module.exports = function (app, security) {
     const log = require('winston')
         , passport = security.authentication.passport
         , access = require('../access')
+        , Authentication = require('../models/authentication')
         , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-        , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration');
+        , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
+        , User = require('../models/user');
 
     app.get(
         '/api/authentication/configuration/',
@@ -114,13 +116,30 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
-            AuthenticationConfiguration.remove(req.param("id")).then(config => {
+
+            AuthenticationConfiguration.getById(req.param('id')).then(config => {
+                return Authentication.getAuthenticationsByType(config.type);
+            }).then(authentications => {
+                const userPromises = [];
+                authentications.forEach(authentication => {
+                    userPromises.push(User.getUserByAuthenticationId(authentication._id));
+                });
+                return Promise.all(userPromises);
+            }).then(users => {
+                const removeUserPromises = [];
+                users.forEach(user => {
+                    removeUserPromises.push(user.remove());
+                });
+                return Promise.all(removeUserPromises);
+            }).then(() => {
+                return AuthenticationConfiguration.remove(req.param("id"));
+            }).then(config => {
                 log.info("Successfully removed strategy with id " + req.param("id"));
                 //TODO not sure how to disable passport strategy, but this will effectively disable it
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
                 next(err);
-            })
+            });
         });
 };

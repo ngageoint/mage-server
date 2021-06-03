@@ -1,40 +1,19 @@
-import { Component, Inject, OnInit } from '@angular/core'
+import { Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../admin-settings.model';
-import { AuthenticationConfigurationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { StateService } from '@uirouter/core';
+import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
   selector: 'authentication-delete',
   templateUrl: './authentication-delete.component.html',
   styleUrls: ['./authentication-delete.component.scss']
 })
-export class AuthenticationDeleteComponent implements OnInit {
-  users: any[] = [];
-
+export class AuthenticationDeleteComponent {
   constructor(
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
-    private stateService: StateService,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
     @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any,
-    @Inject(UserService)
-    private userService: any) {
-  }
-
-  ngOnInit(): void {
-    //TODO poor performance on large set of users
-    //TODO get all users based on where their authentication config id matches
-    this.userService.getAllUsers().then(allUsers => {
-      Object.keys(allUsers).forEach(key => {
-        const user = allUsers[key];
-        if (user.authentication.authenticationConfiguration.title === this.strategy.title) {
-          this.users.push(user);
-        }
-      });
-    }).catch(err => {
-      console.error(err);
-    })
+    private authenticationConfigurationService: any) {
   }
 
   close(): void {
@@ -42,22 +21,11 @@ export class AuthenticationDeleteComponent implements OnInit {
   }
 
   delete(): void {
-    const userPromises = [];
-    this.users.forEach(user => {
-      userPromises.push(this.userService.deleteUser(user));
-    });
-
-    Promise.all(userPromises).then(() => {
-      return this.authenticationConfigurationService.deleteConfiguration(this.strategy);
-    }).then(() => {
+    this.authenticationConfigurationService.deleteConfiguration(this.strategy).then(() => {
       this.dialogRef.close('delete');
     }).catch(err => {
       console.error(err);
       this.dialogRef.close('cancel');
     });
-  }
-
-  onUserSelected(user: any): void {
-    this.stateService.go('admin.user', { userId: user.id });
   }
 }
