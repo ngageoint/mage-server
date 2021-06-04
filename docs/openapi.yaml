@@ -161,6 +161,76 @@ paths:
         403:
           description: Failure to provision the device.  This typically means the device needs to be registered.
 
+  /api/authentication/configuration/:
+    get:
+      tags: [Authentication & Authorization]
+      summary: Get an array of all authentication configurations
+      description: Get all authentication configurations.  The client must have `READ_AUTH_CONFIG` permission.
+      operationId: getAllAuthConfigs
+      responses:
+        200:
+          description: A list of all authentication configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthenticationConfiguration'
+        401:
+          description: User is not authorized to view authentication configurations.
+    post:
+      tags: [Authentication & Authorization]
+      summary: Create a new authentication configuration
+      description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
+                   The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: createNewAuthConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: The created authentication configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+        401:
+          description: User is not authorized to create authentication configurations.
+  /api/authentication/configuration/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/authenticationConfigurationIdInPath' }
+    put:
+      tags: [ Authentication & Authorization ]
+      summary: Update an authentication configuration
+      description: >
+        Update the authentication configuration.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: updateAuthConfigById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: authentication configuration update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+    delete:
+      tags: [ Authentication & Authorization ]
+      summary: Delete  an authentication configuration
+      description: >
+        Delete the authentiction configuration document by `id`.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: deleteAutheConfig
+      responses:
+        204:
+          description: Success - authentication configuration
+          
   /api/users:
     post:
       tags: [ User ]
@@ -3249,6 +3319,30 @@ components:
           type: string
         options:
           type: string
+    AuthenticationConfiguration:
+      required:
+        - name
+        - type
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        title: 
+          type: string
+        textColor:
+          type: string
+        buttonColor:
+          type: string
+        icon:
+          type: string
+          format: byte
+        enabled:
+          type: boolean
+        settings:
+          type: object
+
   parameters:
     userIdInPath:
       in: path
@@ -3404,6 +3498,13 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/SortKey'
+    authenticationConfigurationIdInPath:
+      in: path
+      name: id
+      description: The id of the authentication configuration
+      required: true
+      schema:
+        type: string
 
   responses:
     FormIconInfo:

@@ -5,10 +5,85 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , api = require('../api')
   , config = require('../config.js')
   , log = require('../logger')
-  , userTransformer = require('../transformers/user');
+  , userTransformer = require('../transformers/user')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-module.exports = function (app, passport, provision, googleStrategy, tokenService) {
+function doConfigure(passport, googleStrategy) {
   log.info('Configuring Google authentication');
+  passport.use('google', new GoogleStrategy({
+    clientID: googleStrategy.settings.clientID,
+    clientSecret: googleStrategy.settings.clientSecret,
+    callbackURL: googleStrategy.settings.callbackURL
+  },
+    function (accessToken, refreshToken, profile, done) {
+      User.getUserByAuthenticationStrategy('oauth', profile.id, function (err, user) {
+        if (err) return done(err);
+
+        if (!user) {
+          // Create an account for the user
+          Role.getRole('USER_ROLE', function (err, role) {
+            if (err) return done(err);
+
+            let email = null;
+            profile.emails.forEach(function (e) {
+              if (e.verified) {
+                email = e.value;
+              }
+            });
+
+            const user = {
+              username: email,
+              displayName: profile.name.givenName + ' ' + profile.name.familyName,
+              email: email,
+              active: false,
+              roleId: role._id,
+              authentication: {
+                type: 'oauth',
+                id: profile.id,
+                authenticationConfiguration: {
+                  name: 'google'
+                }
+              }
+            };
+
+            new api.User().create(user).then(newUser => {
+              if (!newUser.authentication.authenticationConfiguration.enabled) {
+                log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
+                return done(null, false, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+              }
+              return done(null, newUser);
+            }).catch(err => done(err));
+          });
+        } else if (!user.active) {
+          return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
+        } else if (!user.authentication.authenticationConfiguration.enabled) {
+          log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
+          return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
+        } else {
+          return done(null, user);
+        }
+      });
+    }
+  ));
+
+}
+
+function configure(passport, config) {
+  if (config) {
+    doConfigure(passport, config);
+  } else {
+    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
+      if (googleStrategy) {
+        doConfigure(passport, googleStrategy);
+      }
+    }).catch(err => {
+      log.error(err);
+    });
+  }
+}
+
+function init(app, passport, provision, tokenService) {
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -31,6 +106,11 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
         return next();
       }
 
+      if (!user.authentication.authenticationConfiguration.enabled) {
+        log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
+        return next();
+      }
+
       // DEPRECATED session authorization, remove req.login which creates session in next version
       req.login(user, function (err) {
         tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
@@ -45,61 +125,18 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
     })(req, res, next);
   }
 
-  passport.use('google', new GoogleStrategy({
-    clientID: googleStrategy.clientID,
-    clientSecret: googleStrategy.clientSecret,
-    callbackURL: googleStrategy.callbackURL
-  },
-  function (accessToken, refreshToken, profile, done) {
-    User.getUserByAuthenticationStrategy('google', profile.id, function (err, user) {
-      if (err) return done(err);
-
-      if (!user) {
-        // Create an account for the user
-        Role.getRole('USER_ROLE', function (err, role) {
-          if (err) return done(err);
-
-          let email = null;
-          profile.emails.forEach(function (e) {
-            if (e.verified) {
-              email = e.value;
-            }
-          });
-
-          const user = {
-            username: email,
-            displayName: profile.name.givenName + ' ' + profile.name.familyName,
-            email: email,
-            active: false,
-            roleId: role._id,
-            authentication: {
-              type: 'google',
-              id: profile.id
-            }
-          };
-
-          new api.User().create(user).then(newUser => {
-            return done(null, newUser);
-          }).catch(err => done(err));
-        });
-      } else if (!user.active) {
-        return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account." });
-      } else {
-        return done(null, user);
-      }
-    });
-  }));
+  configure(passport);
 
   app.get(
-    '/auth/google/signin', 
-    function(req, res, next) {
-      passport.authenticate('google', { 
+    '/auth/google/signin',
+    function (req, res, next) {
+      passport.authenticate('google', {
         scope: ['profile', 'email', 'openid'],
         state: req.query.state
       })(req, res, next);
     }
   );
-    
+
   // DEPRECATED session authorization, remove in next version.
   app.post(
     '/auth/google/authorize',
@@ -122,12 +159,16 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        res.json({
-          token: token.token,
-          expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, { path: req.getRoot() }),
-          device: req.provisionedDevice,
-          api: config.api  // TODO scrub api
+        authenticationApiAppender.append(config.api).then(api => {
+          res.json({
+            token: token.token,
+            expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
+            api: api  // TODO scrub api
+          });
+        }).catch(err => {
+          next(err);
         });
       });
 
@@ -138,7 +179,7 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
   app.get(
     '/auth/google/callback',
     authenticate,
-    function (req, res) {    
+    function (req, res) {
       if (req.query.state === 'mobile') {
         let uri;
         if (!req.user.active || !req.user.enabled) {
@@ -155,3 +196,8 @@ module.exports = function (app, passport, provision, googleStrategy, tokenServic
   );
 
 };
+
+module.exports = {
+  init,
+  configure
+}

@@ -41,6 +41,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatStepperModule } from '@angular/material/stepper';
 
 import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
 import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
@@ -90,7 +92,12 @@ import {
   geometryServiceProvider,
   observationServiceProvider,
   filterServiceProvider,
-  userServiceProvider } from './upgrade/ajs-upgraded-providers';
+  userServiceProvider,
+  settingsProvider,
+  teamProvider,
+  eventProvider,
+  authenticationConfigurationServiceProvider
+} from './upgrade/ajs-upgraded-providers';
 
 import {
   ObservationViewCheckboxComponent,
@@ -123,6 +130,12 @@ import {
 
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
+import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
+import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
+import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
+import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
+import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
+import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 
 @NgModule({
@@ -181,10 +194,22 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     FeedPanelComponent,
     ObservationPopupComponent,
     UserPopupComponent,
-    ColorPickerComponent,
+    AdminSettingsComponent,
+    AuthenticationSettingsComponent,
+    PasswordPolicyComponent,
+    GenericSettingsComponent,
+    AccountLockComponent,
+    AuthenticationCreateComponent,
+    AuthenticationDeleteComponent,
+    SecurityBannerComponent,
+    SecurityDisclaimerComponent,
+    DuplicateKeyComponent,
+    EditSettingComponent,
+    DeleteSettingComponent,
+    IconUploadComponent,
+    DatetimePickerComponent,
     ExportComponent,
-    ExportDialogComponent,
-    DatetimePickerComponent
+    ExportDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -237,7 +262,10 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     MatSortModule,
     MatSnackBarModule,
     MatDatepickerModule,
-    MatNativeDateModule
+    MatNativeDateModule,
+    AdminBreadcrumbModule,
+    MatSlideToggleModule,
+    MatStepperModule
   ],
   providers: [
     mapServiceProvider,
@@ -247,6 +275,10 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     geometryServiceProvider,
     observationServiceProvider,
     localStorageServiceProvider,
+    settingsProvider,
+    teamProvider,
+    eventProvider,
+    authenticationConfigurationServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })

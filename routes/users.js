@@ -136,7 +136,6 @@ module.exports = function (app, security) {
     }
 
     account.password = password;
-    
     req.account = account;
     next();
   }
@@ -165,7 +164,10 @@ module.exports = function (app, security) {
         phones: req.account.phones,
         authentication: {
           type: 'local',
-          password: req.account.password
+          password: req.account.password,
+          authenticationConfiguration: {
+            name: 'local'
+          }
         }
       };
 
@@ -249,7 +251,10 @@ module.exports = function (app, security) {
           phones: req.account.phones,
           authentication: {
             type: 'local',
-            password: req.account.password
+            password: req.account.password,
+            authenticationConfiguration: {
+              name: 'local'
+            }
           }
         };
 
@@ -277,9 +282,9 @@ module.exports = function (app, security) {
     function (req, res, next) {
       var filter = {};
 
-      if(req.query) {
+      if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
             continue;
           }
           filter[key] = value;
@@ -306,7 +311,7 @@ module.exports = function (app, security) {
         sort = req.query.sort;
       }
 
-      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
+      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort }, function (err, users, pageInfo) {
         if (err) return next(err);
 
         let data = null;
@@ -330,9 +335,9 @@ module.exports = function (app, security) {
     function (req, res, next) {
       var filter = {};
 
-      if(req.query) {
+      if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
             continue;
           }
           filter[key] = value;

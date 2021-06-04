@@ -7,6 +7,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Local user signup captcha
+* New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
 
 ##### Bug Fixes
 

@@ -6,8 +6,7 @@ const request = require('supertest')
   , expect = require('chai').expect
   , MockToken = require('../mockToken')
   , app = require('../../express')
-  , mongoose = require('mongoose')
-  , hasher = require('../../utilities/pbkdf2')();
+  , mongoose = require('mongoose');
 
 require('../../models/token');
 const TokenModel = mongoose.model('Token');
@@ -18,10 +17,8 @@ const UserModel = mongoose.model('User');
 require('../../models/event');
 const EventModel = mongoose.model('Event');
 
-const Setting = require('../../models/setting');
-
-require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const Authentication = require('../../models/authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
@@ -104,11 +101,17 @@ describe("user update tests", function () {
       active: true,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: new AuthenticationModel({
+      authentication: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
-        security: {}
+        security: {},
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {}
+        })
       })
     }
 
@@ -116,11 +119,11 @@ describe("user update tests", function () {
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -149,44 +152,49 @@ describe("user update tests", function () {
   });
 
   it('should fail to update myself if passwords does not meet complexity', function (done) {
-    const mockUser = {
+    const mockUser = new UserModel({
       _id: userId,
       username: 'test',
       displayName: 'test',
       active: true,
       enabled: true,
       roleId: mongoose.Types.ObjectId(),
-      authentication: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            passwordPolicy: {
+              helpText: 'Password must be at least 14 characters',
+              passwordMinLengthEnabled: true,
+              passwordMinLength: 14
+            }
+          }
+        }),
         security: {}
       })
-    }
+    });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .chain('exec')
       .yields(null, mockUser);
 
-    sinon.mock(AuthenticationModel.prototype)
+    sinon.mock(Authentication.Local.prototype)
       .expects('validatePassword')
       .yields(null, true);
-
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
-        }
-      }
-    }));
 
     request(app)
       .put('/api/users/myself/password')
@@ -317,7 +325,7 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -339,18 +347,6 @@ describe("user update tests", function () {
     sinon.mock(mockUser.authentication)
       .expects('save')
       .resolves(mockUser.authentication);
-
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
-        }
-      }
-    }));
 
     request(app)
       .put('/api/users/' + id.toString() + '/password')
@@ -374,25 +370,13 @@ describe("user update tests", function () {
       displayName: 'test',
       active: true,
       enabled: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
         security: {}
       })
     });
-
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
-        }
-      }
-    }));
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
@@ -421,7 +405,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: undefined,
@@ -480,18 +464,6 @@ describe("user update tests", function () {
       .expects('updateUser')
       .withArgs(sinon.match.has('roleId', undefined))
       .yields(null, mockUser);
-
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
-        }
-      }
-    }));
 
     request(app)
       .put('/api/users/' + id.toString())
@@ -704,7 +676,7 @@ describe("user update tests", function () {
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: AuthenticationModel({
+      authentication: Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
@@ -740,36 +712,41 @@ describe("user update tests", function () {
     mockTokenWithPermission('UPDATE_USER_ROLE');
 
     const id = mongoose.Types.ObjectId();
-    const mockUser = {
+    const mockUser =  new UserModel({
       _id: id,
       username: 'test',
       displayName: 'test',
       active: true,
-      authentication: AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            passwordPolicy: {
+              helpText: 'Password must be at least 14 characters',
+              passwordMinLengthEnabled: true,
+              passwordMinLength: 14
+            }
+          }
+        }),
         security: {}
       })
-    }
+    });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(UserModel)
       .expects('findById').withArgs(id.toHexString())
       .chain('populate', 'roleId')
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
-
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
-        }
-      }
-    }));
 
     request(app)
       .put('/api/users/' + id.toString() + '/password')

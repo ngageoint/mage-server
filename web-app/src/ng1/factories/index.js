@@ -37,3 +37,4 @@ angular.module('mage')
   .factory('UserPagingService', require('./user-paging.service'))
   .factory('DevicePagingService', require('./device-paging.service'))
   .factory('TeamPagingService', require('./team-paging.service'))
+  .factory('AuthenticationConfigurationService', require('./authentication-configuration.service'));

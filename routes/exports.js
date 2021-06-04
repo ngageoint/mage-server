@@ -154,7 +154,6 @@ module.exports = function (app, security) {
   */
   app.get('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    authorizeExportAccess('READ_EXPORT'),
     function (req, res) {
       const file = path.join(exportDirectory, req.export.relativePath);
       res.writeHead(200, {
@@ -171,7 +170,6 @@ module.exports = function (app, security) {
   // TODO should be able to delete your own export
   app.delete('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    authorizeExportAccess('DELETE_EXPORT'),
     function (req, res, next) {
       Export.removeExport(req.params.exportId).then(result => {
         fs.promises.unlink(path.join(exportDirectory, result.relativePath)).catch(err => {
@@ -186,7 +184,6 @@ module.exports = function (app, security) {
    */
   app.post('/api/exports/:exportId/retry',
     passport.authenticate('bearer'),
-    authorizeExportAccess('READ_EXPORT'),
     getExport,
     getEvent,
     authorizeEventAccess,

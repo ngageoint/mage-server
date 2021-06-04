@@ -14,10 +14,8 @@ const RoleModel = mongoose.model('Role');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-const Setting = require('../../models/setting');
-
 const Authentication = require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 const svgCaptcha = require('svg-captcha');
 
@@ -72,32 +70,33 @@ describe("user create tests", function () {
       password: 'password',
       passwordconfirm: 'password',
       roleId: roleId,
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: true
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
-      .resolves({
-        settings: {
-          [mockUser.authentication.type]: {
-            usersReqAdmin: true
-          }
-        }
-      })
-
     sinon.mock(mockUser)
       .expects('populate')
-      .twice()
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -136,13 +135,12 @@ describe("user create tests", function () {
   it('should fail to create user as admin w/o roleId', function (done) {
     mockTokenWithPermission('CREATE_USER');
 
-    sinon.mock(Setting)
-      .expects('getSetting').withArgs('security')
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
       .resolves({
         settings: {
-          local: {
-            usersReqAdmin: true
-          }
+          usersReqAdmin: { enabled: true }
         }
       });
 
@@ -215,36 +213,43 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: true
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        local: {
-          usersReqAdmin: {
-            enabled: true
-          }
-        }
-      }
-    }));
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
+      .yields(null, mockUser);
 
-    sinon.mock(mockUser)
+    sinon.mock(UserModel)
       .expects('populate')
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
       .expects('create')
-      .withArgs(sinon.match.has('active', false))
       .yields(null, mockUser);
 
     await request(app)
@@ -287,28 +292,38 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        local: {
-        }
-      }
-    }));
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -356,31 +371,39 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            usersReqAdmin: true
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        local: {
-          usersReqAdmin: {
-            enabled: true
-          }
-        }
-      }
-    }));
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
-      .withArgs('roleId')
       .yields(null, mockUser);
 
     sinon.mock(UserModel)
@@ -428,24 +451,35 @@ describe("user create tests", function () {
       displayName: 'test',
       password: 'passwordpassword',
       passwordconfirm: 'passwordpassword',
-      authenticationId: new AuthenticationModel({
+      authenticationId: new Authentication.Local({
         _id: mongoose.Types.ObjectId(),
         type: 'local',
         password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+          }
+        }),
         security: {}
       })
     });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(Authentication)
       .expects('createAuthentication')
       .resolves(mockUser.authentication);
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
-      settings: {
-        local: {
-        }
-      }
-    }));
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
+      .yields(null, mockUser);
 
     sinon.mock(mockUser)
       .expects('populate')
@@ -571,7 +605,7 @@ describe("user create tests", function () {
       });
   });
 
-  it('should fail to create user when passsord does not meet complexity', async function () {
+  it('should fail to create user when password does not meet complexity', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     let jwt = await captcha();
@@ -583,17 +617,28 @@ describe("user create tests", function () {
         permissions: ['SOME_PERMISSIONS']
       }));
 
-    sinon.stub(Setting, 'getSetting').returns(Promise.resolve({
+    const authConfig = {
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      name: 'local',
       settings: {
-        'local': {
-          passwordPolicy: {
-            helpText: 'Password must be at least 14 characters',
-            passwordMinLengthEnabled: true,
-            passwordMinLength: 14
-          }
+        passwordPolicy: {
+          helpText: 'Password must be at least 14 characters',
+          passwordMinLengthEnabled: true,
+          passwordMinLength: 14
         }
       }
-    }));
+    };
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(authConfig);
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findById')
+      .chain('exec')
+      .resolves(authConfig);
 
     await request(app)
       .post('/api/users/signups/verifications')
@@ -609,7 +654,7 @@ describe("user create tests", function () {
       .expect(function (res) {
         res.text.should.equal('Password must be at least 14 characters');
       });
-    });
+  });
 
   it('should fail to create user with no captcha token', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
