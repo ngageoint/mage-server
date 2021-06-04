@@ -121,6 +121,9 @@ module.exports = function (app, security) {
                 .then(authentications => {
                     const userPromises = [];
                     authentications.forEach(authentication => {
+                        if (authentication.type === 'local') {
+                            throw new Error('Removal of local authentication is not allowed');
+                        }
                         userPromises.push(User.getUserByAuthenticationId(authentication._id));
                     });
                     return Promise.all(userPromises);
