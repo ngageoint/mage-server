@@ -12,10 +12,16 @@ class FileSystemSecretStore {
     _config;
     static suffix = '.dat';
 
-    constructor(config = { storageLocation: env.securityStoreDirectory }) {
+    constructor(config = { storageLocation: env.securityDirectory }) {
         this._config = config;
 
         log.info('Secure storage location: ' + this._config.storageLocation);
+
+        try {
+            fs.mkdirSync(this._config.storageLocation);
+        } catch (err) {
+            log.debug(err);
+        }
     }
 
     send(command) {
@@ -51,8 +57,12 @@ class FileSystemSecretStore {
         let response;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
-            fs.accessSync(file, fs.constants.W_OK);
-            response = Promise.resolve(fs.writeFileSync(file, command.data));
+            fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
+
+            const writeOptions = {
+                mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
+            };
+            response = Promise.resolve(fs.writeFileSync(file, command.data, writeOptions));
         } catch (err) {
             log.warn(err);
             response = Promise.reject(err);
