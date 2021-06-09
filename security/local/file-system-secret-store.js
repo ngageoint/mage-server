@@ -5,7 +5,8 @@ const env = require('../../environment/env')
     , log = require('winston')
     , path = require('path')
     , ReadCommand = require('./read-command')
-    , WriteCommand = require('./write-command');
+    , WriteCommand = require('./write-command')
+    , DeleteCommand = require('./delete-command');
 
 class FileSystemSecretStore {
     _config;
@@ -24,6 +25,8 @@ class FileSystemSecretStore {
             response = this.read(command);
         } else if (command instanceof WriteCommand) {
             response = this.write(command);
+        } else if (command instanceof DeleteCommand) {
+            response = this.delete(command);
         } else {
             response = Promise.reject('Unknown command received');
         }
@@ -50,6 +53,19 @@ class FileSystemSecretStore {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
             fs.accessSync(file, fs.constants.W_OK);
             response = Promise.resolve(fs.writeFileSync(file, command.data));
+        } catch (err) {
+            log.warn(err);
+            response = Promise.reject(err);
+        }
+        return response;
+    }
+
+    delete(command) {
+        let response;
+        try {
+            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            fs.accessSync(file, fs.constants.W_OK);
+            response = Promise.resolve(fs.rmSync(file));
         } catch (err) {
             log.warn(err);
             response = Promise.reject(err);
