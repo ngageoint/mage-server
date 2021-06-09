@@ -13,10 +13,18 @@ describe("Secret Store Tests", function () {
     });
 
     it('Test read', function (done) {
+        const dataId = '12345';
+
         const secretStore = new SecretStoreService();
+        const testData = 'some test data';
 
-        secretStore.read('');
+        sinon.mock(secretStore).expects('read').withArgs('12345').resolves(testData);
 
-        done();
+        secretStore.read(dataId).then(response => {
+            expect(response).to.not.be.undefined;
+            expect(response).to.equal(testData);
+        }).finally(() => {
+            done();
+        });
     });
 });
