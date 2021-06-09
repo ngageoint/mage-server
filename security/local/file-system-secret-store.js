@@ -32,12 +32,29 @@ class FileSystemSecretStore {
     }
 
     read(command) {
-        const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
-        return Promise.resolve(fs.readFileSync(file));
+        let response;
+        try {
+            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            fs.accessSync(file, fs.constants.R_OK);
+            response = Promise.resolve(fs.readFileSync(file));
+        } catch (err) {
+            log.warn(err);
+            response = Promise.reject(err);
+        }
+        return response;
     }
 
     write(command) {
-
+        let response;
+        try {
+            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            fs.accessSync(file, fs.constants.W_OK);
+            response = Promise.resolve(fs.writeFileSync(file, command.data));
+        } catch (err) {
+            log.warn(err);
+            response = Promise.reject(err);
+        }
+        return response;
     }
 }
 
