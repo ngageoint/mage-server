@@ -81,7 +81,7 @@ exports.getAllConfigurations = function () {
   return AuthenticationConfiguration.find({}).exec();
 };
 
-exports.create = function (config) {
+function manageIcon(config) {
   if (config.icon) {
     if (config.icon.startsWith('data')) {
       config.icon = new Buffer(config.icon.split(",")[1], "base64");
@@ -91,20 +91,16 @@ exports.create = function (config) {
   } else {
     config.icon = null;
   }
+}
+
+exports.create = function (config) {
+  manageIcon(config);
 
   return AuthenticationConfiguration.create(config);
 };
 
 exports.update = function (id, config) {
-  if (config.icon) {
-    if (config.icon.startsWith('data')) {
-      config.icon = new Buffer(config.icon.split(",")[1], "base64");
-    } else {
-      config.icon = new Buffer(config.icon, 'base64');
-    }
-  } else {
-    config.icon = null;
-  }
+  manageIcon(config);
 
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };
