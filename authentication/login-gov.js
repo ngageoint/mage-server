@@ -111,7 +111,7 @@ function configure(passport, config) {
     sss.read(config._id.toString()).then(result => {
       if (result) {
         Object.keys(result).forEach(key => {
-          strategyConfig.settings[key] = result[key];
+          config.settings[key] = result[key];
         });
       }
       doConfigure(passport, config);
