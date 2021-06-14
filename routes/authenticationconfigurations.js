@@ -1,14 +1,16 @@
 'use strict';
 
+const log = require('winston')
+    , access = require('../access')
+    , Authentication = require('../models/authentication')
+    , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+    , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
+    , User = require('../models/user')
+    , SecretStoreService = require('../security/secret-store-service');
+
 module.exports = function (app, security) {
 
-    const log = require('winston')
-        , passport = security.authentication.passport
-        , access = require('../access')
-        , Authentication = require('../models/authentication')
-        , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-        , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
-        , User = require('../models/user');
+    const passport = security.authentication.passport;
 
     app.get(
         '/api/authentication/configuration/',
@@ -42,22 +44,26 @@ module.exports = function (app, security) {
 
             const settings = JSON.parse(req.body.settings);
 
+            const securityData = {};
+
             Object.keys(settings).forEach(key => {
-                updatedConfig.settings[key] = settings[key];
+                if (AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
+                    securityData[key] = settings[key];
+                } else {
+                    updatedConfig.settings[key] = settings[key];
+                }
             });
 
-            AuthenticationConfiguration.getById(req.param('id')).then(originalConfig => {
-                // add back blacklisted settings, unless the client updated them
-                if (originalConfig.settings) {
-                    Object.keys(originalConfig.settings).forEach(key => {
-                        //TODO what if the client deleted the setting alltogether??
-                        if (!updatedConfig.settings[key] && AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
-                            updatedConfig.settings[key] = originalConfig.settings[key];
-                        }
-                    });
+            AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
+                const response = [];
+                response.push(Promise.resolve(config));
+                if (Object.keys(securityData).length > 0) {
+                    const sss = new SecretStoreService();
+                    response.push(sss.write(config._id, securityData));
                 }
-                return AuthenticationConfiguration.update(req.param('id'), updatedConfig);
-            }).then(config => {
+                return Promise.all(response);
+            }).then(response => {
+                const config = response[0];
                 log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if (config.type === 'oauth') {
@@ -91,11 +97,26 @@ module.exports = function (app, security) {
 
             const settings = JSON.parse(req.body.settings);
 
+            const securityData = {};
+
             Object.keys(settings).forEach(key => {
-                newConfig.settings[key] = settings[key];
+                if (AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
+                    securityData[key] = settings[key];
+                } else {
+                    newConfig.settings[key] = settings[key];
+                }
             });
 
             AuthenticationConfiguration.create(newConfig).then(config => {
+                const response = [];
+                response.push(Promise.resolve(config));
+                if (Object.keys(securityData).length > 0) {
+                    const sss = new SecretStoreService();
+                    response.push(sss.write(config._id, securityData));
+                }
+                return Promise.all(response);
+            }).then(response => {
+                const config = response[0];
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if (config.type === 'oauth') {
@@ -136,6 +157,15 @@ module.exports = function (app, security) {
                 }).then(() => {
                     return AuthenticationConfiguration.remove(req.param("id"));
                 }).then(config => {
+                    const response = [];
+                    response.push(Promise.resolve(config));
+
+                    const sss = new SecretStoreService();
+                    response.push(sss.delete(config._id));
+                    return Promise.all(response);
+                }).then(response => {
+                    const config = response[0];
+
                     log.info("Successfully removed strategy with id " + req.param("id"));
                     //TODO not sure how to disable passport strategy, but this will effectively disable it
                     const transformedConfig = AuthenticationConfigurationTransformer.transform(config);

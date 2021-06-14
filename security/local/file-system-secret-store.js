@@ -76,8 +76,12 @@ class FileSystemSecretStore {
         let response;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
-            fs.accessSync(file, fs.constants.W_OK);
-            response = Promise.resolve(fs.rmSync(file));
+            if (fs.existsSync(file)) {
+                fs.accessSync(file, fs.constants.W_OK);
+                response = Promise.resolve(fs.rmSync(file));
+            } else {
+                response = Promise.resolve(true);
+            }
         } catch (err) {
             log.warn(err);
             response = Promise.reject(err);
