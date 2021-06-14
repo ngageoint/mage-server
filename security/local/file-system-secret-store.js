@@ -18,7 +18,9 @@ class FileSystemSecretStore {
         log.info('Secure storage location: ' + this._config.storageLocation);
 
         try {
-            fs.mkdirSync(this._config.storageLocation);
+            if (!fs.existsSync(this._config.storageLocation)) {
+                fs.mkdirSync(this._config.storageLocation);
+            }
         } catch (err) {
             log.debug(err);
         }
@@ -45,7 +47,7 @@ class FileSystemSecretStore {
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
             fs.accessSync(file, fs.constants.R_OK);
-            response = Promise.resolve(fs.readFileSync(file));
+            response = Promise.resolve(JSON.parse(fs.readFileSync(file)));
         } catch (err) {
             log.warn(err);
             response = Promise.reject(err);

@@ -7,7 +7,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecretStoreService = require('../security/secret-store-service');
 
 function doConfigure(passport, googleStrategy) {
   log.info('Configuring Google authentication');
@@ -70,12 +71,29 @@ function doConfigure(passport, googleStrategy) {
 }
 
 function configure(passport, config) {
+  const sss = new SecretStoreService();
   if (config) {
-    doConfigure(passport, config);
+    sss.read(config._id.toString()).then(result => {
+      if (result) {
+        Object.keys(result).forEach(key => {
+          strategyConfig.settings[key] = result[key];
+        });
+      }
+      doConfigure(passport, config);
+    });
   } else {
-    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
-      if (googleStrategy) {
-        doConfigure(passport, googleStrategy);
+    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(strategyConfig => {
+      if (strategyConfig) {
+        sss.read(strategyConfig._id.toString()).then(result => {
+          if (result) {
+            Object.keys(result).forEach(key => {
+              strategyConfig.settings[key] = result[key];
+            });
+          }
+          doConfigure(passport, strategyConfig);
+        }).catch(err => {
+          log.error(err);
+        });
       }
     }).catch(err => {
       log.error(err);

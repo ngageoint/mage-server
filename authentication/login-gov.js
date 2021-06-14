@@ -11,7 +11,8 @@ const fs = require('fs')
   , config = require('../config.js')
   , log = require('../logger')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecretStoreService = require('../security/secret-store-service');
 
 function doConfigure(passport, strategyConfig) {
   log.info('Configuring login.gov authentication', strategyConfig);
@@ -102,17 +103,32 @@ function doConfigure(passport, strategyConfig) {
   }).catch(function (err) {
     log.error('login.gov configuration error', err);
   });
-
-
 }
 
 function configure(passport, config) {
+  const sss = new SecretStoreService();
   if (config) {
-    doConfigure(passport, config);
+    sss.read(config._id.toString()).then(result => {
+      if (result) {
+        Object.keys(result).forEach(key => {
+          strategyConfig.settings[key] = result[key];
+        });
+      }
+      doConfigure(passport, config);
+    });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
       if (strategyConfig) {
-        doConfigure(passport, strategyConfig);
+        sss.read(strategyConfig._id.toString()).then(result => {
+          if (result) {
+            Object.keys(result).forEach(key => {
+              strategyConfig.settings[key] = result[key];
+            });
+          }
+          doConfigure(passport, strategyConfig);
+        }).catch(err => {
+          log.error(err);
+        });
       }
     }).catch(err => {
       log.error(err);
