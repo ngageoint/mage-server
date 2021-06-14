@@ -8,7 +8,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , userTransformer = require('../transformers/user')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecretStoreService = require('../security/secret-store-service');
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(passport, googleStrategy) {
   log.info('Configuring Google authentication');
@@ -71,32 +71,20 @@ function doConfigure(passport, googleStrategy) {
 }
 
 function configure(passport, config) {
-  const sss = new SecretStoreService();
   if (config) {
-    sss.read(config._id.toString()).then(result => {
-      if (result) {
-        Object.keys(result).forEach(key => {
-          config.settings[key] = result[key];
-        });
-      }
-      doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'google').then(strategyConfig => {
       if (strategyConfig) {
-        sss.read(strategyConfig._id.toString()).then(result => {
-          if (result) {
-            Object.keys(result).forEach(key => {
-              strategyConfig.settings[key] = result[key];
-            });
-          }
-          doConfigure(passport, strategyConfig);
-        }).catch(err => {
-          log.error(err);
-        });
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
       }
+      return Promise.reject('Google not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

@@ -8,7 +8,8 @@ const LdapStrategy = require('passport-ldapauth')
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 let authenticationOptions = {
 };
@@ -86,7 +87,9 @@ function doConfigure(passport, strategyConfig) {
 function configure(passport, config) {
 
   if (config) {
-    doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
+    });
   } else {
     AuthenticationConfiguration.getConfigurationsByType('ldap').then(strategyConfigs => {
       strategyConfigs.forEach(strategyConfig => {
