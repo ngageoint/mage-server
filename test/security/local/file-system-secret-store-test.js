@@ -5,7 +5,8 @@ const chai = require('chai')
     , sinonChai = require('sinon-chai')
     , expect = require("chai").expect
     , FileSystemSecretStore = require("../../../security/local/file-system-secret-store")
-    , ReadCommand = require("../../../security/commands/read-command");
+    , ReadCommand = require("../../../security/commands/read-command")
+    , DeleteCommand = require("../../../security/commands/delete-command");
 
 describe("File System Secret Store Tests", function () {
 
@@ -17,6 +18,20 @@ describe("File System Secret Store Tests", function () {
         const dataId = '12345';
         const fsStore = new FileSystemSecretStore();
         const command = new ReadCommand(dataId);
+
+        fsStore.send(command).then(response => {
+            expect(response.status).to.be.false;
+            expect(response.data).to.be.null;
+            done();
+        }).catch(err => {
+            done(err);
+        });
+    });
+
+    it('Test delete data that does not exist', function (done) {
+        const dataId = '12345';
+        const fsStore = new FileSystemSecretStore();
+        const command = new DeleteCommand(dataId);
 
         fsStore.send(command).then(response => {
             expect(response.status).to.be.false;

@@ -2,9 +2,9 @@
 
 class DataResponse {
     _id;
-    _error;
-    _status;
-    _data;
+    _error = null;
+    _status = true;
+    _data = null;
 
     constructor(id) {
         this._id = id;
