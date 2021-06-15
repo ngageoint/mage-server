@@ -4,7 +4,7 @@ const chai = require('chai')
     , sinon = require('sinon')
     , sinonChai = require('sinon-chai')
     , expect = require("chai").expect
-    , FileSystemSecretStore = require("../../../security/local/file-system-secret-store")
+    , FileSystemSecretStore = require("../../../security/providers/file-system-secret-store")
     , ReadCommand = require("../../../security/commands/read-command")
     , DeleteCommand = require("../../../security/commands/delete-command");
 

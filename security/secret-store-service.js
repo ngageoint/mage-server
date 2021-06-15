@@ -1,6 +1,6 @@
 "use strict";
 
-const FileSystemSecretStore = require("./local/file-system-secret-store")
+const FileSystemSecretStore = require("./providers/file-system-secret-store")
     , log = require('winston')
     , ReadCommand = require('./commands/read-command')
     , WriteCommand = require('./commands/write-command')
