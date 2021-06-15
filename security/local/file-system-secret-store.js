@@ -4,6 +4,7 @@ const env = require('../../environment/env')
     , fs = require('fs')
     , log = require('winston')
     , path = require('path')
+    , DataResponse = require('../responses/data-response')
     , ReadCommand = require('../commands/read-command')
     , WriteCommand = require('../commands/write-command')
     , DeleteCommand = require('../commands/delete-command');
@@ -15,7 +16,7 @@ class FileSystemSecretStore {
     constructor(config = { storageLocation: env.securityDirectory }) {
         this._config = config;
 
-        log.info('Secure storage location: ' + this._config.storageLocation);
+        log.debug('Secure storage location: ' + this._config.storageLocation);
 
         try {
             if (!fs.existsSync(this._config.storageLocation)) {
@@ -43,24 +44,28 @@ class FileSystemSecretStore {
     }
 
     read(command) {
-        let response;
+        const response = new DataResponse(command.id);
+        let promise;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.R_OK);
-                response = Promise.resolve(JSON.parse(fs.readFileSync(file)));
+                response.data = JSON.parse(fs.readFileSync(file));
             } else {
-                response = Promise.resolve(true);
+                response.status = false;
             }
+            promise = Promise.resolve(response);
         } catch (err) {
             log.warn(err);
-            response = Promise.reject(err);
+            response.error = err;
+            promise = Promise.reject(err);
         }
-        return response;
+        return promise;
     }
 
     write(command) {
-        let response;
+        const response = new DataResponse(command.id);
+        let promise;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
             fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
@@ -68,29 +73,35 @@ class FileSystemSecretStore {
             const writeOptions = {
                 mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
             };
-            response = Promise.resolve(fs.writeFileSync(file, command.data, writeOptions));
+            response.data = fs.writeFileSync(file, command.data, writeOptions);
+            promise = Promise.resolve(response);
         } catch (err) {
             log.warn(err);
-            response = Promise.reject(err);
+            response.error = err;
+            promise = Promise.reject(response);
         }
-        return response;
+        return promise;
     }
 
     delete(command) {
-        let response;
+        const response = new DataResponse(command.id);
+        let promise;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.W_OK);
-                response = Promise.resolve(fs.rmSync(file));
+                fs.rmSync(file);
+                response.status = true;
             } else {
-                response = Promise.resolve(true);
+                response.status = false;
             }
+            promise = Promise.resolve(response);
         } catch (err) {
             log.warn(err);
-            response = Promise.reject(err);
+            response.error = err;
+            promise = Promise.reject(response);
         }
-        return response;
+        return promise;
     }
 }
 

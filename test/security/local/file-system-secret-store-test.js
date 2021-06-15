@@ -5,7 +5,7 @@ const chai = require('chai')
     , sinonChai = require('sinon-chai')
     , expect = require("chai").expect
     , FileSystemSecretStore = require("../../../security/local/file-system-secret-store")
-    , ReadCommand = require("../../../security/local/read-command");
+    , ReadCommand = require("../../../security/commands/read-command");
 
 describe("File System Secret Store Tests", function () {
 
@@ -18,10 +18,11 @@ describe("File System Secret Store Tests", function () {
         const fsStore = new FileSystemSecretStore();
         const command = new ReadCommand(dataId);
 
-        fsStore.send(command).then(() => {
-            done('Should not return successfully');
-        }).catch(err => {
+        fsStore.send(command).then(response => {
+            expect(response.status).to.be.false;
             done();
+        }).catch(err => {
+            done(err);
         });
     });
 });
