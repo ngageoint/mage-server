@@ -8,7 +8,8 @@ const SamlStrategy = require('passport-saml').Strategy
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 let cachedApp;
 let cachedTokenService;
@@ -130,16 +131,19 @@ function doConfigure(passport, strategyConfig) {
 
 function configure(passport, config) {
   if (config) {
-    doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
+    });
   } else {
-    AuthenticationConfiguration.getConfigurationsByType('saml').then(strategyConfigs => {
-      strategyConfigs.forEach(strategyConfig => {
-        if (strategyConfig) {
-          doConfigure(passport, strategyConfig);
-        }
-      });
+    AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
+      if (strategyConfig) {
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
+      }
+      return Promise.reject('SAML not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

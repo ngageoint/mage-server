@@ -4,9 +4,9 @@ const env = require('../../environment/env')
     , fs = require('fs')
     , log = require('winston')
     , path = require('path')
-    , ReadCommand = require('./read-command')
-    , WriteCommand = require('./write-command')
-    , DeleteCommand = require('./delete-command');
+    , ReadCommand = require('../commands/read-command')
+    , WriteCommand = require('../commands/write-command')
+    , DeleteCommand = require('../commands/delete-command');
 
 class FileSystemSecretStore {
     _config;
@@ -46,8 +46,12 @@ class FileSystemSecretStore {
         let response;
         try {
             const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
-            fs.accessSync(file, fs.constants.R_OK);
-            response = Promise.resolve(JSON.parse(fs.readFileSync(file)));
+            if (fs.existsSync(file)) {
+                fs.accessSync(file, fs.constants.R_OK);
+                response = Promise.resolve(JSON.parse(fs.readFileSync(file)));
+            } else {
+                response = Promise.resolve(true);
+            }
         } catch (err) {
             log.warn(err);
             response = Promise.reject(err);

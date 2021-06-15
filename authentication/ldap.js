@@ -85,20 +85,20 @@ function doConfigure(passport, strategyConfig) {
 }
 
 function configure(passport, config) {
-
   if (config) {
     SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
       doConfigure(passport, appendedConfig);
     });
   } else {
-    AuthenticationConfiguration.getConfigurationsByType('ldap').then(strategyConfigs => {
-      strategyConfigs.forEach(strategyConfig => {
-        if (strategyConfig) {
-          doConfigure(passport, strategyConfig);
-        }
-      });
+    AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
+      if (strategyConfig) {
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
+      }
+      return Promise.reject('LDAP not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

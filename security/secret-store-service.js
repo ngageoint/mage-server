@@ -2,9 +2,9 @@
 
 const FileSystemSecretStore = require("./local/file-system-secret-store")
     , log = require('winston')
-    , ReadCommand = require('./local/read-command')
-    , WriteCommand = require('./local/write-command')
-    , DeleteCommand = require('./local/delete-command');
+    , ReadCommand = require('./commands/read-command')
+    , WriteCommand = require('./commands/write-command')
+    , DeleteCommand = require('./commands/delete-command');
 
 class SecretStoreService {
     _config;
