@@ -20,10 +20,13 @@ class FileSystemSecretStore {
 
         try {
             if (!fs.existsSync(this._config.storageLocation)) {
-                fs.mkdirSync(this._config.storageLocation);
+                const createOptions = {
+                    mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR | fs.constants.S_IXUSR
+                };
+                fs.mkdirSync(this._config.storageLocation, createOptions);
             }
         } catch (err) {
-            log.debug(err);
+            log.error(err);
         }
     }
 
