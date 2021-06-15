@@ -11,9 +11,8 @@ const env = require('../../environment/env')
 
 class FileSystemSecretStore {
     _config;
-    static suffix = '.dat';
 
-    constructor(config = { storageLocation: env.securityDirectory }) {
+    constructor(config = { storageLocation: env.securityDirectory, suffix: '.json' }) {
         this._config = config;
 
         log.debug('Secure storage location: ' + this._config.storageLocation);
@@ -50,7 +49,7 @@ class FileSystemSecretStore {
         const response = new DataResponse(command.id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.R_OK);
                 response.data = JSON.parse(fs.readFileSync(file));
@@ -70,7 +69,7 @@ class FileSystemSecretStore {
         const response = new DataResponse(command.id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
             fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
 
             const writeOptions = {
@@ -90,7 +89,7 @@ class FileSystemSecretStore {
         const response = new DataResponse(command.id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + FileSystemSecretStore.suffix);
+            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.W_OK);
                 fs.rmSync(file);
