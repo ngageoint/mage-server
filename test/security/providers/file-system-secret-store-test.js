@@ -1,8 +1,6 @@
 "use strict";
 
-const chai = require('chai')
-    , sinon = require('sinon')
-    , sinonChai = require('sinon-chai')
+const sinon = require('sinon')
     , expect = require("chai").expect
     , fs = require('fs')
     , FileSystemSecretStore = require("../../../security/providers/file-system-secret-store")
