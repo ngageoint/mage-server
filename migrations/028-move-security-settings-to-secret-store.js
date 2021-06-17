@@ -5,24 +5,38 @@ const log = require('winston')
 
 exports.id = 'move-security-settings-to-secret-store';
 
-function moveSecuritySettings(settings) {
+function moveSecuritySettings(settings, blacklist) {
     const data = {};
     Object.keys(settings).forEach(key => {
-        switch (key.toLowerCase()) {
-            case 'clientid':
-            case 'clientsecret':
-            case 'client_id':
-                data[key] = settings[key];
-                delete settings[key];
-                break;
-            default:
-                break;
+        if (blacklist.includes(key.toLowerCase())) {
+            data[key] = settings[key];
+            delete settings[key];
         }
     });
     return data;
 }
 
+async function loadBlacklist() {
+    const blacklist = [];
+
+    const settingsCollection = await this.db.collection('settings');
+    const cursor = settingsCollection.find({ type: 'blacklist' });
+
+    let hasNext = true;
+    while (hasNext === true) {
+        hasNext = await cursor.hasNext()
+        if (hasNext !== true) break;
+
+        const key = cursor.next();
+        blacklist.push(key.toLowerCase());
+    }
+
+    return blacklist;
+}
+
 exports.up = async function (done) {
+
+    const blacklist = await loadBlacklist();
 
     const authenticationConfigurationsCollection = await this.db.collection('authenticationconfigurations');
     const cursor = authenticationConfigurationsCollection.find();
@@ -35,7 +49,7 @@ exports.up = async function (done) {
         const authConfig = await cursor.next();
 
         if (authConfig.settings) {
-            const data = moveSecuritySettings(authConfig.settings);
+            const data = moveSecuritySettings(authConfig.settings, blacklist);
 
             if (Object.keys(data).length > 0) {
                 log.info('Moving security settings for auth config ' + authConfig.name);
@@ -55,7 +69,6 @@ exports.up = async function (done) {
     }
 
     done();
-
 };
 
 exports.down = function (done) {
