@@ -2,20 +2,20 @@
 
 class DoNothingKeyManager {
 
-    generateDataKey(request = { KeyId: '' }) {
+    generateDataKey() {
         const dataKey = {
             CiphertextBlob: '',
-            KeyId: request.KeyId,
+            KeyId: '',
             Plaintext: ''
         };
 
         return dataKey;
     }
 
-    encrypt(request = { KeyId: '', EncryptionAlgorithm: '', Plaintext: '' }) {
+    encrypt(request = { KeyId: '', Plaintext: '' }) {
         const data = {
             CiphertextBlob: request.Plaintext,
-            EncryptionAlgorithm: request.EncryptionAlgorithm,
+            EncryptionAlgorithm: '',
             KeyId: request.KeyId
         };
 

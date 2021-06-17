@@ -2,8 +2,8 @@
 
 const log = require('winston')
     , FileSystemSecretStore = require("./storage/file-system-secret-store")
-    , KeyMgtFactory = require('./key-mgt/key-mgt-factory');
-const DataResponse = require('./responses/data-response');
+    , KeyMgtFactory = require('./key-mgt/key-mgt-factory')
+    , DataResponse = require('./responses/data-response');
 
 class SecretStoreService {
     _config;
@@ -37,8 +37,13 @@ class SecretStoreService {
             delete data._metadata;
 
             if (meta) {
+                //Decrypt
                 Object.keys(data).forEach(key => {
-                    const decryptRequest = { CiphertextBlob: data[key], EncryptionAlgorithm: meta.EncryptionAlgorithm, KeyId: meta.KeyId };
+                    const decryptRequest = { 
+                        CiphertextBlob: data[key], 
+                        EncryptionAlgorithm: meta.EncryptionAlgorithm, 
+                        KeyId: meta.EncryptedDataKey 
+                    };
                     const decryptResponse = this._keyManager.decrypt(decryptRequest);
                     data[key] = decryptResponse.Plaintext;
                 });
@@ -47,6 +52,7 @@ class SecretStoreService {
             log.debug('No secure store located for ' + dataId);
         }
 
+        //Return decrypted data
         const response = new DataResponse(dataId);
         response.data = data;
 
@@ -61,25 +67,28 @@ class SecretStoreService {
      */
     write(dataId, data) {
 
+        const dataKeyResponse = this._keyManager.generateDataKey();
+
         const encryptedData = {
             _metadata: {
                 EncryptionAlgorithm: '',
-                KeyId: ''
+                EncryptedDataKey: dataKeyResponse.CiphertextBlob
             }
         }
 
+        //Encrypt
         Object.keys(data).forEach(key => {
             const encryptRequest = {
-                KeyId: encryptedData._metadata.KeyId,
-                EncryptionAlgorithm: encryptedData._metadata.EncryptionAlgorithm,
+                KeyId: dataKeyResponse.Plaintext,
                 Plaintext: data[key]
             };
 
             const encryptResponse = this._keyManager.encrypt(encryptRequest);
-
+            encryptedData._metadata.EncryptionAlgorithm = encryptResponse.EncryptionAlgorithm;
             encryptedData[key] = encryptResponse.CiphertextBlob;
         });
 
+        //Save encrypted data
         this._backingDataStore.write(dataId, encryptedData);
         const response = new DataResponse(dataId);
         response.data = encryptedData;
