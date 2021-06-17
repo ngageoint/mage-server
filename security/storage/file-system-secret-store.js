@@ -4,10 +4,7 @@ const env = require('../../environment/env')
     , fs = require('fs')
     , log = require('winston')
     , path = require('path')
-    , DataResponse = require('../responses/data-response')
-    , ReadCommand = require('../commands/read-command')
-    , WriteCommand = require('../commands/write-command')
-    , DeleteCommand = require('../commands/delete-command');
+    , DataResponse = require('../responses/data-response');
 
 class FileSystemSecretStore {
     _config;
@@ -29,27 +26,11 @@ class FileSystemSecretStore {
         }
     }
 
-    send(command) {
-        let response;
-
-        if (command instanceof ReadCommand) {
-            response = this.read(command);
-        } else if (command instanceof WriteCommand) {
-            response = this.write(command);
-        } else if (command instanceof DeleteCommand) {
-            response = this.delete(command);
-        } else {
-            response = Promise.reject('Unknown command received');
-        }
-
-        return response;
-    }
-
-    read(command) {
-        const response = new DataResponse(command.id);
+    read(id) {
+        const response = new DataResponse(id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
+            const file = path.join(this._config.storageLocation, id + this._config.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.R_OK);
                 response.data = JSON.parse(fs.readFileSync(file));
@@ -65,17 +46,17 @@ class FileSystemSecretStore {
         return promise;
     }
 
-    write(command) {
-        const response = new DataResponse(command.id);
+    write(id, data) {
+        const response = new DataResponse(id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
+            const file = path.join(this._config.storageLocation, id + this._config.suffix);
             fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
 
             const writeOptions = {
                 mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
             };
-            response.data = fs.writeFileSync(file, command.data, writeOptions);
+            response.data = fs.writeFileSync(file, data, writeOptions);
             promise = Promise.resolve(response);
         } catch (err) {
             log.warn(err);
@@ -85,11 +66,11 @@ class FileSystemSecretStore {
         return promise;
     }
 
-    delete(command) {
-        const response = new DataResponse(command.id);
+    delete(id) {
+        const response = new DataResponse(id);
         let promise;
         try {
-            const file = path.join(this._config.storageLocation, command.id + this._config.suffix);
+            const file = path.join(this._config.storageLocation, id + this._config.suffix);
             if (fs.existsSync(file)) {
                 fs.accessSync(file, fs.constants.W_OK);
                 fs.rmSync(file);

@@ -1,10 +1,7 @@
 "use strict";
 
 const log = require('winston')
-    , FileSystemSecretStore = require("./providers/file-system-secret-store")
-    , ReadCommand = require('./commands/read-command')
-    , WriteCommand = require('./commands/write-command')
-    , DeleteCommand = require('./commands/delete-command');
+    , FileSystemSecretStore = require("./storage/file-system-secret-store");
 
 class SecretStoreService {
     _config;
@@ -25,35 +22,29 @@ class SecretStoreService {
     /**
      * 
      * @param {string} dataId the id associated with the data
-     * @returns {Promise}
+     * @returns {Promise} {@link DataResponse}
      */
     read(dataId) {
-        const command = new ReadCommand(dataId);
-
-        return this._backingDataStore.send(command);
+        return this._backingDataStore.read(dataId);
     }
 
     /**
      * 
      * @param {string} dataId the id associated with the data
-     * @param {*} data 
-     * @returns {Promise}
+     * @param {*} data plaintext JSON data
+     * @returns {Promise} {@link DataResponse}
      */
     write(dataId, data) {
-        const command = new WriteCommand(dataId, data);
-
-        return this._backingDataStore.send(command);
+        return this._backingDataStore.write(dataId, data);
     }
 
     /**
      * 
      * @param {string} dataId the id associated with the data
-     * @returns {Promise}
+     * @returns {Promise} {@link DataResponse}
      */
     delete(dataId) {
-        const command = new DeleteCommand(dataId);
-
-        return this._backingDataStore.send(command);
+        return this._backingDataStore.delete(dataId);
     }
 }
 
