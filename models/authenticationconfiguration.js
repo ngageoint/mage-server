@@ -24,7 +24,6 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-const settingsBlacklist = ['clientID', 'client_id', 'clientSecret'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -42,19 +41,9 @@ const transform = function (config, ret, options) {
       });
     }
 
-    if (ret.settings) {
-      Object.keys(ret.settings).forEach(key => {
-        if (settingsBlacklist.includes(key)) {
-          ret.settings[key] = null;
-        }
-      });
-    }
-
     ret.icon = ret.icon ? ret.icon.toString('base64') : null;
   }
 };
-
-exports.SettingsBlacklist = settingsBlacklist;
 
 AuthenticationConfigurationSchema.set("toObject", {
   transform: transform

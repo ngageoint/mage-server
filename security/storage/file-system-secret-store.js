@@ -44,7 +44,7 @@ class FileSystemSecretStore {
         const writeOptions = {
             mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
         };
-        fs.writeFileSync(file, data, writeOptions);
+        fs.writeFileSync(file, JSON.stringify(data), writeOptions);
     }
 
     delete(id) {

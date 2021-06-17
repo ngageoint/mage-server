@@ -16,27 +16,21 @@ function moveSecuritySettings(settings, blacklist) {
     return data;
 }
 
-async function loadBlacklist() {
+async function loadBlacklist(db) {
     const blacklist = [];
 
-    const settingsCollection = await this.db.collection('settings');
-    const cursor = settingsCollection.find({ type: 'blacklist' });
-
-    let hasNext = true;
-    while (hasNext === true) {
-        hasNext = await cursor.hasNext()
-        if (hasNext !== true) break;
-
-        const key = cursor.next();
+    const settingsCollection = await db.collection('settings');
+    const blacklistSettings = await settingsCollection.findOne({ type: 'blacklist' });
+    Object.keys(blacklistSettings.settings).forEach(key => {
         blacklist.push(key.toLowerCase());
-    }
+    });
 
     return blacklist;
 }
 
 exports.up = async function (done) {
 
-    const blacklist = await loadBlacklist();
+    const blacklist = await loadBlacklist(this.db);
 
     const authenticationConfigurationsCollection = await this.db.collection('authenticationconfigurations');
     const cursor = authenticationConfigurationsCollection.find();
@@ -56,7 +50,7 @@ exports.up = async function (done) {
 
                 const store = new SecretStoreService();
                 try {
-                    await store.write(authConfig._id.toString(), JSON.stringify(data));
+                    await store.write(authConfig._id.toString(), data);
                     await authenticationConfigurationsCollection.updateOne({ _id: authConfig._id }, authConfig);
                 } catch (err) {
                     log.warn(err);

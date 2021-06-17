@@ -44,19 +44,4 @@ describe("authentication configuration model tests", function () {
         expect(whitelistedConfig.settings).to.be.undefined;
         done();
     });
-
-    it('test blacklist', function (done) {
-        const authConfig = new AuthenticationConfiguration.Model({
-            name: 'ldap',
-            type: 'ldap',
-            settings: {
-                clientID: 'should not be here'
-            }
-        });
-
-        const whitelistedConfig = authConfig.toObject({ whitelist: false, transform: AuthenticationConfiguration.transform });
-
-        expect(whitelistedConfig.settings.clientID).to.be.null;
-        done();
-    });
 });

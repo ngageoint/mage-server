@@ -6,6 +6,7 @@ const log = require('winston')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
     , User = require('../models/user')
+    , Settings = require('../models/setting')
     , SecretStoreService = require('../security/secret-store-service');
 
 module.exports = function (app, security) {
@@ -42,19 +43,20 @@ module.exports = function (app, security) {
                 settings: {}
             };
 
-            const settings = JSON.parse(req.body.settings);
-
             const securityData = {};
+            
+            Settings.getSetting('blacklist').then(blacklist => {
+                const settings = JSON.parse(req.body.settings);
 
-            Object.keys(settings).forEach(key => {
-                if (AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
-                    securityData[key] = settings[key];
-                } else {
-                    updatedConfig.settings[key] = settings[key];
-                }
-            });
-
-            AuthenticationConfiguration.update(req.param('id'), updatedConfig).then(config => {
+                Object.keys(settings).forEach(key => {
+                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
+                        securityData[key] = settings[key];
+                    } else {
+                        updatedConfig.settings[key] = settings[key];
+                    }
+                });
+                return AuthenticationConfiguration.update(req.param('id'), updatedConfig);
+            }).then(config => {
                 const response = [];
                 response.push(Promise.resolve(config));
                 if (Object.keys(securityData).length > 0) {
@@ -95,19 +97,21 @@ module.exports = function (app, security) {
                 settings: {}
             };
 
-            const settings = JSON.parse(req.body.settings);
-
             const securityData = {};
 
-            Object.keys(settings).forEach(key => {
-                if (AuthenticationConfiguration.SettingsBlacklist.includes(key)) {
-                    securityData[key] = settings[key];
-                } else {
-                    newConfig.settings[key] = settings[key];
-                }
-            });
+            Settings.getSetting('blacklist').then(blacklist => {
+                const settings = JSON.parse(req.body.settings);
 
-            AuthenticationConfiguration.create(newConfig).then(config => {
+                Object.keys(settings).forEach(key => {
+                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
+                        securityData[key] = settings[key];
+                    } else {
+                        newConfig.settings[key] = settings[key];
+                    }
+                });
+
+                return AuthenticationConfiguration.create(newConfig);
+            }).then(config => {
                 const response = [];
                 response.push(Promise.resolve(config));
                 if (Object.keys(securityData).length > 0) {
