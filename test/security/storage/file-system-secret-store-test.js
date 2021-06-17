@@ -17,13 +17,9 @@ describe("File System Secret Store Tests", function () {
 
         sinon.stub(fs, 'existsSync').returns(false);
 
-        fsStore.read(dataId).then(response => {
-            expect(response.status).to.be.false;
-            expect(response.data).to.be.null;
-            done();
-        }).catch(err => {
-            done(err);
-        });
+        const response = fsStore.read(dataId);
+        expect(response).to.be.undefined;
+        done();
     });
 
     it('Test read data', function (done) {
@@ -38,14 +34,11 @@ describe("File System Secret Store Tests", function () {
         sinon.stub(fs, 'accessSync').returns(undefined);
         sinon.stub(fs, 'readFileSync').returns(JSON.stringify(data));
 
-        fsStore.read(dataId).then(response => {
-            expect(response.data).to.not.be.null;
-            expect(response.data.clientId).to.not.be.null;
-            expect(response.data.clientId).to.equal(data.clientId);
-            done();
-        }).catch(err => {
-            done(err);
-        });
+        const response = fsStore.read(dataId)
+        expect(response).to.not.be.null;
+        expect(response.clientId).to.not.be.null;
+        expect(response.clientId).to.equal(data.clientId);
+        done();
     });
 
     it('Test read data, wrong permissions', function (done) {
@@ -55,23 +48,20 @@ describe("File System Secret Store Tests", function () {
         sinon.stub(fs, 'existsSync').returns(true);
         sinon.stub(fs, 'accessSync').throws(new Error('Incorrect permissions'));
 
-        fsStore.read(dataId).then(() => {
+        try {
+            fsStore.read(dataId);
             done('An error should be thrown');
-        }).catch(err => {
+        } catch (err) {
             done();
-        });
+        }
     });
 
     it('Test delete data that does not exist', function (done) {
         const dataId = '12345';
         const fsStore = new FileSystemSecretStore();
 
-        fsStore.delete(dataId).then(response => {
-            expect(response.status).to.be.false;
-            done();
-        }).catch(err => {
-            done(err);
-        });
+        fsStore.delete(dataId);
+        done();
     });
 
     it('Test delete data, wrong permissions', function (done) {
@@ -81,10 +71,12 @@ describe("File System Secret Store Tests", function () {
         sinon.stub(fs, 'existsSync').returns(true);
         sinon.stub(fs, 'accessSync').throws(new Error('Incorrect permissions'));
 
-        fsStore.delete(dataId).then(() => {
-            done('An error should be thrown');
-        }).catch(err => {
+        try {
+            fsStore.delete(dataId);
+            done('Should fail');
+        } catch (err) {
             done();
-        });
+        }
+
     });
 });

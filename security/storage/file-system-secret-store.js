@@ -3,8 +3,7 @@
 const env = require('../../environment/env')
     , fs = require('fs')
     , log = require('winston')
-    , path = require('path')
-    , DataResponse = require('../responses/data-response');
+    , path = require('path');
 
 class FileSystemSecretStore {
     _config;
@@ -27,64 +26,33 @@ class FileSystemSecretStore {
     }
 
     read(id) {
-        const response = new DataResponse(id);
-        let promise;
-        try {
-            const file = path.join(this._config.storageLocation, id + this._config.suffix);
-            if (fs.existsSync(file)) {
-                fs.accessSync(file, fs.constants.R_OK);
-                response.data = JSON.parse(fs.readFileSync(file));
-            } else {
-                response.status = false;
-            }
-            promise = Promise.resolve(response);
-        } catch (err) {
-            log.warn(err);
-            response.error = err;
-            promise = Promise.reject(err);
+        let response;
+
+        const file = path.join(this._config.storageLocation, id + this._config.suffix);
+        if (fs.existsSync(file)) {
+            fs.accessSync(file, fs.constants.R_OK);
+            response = JSON.parse(fs.readFileSync(file));
         }
-        return promise;
+
+        return response;
     }
 
     write(id, data) {
-        const response = new DataResponse(id);
-        let promise;
-        try {
-            const file = path.join(this._config.storageLocation, id + this._config.suffix);
-            fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
+        const file = path.join(this._config.storageLocation, id + this._config.suffix);
+        fs.accessSync(this._config.storageLocation, fs.constants.W_OK);
 
-            const writeOptions = {
-                mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
-            };
-            response.data = fs.writeFileSync(file, data, writeOptions);
-            promise = Promise.resolve(response);
-        } catch (err) {
-            log.warn(err);
-            response.error = err;
-            promise = Promise.reject(response);
-        }
-        return promise;
+        const writeOptions = {
+            mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
+        };
+        fs.writeFileSync(file, data, writeOptions);
     }
 
     delete(id) {
-        const response = new DataResponse(id);
-        let promise;
-        try {
-            const file = path.join(this._config.storageLocation, id + this._config.suffix);
-            if (fs.existsSync(file)) {
-                fs.accessSync(file, fs.constants.W_OK);
-                fs.rmSync(file);
-                response.status = true;
-            } else {
-                response.status = false;
-            }
-            promise = Promise.resolve(response);
-        } catch (err) {
-            log.warn(err);
-            response.error = err;
-            promise = Promise.reject(response);
+        const file = path.join(this._config.storageLocation, id + this._config.suffix);
+        if (fs.existsSync(file)) {
+            fs.accessSync(file, fs.constants.W_OK);
+            fs.rmSync(file);
         }
-        return promise;
     }
 }
 
