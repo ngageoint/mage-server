@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * This provides the minimum to encrypt data.  Modeled after:
+ * 
+ * {@link https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#data-keys}
+ * 
+ */
 class PlaintextKeyManager {
 
     generateDataKey() {
