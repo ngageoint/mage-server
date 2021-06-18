@@ -8,7 +8,8 @@ const util = require('util')
   , Exporter = require('./exporter')
   , GeoPackageAPI = require('@ngageoint/geopackage')
   , environment = require('../environment/env')
-  , os = require('os');
+  , os = require('os')
+  , wkx = require('wkx');
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
@@ -445,21 +446,19 @@ GeoPackage.prototype.addFormDataToGeoPackage = function (geopackage) {
 
 GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
   log.info('Add Observations');
-  const self = this;
-  return this.getObservations().then(function (observations) {
-    const firstObs = observations[0];
-    return self.createObservationTable(geopackage, {
-    }).then(function () {
-      self.createAttachmentTable(geopackage);
-    }).then(function () {
-      return observations.reduce(function (sequence, observation) {
-        return sequence.then(function () {
+  return this.getObservations().then(observations => {
+    return this.createObservationTable(geopackage, {
+    }).then(() => {
+      this.createAttachmentTable(geopackage);
+    }).then(() => {
+      return observations.reduce((sequence, observation) => {
+        return sequence.then(() => {
 
           let primary;
           let variant;
 
           if (observation.properties.forms[0]) {
-            const form = self._event.formMap[observation.properties.forms[0].formId];
+            const form = this._event.formMap[observation.properties.forms[0].formId];
             primary = observation.properties.forms[0][form.primaryField];
             variant = observation.properties.forms[0][form.variantField];
           }
@@ -486,11 +485,11 @@ GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
 
           if (observation.properties.forms[0]) {
             // insert the icon link
-            const iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
-            if (primary) {
+            let iconId = iconMap[observation.properties.forms[0].formId]['icon.png'];
+            if (primary && iconMap[observation.properties.forms[0].formId][primary]) {
               iconId = iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
             }
-            if (variant) {
+            if (variant && iconMap[observation.properties.forms[0].formId][primary] && iconMap[observation.properties.forms[0].formId][primary][variant]) {
               iconId = iconMap[observation.properties.forms[0].formId][primary][variant];
             }
             promise = geopackage.linkMedia('Observations', featureId, 'Icons', iconId);
@@ -498,21 +497,24 @@ GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
             promise = Promise.resolve();
           }
 
-          return promise.then(function () {
+          return promise.then(() => {
             // insert all attachments and link them
             if (observation.attachments) {
-              return self.addAttachments(geopackage, observation.attachments, featureId);
+              return this.addAttachments(geopackage, observation.attachments, featureId);
             }
-          }).then(function () {
+          }).then(() => {
             // insert all of the forms as linked attribute tables
-            return observation.properties.forms.reduce(function (sequence, form) {
-              return sequence.then(function () {
-                form.primaryField = primary;
-                form.variantField = variant;
-                form.formId = form.formId.toString();
-                const rowId = geopackage.addAttributeRow('Form_' + form.formId, form);
+            return observation.properties.forms.reduce((sequence, observationForm) => {
+              return sequence.then(() => {
+                const formDefinition = this._event.formMap[observationForm.formId];
+                observationForm.primaryField = primary;
+                observationForm.variantField = variant;
+                observationForm.formId = observationForm.formId.toString();
+                observationForm = this.formToGeoPackage(formDefinition, observationForm);
+
+                const rowId = geopackage.addAttributeRow('Form_' + observationForm.formId, observationForm);
                 const relatedTables = geopackage.relatedTablesExtension;
-                return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + form.formId, rowId, {
+                return relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + observationForm.formId, rowId, {
                   name: 'simple_attributes',
                   dataType: 'ATTRIBUTES'
                 });
@@ -522,9 +524,30 @@ GeoPackage.prototype.addObservationsToGeoPackage = function (geopackage) {
         });
       }, Promise.resolve());
     });
-  }).then(function () {
+  }).then(() => {
     return geopackage;
   });
+}
+
+GeoPackage.prototype.formToGeoPackage = function(formDefinition, observationForm) {
+  Object.keys(observationForm).forEach(key => {
+    if (observationForm[key] == null) return;
+
+    const fieldDefinition = formDefinition.fields.find(field => field.name === key);
+    if (!fieldDefinition) return;
+
+    if (fieldDefinition.type === 'multiselectdropdown') {
+      observationForm[key] = observationForm[key].join(', ');
+    } else if (fieldDefinition.type === 'date') {
+      observationForm[key] = moment(observationForm[key]).toISOString();
+    } else if (fieldDefinition.type === 'checkbox') {
+      observationForm[key] = observationForm[key].toString();
+    } else if (fieldDefinition.type === 'geometry') {
+      observationForm[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
+    }
+  })
+
+  return observationForm;
 }
 
 GeoPackage.prototype.addAttachments = function (geopackage, attachments, observationId) {
