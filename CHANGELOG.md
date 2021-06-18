@@ -8,6 +8,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+
+## [5.5.2](https://github.com/ngageoint/mage-server/releases/tag/5.5.2)
+
+##### Features
+
+##### Bug Fixes
 * GeoPackage export properly formats observation form data to allowed geopackage types.
 * Fix invalid reference in export startup service.
 * KML user location export properly groups user locations.
