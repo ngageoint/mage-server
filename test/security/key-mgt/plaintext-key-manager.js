@@ -2,7 +2,7 @@
 
 const sinon = require('sinon')
     , expect = require("chai").expect
-    , DoNothingKeyManager = require("../../../security/key-mgt/do-nothing-key-manager");
+    , PlaintextKeyManager = require("../../../security/key-mgt/plaintext-key-manager");
 
 describe("Do Nothing Key Manager Tests", function () {
 
@@ -11,7 +11,7 @@ describe("Do Nothing Key Manager Tests", function () {
     });
 
     it('Test generateDataKey', function (done) {
-        const mgr = new DoNothingKeyManager();
+        const mgr = new PlaintextKeyManager();
 
         const dataKey = mgr.generateDataKey();
         expect(dataKey).to.be.not.null;
@@ -19,7 +19,7 @@ describe("Do Nothing Key Manager Tests", function () {
     });
 
     it('Test encrypt', function (done) {
-        const mgr = new DoNothingKeyManager();
+        const mgr = new PlaintextKeyManager();
 
         const data = mgr.encrypt();
         expect(data).to.be.not.null;
@@ -27,7 +27,7 @@ describe("Do Nothing Key Manager Tests", function () {
     });
 
     it('Test decrypt', function (done) {
-        const mgr = new DoNothingKeyManager();
+        const mgr = new PlaintextKeyManager();
 
         const data = mgr.decrypt();
         expect(data).to.be.not.null;

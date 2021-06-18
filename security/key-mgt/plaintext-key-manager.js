@@ -1,6 +1,6 @@
 'use strict';
 
-class DoNothingKeyManager {
+class PlaintextKeyManager {
 
     generateDataKey() {
         const dataKey = {
@@ -33,4 +33,4 @@ class DoNothingKeyManager {
     }
 }
 
-module.exports = DoNothingKeyManager;
+module.exports = PlaintextKeyManager;
