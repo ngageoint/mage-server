@@ -275,13 +275,6 @@ Configuration:
         * major - Major server version. Updated when backwards breaking changes are implemented.
         * minor - Minor server version. Updated when significant feature changes are added that do not break backwards compatibility.
         * micro - Micro server version. Updated for bug fixes.
-    * authenticationStrategies - hash of all authentication strategies accepted by this server.
-        * local - local (username/password) authentication.  Usernames and passwords stored and managed localy by this MAGE server
-            * passwordMinLength - minimum password length
-        * google - google oauth2 authentication strategy.
-            * callbackURL - google callback URL
-            * clientID - google client ID
-            * clientSecret - google client secret
     * provison - device provisioning strategy
         * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
 * server - Server based configuration.  Not exposed to client
@@ -296,11 +289,6 @@ Configuration:
       "major": 5,
       "minor": 0,
       "micro": 0
-    },
-    "authenticationStrategies": {
-      "local": {
-        "passwordMinLength": 14
-      }
     },
     "provision": {
       "strategy": "uid"
