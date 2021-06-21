@@ -21,16 +21,26 @@ describe("Do Nothing Key Manager Tests", function () {
     it('Test encrypt', function (done) {
         const mgr = new PlaintextKeyManager();
 
-        const data = mgr.encrypt();
+        const request = {
+            Plaintext: 'Test'
+        };
+
+        const data = mgr.encrypt(request);
         expect(data).to.be.not.null;
+        expect(data.CiphertextBlob).to.equals(request.Plaintext);
         done();
     });
 
     it('Test decrypt', function (done) {
         const mgr = new PlaintextKeyManager();
 
-        const data = mgr.decrypt();
+        const request = {
+            CiphertextBlob: 'Test'
+        };
+
+        const data = mgr.decrypt(request);
         expect(data).to.be.not.null;
+        expect(data.Plaintext).to.equals(request.CiphertextBlob);
         done();
     });
 });
