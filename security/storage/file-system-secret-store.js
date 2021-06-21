@@ -3,13 +3,16 @@
 const env = require('../../environment/env')
     , fs = require('fs')
     , log = require('winston')
-    , path = require('path');
+    , path = require('path')
+    , JSONProvider = require('./json-provider');
 
 class FileSystemSecretStore {
     _config;
+    _dataProvider;
 
-    constructor(config = { storageLocation: env.securityDirectory, suffix: '.json' }) {
+    constructor(config = { storageLocation: env.securityDirectory, suffix: '.json' }, provider = new JSONProvider) {
         this._config = config;
+        this._dataProvider = provider;
 
         log.debug('Secure storage location: ' + this._config.storageLocation);
 
@@ -31,7 +34,7 @@ class FileSystemSecretStore {
         const file = path.join(this._config.storageLocation, id + this._config.suffix);
         if (fs.existsSync(file)) {
             fs.accessSync(file, fs.constants.R_OK);
-            response = JSON.parse(fs.readFileSync(file));
+            response = this._dataProvider.read(fs.readFileSync(file));
         }
 
         return response;
@@ -44,7 +47,7 @@ class FileSystemSecretStore {
         const writeOptions = {
             mode: fs.constants.S_IRUSR | fs.constants.S_IWUSR
         };
-        fs.writeFileSync(file, JSON.stringify(data), writeOptions);
+        fs.writeFileSync(file, this._dataProvider.write(data), writeOptions);
     }
 
     delete(id) {
