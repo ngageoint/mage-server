@@ -3,15 +3,22 @@
 const SecretStoreService = require('../secret-store-service');
 
 async function appendToConfig(config) {
+    const configCopy = JSON.parse(JSON.stringify(config));
+
     const sss = new SecretStoreService();
 
-    const result = await sss.read(config._id.toString());
+    const result = await sss.read(configCopy._id.toString());
     if (result && result.data) {
+        
+        if (!configCopy.settings) {
+            configCopy['settings'] = {};
+        }
+
         Object.keys(result.data).forEach(key => {
-            config.settings[key] = result.data[key];
+            configCopy.settings[key] = result.data[key];
         });
     }
-    return Promise.resolve(config);
+    return Promise.resolve(configCopy);
 }
 
 module.exports = {

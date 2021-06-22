@@ -23,4 +23,30 @@ describe("Secret Store Tests", function () {
             done();
         });
     });
+
+    it('Test append', function (done) {
+        const config = {
+            _id: '12345'
+        };
+
+        const secureProperties = {
+            testData: 'Test data',
+            addlData: 'More test data'
+        };
+
+        sinon.stub(fs, 'existsSync').returns(true);
+        sinon.stub(fs, 'accessSync').returns(true);
+        sinon.stub(fs, 'readFileSync').returns(secureProperties);
+
+        SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+            expect(appendedConfig.settings).to.not.be.undefined;
+            expect(Object.keys(appendedConfig.settings).length).to.equal(Object.keys(secureProperties).length);
+
+            Object.keys(secureProperties).forEach(key => {
+                expect(appendedConfig.settings[key]).equals(secureProperties[key]);
+            });
+
+            done();
+        });
+    });
 });

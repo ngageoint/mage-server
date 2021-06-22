@@ -3,7 +3,15 @@
 class JSONProvider {
 
     read(data) {
-        return JSON.parse(data);
+        let parsedData = data;
+
+        try {
+            parsedData = JSON.parse(data);
+        } catch (err) {
+
+        }
+
+        return parsedData;
     }
 
     write(data) {
