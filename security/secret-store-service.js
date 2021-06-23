@@ -5,6 +5,11 @@ const log = require('winston')
     , KeyMgtFactory = require('./key-mgt/key-mgt-factory')
     , DataResponse = require('./responses/data-response');
 
+/**
+ * This is the class to use for interactions to the secret store.
+ * 
+ * @since 5.5.1
+ */
 class SecretStoreService {
     _config;
     _keyManager;
@@ -39,10 +44,10 @@ class SecretStoreService {
             if (meta) {
                 //Decrypt
                 Object.keys(data).forEach(key => {
-                    const decryptRequest = { 
-                        CiphertextBlob: data[key], 
-                        EncryptionAlgorithm: meta.EncryptionAlgorithm, 
-                        KeyId: meta.EncryptedDataKey 
+                    const decryptRequest = {
+                        CiphertextBlob: data[key],
+                        EncryptionAlgorithm: meta.EncryptionAlgorithm,
+                        KeyId: meta.EncryptedDataKey
                     };
                     const decryptResponse = this._keyManager.decrypt(decryptRequest);
                     data[key] = decryptResponse.Plaintext;
@@ -64,6 +69,8 @@ class SecretStoreService {
      * @param {string} dataId the id associated with the data
      * @param {*} data plaintext JSON data
      * @returns {Promise} {@link DataResponse}
+     * 
+     * @see {@link https://docs.aws.amazon.com/kms/latest/APIReference/API_GenerateDataKey.html}
      */
     write(dataId, data) {
 
