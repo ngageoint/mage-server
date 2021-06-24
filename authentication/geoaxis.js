@@ -7,7 +7,8 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , config = require('../config.js')
   , log = require('../logger')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(passport, strategyConfig) {
   log.info('Configuring GeoAxis authentication');
@@ -73,14 +74,19 @@ function doConfigure(passport, strategyConfig) {
 
 function configure(passport, config) {
   if (config) {
-    doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
+    });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
       if (strategyConfig) {
-        doConfigure(passport, strategyConfig);
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
       }
+      return Promise.reject('Geoaxis not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

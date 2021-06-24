@@ -7,7 +7,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(passport, googleStrategy) {
   log.info('Configuring Google authentication');
@@ -71,14 +72,19 @@ function doConfigure(passport, googleStrategy) {
 
 function configure(passport, config) {
   if (config) {
-    doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
+    });
   } else {
-    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(googleStrategy => {
-      if (googleStrategy) {
-        doConfigure(passport, googleStrategy);
+    AuthenticationConfiguration.getConfiguration('oauth', 'google').then(strategyConfig => {
+      if (strategyConfig) {
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
       }
+      return Promise.reject('Google not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

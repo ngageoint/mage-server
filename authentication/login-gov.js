@@ -11,7 +11,8 @@ const fs = require('fs')
   , config = require('../config.js')
   , log = require('../logger')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(passport, strategyConfig) {
   log.info('Configuring login.gov authentication', strategyConfig);
@@ -102,20 +103,23 @@ function doConfigure(passport, strategyConfig) {
   }).catch(function (err) {
     log.error('login.gov configuration error', err);
   });
-
-
 }
 
 function configure(passport, config) {
   if (config) {
-    doConfigure(passport, config);
+    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
+    });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
       if (strategyConfig) {
-        doConfigure(passport, strategyConfig);
+        return SecurePropertyAppender.appendToConfig(strategyConfig);
       }
+      return Promise.reject('Login-gov not configured');
+    }).then(appendedConfig => {
+      doConfigure(passport, appendedConfig);
     }).catch(err => {
-      log.error(err);
+      log.info(err);
     });
   }
 }

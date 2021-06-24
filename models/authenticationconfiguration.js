@@ -24,7 +24,6 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-const settingsBlacklist = ['clientID', 'client_id', 'clientSecret'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -42,19 +41,9 @@ const transform = function (config, ret, options) {
       });
     }
 
-    if (ret.settings) {
-      Object.keys(ret.settings).forEach(key => {
-        if (settingsBlacklist.includes(key)) {
-          ret.settings[key] = null;
-        }
-      });
-    }
-
     ret.icon = ret.icon ? ret.icon.toString('base64') : null;
   }
 };
-
-exports.SettingsBlacklist = settingsBlacklist;
 
 AuthenticationConfigurationSchema.set("toObject", {
   transform: transform
@@ -81,7 +70,7 @@ exports.getAllConfigurations = function () {
   return AuthenticationConfiguration.find({}).exec();
 };
 
-exports.create = function (config) {
+function manageIcon(config) {
   if (config.icon) {
     if (config.icon.startsWith('data')) {
       config.icon = new Buffer(config.icon.split(",")[1], "base64");
@@ -91,20 +80,16 @@ exports.create = function (config) {
   } else {
     config.icon = null;
   }
+}
+
+exports.create = function (config) {
+  manageIcon(config);
 
   return AuthenticationConfiguration.create(config);
 };
 
 exports.update = function (id, config) {
-  if (config.icon) {
-    if (config.icon.startsWith('data')) {
-      config.icon = new Buffer(config.icon.split(",")[1], "base64");
-    } else {
-      config.icon = new Buffer(config.icon, 'base64');
-    }
-  } else {
-    config.icon = null;
-  }
+  manageIcon(config);
 
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };

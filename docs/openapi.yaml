@@ -2182,7 +2182,8 @@ paths:
           enum:
           - banner
           - disclaimer
-          - security
+          - blacklist
+          - authconfigsetup
       responses:
         200:
           description: Success - setting document
@@ -2206,7 +2207,8 @@ paths:
           enum:
           - banner
           - disclaimer
-          - security
+          - blacklist
+          - authconfigsetup
       responses:
         200:
           description: Success - the update settings document
