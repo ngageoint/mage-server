@@ -8,7 +8,7 @@ const log = require('winston')
 /**
  * This is the class to use for interactions to the secret store.
  * 
- * @since 5.5.1
+ * @since 5.5.3
  */
 class SecretStoreService {
     _config;
