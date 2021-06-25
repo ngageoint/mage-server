@@ -1,7 +1,8 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatChipInputEvent, MatAutocompleteSelectedEvent, MatAutocompleteTrigger, MatChipList } from '@angular/material';
+import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatChipInputEvent, MatChipList } from '@angular/material/chips';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 

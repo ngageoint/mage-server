@@ -47,7 +47,7 @@
   </div>
 
   <div class="edit-location__actions">
-    <button mat-button type="button" color="primary" (click)="onCancel($event)">Cancel</button>
-    <button mat-flat-button type="button" color="primary" (click)="onSave($event)" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
+    <button mat-button type="button" color="primary" (click)="onCancel()">Cancel</button>
+    <button mat-flat-button type="button" color="primary" (click)="onSave()" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
   </div>
 </div>

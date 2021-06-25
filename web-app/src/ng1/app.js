@@ -26,8 +26,10 @@ import { SearchComponent } from '../app/map/controls/search.component';
 import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
-import { ExportsComponent } from '../app/export/exports.component';
+import { ExportComponent } from '../app/export/export.component';
+import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
 
+import { ExportService } from '../app/export/export.service'
 import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
 import { MapPopupService } from '../app/map/map-popup.service'
 
@@ -38,6 +40,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
 
 require('angular-minicolors');
 require('select2');
@@ -57,6 +60,7 @@ const app = angular.module('mage', [
 
 // Downgraded Angular services 
 app
+  .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService));
 
@@ -82,11 +86,12 @@ app
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
-  .directive('exports', downgradeComponent({ component: ExportsComponent }));
+  .directive('export', downgradeComponent({ component: ExportComponent }))
+  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
+  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))
-  .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
@@ -382,7 +387,13 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   // Admin settings routes
   $stateProvider.state('admin.settings', {
     url: '/settings',
-    component: "adminSettings",
+    component: "upgradedAdminSettings",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.authenticationCreate', {
+    url: '/settings/new',
+    component: "authenticationCreate",
     resolve: resolveAdmin()
   });
 

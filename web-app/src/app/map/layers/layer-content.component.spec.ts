@@ -1,7 +1,11 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LayerContentComponent } from './layer-content.component';
-import { MatFormFieldModule, MatSliderModule, MatIconModule, MatCardModule, MatInputModule } from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSliderModule } from '@angular/material/slider';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { CheckboardModule, SaturationModule, HueModule, AlphaModule } from 'ngx-color';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +24,7 @@ class TestHostComponent {
     }
   };
 
-  @ViewChild(LayerContentComponent, { static: false }) layerContent: LayerContentComponent;
+  @ViewChild(LayerContentComponent) layerContent: LayerContentComponent;
 }
 
 describe('LayerContentComponent', () => {

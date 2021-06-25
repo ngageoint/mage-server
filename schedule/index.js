@@ -1,28 +1,14 @@
-'use strict';
+const ExportTask = require('./export/export-task');
+const env = require('../environment/env')
+const exportResource = require('../models/export');
 
-const async = require('async')
-  , fs = require('fs-extra')
-  , path = require('path')
-  , log = require('winston');
+const exportTask = new ExportTask(env, exportResource);
+async function scheduleExportTask() {
+  await exportTask.doTask()
+  setTimeout(() => scheduleExportTask(), env.exportSweepInterval * 1000);
+}
 
-exports.initialize = function(app, callback) {
-  // set up scheduled jobs
-  const files = fs.readdirSync(__dirname).map(function(file) {
-    return path.join(__dirname, file);
-  }).filter(function(file) {
-    return fs.statSync(file).isDirectory();
-  });
-
-  async.eachSeries(files, function(file, done) {
-    const jobName = path.basename(file);
-    log.info('Scheduling job ' + jobName);
-    const job = require('./' + jobName);
-    job.initialize(app, done);
-  }, function(err) {
-    if (err) {
-      log.error('Error initializing job', err);
-    }
-
-    callback(err);
-  });
+exports.initialize = async function() {
+  await exportTask.initialize();
+  scheduleExportTask();
 };

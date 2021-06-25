@@ -1,3 +1,10 @@
+// Undo Bootstrap styles
+:host ::ng-deep label {
+  max-width: unset;
+  margin-bottom: unset;
+  font-weight: unset
+}
+
 .radio-group {
   display: flex;
   flex-direction: column;
@@ -5,8 +12,8 @@
   margin-bottom: 16px;
 }
 
-mat-radio-group > mat-radio-button:not(:last-of-type) {
-  margin-bottom: 8px;
+.radio-button {
+  margin: 5px;
 }
 
 .mat-error {

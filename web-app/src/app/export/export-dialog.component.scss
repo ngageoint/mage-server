@@ -1,0 +1,142 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+:host ::ng-deep label {
+  display: unset;
+  max-width: unset;
+  margin-bottom: unset;
+  font-weight: unset;
+}
+
+.export {
+  height: 480px;
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.export-panel {
+  height: 100%;
+}
+
+.export-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.export-filter {
+  width: 100%;
+}
+
+.mat-dialog-content, .export-content {
+  flex: 1 1 auto;
+  max-height: unset;
+}
+
+.export-table {
+  height: 300px;
+  overflow-y: scroll;
+}
+
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-bottom: -16px;
+}
+
+.actions-divider {
+  margin: 0 -24px;
+}
+
+.export-row {
+  z-index: 1;
+  cursor: pointer;
+  border-bottom-width: 0;
+}
+
+.export-row mat-cell {
+  border-bottom-width: 0;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 289;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+}
+
+.locale-button {
+  color: #1E88E5;
+  height: 51px;
+  margin-bottom: 18px;
+}
+
+.export-options {
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+.export-format {
+  margin-bottom: 16px;
+}
+
+.advanced {
+  margin-bottom: 8px;
+}
+
+.advanced-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.advanced-header__title {
+  margin: 0 8px 0 0;
+  color: rgba(0, 0, 0, .87);
+  font-family: Roboto, sans-serif;
+}
+
+.advanced-content {
+  margin-top: 8px;
+  margin-left: 16px;
+}
+
+.export-details-icon {
+  height: 18px;
+  width: 18px;
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.export-details-info {
+  color: rgba(0, 0, 0, .6);
+  margin-left: 16px;
+}
+
+.time-field {
+  width: 100%;
+}
+
+.export-detail-row {
+  min-height: 0;
+}
+
+.export-detail {
+  overflow: hidden;
+  display: flex;
+}

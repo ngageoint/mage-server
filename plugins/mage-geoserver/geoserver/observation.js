@@ -67,7 +67,7 @@ exports.updateLayer = function(event) {
           store: {
             name: 'cite:mage'
           },
-          cqlFilter: "\"event.id\" = " + event._id,
+          cqlFilter: "\"event_id\" = " + event._id,
           attributes: mapper.attributesForEvent(event),
           metadata: {
             entry: [{

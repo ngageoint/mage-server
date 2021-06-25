@@ -4,9 +4,10 @@ import { FormGroup, ValidatorFn, Validators } from '@angular/forms';
 interface NumberField {
   title: string,
   name: string,
+  value: number,
   required: boolean,
-  min: number,
-  max: number
+  min?: number,
+  max?: number
 }
 
 @Component({

@@ -115,15 +115,16 @@ function transform(observation, ret, options) {
       delete ret.states;
     }
 
-    if (observation.populated('userId')) {
+    const populatedUserId = observation.populated('userId');
+    if (populatedUserId) {
       ret.user = ret.userId;
-
       // TODO Update mobile clients to handle observation.userId or observation.user.id
       // Leave userId as mobile clients depend on it for observation create/update,
-      ret.userId =  ret.user.id;
+      ret.userId =  populatedUserId;
     }
 
-    if (ret.important && observation.populated('important.userId')) {
+    const populatedImportantUserId = observation.populated('important.userId')
+    if (populatedImportantUserId && ret.important) {
       ret.important.user = ret.important.userId
       delete ret.important.userId;
     }
@@ -263,7 +264,7 @@ exports.getObservations = function(event, o, callback) {
   if (o.populate) {
     query = query
       .populate({
-        path: 'userId', 
+        path: 'userId',
         select: 'displayName' })
       .populate({
         path: 'important.userId',

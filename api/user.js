@@ -4,7 +4,7 @@ const UserModel = require('../models/user')
   , LoginModel = require('../models/login')
   , DeviceModel = require('../models/device')
   , TeamModel = require('../models/team')
-  , Setting = require('../models/setting')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , path = require('path')
   , fs = require('fs-extra')
   , util = require('util')
@@ -33,48 +33,55 @@ function iconPath(id, user, icon) {
 function User() {
 }
 
-User.prototype.login = function(user, device, options, callback) {
+User.prototype.login = function (user, device, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
-  TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
+  TokenModel.createToken({ userId: user._id, device: device }, function (err, token) {
     if (err) return callback(err);
 
-    callback(err, token);
+    LoginModel.createLogin(user, device, function (err) {
+      if (err) {
+        log.error('could not add login', err);
+        return callback(err);
+      }
 
-    LoginModel.createLogin(user, device, function(err) {
-      if (err) log.error('could not add login', err);
+      if (device) {
+        // set user-agent and mage version on device
+        DeviceModel.updateDevice(device._id, { userAgent: options.userAgent, appVersion: options.appVersion }).then(() => {
+          callback(null, token);
+        }).catch(err => {
+          callback(err);
+        });
+      } else {
+        callback(null, token);
+      }
     });
-
-    if (device) {
-      // set user-agent and mage version on device
-      DeviceModel.updateDevice(device._id, { userAgent: options.userAgent, appVersion: options.appVersion });
-    }
   });
 };
 
-User.prototype.logout = function(token, callback) {
+User.prototype.logout = function (token, callback) {
   if (!token) return callback();
 
-  TokenModel.removeToken(token, function(err) {
+  TokenModel.removeToken(token, function (err) {
     callback(err);
   });
 };
 
-User.prototype.count = function(options, callback) {
+User.prototype.count = function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
-  UserModel.count(options, callback, function(err, count) {
+  UserModel.count(options, callback, function (err, count) {
     callback(err, count);
   });
 };
 
-User.prototype.getAll = function(filter, callback) {
+User.prototype.getAll = function (filter, callback) {
   if (typeof filter === 'function') {
     callback = filter;
     filter = {};
@@ -85,24 +92,34 @@ User.prototype.getAll = function(filter, callback) {
   });
 };
 
-User.prototype.getById = function(id, callback) {
-  UserModel.getUserById(id, function(err, user) {
+User.prototype.getById = function (id, callback) {
+  UserModel.getUserById(id, function (err, user) {
     callback(err, user);
   });
 };
 
-User.prototype.create = async function(user, options = {}) {
-  const { settings = {} } = await Setting.getSetting('security') || {};
+User.prototype.create = async function (user, options = {}) {
+
+  const authType = user.authentication.type;
+  const authName = user.authentication.authenticationConfiguration.name;
+
+  const authenticationConfig = await AuthenticationConfiguration.getConfiguration(authType, authName);
+
+  delete user.authentication.authenticationConfiguration;
+
   let defaultTeams;
   let defaultEvents
-  const authenticationType = user.authentication.type;
-  if (settings[authenticationType]) {
-    /// TODO bug here, this needs to default to true 
-    const requireAdminActivation = settings[authenticationType].usersReqAdmin || { enabled: true };
-    user.active = user.active || !requireAdminActivation.enabled;
+  if (authenticationConfig) {
+    user.authentication.authenticationConfigurationId = authenticationConfig._id;
+    const requireAdminActivation = authenticationConfig.settings.usersReqAdmin || { enabled: true };
+    if (requireAdminActivation) {
+      user.active = user.active || !requireAdminActivation.enabled;
+    }
 
-    defaultTeams = settings[authenticationType].newUserTeams;
-    defaultEvents = settings[authenticationType].newUserEvents;
+    defaultTeams = authenticationConfig.settings.newUserTeams;
+    defaultEvents = authenticationConfig.settings.newUserEvents;
+  } else {
+    throw new Error('No configuration defined for ' + user.authentication.type);
   }
 
   const newUser = await util.promisify(UserModel.createUser)(user);
@@ -119,7 +136,7 @@ User.prototype.create = async function(user, options = {}) {
       };
 
       await newUser.save();
-    } catch {}
+    } catch { }
   }
 
   if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
@@ -135,7 +152,7 @@ User.prototype.create = async function(user, options = {}) {
       newUser.icon.color = options.icon.color;
 
       await newUser.save();
-    } catch {}
+    } catch { }
   }
 
   if (defaultTeams && Array.isArray(defaultTeams)) {
@@ -143,7 +160,7 @@ User.prototype.create = async function(user, options = {}) {
     for (let i = 0; i < defaultTeams.length; i++) {
       try {
         await addUserToTeam({ _id: defaultTeams[i] }, newUser);
-      } catch {}
+      } catch { }
     }
   }
 
@@ -164,21 +181,21 @@ User.prototype.create = async function(user, options = {}) {
   return newUser;
 };
 
-User.prototype.update = function(user, options, callback) {
+User.prototype.update = function (user, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
   const operations = [];
-  operations.push(function(done) {
+  operations.push(function (done) {
     done(null, user);
   });
 
   if (options.avatar) {
-    operations.push(function(updatedUser, done) {
+    operations.push(function (updatedUser, done) {
       const avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
-      fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
+      fs.move(options.avatar.path, avatar.absolutePath, { clobber: true }, function (err) {
         if (err) {
           return done(err);
         }
@@ -198,12 +215,12 @@ User.prototype.update = function(user, options, callback) {
     if (options.icon.type === 'none') {
       if (user.icon.relativePath) {
         // delete it
-        operations.push(function(updatedUser, done) {
+        operations.push(function (updatedUser, done) {
           const icon = updatedUser.icon;
           icon.path = path.join(userBase, updatedUser.icon.relativePath);
 
           const iconPaths = iconPath(updatedUser._id, updatedUser, icon);
-          fs.remove(iconPaths.absolutePath, function(err) {
+          fs.remove(iconPaths.absolutePath, function (err) {
             if (err) {
               log.warn('Error removing users map icon from ' + iconPaths.absolutePath);
             }
@@ -217,9 +234,9 @@ User.prototype.update = function(user, options, callback) {
         });
       }
     } else {
-      operations.push(function(updatedUser, done) {
+      operations.push(function (updatedUser, done) {
         const icon = iconPath(updatedUser._id, updatedUser, options.icon);
-        fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
+        fs.move(options.icon.path, icon.absolutePath, { clobber: true }, function (err) {
           if (err) return done(err);
 
           updatedUser.icon.type = options.icon.type;
@@ -235,20 +252,20 @@ User.prototype.update = function(user, options, callback) {
     }
   }
 
-  async.waterfall(operations, function(err, updatedUser) {
+  async.waterfall(operations, function (err, updatedUser) {
     if (err) return callback(err);
 
     UserModel.updateUser(updatedUser, callback);
   });
 };
 
-User.prototype.delete = function(user, callback) {
-  UserModel.deleteUser(user, function(err) {
+User.prototype.delete = function (user, callback) {
+  UserModel.deleteUser(user, function (err) {
     callback(err);
   });
 };
 
-User.prototype.avatar = function(user, callback) {
+User.prototype.avatar = function (user, callback) {
   if (!user.avatar.relativePath) return callback();
 
   const avatar = user.avatar.toObject();
@@ -257,7 +274,7 @@ User.prototype.avatar = function(user, callback) {
   callback(null, avatar);
 };
 
-User.prototype.icon = function(user, callback) {
+User.prototype.icon = function (user, callback) {
   if (!user.icon.relativePath) return callback();
 
   const icon = user.icon.toObject();
@@ -266,7 +283,7 @@ User.prototype.icon = function(user, callback) {
   callback(null, icon);
 };
 
-User.prototype.addRecentEvent = function(user, event, callback) {
+User.prototype.addRecentEvent = function (user, event, callback) {
   UserModel.addRecentEventForUser(user, event, callback);
 };
 

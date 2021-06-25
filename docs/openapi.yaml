@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
-  version: 5.4.3
+  version: 5.5.0
 servers: []
 security:
   - mageToken: []
@@ -161,6 +161,76 @@ paths:
         403:
           description: Failure to provision the device.  This typically means the device needs to be registered.
 
+  /api/authentication/configuration/:
+    get:
+      tags: [Authentication & Authorization]
+      summary: Get an array of all authentication configurations
+      description: Get all authentication configurations.  The client must have `READ_AUTH_CONFIG` permission.
+      operationId: getAllAuthConfigs
+      responses:
+        200:
+          description: A list of all authentication configurations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuthenticationConfiguration'
+        401:
+          description: User is not authorized to view authentication configurations.
+    post:
+      tags: [Authentication & Authorization]
+      summary: Create a new authentication configuration
+      description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
+                   The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: createNewAuthConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: The created authentication configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+        401:
+          description: User is not authorized to create authentication configurations.
+  /api/authentication/configuration/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/authenticationConfigurationIdInPath' }
+    put:
+      tags: [ Authentication & Authorization ]
+      summary: Update an authentication configuration
+      description: >
+        Update the authentication configuration.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: updateAuthConfigById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthenticationConfiguration' }
+      responses:
+        200:
+          description: authentication configuration update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationConfiguration'
+    delete:
+      tags: [ Authentication & Authorization ]
+      summary: Delete  an authentication configuration
+      description: >
+        Delete the authentiction configuration document by `id`.
+        The client must have `UPDATE_AUTH_CONFIG` permission.
+      operationId: deleteAutheConfig
+      responses:
+        204:
+          description: Success - authentication configuration
+          
   /api/users:
     post:
       tags: [ User ]
@@ -2112,7 +2182,8 @@ paths:
           enum:
           - banner
           - disclaimer
-          - security
+          - blacklist
+          - authconfigsetup
       responses:
         200:
           description: Success - setting document
@@ -2136,7 +2207,8 @@ paths:
           enum:
           - banner
           - disclaimer
-          - security
+          - blacklist
+          - authconfigsetup
       responses:
         200:
           description: Success - the update settings document
@@ -2148,12 +2220,12 @@ paths:
     get:
       deprecated: true
       tags: [ Export ]
-      operationId: export
+      operationId: exportStream
       description: >
         Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
-      summary: Perform export during request.  May timeout, so use export in background.
+      summary: Perform export during request.  May timeout, so please use /api/exports instead.
       parameters:
       - name: exportType
         in: path
@@ -2210,18 +2282,32 @@ paths:
       responses:
         200:
           description: export response
-  /api/export/{exportType}:
+  /api/exports/:
     get:
       tags: [ Export ]
-      operationId: exportBackground
+      operationId: getAllExports
       description: >
-        Export mage data (GeoJSON, KML, Shapefiles, CSV) in the background. The requesting user must have
-        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
+        Get all exports regardless of user.
+      summary: Get a list of all exports.
+      responses:
+        200:
+          description: all exports.
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Export' }
+    post:
+      tags: [ Export ]
+      operationId: export
+      description: >
+        Export MAGE data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
+        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
-      summary: Export in the background.
+      summary: Export MAGE data using a background task.
       parameters:
       - name: exportType
-        in: path
+        in: query
         required: true
         schema:
           type: string
@@ -2229,6 +2315,7 @@ paths:
           - geojson
           - kml
           - shapefile
+          - geopackage
           - csv
       - name: eventId
         in: query
@@ -2247,16 +2334,16 @@ paths:
           format: date-time
       - name: observations
         in: query
+        required: true
         description: Boolean flag indicating whether or not to export observations
         schema:
           type: boolean
-          default: true
       - name: locations
         in: query
+        required: true
         description: Boolean flag indicating whether or not to export user locations
         schema:
           type: boolean
-          default: true
       - name: attachments
         in: query
         description: Boolean flag indicating whether or not to `exclude` observation attachments (if any).  Attachments are included by default.
@@ -2275,26 +2362,37 @@ paths:
       responses:
         201:
           description: export id
+          headers:
+            location:
+              description: The URI of the export download.
+              schema:
+                type: string
           content: 
             text/plain:
               schema:
                 type: string
-          links:
-            GetExportStatusByExportId:
-              operationId: getExportStatus
-              parameters:
-                exportId: '$response.body'
-              description: >
-                The value returned in the response can be used as
-                the `exportId` parameter in `GET /api/export/{exportId}/status`.
-  /api/export/{exportId}/status:
+  /api/exports/myself:
     get:
       tags: [ Export ]
-      operationId: getExportStatus
+      operationId: getExports
       description: >
-        Get the status of a background export operation. The requesting user must have
-        an ACL entry in the event with `read`.
-      summary: Get the status of a background export operation.
+        Get only exports for current token holder.
+      summary: Get exports.
+      responses:
+        200:
+          description: exports
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Export' }
+  /api/exports/{exportId}:
+    get:
+      tags: [ Export ]
+      operationId: getExportById
+      description: >
+        Download an export by id.
+      summary: Download a completed export.
       parameters:
       - name: exportId
         in: path
@@ -2303,13 +2401,11 @@ paths:
           type: string
       responses:
         200:
-          description: export location
+          description: The exported data as a compressed file.
           content: 
-            text/plain:
+            application/zip:
               schema:
-                type: string
-                enum: [ Starting, Running, Completed, Failed ]
-                example: Running
+                type: object
 components:
   securitySchemes:
     authenticationToken:
@@ -3203,6 +3299,52 @@ components:
           type: string
         settings:
           type: object
+    Export:
+      required:
+        - type
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        physicalPath:
+          type: string
+        filename:
+          type: string
+        exportType:
+          type: string
+          enum: [ geojson, kml, geopackage, shapefile, csv ]
+        location:
+          type: string
+        status:
+          type: string
+        options:
+          type: string
+    AuthenticationConfiguration:
+      required:
+        - name
+        - type
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        title: 
+          type: string
+        textColor:
+          type: string
+        buttonColor:
+          type: string
+        icon:
+          type: string
+          format: byte
+        enabled:
+          type: boolean
+        settings:
+          type: object
+
   parameters:
     userIdInPath:
       in: path
@@ -3358,6 +3500,13 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/SortKey'
+    authenticationConfigurationIdInPath:
+      in: path
+      name: id
+      description: The id of the authentication configuration
+      required: true
+      schema:
+        type: string
 
   responses:
     FormIconInfo:

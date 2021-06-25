@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormsModule } from '@angular/forms'
-import { MatCheckbox, MatCheckboxModule, MatError, MatFormFieldModule } from '@angular/material'
+import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser'
 
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component'
@@ -17,7 +18,7 @@ class TestHostComponent {
     name: 'field1'
   }
 
-  @ViewChild(ObservationEditCheckboxComponent, { static: false }) component: ObservationEditCheckboxComponent
+  @ViewChild(ObservationEditCheckboxComponent) component: ObservationEditCheckboxComponent
 }
 
 describe('ObservationEditCheckboxComponent', () => {
@@ -83,7 +84,7 @@ describe('ObservationEditCheckboxComponent', () => {
   })
 
   it('should show error on invalid and touched', async () => {
-    component.field.value = true
+    component.field.value = false
     component.field.required = true
     
     const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).references['checkbox']
@@ -92,18 +93,18 @@ describe('ObservationEditCheckboxComponent', () => {
     fixture.detectChanges()
     await fixture.whenStable()
 
-    const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error.nativeElement.innerText).toBe(`${component.field.title} is required`)
+    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeNull()
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.field.value = true
+    component.field.value = false
     component.field.required = true
 
     fixture.detectChanges()
     await fixture.whenStable()
 
-    const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error).toBeNull()
+    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
   })
 });

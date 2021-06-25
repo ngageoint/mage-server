@@ -1,24 +1,50 @@
-'use strict';
-
 const moment = require('moment')
+  , path = require('path')
   , log = require('winston')
   , fs = require('fs')
-  , Writable = require('stream')
   , exportDirectory = require('../environment/env').exportDirectory
   , Event = require('../models/event')
   , User = require('../models/user')
   , Device = require('../models/device')
   , access = require('../access')
+  , exportXform = require('../transformers/export')
   , exporterFactory = require('../export/exporterFactory')
-  , ExportMetadata = require('../models/exportmetadata');
-
+  , Export = require('../models/export');
 
 module.exports = function (app, security) {
 
   const passport = security.authentication.passport;
 
+  function authorizeEventAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
+      next();
+    } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.userHasEventPermission(req.event, req.user._id, 'read', function (err, hasPermission) {
+        if (hasPermission) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
+
+  function authorizeExportAccess(permission) {
+    return async function authorizeExportAccess(req, res, next) {
+      req.export = await Export.getExportById(req.params.exportId);
+      if (access.userHasPermission(req.user, permission)) {
+        next();
+      } else {
+        req.user._id.toString() === req.export.userId.toString() ? next() : res.sendStatus(403);
+      }
+    }
+  }
+
   /**
-   * This method holds up the request until the export is complete.
+   * Stream export file to client
    * 
    * @deprecated Use {@code /api/exports/} instead.  
    */
@@ -27,11 +53,30 @@ module.exports = function (app, security) {
     passport.authenticate('bearer'),
     parseQueryParams,
     getEvent,
-    validateEventAccess,
+    authorizeEventAccess,
     mapUsers,
     mapDevices,
     function (req, res) {
-      log.warn('DEPRECATED - /api/:exportType called.  Please use /api/exports/:exportType instead.');
+      log.warn('DEPRECATED - /api/:exportType called.  Please use /api/exports instead.');
+
+      res.type('application/zip');
+      switch (req.params.exportType) {
+        case 'shapefile':
+          res.attachment('mage-shapefile.zip');
+          break;
+        case 'kml':
+          res.attachment('mage-kml.zip');
+          break;
+        case 'geojson':
+          res.attachment("mage-geojson.zip");
+          break;
+        case 'csv':
+          res.attachment("mage-export-csv.zip");
+          break;
+        case 'geopackage':
+          res.attachment("mage-geojson.zip");
+          break;
+      }
 
       const options = {
         event: req.event,
@@ -45,61 +90,49 @@ module.exports = function (app, security) {
   );
 
   /**
-   * This performs the export in the "background".  This means that the export does 
-   * not hold up the request until the export is complete.
+   * Export async, return export metadata immediately
    */
   app.post('/api/exports',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     parseQueryParams,
     getEvent,
-    validateEventAccess,
+    authorizeEventAccess,
     mapUsers,
     mapDevices,
     function (req, res, next) {
-
-      const meta = {
+      const document = {
         userId: req.user._id,
-        exportType: req.param('exportType'),
+        exportType: req.body.exportType,
         options: {
-          eventId: req.param('eventId'),
+          eventId: req.body.eventId,
           filter: req.parameters.filter
         }
       };
 
-      ExportMetadata.createMetadata(meta).then(result => {
+      Export.createExport(document).then(result => {
+        const response = exportXform.transform(result, { path: req.getPath() });
+        res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
+
         //TODO figure out event, users and devices
-        exportInBackground(result._id, req.event, req.users, req.devices).catch(err => {
-          log.warn(err);
+        exportData(result._id, req.event, req.users, req.devices).catch(err => {
+          log.error(`Error exporting ${result._id}`, err);
+          Export.updateExport(result._id, {status: Export.ExportStatus.Failed});
         });
-        res.location(result.location);
-        res.status(201);
-        const exportResponse = {
-          exportId: result._id.toString()
-        };
-        res.json(exportResponse);
-        return next();
-      }).catch(err => {
-        log.warn(err);
-        return next(err);
-      });
+      }).catch(err => next(err));
     }
   );
 
   /**
    * Get all exports
    */
-  app.get('/api/exports/all',
+  app.get('/api/exports',
     passport.authenticate('bearer'),
     access.authorize('READ_EXPORT'),
     function (req, res, next) {
-      ExportMetadata.getAllExportMetadatas().then(metas => {
-        res.json(metas);
-        return next();
-      }).catch(err => {
-        log.warn(err);
-        return next(err);
-      });
+      Export.getAllExports().then(results => {
+        const response = exportXform.transform(results, { path: req.getPath() });
+        res.json(response);
+      }).catch(err => next(err));
     }
   );
 
@@ -108,80 +141,65 @@ module.exports = function (app, security) {
    */
   app.get('/api/exports/myself',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
     function (req, res, next) {
-      ExportMetadata.getExportMetadatasByUserId(req.user._id).then(metas => {
-        res.json(metas);
-        return next();
-      }).catch(err => {
-        log.warn(err);
-        return next(err);
-      });
+      Export.getExportsByUserId(req.user._id, { populate: true }).then(exports => {
+        const response = exportXform.transform(exports, { path: `${req.getRoot()}/api/exports` });
+        res.json(response);
+      }).catch(err => next(err));
     }
   );
 
   /**
   * Get a specific export
   */
-  app.get('/api/exports/download/:exportId',
+  app.get('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
-    function (req, res, next) {
-      ExportMetadata.getExportMetadataById(req.param("exportId")).then(meta => {
-        const file = meta.physicalPath;
-        res.writeHead(200, {
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition": "attachment; filename=" + meta.filename
-        });
-        const readStream = fs.createReadStream(file);
-        readStream.pipe(res);
-        return next();
-      }).catch(err => {
-        return next(err);
+    function (req, res) {
+      const file = path.join(exportDirectory, req.export.relativePath);
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${req.export.filename}`
       });
+      const readStream = fs.createReadStream(file);
+      readStream.pipe(res);
     });
 
   /**
    * Remove a specific export
    */
+  // TODO should be able to delete your own export
   app.delete('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    access.authorize('DELETE_EXPORT'),
     function (req, res, next) {
-      ExportMetadata.removeMetadata(req.param("exportId")).then(meta => {
-        res.json(meta);
-        return next();
-      }).catch(err => {
-        return next(err);
-      });
+      Export.removeExport(req.params.exportId).then(result => {
+        fs.promises.unlink(path.join(exportDirectory, result.relativePath)).catch(err => {
+          log.warn(`Error removing export file, ${result.relativePath}`, err)
+        })
+        res.json(result);
+      }).catch(err => next(err));
     });
 
   /**
    * Retry a failed export
    */
-  app.post('/api/exports/retry',
+  app.post('/api/exports/:exportId/retry',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
-    loadExportMetadata,
+    getExport,
     getEvent,
-    validateEventAccess,
+    authorizeEventAccess,
     mapUsers,
     mapDevices,
-    function (req, res, next) {
-      exportInBackground(req.parameters.exportId, req.event, req.users, req.devices).catch(err => {
-        log.warn(err);
+    function (req, res) {
+      res.json({ id: req.params.exportId });
+
+      exportData(req.param('exportId'), req.event, req.users, req.devices).catch(err => {
+        log.error(err);
       });
-     
-      const exportResponse = {
-        exportId: req.parameters.exportId
-      };
-      res.json(exportResponse);
-      return next();
     });
 };
 
-function loadExportMetadata(req, res, next) {
-  ExportMetadata.getExportMetadataById(req.param("exportId")).then(result => {
+function getExport(req, res, next) {
+  Export.getExportById(req.params.exportId).then(result => {
     const parameters = { filter: {} };
 
     parameters.filter.eventId = result.options.eventId;
@@ -190,7 +208,7 @@ function loadExportMetadata(req, res, next) {
     req.parameters = parameters;
 
     next();
-  }).catch(err => { next(err) });
+  }).catch(err => next(err));
 }
 
 function parseQueryParams(req, res, next) {
@@ -212,52 +230,33 @@ function parseQueryParams(req, res, next) {
   }
   parameters.filter.eventId = eventId;
 
-  const observations = req.param('observations');
-  if (observations) {
-    parameters.filter.exportObservations = observations === true;
-
-    if (parameters.filter.exportObservations) {
-      parameters.filter.favorites = req.param('favorites') === true;
-      if (parameters.filter.favorites) {
-        parameters.filter.favorites = {
-          userId: req.user._id
-        };
-      }
-
-      parameters.filter.important = req.param('important') === true;
-      parameters.filter.attachments = req.param('attachments') === true;
+  parameters.filter.exportObservations = String(req.param('observations')).toLowerCase() === 'true';
+  if (parameters.filter.exportObservations) {
+    parameters.filter.favorites = String(req.param('favorites')).toLowerCase() === 'true';
+    if (parameters.filter.favorites) {
+      parameters.filter.favorites = {
+        userId: req.user._id
+      };
     }
+
+    parameters.filter.important = String(req.param('important')).toLowerCase() === 'true';
+    parameters.filter.attachments = String(req.param('attachments')).toLowerCase() === 'true';
   }
 
-  const locations = req.param('locations');
-  if (locations) {
-    parameters.filter.exportLocations = locations === true;
-  }
+  parameters.filter.exportLocations = String(req.param('locations')).toLowerCase() === 'true';
 
   req.parameters = parameters;
 
   next();
 }
 
-function validateEventAccess(req, res, next) {
-  if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
-    next();
-  } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
-    // Make sure I am part of this event
-    Event.userHasEventPermission(req.event, req.user._id, 'read', function (err, hasPermission) {
-      if (hasPermission) {
-        return next();
-      } else {
-        return res.sendStatus(403);
-      }
-    });
-  } else {
-    res.sendStatus(403);
-  }
-}
-
 function getEvent(req, res, next) {
   Event.getById(req.parameters.filter.eventId, {}, function (err, event) {
+    if (err || !event) {
+      const msg = "Event with id " + req.parameters.filter.eventId + " does not exist";
+      return res.status(400).send(msg);
+    }
+
     req.event = event;
 
     // form map
@@ -308,55 +307,30 @@ function mapDevices(req, res, next) {
     .catch(err => next(err));
 }
 
-function exportInBackground(exportId, event, users, devices) {
-  log.info('Setting up export of ' + exportId);
+async function exportData(exportId, event, users, devices) {
+  let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
 
-  return ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Running).then(meta => {
-
-    //TODO possibly move this to some init script?
-    log.debug('Checking to see if we need to create ' + exportDirectory);
-    if (!fs.existsSync(exportDirectory)) {
-      log.info('Creating directory ' + exportDirectory);
-      fs.mkdirSync(exportDirectory);
-    }
-
-    const filename = exportId + '-' + meta.exportType + '.zip';
-    meta.physicalPath = exportDirectory + '/' + filename;
-    meta.filename = filename;
-    return ExportMetadata.updateExportMetadata(meta);
-  }).then(meta => {
-    //TODO adding type and attachment functions to support current (version 5.4.2) export implementations.
-    //can probably move this to the top of this class
-    Writable.prototype.type = function () { };
-    Writable.prototype.attachment = function () { };
-
-    log.debug('Constructing file ' + meta.physicalPath);
-    const writableStream = fs.createWriteStream(meta.physicalPath);
-    writableStream.on('finish', () => {
-      log.info('Successfully completed export of ' + exportId);
-      ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Completed);
-    });
-
-    return Promise.resolve({
-      meta: meta,
-      stream: writableStream
-    });
-  }).then(data => {
-    const options = {
-      event: event,
-      users: users,
-      devices: devices,
-      filter: data.meta.options.filter
-    };
-    log.info('Begining actual export of ' + exportId + ' (' + data.meta.exportType + ')');
-    const exporter = exporterFactory.createExporter(data.meta.exportType.toLowerCase(), options);
-    exporter.export(data.stream);
-
-    return true;
-  }).catch(err => {
-    log.warn('Failed export of ' + exportId, err);
-
-    ExportMetadata.updateExportMetadataStatus(exportId, ExportMetadata.ExportStatus.Failed);
-    return Promise.reject(err);
+  const filename = exportId + '-' + exportDocument.exportType + '.zip';
+  exportDocument = await Export.updateExport(exportId, {
+    status: Export.ExportStatus.Running,
+    relativePath: filename,
+    filename: filename
   });
+
+  const file = path.join(exportDirectory, filename);
+  const stream = fs.createWriteStream(file);
+  stream.on('finish', () => {
+    log.info('Successfully completed export of ' + exportId);
+    Export.updateExport(exportId, { status: Export.ExportStatus.Completed });
+  });
+
+  const options = {
+    event: event,
+    users: users,
+    devices: devices,
+    filter: exportDocument.options.filter
+  };
+  log.info('Export ' + exportId + ' (' + exportDocument.exportType + ')');
+  const exporter = exporterFactory.createExporter(exportDocument.exportType.toLowerCase(), options);
+  exporter.export(stream);
 }

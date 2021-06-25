@@ -7,7 +7,7 @@
       </div>
       <div *ngIf="primaryFieldValue" class="form-header-summary__primary">
         <span [ngSwitch]="primaryField?.type">
-          <span *ngSwitchCase="geometry">
+          <span *ngSwitchCase="'geometry'">
             {{primaryFieldValue | geometry:5}}
           </span>
           <span *ngSwitchDefault>
@@ -17,7 +17,7 @@
       </div>
       <div *ngIf="secondaryFieldValue" class="form-header-summary__secondary">
         <span [ngSwitch]="secondaryField?.type">
-          <span *ngSwitchCase="geometry">
+          <span *ngSwitchCase="'geometry'">
             {{secondaryFieldValue | geometry:5}}
           </span>
           <span *ngSwitchDefault>

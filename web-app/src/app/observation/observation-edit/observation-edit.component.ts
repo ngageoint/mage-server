@@ -3,13 +3,16 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
-import { MatBottomSheet, MatDialog, MatIconRegistry, MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
 import * as moment from 'moment';
 import { ObservationEditDiscardComponent } from './observation-edit-discard/observation-edit-discard.component'
+import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar'
+import { MatIconRegistry } from '@angular/material/icon'
+import { MatDialog } from '@angular/material/dialog'
+import { MatBottomSheet } from '@angular/material/bottom-sheet'
 
 export type ObservationFormControl = FormControl & { definition: any }
 

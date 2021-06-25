@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-md-12">
-    <form name="account" ng-submit="$ctrl.signup(account)" method="post" autocomplete="off" novalidate>
+    <form name="account" class="bottom-gap-l" autocomplete="off" novalidate>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
         <input type="text" 
@@ -9,7 +9,8 @@
           placeholder="i.e. jappleseed" 
           autocomplete="new-password" 
           autocapitalize="off"
-          ng-model="$ctrl.user.username" 
+          ng-model="$ctrl.account.username"
+          ng-blur="$ctrl.getCaptcha()"
           required="true"
           class="mdc-text-field__input">
         <div class="mdc-notched-outline">
@@ -23,14 +24,14 @@
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
           <input type="text" 
-          id="displayName" 
-          name="displayName" 
-          placeholder="Johnny Appleseed" 
-          autocomplete="none"
-          autocapitalize="off"
-          ng-model="$ctrl.user.displayName" 
-          required="true"
-          class="mdc-text-field__input">
+            id="displayName" 
+            name="displayName" 
+            placeholder="Johnny Appleseed" 
+            autocomplete="none"
+            autocapitalize="off"
+            ng-model="$ctrl.account.displayName" 
+            required="true"
+            class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch">
@@ -42,13 +43,13 @@
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
           <input type="email" 
-          id="signup-email" 
-          name="signup-email" 
-          placeholder="johnny@appleseed.com" 
-          autocomplete="none"
-          autocapitalize="off"
-          ng-model="$ctrl.user.email" 
-          class="mdc-text-field__input">
+            id="signup-email" 
+            name="signup-email" 
+            placeholder="johnny@appleseed.com" 
+            autocomplete="none"
+            autocapitalize="off"
+            ng-model="$ctrl.account.email" 
+            class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch">
@@ -60,12 +61,12 @@
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
           <input type="tel" 
-          id="signup-phone" 
-          name="signup-phone" 
-          autocomplete="none"
-          autocapitalize="off"
-          ng-model="$ctrl.user.phone" 
-          class="mdc-text-field__input">
+            id="signup-phone" 
+            name="signup-phone" 
+            autocomplete="none"
+            autocapitalize="off"
+            ng-model="$ctrl.account.phone" 
+            class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch">
@@ -76,15 +77,8 @@
       </div>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-          <input type="password" 
-          id="password" 
-          name="password" 
-          autocomplete="new-password"
-          autocapitalize="off"
-          ng-model="$ctrl.user.password" 
-          required="true"
-          ng-change="$ctrl.onPasswordChange()"
-          class="mdc-text-field__input">
+        <input type="password" id="password" name="password" autocomplete="new-password" autocapitalize="off"
+          ng-model="$ctrl.account.password" required="true" ng-change="$ctrl.onPasswordChange()" class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch">
@@ -93,16 +87,10 @@
           <div class="mdc-notched-outline__trailing"></div>
         </div>
       </div>
-
+      
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-          <input type="password" 
-          id="passwordconfirm" 
-          name="passwordconfirm" 
-          autocomplete="new-password"
-          autocapitalize="off"
-          ng-model="$ctrl.user.passwordconfirm" 
-          required="true"
-          class="mdc-text-field__input">
+        <input type="password" id="passwordconfirm" name="passwordconfirm" autocomplete="new-password" autocapitalize="off"
+          ng-model="$ctrl.account.passwordconfirm" required="true" class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
           <div class="mdc-notched-outline__notch">
@@ -114,9 +102,10 @@
       <div class="mdc-text-field-helper-line">
         <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Passwords do not match</div>
       </div>
-
-      <div class="top-gap">
-        <div class="muted">Password Strength: <span class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></div>
+      
+      <div>
+        <div class="muted">Password Strength: <span
+            class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></div>
         <div role="progressbar" class="top-gap-s mdc-linear-progress" ng-class="'progress-bar-' + $ctrl.passwordStrengthType">
           <div class="mdc-linear-progress__buffering-dots"></div>
           <div class="mdc-linear-progress__buffer"></div>
@@ -129,9 +118,51 @@
         </div>
       </div>
 
+      <div class="auth-captcha-container top-gap-l">
+        <div ng-show="$ctrl.loadingCaptcha" class="auth-captcha-progress">
+          <div class="auth-captcha-progress__container">
+            <div class="auth-captcha-progress--text">Generating Captcha...</div>
+            <div role="progressbar" class="mdc-linear-progress" aria-label="Example Progress Bar" aria-valuemin="0"
+              aria-valuemax="1" aria-valuenow="0">
+              <div class="mdc-linear-progress__buffer">
+                <div class="mdc-linear-progress__buffer-bar"></div>
+                <div class="mdc-linear-progress__buffer-dots"></div>
+              </div>
+              <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+                <span class="mdc-linear-progress__bar-inner"></span>
+              </div>
+              <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+                <span class="mdc-linear-progress__bar-inner"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-captcha">
+          <img ng-if="$ctrl.captcha.uri" alt="" width="100%" height="100%" src="{{$ctrl.captcha.uri}}">
+        </div>
+        <div class="auth-captcha-refresh">
+          <button ng-if="$ctrl.captcha.uri" class="mdc-icon-button material-icons" ng-click="$ctrl.getCaptcha()">refresh</button>
+        </div>
+      </div>
+      
+      <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
+        <input type="text" id="captchaText" name="captchaText" placeholder="Enter text from image above" autocapitalize="off"
+          ng-model="$ctrl.account.captchaText" required="true" class="mdc-text-field__input">
+        <div class="mdc-notched-outline">
+          <div class="mdc-notched-outline__leading"></div>
+          <div class="mdc-notched-outline__notch">
+            <label for="username" class="mdc-floating-label">Captcha Text</label>
+          </div>
+          <div class="mdc-notched-outline__trailing"></div>
+        </div>
+      </div>
+      <div class="mdc-text-field-helper-line">
+        <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Captcha text is required</div>
+      </div>
+
       <div class="auth-button-container">
         <button type="button" class="top-gap mdc-button mdc-button--raised secondary-button" ng-click="$ctrl.onCancel()">Cancel</button>
-        <button type="submit" class="top-gap mdc-button mdc-button--raised primary-button" >Sign Up</button>
+        <button type="button" class="top-gap mdc-button mdc-button--raised primary-button" ng-click="$ctrl.verify(account)">Signup</button>
       </div>
     </form>
   </div>

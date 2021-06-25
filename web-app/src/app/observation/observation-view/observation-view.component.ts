@@ -3,10 +3,11 @@ import { EventService, LocalStorageService, MapService, UserService } from 'src/
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { animate, style, transition, trigger } from '@angular/animations';
-import { MatBottomSheet, MatDialog } from '@angular/material';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'observation-view',
@@ -43,9 +44,10 @@ export class ObservationViewComponent implements OnChanges {
     description?: string
   } = { open: false }
 
+  // TODO: define types for these
   observationForm: any
-  primaryFeedField = {}
-  secondaryFeedField = {}
+  primaryFeedField: any = {}
+  secondaryFeedField: any = {}
 
   constructor(
     private dialog: MatDialog,

@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormsModule } from '@angular/forms'
-import { MatError, MatFormFieldModule, MatRadioGroup, MatRadioModule } from '@angular/material'
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
+import { MatRadioGroup, MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser'
 
 import { ObservationEditRadioComponent } from './observation-edit-radio.component'
@@ -22,7 +23,7 @@ class TestHostComponent {
     }]
   }
 
-  @ViewChild(ObservationEditRadioComponent, { static: false }) component: ObservationEditRadioComponent
+  @ViewChild(ObservationEditRadioComponent) component: ObservationEditRadioComponent
 }
 
 describe('ObservationEditRadioComponent', () => {
@@ -72,8 +73,9 @@ describe('ObservationEditRadioComponent', () => {
     fixture.detectChanges()
     await fixture.whenStable()
 
-    const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error.nativeElement.innerText).toBe('You must enter a value')
+    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeNull()
+    expect(error.nativeElement.innerText).toBe('Radio is required')
   })
 
   it('should not show error on invalid if not touched', async () => {
@@ -82,7 +84,7 @@ describe('ObservationEditRadioComponent', () => {
     fixture.detectChanges()
     await fixture.whenStable()
 
-    const error = fixture.debugElement.query(By.directive(MatError))
-    expect(error).toBeNull()
+    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
   })
 });

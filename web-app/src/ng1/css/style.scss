@@ -1171,6 +1171,10 @@ admin {
   font-size: 25px;
 }
 
+.admin-layer-snackbar {
+  z-index: 1000;
+}
+
 .admin-delete-icon {
   color: red;
 }

@@ -1,0 +1,17 @@
+<section class="mat-typography">
+  <h1 mat-dialog-title>Delete {{strategy.title}} Authentication?</h1>
+</section>
+<section class="mat-typography">
+  <mat-dialog-content>
+    <p>"{{strategy.title}}" authentication will be deleted.</p>
+    <strong>This will remove all associated user information including location data. This cannot be undone, and the
+      user's data will be unrecoverable.
+    </strong>
+  </mat-dialog-content>
+</section>
+<section class="mat-typography">
+  <mat-dialog-actions>
+    <button mat-button (click)="close()" cdkFocusInitial>Cancel</button>
+    <button mat-button color="warn" (click)="delete()">Delete</button>
+  </mat-dialog-actions>
+</section>

@@ -6,7 +6,7 @@ describe('MapPopupService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: MapPopupService = TestBed.get(MapPopupService);
+    const service: MapPopupService = TestBed.inject(MapPopupService);
     expect(service).toBeTruthy();
   });
 });

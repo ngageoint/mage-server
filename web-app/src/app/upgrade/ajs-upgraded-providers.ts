@@ -1,12 +1,16 @@
 import { InjectionToken } from "@angular/core";
 export const MapService = new InjectionToken<any>('MapService');
 export const UserService = new InjectionToken<any>('UserService');
-export const FilterService = new InjectionToken<any>('EventService');
+export const FilterService = new InjectionToken<any>('FilterService');
 export const EventService = new InjectionToken<any>('EventService');
 export const GeometryService = new InjectionToken<any>('GeometryService');
 export const ObservationService = new InjectionToken<any>('ObservationService');
 export const LocalStorageService = new InjectionToken<any>('LocalStorageService');
 export const LocationService = new InjectionToken<any>('LocationService');
+export const Settings = new InjectionToken<any>('Settings');
+export const Team = new InjectionToken<any>('Team');
+export const Event = new InjectionToken<any>('Event');
+export const AuthenticationConfigurationService = new InjectionToken<any>('AuthenticationConfigurationService');
 
 export function mapServiceFactory(i: any): any {
   return i.get('MapService');
@@ -86,5 +90,45 @@ export function locationServiceFactory(i: any): any {
 export const locationServiceProvider = {
   provide: LocationService,
   useFactory: locationServiceFactory,
+  deps: ['$injector']
+};
+
+export function settingsFactory(i: any): any {
+  return i.get('Settings');
+}
+
+export const settingsProvider = {
+  provide: Settings,
+  useFactory: settingsFactory,
+  deps: ['$injector']
+};
+
+export function teamFactory(i: any): any {
+  return i.get('Team');
+}
+
+export const teamProvider = {
+  provide: Team,
+  useFactory: teamFactory,
+  deps: ['$injector']
+};
+
+export function eventFactory(i: any): any {
+  return i.get('Event');
+}
+
+export const eventProvider = {
+  provide: Event,
+  useFactory: eventFactory,
+  deps: ['$injector']
+};
+
+export function authenticationConfigurationServiceFactory(i: any): any {
+  return i.get('AuthenticationConfigurationService');
+}
+
+export const authenticationConfigurationServiceProvider = {
+  provide: AuthenticationConfigurationService,
+  useFactory: authenticationConfigurationServiceFactory,
   deps: ['$injector']
 };

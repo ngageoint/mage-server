@@ -23,8 +23,8 @@
 
 <div class="actions">
   <div class="action-buttons">
-    <button *ngIf="followingUser.id !== user.id" mat-button color="primary" (click)="onFollow($event)">FOLLOW</button>
-    <button *ngIf="followingUser.id === user.id" mat-flat-button color="primary" (click)="onFollow($event)">FOLLOWING</button>
+    <button *ngIf="followingUser.id !== user.id" mat-button color="primary" (click)="onFollow()">FOLLOW</button>
+    <button *ngIf="followingUser.id === user.id" mat-flat-button color="primary" (click)="onFollow()">FOLLOWING</button>
   </div>
 
   <div class="actions-icons">

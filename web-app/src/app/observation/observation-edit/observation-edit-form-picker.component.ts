@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MatBottomSheetRef } from '@angular/material';
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { EventService, FilterService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({

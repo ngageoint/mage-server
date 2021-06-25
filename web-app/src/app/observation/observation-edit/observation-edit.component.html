@@ -7,7 +7,7 @@
         <span *ngIf="isNewObservation">Create Observation</span>
       </div>
 
-      <button mat-button (click)="save()" [disabled]="observationForm.$invalid || saving || mask">SAVE</button>
+      <button mat-button (click)="save()" [disabled]="formGroup.invalid || saving || mask">SAVE</button>
     </mat-toolbar-row>
   </mat-toolbar>
 

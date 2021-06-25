@@ -1,5 +1,5 @@
-const fs = require('fs');
-const Setting = require('../models/setting');
+const fs = require('fs')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
 /**
  * `Provision` constructor.
@@ -10,7 +10,7 @@ function Provision() {
   this.strategies = {};
 }
 
-Provision.prototype.use = function(name, strategy) {
+Provision.prototype.use = function (name, strategy) {
   if (!strategy) {
     strategy = name;
     name = strategy.name;
@@ -21,15 +21,14 @@ Provision.prototype.use = function(name, strategy) {
   return this;
 };
 
-Provision.prototype.check = function(type, options) {
+Provision.prototype.check = function (type, name, options) {
   options = options || {};
 
   const strategies = this.strategies;
 
-  return function(req, res, next) {
-    Setting.getSetting('security').then(({settings}) => {
-      const localAuthentication = settings[type] || {};
-      const localDeviceSettings = localAuthentication.devicesReqAdmin || {};
+  return function (req, res, next) {
+    AuthenticationConfiguration.getConfiguration(type, name).then(authConfig => {
+      const localDeviceSettings = authConfig.settings.devicesReqAdmin || {};
       const strategy = localDeviceSettings.enabled !== false ? 'uid' : 'none';
 
       const provision = strategies[strategy];
@@ -44,7 +43,9 @@ Provision.prototype.check = function(type, options) {
 
         next();
       });
-    })
+    }).catch(err => {
+      next(err);;
+    });
   };
 };
 

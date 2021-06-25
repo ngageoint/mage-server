@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatError, MatFormField, MatFormFieldModule, MatInput, MatInputModule } from '@angular/material';
+import { MatError, MatFormField, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -14,11 +15,11 @@ import { ObservationEditTextComponent } from './observation-edit-text.component'
 class TestHostComponent {
 
   field = {
-    title: 'Number',
+    title: 'Text',
     name: 'field1'
   }
 
-  @ViewChild(ObservationEditTextComponent, { static: false }) component: ObservationEditTextComponent
+  @ViewChild(ObservationEditTextComponent) component: ObservationEditTextComponent
 }
 
 describe('ObservationEditTextComponent', () => {
@@ -31,7 +32,7 @@ describe('ObservationEditTextComponent', () => {
       imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
       declarations: [ObservationEditTextComponent, TestHostComponent]
     })
-      .compileComponents()
+    .compileComponents()
   }))
 
   beforeEach(() => {
@@ -45,7 +46,7 @@ describe('ObservationEditTextComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  fit('should not indicate required', () => {
+  it('should not indicate required', () => {
     component.field.required = false
     fixture.detectChanges()
     const input = fixture.debugElement.query(By.directive(MatFormField)).componentInstance
@@ -62,7 +63,7 @@ describe('ObservationEditTextComponent', () => {
   it('should show error on invalid and touched', async () => {
     component.field.required = true
 
-    const input = fixture.debugElement.query(By.directive(MatInput)).references['number']
+    const input = fixture.debugElement.query(By.directive(MatInput)).references['text']
     input.control.markAsTouched()
 
     fixture.detectChanges()

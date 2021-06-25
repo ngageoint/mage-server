@@ -19,8 +19,8 @@ export class ObservationEditDateComponent implements OnChanges {
   @Input() formGroup: FormGroup
   @Input() definition: any
 
-  @ViewChild('dateModel', { static: false }) dateModel: NgModel
-  @ViewChild('timeModel', { static: false }) timeModel: NgModel
+  @ViewChild('dateModel') dateModel: NgModel
+  @ViewChild('timeModel') timeModel: NgModel
 
   date: moment.Moment
   time: moment.Moment
