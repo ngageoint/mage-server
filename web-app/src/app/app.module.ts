@@ -138,8 +138,6 @@ import { AccountLockComponent } from './admin/admin-settings/authentication-sett
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
-import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
-import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
 import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
 
 @NgModule({
@@ -163,7 +161,6 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
     ObservationDeleteComponent,
     ObservationEditFormComponent,
     ObservationEditFormPickerComponent,
-    ObservationEditAttachmentComponent,
     ObservationEditMultiselectComponent,
     ObservationEditCheckboxComponent,
     ObservationEditSelectComponent,
@@ -187,7 +184,6 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
     ObservationFavoritesComponent,
     ObservationListComponent,
     ObservationOptionsComponent,
-    ObservationViewAttachmentComponent,
     MapClipComponent,
     BootstrapComponent,
     AttachmentComponent,
