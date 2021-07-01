@@ -7,6 +7,7 @@ const SamlStrategy = require('passport-saml').Strategy
   , api = require('../api')
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
+  , AuthenticationInitializer = require('./index')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
@@ -148,7 +149,11 @@ function configure(passport, config) {
   }
 }
 
-function init(app, passport, provision, tokenService) {
+function initialize() {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
+  const tokenService = AuthenticationInitializer.tokenService;
 
   cachedApp = app;
   cachedTokenService = tokenService;
@@ -258,6 +263,6 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
+  initialize,
   configure
 }

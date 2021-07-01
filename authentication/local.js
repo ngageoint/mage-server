@@ -7,6 +7,7 @@ const log = require('winston')
   , api = require('../api')
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
+  , AuthenticationInitializer = require('./index')
   , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
   , Authentication = require('../models/authentication');
 
@@ -67,7 +68,11 @@ function configure(passport) {
   ));
 }
 
-function init(app, passport, provision, tokenService) {
+function initialize() {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
+  const tokenService = AuthenticationInitializer.tokenService;
 
   function parseLoginMetadata(req, _res, next) {
     req.loginOptions = {
@@ -222,6 +227,6 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
+  initialize,
   configure
 }

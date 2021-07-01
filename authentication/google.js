@@ -6,6 +6,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , config = require('../config.js')
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
+  , AuthenticationInitializer = require('./index')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
@@ -89,7 +90,11 @@ function configure(passport, config) {
   }
 }
 
-function init(app, passport, provision, tokenService) {
+function initialize() {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
+  const tokenService = AuthenticationInitializer.tokenService;
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -204,6 +209,6 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
+  initialize,
   configure
 }

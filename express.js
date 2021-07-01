@@ -10,7 +10,8 @@ const express = require("express")
   , log = require('./logger')
   , api = require('./api')
   , env = require('./environment/env')
-  , yaml = require('yaml');
+  , yaml = require('yaml')
+  , AuthenticationInitializer = require('./authentication');
 
 const app = express();
 app.use(function(req, res, next) {
@@ -71,7 +72,7 @@ app.use('/private',
   express.static(path.join(__dirname, 'private')));
   
 // Configure authentication
-const authentication = require('./authentication')(app, passport, provision);
+const authentication = AuthenticationInitializer.initialize(app, passport, provision);
 
 // Configure routes
 require('./routes')(app, { authentication: authentication });

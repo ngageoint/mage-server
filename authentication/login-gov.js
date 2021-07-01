@@ -10,6 +10,7 @@ const fs = require('fs')
   , api = require('../api')
   , config = require('../config.js')
   , log = require('../logger')
+  , AuthenticationInitializer = require('./index')
   , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
@@ -124,7 +125,10 @@ function configure(passport, config) {
   }
 }
 
-function init(app, passport, provision) {
+function initialize() {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
 
   Issuer.useRequest();
 
@@ -272,6 +276,6 @@ function init(app, passport, provision) {
 };
 
 module.exports = {
-  init,
+  initialize,
   configure
 }
