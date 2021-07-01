@@ -12,12 +12,9 @@ const SamlStrategy = require('passport-saml').Strategy
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-let cachedApp;
-let cachedTokenService;
-
-function doConfigure(passport, strategyConfig) {
+function doConfigure(strategyConfig) {
   log.info('Configuring SAML authentication');
-  passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
+  AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
     const uid = profile[strategyConfig.settings.uidAttribute];
 
     if (!uid) {
@@ -68,7 +65,7 @@ function doConfigure(passport, strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    passport.authenticate('saml', function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate('saml', function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -86,7 +83,7 @@ function doConfigure(passport, strategyConfig) {
 
       // DEPRECATED session authorization, remove req.login which creates session in next version
       req.login(user, function (err) {
-        cachedTokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+        AuthenticationInitializer.tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
           .then(token => {
             req.token = token;
             req.user = user;
@@ -99,7 +96,7 @@ function doConfigure(passport, strategyConfig) {
     })(req, res, next);
   }
 
-  cachedApp.post(
+  AuthenticationInitializer.app.post(
     strategyConfig.settings.options.callbackPath,
     authenticate,
     function (req, res) {
@@ -130,10 +127,10 @@ function doConfigure(passport, strategyConfig) {
   );
 }
 
-function configure(passport, config) {
+function configure(config) {
   if (config) {
     SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     });
   } else {
     AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
@@ -142,7 +139,7 @@ function configure(passport, config) {
       }
       return Promise.reject('SAML not configured');
     }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     }).catch(err => {
       log.info(err);
     });
@@ -167,7 +164,7 @@ function initialize() {
     next();
   }
 
-  configure(passport);
+  configure();
 
   app.get(
     '/auth/saml/signin',

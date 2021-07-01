@@ -15,7 +15,7 @@ const fs = require('fs')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-function doConfigure(passport, strategyConfig) {
+function doConfigure(strategyConfig) {
   log.info('Configuring login.gov authentication', strategyConfig);
   const loginGov = {};
 
@@ -51,7 +51,7 @@ function doConfigure(passport, strategyConfig) {
     client.CLOCK_TOLERANCE = 10;
 
     const params = getParams();
-    passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
+    AuthenticationInitializer.passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
@@ -106,10 +106,10 @@ function doConfigure(passport, strategyConfig) {
   });
 }
 
-function configure(passport, config) {
+function configure(config) {
   if (config) {
     SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
@@ -118,7 +118,7 @@ function configure(passport, config) {
       }
       return Promise.reject('Login-gov not configured');
     }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     }).catch(err => {
       log.info(err);
     });
@@ -132,7 +132,7 @@ function initialize() {
 
   Issuer.useRequest();
 
-  configure(passport);
+  configure();
 
   function parseLoginMetadata(req, res, next) {
     const options = {};

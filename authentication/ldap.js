@@ -15,7 +15,7 @@ const LdapStrategy = require('passport-ldapauth')
 let authenticationOptions = {
 };
 
-function doConfigure(passport, strategyConfig) {
+function doConfigure(strategyConfig) {
   log.info('Configuring LDAP authentication');
   authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
@@ -28,7 +28,7 @@ function doConfigure(passport, strategyConfig) {
     invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
   };
 
-  passport.use(new LdapStrategy({
+  AuthenticationInitializer.passport.use(new LdapStrategy({
     server: {
       url: strategyConfig.settings.url,
       bindDN: strategyConfig.settings.bindDN,
@@ -85,10 +85,10 @@ function doConfigure(passport, strategyConfig) {
 
 }
 
-function configure(passport, config) {
+function configure(config) {
   if (config) {
     SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     });
   } else {
     AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
@@ -97,7 +97,7 @@ function configure(passport, config) {
       }
       return Promise.reject('LDAP not configured');
     }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     }).catch(err => {
       log.info(err);
     });
@@ -119,7 +119,7 @@ function initialize() {
     next();
   }
 
-  configure(passport);
+  configure();
 
   app.post(
     '/auth/ldap/signin',

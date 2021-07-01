@@ -11,9 +11,9 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-function doConfigure(passport, googleStrategy) {
+function doConfigure(googleStrategy) {
   log.info('Configuring Google authentication');
-  passport.use('google', new GoogleStrategy({
+  AuthenticationInitializer.passport.use('google', new GoogleStrategy({
     clientID: googleStrategy.settings.clientID,
     clientSecret: googleStrategy.settings.clientSecret,
     callbackURL: googleStrategy.settings.callbackURL
@@ -71,10 +71,10 @@ function doConfigure(passport, googleStrategy) {
 
 }
 
-function configure(passport, config) {
+function configure(config) {
   if (config) {
     SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     });
   } else {
     AuthenticationConfiguration.getConfiguration('oauth', 'google').then(strategyConfig => {
@@ -83,7 +83,7 @@ function configure(passport, config) {
       }
       return Promise.reject('Google not configured');
     }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
+      doConfigure(appendedConfig);
     }).catch(err => {
       log.info(err);
     });
@@ -136,7 +136,7 @@ function initialize() {
     })(req, res, next);
   }
 
-  configure(passport);
+  configure();
 
   app.get(
     '/auth/google/signin',

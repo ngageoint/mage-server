@@ -11,9 +11,9 @@ const log = require('winston')
   , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
   , Authentication = require('../models/authentication');
 
-function configure(passport) {
+function configure() {
   log.info('Configuring local authentication');
-  passport.use(new LocalStrategy(
+  AuthenticationInitializer.passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
@@ -83,7 +83,7 @@ function initialize() {
     next();
   }
 
-  configure(passport);
+  configure();
 
   // DEPRECATED retain old routes as deprecated until next major version.
   app.post(
