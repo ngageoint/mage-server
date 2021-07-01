@@ -11,12 +11,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-function doConfigure(googleStrategy) {
+function doConfigure(strategyConfig) {
   log.info('Configuring Google authentication');
   AuthenticationInitializer.passport.use('google', new GoogleStrategy({
-    clientID: googleStrategy.settings.clientID,
-    clientSecret: googleStrategy.settings.clientSecret,
-    callbackURL: googleStrategy.settings.callbackURL
+    clientID: strategyConfig.settings.clientID,
+    clientSecret: strategyConfig.settings.clientSecret,
+    callbackURL: strategyConfig.settings.callbackURL
   },
     function (accessToken, refreshToken, profile, done) {
       User.getUserByAuthenticationStrategy('oauth', profile.id, function (err, user) {
