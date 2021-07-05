@@ -139,6 +139,9 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
 import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
+import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
+import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
+import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
 
 @NgModule({
   declarations: [
@@ -159,6 +162,7 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
     ObservationListItemComponent,
     ObservationEditComponent,
     ObservationDeleteComponent,
+    ObservationEditAttachmentComponent,
     ObservationEditFormComponent,
     ObservationEditFormPickerComponent,
     ObservationEditMultiselectComponent,
@@ -174,6 +178,7 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
     ObservationEditGeometryFormComponent,
     ObservationEditDateComponent,
     ObservationViewComponent,
+    ObservationViewAttachmentComponent,
     ObservationViewTextComponent,
     ObservationViewTextareaComponent,
     ObservationViewCheckboxComponent,
@@ -211,7 +216,10 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
     IconUploadComponent,
     DatetimePickerComponent,
     ExportComponent,
-    ExportDialogComponent
+    ExportDialogComponent,
+    ObservationEditFormPickerComponent,
+    ObservationOptionsComponent,
+    ObservationEditDiscardComponent
   ],
   imports: [
     CommonModule,

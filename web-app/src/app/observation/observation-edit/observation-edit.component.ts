@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
@@ -13,6 +13,9 @@ import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/s
 import { MatIconRegistry } from '@angular/material/icon'
 import { MatDialog } from '@angular/material/dialog'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
+import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from '../attachment/attachment.service'
+import { AttachmentRequestType } from './observation-edit-attachment/observation-edit-attachment.component'
+import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
 
 export type ObservationFormControl = FormControl & { definition: any }
 
@@ -44,6 +47,7 @@ export type ObservationFormControl = FormControl & { definition: any }
 export class ObservationEditComponent implements OnInit, OnChanges {
   @Input() preview: boolean
   @Input() observation: any
+  attachments =[]
 
   @Output() close = new EventEmitter<any>()
 
@@ -70,9 +74,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   mask = false
   saving = false
   error: any
-  uploadId = 0
-  uploadAttachments = false
-  attachments = []
+
+  uploads: FileUpload[] = []
+  attachmentUrl: string
 
   isNewObservation: boolean
   canDeleteObservation: boolean
@@ -96,7 +100,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     private formBuilder: FormBuilder,
     private bottomSheet: MatBottomSheet,
     private snackBar: MatSnackBar,
-    private changeDetector: ChangeDetectorRef,
+    private attachmentService: AttachmentService,
     @Inject(DOCUMENT) private document: Document,
     @Inject(MapService) private mapService: any,
     @Inject(UserService) private userService: any,
@@ -115,6 +119,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     this.canDeleteObservation = this.observation.id !== 'new' &&
       (this.hasEventUpdatePermission() || this.isCurrentUsersObservation() || this.hasUpdatePermissionsInEventAcl())
+
+    this.attachmentService.upload$.subscribe(event => this.onAttachmentUpload(event))
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -169,6 +175,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     observationForms.forEach(observationForm => {
       const formDefinition = this.formDefinitions[observationForm.formId]
       const fieldGroup = new FormGroup({
+        id: new FormControl(observationForm.id),
         formId: new FormControl(formDefinition.id)
       })
 
@@ -240,13 +247,14 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     }
 
     this.saving = true
+    this.uploads = []
     const markedForDelete = this.observation.attachments ? this.observation.attachments.filter(attachment => attachment.markedForDelete) : []
 
     // TODO look at this: this is a hack that will be corrected when we pull ids from the server
     const form = this.formGroup.getRawValue()
     const id = form.id;
     if (form.id === 'new') {
-      delete form.id;
+      delete form.id
     }
 
     this.eventService.saveObservation(form).then(observation => {
@@ -257,13 +265,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         this.mapService.removeFeatureFromLayer({ id: id }, 'Observations')
       }
 
-      this.error = null;
-
-      if (this.attachments.length) {
-        this.uploadAttachments = true;
-      } else {
-        this.attachments = []
-      }
+      this.error = null
+      this.observation = observation
+      this.formGroup.get('id').setValue(observation.id)
 
       // delete any attachments that were marked for delete
       markedForDelete.forEach(attachment => {
@@ -271,9 +275,30 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         observation.attachments = observation.attachments.filter(a => a.id !== attachment.id)
       });
 
-      if (!this.uploadAttachments) {
-        this.saving = false
-        this.close.emit(observation)
+      form.properties.forms.forEach(form => {
+        const formDefinition = this.formDefinitions[form.formId];
+        Object.keys(form).forEach(fieldName => {
+          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+          const value = form[fieldName];
+          if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
+            value.forEach(fieldAttachment => {
+              const attachment = observation.attachments.find(attachment => {
+                return attachment.name === fieldAttachment.name && attachment.contentType == fieldAttachment.type
+              });
+
+              if (fieldAttachment.file && fieldAttachment.requestType === AttachmentRequestType.ADD && attachment) {
+                fieldAttachment.attachmentId = attachment.id
+                this.uploads.push(attachment)
+              }
+            })
+          }
+        })
+      })
+
+      if (this.uploads.length) {
+        this.attachmentUrl = observation.url
+      } else {
+        this.close.emit(this.observation)
       }
     }, err => {
       this.formGroup.markAllAsTouched()
@@ -320,54 +345,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   hasForms(): boolean {
     const definitions = this.formDefinitions || {}
     return Object.keys(definitions).length > 0
-  }
-
-  trackByAttachment(index: number, attachment: any): any {
-    return attachment.id;
-  }
-
-  allAttachments(): any[] {
-    const attachments = this.observation.attachments || [];
-    return attachments.concat(this.attachments)
-  }
-
-  onAttachmentFile(event): void {
-    const files = Array.from(event.target.files)
-    files.forEach(file => {
-      const id = this.uploadId++;
-      this.attachments.push({
-        id: id,
-        file: file
-      })
-    })
-
-    this.changeDetector.detectChanges()
-  }
-
-  onAttachmentRemove($event): void {
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-  }
-
-  onAttachmentUploaded($event): void {
-    this.eventService.addAttachmentToObservation(this.observation, $event.response);
-
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-    if (this.attachments.length === 0) {
-      this.saving = false;
-      this.uploadAttachments = false;
-      this.close.emit();
-    }
-  }
-
-  onAttachmentError($event): void {
-    // TODO warn user in some way that attachment didn't upload
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-
-    if (this.attachments.length === 0) {
-      this.saving = false;
-      this.uploadAttachments = false;
-      this.close.emit();
-    }
   }
 
   onGeometryEdit(event): void {
@@ -442,5 +419,38 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   dragEnd(event: DragEvent): void {
     this.document.body.classList.remove('item-drag')
+  }
+
+  private onAttachmentUpload(event: AttachmentUploadEvent): void {
+    switch (event.status) {
+      case AttachmentUploadStatus.COMPLETE: {
+        this.eventService.addAttachmentToObservation(this.observation, event.response)
+
+        this.uploads = this.uploads.filter(attachment => attachment.id !== event.upload.attachmentId)
+        if (this.uploads.length === 0) {
+          this.saving = false
+          this.close.emit(this.observation)
+        }
+      }
+      case AttachmentUploadStatus.ERROR: {
+        this.snackBar.open(event.response?.error, null, { duration: 4000 })
+
+        const formArray = this.formGroup.get('properties').get('forms') as FormArray
+        formArray.controls.forEach((formGroup: FormGroup) => {
+          const formId = formGroup.get('formId').value
+          const formDefinition = this.formDefinitions[formId];
+          Object.keys(formGroup.controls).forEach(fieldName => {
+            const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+            if (fieldDefinition && fieldDefinition.type === 'attachment') {
+              let attachments = formGroup.get(fieldName).value || []
+              attachments = attachments.filter(attachment => attachment.attachmentId !== event.upload.attachmentId)
+              formGroup.get(fieldName).setValue(attachments)
+            }
+          })
+        })
+      
+        this.saving = false;
+      }
+    }
   }
 }

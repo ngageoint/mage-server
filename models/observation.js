@@ -9,6 +9,17 @@ const Schema = mongoose.Schema;
 const ObservationIdSchema = new Schema();
 const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
+const FormSchema = new Schema({
+  formId: { type: Number, required: true }
+},{
+  strict: false
+});
+
+const PropertiesSchema = new Schema({
+  timestamp: { type: Date, required: true },
+  forms: [FormSchema]
+});
+
 const StateSchema = new Schema({
   name: { type: String, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User' }
@@ -27,6 +38,8 @@ const ThumbnailSchema = new Schema({
 });
 
 const AttachmentSchema = new Schema({
+  formId: { type: Schema.Types.ObjectId, required: true },
+  fieldName: { type: String, required: true },
   lastModified: {type: Date, required: false},
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
@@ -47,7 +60,7 @@ const ObservationSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true},
   deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
-  properties: Schema.Types.Mixed,
+  properties: PropertiesSchema,
   attachments: [AttachmentSchema],
   states: [StateSchema],
   important: {
@@ -80,7 +93,9 @@ function transformAttachment(attachment, observation) {
   delete attachment._id;
   delete attachment.thumbnails;
 
-  attachment.url = [observation.url, "attachments", attachment.id].join("/");
+  if (attachment.relativePath) {
+    attachment.url = [observation.url, "attachments", attachment.id].join("/");
+  }
 
   return attachment;
 }
@@ -99,20 +114,30 @@ function transform(observation, ret, options) {
     delete ret._id;
     delete ret.__v;
 
-    ret.eventId = options.eventId;
+    if (options.event) {
+      ret.eventId = options.event._id;
+    }
 
     const path = options.path ? options.path : "";
     ret.url = [path, observation.id].join("/");
 
-    if (observation.attachments) {
-      ret.attachments = ret.attachments.map(function(attachment) {
-        return transformAttachment(attachment, ret);
-      });
-    }
-
     if (observation.states && observation.states.length) {
       ret.state = transformState(ret.states[0], ret);
       delete ret.states;
+    }
+
+    if (observation.properties && observation.properties.forms) {
+      ret.properties.forms = ret.properties.forms.map(observationForm => {
+        observationForm.id = observationForm._id;
+        delete observationForm._id;
+        return observationForm;
+      });
+    }
+
+    if (observation.attachments) {
+      ret.attachments = ret.attachments.map(function (attachment) {
+        return transformAttachment(attachment, ret);
+      });
     }
 
     const populatedUserId = observation.populated('userId');
@@ -143,8 +168,7 @@ ObservationSchema.set('toObject', {
   transform: transform
 });
 
-var models = {};
-var Attachment = mongoose.model('Attachment', AttachmentSchema);
+const models = {};
 mongoose.model('Thumbnail', ThumbnailSchema);
 mongoose.model('State', StateSchema);
 
@@ -153,12 +177,12 @@ function convertFieldForQuery(field, keys, fields) {
   keys = keys || [];
   fields = fields || {};
 
-  for (var childField in field) {
+  for (const childField in field) {
     keys.push(childField);
     if (Object(field[childField]) === field[childField]) {
       convertFieldForQuery(field[childField], keys, fields);
     } else {
-      var key = keys.join(".");
+      const key = keys.join(".");
       if (field[childField]) {
         fields[key] = field[childField];
       }
@@ -171,7 +195,7 @@ function convertFieldForQuery(field, keys, fields) {
 
 function parseFields(fields) {
   if (fields) {
-    var state = fields.state ? true : false;
+    const state = fields.state ? true : false;
     delete fields.state;
 
     fields = convertFieldForQuery(fields);
@@ -189,8 +213,8 @@ function parseFields(fields) {
 }
 
 function observationModel(event) {
-  var name = event.collectionName;
-  var model = models[name];
+  const name = event.collectionName;
+  let model = models[name];
   if (!model) {
     // Creates the Model for the Observation Schema
     model = mongoose.model(name, ObservationSchema, name);
@@ -290,14 +314,54 @@ exports.getLatestObservation = function(event, callback) {
 };
 
 exports.getObservationById = function(event, observationId, options, callback) {
-  var fields = parseFields(options.fields);
+  const fields = parseFields(options.fields);
 
   observationModel(event).findById(observationId, fields, callback);
 };
 
 exports.updateObservation = function(event, observationId, observation, callback) {
+  delete observation.attachments;
+
+  let newAttachments = [];
+  observation.properties.forms
+    .map(observationForm => {
+      observationForm._id = observationForm._id || mongoose.Types.ObjectId();
+      delete observationForm.id;
+      return observationForm;
+    })
+    .forEach(observationForm => {
+      const formDefinition = event.forms.find(form => form._id === observationForm.formId);
+      Object.keys(observationForm).forEach(fieldName => {
+        const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+        if (fieldDefinition && fieldDefinition.type === 'attachment') {
+          const attachments = observationForm[fieldName] || [];
+          newAttachments = newAttachments.concat(attachments
+            .filter(attachment => !attachment.id)
+            .map(attachment => {
+              return {
+                formId: observationForm._id,
+                fieldName: fieldName,
+                name: attachment.name,
+                contentType: attachment.type
+              }
+            }));
+
+          delete observationForm[fieldName]
+        }
+      });
+  });
+
+  const update = {
+    '$set': observation,
+    '$push': {
+      attachments: {
+        '$each': newAttachments
+      }
+    }
+  }
+
   observationModel(event)
-    .findByIdAndUpdate(observationId, observation, { new: true, upsert: true })
+    .findByIdAndUpdate(observationId, update, { new: true, upsert: true })
     .populate({ path: 'userId', select: 'displayName' })
     .populate({ path: 'important.userId', select: 'displayName' })
     .exec(callback);
@@ -308,9 +372,9 @@ exports.removeObservation = function(event, observationId, callback) {
 };
 
 exports.removeUser = function(user, callback) {
-  var condition = { userId: user._id };
-  var update = { '$unset': { userId: true } };
-  var options = { multi: true };
+  const condition = { userId: user._id };
+  const update = { '$unset': { userId: true } };
+  const options = { multi: true };
 
   Event.getEvents({}, function(err, events) {
     async.each(events, function(event, done) {
@@ -326,9 +390,9 @@ exports.removeUser = function(user, callback) {
 };
 
 exports.removeDevice = function(device, callback) {
-  var condition = { deviceId: device._id };
-  var update = { '$unset': { deviceId: true } };
-  var options = { multi: true };
+  const condition = { deviceId: device._id };
+  const update = { '$unset': { deviceId: true } };
+  const options = { multi: true };
 
   Event.getEvents(function(err, events) {
     async.each(events, function(event, done) {
@@ -361,7 +425,7 @@ exports.addState = function(event, id, state, callback) {
 };
 
 exports.addFavorite = function(event, observationId, user, callback) {
-  var update = {
+  const update = {
     $addToSet: {
       favoriteUserIds: user._id
     }
@@ -371,7 +435,7 @@ exports.addFavorite = function(event, observationId, user, callback) {
 };
 
 exports.removeFavorite = function (event, observationId, user, callback) {
-  var update = {
+  const update = {
     $pull: {
       favoriteUserIds: user._id
     }
@@ -381,7 +445,7 @@ exports.removeFavorite = function (event, observationId, user, callback) {
 };
 
 exports.removeImportant = function(event, id, callback) {
-  var update = {
+  const update = {
     '$unset': {
       important: 1
     }
@@ -391,78 +455,45 @@ exports.removeImportant = function(event, id, callback) {
 };
 
 exports.getAttachment = function(event, observationId, attachmentId, callback) {
-  var id = {_id: observationId};
-  var attachment = {"attachments": {"$elemMatch": {_id: attachmentId}}};
-  var fields = {attachments: true};
-  observationModel(event).findOne(id, attachment, fields, function(err, observation) {
-    if (err) return callback(err);
-
-    var attachment = observation.attachments.length ? observation.attachments[0] : null;
-    callback(err, attachment);
-  });
-};
-
-exports.addAttachment = function(event, id, file, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
+  const condition = {
+    _id: observationId,
+    'attachments._id': attachmentId,
   }
 
-  var condition = {};
-  condition[id.field] = id.id;
-
-  var attachment = new Attachment({
-    contentType: file.mimetype,
-    size: file.size,
-    name: file.filename,
-    relativePath: file.relativePath,
-    lastModified: new Date()
-  });
-
-  var update = {'$push': { attachments: attachment }};
-  observationModel(event).update(condition, update, function(err) {
+  observationModel(event).findOne(condition, function (err, observation) {
+    const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
     callback(err, attachment);
   });
 };
 
-exports.updateAttachment = function(event, observationId, attachmentId, file, callback) {
-  var condition = {_id: observationId, 'attachments._id': attachmentId};
-  var set = {};
-  if (file.name) set['attachments.$.name'] = file.name;
-  if (file.type) set['attachments.$.contentType'] = file.type;
-  if (file.size) set['attachments.$.size'] = file.size;
-  if (file.width) set['attachments.$.width'] = file.width;
-  if (file.height) set['attachments.$.height'] = file.height;
-  if (file.oriented) set['attachments.$.oriented'] = file.oriented;
+exports.addAttachment = function(event, observationId, attachmentId, file, callback) {
+  const condition = {
+    _id: observationId,
+    'attachments._id': attachmentId,
+    'attachments.contentType': file.mimetype,
+    'attachments.name': file.originalname
+  }
 
-  set['attachments.$.lastModified'] = new Date();
+  const update = {
+    'attachments.$.size': file.size,
+    'attachments.$.relativePath': file.relativePath
+  }
 
-  var update = { '$set': set };
-  observationModel(event).findOneAndUpdate(condition, update, function(err, observation) {
-    var attachments = observation.attachments.filter(function(attachment) {
-      return attachment._id.toString() === attachmentId;
-    });
+  observationModel(event).findOneAndUpdate(condition, update, {new: true}, function(err, observation) {
+    if (err || !observation) return callback(err);
 
-    var attachment = null;
-    if (attachments.length) {
-      attachment = attachments[0];
-    }
-
+    const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
     callback(err, attachment);
   });
 };
 
-exports.removeAttachment = function(observation, id, callback) {
-  var attachments = {};
-  attachments[id.field] = id.id;
-  observation.update({'$pull': {attachments: attachments}}, function(err) {
-    callback(err);
-  });
+exports.removeAttachment = function(event, observationId, attachmentId, callback) {
+  const update = { $pull: { attachments: { _id: attachmentId } } };
+  observationModel(event).findByIdAndUpdate(observationId, update, callback);
 };
 
 exports.addAttachmentThumbnail = function(event, observationId, attachmentId, thumbnail, callback) {
-  var condition = {_id: observationId, 'attachments._id': attachmentId};
-  var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
-  observationModel(event).update(condition, update, function(err) {
-    callback(err);
-  });
+  const condition = {_id: observationId, 'attachments._id': attachmentId};
+  const update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
+  observationModel(event).update(condition, update, callback);
 };

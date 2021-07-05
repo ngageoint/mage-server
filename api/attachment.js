@@ -1,14 +1,14 @@
-var ObservationModel = require('../models/observation')
+const ObservationModel = require('../models/observation')
   , AttachmentEvents = require('./events/attachment.js')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
   , environment = require('../environment/env');
 
-var attachmentBase = environment.attachmentBaseDirectory;
+const attachmentBase = environment.attachmentBaseDirectory;
 
-var createAttachmentPath = function(event) {
-  var now = new Date();
+const createAttachmentPath = function(event) {
+  const now = new Date();
   return path.join(
     event.collectionName,
     now.getFullYear().toString(),
@@ -22,14 +22,14 @@ function Attachment(event, observation) {
   this._observation = observation;
 }
 
-var EventEmitter = new AttachmentEvents();
+const EventEmitter = new AttachmentEvents();
 Attachment.on = EventEmitter;
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
-  var size = options.size ? Number(options.size) : null;
+  const size = options.size ? Number(options.size) : null;
 
   ObservationModel.getAttachment(this._event, this._observation._id, attachmentId, function(err, attachment) {
-    if (!attachment) return callback();
+    if (!attachment) return callback(err);
 
     if (size) {
       attachment.thumbnails.forEach(function(thumbnail) {
@@ -41,32 +41,29 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
       });
     }
 
-    if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
+    if (attachment && attachment.relativePath) attachment.path = path.join(attachmentBase, attachment.relativePath);
 
     callback(null, attachment);
   });
 };
 
-Attachment.prototype.create = function(observationId, attachment, callback) {
-  var event = this._event;
-  var observation = this._observation;
-
-  var relativePath = createAttachmentPath(event);
+Attachment.prototype.update = function(attachmentId, attachment, callback) {
+  const relativePath = createAttachmentPath(this._event);
   // move file upload to its new home
-  var dir = path.join(attachmentBase, relativePath);
-  fs.mkdirp(dir, function(err) {
+  const dir = path.join(attachmentBase, relativePath);
+  fs.mkdirp(dir, err => {
     if (err) return callback(err);
 
-    var fileName = path.basename(attachment.path);
+    const fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
-    var file = path.join(attachmentBase, attachment.relativePath);
+    const file = path.join(attachmentBase, attachment.relativePath);
 
-    fs.move(attachment.path, file, function(err) {
+    fs.move(attachment.path, file, err => {
       if (err) return callback(err);
 
-      ObservationModel.addAttachment(event, observationId, attachment, function(err, newAttachment) {
-        if (!err) {
-          EventEmitter.emit(AttachmentEvents.events.add, newAttachment.toObject(), observation, event);
+      ObservationModel.addAttachment(this._event, this._observation._id, attachmentId, attachment, (err, newAttachment) => {
+        if (!err && newAttachment) {
+          EventEmitter.emit(AttachmentEvents.events.add, newAttachment.toObject(), this._observation, this._event);
         }
 
         callback(err, newAttachment);
@@ -75,51 +72,14 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
   });
 };
 
-Attachment.prototype.update = function(id, attachment, callback) {
-  var event = this._event;
-  var observation = this._observation;
-
-  var relativePath = createAttachmentPath(event);
-  var dir = path.join(attachmentBase, relativePath);
-  // move file upload to its new home
-  fs.mkdirp(dir, function(err) {
+Attachment.prototype.delete = function(attachmentId, callback) {
+  const attachment = this._observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
+  ObservationModel.removeAttachment(this._event, this._observation._id, attachmentId, err => {
     if (err) return callback(err);
 
-    var fileName = path.basename(attachment.path);
-    attachment.relativePath = path.join(relativePath, fileName);
-    var file = path.join(attachmentBase, attachment.relativePath);
-    fs.move(attachment.path, file, function(err) {
-      if (err) return callback(err);
-
-      ObservationModel.updateAttachment(event, observation._id, id, attachment, function(err, attachment) {
-        if (err) return callback(err);
-
-        callback(err, attachment);
-      });
-    });
-  });
-};
-
-Attachment.prototype.delete = function(id, callback) {
-  var observation = this._observation;
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  ObservationModel.removeAttachment(observation, id, function(err) {
-    if (err) return callback(err);
-
-    var attachment = null;
-    observation.attachments.forEach(function(a) {
-      if (a[id.field] === id.id) {
-        attachment = a;
-        return false; //found attachment stop iterating
-      }
-    });
-
-    if (attachment) {
-      var file = path.join(attachmentBase, attachment.relativePath);
-      fs.remove(file, function(err) {
+    if (attachment && attachment.relativePath) {
+      const file = path.join(attachmentBase, attachment.relativePath);
+      fs.remove(file, err => {
         if (err) {
           log.error('Could not remove attachment file ' + file + '.', err);
         }
@@ -131,8 +91,7 @@ Attachment.prototype.delete = function(id, callback) {
 };
 
 Attachment.prototype.deleteAllForEvent = function (callback) {
-
-  var directoryPath = path.join(attachmentBase, this._event.collectionName);
+  const directoryPath = path.join(attachmentBase, this._event.collectionName);
   log.info('removing attachments directory ' + directoryPath);
 
   fs.remove(directoryPath, function(err) {

@@ -1,9 +1,12 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { AttachmentService } from '../attachment.service';
 
-interface FileUpload {
-  id: number,
+export interface FileUpload {
+  id: number | string,
+  formControl: FormControl,
+  attachmentId: string,
   file: File,
   preview?: string,
   uploading?: boolean,
@@ -19,11 +22,10 @@ interface FileUpload {
 export class AttachUploadComponent implements OnChanges {
   @Input() attachment: FileUpload
   @Input() url: string
-  @Input() allowUpload: boolean
 
-  @Output() remove = new EventEmitter<{ id: number }>()
-  @Output() upload = new EventEmitter<{ id: number, response: HttpResponseBase }>()
-  @Output() error = new EventEmitter<{ id: number }>()
+  @Output() remove = new EventEmitter<{ id: number | string }>()
+  @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>()
+  @Output() error = new EventEmitter<{ id: number | string }>()
 
   attachmentsToUpload = 0
 
@@ -38,7 +40,7 @@ export class AttachUploadComponent implements OnChanges {
       }
     }
 
-    if (changes.allowUpload && this.allowUpload === true) {
+    if (changes.url && changes.url.currentValue) {
       this.startUpload();
     }
   }
@@ -94,9 +96,9 @@ export class AttachUploadComponent implements OnChanges {
   }
 
   startUpload(): void {
-    if (!this.attachment || !this.url || !this.allowUpload) return
+    if (!this.attachment || !this.url) return
 
-    this.attachmentService.upload(this.attachment.file, this.url).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
+    this.attachmentService.upload(this.attachment, this.url).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
       if (response.type === HttpEventType.Response) {
         this.attachment.uploading = false
         if (response.status === 200) {

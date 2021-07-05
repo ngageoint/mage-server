@@ -1,4 +1,5 @@
 const Field = require('./field')
+  , AttachmentField = require('./attachmentField')
   , DateField = require('./dateField')
   , GeometryField = require('./geometryField')
   , NumberField = require('./numberField')
@@ -10,6 +11,7 @@ const Field = require('./field')
 
 function FieldFactory() {
   const fields = {
+    attachment: AttachmentField,
     date: DateField,
     geometry: GeometryField,
     textfield: TextField,

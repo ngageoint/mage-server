@@ -126,16 +126,8 @@
       </mat-card-actions>
     </mat-card>
 
-    <mat-card *ngIf="observation?.attachments?.length" class="observation-attachments">
-      <mat-grid-list cols="2" rowHeight="210px" gutterSize="4px">
-        <mat-grid-tile *ngFor="let attachment of observation?.attachments; first as isFirst" [rowspan]="1" [colspan]="isFirst && (observation?.attachments?.length % 2 === 1) ? 2 : 1">
-          <observation-attachment [observation]="observation" [attachment]="attachment" clickable="true"></observation-attachment>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </mat-card>
-
     <div class="form-card" *ngFor="let form of observationForm.forms; let i = index">
-      <observation-view-form [form]="form" [expand]="i === 0"></observation-view-form>
+      <observation-view-form [form]="form" [attachments]="observation.attachments" [expand]="i === 0"></observation-view-form>
     </div>
   </div>
 </div>

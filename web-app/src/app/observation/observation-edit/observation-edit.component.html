@@ -40,38 +40,6 @@
         </observation-edit-geometry>
       </mat-card>
 
-      <div *ngIf="!preview">
-        <mat-card class="form">
-          <div class="attachment-field">
-            <div class="attachment-field__label">Attachments</div>
-      
-            <ng-container *ngIf="allAttachments().length; else empty">
-              <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px"
-                *ngIf="allAttachments().length">
-                <mat-grid-tile *ngFor="let attachment of allAttachments(); trackBy: trackByAttachment; first as isFirst"
-                  [rowspan]="1" [colspan]="isFirst && (allAttachments().length % 2 === 1) ? 2 : 1">
-                  <observation-attachment *ngIf="!attachment.file" [attachment]="attachment" [observation]="observation"
-                    edit="true">
-                  </observation-attachment>
-                  <attachment-upload *ngIf="attachment.file" [url]="observation.url + '/attachments'"
-                    [attachment]="attachment" [allowUpload]="uploadAttachments" (remove)="onAttachmentRemove($event)"
-                    (error)="onAttachmentError($event)" (upload)="onAttachmentUploaded($event)"></attachment-upload>
-                </mat-grid-tile>
-              </mat-grid-list>
-            </ng-container>
-      
-            <div class="attachment-actions">
-              <button mat-button class="add__button" type="button" color="primary" (click)="file.click()">
-                Add Attachment
-              </button>
-              <input [hidden]="true" type="file" #file multiple (change)="onAttachmentFile($event)">
-            </div>
-      
-            <div class="attachment-field__underline"></div>
-          </div>
-        </mat-card>
-      </div>
-
       <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
         <ng-container *ngFor="let group of formGroup?.get('properties')?.get('forms')?.controls; let i = index">
           <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
@@ -79,6 +47,8 @@
               [formGroup]="group"
               [definition]="formDefinitions[group.get('formId').value]"
               [geometryStyle]="geometryStyle"
+              [attachmentUrl]="attachmentUrl"
+              [observation]="observation"
               [options]="i === 0 ? {expand: true} : formOptions"
               (remove)="removeForm($event)"
               (featureEdit)="onGeometryEdit($event)">

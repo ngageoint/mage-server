@@ -23,11 +23,12 @@ const FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false},
   title: { type: String, required: true },
-  type: { type: String, required: true, enum: ['textfield', 'numberfield', 'email', 'password', 'radio', 'dropdown', 'multiselectdropdown', 'date', 'geometry', 'textarea', 'checkbox', 'hidden'] },
+  type: { type: String, required: true, enum: ['attachment', 'textfield', 'numberfield', 'email', 'password', 'radio', 'dropdown', 'multiselectdropdown', 'date', 'geometry', 'textarea', 'checkbox', 'hidden'] },
   value: { type: Schema.Types.Mixed, required: false },
   name: { type: String, required: true },
   required: { type: Boolean, required: true },
   choices: [OptionSchema],
+  restrictedAttachmentTypes: [{ type: String, required: false, enum: ['image', 'video', 'audio'] }],
   min: { type: Number, required: false },
   max: { type: Number, required: false }
 },{
@@ -205,11 +206,15 @@ EventSchema.post('remove', function(event) {
 });
 
 function transformForm(form, ret) {
+  console.log('************************** transform form called *****************************');
+
   ret.id = ret._id;
   delete ret._id;
 }
 
 function transform(event, ret, options) {
+  console.log('************************** transform event called *****************************');
+
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;

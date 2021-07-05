@@ -99,8 +99,6 @@ Observation.prototype.validate = function(observation) {
     message += `\u2022 Total number of forms in observation must be at least ${this._event.minObservationForms}\n`;
   }
 
-  console.log('max obs forms', this._event.maxObservationForms)
-  console.log('forms length', forms.length)
   if (this._event.maxObservationForms != null && forms.length > this._event.maxObservationForms) {
     errors.maxObservationForms = new Error("Exceeded maximum number of forms");
     message += `\u2022 Total number of forms in observation cannot be more than ${this._event.maxObservationForms}\n`;
@@ -128,6 +126,8 @@ Observation.prototype.validate = function(observation) {
       message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times\n`;
     }
   });
+
+  // TODO attachment-work, validate attachment restrictions and min/max
 
   if (Object.keys(formError).length) {
     errors.form = formError;
@@ -200,7 +200,7 @@ Observation.prototype.update = function(observationId, observation, callback) {
 
   ObservationModel.updateObservation(this._event, observationId, observation, (err, observation) => {
     if (observation) {
-      EventEmitter.emit(ObservationEvents.events.update, observation.toObject(), this._event, this._user);
+      EventEmitter.emit(ObservationEvents.events.update, observation.toObject({event: this._event}), this._event, this._user);
     }
 
     callback(err, observation);

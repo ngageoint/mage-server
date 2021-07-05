@@ -38,6 +38,7 @@
   <div *ngIf="expand" @expand class="form-content">
     <div *ngFor="let field of nonArchivedFields(form.fields)">
       <div [ngSwitch]="field.type" class="field">
+        <observation-view-attachment *ngSwitchCase="'attachment'" [form]="form" [field]="field" [attachments]="attachments"></observation-view-attachment>
         <observation-view-geometry *ngSwitchCase="'geometry'" [field]="field"></observation-view-geometry>
         <observation-view-date *ngSwitchCase="'date'" [field]="field"></observation-view-date>
         <observation-view-checkbox *ngSwitchCase="'checkbox'" [field]="field"></observation-view-checkbox>

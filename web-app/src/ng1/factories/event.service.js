@@ -143,7 +143,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
     PollingService.removeListener(pollingServiceListener);
   });
 
-  var service = {
+  const service = {
     addObservationsChangedListener: addObservationsChangedListener,
     removeObservationsChangedListener: removeObservationsChangedListener,
     addUsersChangedListener: addUsersChangedListener,
@@ -303,13 +303,13 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
   }
 
   function addAttachmentToObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     ObservationService.addAttachmentToObservationForEvent(event, observation, attachment);
     observationsChanged({updated: [observation]});
   }
 
   function deleteAttachmentForObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     return ObservationService.deleteAttachmentInObservationForEvent(event, observation, attachment).then(function(observation) {
       observationsChanged({updated: [observation]});
     });
@@ -337,8 +337,8 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
   }
 
   function createForm(observationForm, formDefinition, viewMode) {
-
     const form = angular.copy(formDefinition);
+    form.remoteId = observationForm.id;
 
     const existingPropertyFields = [];
 

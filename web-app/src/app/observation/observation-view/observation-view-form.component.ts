@@ -24,6 +24,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 })
 export class ObservationViewFormComponent implements OnInit, OnChanges {
   @Input() form: any
+  @Input() attachments: any[]
   @Input() expand: boolean
 
   primaryField: any = {}
@@ -47,7 +48,13 @@ export class ObservationViewFormComponent implements OnInit, OnChanges {
     const fields: any[] = this.form.fields
     return fields
       .filter(field => !field.archived)
-      .some(field => field.value)
+      .some(field => {
+        if (field.type === 'attachment') {
+          return this.attachments.filter(attachment => attachment.formId === this.form.remoteId).length
+        } else {
+          return field.value
+        }
+      })
   }
 
   private updateView(): void {
