@@ -431,6 +431,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           this.saving = false
           this.close.emit(this.observation)
         }
+
+        break;
       }
       case AttachmentUploadStatus.ERROR: {
         this.snackBar.open(event.response?.error, null, { duration: 4000 })
@@ -450,6 +452,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         })
       
         this.saving = false;
+        break;
       }
     }
   }

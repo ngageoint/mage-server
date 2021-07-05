@@ -336,7 +336,6 @@ exports.updateObservation = function(event, observationId, observation, callback
         if (fieldDefinition && fieldDefinition.type === 'attachment') {
           const attachments = observationForm[fieldName] || [];
           newAttachments = newAttachments.concat(attachments
-            .filter(attachment => !attachment.id)
             .map(attachment => {
               return {
                 formId: observationForm._id,
