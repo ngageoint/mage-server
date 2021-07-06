@@ -3,23 +3,21 @@ const config = require('../config.js'),
 
 exports.id = 'copy-auth-from-config-to-db';
 
-//local auth strategy will be done in a later migration since it was previously migrated to the settings collection.
-const knownAuthStrategies = ['saml', 'ldap', 'google', 'geoaxis', 'login-gov'];
-
 function createDBObjectsFromConfig() {
   const authDbObjects = [];
 
   if (config.api && config.api.authenticationStrategies) {
     //Copy configs to DB objects
-    for (let i = 0; i < knownAuthStrategies.length; i++) {
-      const authStratName = knownAuthStrategies[i];
-      const authStratConfig = config.api.authenticationStrategies[authStratName];
-      if (authStratConfig) {
+    Object.keys(config.api.authenticationStrategies).forEach(authStratName =>  {
+
+      if (authStratName !== 'local') {
+        const authStratConfig = config.api.authenticationStrategies[authStratName];
+
         log.debug("Copying " + authStratName + " auth strategy");
 
         let binIcon;
         if(authStratConfig.icon) {
-           binIcon = new Buffer(authStratConfig.icon, 'base64');
+           binIcon = Buffer.from(authStratConfig.icon, 'base64');
         }
 
         const authDbObject = {
@@ -54,7 +52,7 @@ function createDBObjectsFromConfig() {
         log.debug('Strategy ' + authStratName + ' DB object:' + JSON.stringify(authDbObject));
         authDbObjects.push(authDbObject);
       }
-    }
+    });
   }
 
   return authDbObjects;

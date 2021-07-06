@@ -16,10 +16,14 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
 
         //Name was "unique" prior to this server version, so key off of that.  This uniqueness does not maintain after this version however.
         const authenticationConfiguration = await authenticationConfigurationsCollection.findOne({ name: authentication.type });
-        authentication.authenticationConfigurationId = authenticationConfiguration._id;
+        if (authenticationConfiguration) {
+            authentication.authenticationConfigurationId = authenticationConfiguration._id;
 
-        log.info('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
-        await authenticationCollection.updateOne({ _id: authentication._id }, authentication);
+            log.info('Linking authentication ' + authentication._id + ' to authentication configuration ' + authenticationConfiguration._id);
+            await authenticationCollection.updateOne({ _id: authentication._id }, authentication);
+        } else {
+            log.info('Authentication strategy is not configured for ' + authentication._id);
+        }
     }
 
     // Close the cursor, this is the same as reseting the query
