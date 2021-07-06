@@ -135,6 +135,11 @@ function init(app, passport, provision, tokenService) {
           return res.status(401).send('Your account has been disabled, please contact a MAGE administrator for assistance.')
         }
 
+        if (!user.authentication.authenticationConfigurationId) {
+          log.warn('Failed user login attempt: ' + user.authentication.type + ' is not configured');
+          return res.status(401).send(user.authentication.type + ' authentication is not configured, please contact a MAGE administrator for assistance.')
+        }
+
         if (!user.authentication.authenticationConfiguration.enabled) {
           log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
           return res.status(401).send(user.authentication.authenticationConfiguration.title + ' authentication is disabled, please contact a MAGE administrator for assistance.')

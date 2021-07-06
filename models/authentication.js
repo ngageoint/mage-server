@@ -14,7 +14,7 @@ const Schema = mongoose.Schema;
 const AuthenticationSchema = new Schema({
   type: { type: String, required: true },
   id: { type: String, required: false },
-  authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: true }
+  authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: false }
 }, {
   discriminatorKey: 'type',
   timestamps: {

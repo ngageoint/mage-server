@@ -112,6 +112,11 @@ function init(app, passport, provision, tokenService) {
         return next();
       }
 
+      if (!user.authentication.authenticationConfigurationId) {
+        log.warn('Failed user login attempt: ' + user.authentication.type + ' is not configured');
+        return next();
+      }
+
       if (!user.authentication.authenticationConfiguration.enabled) {
         log.warn('Failed user login attempt: Authentication ' + user.authentication.authenticationConfiguration.title + ' is disabled.');
         return next();
