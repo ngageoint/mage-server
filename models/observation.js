@@ -38,7 +38,7 @@ const ThumbnailSchema = new Schema({
 });
 
 const AttachmentSchema = new Schema({
-  formId: { type: Schema.Types.ObjectId, required: true },
+  observationFormId: { type: Schema.Types.ObjectId, required: true },
   fieldName: { type: String, required: true },
   lastModified: {type: Date, required: false},
   contentType: { type: String, required: false },
@@ -338,7 +338,7 @@ exports.updateObservation = function(event, observationId, observation, callback
           newAttachments = newAttachments.concat(attachments
             .map(attachment => {
               return {
-                formId: observationForm._id,
+                observationFormId: observationForm._id,
                 fieldName: fieldName,
                 name: attachment.name,
                 contentType: attachment.type

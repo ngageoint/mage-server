@@ -97,7 +97,7 @@ module.exports = function(app, security) {
       const media = new Media(fileType.mime);
       const attachment = req.observation.attachments.find(attachment => attachment._id.toString() === req.params.attachmentId);
       const observationForm = req.observation.properties.forms.find(observationForm => {
-        return observationForm._id.toString() === attachment.formId.toString()
+        return observationForm._id.toString() === attachment.observationFormId.toString()
       });
 
       if (!observationForm) return res.status(400).send('Attachment form not found');

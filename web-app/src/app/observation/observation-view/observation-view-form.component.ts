@@ -50,7 +50,7 @@ export class ObservationViewFormComponent implements OnInit, OnChanges {
       .filter(field => !field.archived)
       .some(field => {
         if (field.type === 'attachment') {
-          return this.attachments.filter(attachment => attachment.formId === this.form.remoteId).length
+          return this.attachments.filter(attachment => attachment.observationFormId === this.form.remoteId).length
         } else {
           return field.value
         }

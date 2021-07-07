@@ -80,25 +80,32 @@ async function updateEventAttachments(db, event) {
   const observations = await collection.find().toArray();
   log.info(`found ${observations.length} in collection`)
   for (const observation of observations) {
+    // Add _id to observation form, if exists
+    const observationFormId = new ObjectID();
+    if (observation.properties.forms && observation.properties.forms.length) {
+      const observationForm = observation.properties.forms[0];
+      observationForm._id = observationFormId;
+    }
+
     const attachments = observation.attachments || [];
     if (attachments.length) {
-      // we have attachments, need to add to form if exist or create if not
-      const formId = new ObjectID();
+      // observation has attachments, add to form if exists, create if not
       let observationForm;
       if (observation.properties.forms && observation.properties.forms.length) {
         observationForm = observation.properties.forms[0];
       } else {
         observationForm = {
+          _id: observationFormId,
           formId: event.forms[0]._id
         }
         observation.properties.forms = [observationForm];
       }
-      observationForm._id = formId;
+
       const form = event.forms.find(form => form._id === observationForm.formId);
       const attachmentField = form.fields.find(field => field.type === 'attachment');
       attachments.forEach(attachment => {
-        attachment.formId = formId;
-        attachment.fieldName = attachmentField.name
+        attachment.observationFormId = observationFormId;
+        attachment.fieldName = attachmentField.name;
       });
     }
 

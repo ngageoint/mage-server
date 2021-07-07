@@ -13,7 +13,7 @@ export class ObservationViewAttachmentComponent {
   @Input()
   set attachments(attachments: any[]) {
     this._attachments = attachments.filter(attachment => {
-      return attachment.formId === this.form.remoteId &&
+      return attachment.observationFormId === this.form.remoteId &&
         attachment.fieldName === this.field.name
     })
   }
