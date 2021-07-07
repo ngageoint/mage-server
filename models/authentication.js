@@ -165,6 +165,10 @@ exports.getAuthenticationsByAuthConfigId = function (authConfigId) {
   return Authentication.find({ authenticationConfigurationId: authConfigId }).exec();
 };
 
+exports.countAuthenticationsByAuthConfigId = function (authConfigId) {
+  return Authentication.count({ authenticationConfigurationId: authConfigId }).exec();
+};
+
 exports.createAuthentication = function (authentication) {
   let newAuth;
   switch (authentication.type) {

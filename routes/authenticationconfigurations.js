@@ -30,9 +30,9 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
-            Authentication.getAuthenticationsByAuthConfigId(req.param('id')).then(auths => {
+            Authentication.countAuthenticationsByAuthConfigId(req.param('id')).then(cnt => {
                 const response = {
-                    count: auths.length
+                    count: cnt
                 };
                 res.json(response);
             }).catch(err => {
