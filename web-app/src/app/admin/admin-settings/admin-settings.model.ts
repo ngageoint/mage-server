@@ -5,6 +5,7 @@ export interface AdminChoice {
 }
 
 export interface Strategy {
+    _id?: string,
     isDirty?: boolean,
     enabled: boolean, 
     name: string,

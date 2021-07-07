@@ -1,10 +1,7 @@
-import { AfterViewInit, Component, Inject, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Strategy } from '../admin-settings.model';
-import { AuthenticationConfigurationService, UserPagingService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
   selector: 'authentication-delete',
@@ -12,29 +9,21 @@ import { AuthenticationConfigurationService, UserPagingService } from 'src/app/u
   styleUrls: ['./authentication-delete.component.scss']
 })
 export class AuthenticationDeleteComponent implements AfterViewInit {
-  displayedColumns: string[] = ['name', 'email'];
-  dataSource: MatTableDataSource<string>;
-
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
+  userCount = 0;
 
   constructor(
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
     @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any,
-    @Inject(UserPagingService)
-    private userPagingService: any) {
-
-    this.dataSource = new MatTableDataSource([]);
+    private authenticationConfigurationService: any) {
   }
 
   ngAfterViewInit(): void {
-    // If the user changes the sort order, reset back to the first page.
-    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
-
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    this.authenticationConfigurationService.countUsers(this.strategy._id).then(result => {
+      this.userCount = result.data.count;
+    }).catch(err => {
+      console.error(err);
+    })
   }
 
   close(): void {

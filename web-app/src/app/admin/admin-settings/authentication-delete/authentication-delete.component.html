@@ -4,28 +4,8 @@
 <section class="mat-typography">
   <mat-dialog-content>
     <strong>
-      By deleting this authentication strategy, the following users will no longer be able to access MAGE:
+      By deleting this authentication strategy, {{userCount}} users will no longer be able to access MAGE.
     </strong>
-    <section class="mat-typography">
-      <div class="mat-elevation-z0 bottom-gap">
-        <table mat-table [dataSource]="dataSource" matSort>
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
-            <td mat-cell *matCellDef="let row"> {{row.name}} </td>
-          </ng-container>
-
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> E-Mail </th>
-            <td mat-cell *matCellDef="let row"> {{row.email}} </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
-        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
-      </div>
-    </section>
   </mat-dialog-content>
 </section>
 <section class="mat-typography">

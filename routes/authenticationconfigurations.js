@@ -5,7 +5,6 @@ const log = require('winston')
     , Authentication = require('../models/authentication')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
-    , User = require('../models/user')
     , Settings = require('../models/setting')
     , SecretStoreService = require('../security/secret-store-service');
 
@@ -21,6 +20,21 @@ module.exports = function (app, security) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
                 res.json(transformedConfigs);
+            }).catch(err => {
+                next(err);
+            });
+        });
+
+    app.get(
+        '/api/authentication/configuration/count/:id',
+        passport.authenticate('bearer'),
+        access.authorize('READ_AUTH_CONFIG'),
+        function (req, res, next) {
+            Authentication.getAuthenticationsByAuthConfigId(req.param('id')).then(auths => {
+                const response = {
+                    count: auths.length
+                };
+                res.json(response);
             }).catch(err => {
                 next(err);
             });
