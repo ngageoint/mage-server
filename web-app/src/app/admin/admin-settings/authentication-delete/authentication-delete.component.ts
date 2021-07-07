@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Strategy } from '../admin-settings.model';
-import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { AuthenticationConfigurationService, UserPagingService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
   selector: 'authentication-delete',
@@ -22,12 +22,17 @@ export class AuthenticationDeleteComponent implements AfterViewInit {
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
     @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any) {
+    private authenticationConfigurationService: any,
+    @Inject(UserPagingService)
+    private userPagingService: any) {
 
     this.dataSource = new MatTableDataSource([]);
   }
 
   ngAfterViewInit(): void {
+    // If the user changes the sort order, reset back to the first page.
+    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
