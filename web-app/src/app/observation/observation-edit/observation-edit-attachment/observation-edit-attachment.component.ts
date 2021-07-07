@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 interface AttachmentField {
@@ -40,7 +40,13 @@ export class ObservationEditAttachmentComponent implements OnInit {
   }
 
   allAttachments(): any[] {
-    const attachments = this.attachments || []
+    const observationFormId = this.formGroup.get('id')?.value
+    const attachments = (this.attachments || []).filter(attachment => {
+      return attachment.url &&
+        attachment.observationFormId === observationFormId &&
+        attachment.fieldName === this.definition.name
+    });
+
     return this.control.value ? attachments.concat(this.control.value) : attachments
   }
 
