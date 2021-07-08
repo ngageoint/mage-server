@@ -83,13 +83,25 @@
               </div>
             </div>
 
-            <div class="row top-gap-s bottom-gap">
+            <div class="row top-gap-s">
               <div class="col-md-2">
                 <span class="muted">Role:&nbsp;</span>
               </div>
               <div class="col-md-10">
                 <span>{{$ctrl.user.role.name}}</span>
               </div>
+            </div>
+
+            <div class="row top-gap-s bottom-gap">
+              <div class="col-md-2">
+                <span class="muted">Auth:&nbsp;</span>
+              </div>
+              <div class="col-md-10" ng-if="$ctrl.user.authentication.authenticationConfiguration">
+                <span>{{$ctrl.user.authentication.authenticationConfiguration.title}}</span>
+              </div>
+              <div class="col-md-10" ng-if="!$ctrl.user.authentication.authenticationConfiguration">
+                <strong>Authentication strategy no longer exists</strong>
+            </div>
             </div>
 
           </div>

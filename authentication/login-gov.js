@@ -167,6 +167,11 @@ function init(app, passport, provision) {
               return res.sendStatus(403);
             }
 
+            if (!user.authentication.authenticationConfigurationId) {
+              log.warn('Failed user login attempt: ' + user.authentication.type + ' is not configured');
+              return res.sendStatus(403);
+            }
+
             if (!user.authentication.authenticationConfiguration.enabled) {
               log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
               return res.sendStatus(403);

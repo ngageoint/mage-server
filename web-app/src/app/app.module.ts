@@ -96,7 +96,8 @@ import {
   settingsProvider,
   teamProvider,
   eventProvider,
-  authenticationConfigurationServiceProvider
+  authenticationConfigurationServiceProvider,
+  userPagingServiceProvider
 } from './upgrade/ajs-upgraded-providers';
 
 import {
@@ -279,6 +280,7 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     teamProvider,
     eventProvider,
     authenticationConfigurationServiceProvider,
+    userPagingServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })

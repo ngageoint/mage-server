@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { AfterViewInit, Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../admin-settings.model';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
@@ -8,12 +8,22 @@ import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded
   templateUrl: './authentication-delete.component.html',
   styleUrls: ['./authentication-delete.component.scss']
 })
-export class AuthenticationDeleteComponent {
+export class AuthenticationDeleteComponent implements AfterViewInit {
+  userCount = 0;
+
   constructor(
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
     @Inject(AuthenticationConfigurationService)
     private authenticationConfigurationService: any) {
+  }
+
+  ngAfterViewInit(): void {
+    this.authenticationConfigurationService.countUsers(this.strategy._id).then(result => {
+      this.userCount = result.data.count;
+    }).catch(err => {
+      console.error(err);
+    })
   }
 
   close(): void {
@@ -23,7 +33,7 @@ export class AuthenticationDeleteComponent {
   delete(): void {
     this.authenticationConfigurationService.deleteConfiguration(this.strategy).then(() => {
       this.dialogRef.close('delete');
-    }).catch(err => {
+    }).catch((err: any) => {
       console.error(err);
       this.dialogRef.close('cancel');
     });
