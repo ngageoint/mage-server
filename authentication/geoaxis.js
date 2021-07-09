@@ -10,7 +10,7 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(strategyConfig) {
-  log.info('Configuring GeoAxis authentication');
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
   const strategy = new GeoaxisStrategy({
     authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
     tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
@@ -22,7 +22,7 @@ function doConfigure(strategyConfig) {
   },
     function (req, accessToken, refreshToken, profile, done) {
       const geoaxisUser = profile._json;
-      User.getUserByAuthenticationStrategy('oauth', geoaxisUser.email, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, geoaxisUser.email, function (err, user) {
         if (err) return done(err);
 
         const email = geoaxisUser.email;
@@ -39,10 +39,10 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'oauth',
+                type: strategyConfig.name,
                 id: email,
                 authenticationConfiguration: {
-                  name: 'geoaxis'
+                  name: strategyConfig.name
                 }
               }
             };
@@ -67,7 +67,7 @@ function doConfigure(strategyConfig) {
       });
     });
 
-    AuthenticationInitializer.passport.use('geoaxis', strategy);
+    AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
 }
 
 function initialize(config) {

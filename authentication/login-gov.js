@@ -8,15 +8,13 @@ const fs = require('fs')
   , Device = require('../models/device')
   , Role = require('../models/role')
   , api = require('../api')
-  , config = require('../config.js')
   , log = require('../logger')
   , AuthenticationInitializer = require('./index')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(strategyConfig) {
-  log.info('Configuring login.gov authentication', strategyConfig);
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
   const loginGov = {};
 
   const key = fs.readFileSync(strategyConfig.settings.keyFile, 'ascii');
@@ -55,7 +53,7 @@ function doConfigure(strategyConfig) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
-      User.getUserByAuthenticationStrategy('oauth', userinfo.email, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, userinfo.email, function (err, user) {
         if (err) return done(err);
 
         const email = userinfo.email;
@@ -72,10 +70,10 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'oauth',
+                type: strategyConfig.name,
                 id: email,
                 authenticationConfiguration: {
-                  name: 'login-gov'
+                  name: strategyConfig.name
                 }
               }
             };

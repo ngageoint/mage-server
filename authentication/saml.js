@@ -11,7 +11,7 @@ const SamlStrategy = require('passport-saml').Strategy
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(strategyConfig) {
-  log.info('Configuring SAML authentication');
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
   AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
     const uid = profile[strategyConfig.settings.uidAttribute];
 
@@ -20,7 +20,7 @@ function doConfigure(strategyConfig) {
       return done('Failed to load user id from SAML profile');
     }
 
-    User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategyConfig.type, uid, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -35,10 +35,10 @@ function doConfigure(strategyConfig) {
             active: false,
             roleId: role._id,
             authentication: {
-              type: 'saml',
+              type: strategyConfig.name,
               id: uid,
               authenticationConfiguration: {
-                name: 'saml'
+                name: strategyConfig.name
               }
             }
           };

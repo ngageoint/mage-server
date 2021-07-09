@@ -14,7 +14,7 @@ let authenticationOptions = {
 };
 
 function doConfigure(strategyConfig) {
-  log.info('Configuring LDAP authentication');
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
   authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
     invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
@@ -37,7 +37,7 @@ function doConfigure(strategyConfig) {
   },
     function (profile, done) {
       const username = profile[strategyConfig.settings.ldapUsernameField];
-      User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, username, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
@@ -52,10 +52,10 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'ldap',
+                type: strategyConfig.name,
                 id: username,
                 authenticationConfiguration: {
-                  name: 'ldap'
+                  name: strategyConfig.name
                 }
               }
             };

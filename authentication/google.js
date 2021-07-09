@@ -10,14 +10,14 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 function doConfigure(strategyConfig) {
-  log.info('Configuring Google authentication');
-  AuthenticationInitializer.passport.use('google', new GoogleStrategy({
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
+  AuthenticationInitializer.passport.use(strategyConfig.name, new GoogleStrategy({
     clientID: strategyConfig.settings.clientID,
     clientSecret: strategyConfig.settings.clientSecret,
     callbackURL: strategyConfig.settings.callbackURL
   },
     function (accessToken, refreshToken, profile, done) {
-      User.getUserByAuthenticationStrategy('oauth', profile.id, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, profile.id, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
@@ -39,10 +39,10 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'oauth',
+                type: strategyConfig.name,
                 id: profile.id,
                 authenticationConfiguration: {
-                  name: 'google'
+                  name: strategyConfig.name
                 }
               }
             };
