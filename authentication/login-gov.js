@@ -106,33 +106,18 @@ function doConfigure(strategyConfig) {
   });
 }
 
-function configure(config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('Login-gov not configured');
-    }).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function initialize() {
+function initialize(config) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
   const provision = AuthenticationInitializer.provision;
 
   Issuer.useRequest();
 
-  configure();
+  SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+    doConfigure(appendedConfig);
+  }).catch(err => {
+    log.error(err);
+  });
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -281,6 +266,5 @@ function initialize() {
 };
 
 module.exports = {
-  initialize,
-  configure
+  initialize
 }

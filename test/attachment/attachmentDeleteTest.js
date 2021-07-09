@@ -3,17 +3,38 @@ const sinon = require('sinon');
 const expect = require('chai').expect;
 const mongoose = require('mongoose');
 const MockToken = require('../mockToken');
-const app = require('../../express');
 require('sinon-mongoose');
 require('../../models/team');
 require('../../models/event');
 const Observation = require('../../models/observation');
 const observationModel = Observation.observationModel;
 const TokenModel = mongoose.model('Token');
-const TeamModel = mongoose.model('Team');
 const EventModel = mongoose.model('Event');
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 describe("deleting attachments", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   const userId = mongoose.Types.ObjectId();
   const attachmentId = mongoose.Types.ObjectId();

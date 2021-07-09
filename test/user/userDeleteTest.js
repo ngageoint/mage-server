@@ -3,7 +3,6 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , mongoose = require('mongoose');
 
 require('../../models/token');
@@ -14,7 +13,31 @@ const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("user delete tests", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   afterEach(function() {
     sinon.restore();

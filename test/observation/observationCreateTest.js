@@ -3,7 +3,6 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -18,7 +17,31 @@ var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 var ObservationIdModel = mongoose.model('ObservationId');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("observation create tests", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   beforeEach(function() {
     var mockEvent = EventModel({

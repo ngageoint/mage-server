@@ -1,10 +1,11 @@
 const crypto = require('crypto')
-  , fs = require('fs-extra')
   , verification = require('./verification')
   , api = require('../api/')
   , config = require('../config.js')
+  , log = require('../logger')
   , userTransformer = require('../transformers/user')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
@@ -112,12 +113,13 @@ class AuthenticationInitializer {
       }
     );
 
-    // Dynamically import all authentication strategies
-    fs.readdirSync(__dirname).forEach(function (file) {
-      if (file[0] === '.' || file === 'index.js' || file === 'verification.js') return;
-      const strategy = file.substr(0, file.indexOf('.'));
-      const authentication = require('./' + strategy);
-      authentication.initialize();
+    AuthenticationConfiguration.getAllConfigurations().then(configs => {
+      configs.forEach(config => {
+        const authentication = require('./' + config.name);
+        authentication.initialize(config);
+      });
+    }).catch(err => {
+      log.warn(err);
     });
 
     return {

@@ -26,7 +26,6 @@ const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , mockfs = require('mock-fs')
   , mongoose = require('mongoose');
 
@@ -36,12 +35,33 @@ const TokenModel = mongoose.model('Token');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
-
 require('sinon-mongoose');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("user read tests", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   afterEach(function() {
     sinon.restore();

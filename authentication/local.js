@@ -227,6 +227,5 @@ function initialize() {
 };
 
 module.exports = {
-  initialize,
-  configure
+  initialize
 }

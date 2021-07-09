@@ -86,7 +86,7 @@ module.exports = function (app, security) {
                     strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
-                strategy.configure(config);
+                strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
@@ -159,7 +159,7 @@ module.exports = function (app, security) {
                     strategyType = config.name.toLowerCase();
                 }
                 const strategy = require('../authentication/' + strategyType);
-                strategy.configure(config);
+                strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);

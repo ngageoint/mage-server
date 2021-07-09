@@ -2,8 +2,7 @@
 
 const request = require('supertest')
   , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , app = require('../../express');
+  , mongoose = require('mongoose');
 
 require('sinon-mongoose');
 
@@ -20,10 +19,12 @@ require('../../models/user');
 const UserModel = mongoose.model('User');
 
 const Authentication = require('../../models/authentication');
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 let userId;
 let mockUser;
+let app;
 
 async function authenticate() {
   userId = mongoose.Types.ObjectId();
@@ -86,6 +87,26 @@ async function authenticate() {
 }
 
 describe("device provision tests", function () {
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
+  
   let jwt;
 
   beforeEach(async () => {

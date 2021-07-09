@@ -2,8 +2,8 @@
 
 const request = require('supertest')
   , sinon = require('sinon')
-  , app = require('../express')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 require('../models/setting');
 const SettingModel = mongoose.model('Setting');
@@ -18,6 +18,27 @@ require('sinon-mongoose');
 require('chai').should();
 
 describe("api route tests", function () {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../express');
+  });
 
   afterEach(function () {
     sinon.restore();

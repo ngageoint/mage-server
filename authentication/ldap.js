@@ -5,10 +5,8 @@ const LdapStrategy = require('passport-ldapauth')
   , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , config = require('../config.js')
   , userTransformer = require('../transformers/user')
   , AuthenticationInitializer = require('./index')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
@@ -85,26 +83,7 @@ function doConfigure(strategyConfig) {
 
 }
 
-function configure(config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('LDAP not configured');
-    }).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function initialize() {
+function initialize(config) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
   const provision = AuthenticationInitializer.provision;
@@ -119,7 +98,11 @@ function initialize() {
     next();
   }
 
-  configure();
+  SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+    doConfigure(appendedConfig);
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.post(
     '/auth/ldap/signin',
@@ -248,6 +231,5 @@ function initialize() {
 };
 
 module.exports = {
-  initialize,
-  configure
+  initialize
 }

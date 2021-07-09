@@ -2,7 +2,6 @@ var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -10,7 +9,31 @@ require('sinon-mongoose');
 require('../../models/team');
 var TeamModel = mongoose.model('Team');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("team update tests", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
   
   afterEach(function() {
     sinon.restore();

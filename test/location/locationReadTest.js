@@ -4,7 +4,6 @@ var request = require('supertest')
   , moment = require('moment')
   , should = require('chai').should()
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -21,7 +20,31 @@ var LocationModel = mongoose.model('Location');
 require('../../models/cappedLocation');
 var CappedLocationModel = mongoose.model('CappedLocation');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("location read tests", function() {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   beforeEach(function() {
     var mockEvent = new EventModel({

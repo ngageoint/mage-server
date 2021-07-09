@@ -2,9 +2,9 @@ const request = require('supertest')
   , sinon = require('sinon')
   , chai = require('chai')
   , mongoose = require('mongoose')
-  , app = require('../../express')
   , createToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , TokenModel = mongoose.model('Token')
+  , SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 
 require('sinon-mongoose');
 
@@ -21,6 +21,27 @@ const Authentication = require('../../models/authentication');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 describe("device create tests", function () {
+
+  let app;
+
+  before(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   afterEach(function () {
     sinon.restore();

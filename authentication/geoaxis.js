@@ -4,10 +4,8 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , config = require('../config.js')
   , log = require('../logger')
   , AuthenticationInitializer = require('./index')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
@@ -70,29 +68,9 @@ function doConfigure(strategyConfig) {
     });
 
     AuthenticationInitializer.passport.use('geoaxis', strategy);
-
 }
 
-function configure(config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('oauth', 'geoaxis').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('Geoaxis not configured');
-    }).then(appendedConfig => {
-      doConfigure(appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function initialize() {
+function initialize(config) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
   const provision = AuthenticationInitializer.provision;
@@ -144,7 +122,11 @@ function initialize() {
     })(req, res, next);
   }
 
-  configure();
+  SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+    doConfigure(appendedConfig);
+  }).catch(err => {
+    log.error(err);
+  });
 
   app.get(
     '/auth/geoaxis/signin',
@@ -265,6 +247,5 @@ function initialize() {
 };
 
 module.exports = {
-  initialize,
-  configure
+  initialize
 }
