@@ -1,6 +1,6 @@
 <mat-form-field appearance="fill" [formGroup]="formGroup">
   <mat-label>{{definition.title}}</mat-label>
-  <mat-select formControlName="{{definition.name}}" (selectionChange)="onSelectionChange($event)">
+  <mat-select formControlName="{{definition.name}}" (selectionChange)="onSelectionChange($event)" [required]="definition.required">
     <mat-option>
       <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{definition.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
     </mat-option>

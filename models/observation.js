@@ -169,6 +169,7 @@ ObservationSchema.set('toObject', {
 });
 
 const models = {};
+mongoose.model('Attachment', AttachmentSchema);
 mongoose.model('Thumbnail', ThumbnailSchema);
 mongoose.model('State', StateSchema);
 

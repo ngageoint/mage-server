@@ -1,6 +1,6 @@
 <mat-form-field appearance="fill" [formGroup]="formGroup">
   <mat-label>{{definition.title}}</mat-label>
-  <mat-chip-list #chipList formControlName="{{definition.name}}">
+  <mat-chip-list #chipList formControlName="{{definition.name}}" [required]="definition.required">
     <mat-chip *ngFor="let choice of formGroup.get(this.definition.name).value" [removable]="removable" (removed)="remove(choice)">
       {{choice}}
       <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
