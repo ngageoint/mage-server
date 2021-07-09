@@ -1,6 +1,10 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
+.bottom-gap {
+    margin-bottom: 16px;
+}
+
 mat-button {
     margin-left: 8px; 
 }

@@ -1,14 +1,11 @@
-module.exports = AuthenticationConfigurationService;
-
-AuthenticationConfigurationService.$inject = ['$http', '$httpParamSerializer'];
-
 function AuthenticationConfigurationService($http, $httpParamSerializer) {
 
     const service = {
         getAllConfigurations: getAllConfigurations,
         updateConfiguration: updateConfiguration,
         deleteConfiguration: deleteConfiguration,
-        createConfiguration: createConfiguration
+        createConfiguration: createConfiguration,
+        countUsers: countUsers
     };
 
     return service;
@@ -34,4 +31,12 @@ function AuthenticationConfigurationService($http, $httpParamSerializer) {
             headers: { "Content-Type": "application/x-www-form-urlencoded" }
         });
     }
+
+    function countUsers(id) {
+        return $http.get('/api/authentication/configuration/count/' + id);
+    }
 };
+
+module.exports = AuthenticationConfigurationService;
+
+AuthenticationConfigurationService.$inject = ['$http', '$httpParamSerializer'];

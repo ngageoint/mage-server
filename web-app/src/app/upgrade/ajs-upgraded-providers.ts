@@ -11,6 +11,8 @@ export const Settings = new InjectionToken<any>('Settings');
 export const Team = new InjectionToken<any>('Team');
 export const Event = new InjectionToken<any>('Event');
 export const AuthenticationConfigurationService = new InjectionToken<any>('AuthenticationConfigurationService');
+export const UserPagingService = new InjectionToken<any>('UserPagingService');
+
 
 export function mapServiceFactory(i: any): any {
   return i.get('MapService');
@@ -130,5 +132,15 @@ export function authenticationConfigurationServiceFactory(i: any): any {
 export const authenticationConfigurationServiceProvider = {
   provide: AuthenticationConfigurationService,
   useFactory: authenticationConfigurationServiceFactory,
+  deps: ['$injector']
+};
+
+export function userPagingServiceFactory(i: any): any {
+  return i.get('UserPagingService');
+}
+
+export const userPagingServiceProvider = {
+  provide: UserPagingService,
+  useFactory: userPagingServiceFactory,
   deps: ['$injector']
 };

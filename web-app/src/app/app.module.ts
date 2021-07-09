@@ -97,7 +97,8 @@ import {
   settingsProvider,
   teamProvider,
   eventProvider,
-  authenticationConfigurationServiceProvider
+  authenticationConfigurationServiceProvider,
+  userPagingServiceProvider
 } from './upgrade/ajs-upgraded-providers';
 
 import {
@@ -292,6 +293,7 @@ import { ObservationEditAttachmentComponent } from './observation/observation-ed
     teamProvider,
     eventProvider,
     authenticationConfigurationServiceProvider,
+    userPagingServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })

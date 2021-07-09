@@ -5,7 +5,6 @@ const log = require('winston')
     , Authentication = require('../models/authentication')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
-    , User = require('../models/user')
     , Settings = require('../models/setting')
     , SecretStoreService = require('../security/secret-store-service');
 
@@ -21,6 +20,21 @@ module.exports = function (app, security) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
                 res.json(transformedConfigs);
+            }).catch(err => {
+                next(err);
+            });
+        });
+
+    app.get(
+        '/api/authentication/configuration/count/:id',
+        passport.authenticate('bearer'),
+        access.authorize('READ_AUTH_CONFIG'),
+        function (req, res, next) {
+            Authentication.countAuthenticationsByAuthConfigId(req.param('id')).then(cnt => {
+                const response = {
+                    count: cnt
+                };
+                res.json(response);
             }).catch(err => {
                 next(err);
             });
@@ -44,7 +58,7 @@ module.exports = function (app, security) {
             };
 
             const securityData = {};
-            
+
             Settings.getSetting('blacklist').then(blacklist => {
                 const settings = JSON.parse(req.body.settings);
 
@@ -121,6 +135,24 @@ module.exports = function (app, security) {
                 return Promise.all(response);
             }).then(response => {
                 const config = response[0];
+                const promises = [];
+                promises.push(Promise.resolve(config))
+                promises.push(Authentication.getAuthenticationsByType(config.name));
+                return Promise.all(promises);
+            }).then(response => {
+                const config = response[0];
+                const authentications = response[1];
+
+                const promises = [];
+                promises.push(config);
+
+                authentications.forEach(authentication => {
+                    authentication.authenticationConfigurationId = config._id;
+                    promises.push(Authentication.updateAuthentication(authentication));
+                });
+                return Promise.all(promises);
+            }).then(response => {
+                const config = response[0];
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if (config.type === 'oauth') {
@@ -144,20 +176,15 @@ module.exports = function (app, security) {
 
             Authentication.getAuthenticationsByAuthConfigId(req.param('id'))
                 .then(authentications => {
-                    const userPromises = [];
+                    const authUpdatePromises = [];
                     authentications.forEach(authentication => {
                         if (authentication.type === 'local') {
                             throw new Error('Removal of local authentication is not allowed');
                         }
-                        userPromises.push(User.getUserByAuthenticationId(authentication._id));
+                        authentication.authenticationConfigurationId = null;
+                        authUpdatePromises.push(Authentication.updateAuthentication(authentication));
                     });
-                    return Promise.all(userPromises);
-                }).then(users => {
-                    const removeUserPromises = [];
-                    users.forEach(user => {
-                        removeUserPromises.push(user.remove());
-                    });
-                    return Promise.all(removeUserPromises);
+                    return Promise.all(authUpdatePromises);
                 }).then(() => {
                     return AuthenticationConfiguration.remove(req.param("id"));
                 }).then(config => {
