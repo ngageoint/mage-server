@@ -26,7 +26,7 @@ function doConfigure(strategyConfig) {
     invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
   };
 
-  AuthenticationInitializer.passport.use(new LdapStrategy({
+  AuthenticationInitializer.passport.use(strategyConfig.name, new LdapStrategy({
     server: {
       url: strategyConfig.settings.url,
       bindDN: strategyConfig.settings.bindDN,
@@ -105,9 +105,9 @@ function initialize(config) {
   });
 
   app.post(
-    '/auth/ldap/signin',
+    '/auth/' + config.name + '/signin',
     function authenticate(req, res, next) {
-      passport.authenticate('ldapauth', authenticationOptions, function (err, user, info = {}) {
+      passport.authenticate(config.name, authenticationOptions, function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) {
@@ -155,7 +155,7 @@ function initialize(config) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/ldap/devices',
+  app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       // check user session
       if (req.user) {
@@ -192,7 +192,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/ldap/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -206,7 +206,7 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check('ldap'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {

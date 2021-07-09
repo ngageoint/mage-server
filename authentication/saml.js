@@ -63,7 +63,7 @@ function doConfigure(strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    AuthenticationInitializer.passport.authenticate('saml', function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate(config.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -151,14 +151,14 @@ function initialize(config) {
   });
 
   app.get(
-    '/auth/saml/signin',
+    '/auth/' + config.name + '/signin',
     function (req, res, next) {
       const state = {
         initiator: 'mage',
         client: req.query.state
       };
 
-      passport.authenticate('saml', {
+      passport.authenticate(config.name, {
         additionalParams: { RelayState: JSON.stringify(state) }
       })(req, res, next);
     }
@@ -168,7 +168,7 @@ function initialize(config) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/saml/devices',
+  app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       if (req.user) {
         next();
@@ -204,7 +204,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/saml/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -218,7 +218,7 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check('saml'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {

@@ -86,7 +86,7 @@ function initialize(config) {
   }
 
   function authenticate(req, res, next) {
-    passport.authenticate('geoaxis', function (err, user, info = {}) {
+    passport.authenticate(config.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -129,9 +129,9 @@ function initialize(config) {
   });
 
   app.get(
-    '/auth/geoaxis/signin',
+    '/auth/' + config.name + '/signin',
     function (req, res, next) {
-      passport.authenticate('geoaxis', {
+      passport.authenticate(config.name, {
         state: req.query.state
       })(req, res, next);
     }
@@ -141,7 +141,7 @@ function initialize(config) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/geoaxis/devices',
+  app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       // check user session
       if (req.user) {
@@ -178,7 +178,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/geoaxis/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -192,7 +192,7 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check('geoaxis'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
@@ -200,13 +200,13 @@ function initialize(config) {
 
         authenticationApiAppender.append(config.api).then(apiCopy => {
           const api = Object.assign({}, apiCopy);
-          api.authenticationStrategies['geoaxis'] = {
-            url: api.authenticationStrategies['geoaxis'].url,
-            type: api.authenticationStrategies['geoaxis'].type,
-            title: api.authenticationStrategies['geoaxis'].title,
-            textColor: api.authenticationStrategies['geoaxis'].textColor,
-            buttonColor: api.authenticationStrategies['geoaxis'].buttonColor,
-            icon: api.authenticationStrategies['geoaxis'].icon
+          api.authenticationStrategies[config.name] = {
+            url: api.authenticationStrategies[config.name].url,
+            type: api.authenticationStrategies[config.name].type,
+            title: api.authenticationStrategies[config.name].title,
+            textColor: api.authenticationStrategies[config.name].textColor,
+            buttonColor: api.authenticationStrategies[config.name].buttonColor,
+            icon: api.authenticationStrategies[config.name].icon
           };
 
           res.json({
@@ -226,7 +226,7 @@ function initialize(config) {
   );
 
   app.get(
-    '/auth/geoaxis/callback',
+    '/auth/' + config.name + '/callback',
     authenticate,
     function (req, res) {
       if (req.query.state === 'mobile') {
@@ -237,7 +237,7 @@ function initialize(config) {
           uri = `mage://app/authentication?token=${req.token}`
         }
 
-        res.render('geoaxis', { uri: uri });
+        res.render(config.name, { uri: uri });
       } else {
         res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
       }

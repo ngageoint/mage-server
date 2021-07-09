@@ -85,7 +85,7 @@ function initialize(config) {
   }
 
   function authenticate(req, res, next) {
-    passport.authenticate('google', function (err, user) {
+    passport.authenticate(config.name, function (err, user) {
       if (err) return next(err);
 
       req.user = user;
@@ -127,9 +127,9 @@ function initialize(config) {
   });
 
   app.get(
-    '/auth/google/signin',
+    '/auth/' + config.name + '/signin',
     function (req, res, next) {
-      passport.authenticate('google', {
+      passport.authenticate(config.name, {
         scope: ['profile', 'email', 'openid'],
         state: req.query.state
       })(req, res, next);
@@ -138,7 +138,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/google/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -152,7 +152,7 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check('google'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
@@ -176,7 +176,7 @@ function initialize(config) {
   );
 
   app.get(
-    '/auth/google/callback',
+    '/auth/' + config.name + '/callback',
     authenticate,
     function (req, res) {
       if (req.query.state === 'mobile') {
