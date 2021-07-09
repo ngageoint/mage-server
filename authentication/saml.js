@@ -120,10 +120,10 @@ function doConfigure(strategyConfig) {
         }
       } else {
         if (req.user.active && req.user.enabled) {
-          res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
+          res.redirect(`/#/signin?strategy=${config.name}&action=authorize-device&token=${req.token}`);
         } else {
           const action = !req.user.active ? 'inactive-account' : 'disabled-account';
-          res.redirect(`/#/signin?strategy=saml&action=${action}`);
+          res.redirect(`/#/signin?strategy=${config.name}&action=${action}`);
         }
       }
     }

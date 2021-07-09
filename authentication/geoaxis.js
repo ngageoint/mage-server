@@ -5,6 +5,7 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
   , log = require('../logger')
+  , userTransformer = require('../transformers/user')
   , AuthenticationInitializer = require('./index')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
@@ -67,7 +68,7 @@ function doConfigure(strategyConfig) {
       });
     });
 
-    AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
+  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
 }
 
 function initialize(config) {
@@ -77,11 +78,11 @@ function initialize(config) {
   const tokenService = AuthenticationInitializer.tokenService;
 
   function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.header['user-agent'],
-      appVersion: req.param('appVersion')
-    };
+    const options = {};
+    options.userAgent = req.headers['user-agent'];
+    options.appVersion = req.param('appVersion');
 
+    req.loginOptions = options;
     next();
   }
 
@@ -210,10 +211,10 @@ function initialize(config) {
           };
 
           res.json({
-            user: req.user,
-            device: req.provisionedDevice,
             token: token.token,
             expirationDate: token.expirationDate,
+            user: userTransformer.transform(req.user, { path: req.getRoot() }),
+            device: req.provisionedDevice,
             api: api
           });
         }).catch(err => {

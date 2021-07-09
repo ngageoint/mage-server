@@ -11,7 +11,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
 
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
-  AuthenticationInitializer.passport.use(strategyConfig.name, new GoogleStrategy({
+  const strategy = new GoogleStrategy({
     clientID: strategyConfig.settings.clientID,
     clientSecret: strategyConfig.settings.clientSecret,
     callbackURL: strategyConfig.settings.callbackURL
@@ -64,9 +64,9 @@ function doConfigure(strategyConfig) {
           return done(null, user);
         }
       });
-    }
-  ));
+    });
 
+  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
 }
 
 function initialize(config) {
@@ -85,7 +85,7 @@ function initialize(config) {
   }
 
   function authenticate(req, res, next) {
-    passport.authenticate(config.name, function (err, user) {
+    passport.authenticate(config.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -112,6 +112,7 @@ function initialize(config) {
           .then(token => {
             req.token = token;
             req.user = user;
+            req.info = info;
             next();
           }).catch(err => {
             next(err);
@@ -158,13 +159,23 @@ function initialize(config) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        authenticationApiAppender.append(config.api).then(api => {
+        authenticationApiAppender.append(config.api).then(apiCopy => {
+          const api = Object.assign({}, apiCopy);
+          api.authenticationStrategies[config.name] = {
+            url: api.authenticationStrategies[config.name].url,
+            type: api.authenticationStrategies[config.name].type,
+            title: api.authenticationStrategies[config.name].title,
+            textColor: api.authenticationStrategies[config.name].textColor,
+            buttonColor: api.authenticationStrategies[config.name].buttonColor,
+            icon: api.authenticationStrategies[config.name].icon
+          };
+
           res.json({
             token: token.token,
             expirationDate: token.expirationDate,
             user: userTransformer.transform(req.user, { path: req.getRoot() }),
             device: req.provisionedDevice,
-            api: api  // TODO scrub api
+            api: api
           });
         }).catch(err => {
           next(err);
