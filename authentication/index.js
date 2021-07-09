@@ -122,6 +122,8 @@ class AuthenticationInitializer {
       log.warn(err);
     });
 
+    require('./anonymous').initialize();
+
     return {
       passport: passport
     };
