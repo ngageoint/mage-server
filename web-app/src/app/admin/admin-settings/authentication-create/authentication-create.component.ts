@@ -88,7 +88,7 @@ export class AuthenticationCreateComponent implements OnInit {
         this.reset();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.setupDefaults = {};
         const settingsPromise = this.settingsService.query().$promise;
 
@@ -105,7 +105,7 @@ export class AuthenticationCreateComponent implements OnInit {
             });
 
             this.setupDefaults = settings.authconfigsetup ? settings.authconfigsetup.settings : {};
-        }).catch(err => {
+        }).catch((err: any) => {
             console.log(err);
         });
     }
@@ -172,7 +172,7 @@ export class AuthenticationCreateComponent implements OnInit {
     save(): void {
         this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
             this.stateService.go('admin.settings', { strategy: newStrategy });
-        }).catch(err => {
+        }).catch((err: any) => {
             console.error(err);
             this._snackBar.open('Failed to create ' + this.strategy.title, null, {
                 duration: 2000,
