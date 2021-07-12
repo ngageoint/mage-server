@@ -115,8 +115,12 @@ class AuthenticationInitializer {
 
     AuthenticationConfiguration.getAllConfigurations().then(configs => {
       configs.forEach(config => {
-        const authentication = require('./' + config.name);
-        authentication.initialize(config);
+        let strategyType = config.type;
+        if (config.type === 'oauth') {
+          strategyType = config.name.toLowerCase();
+        }
+        const strategy = require('../authentication/' + strategyType);
+        strategy.initialize(config);
       });
     }).catch(err => {
       log.warn(err);
