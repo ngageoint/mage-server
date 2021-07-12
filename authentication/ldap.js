@@ -10,21 +10,8 @@ const LdapStrategy = require('passport-ldapauth')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
   , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
-let authenticationOptions = {
-};
-
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
-  authenticationOptions = {
-    invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
-    invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
-    passwordExpired: `${strategyConfig.title} password expired.`,
-    accountDisabled: `${strategyConfig.title} account disabled.`,
-    accountExpired: `${strategyConfig.title} account expired.`,
-    passwordMustChange: `User must reset ${strategyConfig.title} password.`,
-    accountLockedOut: `${strategyConfig.title} user account locked.`,
-    invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
-  };
 
   AuthenticationInitializer.passport.use(strategyConfig.name, new LdapStrategy({
     server: {
@@ -103,6 +90,17 @@ function initialize(config) {
   }).catch(err => {
     log.error(err);
   });
+
+  const authenticationOptions = {
+    invalidLogonHours: `Not Permitted to login to ${config.title} account at this time.`,
+    invalidWorkstation: `Not permited to logon to ${config.title} account at this workstation.`,
+    passwordExpired: `${config.title} password expired.`,
+    accountDisabled: `${config.title} account disabled.`,
+    accountExpired: `${config.title} account expired.`,
+    passwordMustChange: `User must reset ${config.title} password.`,
+    accountLockedOut: `${config.title} user account locked.`,
+    invalidCredentials: `Invalid ${config.title} username/password.`
+  };
 
   app.post(
     '/auth/' + config.name + '/signin',
