@@ -70,8 +70,6 @@ function doConfigure(strategyConfig) {
 }
 
 function initialize(config) {
-  const app = AuthenticationInitializer.app;
-
   OAuth.initialize(config);
 
   SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
@@ -79,6 +77,8 @@ function initialize(config) {
   }).catch(err => {
     log.error(err);
   });
+
+  const app = AuthenticationInitializer.app;
 
   // DEPRECATED, this will be removed in next major server version release
   // Create a new device
