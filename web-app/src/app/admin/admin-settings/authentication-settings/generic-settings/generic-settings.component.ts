@@ -16,7 +16,7 @@ import { DeleteSettingComponent } from './delete-setting/delete-setting.componen
 })
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: Strategy;
-    @Input() editable: boolean = true;
+    @Input() editable = true;
     dataSource: MatTableDataSource<GenericSetting>;
     readonly displayedColumns: string[] = ['key', 'value', 'action'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
@@ -38,12 +38,12 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.refresh();
     }
 
-    ngAfterViewInit() {
+    ngAfterViewInit(): void {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
     }
 
-    refresh() {
+    refresh(): void {
         const settings: GenericSetting[] = [];
         for (const [key, value] of Object.entries(this.strategy.settings)) {
 
