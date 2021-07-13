@@ -20,7 +20,7 @@ module.exports = function (app, security) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 const filtered = configs.filter(config => {
                     if (!config.enabled) {
-                        if (req.param('includeDisabled')) {
+                        if (req.query.includeDisabled) {
                             return true;
                         }
                         return false;
