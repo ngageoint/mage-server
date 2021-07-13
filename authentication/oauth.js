@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
