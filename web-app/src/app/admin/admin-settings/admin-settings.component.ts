@@ -50,7 +50,7 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const configsPromise = this.authenticationConfigurationService.getAllConfigurations();
+        const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
         const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
         const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
 

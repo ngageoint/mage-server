@@ -18,7 +18,13 @@ module.exports = function (app, security) {
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
-                const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
+                let filtered = configs;
+                if (!req.param('includeDisabled')) {
+                    filtered = configs.filter(config => {
+                        return config.enabled;
+                    });
+                }
+                const transformedConfigs = AuthenticationConfigurationTransformer.transform(filtered);
                 res.json(transformedConfigs);
             }).catch(err => {
                 next(err);
