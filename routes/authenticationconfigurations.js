@@ -18,12 +18,16 @@ module.exports = function (app, security) {
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
-                let filtered = configs;
-                if (!req.param('includeDisabled')) {
-                    filtered = configs.filter(config => {
-                        return config.enabled;
-                    });
-                }
+                const filtered = configs.filter(config => {
+                    if (!config.enabled) {
+                        if (req.param('includeDisabled')) {
+                            return true;
+                        }
+                        return false;
+                    } else {
+                        return true;
+                    }
+                });
                 const transformedConfigs = AuthenticationConfigurationTransformer.transform(filtered);
                 res.json(transformedConfigs);
             }).catch(err => {

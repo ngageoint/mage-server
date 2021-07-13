@@ -133,7 +133,7 @@ export class AdminSettingsComponent implements OnInit {
 
         if (promises.length > 0) {
             Promise.all(promises).then(() => {
-                return this.authenticationConfigurationService.getAllConfigurations();
+                return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
             }).then(strategies => {
                 this.processUnsortedStrategies(strategies.data);
                 this._snackBar.open('Authentication successfully saved', null, {
