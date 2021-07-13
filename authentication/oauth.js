@@ -3,9 +3,9 @@
 const TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , log = require('../logger')
-    , userTransformer = require('../transformers/user')
+    , UserTransformer = require('../transformers/user')
     , AuthenticationInitializer = require('./index')
-    , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+    , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function initialize(config) {
     const app = AuthenticationInitializer.app;
@@ -91,7 +91,7 @@ function initialize(config) {
             new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
                 if (err) return next(err);
 
-                authenticationApiAppender.append(config.api).then(apiCopy => {
+                AuthenticationApiAppender.append(config.api).then(apiCopy => {
                     const api = Object.assign({}, apiCopy);
                     api.authenticationStrategies[config.name] = {
                         url: api.authenticationStrategies[config.name].url,
@@ -105,7 +105,7 @@ function initialize(config) {
                     res.json({
                         token: token.token,
                         expirationDate: token.expirationDate,
-                        user: userTransformer.transform(req.user, { path: req.getRoot() }),
+                        user: UserTransformer.transform(req.user, { path: req.getRoot() }),
                         device: req.provisionedDevice,
                         api: api
                     });

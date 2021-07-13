@@ -13,7 +13,7 @@ const LdapStrategy = require('passport-ldapauth')
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
 
-  AuthenticationInitializer.passport.use(strategyConfig.name, new LdapStrategy({
+  const strategy = new LdapStrategy({
     server: {
       url: strategyConfig.settings.url,
       bindDN: strategyConfig.settings.bindDN,
@@ -66,8 +66,9 @@ function doConfigure(strategyConfig) {
           return done(null, user);
         }
       });
-    }));
-
+    });
+    
+  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
 }
 
 function initialize(config) {
