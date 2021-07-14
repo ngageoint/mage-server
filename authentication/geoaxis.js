@@ -19,8 +19,8 @@ function doConfigure(strategyConfig) {
     userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me'
   },
     function (accessToken, refreshToken, profile, done) {
-      const geoaxisUser = profile._json;
-      User.getUserByAuthenticationStrategy(strategyConfig.type, geoaxisUser.email, function (err, user) {
+      const oauthUser = profile._json;
+      User.getUserByAuthenticationStrategy(strategyConfig.type, oauthUser.email, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
@@ -28,7 +28,7 @@ function doConfigure(strategyConfig) {
           Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
 
-            const email = geoaxisUser.email;
+            const email = oauthUser.email;
 
             const user = {
               username: email,
@@ -77,13 +77,11 @@ function initialize(config) {
     log.error(err);
   });
 
-  const app = AuthenticationInitializer.app;
-
   // DEPRECATED, this will be removed in next major server version release
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/' + config.name + '/devices',
+  AuthenticationInitializer.app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       // check user session
       if (req.user) {
