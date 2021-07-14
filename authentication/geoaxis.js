@@ -11,25 +11,24 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
   const strategy = new GeoaxisStrategy({
-    authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-    tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-    userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
     clientID: strategyConfig.settings.clientID,
     clientSecret: strategyConfig.settings.clientSecret,
     callbackURL: strategyConfig.settings.callbackUrl,
-    passReqToCallback: true
+    authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+    tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+    userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me'
   },
-    function (req, accessToken, refreshToken, profile, done) {
+    function (accessToken, refreshToken, profile, done) {
       const geoaxisUser = profile._json;
       User.getUserByAuthenticationStrategy(strategyConfig.type, geoaxisUser.email, function (err, user) {
         if (err) return done(err);
-
-        const email = geoaxisUser.email;
 
         if (!user) {
           // Create an account for the user
           Role.getRole('USER_ROLE', function (err, role) {
             if (err) return done(err);
+
+            const email = geoaxisUser.email;
 
             const user = {
               username: email,
