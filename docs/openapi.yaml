@@ -163,10 +163,16 @@ paths:
 
   /api/authentication/configuration/:
     get:
-      tags: [Authentication & Authorization]
+      tags: [Authentication Configuration]
       summary: Get an array of all authentication configurations
       description: Get all authentication configurations.  The client must have `READ_AUTH_CONFIG` permission.
       operationId: getAllAuthConfigs
+      parameters:
+        - name: includeDisabled
+          in: query
+          description: Set to true to return disabled configs.
+          required: false
+          schema: { $ref: '#/components/parameters/authenticationConfigurationIncludeDisabled' }
       responses:
         200:
           description: A list of all authentication configurations.
@@ -179,7 +185,7 @@ paths:
         401:
           description: User is not authorized to view authentication configurations.
     post:
-      tags: [Authentication & Authorization]
+      tags: [Authentication Configuration]
       summary: Create a new authentication configuration
       description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
                    The client must have `UPDATE_AUTH_CONFIG` permission.
@@ -202,7 +208,7 @@ paths:
     parameters:
       - { $ref: '#/components/parameters/authenticationConfigurationIdInPath' }
     put:
-      tags: [ Authentication & Authorization ]
+      tags: [ Authentication Configuration ]
       summary: Update an authentication configuration
       description: >
         Update the authentication configuration.
@@ -221,7 +227,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuthenticationConfiguration'
     delete:
-      tags: [ Authentication & Authorization ]
+      tags: [ Authentication Configuration ]
       summary: Delete  an authentication configuration
       description: >
         Delete the authentiction configuration document by `id`.
@@ -3507,6 +3513,13 @@ components:
       required: true
       schema:
         type: string
+    authenticationConfigurationIncludeDisabled:
+      in: query
+      name: includeDisabled
+      description: Flag to return disabled configs
+      required: false
+      schema:
+        type: boolean
 
   responses:
     FormIconInfo:
