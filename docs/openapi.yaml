@@ -182,11 +182,7 @@ paths:
       description: Get all authentication configurations.  The client must have `READ_AUTH_CONFIG` permission.
       operationId: getAllAuthConfigs
       parameters:
-        - name: includeDisabled
-          in: query
-          description: Set to true to return disabled configs.
-          required: false
-          schema: { $ref: '#/components/parameters/authenticationConfigurationIncludeDisabled' }
+        - { $ref: '#/components/parameters/authenticationConfigurationIncludeDisabled' }
       responses:
         200:
           description: A list of all authentication configurations.
