@@ -12,7 +12,21 @@ info:
 servers: []
 security:
   - mageToken: []
-
+tags:
+  - name: Auth
+  - name: Authentication & Authorization
+  - name: Authentication Configuration
+    description: Authentication configurations define the strategies used to authenticate users into the system.
+  - name: Device
+  - name: Event
+  - name: Export
+  - name: Layer
+  - name: Location
+  - name: Observation
+  - name: Role
+  - name: Settings
+  - name: Team
+  - name: User
 paths:
   /api/logins:
     get:
