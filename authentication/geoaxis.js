@@ -1,3 +1,5 @@
+'use strict';
+
 const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , User = require('../models/user')
   , Device = require('../models/device')
@@ -6,7 +8,6 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , log = require('../logger')
   , AuthenticationInitializer = require('./index')
   , OAuth = require('./oauth');
-
 
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');

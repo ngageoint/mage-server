@@ -1,3 +1,5 @@
+'use strict';
+
 const GoogleStrategy = require('passport-google-oauth20').Strategy
   , User = require('../models/user')
   , Role = require('../models/role')
