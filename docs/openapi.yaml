@@ -246,6 +246,19 @@ paths:
       responses:
         204:
           description: Success - authentication configuration
+  /api/authentication/configuration/count/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/authenticationConfigurationIdInPath' }
+    get:
+      tags: [ Authentication Configuration ]
+      summary: Count the number of users for a given configuration
+      description: >
+        Count the number of users for a given configuration.
+        The client must have `READ_AUTH_CONFIG` permission.
+      operationId: countUsersByAuthConfig
+      responses:
+        200:
+          description: authentication configuration update response
           
   /api/users:
     post:
