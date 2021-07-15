@@ -7,8 +7,7 @@ const LdapStrategy = require('passport-ldapauth')
   , api = require('../api')
   , userTransformer = require('../transformers/user')
   , AuthenticationInitializer = require('./index')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
@@ -86,11 +85,7 @@ function initialize(config) {
     next();
   }
 
-  SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-    doConfigure(appendedConfig);
-  }).catch(err => {
-    log.error(err);
-  });
+  doConfigure(config);
 
   const authenticationOptions = {
     invalidLogonHours: `Not Permitted to login to ${config.title} account at this time.`,

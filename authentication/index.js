@@ -5,7 +5,8 @@ const crypto = require('crypto')
   , log = require('../logger')
   , userTransformer = require('../transformers/user')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration');
+  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 const JWTService = verification.JWTService;
 const TokenAssertion = verification.TokenAssertion;
@@ -120,7 +121,11 @@ class AuthenticationInitializer {
           strategyType = config.name.toLowerCase();
         }
         const strategy = require('../authentication/' + strategyType);
-        strategy.initialize(config);
+        SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
+          strategy.initialize(appendedConfig);
+        }).catch(err => {
+          log.error(err);
+        });
       });
     }).catch(err => {
       log.warn(err);

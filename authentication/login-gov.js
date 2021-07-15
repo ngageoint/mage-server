@@ -10,8 +10,7 @@ const fs = require('fs')
   , api = require('../api')
   , log = require('../logger')
   , AuthenticationInitializer = require('./index')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
@@ -111,11 +110,7 @@ function initialize(config) {
 
   Issuer.useRequest();
 
-  SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-    doConfigure(appendedConfig);
-  }).catch(err => {
-    log.error(err);
-  });
+  doConfigure(config);
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
