@@ -6,7 +6,8 @@ const log = require('winston')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
     , Settings = require('../models/setting')
-    , SecretStoreService = require('../security/secret-store-service');
+    , SecretStoreService = require('../security/secret-store-service')
+    , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 module.exports = function (app, security) {
 
@@ -40,7 +41,7 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
-            Authentication.countAuthenticationsByAuthConfigId(req.param('id')).then(cnt => {
+            Authentication.countAuthenticationsByAuthConfigId(req.params.id).then(cnt => {
                 const response = {
                     count: cnt
                 };
@@ -79,7 +80,7 @@ module.exports = function (app, security) {
                         updatedConfig.settings[key] = settings[key];
                     }
                 });
-                return AuthenticationConfiguration.update(req.param('id'), updatedConfig);
+                return AuthenticationConfiguration.update(req.params.id, updatedConfig);
             }).then(config => {
                 const response = [];
                 response.push(Promise.resolve(config));
@@ -90,6 +91,8 @@ module.exports = function (app, security) {
                 return Promise.all(response);
             }).then(response => {
                 const config = response[0];
+                return SecurePropertyAppender.appendToConfig(config);
+            }).then(config => {
                 log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
                 let strategyType = config.type;
                 if (config.type === 'oauth') {
@@ -184,7 +187,7 @@ module.exports = function (app, security) {
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
 
-            Authentication.getAuthenticationsByAuthConfigId(req.param('id'))
+            Authentication.getAuthenticationsByAuthConfigId(req.params.id)
                 .then(authentications => {
                     const authUpdatePromises = [];
                     authentications.forEach(authentication => {
@@ -196,7 +199,7 @@ module.exports = function (app, security) {
                     });
                     return Promise.all(authUpdatePromises);
                 }).then(() => {
-                    return AuthenticationConfiguration.remove(req.param("id"));
+                    return AuthenticationConfiguration.remove(req.params.id);
                 }).then(config => {
                     const response = [];
                     response.push(Promise.resolve(config));
@@ -207,7 +210,7 @@ module.exports = function (app, security) {
                 }).then(response => {
                     const config = response[0];
 
-                    log.info("Successfully removed strategy with id " + req.param("id"));
+                    log.info("Successfully removed strategy with id " + req.params.id);
                     //TODO not sure how to disable passport strategy, but this will effectively disable it
                     const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                     res.json(transformedConfig);
