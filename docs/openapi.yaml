@@ -258,7 +258,7 @@ paths:
       operationId: countUsersByAuthConfig
       responses:
         200:
-          description: authentication configuration update response
+          description: The number of users created from the provided authentication.
           
   /api/users:
     post:
