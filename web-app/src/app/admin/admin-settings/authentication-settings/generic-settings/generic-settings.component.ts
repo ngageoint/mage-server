@@ -105,7 +105,16 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     addSetting(): void {
-        if (this.strategy.settings[this.newRow.key]) {
+        let duplicate = false;
+
+        if (this.newRow.key.includes('.')) {
+            const keys = this.newRow.key.split('.');
+            duplicate = this.strategy.settings[keys[0]][keys[1]];
+        } else {
+            duplicate = this.strategy.settings[this.newRow.key];
+        }
+
+        if (duplicate) {
             this.dialog.open(DuplicateKeyComponent, {
                 width: '500px',
                 data: this.newRow,
