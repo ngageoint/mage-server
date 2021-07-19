@@ -21,6 +21,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     readonly displayedColumns: string[] = ['key', 'value', 'action'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     newRow: GenericSetting = {
+        displayKey: '',
         key: '',
         value: '',
         required: false
@@ -63,6 +64,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                     const castedValue = value as string;
                     //TODO detect if this field is required
                     const gs: GenericSetting = {
+                        displayKey: key,
                         key: key,
                         value: castedValue,
                         required: true
@@ -120,6 +122,16 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
 
     private doAddSetting(): void {
         const settings = this.dataSource.data;
+        const cloneRow = JSON.parse(JSON.stringify(this.newRow));
+
+        if (this.newRow.key.includes('.')) {
+            const keys = this.newRow.key.split('.');
+            this.strategy.settings[keys[0]][keys[1]] = this.newRow.value;
+            cloneRow.displayKey = keys[1];
+        } else {
+            this.strategy.settings[this.newRow.key] = this.newRow.value;
+            cloneRow.displayKey = this.newRow.key;
+        }
 
         let idx = -1;
         for (let i = 0; i < settings.length; i++) {
@@ -129,19 +141,10 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                 break;
             }
         }
-
-        const cloneRow = { key: this.newRow.key, value: this.newRow.value, required: this.newRow.required };
         if (idx > -1) {
             settings[idx] = cloneRow;
         } else {
             settings.push(cloneRow);
-        }
-
-        if (this.newRow.key.includes('.')) {
-            const keys = this.newRow.key.split('.');
-            this.strategy.settings[keys[0]][keys[1]] = this.newRow.value;
-        } else {
-            this.strategy.settings[this.newRow.key] = this.newRow.value;
         }
 
         this.newRow.key = '';

@@ -6,7 +6,7 @@
     <table mat-table [dataSource]="dataSource" matSort>
         <ng-container matColumnDef="key">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> Key </th>
-            <td mat-cell *matCellDef="let setting">{{setting.key}}</td>
+            <td mat-cell *matCellDef="let setting">{{setting.displayKey}}</td>
         </ng-container>
 
         <ng-container matColumnDef="value">
