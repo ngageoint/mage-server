@@ -44,35 +44,41 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     refresh(): void {
+        this.dataSource.data = this.convertObjectToSettings(this.strategy.settings);
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
+    }
+
+    convertObjectToSettings(obj: any): GenericSetting[] {
         const settings: GenericSetting[] = [];
-        for (const [key, value] of Object.entries(this.strategy.settings)) {
+        for (const [key, value] of Object.entries(obj)) {
 
             if (this.settingsKeysToIgnore.includes(key)) {
                 continue;
             }
 
-            let castedValue: string;
-
             if (value) {
                 if (typeof value == 'string') {
-                    castedValue = value as string;
+                    const castedValue = value as string;
+                    //TODO detect if this field is required
+                    const gs: GenericSetting = {
+                        key: key,
+                        value: castedValue,
+                        required: true
+                    };
+                    settings.push(gs);
                 } else {
-                    castedValue = JSON.stringify(value);
+                    const objSettings = this.convertObjectToSettings(value);
+                    objSettings.forEach(setting => {
+                        setting.key = key + "." + setting.key;
+                        settings.push(setting);
+                    })
                 }
             }
+        }
 
-            //TODO detect if this field is required
-            const gs: GenericSetting = {
-                key: key,
-                value: castedValue,
-                required: true
-            };
-            settings.push(gs);
-        }
-        this.dataSource.data = settings;
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
+        return settings;
     }
 
     editSetting(setting: GenericSetting): void {
@@ -83,7 +89,13 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
                 const updatedSetting = result.data;
-                this.strategy.settings[updatedSetting.key] = updatedSetting.value;
+                const key = updatedSetting.key;
+                if (key.includes('.')) {
+                    const keys = key.split('.');
+                    this.strategy.settings[keys[0]][keys[1]] = updatedSetting.value;
+                } else {
+                    this.strategy.settings[updatedSetting.key] = updatedSetting.value;
+                }
                 this.strategy.isDirty = true;
                 this.refresh();
             }
@@ -125,7 +137,13 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             settings.push(cloneRow);
         }
 
-        this.strategy.settings[this.newRow.key] = this.newRow.value;
+        if (this.newRow.key.includes('.')) {
+            const keys = this.newRow.key.split('.');
+            this.strategy.settings[keys[0]][keys[1]] = this.newRow.value;
+        } else {
+            this.strategy.settings[this.newRow.key] = this.newRow.value;
+        }
+
         this.newRow.key = '';
         this.newRow.value = '';
 
@@ -141,7 +159,12 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
-                delete this.strategy.settings[setting.key];
+                if (setting.key.includes('.')) {
+                    const keys = setting.key.split('.');
+                    delete this.strategy.settings[keys[0]][keys[1]];
+                } else {
+                    delete this.strategy.settings[setting.key];
+                }
                 this.refresh();
             }
         });
