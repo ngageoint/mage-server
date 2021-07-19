@@ -30,7 +30,14 @@ describe("user authentication tests", function () {
 
   let app;
 
-  before(function() {
+  beforeEach(function () {
+    sinon.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({ token: "12345" })
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
+
     const configs = [];
     const config = {
       name: 'local',
@@ -44,18 +51,9 @@ describe("user authentication tests", function () {
 
     sinon.mock(SecurePropertyAppender)
       .expects('appendToConfig')
-      .resolves(config); 
+      .resolves(config);
 
     app = require('../../express');
-  });
-
-  beforeEach(function () {
-    sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
   });
 
   afterEach(function () {

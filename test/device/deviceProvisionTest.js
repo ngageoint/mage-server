@@ -88,7 +88,9 @@ async function authenticate() {
 
 describe("device provision tests", function () {
 
-  before(function() {
+  let jwt;
+
+  beforeEach(async () => {
     const configs = [];
     const config = {
       name: 'local',
@@ -102,14 +104,9 @@ describe("device provision tests", function () {
 
     sinon.mock(SecurePropertyAppender)
       .expects('appendToConfig')
-      .resolves(config); 
+      .resolves(config);
 
     app = require('../../express');
-  });
-  
-  let jwt;
-
-  beforeEach(async () => {
     jwt = await authenticate();
   });
 

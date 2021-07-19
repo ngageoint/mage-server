@@ -23,30 +23,11 @@ var CappedLocationModel = mongoose.model('CappedLocation');
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("location read tests", function() {
+describe("location read tests", function () {
 
   let app;
 
-  before(function() {
-    const configs = [];
-    const config = {
-      name: 'local',
-      type: 'local'
-    };
-    configs.push(config);
-
-    sinon.mock(AuthenticationConfiguration)
-      .expects('getAllConfigurations')
-      .resolves(configs);
-
-    sinon.mock(SecurePropertyAppender)
-      .expects('appendToConfig')
-      .resolves(config); 
-
-    app = require('../../express');
-  });
-
-  beforeEach(function() {
+  beforeEach(function () {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
@@ -60,9 +41,26 @@ describe("location read tests", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -70,13 +68,13 @@ describe("location read tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should get locations with read all permission", function(done) {
+  it("should get locations with read all permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
     sinon.mock(TeamModel)
@@ -112,7 +110,7 @@ describe("location read tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -121,7 +119,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should get locations with event read permission", function(done) {
+  it("should get locations with event read permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -157,7 +155,7 @@ describe("location read tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -166,7 +164,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should get locations grouped by user", function(done) {
+  it("should get locations grouped by user", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -188,7 +186,7 @@ describe("location read tests", function() {
       .chain('exec')
       .yields(null, [{
         userId: mongoose.Types.ObjectId(),
-        locations:[{
+        locations: [{
           type: "Feature",
           userId: mongoose.Types.ObjectId(),
           properties: {
@@ -210,7 +208,7 @@ describe("location read tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var users = res.body;
         should.exist(users);
         users.should.be.an('array').and.have.length(1);
@@ -220,7 +218,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should filter locations on startDate/endDate with event read permission", function(done) {
+  it("should filter locations on startDate/endDate with event read permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -262,11 +260,11 @@ describe("location read tests", function() {
 
     request(app)
       .get('/api/events/1/locations')
-      .query({startDate: startDate.toISOString(), endDate: endDate.toISOString()})
+      .query({ startDate: startDate.toISOString(), endDate: endDate.toISOString() })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -275,7 +273,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should page locations with event read permission", function(done) {
+  it("should page locations with event read permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -301,7 +299,7 @@ describe("location read tests", function() {
         $or: [{
           _id: { $gt: lastLocationId.toString() },
           'properties.timestamp': startDate.toDate()
-        },{
+        }, {
           'properties.timestamp': {
             $gt: startDate.toDate()
           }
@@ -333,7 +331,7 @@ describe("location read tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -342,7 +340,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should limit locations with event read permission", function(done) {
+  it("should limit locations with event read permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -376,11 +374,11 @@ describe("location read tests", function() {
 
     request(app)
       .get('/api/events/1/locations')
-      .query({limit: 10})
+      .query({ limit: 10 })
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -389,7 +387,7 @@ describe("location read tests", function() {
       .end(done);
   });
 
-  it("should deny locations with read event permission when not in event", function(done) {
+  it("should deny locations with read event permission when not in event", function (done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
 
     sinon.mock(TeamModel)

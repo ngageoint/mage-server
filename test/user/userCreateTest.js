@@ -47,7 +47,7 @@ async function captcha() {
 
 describe("user create tests", function () {
 
-  before(function() {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',

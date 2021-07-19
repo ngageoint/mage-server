@@ -24,26 +24,6 @@ const observationModel = Observation.observationModel;
 describe("creating attachments", function() {
 
   let app;
-
-  before(function() {
-    const configs = [];
-    const config = {
-      name: 'local',
-      type: 'local'
-    };
-    configs.push(config);
-
-    sinon.mock(AuthenticationConfiguration)
-      .expects('getAllConfigurations')
-      .resolves(configs);
-
-    sinon.mock(SecurePropertyAppender)
-      .expects('appendToConfig')
-      .resolves(config); 
-
-    app = require('../../express');
-  });
-
   const userId = mongoose.Types.ObjectId();
 
   beforeEach(function() {
@@ -55,6 +35,23 @@ describe("creating attachments", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+      const configs = [];
+      const config = {
+        name: 'local',
+        type: 'local'
+      };
+      configs.push(config);
+  
+      sinon.mock(AuthenticationConfiguration)
+        .expects('getAllConfigurations')
+        .resolves(configs);
+  
+      sinon.mock(SecurePropertyAppender)
+        .expects('appendToConfig')
+        .resolves(config); 
+  
+      app = require('../../express');
   });
 
   afterEach(function() {

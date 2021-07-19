@@ -17,32 +17,13 @@ var observationModel = Observation.observationModel;
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("marking favorite observations", function() {
+describe("marking favorite observations", function () {
 
   let app;
 
-  before(function() {
-    const configs = [];
-    const config = {
-      name: 'local',
-      type: 'local'
-    };
-    configs.push(config);
-
-    sinon.mock(AuthenticationConfiguration)
-      .expects('getAllConfigurations')
-      .resolves(configs);
-
-    sinon.mock(SecurePropertyAppender)
-      .expects('appendToConfig')
-      .resolves(config); 
-
-    app = require('../../express');
-  });
-
   const userId = mongoose.Types.ObjectId();
 
-  beforeEach(function() {
+  beforeEach(function () {
     const mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
@@ -53,12 +34,12 @@ describe("marking favorite observations", function() {
           name: "timestamp",
           title: "Date",
           required: true
-        },{
+        }, {
           type: "geometry",
           name: "geometry",
           title: "Location",
           required: true
-        },{
+        }, {
           type: "dropdown",
           name: "type",
           title: "type",
@@ -78,22 +59,39 @@ describe("marking favorite observations", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("favorites an observation", function(done) {
+  it("favorites an observation", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     const ObservationModel = observationModel({
@@ -112,12 +110,12 @@ describe("marking favorite observations", function() {
       properties: {
         timestamp: '2016-01-01T00:00:00'
       },
-      favoriteUserIds: [ userId ]
+      favoriteUserIds: [userId]
     });
 
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match( { '$addToSet': { favoriteUserIds: userId } } ), sinon.match.any)
+      .withArgs(observationId.toString(), sinon.match({ '$addToSet': { favoriteUserIds: userId } }), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
@@ -126,7 +124,7 @@ describe("marking favorite observations", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         observationMock.verify();
         const observation = res.body;
         should.exist(observation);
@@ -138,7 +136,7 @@ describe("marking favorite observations", function() {
       .end(done);
   });
 
-  it("unfavorites an observation", function(done) {
+  it("unfavorites an observation", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     var ObservationModel = observationModel({
@@ -163,7 +161,7 @@ describe("marking favorite observations", function() {
 
     const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match( { '$pull': {favoriteUserIds: userId} } ), sinon.match.any)
+      .withArgs(observationId.toString(), sinon.match({ '$pull': { favoriteUserIds: userId } }), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
@@ -172,7 +170,7 @@ describe("marking favorite observations", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         observationMock.verify();
         var observation = res.body;
         should.exist(observation);
@@ -183,7 +181,7 @@ describe("marking favorite observations", function() {
       .end(done);
   });
 
-  it('requires observation update permission', async function() {
+  it('requires observation update permission', async function () {
 
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 

@@ -27,7 +27,7 @@ describe("event delete tests", function() {
 
   let app;
 
-  before(function() {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',

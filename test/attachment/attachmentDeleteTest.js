@@ -13,29 +13,9 @@ const EventModel = mongoose.model('Event');
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("deleting attachments", function() {
+describe("deleting attachments", function () {
 
   let app;
-
-  before(function() {
-    const configs = [];
-    const config = {
-      name: 'local',
-      type: 'local'
-    };
-    configs.push(config);
-
-    sinon.mock(AuthenticationConfiguration)
-      .expects('getAllConfigurations')
-      .resolves(configs);
-
-    sinon.mock(SecurePropertyAppender)
-      .expects('appendToConfig')
-      .resolves(config); 
-
-    app = require('../../express');
-  });
-
   const userId = mongoose.Types.ObjectId();
   const attachmentId = mongoose.Types.ObjectId();
   const observationId = mongoose.Types.ObjectId();
@@ -72,7 +52,7 @@ describe("deleting attachments", function() {
   let mockObservation;
   let mockObservationModel;
 
-  beforeEach(function() {
+  beforeEach(function () {
     mockEvent = new EventModel(eventDoc);
     mockObservation = new ObservationModel(observationDoc);
 
@@ -85,23 +65,40 @@ describe("deleting attachments", function() {
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  describe('required permissions', function() {
+  describe('required permissions', function () {
 
-    beforeEach(function() {
+    beforeEach(function () {
       mockObservationModel = sinon.mock(ObservationModel);
       mockObservationModel
         .expects('update')
-        .withArgs({ _id: observationId }, { $pull: { attachments: { _id: attachmentId.toString() }}})
+        .withArgs({ _id: observationId }, { $pull: { attachments: { _id: attachmentId.toString() } } })
         .yields(null, mockObservation);
     });
 
-    it("succeeds when the user has global event update permission", async function() {
+    it("succeeds when the user has global event update permission", async function () {
 
       mockTokenWithPermission('UPDATE_EVENT');
 
@@ -114,7 +111,7 @@ describe("deleting attachments", function() {
       mockObservationModel.verify();
     });
 
-    it('succeeds when the user has update permission in the event acl', async function() {
+    it('succeeds when the user has update permission in the event acl', async function () {
 
       mockTokenWithPermission('NA');
       mockEvent.acl[userId.toString()] = 'MANAGER';
@@ -123,7 +120,7 @@ describe("deleting attachments", function() {
         .expects('populate')
         .withArgs(mockEvent)
         .yields(null, Object.assign(
-          { teamIds: [ { name: 'Attachment Deleters', userIds: [ userId ] } ] },
+          { teamIds: [{ name: 'Attachment Deleters', userIds: [userId] }] },
           eventDoc));
 
       const res = await request(app)
@@ -135,7 +132,7 @@ describe("deleting attachments", function() {
       mockObservationModel.verify();
     });
 
-    it('succeeds when the user owns the observation', async function() {
+    it('succeeds when the user owns the observation', async function () {
 
       mockObservation.userId = userId;
       mockTokenWithPermission('NA')
@@ -150,7 +147,7 @@ describe("deleting attachments", function() {
     });
   });
 
-  it('fails without correct permission', async function() {
+  it('fails without correct permission', async function () {
 
     sinon.mock(ObservationModel).expects('update').never();
 

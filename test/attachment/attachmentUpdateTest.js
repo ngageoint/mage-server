@@ -22,11 +22,20 @@ var AttachmentModel = mongoose.model('Attachment');
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe('updating attachments', function() {
+describe('updating attachments', function () {
 
   let app;
 
-  before(function() {
+  beforeEach(function () {
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
     const configs = [];
     const config = {
       name: 'local',
@@ -40,23 +49,12 @@ describe('updating attachments', function() {
 
     sinon.mock(SecurePropertyAppender)
       .expects('appendToConfig')
-      .resolves(config); 
+      .resolves(config);
 
     app = require('../../express');
   });
 
-  beforeEach(function() {
-    var mockEvent = new EventModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    sinon.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
-  });
-
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
     mockfs.restore();
   });
@@ -66,13 +64,13 @@ describe('updating attachments', function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("updates an attachment with event update permission", async function() {
+  it("updates an attachment with event update permission", async function () {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     var fs = {
@@ -122,7 +120,7 @@ describe('updating attachments', function() {
       properties: {
         timestamp: Date.now()
       },
-      attachments: [ mockAttachment ]
+      attachments: [mockAttachment]
     });
 
     sinon.mock(ObservationModel)

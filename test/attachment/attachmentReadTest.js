@@ -20,11 +20,20 @@ var observationModel = Observation.observationModel;
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-describe("attachment read tests", function() {
+describe("attachment read tests", function () {
 
   let app;
 
-  before(function() {
+  beforeEach(function () {
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
     const configs = [];
     const config = {
       name: 'local',
@@ -38,23 +47,12 @@ describe("attachment read tests", function() {
 
     sinon.mock(SecurePropertyAppender)
       .expects('appendToConfig')
-      .resolves(config); 
+      .resolves(config);
 
     app = require('../../express');
   });
 
-  beforeEach(function() {
-    var mockEvent = new EventModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    sinon.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
-  });
-
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
     mockfs.restore();
   });
@@ -63,13 +61,13 @@ describe("attachment read tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should get attachments for event I am a part of", function(done) {
+  it("should get attachments for event I am a part of", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -106,7 +104,7 @@ describe("attachment read tests", function() {
         size: 200,
         contentType: 'image/jpeg',
         relativePath: 'some/relative/path'
-      },{
+      }, {
         size: 4096,
         contentType: 'image/jpeg',
         relativePath: 'some/relative/path'
@@ -123,7 +121,7 @@ describe("attachment read tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var attachments = res.body;
         should.exist(attachments);
         attachments.should.be.an('array');
@@ -132,7 +130,7 @@ describe("attachment read tests", function() {
       .end(done);
   });
 
-  it("should get attachment for any event", function(done) {
+  it("should get attachment for any event", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
@@ -173,7 +171,7 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId })
       .yields(null, mockObservation);
 
     request(app)
@@ -183,12 +181,12 @@ describe("attachment read tests", function() {
       .expect(200)
       .expect('Content-Type', 'image/jpeg')
       .expect('Content-Length', "7")
-      .end(function(err) {
+      .end(function (err) {
         done(err);
       });
   });
 
-  it("should fail to get attachment that does not exist", function(done) {
+  it("should fail to get attachment that does not exist", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
@@ -221,7 +219,7 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId })
       .yields(null, mockObservation);
 
     request(app)
@@ -232,7 +230,7 @@ describe("attachment read tests", function() {
       .end(done);
   });
 
-  it("should get attachment range", function(done) {
+  it("should get attachment range", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
@@ -273,7 +271,7 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId })
       .yields(null, mockObservation);
 
     request(app)
