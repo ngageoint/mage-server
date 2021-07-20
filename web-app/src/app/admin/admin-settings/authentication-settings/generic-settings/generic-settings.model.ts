@@ -1,6 +1,6 @@
 export interface GenericSetting {
-    displayKey: string,
+    displayKey?: string,
     key: string,
     value: string,
-    required: boolean
+    required?: boolean
 }

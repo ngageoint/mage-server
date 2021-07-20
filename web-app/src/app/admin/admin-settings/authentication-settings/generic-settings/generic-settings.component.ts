@@ -21,10 +21,8 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     readonly displayedColumns: string[] = ['key', 'value', 'action'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     newRow: GenericSetting = {
-        displayKey: '',
         key: '',
-        value: '',
-        required: false
+        value: ''
     }
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -130,38 +128,17 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     private doAddSetting(): void {
-        const settings = this.dataSource.data;
-        const cloneRow = JSON.parse(JSON.stringify(this.newRow));
-
         if (this.newRow.key.includes('.')) {
             const keys = this.newRow.key.split('.');
             this.strategy.settings[keys[0]][keys[1]] = this.newRow.value;
-            cloneRow.displayKey = keys[1];
         } else {
             this.strategy.settings[this.newRow.key] = this.newRow.value;
-            cloneRow.displayKey = this.newRow.key;
-        }
-
-        let idx = -1;
-        for (let i = 0; i < settings.length; i++) {
-            const gs = settings[i];
-            if (gs.key == this.newRow.key) {
-                idx = i;
-                break;
-            }
-        }
-        if (idx > -1) {
-            settings[idx] = cloneRow;
-        } else {
-            settings.push(cloneRow);
         }
 
         this.newRow.key = '';
         this.newRow.value = '';
-
-        this.dataSource.data = settings;
         this.strategy.isDirty = true;
-        this.dataSource.paginator.firstPage();
+        this.refresh();
     }
 
     deleteSetting(setting: GenericSetting): void {
