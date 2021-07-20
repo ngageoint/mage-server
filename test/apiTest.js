@@ -3,7 +3,8 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender')
+  , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 require('../models/setting');
 const SettingModel = mongoose.model('Setting');
@@ -45,6 +46,16 @@ describe("api route tests", function () {
   });
 
   it("api should return configuration", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: '',
+      initial: true
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })
@@ -94,6 +105,16 @@ describe("api route tests", function () {
   });
 
   it("api should return initial", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: '',
+      initial: true
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })
@@ -129,6 +150,15 @@ describe("api route tests", function () {
   });
 
   it("api should not return initial", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: ''
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })
