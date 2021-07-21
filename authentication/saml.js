@@ -62,7 +62,7 @@ function doConfigure(strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    AuthenticationInitializer.passport.authenticate(config.name, function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate(strategyConfig.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
