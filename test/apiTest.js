@@ -46,6 +46,7 @@ describe("api route tests", function () {
   });
 
   it("api should return configuration", function (done) {
+    this.timeout(10000);
     const api = {
       version: '1',
       authenticationStrategies: [],
