@@ -23,6 +23,8 @@ describe("api route tests", function () {
   let app;
 
   beforeEach(function() {
+    this.timeout(10000);
+    
     const configs = [];
     const config = {
       name: 'local',
@@ -46,7 +48,6 @@ describe("api route tests", function () {
   });
 
   it("api should return configuration", function (done) {
-    this.timeout(10000);
     const api = {
       version: '1',
       authenticationStrategies: [],
