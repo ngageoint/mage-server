@@ -63,7 +63,7 @@ function initialize(config) {
         '/auth/' + config.name + '/signin',
         function (req, res, next) {
             passport.authenticate(config.name, {
-                scope: ['profile', 'email', 'openid'],
+                scope: ['UserProfile.me', 'profile', 'email', 'openid'],
                 state: req.query.state
             })(req, res, next);
         }
