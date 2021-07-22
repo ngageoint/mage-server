@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 import { EditSettingComponent } from './edit-setting/edit-setting.component';
 import { DeleteSettingComponent } from './delete-setting/delete-setting.component';
+import { SettingsKeyHandler } from './utilities/settings-key-handler';
 
 @Component({
     selector: 'generic-settings',
@@ -24,6 +25,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         key: '',
         value: ''
     }
+    readonly settingsKeyHandler = new SettingsKeyHandler();
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -90,12 +92,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             if (result.event === 'confirm') {
                 const updatedSetting = result.data;
                 const key = updatedSetting.key;
-                if (key.includes('.')) {
-                    const keys = key.split('.');
-                    this.strategy.settings[keys[0]][keys[1]] = updatedSetting.value;
-                } else {
-                    this.strategy.settings[updatedSetting.key] = updatedSetting.value;
-                }
+                this.settingsKeyHandler.flattenAndSet(key, updatedSetting.value, this.strategy.settings);
                 this.strategy.isDirty = true;
                 this.refresh();
             }
@@ -103,16 +100,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     addSetting(): void {
-        let duplicate = false;
-
-        if (this.newRow.key.includes('.')) {
-            const keys = this.newRow.key.split('.');
-            duplicate = this.strategy.settings[keys[0]][keys[1]];
-        } else {
-            duplicate = this.strategy.settings[this.newRow.key];
-        }
-
-        if (duplicate) {
+        if (this.settingsKeyHandler.exists(this.newRow.key, this.strategy.settings)) {
             this.dialog.open(DuplicateKeyComponent, {
                 width: '500px',
                 data: this.newRow,
@@ -128,12 +116,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     private doAddSetting(): void {
-        if (this.newRow.key.includes('.')) {
-            const keys = this.newRow.key.split('.');
-            this.strategy.settings[keys[0]][keys[1]] = this.newRow.value;
-        } else {
-            this.strategy.settings[this.newRow.key] = this.newRow.value;
-        }
+        this.settingsKeyHandler.flattenAndSet(this.newRow.key, this.newRow.value, this.strategy.settings);
 
         this.newRow.key = '';
         this.newRow.value = '';
@@ -148,12 +131,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
-                if (setting.key.includes('.')) {
-                    const keys = setting.key.split('.');
-                    delete this.strategy.settings[keys[0]][keys[1]];
-                } else {
-                    delete this.strategy.settings[setting.key];
-                }
+                this.settingsKeyHandler.delete(setting.key, this.strategy.settings);
                 this.refresh();
             }
         });
