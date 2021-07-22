@@ -23,10 +23,10 @@ function doConfigure(strategyConfig) {
     function (req, accessToken, refreshToken, profile, done) {
       const geoaxisUser = profile._json;
       log.info('Processing geoaxis profile ' + JSON.stringify(geoaxisUser));
-      User.getUserByAuthenticationStrategy('oauth', geoaxisUser.email, function (err, user) {
+      User.getUserByAuthenticationStrategy('oauth', geoaxisUser.mail, function (err, user) {
         if (err) return done(err);
 
-        const email = geoaxisUser.email;
+        const email = geoaxisUser.mail;
 
         if (!user) {
           // Create an account for the user
