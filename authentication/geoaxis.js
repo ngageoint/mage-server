@@ -42,7 +42,7 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'oauth',
+                type: strategyConfig.name,
                 id: email,
                 authenticationConfiguration: {
                   name: 'geoaxis'
