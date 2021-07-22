@@ -7,7 +7,7 @@ const TokenAssertion = require('./verification').TokenAssertion
     , AuthenticationInitializer = require('./index')
     , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function initialize(config) {
+function initialize(config, redirect = true) {
     const app = AuthenticationInitializer.app;
     const passport = AuthenticationInitializer.passport;
     const provision = AuthenticationInitializer.provision;
@@ -130,7 +130,11 @@ function initialize(config) {
                     uri = `mage://app/authentication?token=${req.token}`
                 }
 
-                res.redirect(uri);
+                if (redirect) {
+                    res.redirect(uri);
+                } else {
+                    res.render(config.name, { uri: uri });
+                }
             } else {
                 res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
             }

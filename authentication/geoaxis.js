@@ -70,7 +70,7 @@ function doConfigure(strategyConfig) {
 
 function initialize(config) {
   config.scope = ['UserProfile.me'];
-  OAuth.initialize(config);
+  OAuth.initialize(config, false);
   doConfigure(config);
 
   // DEPRECATED, this will be removed in next major server version release
