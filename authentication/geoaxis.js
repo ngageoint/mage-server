@@ -69,6 +69,7 @@ function doConfigure(strategyConfig) {
 }
 
 function initialize(config) {
+  config.scope = ['UserProfile.me'];
   OAuth.initialize(config);
   doConfigure(config);
 

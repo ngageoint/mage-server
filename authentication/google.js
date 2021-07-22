@@ -68,6 +68,7 @@ function doConfigure(strategyConfig) {
 }
 
 function initialize(config) {
+  config.scope = ['profile', 'email', 'openid'];
   OAuth.initialize(config);
   doConfigure(config);
 };
