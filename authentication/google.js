@@ -37,7 +37,7 @@ function doConfigure(strategyConfig) {
             active: false,
             roleId: role._id,
             authentication: {
-              type: strategyConfig.name,
+              type: strategyConfig.type,
               id: profile.id,
               authenticationConfiguration: {
                 name: strategyConfig.name
