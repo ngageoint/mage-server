@@ -15,7 +15,7 @@ function doConfigure(strategyConfig) {
     clientSecret: strategyConfig.settings.clientSecret,
     callbackURL: strategyConfig.settings.callbackURL
   }, function (accessToken, refreshToken, profile, done) {
-    User.getUserByAuthenticationStrategy(strategyConfig.type, profile.id, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategyConfig.name, profile.id, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
