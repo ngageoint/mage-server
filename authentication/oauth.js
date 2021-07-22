@@ -62,8 +62,15 @@ function initialize(config) {
     app.get(
         '/auth/' + config.name + '/signin',
         function (req, res, next) {
+            //TODO move to DB
+            let scope;
+            if (config.name.toLowerCase() == 'geoaxis') {
+                scope = ['UserProfile.me'];
+            } else {
+                scope = ['profile', 'email', 'openid'];
+            }
             passport.authenticate(config.name, {
-                scope: ['UserProfile.me', 'profile', 'email', 'openid'],
+                scope: scope,
                 state: req.query.state
             })(req, res, next);
         }
