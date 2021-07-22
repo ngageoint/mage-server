@@ -23,7 +23,7 @@ function doConfigure(strategyConfig) {
     function (req, accessToken, refreshToken, profile, done) {
       const geoaxisUser = profile._json;
       log.debug('Processing geoaxis profile ' + JSON.stringify(geoaxisUser));
-      User.getUserByAuthenticationStrategy(strategyConfig.name, geoaxisUser.mail, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, geoaxisUser.mail, function (err, user) {
         if (err) return done(err);
 
         log.debug('Located geoaxis user ' + JSON.stringify(user));
@@ -45,7 +45,7 @@ function doConfigure(strategyConfig) {
                 type: strategyConfig.type,
                 id: email,
                 authenticationConfiguration: {
-                  name: 'geoaxis'
+                  name: strategyConfig.name
                 }
               }
             };
