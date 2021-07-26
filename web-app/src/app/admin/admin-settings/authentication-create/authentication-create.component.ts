@@ -63,7 +63,7 @@ export class AuthenticationCreateComponent implements OnInit {
         type: 'ldap',
         name: 'ldap'
     }, {
-        title: 'Login-gov',
+        title: 'Login.gov',
         description: 'Login-gov account.',
         type: 'oauth',
         name: 'login-gov'
@@ -150,6 +150,8 @@ export class AuthenticationCreateComponent implements OnInit {
                     }
                 }
             }
+        } else {
+            console.log('No setup defaults found for ' + this.strategy.name);
         }
 
         //TODO dont call ngoninit
