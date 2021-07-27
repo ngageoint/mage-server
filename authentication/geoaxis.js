@@ -19,9 +19,8 @@ function initialize(config) {
     userProfileURL: config.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
     clientID: config.settings.clientID,
     clientSecret: config.settings.clientSecret,
-    callbackURL: config.settings.callbackUrl,
-    passReqToCallback: true
-  }, function (req, accessToken, refreshToken, profile, done) {
+    callbackURL: config.settings.callbackUrl
+  }, function (accessToken, refreshToken, profile, done) {
     const geoaxisUser = profile._json;
     log.debug('Processing geoaxis profile ' + JSON.stringify(geoaxisUser));
     let email = geoaxisUser.email;
