@@ -20,7 +20,7 @@ function initialize(config) {
     const tokenService = AuthenticationInitializer.tokenService;
 
     switch (config.name) {
-        case 'login.gov':
+        case 'login-gov':
             //TODO test login.gov
             const loginGov = require('../authentication/' + config.name);
             loginGov.initialize(config);
