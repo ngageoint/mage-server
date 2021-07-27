@@ -94,11 +94,7 @@ module.exports = function (app, security) {
                 return SecurePropertyAppender.appendToConfig(config);
             }).then(config => {
                 log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
-                let strategyType = config.type;
-                if (config.type === 'oauth') {
-                    strategyType = config.name.toLowerCase();
-                }
-                const strategy = require('../authentication/' + strategyType);
+                const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
@@ -167,11 +163,7 @@ module.exports = function (app, security) {
             }).then(response => {
                 const config = response[0];
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
-                let strategyType = config.type;
-                if (config.type === 'oauth') {
-                    strategyType = config.name.toLowerCase();
-                }
-                const strategy = require('../authentication/' + strategyType);
+                const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);

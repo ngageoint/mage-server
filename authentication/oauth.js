@@ -11,17 +11,22 @@ function doConfigure(config) {
     //TODO configure generic oauth strategy
 }
 
-function initialize(config, strategy) {
+function initialize(config) {
     const app = AuthenticationInitializer.app;
     const passport = AuthenticationInitializer.passport;
     const provision = AuthenticationInitializer.provision;
     const tokenService = AuthenticationInitializer.tokenService;
 
-    if (strategy) {
-        log.info('Configuring ' + config.title + ' authentication');
-        AuthenticationInitializer.passport.use(config.name, strategy);
-    } else {
-        doConfigure(config);
+    switch (config.name) {
+        case 'google':
+        case 'geoaxis':
+        case 'login.gov':
+            const specificOauth = require('../authentication/' + config.name);
+            specificOauth.initialize(config);
+            break;
+        default:
+            doConfigure(config);
+            break;
     }
 
     function parseLoginMetadata(req, res, next) {

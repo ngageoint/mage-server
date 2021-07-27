@@ -116,11 +116,7 @@ class AuthenticationInitializer {
 
     AuthenticationConfiguration.getAllConfigurations().then(configs => {
       configs.forEach(config => {
-        let strategyType = config.type;
-        if (config.type === 'oauth') {
-          strategyType = config.name.toLowerCase();
-        }
-        const strategy = require('../authentication/' + strategyType);
+        const strategy = require('../authentication/' + config.type);
         SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
           strategy.initialize(appendedConfig);
         }).catch(err => {

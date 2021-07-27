@@ -5,13 +5,9 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , Role = require('../models/role')
   , api = require('../api')
   , log = require('../logger')
-  , OAuth = require('./oauth');
+  , AuthenticationInitializer = require('./index');
 
-
-function initialize(config) {
-  config.scope = ['profile', 'email', 'openid'];
-  config.redirect = true;
-
+function doConfigure(config) {
   const strategy = new GoogleStrategy({
     clientID: config.settings.clientID,
     clientSecret: config.settings.clientSecret,
@@ -65,8 +61,15 @@ function initialize(config) {
       }
     });
   });
+  log.info('Configuring ' + config.title + ' authentication');
+  AuthenticationInitializer.passport.use(config.name, strategy);
+}
 
-  OAuth.initialize(config, strategy);
+function initialize(config) {
+  config.scope = ['profile', 'email', 'openid'];
+  config.redirect = true;
+
+  doConfigure(config);
 };
 
 module.exports = {

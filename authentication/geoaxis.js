@@ -6,13 +6,9 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , Role = require('../models/role')
   , api = require('../api')
   , log = require('../logger')
-  , AuthenticationInitializer = require('./index')
-  , OAuth = require('./oauth');
+  , AuthenticationInitializer = require('./index');
 
-function initialize(config) {
-  config.scope = ['UserProfile.me'];
-  config.redirect = false;
-
+function doConfigure(config) {
   const strategy = new GeoaxisStrategy({
     authorizationURL: config.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
     tokenURL: config.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
@@ -71,8 +67,15 @@ function initialize(config) {
       }
     });
   });
+  log.info('Configuring ' + config.title + ' authentication');
+  AuthenticationInitializer.passport.use(config.name, strategy);
+}
 
-  OAuth.initialize(config, strategy);
+function initialize(config) {
+  config.scope = ['UserProfile.me'];
+  config.redirect = false;
+
+  doConfigure(config);
 
   // DEPRECATED, this will be removed in next major server version release
   // Create a new device
