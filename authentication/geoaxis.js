@@ -9,6 +9,8 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , AuthenticationInitializer = require('./index');
 
 function doConfigure(config) {
+  log.info('Configuring ' + config.title + ' authentication');
+
   const strategy = new GeoaxisStrategy({
     authorizationURL: config.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
     tokenURL: config.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
@@ -67,7 +69,7 @@ function doConfigure(config) {
       }
     });
   });
-  log.info('Configuring ' + config.title + ' authentication');
+  
   AuthenticationInitializer.passport.use(config.name, strategy);
 }
 

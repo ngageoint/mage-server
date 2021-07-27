@@ -8,6 +8,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , AuthenticationInitializer = require('./index');
 
 function doConfigure(config) {
+  log.info('Configuring ' + config.title + ' authentication');
+  
   const strategy = new GoogleStrategy({
     clientID: config.settings.clientID,
     clientSecret: config.settings.clientSecret,
@@ -61,7 +63,7 @@ function doConfigure(config) {
       }
     });
   });
-  log.info('Configuring ' + config.title + ' authentication');
+ 
   AuthenticationInitializer.passport.use(config.name, strategy);
 }
 

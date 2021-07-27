@@ -8,7 +8,9 @@ const TokenAssertion = require('./verification').TokenAssertion
     , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function doConfigure(config) {
-    //TODO configure generic oauth strategy
+    log.info('Configuring ' + config.title + ' authentication');
+
+     //TODO configure generic oauth strategy
 }
 
 function initialize(config) {
