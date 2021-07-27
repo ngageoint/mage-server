@@ -10,7 +10,7 @@ const TokenAssertion = require('./verification').TokenAssertion
 function doConfigure(config) {
     log.info('Configuring ' + config.title + ' authentication');
 
-     //TODO configure generic oauth strategy
+    //TODO configure generic oauth strategy
 }
 
 function initialize(config) {
@@ -20,9 +20,13 @@ function initialize(config) {
     const tokenService = AuthenticationInitializer.tokenService;
 
     switch (config.name) {
+        case 'login.gov':
+            //TODO test login.gov
+            const loginGov = require('../authentication/' + config.name);
+            loginGov.initialize(config);
+            return;
         case 'google':
         case 'geoaxis':
-        case 'login.gov':
             const specificOauth = require('../authentication/' + config.name);
             specificOauth.initialize(config);
             break;
