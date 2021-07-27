@@ -7,11 +7,22 @@ const TokenAssertion = require('./verification').TokenAssertion
     , AuthenticationInitializer = require('./index')
     , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function initialize(config, redirect = true) {
+function doConfigure(config) {
+    //TODO configure generic oauth strategy
+}
+
+function initialize(config, strategy) {
     const app = AuthenticationInitializer.app;
     const passport = AuthenticationInitializer.passport;
     const provision = AuthenticationInitializer.provision;
     const tokenService = AuthenticationInitializer.tokenService;
+
+    if (strategy) {
+        log.info('Configuring ' + config.title + ' authentication');
+        AuthenticationInitializer.passport.use(config.name, strategy);
+    } else {
+        doConfigure(config);
+    }
 
     function parseLoginMetadata(req, res, next) {
         const options = {};
@@ -130,7 +141,7 @@ function initialize(config, redirect = true) {
                     uri = `mage://app/authentication?token=${req.token}`
                 }
 
-                if (redirect) {
+                if (config.redirect) {
                     res.redirect(uri);
                 } else {
                     res.render(config.name, { uri: uri });
