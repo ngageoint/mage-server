@@ -162,9 +162,8 @@ module.exports = function (app, security) {
                 return Promise.all(promises);
             }).then(response => {
                 const config = response[0];
-                Object.keys(securityData).forEach(key => {
-                    config.settings[key] = securityData[key];
-                });
+                return SecurePropertyAppender.appendToConfig(config);
+            }).then(config => {
                 log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
@@ -172,6 +171,7 @@ module.exports = function (app, security) {
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
+                //TODO rollback somehow
                 next(err);
             })
         });
