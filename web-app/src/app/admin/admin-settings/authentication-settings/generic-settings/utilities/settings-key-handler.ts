@@ -1,5 +1,5 @@
 export class SettingsKeyHandler {
-    flattenAndSet(key: string, value: any, settings: any): void {
+    flattenAndSet(key: string, value: any, settings = {}): void {
         if (key.includes('.')) {
             const keys = key.split('.');
             settings[keys[0]][keys[1]] = value;
@@ -8,7 +8,7 @@ export class SettingsKeyHandler {
         }
     }
 
-    exists(key: string, settings: any): boolean {
+    exists(key: string, settings = {}): boolean {
         let duplicate = false;
         
         if (key.includes('.')) {
@@ -21,7 +21,7 @@ export class SettingsKeyHandler {
         return duplicate;
     }
 
-    delete(key: string, settings: any): void {
+    delete(key: string, settings = {}): void {
         if (key.includes('.')) {
             const keys = key.split('.');
             delete settings[keys[0]][keys[1]];
