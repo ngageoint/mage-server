@@ -9,15 +9,15 @@ const GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
   , AuthenticationInitializer = require('./index')
   , OAuth = require('./oauth');
 
-function doConfigure(strategyConfig) {
+function doConfigure(config) {
   log.info('Configuring GeoAxis authentication');
   const strategy = new GeoaxisStrategy({
-    authorizationURL: strategyConfig.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-    tokenURL: strategyConfig.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-    userProfileURL: strategyConfig.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
-    clientID: strategyConfig.settings.clientID,
-    clientSecret: strategyConfig.settings.clientSecret,
-    callbackURL: strategyConfig.settings.callbackUrl,
+    authorizationURL: config.settings.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+    tokenURL: config.settings.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+    userProfileURL: config.settings.apiUrl + '/ms_oauth/resources/userprofile/me',
+    clientID: config.settings.clientID,
+    clientSecret: config.settings.clientSecret,
+    callbackURL: config.settings.callbackUrl,
     passReqToCallback: true
   },
     function (req, accessToken, refreshToken, profile, done) {
@@ -27,7 +27,7 @@ function doConfigure(strategyConfig) {
       if(!email) {
         email = geoaxisUser.mail;
       }
-      User.getUserByAuthenticationStrategy(strategyConfig.type, email, function (err, user) {
+      User.getUserByAuthenticationStrategy(config.type, email, function (err, user) {
         if (err) return done(err);
 
         log.debug('Located geoaxis user ' + JSON.stringify(user));
@@ -44,10 +44,10 @@ function doConfigure(strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: strategyConfig.type,
+                type: config.type,
                 id: email,
                 authenticationConfiguration: {
-                  name: strategyConfig.name
+                  name: config.name
                 }
               }
             };
@@ -72,13 +72,14 @@ function doConfigure(strategyConfig) {
       });
     });
 
-  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
+  AuthenticationInitializer.passport.use(config.name, strategy);
 }
 
 function initialize(config) {
   config.scope = ['UserProfile.me'];
-  OAuth.initialize(config, false);
   doConfigure(config);
+
+  OAuth.initialize(config, false);
 
   // DEPRECATED, this will be removed in next major server version release
   // Create a new device

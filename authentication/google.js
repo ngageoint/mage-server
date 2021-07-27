@@ -8,14 +8,14 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
   , AuthenticationInitializer = require('./index')
   , OAuth = require('./oauth');
 
-function doConfigure(strategyConfig) {
-  log.info('Configuring ' + strategyConfig.title + ' authentication');
+function doConfigure(config) {
+  log.info('Configuring ' + config.title + ' authentication');
   const strategy = new GoogleStrategy({
-    clientID: strategyConfig.settings.clientID,
-    clientSecret: strategyConfig.settings.clientSecret,
-    callbackURL: strategyConfig.settings.callbackURL
+    clientID: config.settings.clientID,
+    clientSecret: config.settings.clientSecret,
+    callbackURL: config.settings.callbackURL
   }, function (accessToken, refreshToken, profile, done) {
-    User.getUserByAuthenticationStrategy(strategyConfig.type, profile.id, function (err, user) {
+    User.getUserByAuthenticationStrategy(config.type, profile.id, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -37,10 +37,10 @@ function doConfigure(strategyConfig) {
             active: false,
             roleId: role._id,
             authentication: {
-              type: strategyConfig.type,
+              type: config.type,
               id: profile.id,
               authenticationConfiguration: {
-                name: strategyConfig.name
+                name: config.name
               }
             }
           };
@@ -64,13 +64,14 @@ function doConfigure(strategyConfig) {
     });
   });
 
-  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
+  AuthenticationInitializer.passport.use(config.name, strategy);
 }
 
 function initialize(config) {
   config.scope = ['profile', 'email', 'openid'];
-  OAuth.initialize(config);
   doConfigure(config);
+
+  OAuth.initialize(config);
 };
 
 module.exports = {
