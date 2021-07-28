@@ -18,10 +18,13 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
+            const includeDisabled = req.query.includeDisabled === 'true' ? true :
+                req.query.includeDisabled === 'false' ? false :
+                    req.query.includeDisabled;
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 const filtered = configs.filter(config => {
                     if (!config.enabled) {
-                        if (req.query.includeDisabled) {
+                        if (includeDisabled) {
                             return true;
                         }
                         return false;
@@ -96,7 +99,7 @@ module.exports = function (app, security) {
                 if (Object.keys(securityData).length > 0) {
                     const config = response[0];
                     const dataResponse = response[1];
-                    if(dataResponse.data) {
+                    if (dataResponse.data) {
                         Object.keys(dataResponse.data).forEach(key => {
                             if (!securityData[key]) {
                                 securityData[key] = dataResponse.data[key];
