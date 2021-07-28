@@ -82,13 +82,28 @@ module.exports = function (app, security) {
                 });
                 return AuthenticationConfiguration.update(req.params.id, updatedConfig);
             }).then(config => {
-                const response = [];
-                response.push(Promise.resolve(config));
+                const promises = [];
+                promises.push(Promise.resolve(config));
+                const sss = new SecretStoreService();
+                promises.push(sss.read(config._id));
+                return Promise.all(promises);
+            }).then(response => {
+                const promises = [];
+                promises.push(Promise.resolve(response[0]));
+
+                const dataResponse = response[1];
+                Object.keys(dataResponse.data).forEach(key => {
+                    if(!securityData[key]) {
+                        securityData[key] = dataResponse.data[key];
+                    }
+                });
+
                 if (Object.keys(securityData).length > 0) {
                     const sss = new SecretStoreService();
-                    response.push(sss.write(config._id, securityData));
+                    const config = response[0];
+                    promises.push(sss.write(config._id, securityData));
                 }
-                return Promise.all(response);
+                return Promise.all(promises);
             }).then(response => {
                 const config = response[0];
                 return SecurePropertyAppender.appendToConfig(config);
