@@ -16,11 +16,13 @@ export class SettingsKeyHandler {
 
         if (key.includes('.')) {
             const keys = key.split('.');
-            if (settings[keys[0]]) {
-                duplicate = settings[keys[0]][keys[1]];
+            if (settings[keys[0]] && settings[keys[0]][keys[1]]) {
+                duplicate = true;
             }
         } else {
-            duplicate = settings[key];
+            if(settings[key]) {
+                duplicate = true;
+            }
         }
 
         return duplicate;
