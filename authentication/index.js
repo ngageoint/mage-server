@@ -127,6 +127,9 @@ class AuthenticationInitializer {
       log.warn(err);
     });
 
+    //TODO due to a timing issue on startup, local may not yet be configured during setup phase
+    //For now, always load it (even though it may have already be loaded above)
+    require('./local').initialize();
     require('./anonymous').initialize();
 
     return {
