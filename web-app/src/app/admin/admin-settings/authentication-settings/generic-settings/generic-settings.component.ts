@@ -67,7 +67,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                         displayKey: key,
                         key: key,
                         value: castedValue,
-                        required: true
+                        required: false
                     };
                     settings.push(gs);
                 } else {
@@ -132,6 +132,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
                 this.settingsKeyHandler.delete(setting.key, this.strategy.settings);
+                this.strategy.isDirty = true;
                 this.refresh();
             }
         });

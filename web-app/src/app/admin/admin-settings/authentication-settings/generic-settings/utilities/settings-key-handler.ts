@@ -31,6 +31,9 @@ export class SettingsKeyHandler {
             const keys = key.split('.');
             if (settings[keys[0]]) {
                 delete settings[keys[0]][keys[1]];
+                if(Object.keys(settings[keys[0]]).length == 0) {
+                    delete settings[keys[0]];
+                }
             }
         } else {
             delete settings[key];
