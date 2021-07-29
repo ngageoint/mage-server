@@ -115,7 +115,7 @@ module.exports = function (app, security) {
                 const config = response[0];
                 return SecurePropertyAppender.appendToConfig(config);
             }).then(config => {
-                log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
+                log.info("Reconfiguring authentication strategy " + config.type + " (" + config.title + ")");
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
@@ -196,7 +196,7 @@ module.exports = function (app, security) {
                 const config = response[0];
                 return SecurePropertyAppender.appendToConfig(config);
             }).then(config => {
-                log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
+                log.info("Creating new authentication strategy " + config.type + " (" + config.title + ")");
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
