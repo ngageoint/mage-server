@@ -11,6 +11,7 @@ function doConfigure(config) {
     log.info('Configuring ' + config.title + ' authentication');
 
     //TODO configure generic oauth strategy
+    throw new Error('Generic OAuth is not implemented');
 }
 
 function initialize(config) {
