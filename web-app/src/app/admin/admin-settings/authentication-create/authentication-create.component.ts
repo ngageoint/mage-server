@@ -49,27 +49,22 @@ export class AuthenticationCreateComponent implements OnInit {
 
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
-        description: 'Google account.',
         type: 'oauth',
         name: 'google'
     }, {
         title: 'GeoAxis',
-        description: 'GeoAxis account.',
         type: 'oauth',
         name: 'geoaxis'
     }, {
         title: 'LDAP',
-        description: 'LDAP account.',
         type: 'ldap',
         name: 'ldap'
     }, {
         title: 'Login.gov',
-        description: 'Login-gov account.',
         type: 'oauth',
         name: 'login-gov'
     }, {
         title: 'SAML',
-        description: 'SAML account.',
         type: 'saml',
         name: 'saml'
     }];
