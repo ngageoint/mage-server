@@ -60,10 +60,6 @@ export class AuthenticationCreateComponent implements OnInit {
         type: 'ldap',
         name: 'ldap'
     }, {
-        title: 'Login.gov',
-        type: 'oauth',
-        name: 'login-gov'
-    }, {
         title: 'SAML',
         type: 'saml',
         name: 'saml'
