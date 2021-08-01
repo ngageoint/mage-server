@@ -35,8 +35,8 @@ function FieldFactory() {
   };
 }
 
-FieldFactory.prototype.createField = function(fieldDefinition, observation) {
-  return new (this.getField(fieldDefinition.type))(fieldDefinition, observation);
+FieldFactory.prototype.createField = function(fieldDefinition, observationForm, observation) {
+  return new (this.getField(fieldDefinition.type))(fieldDefinition, observationForm, observation);
 };
 
 module.exports = FieldFactory;

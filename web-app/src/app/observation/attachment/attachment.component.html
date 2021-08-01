@@ -1,6 +1,6 @@
 <div *ngIf="attachment.url">
   <div [ngSwitch]="contentType()">
-    <div [ngClass]="{'media-delete__mask': attachment.markedForDelete}">
+    <div [ngClass]="{'media-delete__mask': attachment.action === actions.DELETE}">
       <div *ngSwitchCase="'image'">
         <ng-container *ngTemplateOutlet="image"></ng-container>
       </div>
@@ -22,7 +22,7 @@
     </div>
 
     <div *ngIf="canEdit" class="attachment__delete">
-      <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.markedForDelete">
+      <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
@@ -57,7 +57,7 @@
   </div>
 
   <div *ngIf="canEdit" class="attachment__delete">
-    <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.markedForDelete">
+    <button mat-mini-fab color="warn" (click)="deleteAttachment()" [disabled]="attachment?.actions === actions.DELETE">
       <mat-icon>delete</mat-icon>
     </button>
   </div>

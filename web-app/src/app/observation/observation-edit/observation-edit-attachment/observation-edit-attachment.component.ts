@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { AttachmentAction } from './observation-edit-attachment-action';
 
 interface AttachmentField {
   title: string,
@@ -7,11 +8,6 @@ interface AttachmentField {
   value: any[],
   min: number,
   max: number
-}
-
-export enum AttachmentRequestType {
-  ADD,
-  REMOVE
 }
 
 @Component({
@@ -60,8 +56,8 @@ export class ObservationEditAttachmentComponent implements OnInit {
         formId: this.formGroup.get('formId').value,
         name: file.name,
         size: file.size,
-        type: file.type,
-        requestType: AttachmentRequestType.ADD,
+        contentType: file.type,
+        action: AttachmentAction.ADD,
         file: file
       })
     })
@@ -69,6 +65,15 @@ export class ObservationEditAttachmentComponent implements OnInit {
     this.control.setValue(attachments)
 
     this.changeDetector.detectChanges()
+  }
+
+  deleteAttachment(attachmentToDelete): void {
+    this.attachments = this.attachments.filter(attachment => attachment.id !== attachmentToDelete.id)
+    attachmentToDelete.action = AttachmentAction.DELETE
+
+    const value = this.control.value || []
+    value.push(attachmentToDelete)
+    this.control.setValue(value)
   }
 
   removeAttachment($event): void {

@@ -1,5 +1,6 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { LocalStorageService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { AttachmentAction } from '../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 
 @Component({
   selector: 'observation-attachment',
@@ -12,6 +13,8 @@ export class AttachmentComponent implements OnInit {
   @Input() edit: boolean
   @Input() label: string | boolean
 
+  @Output() delete = new EventEmitter<void>()
+
   canEdit: boolean
   token: string
 
@@ -22,6 +25,8 @@ export class AttachmentComponent implements OnInit {
     'mp4': 'video',
     'mov': 'video'
   }
+
+  actions: typeof AttachmentAction = AttachmentAction
 
   constructor(
     @Inject(UserService) private userService: any,
@@ -34,7 +39,7 @@ export class AttachmentComponent implements OnInit {
   }
 
   deleteAttachment(): void {
-    this.attachment.markedForDelete = true
+    this.delete.emit()
   }
 
   contentType(): string {

@@ -68,7 +68,7 @@ class AdminFormFieldsEditController {
       hidden: true
     }];
 
-    this.attachmentRestrictionTypes = [{
+    this.attachmentAllowedTypes = [{
       name: 'image',
       title: 'Image'
     }, {
@@ -171,6 +171,14 @@ class AdminFormFieldsEditController {
     }
 
     return this.fieldNameMap[field.type].title;
+  }
+
+  onFieldTypeChange() {
+    if (this.newField.type === 'attachment') {
+      this.newField.allowedAttachmentTypes = this.attachmentAllowedTypes.map(type => type.name);
+    } else {
+      delete this.newField.attachmentAllowedTypes;
+    }
   }
 
   addField() {

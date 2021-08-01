@@ -44,7 +44,7 @@ const AttachmentSchema = new Schema({
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
   name: { type: String, required: false },
-  relativePath: { type: String, required: true },
+  relativePath: { type: String, required: false },
   width: { type: Number, required: false },
   height: { type: Number, required: false },
   oriented: {type: Boolean, required: true, default: false },
@@ -320,11 +320,10 @@ exports.getObservationById = function(event, observationId, options, callback) {
   observationModel(event).findById(observationId, fields, callback);
 };
 
-exports.updateObservation = function(event, observationId, observation, callback) {
-  delete observation.attachments;
-
-  let newAttachments = [];
-  observation.properties.forms
+exports.updateObservation = function(event, observationId, update, callback) {
+  let addAttachments = [];
+  let removeAttachments = [];
+  update.properties.forms
     .map(observationForm => {
       observationForm._id = observationForm._id || mongoose.Types.ObjectId();
       delete observationForm.id;
@@ -336,35 +335,59 @@ exports.updateObservation = function(event, observationId, observation, callback
         const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
         if (fieldDefinition && fieldDefinition.type === 'attachment') {
           const attachments = observationForm[fieldName] || [];
-          newAttachments = newAttachments.concat(attachments
+          addAttachments = addAttachments.concat(attachments
+            .filter(attachment => attachment.action === 'add') 
             .map(attachment => {
               return {
                 observationFormId: observationForm._id,
                 fieldName: fieldName,
                 name: attachment.name,
-                contentType: attachment.type
+                contentType: attachment.contentType
               }
             }));
+
+          removeAttachments = removeAttachments.concat(attachments
+            .filter(attachment => attachment.action === 'delete')
+            .map(attachment => attachment.id )
+          );
 
           delete observationForm[fieldName]
         }
       });
   });
 
-  const update = {
-    '$set': observation,
-    '$push': {
-      attachments: {
-        '$each': newAttachments
+  const ObservationModel = observationModel(event);
+  ObservationModel.findById(observationId)
+    .then(observation => {
+      if (!observation) {
+        observation = new ObservationModel({
+          _id: observationId,
+          userId: update.userId,
+          deviceId: update.deviceId,
+          states: [{ name: 'active', userId: update.userId }]
+        });
       }
-    }
-  }
 
-  observationModel(event)
-    .findByIdAndUpdate(observationId, update, { new: true, upsert: true })
-    .populate({ path: 'userId', select: 'displayName' })
-    .populate({ path: 'important.userId', select: 'displayName' })
-    .exec(callback);
+      observation.type = update.type;
+      observation.geometry = update.geometry;
+      observation.properties = update.properties;
+      observation.attachments = observation.attachments.concat(addAttachments);
+      observation.attachments = observation.attachments.filter(attachment => {
+        return !removeAttachments.includes(attachment._id.toString()) 
+      });
+
+      return observation.save();
+    })
+    .then(observation => {
+      return observation
+        .populate({ path: 'userId', select: 'displayName' })
+        .populate({ path: 'important.userId', select: 'displayName' })
+        .execPopulate();
+    })
+    .then(observation => {
+      callback(null, observation);
+    })
+    .catch(err => callback(err)); 
 };
 
 exports.removeObservation = function(event, observationId, callback) {
@@ -469,9 +492,13 @@ exports.getAttachment = function(event, observationId, attachmentId, callback) {
 exports.addAttachment = function(event, observationId, attachmentId, file, callback) {
   const condition = {
     _id: observationId,
-    'attachments._id': attachmentId,
-    'attachments.contentType': file.mimetype,
-    'attachments.name': file.originalname
+    attachments: {
+      '$elemMatch': {
+        _id: attachmentId,
+        contentType: file.mimetype,
+        name: file.originalname
+      }
+    }
   }
 
   const update = {

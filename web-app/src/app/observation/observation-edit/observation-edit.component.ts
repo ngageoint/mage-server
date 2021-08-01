@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
@@ -14,8 +14,8 @@ import { MatIconRegistry } from '@angular/material/icon'
 import { MatDialog } from '@angular/material/dialog'
 import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from '../attachment/attachment.service'
-import { AttachmentRequestType } from './observation-edit-attachment/observation-edit-attachment.component'
 import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
+import { AttachmentAction } from './observation-edit-attachment/observation-edit-attachment-action'
 
 export type ObservationFormControl = FormControl & { definition: any }
 
@@ -53,7 +53,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   @ViewChild('editContent', { static: true }) editContent: ElementRef
   @ViewChild('dragHandle', { static: true }) dragHandle: ElementRef
-  @ViewChildren('form') formElements: QueryList<ElementRef>;
+  @ViewChildren('form') formElements: QueryList<ElementRef>
 
   event: any
   formGroup: FormGroup
@@ -248,7 +248,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     this.saving = true
     this.uploads = []
-    const markedForDelete = this.observation.attachments ? this.observation.attachments.filter(attachment => attachment.markedForDelete) : []
 
     // TODO look at this: this is a hack that will be corrected when we pull ids from the server
     const form = this.formGroup.getRawValue()
@@ -269,12 +268,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       this.observation = observation
       this.formGroup.get('id').setValue(observation.id)
 
-      // delete any attachments that were marked for delete
-      markedForDelete.forEach(attachment => {
-        this.eventService.deleteAttachmentForObservation(this.observation, attachment);
-        observation.attachments = observation.attachments.filter(a => a.id !== attachment.id)
-      });
-
       form.properties.forms.forEach(form => {
         const formDefinition = this.formDefinitions[form.formId];
         Object.keys(form).forEach(fieldName => {
@@ -283,10 +276,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
           if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
             value.forEach(fieldAttachment => {
               const attachment = observation.attachments.find(attachment => {
-                return attachment.name === fieldAttachment.name && attachment.contentType == fieldAttachment.type
+                return !attachment.url &&
+                  attachment.name === fieldAttachment.name && 
+                  attachment.contentType == fieldAttachment.contentType
               });
 
-              if (fieldAttachment.file && fieldAttachment.requestType === AttachmentRequestType.ADD && attachment) {
+              if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
                 fieldAttachment.attachmentId = attachment.id
                 this.uploads.push(attachment)
               }
@@ -321,11 +316,6 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     } else {
       this.mapService.removeFeatureFromLayer(this.observation, 'Observations')
     }
-
-    const attachments = this.observation.attachments || []
-    attachments.forEach(attachment => {
-      delete attachment.markedForDelete;
-    })
 
     if (this.formRemoveSnackbar) {
       this.formRemoveSnackbar.dismiss()

@@ -1,17 +1,18 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { AttachmentAction } from '../../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { AttachmentService } from '../attachment.service';
 
 export interface FileUpload {
   id: number | string,
   formControl: FormControl,
   attachmentId: string,
+  action: AttachmentAction,
   file: File,
   preview?: string,
   uploading?: boolean,
-  uploadProgress?: number,
-  markedForDelete?: boolean
+  uploadProgress?: number
 }
 
 @Component({
@@ -28,6 +29,7 @@ export class AttachUploadComponent implements OnChanges {
   @Output() error = new EventEmitter<{ id: number | string }>()
 
   attachmentsToUpload = 0
+  actions: typeof AttachmentAction = AttachmentAction
 
   constructor(private changeDetector: ChangeDetectorRef, private attachmentService: AttachmentService) { }
 

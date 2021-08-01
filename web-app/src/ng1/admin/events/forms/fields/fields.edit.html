@@ -88,7 +88,7 @@
                       <div class="col-md-6">
                         <div class="top-gap">
                           <label>Minimum Attachments</label>
-                          <input type="number" ng-model="$field.min" value="{{field.min}}" placeholder="No Attachment Minimum"
+                          <input type="number" ng-model="field.min" value="{{field.min}}" placeholder="No Attachment Minimum"
                             class="form-control">
                         </div>
                       </div>
@@ -104,10 +104,10 @@
                     <!-- Attachment type Image/Video/Voice/Any -->
                     <div class="row top-gap">
                       <div class="col-md-12">
-                        <label>Attachment Restrictions</label>
-                        <ui-select multiple ng-model="field.restrictedAttachmentTypes" theme="bootstrap">
-                          <ui-select-match placeholder="No Attachment Restrictions">{{$item.title}}</ui-select-match>
-                          <ui-select-choices repeat="type.name as type in $ctrl.attachmentRestrictionTypes">
+                        <label>Allowed Attachment Types</label>
+                        <ui-select multiple ng-model="field.allowedAttachmentTypes" theme="bootstrap">
+                          <ui-select-match placeholder="No Allowed Attachment Types">{{$item.title}}</ui-select-match>
+                          <ui-select-choices repeat="type.name as type in $ctrl.attachmentAllowedTypes">
                             <div ng-bind-html="type.title"></div>
                           </ui-select-choices>
                         </ui-select>
@@ -259,7 +259,7 @@
               <div class="col-md-6">
                 <div class="top-gap">
                   <label>Type</label>
-                  <select ng-model="$ctrl.newField.type" ng-options="type.name as type.title for type in $ctrl.fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
+                  <select ng-model="$ctrl.newField.type" ng-options="type.name as type.title for type in $ctrl.fieldTypes | filter: {hidden: '!'}" ng-change="$ctrl.onFieldTypeChange()" class="form-control"></select>
                   <p class="help-block" ng-if="$ctrl.isUserDropdown($ctrl.newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
                 </div>
               </div>
@@ -318,10 +318,10 @@
             
                 <div class="row top-gap">
                   <div class="col-md-12">
-                    <label>Attachment Restrictions</label>
-                    <ui-select multiple ng-model="$ctrl.newField.restrictedAttachmentTypes" theme="bootstrap">
-                      <ui-select-match placeholder="No Attachment Restrictions">{{$item.title}}</ui-select-match>
-                      <ui-select-choices repeat="type.name as type in $ctrl.attachmentRestrictionTypes">
+                    <label>Allowed Attachment Types</label>
+                    <ui-select multiple ng-model="$ctrl.newField.allowedAttachmentTypes" theme="bootstrap">
+                      <ui-select-match placeholder="No Allowed Attachment Types">{{$item.title}}</ui-select-match>
+                      <ui-select-choices repeat="type.name as type in $ctrl.attachmentAllowedTypes">
                         <div ng-bind-html="type.title"></div>
                       </ui-select-choices>
                     </ui-select>

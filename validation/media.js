@@ -9,14 +9,14 @@ class Media {
     this.mimetype = mimetype
   }
 
-  validate(restrictions) {
+  validate(allowedTypes) {
     if (this.mimetype) {
-      const invalid = restrictions.some(restriction => {
-        const mimetypes = Media.mimetypes[restriction]
-        return !mimetypes || mimetypes.some(mimetype => mimetype === this.mimetype)
+      const valid = allowedTypes.some(allowed => {
+        const mimetypes = Media.mimetypes[allowed]
+        return mimetypes && mimetypes.some(mimetype => mimetype === this.mimetype)
       });
 
-      return !invalid;
+      return valid;
     } else {
       return false;
     }

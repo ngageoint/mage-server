@@ -106,7 +106,7 @@ module.exports = function(app, security) {
       const fieldDefinition = formDefinition.fields.find(field => field.name === attachment.fieldName);
       if (!fieldDefinition) return res.status(400).send('Attachment field not found');
 
-      if (!media.validate(fieldDefinition.restrictedAttachmentTypes)) {
+      if (!media.validate(fieldDefinition.allowedAttachmentTypes)) {
         return res.status(400).send(`Invalid attachment '${attachment.name}', cannot be of type ${fieldDefinition.restrictedAttachmentTypes.join(' or ')}`);
       }
 
@@ -172,11 +172,6 @@ module.exports = function(app, security) {
       if (deviceId) {
         req.observation.deviceId = deviceId;
       }
-      const state = { name: 'active' };
-      if (userId) {
-        state.userId = userId;
-      }
-      req.observation.states = [state];
     }
 
     req.observation.type = req.body.type;
@@ -188,6 +183,8 @@ module.exports = function(app, security) {
     if (req.body.properties) {
       req.observation.properties = req.body.properties;
     }
+
+    req.observation.attachments = req.existingObservation ? req.existingObservation.attachments : [];
 
     next();
   }

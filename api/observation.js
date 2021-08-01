@@ -1,7 +1,9 @@
 const async = require('async')
+  , log = require('winston')
   , ObservationEvents = require('./events/observation.js')
   , FieldFactory = require('./field')
-  , ObservationModel = require('../models/observation');
+  , ObservationModel = require('../models/observation')
+  , Attachment = require('./attachment');
 
 const fieldFactory = new FieldFactory();
 
@@ -143,7 +145,7 @@ Observation.prototype.validate = function(observation) {
     formDefinitions[observationForm.formId].fields
       .filter(fieldDefinition => !fieldDefinition.archived)
       .forEach(fieldDefinition => {
-        const field = fieldFactory.createField(fieldDefinition, observationForm);
+        const field = fieldFactory.createField(fieldDefinition, observationForm, observation);
         const fieldError = field.validate();
 
         if (fieldError) {
@@ -198,12 +200,31 @@ Observation.prototype.update = function(observationId, observation, callback) {
   const err = this.validate(observation);
   if (err) return callback(err);
 
-  ObservationModel.updateObservation(this._event, observationId, observation, (err, observation) => {
-    if (observation) {
-      EventEmitter.emit(ObservationEvents.events.update, observation.toObject({event: this._event}), this._event, this._user);
+  ObservationModel.updateObservation(this._event, observationId, observation, (err, updatedObservation) => {
+    if (updatedObservation) {
+      EventEmitter.emit(ObservationEvents.events.update, updatedObservation.toObject({event: this._event}), this._event, this._user);
+
+      // Remove any deleted attachments from file system
+      observation.properties.forms.forEach(observationForm => {
+        const formDefinition = this._event.forms.find(form => form._id === observationForm.formId);
+        Object.keys(observationForm).forEach(fieldName => {
+          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+          if (fieldDefinition && fieldDefinition.type === 'attachment') {
+            const attachmentsField = observationForm[fieldName] || [];
+            attachmentsField.filter(attachmentField => attachmentField.action === 'delete').forEach(attachmentField => {
+              const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentField.id);
+              if (attachment) {
+                new Attachment(this._event, observation).delete(attachment._id, err => {
+                  log.warn('Error removing deleted attachment from file system', err);
+                });
+              }
+            });
+          }
+        });
+      });
     }
 
-    callback(err, observation);
+    callback(err, updatedObservation);
   });
 };
 
