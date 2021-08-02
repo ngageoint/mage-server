@@ -5,18 +5,13 @@ const SamlStrategy = require('passport-saml').Strategy
   , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , config = require('../config.js')
   , userTransformer = require('../transformers/user')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , AuthenticationInitializer = require('./index')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-let cachedApp;
-let cachedTokenService;
-
-function doConfigure(passport, strategyConfig) {
-  log.info('Configuring SAML authentication');
-  passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
+function doConfigure(strategyConfig) {
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
+  AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
     const uid = profile[strategyConfig.settings.uidAttribute];
 
     if (!uid) {
@@ -24,7 +19,7 @@ function doConfigure(passport, strategyConfig) {
       return done('Failed to load user id from SAML profile');
     }
 
-    User.getUserByAuthenticationStrategy('saml', uid, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategyConfig.type, uid, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -39,10 +34,10 @@ function doConfigure(passport, strategyConfig) {
             active: false,
             roleId: role._id,
             authentication: {
-              type: 'saml',
+              type: strategyConfig.name,
               id: uid,
               authenticationConfiguration: {
-                name: 'saml'
+                name: strategyConfig.name
               }
             }
           };
@@ -67,7 +62,7 @@ function doConfigure(passport, strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    passport.authenticate('saml', function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate(strategyConfig.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -90,7 +85,7 @@ function doConfigure(passport, strategyConfig) {
 
       // DEPRECATED session authorization, remove req.login which creates session in next version
       req.login(user, function (err) {
-        cachedTokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+        AuthenticationInitializer.tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
           .then(token => {
             req.token = token;
             req.user = user;
@@ -103,7 +98,7 @@ function doConfigure(passport, strategyConfig) {
     })(req, res, next);
   }
 
-  cachedApp.post(
+  AuthenticationInitializer.app.post(
     strategyConfig.settings.options.callbackPath,
     authenticate,
     function (req, res) {
@@ -124,39 +119,20 @@ function doConfigure(passport, strategyConfig) {
         }
       } else {
         if (req.user.active && req.user.enabled) {
-          res.redirect(`/#/signin?strategy=saml&action=authorize-device&token=${req.token}`);
+          res.redirect(`/#/signin?strategy=${config.name}&action=authorize-device&token=${req.token}`);
         } else {
           const action = !req.user.active ? 'inactive-account' : 'disabled-account';
-          res.redirect(`/#/signin?strategy=saml&action=${action}`);
+          res.redirect(`/#/signin?strategy=${config.name}&action=${action}`);
         }
       }
     }
   );
 }
 
-function configure(passport, config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('saml', 'saml').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('SAML not configured');
-    }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function init(app, passport, provision, tokenService) {
-
-  cachedApp = app;
-  cachedTokenService = tokenService;
+function initialize(config) {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -167,17 +143,17 @@ function init(app, passport, provision, tokenService) {
     next();
   }
 
-  configure(passport);
+  doConfigure(config);
 
   app.get(
-    '/auth/saml/signin',
+    '/auth/' + config.name + '/signin',
     function (req, res, next) {
       const state = {
         initiator: 'mage',
         client: req.query.state
       };
 
-      passport.authenticate('saml', {
+      passport.authenticate(config.name, {
         additionalParams: { RelayState: JSON.stringify(state) }
       })(req, res, next);
     }
@@ -187,7 +163,7 @@ function init(app, passport, provision, tokenService) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/saml/devices',
+  app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       if (req.user) {
         next();
@@ -223,7 +199,7 @@ function init(app, passport, provision, tokenService) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/saml/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -237,7 +213,7 @@ function init(app, passport, provision, tokenService) {
         next();
       })(req, res, next);
     },
-    provision.check('saml'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
@@ -263,6 +239,5 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
-  configure
+  initialize
 }

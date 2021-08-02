@@ -21,7 +21,7 @@ export class AuthenticationDeleteComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.authenticationConfigurationService.countUsers(this.strategy._id).then(result => {
       this.userCount = result.data.count;
-    }).catch(err => {
+    }).catch((err: any) => {
       console.error(err);
     })
   }

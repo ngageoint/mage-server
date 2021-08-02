@@ -49,27 +49,18 @@ export class AuthenticationCreateComponent implements OnInit {
 
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
-        description: 'Google account.',
         type: 'oauth',
         name: 'google'
     }, {
         title: 'GeoAxis',
-        description: 'GeoAxis account.',
         type: 'oauth',
         name: 'geoaxis'
     }, {
         title: 'LDAP',
-        description: 'LDAP account.',
         type: 'ldap',
         name: 'ldap'
     }, {
-        title: 'Login-gov',
-        description: 'Login-gov account.',
-        type: 'oauth',
-        name: 'login-gov'
-    }, {
         title: 'SAML',
-        description: 'SAML account.',
         type: 'saml',
         name: 'saml'
     }];
@@ -88,7 +79,7 @@ export class AuthenticationCreateComponent implements OnInit {
         this.reset();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.setupDefaults = {};
         const settingsPromise = this.settingsService.query().$promise;
 
@@ -105,7 +96,7 @@ export class AuthenticationCreateComponent implements OnInit {
             });
 
             this.setupDefaults = settings.authconfigsetup ? settings.authconfigsetup.settings : {};
-        }).catch(err => {
+        }).catch((err: any) => {
             console.log(err);
         });
     }
@@ -150,6 +141,8 @@ export class AuthenticationCreateComponent implements OnInit {
                     }
                 }
             }
+        } else {
+            console.log('No setup defaults found for ' + this.strategy.name);
         }
 
         //TODO dont call ngoninit
@@ -172,7 +165,7 @@ export class AuthenticationCreateComponent implements OnInit {
     save(): void {
         this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
             this.stateService.go('admin.settings', { strategy: newStrategy });
-        }).catch(err => {
+        }).catch((err: any) => {
             console.error(err);
             this._snackBar.open('Failed to create ' + this.strategy.title, null, {
                 duration: 2000,

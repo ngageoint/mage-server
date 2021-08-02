@@ -7,12 +7,13 @@ const log = require('winston')
   , api = require('../api')
   , config = require('../config.js')
   , userTransformer = require('../transformers/user')
+  , AuthenticationInitializer = require('./index')
   , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
   , Authentication = require('../models/authentication');
 
-function configure(passport) {
+function configure() {
   log.info('Configuring local authentication');
-  passport.use(new LocalStrategy(
+  AuthenticationInitializer.passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
@@ -67,7 +68,11 @@ function configure(passport) {
   ));
 }
 
-function init(app, passport, provision, tokenService) {
+function initialize() {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
+  const tokenService = AuthenticationInitializer.tokenService;
 
   function parseLoginMetadata(req, _res, next) {
     req.loginOptions = {
@@ -78,7 +83,7 @@ function init(app, passport, provision, tokenService) {
     next();
   }
 
-  configure(passport);
+  configure();
 
   // DEPRECATED retain old routes as deprecated until next major version.
   app.post(
@@ -222,6 +227,5 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
-  configure
+  initialize
 }

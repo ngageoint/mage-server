@@ -2,8 +2,9 @@
 
 const request = require('supertest')
   , sinon = require('sinon')
-  , app = require('../express')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , SecurePropertyAppender = require('../security/utilities/secure-property-appender')
+  , AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 require('../models/setting');
 const SettingModel = mongoose.model('Setting');
@@ -19,11 +20,44 @@ require('chai').should();
 
 describe("api route tests", function () {
 
+  let app;
+
+  beforeEach(function() {
+    this.timeout(10000);
+    
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../express');
+  });
+
   afterEach(function () {
     sinon.restore();
   });
 
   it("api should return configuration", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: '',
+      initial: true
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })
@@ -73,6 +107,16 @@ describe("api route tests", function () {
   });
 
   it("api should return initial", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: '',
+      initial: true
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })
@@ -108,6 +152,15 @@ describe("api route tests", function () {
   });
 
   it("api should not return initial", function (done) {
+    const api = {
+      version: '1',
+      authenticationStrategies: [],
+      disclaimer: ''
+    }
+    sinon.mock(AuthenticationApiAppender)
+      .expects('append')
+      .resolves(api);
+
     sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'disclaimer' })

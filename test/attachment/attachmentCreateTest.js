@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const mockfs = require('mock-fs');
 const expect = require('chai').expect;
 const MockToken = require('../mockToken');
-const app = require('../../express');
 const TokenModel = mongoose.model('Token');
 const env = require('../../environment/env');
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
 require('chai').should();
 require('sinon-mongoose');
@@ -22,6 +23,7 @@ const observationModel = Observation.observationModel;
 
 describe("creating attachments", function() {
 
+  let app;
   const userId = mongoose.Types.ObjectId();
 
   beforeEach(function() {
@@ -33,6 +35,23 @@ describe("creating attachments", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+      const configs = [];
+      const config = {
+        name: 'local',
+        type: 'local'
+      };
+      configs.push(config);
+  
+      sinon.mock(AuthenticationConfiguration)
+        .expects('getAllConfigurations')
+        .resolves(configs);
+  
+      sinon.mock(SecurePropertyAppender)
+        .expects('appendToConfig')
+        .resolves(config); 
+  
+      app = require('../../express');
   });
 
   afterEach(function() {

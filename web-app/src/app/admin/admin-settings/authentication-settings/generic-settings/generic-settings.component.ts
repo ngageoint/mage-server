@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 import { EditSettingComponent } from './edit-setting/edit-setting.component';
 import { DeleteSettingComponent } from './delete-setting/delete-setting.component';
+import { SettingsKeyHandler } from './utilities/settings-key-handler';
 
 @Component({
     selector: 'generic-settings',
@@ -16,15 +17,15 @@ import { DeleteSettingComponent } from './delete-setting/delete-setting.componen
 })
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
     @Input() strategy: Strategy;
-    @Input() editable: boolean = true;
+    @Input() editable = true;
     dataSource: MatTableDataSource<GenericSetting>;
     readonly displayedColumns: string[] = ['key', 'value', 'action'];
     readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
     newRow: GenericSetting = {
         key: '',
-        value: '',
-        required: false
+        value: ''
     }
+    readonly settingsKeyHandler = new SettingsKeyHandler();
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
@@ -38,41 +39,48 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         this.refresh();
     }
 
-    ngAfterViewInit() {
+    ngAfterViewInit(): void {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
     }
 
-    refresh() {
+    refresh(): void {
+        this.dataSource.data = this.convertObjectToSettings(this.strategy.settings);
+        if (this.dataSource.paginator) {
+            this.dataSource.paginator.firstPage();
+        }
+    }
+
+    convertObjectToSettings(obj: any): GenericSetting[] {
         const settings: GenericSetting[] = [];
-        for (const [key, value] of Object.entries(this.strategy.settings)) {
+        for (const [key, value] of Object.entries(obj)) {
 
             if (this.settingsKeysToIgnore.includes(key)) {
                 continue;
             }
 
-            let castedValue: string;
-
             if (value) {
                 if (typeof value == 'string') {
-                    castedValue = value as string;
+                    const castedValue = value as string;
+                    //TODO detect if this field is required
+                    const gs: GenericSetting = {
+                        displayKey: key,
+                        key: key,
+                        value: castedValue,
+                        required: false
+                    };
+                    settings.push(gs);
                 } else {
-                    castedValue = JSON.stringify(value);
+                    const objSettings = this.convertObjectToSettings(value);
+                    objSettings.forEach(setting => {
+                        setting.key = key + "." + setting.key;
+                        settings.push(setting);
+                    })
                 }
             }
+        }
 
-            //TODO detect if this field is required
-            const gs: GenericSetting = {
-                key: key,
-                value: castedValue,
-                required: true
-            };
-            settings.push(gs);
-        }
-        this.dataSource.data = settings;
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
+        return settings;
     }
 
     editSetting(setting: GenericSetting): void {
@@ -83,7 +91,8 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
                 const updatedSetting = result.data;
-                this.strategy.settings[updatedSetting.key] = updatedSetting.value;
+                const key = updatedSetting.key;
+                this.settingsKeyHandler.flattenAndSet(key, updatedSetting.value, this.strategy.settings);
                 this.strategy.isDirty = true;
                 this.refresh();
             }
@@ -91,7 +100,7 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     addSetting(): void {
-        if (this.strategy.settings[this.newRow.key]) {
+        if (this.settingsKeyHandler.exists(this.newRow.key, this.strategy.settings)) {
             this.dialog.open(DuplicateKeyComponent, {
                 width: '500px',
                 data: this.newRow,
@@ -107,31 +116,12 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
     }
 
     private doAddSetting(): void {
-        const settings = this.dataSource.data;
+        this.settingsKeyHandler.flattenAndSet(this.newRow.key, this.newRow.value, this.strategy.settings);
 
-        let idx = -1;
-        for (let i = 0; i < settings.length; i++) {
-            const gs = settings[i];
-            if (gs.key == this.newRow.key) {
-                idx = i;
-                break;
-            }
-        }
-
-        const cloneRow = { key: this.newRow.key, value: this.newRow.value, required: this.newRow.required };
-        if (idx > -1) {
-            settings[idx] = cloneRow;
-        } else {
-            settings.push(cloneRow);
-        }
-
-        this.strategy.settings[this.newRow.key] = this.newRow.value;
         this.newRow.key = '';
         this.newRow.value = '';
-
-        this.dataSource.data = settings;
         this.strategy.isDirty = true;
-        this.dataSource.paginator.firstPage();
+        this.refresh();
     }
 
     deleteSetting(setting: GenericSetting): void {
@@ -141,7 +131,8 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             autoFocus: false
         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
-                delete this.strategy.settings[setting.key];
+                this.settingsKeyHandler.delete(setting.key, this.strategy.settings);
+                this.strategy.isDirty = true;
                 this.refresh();
             }
         });

@@ -6,7 +6,8 @@ const log = require('winston')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
     , Settings = require('../models/setting')
-    , SecretStoreService = require('../security/secret-store-service');
+    , SecretStoreService = require('../security/secret-store-service')
+    , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 module.exports = function (app, security) {
 
@@ -17,8 +18,21 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
+            const includeDisabled = req.query.includeDisabled === 'true' ? true :
+                req.query.includeDisabled === 'false' ? false :
+                    req.query.includeDisabled;
             AuthenticationConfiguration.getAllConfigurations().then(configs => {
-                const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs);
+                const filtered = configs.filter(config => {
+                    if (!config.enabled) {
+                        if (includeDisabled) {
+                            return true;
+                        }
+                        return false;
+                    } else {
+                        return true;
+                    }
+                });
+                const transformedConfigs = AuthenticationConfigurationTransformer.transform(filtered);
                 res.json(transformedConfigs);
             }).catch(err => {
                 next(err);
@@ -30,7 +44,7 @@ module.exports = function (app, security) {
         passport.authenticate('bearer'),
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
-            Authentication.countAuthenticationsByAuthConfigId(req.param('id')).then(cnt => {
+            Authentication.countAuthenticationsByAuthConfigId(req.params.id).then(cnt => {
                 const response = {
                     count: cnt
                 };
@@ -69,24 +83,41 @@ module.exports = function (app, security) {
                         updatedConfig.settings[key] = settings[key];
                     }
                 });
-                return AuthenticationConfiguration.update(req.param('id'), updatedConfig);
+                return AuthenticationConfiguration.update(req.params.id, updatedConfig);
             }).then(config => {
-                const response = [];
-                response.push(Promise.resolve(config));
-                if (Object.keys(securityData).length > 0) {
-                    const sss = new SecretStoreService();
-                    response.push(sss.write(config._id, securityData));
-                }
-                return Promise.all(response);
+                //Read any existing secure data (for append purposes)
+                const promises = [];
+                promises.push(Promise.resolve(config));
+                const sss = new SecretStoreService();
+                promises.push(sss.read(config._id));
+                return Promise.all(promises);
             }).then(response => {
-                const config = response[0];
-                log.info("Reconfiguring authentication strategy " + config.type + " (" + config.name + ")");
-                let strategyType = config.type;
-                if (config.type === 'oauth') {
-                    strategyType = config.name.toLowerCase();
+                //Update secure data if necessary
+                const promises = [];
+                promises.push(Promise.resolve(response[0]));
+
+                if (Object.keys(securityData).length > 0) {
+                    const config = response[0];
+                    const dataResponse = response[1];
+                    if (dataResponse.data) {
+                        Object.keys(dataResponse.data).forEach(key => {
+                            if (!securityData[key]) {
+                                securityData[key] = dataResponse.data[key];
+                            }
+                        });
+                    }
+                    const sss = new SecretStoreService();
+                    promises.push(sss.write(config._id, securityData));
                 }
-                const strategy = require('../authentication/' + strategyType);
-                strategy.configure(passport, config);
+                return Promise.all(promises);
+            }).then(response => {
+                //Append secure data to config for the purposes of configuring passport
+                const config = response[0];
+                return SecurePropertyAppender.appendToConfig(config);
+            }).then(config => {
+                log.info("Reconfiguring authentication strategy " + config.type + " (" + config.title + ")");
+                const strategy = require('../authentication/' + config.type);
+                strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
@@ -126,6 +157,7 @@ module.exports = function (app, security) {
 
                 return AuthenticationConfiguration.create(newConfig);
             }).then(config => {
+                //Create secure data, if any
                 const response = [];
                 response.push(Promise.resolve(config));
                 if (Object.keys(securityData).length > 0) {
@@ -134,12 +166,20 @@ module.exports = function (app, security) {
                 }
                 return Promise.all(response);
             }).then(response => {
+                //Read any authentications that could be attached to this config
+                //For example: 
+                // 1. authentications attached to google
+                // 2. Google removed
+                // 3. Authentications attached to google no longer have a config
+                // 3. Google recreated
+                // 4. Authentications are then atteched to this new config
                 const config = response[0];
                 const promises = [];
                 promises.push(Promise.resolve(config))
                 promises.push(Authentication.getAuthenticationsByType(config.name));
                 return Promise.all(promises);
             }).then(response => {
+                //Attach any "dangling" authentications to the new config
                 const config = response[0];
                 const authentications = response[1];
 
@@ -152,18 +192,18 @@ module.exports = function (app, security) {
                 });
                 return Promise.all(promises);
             }).then(response => {
+                //Append secure data to config for the purposes of configuring passport
                 const config = response[0];
-                log.info("Creating new authentication strategy " + config.type + " (" + config.name + ")");
-                let strategyType = config.type;
-                if (config.type === 'oauth') {
-                    strategyType = config.name.toLowerCase();
-                }
-                const strategy = require('../authentication/' + strategyType);
-                strategy.configure(passport, config);
+                return SecurePropertyAppender.appendToConfig(config);
+            }).then(config => {
+                log.info("Creating new authentication strategy " + config.type + " (" + config.title + ")");
+                const strategy = require('../authentication/' + config.type);
+                strategy.initialize(config);
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
             }).catch(err => {
+                //TODO rollback somehow
                 next(err);
             })
         });
@@ -174,8 +214,9 @@ module.exports = function (app, security) {
         access.authorize('UPDATE_AUTH_CONFIG'),
         function (req, res, next) {
 
-            Authentication.getAuthenticationsByAuthConfigId(req.param('id'))
+            Authentication.getAuthenticationsByAuthConfigId(req.params.id)
                 .then(authentications => {
+                    //Set config to null for any attached authentications
                     const authUpdatePromises = [];
                     authentications.forEach(authentication => {
                         if (authentication.type === 'local') {
@@ -186,8 +227,10 @@ module.exports = function (app, security) {
                     });
                     return Promise.all(authUpdatePromises);
                 }).then(() => {
-                    return AuthenticationConfiguration.remove(req.param("id"));
+                    //Remove config
+                    return AuthenticationConfiguration.remove(req.params.id);
                 }).then(config => {
+                    //Remove any secure properties
                     const response = [];
                     response.push(Promise.resolve(config));
 
@@ -197,7 +240,7 @@ module.exports = function (app, security) {
                 }).then(response => {
                     const config = response[0];
 
-                    log.info("Successfully removed strategy with id " + req.param("id"));
+                    log.info("Successfully removed strategy with id " + req.params.id);
                     //TODO not sure how to disable passport strategy, but this will effectively disable it
                     const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                     res.json(transformedConfig);

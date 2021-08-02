@@ -32,12 +32,11 @@
                                             <div *ngIf="!strategy.enabled">Disabled</div>
                                         </mat-panel-description>
                                     </mat-expansion-panel-header>
-                                    <section class="mat-typography" *ngIf="strategy.type !== 'local'">
+                                    <section class="mat-typography">
                                         <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
                                             color="primary" [ngModelOptions]="{standalone: true}"
                                             *ngIf="hasAuthConfigEditPermission"
-                                            (click)="$event.stopPropagation(); strategy.isDirty = 'true'"
-                                            [disabled]="strategy.type.toLowerCase() === 'local'">
+                                            (click)="$event.stopPropagation(); strategy.isDirty = 'true'">
                                         </mat-slide-toggle>
                                         <label>Enable Authentication</label>
                                         <hr>

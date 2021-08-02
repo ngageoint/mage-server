@@ -3,7 +3,6 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -17,9 +16,14 @@ var EventModel = mongoose.model('Event');
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
-describe("observation update tests", function() {
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-  beforeEach(function() {
+describe("observation update tests", function () {
+
+  let app;
+
+  beforeEach(function () {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
@@ -29,9 +33,26 @@ describe("observation update tests", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -39,13 +60,13 @@ describe("observation update tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update observation for id with event permission", function(done) {
+  it("should update observation for id with event permission", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(EventModel)
@@ -102,7 +123,7 @@ describe("observation update tests", function() {
         }
       })
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var observation = res.body;
         should.exist(observation);
         observation.should.have.property('id');
@@ -111,7 +132,7 @@ describe("observation update tests", function() {
       .end(done);
   });
 
-  it("should update observation for id with all permission", function(done) {
+  it("should update observation for id with all permission", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
 
     sinon.mock(EventModel)
@@ -168,7 +189,7 @@ describe("observation update tests", function() {
         }
       })
       .expect(200)
-      .expect(function(res) {
+      .expect(function (res) {
         var observation = res.body;
         should.exist(observation);
         observation.should.have.property('id');
@@ -177,7 +198,7 @@ describe("observation update tests", function() {
       .end(done);
   });
 
-  it("should deny update observation for id w/o timestamp", function(done) {
+  it("should deny update observation for id w/o timestamp", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(EventModel)
@@ -214,13 +235,13 @@ describe("observation update tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("'properties.timestamp' param required but not specified");
       })
       .end(done);
   });
 
-  it("should deny update observation for id w/o geometry", function(done) {
+  it("should deny update observation for id w/o geometry", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(EventModel)
@@ -254,13 +275,13 @@ describe("observation update tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("'geometry' param required but not specified");
       })
       .end(done);
   });
 
-  it("should deny update observation for id with invalid geometry", function(done) {
+  it("should deny update observation for id with invalid geometry", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(EventModel)
@@ -298,13 +319,13 @@ describe("observation update tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal("Cannot create observation, 'geometry' is not valid.");
       })
       .end(done);
   });
 
-  it("should deny update observation for id that does not exist", function(done) {
+  it("should deny update observation for id that does not exist", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(EventModel)
@@ -326,7 +347,7 @@ describe("observation update tests", function() {
     var observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationModel)
       .expects('findById')
-      .yields(null, {_id: observationId});
+      .yields(null, { _id: observationId });
 
     sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
@@ -350,13 +371,13 @@ describe("observation update tests", function() {
         }
       })
       .expect(404)
-      .expect(function(res) {
-        res.text.should.equal('Observation with ID ' +  observationId + ' does not exist');
+      .expect(function (res) {
+        res.text.should.equal('Observation with ID ' + observationId + ' does not exist');
       })
       .end(done);
   });
 
-  it("should deny update observation for event I am not part of", function(done) {
+  it("should deny update observation for event I am not part of", function (done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     sinon.mock(TeamModel)
@@ -385,7 +406,7 @@ describe("observation update tests", function() {
     var observationId = mongoose.Types.ObjectId();
     sinon.mock(ObservationModel)
       .expects('findById')
-      .yields(null, {_id: observationId});
+      .yields(null, { _id: observationId });
 
     var mockObservation = new ObservationModel({
       _id: observationId,
@@ -418,7 +439,7 @@ describe("observation update tests", function() {
         }
       })
       .expect(403)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.equal('Forbidden');
       })
       .end(done);

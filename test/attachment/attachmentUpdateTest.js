@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const mongoose = require('mongoose');
 const mockfs = require('mock-fs');
 const MockToken = require('../mockToken');
-const app = require('../../express');
 const TokenModel = mongoose.model('Token');
 const env = require('../../environment/env');
 
@@ -20,9 +19,14 @@ var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 var AttachmentModel = mongoose.model('Attachment');
 
-describe('updating attachments', function() {
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-  beforeEach(function() {
+describe('updating attachments', function () {
+
+  let app;
+
+  beforeEach(function () {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
@@ -31,9 +35,26 @@ describe('updating attachments', function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
     mockfs.restore();
   });
@@ -43,13 +64,13 @@ describe('updating attachments', function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("updates an attachment with event update permission", async function() {
+  it("updates an attachment with event update permission", async function () {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     var fs = {
@@ -99,7 +120,7 @@ describe('updating attachments', function() {
       properties: {
         timestamp: Date.now()
       },
-      attachments: [ mockAttachment ]
+      attachments: [mockAttachment]
     });
 
     sinon.mock(ObservationModel)
