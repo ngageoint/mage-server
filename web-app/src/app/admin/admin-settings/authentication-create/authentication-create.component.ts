@@ -56,7 +56,7 @@ export class AuthenticationCreateComponent implements OnInit {
         type: 'oauth',
         name: 'geoaxis'
     }, {
-        title: 'OAuth2',
+        title: 'OAuth',
         type: 'oauth',
         name: 'oauth'
     }, {
@@ -116,7 +116,7 @@ export class AuthenticationCreateComponent implements OnInit {
             }
         };
 
-        let settingsDefaultKey;
+        let settingsDefaultKey: string;
         switch (this.strategy.name) {
             case 'google':
             case 'geoaxis':
