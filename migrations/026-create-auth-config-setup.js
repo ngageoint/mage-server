@@ -41,7 +41,10 @@ exports.up = function (done) {
             'settings.saml.buttonColor': '#EF6C00',
             'settings.oauth.clientID': '',
             'settings.oauth.clientSecret': '',
-            'settings.oauth.callbackURL': ''
+            'settings.oauth.callbackURL': '',
+            'settings.oauth.authorizationURL': '',
+            'settings.oauth.tokenURL': '',
+            'settings.oauth.profileURL': ''
         }
     }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const OAuth2Strategy = require('passport-oauth2').Strategy
+const OAuth2Strategy = require('./oauth-strategy').Strategy
     , TokenAssertion = require('./verification').TokenAssertion
     , api = require('../api')
     , log = require('../logger')
@@ -16,9 +16,14 @@ function doConfigure(config) {
     const strategy = new OAuth2Strategy({
         clientID: config.settings.clientID,
         clientSecret: config.settings.clientSecret,
-        callbackURL: config.settings.callbackURL
+        callbackURL: config.settings.callbackURL,
+        authorizationURL: config.settings.authorizationURL,
+        tokenURL: config.settings.tokenURL,
+        profileURL: config.settings.profileURL
     }, function (accessToken, refreshToken, profile, done) {
-        User.getUserByAuthenticationStrategy(config.type, profile.id, function (err, user) {
+        const oauthUser = profile._json;
+        log.info("OAuth user profile: " + JSON.stringify(oauthUser));
+        User.getUserByAuthenticationStrategy(config.type, oauthUser.id, function (err, user) {
             if (err) return done(err);
 
             if (!user) {
@@ -27,21 +32,23 @@ function doConfigure(config) {
                     if (err) return done(err);
 
                     let email = null;
-                    profile.emails.forEach(function (e) {
-                        if (e.verified) {
-                            email = e.value;
-                        }
-                    });
-
+                    if(oauthUser.emails) {
+                        oauthUser.emails.forEach(function (e) {
+                            if (e.verified) {
+                                email = e.value;
+                            }
+                        });
+                    }
+                  
                     const user = {
-                        username: email,
-                        displayName: profile.name.givenName + ' ' + profile.name.familyName,
+                        username: oauthUser.id,
+                        displayName: oauthUser.displayName,
                         email: email,
                         active: false,
                         roleId: role._id,
                         authentication: {
                             type: config.type,
-                            id: profile.id,
+                            id: oauthUser.id,
                             authenticationConfiguration: {
                                 name: config.name
                             }
