@@ -29,14 +29,6 @@ exports.up = function (done) {
             'settings.ldap.ldapEmailField': 'mail',
             'settings.ldap.textColor': '#FFFFFF',
             'settings.ldap.buttonColor': '#5E35B1',
-            'settings.logingov.loa': '1',
-            'settings.logingov.url': '',
-            'settings.logingov.client_id': '',
-            'settings.logingov.acr_values': '',
-            'settings.logingov.redirect_uri': '',
-            'settings.logingov.keyFile': '',
-            'settings.logingov.textColor': '#FFFFFF',
-            'settings.logingov.buttonColor': '#E21D3E',
             'settings.saml.uidAttribute': 'uid',
             'settings.saml.displayNameAttribute': 'email',
             'settings.saml.emailAttribute': 'email',
@@ -46,7 +38,10 @@ exports.up = function (done) {
                 'callbackPath': '/auth/saml/callback'
             },
             'settings.saml.textColor': '#000000',
-            'settings.saml.buttonColor': '#EF6C00'
+            'settings.saml.buttonColor': '#EF6C00',
+            'settings.oauth.clientID': '',
+            'settings.oauth.clientSecret': '',
+            'settings.oauth.callbackURL': ''
         }
     }
 

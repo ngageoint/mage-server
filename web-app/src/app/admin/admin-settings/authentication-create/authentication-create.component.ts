@@ -56,6 +56,10 @@ export class AuthenticationCreateComponent implements OnInit {
         type: 'oauth',
         name: 'geoaxis'
     }, {
+        title: 'OAuth2',
+        type: 'oauth',
+        name: 'oauth'
+    }, {
         title: 'LDAP',
         type: 'ldap',
         name: 'ldap'
@@ -112,18 +116,21 @@ export class AuthenticationCreateComponent implements OnInit {
             }
         };
 
+        let settingsDefaultKey;
         switch (this.strategy.name) {
             case 'google':
             case 'geoaxis':
-            case 'login-gov':
                 this.strategy.type = 'oauth';
+                settingsDefaultKey = this.strategy.name;
                 break;
             default:
                 this.strategy.type = this.strategy.name;
+                settingsDefaultKey = this.strategy.type;
+                break;
         }
 
-        if (this.setupDefaults[this.strategy.name]) {
-            for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
+        if (this.setupDefaults[settingsDefaultKey]) {
+            for (const [key, value] of Object.entries(this.setupDefaults[settingsDefaultKey])) {
 
                 if (key === 'buttonColor') {
                     this.strategy.buttonColor = value as string;
@@ -142,7 +149,7 @@ export class AuthenticationCreateComponent implements OnInit {
                 }
             }
         } else {
-            console.log('No setup defaults found for ' + this.strategy.name);
+            console.log('No setup defaults found for ' + settingsDefaultKey);
         }
 
         //TODO dont call ngoninit

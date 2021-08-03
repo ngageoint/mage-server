@@ -59,24 +59,23 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                 continue;
             }
 
-            if (value) {
-                if (typeof value == 'string') {
-                    const castedValue = value as string;
-                    //TODO detect if this field is required
-                    const gs: GenericSetting = {
-                        displayKey: key,
-                        key: key,
-                        value: castedValue,
-                        required: false
-                    };
-                    settings.push(gs);
-                } else {
-                    const objSettings = this.convertObjectToSettings(value);
-                    objSettings.forEach(setting => {
-                        setting.key = key + "." + setting.key;
-                        settings.push(setting);
-                    })
-                }
+            if (typeof value == 'string') {
+                const castedValue = value as string;
+                //TODO detect if this field is required
+                const gs: GenericSetting = {
+                    displayKey: key,
+                    key: key,
+                    value: castedValue,
+                    required: false,
+                    isSecret: false
+                };
+                settings.push(gs);
+            } else {
+                const objSettings = this.convertObjectToSettings(value);
+                objSettings.forEach(setting => {
+                    setting.key = key + "." + setting.key;
+                    settings.push(setting);
+                })
             }
         }
 
