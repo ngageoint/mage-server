@@ -222,6 +222,8 @@ function initialize(config) {
                     res.render(config.name, { uri: uri });
                 }
             } else {
+                //As of mage 6.0.0-beta:
+                //This "calls" ../views/authentication.pug, which in turn calls user.service idpSignin.onMessage
                 res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
             }
         }
