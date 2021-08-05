@@ -86,11 +86,12 @@ export class AuthenticationCreateComponent implements OnInit {
     ngOnInit(): void {
         this.setupDefaults = {};
         const settingsPromise = this.settingsService.query().$promise;
+        const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
 
-        settingsPromise.then(result => {
+        Promise.all([settingsPromise, configsPromise]).then(result => {
             const settings: any = {};
 
-            result.forEach(element => {
+            result[0].forEach(element => {
                 settings[element.type] = {};
                 Object.keys(element).forEach(key => {
                     if (key !== 'type') {
@@ -100,7 +101,22 @@ export class AuthenticationCreateComponent implements OnInit {
             });
 
             this.setupDefaults = settings.authconfigsetup ? settings.authconfigsetup.settings : {};
-        }).catch((err: any) => {
+
+            const strategies = result[1].data;
+            strategies.forEach(strategy => {
+                let idx = -1;
+                for (let i = 0; i < this.typeChoices.length; i++) {
+                    const choice = this.typeChoices[i];
+                    if (choice.name === strategy.name) {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx > -1) {
+                    this.typeChoices.splice(idx, 1);
+                }
+            });
+        }).catch(err => {
             console.log(err);
         });
     }
