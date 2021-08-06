@@ -10,6 +10,7 @@ import { ColorEvent } from 'ngx-color';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { GenericSettingsComponent } from '../authentication-settings/generic-settings/generic-settings.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CreateValidator } from '../utilities/create-validator';
 
 @Component({
     selector: 'authentication-create',
@@ -46,6 +47,7 @@ export class AuthenticationCreateComponent implements OnInit {
         }
     }];
     strategy: Strategy;
+    strategyValidator = new CreateValidator();
 
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
@@ -194,6 +196,10 @@ export class AuthenticationCreateComponent implements OnInit {
                 duration: 2000,
             });
         });
+    }
+
+    isValid(): boolean {
+        return this.strategyValidator.isValid(this.strategy);
     }
 
     reset(): void {

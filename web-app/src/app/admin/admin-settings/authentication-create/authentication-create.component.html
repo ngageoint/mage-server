@@ -117,8 +117,7 @@
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
                         <button mat-button (click)="reset(); stepper.reset()">Reset</button>
-                        <button mat-button (click)="save()"
-                            [disabled]="!strategy.type.length || !strategy.name.length">Save</button>
+                        <button mat-button (click)="save()" [disabled]="!isValid()">Save</button>
                     </div>
                 </mat-step>
             </mat-horizontal-stepper>
