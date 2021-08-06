@@ -113,6 +113,15 @@
                     </section>
                     <generic-settings [strategy]="strategy" [editable]="false" class="top-gap" id="summary" #summary>
                     </generic-settings>
+                    <section *ngIf="!isValid()" class="mat-typography">
+                        <h4>Validation Errors</h4>
+                        <hr>
+                        <mat-list dense>
+                            <div *ngFor="let key of strategyValidator.invalidKeys()">
+                                <mat-list-item style="color: red"> *The setting, {{key}} is required </mat-list-item>
+                            </div>
+                        </mat-list>
+                    </section>
                     <mat-divider></mat-divider>
                     <div>
                         <button mat-button matStepperPrevious>Back</button>
