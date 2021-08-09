@@ -30,7 +30,9 @@ export class CreateValidator implements StrategyValidator {
                 let found = false;
                 Object.keys(strategy.settings).forEach(key => {
                     if (key.toLowerCase() === setting) {
-                        found = true;
+                        if (strategy.settings[key]) {
+                            found = true;
+                        }
                     }
                 });
                 if (found) {
@@ -40,7 +42,7 @@ export class CreateValidator implements StrategyValidator {
                 }
             });
             isValid = requiredPropertiesFound >= this.requiredOAuthSettings.length;
-        } 
+        }
 
         return isValid;
     }
