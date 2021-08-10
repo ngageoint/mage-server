@@ -6,9 +6,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Local user signup captcha
+* Local user signup captcha.
 * New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
 * Moving security settings to more secure location.
+* Adding support for connecting to a generic OAuth server.
 
 ##### Bug Fixes
 
