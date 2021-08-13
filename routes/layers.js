@@ -157,6 +157,16 @@ module.exports = function(app, security) {
         layer.save();
       })
       .then(() => {
+        return new Promise((resolve) => {
+          // GeoPackage file size may have changed after index, update the metadata
+          fs.stat(path.join(environment.layerBaseDirectory, layer.file.relativePath))
+              .then((stats) => {
+                layer.file.size = stats.size;
+                resolve()
+              });
+        })
+      })
+      .then(() => {
         layer.processing = undefined;
         layer.state = 'available';
         layer.save().then((layer) => {
