@@ -20,8 +20,9 @@ AttachmentField.prototype.validate = function() {
     return { error: 'value', message: `${this.definition.title} must be an Array` }
   }
 
+  const observationFormId = this.observationForm._id ? this.observationForm._id.toString() : null
   const attachments = this.attachments.filter(attachment => {
-    return attachment.observationFormId.toString() === this.observationForm._id.toString() && attachment.fieldName === this.definition.name;
+    return attachment.observationFormId.toString() === observationFormId && attachment.fieldName === this.definition.name;
   });
 
   const add = fieldValue.reduce((count, attachment) => { attachment.action === 'add' ? count + 1 : count }, 0)

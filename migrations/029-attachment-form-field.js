@@ -13,7 +13,7 @@ async function createAttachmentField(db) {
     log.info(`creating attachment fields for event ${event.name}`);
 
     event.forms.forEach(form => {
-      let id = 1;
+      let id = 0;
       const fields = form.fields.slice() || [];
       if (fields.length) {
         id = fields.sort((a, b) => b.id - a.id)[0].id + 1;
@@ -23,7 +23,7 @@ async function createAttachmentField(db) {
       fields.forEach(field => field.id = ++field.id);
 
       fields.push({
-        id: 1,
+        id: 0,
         name: `field${id}`,
         required: false,
         type: 'attachment',
@@ -41,7 +41,7 @@ async function createAttachmentField(db) {
       log.info(`Event ${event.name} has no forms`);
 
       const observationCollection = await db.collection(`observations${event._id}`);
-      const count = await observationCollection.count({attachments: { $exists: true, $type: 'array', $ne: [] } })
+      const count = await observationCollection.count({attachments: { $exists: true, $ne: [] } })
       if (count > 0) {
         log.info(`Event ${event.name} has no forms, but does contain attachments, create new form w/ attachment field`);
 
@@ -62,7 +62,7 @@ async function createAttachmentField(db) {
             type: 'attachment',
             title: 'Attachments',
             choices: [],
-            allowedAttachmentTypes: ['image', 'video', 'voice']
+            allowedAttachmentTypes: ['image', 'video', 'audio']
           }]
         }];
       }
