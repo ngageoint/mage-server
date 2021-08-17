@@ -25,9 +25,8 @@ AttachmentField.prototype.validate = function() {
     return attachment.observationFormId.toString() === observationFormId && attachment.fieldName === this.definition.name;
   });
 
-  const add = fieldValue.reduce((count, attachment) => { attachment.action === 'add' ? count + 1 : count }, 0)
-  const remove = fieldValue.reduce((count, attachment) => { attachment.action === 'delete' ? count + 1 : count }, 0)
-
+  const add = fieldValue.reduce((count, attachment) => { return attachment.action === 'add' ? count + 1 : count }, 0);
+  const remove = fieldValue.reduce((count, attachment) => { return attachment.action === 'delete' ? count + 1 : count }, 0)
   const attachmentCount = attachments.length + add - remove;
 
   if (this.definition.min != null && attachmentCount < this.definition.min) {
@@ -40,7 +39,7 @@ AttachmentField.prototype.validate = function() {
 
   const addAttachments = fieldValue.filter(attachment => attachment.action === 'add');
   if (addAttachments.length) {
-    const validType = addAttachments.some(attachment => {
+    const validType = addAttachments.every(attachment => {
       const media = new Media(attachment.contentType);
       return media.validate(this.definition.allowedAttachmentTypes);
     });

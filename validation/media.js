@@ -10,6 +10,7 @@ class Media {
   }
 
   validate(allowedTypes) {
+    console.log('************** check mime type', this.mimetype);
     if (this.mimetype) {
       const valid = allowedTypes.some(allowed => {
         const mimetypes = Media.mimetypes[allowed]

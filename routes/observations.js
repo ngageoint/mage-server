@@ -107,7 +107,7 @@ module.exports = function(app, security) {
       if (!fieldDefinition) return res.status(400).send('Attachment field not found');
 
       if (!media.validate(fieldDefinition.allowedAttachmentTypes)) {
-        return res.status(400).send(`Invalid attachment '${attachment.name}', cannot be of type ${fieldDefinition.restrictedAttachmentTypes.join(' or ')}`);
+        return res.status(400).send(`Invalid attachment '${attachment.name}', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(' or ')}`);
       }
 
       next();

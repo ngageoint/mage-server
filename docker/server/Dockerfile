@@ -1,6 +1,6 @@
-FROM node:10.17.0
+FROM node:14.17.5
 
-ARG MAGE_VER=5.5.0
+ARG MAGE_VERSION=6.0.0-beta3
 
 LABEL author="NGA"
 
@@ -10,6 +10,7 @@ RUN apt-get update && apt-get -y install \
         unzip \
         curl \
         graphicsmagick \
+        build-essential libjpeg-dev libsdl-pango-dev libcairo-dev libgif-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r mage \
@@ -19,10 +20,10 @@ RUN groupadd -r mage \
 
 USER mage
 
-ENV MAGE_HOME /home/mage/mage-server-${MAGE_VER}
+ENV MAGE_HOME /home/mage/mage-server-${MAGE_VERSION}
 WORKDIR /home/mage
 
-RUN curl -L "https://github.com/ngageoint/mage-server/archive/${MAGE_VER}.zip" -o mage-server.zip \
+RUN curl -L "https://github.com/ngageoint/mage-server/archive/${MAGE_VERSION}.zip" -o mage-server.zip \
     && unzip mage-server.zip
 
 WORKDIR ${MAGE_HOME}
