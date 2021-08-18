@@ -4,10 +4,6 @@ const extend = require('util')._extend
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration');
 
-module.exports = {
-    append
-};
-
 /**
  * Appends authenticationStrategies to the config.api object (the original config.api is not modified; this method returns a copy).  
  * These strategies are read from the db.
@@ -19,14 +15,30 @@ module.exports = {
 async function append(api, options) {
     options = options || {};
 
-    let apiCopy = extend({}, api);
+    const apiCopy = extend({}, api);
     delete apiCopy.authenticationStrategies;
     apiCopy.authenticationStrategies = {};
 
     const authenticationConfigurations = await AuthenticationConfiguration.Model.find();
-    const transformedConfigurations = AuthenticationConfigurationTransformer.transform(authenticationConfigurations, options);
+
+    const filtered = authenticationConfigurations.filter(config => {
+        if (!config.enabled) {
+            if (options.includeDisabled) {
+                return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    });
+
+    const transformedConfigurations = AuthenticationConfigurationTransformer.transform(filtered, options);
     transformedConfigurations.forEach(function (configuration) {
         apiCopy.authenticationStrategies[configuration.name] = extend({}, configuration);
     });
     return Promise.resolve(apiCopy);
 }
+
+module.exports = {
+    append
+};

@@ -8,14 +8,12 @@ const fs = require('fs')
   , Device = require('../models/device')
   , Role = require('../models/role')
   , api = require('../api')
-  , config = require('../config.js')
   , log = require('../logger')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , AuthenticationInitializer = require('./index')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function doConfigure(passport, strategyConfig) {
-  log.info('Configuring login.gov authentication', strategyConfig);
+function doConfigure(strategyConfig) {
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
   const loginGov = {};
 
   const key = fs.readFileSync(strategyConfig.settings.keyFile, 'ascii');
@@ -50,11 +48,11 @@ function doConfigure(passport, strategyConfig) {
     client.CLOCK_TOLERANCE = 10;
 
     const params = getParams();
-    passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
+    AuthenticationInitializer.passport.use('oidc-loa-1', new Strategy({ client: client, params: params, passReqToCallback: true }, function (req, tokenset, userinfo, done) {
       userinfo.token = tokenset.id_token; // required for RP-Initiated Logout
       userinfo.state = params.state; // required for RP-Initiated Logout
 
-      User.getUserByAuthenticationStrategy('oauth', userinfo.email, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, userinfo.email, function (err, user) {
         if (err) return done(err);
 
         const email = userinfo.email;
@@ -71,10 +69,10 @@ function doConfigure(passport, strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'oauth',
+                type: strategyConfig.name,
                 id: email,
                 authenticationConfiguration: {
-                  name: 'login-gov'
+                  name: strategyConfig.name
                 }
               }
             };
@@ -105,30 +103,14 @@ function doConfigure(passport, strategyConfig) {
   });
 }
 
-function configure(passport, config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('oauth', 'login-gov').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('Login-gov not configured');
-    }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function init(app, passport, provision) {
+function initialize(config) {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
 
   Issuer.useRequest();
 
-  configure(passport);
+  doConfigure(config);
 
   function parseLoginMetadata(req, res, next) {
     const options = {};
@@ -277,6 +259,5 @@ function init(app, passport, provision) {
 };
 
 module.exports = {
-  init,
-  configure
+  initialize
 }

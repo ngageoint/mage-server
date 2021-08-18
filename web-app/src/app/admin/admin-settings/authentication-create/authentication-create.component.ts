@@ -10,6 +10,7 @@ import { ColorEvent } from 'ngx-color';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
 import { GenericSettingsComponent } from '../authentication-settings/generic-settings/generic-settings.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CreateValidator } from '../utilities/create-validator';
 
 @Component({
     selector: 'authentication-create',
@@ -46,30 +47,26 @@ export class AuthenticationCreateComponent implements OnInit {
         }
     }];
     strategy: Strategy;
+    strategyValidator = new CreateValidator();
 
     readonly typeChoices: TypeChoice[] = [{
         title: 'Google',
-        description: 'Google account.',
         type: 'oauth',
         name: 'google'
     }, {
         title: 'GeoAxis',
-        description: 'GeoAxis account.',
         type: 'oauth',
         name: 'geoaxis'
     }, {
+        title: 'OAuth',
+        type: 'oauth',
+        name: 'oauth'
+    }, {
         title: 'LDAP',
-        description: 'LDAP account.',
         type: 'ldap',
         name: 'ldap'
     }, {
-        title: 'Login-gov',
-        description: 'Login-gov account.',
-        type: 'oauth',
-        name: 'login-gov'
-    }, {
         title: 'SAML',
-        description: 'SAML account.',
         type: 'saml',
         name: 'saml'
     }];
@@ -88,14 +85,15 @@ export class AuthenticationCreateComponent implements OnInit {
         this.reset();
     }
 
-    ngOnInit() {
+    ngOnInit(): void {
         this.setupDefaults = {};
         const settingsPromise = this.settingsService.query().$promise;
+        const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
 
-        settingsPromise.then(result => {
+        Promise.all([settingsPromise, configsPromise]).then(result => {
             const settings: any = {};
 
-            result.forEach(element => {
+            result[0].forEach(element => {
                 settings[element.type] = {};
                 Object.keys(element).forEach(key => {
                     if (key !== 'type') {
@@ -105,6 +103,21 @@ export class AuthenticationCreateComponent implements OnInit {
             });
 
             this.setupDefaults = settings.authconfigsetup ? settings.authconfigsetup.settings : {};
+
+            const strategies = result[1].data;
+            strategies.forEach(strategy => {
+                let idx = -1;
+                for (let i = 0; i < this.typeChoices.length; i++) {
+                    const choice = this.typeChoices[i];
+                    if (choice.name === strategy.name) {
+                        idx = i;
+                        break;
+                    }
+                }
+                if (idx > -1) {
+                    this.typeChoices.splice(idx, 1);
+                }
+            });
         }).catch(err => {
             console.log(err);
         });
@@ -121,18 +134,21 @@ export class AuthenticationCreateComponent implements OnInit {
             }
         };
 
+        let settingsDefaultKey: string;
         switch (this.strategy.name) {
             case 'google':
             case 'geoaxis':
-            case 'login-gov':
                 this.strategy.type = 'oauth';
+                settingsDefaultKey = this.strategy.name;
                 break;
             default:
                 this.strategy.type = this.strategy.name;
+                settingsDefaultKey = this.strategy.type;
+                break;
         }
 
-        if (this.setupDefaults[this.strategy.name]) {
-            for (const [key, value] of Object.entries(this.setupDefaults[this.strategy.name])) {
+        if (this.setupDefaults[settingsDefaultKey]) {
+            for (const [key, value] of Object.entries(this.setupDefaults[settingsDefaultKey])) {
 
                 if (key === 'buttonColor') {
                     this.strategy.buttonColor = value as string;
@@ -150,6 +166,8 @@ export class AuthenticationCreateComponent implements OnInit {
                     }
                 }
             }
+        } else {
+            console.log('No setup defaults found for ' + settingsDefaultKey);
         }
 
         //TODO dont call ngoninit
@@ -172,12 +190,16 @@ export class AuthenticationCreateComponent implements OnInit {
     save(): void {
         this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
             this.stateService.go('admin.settings', { strategy: newStrategy });
-        }).catch(err => {
+        }).catch((err: any) => {
             console.error(err);
             this._snackBar.open('Failed to create ' + this.strategy.title, null, {
                 duration: 2000,
             });
         });
+    }
+
+    isValid(): boolean {
+        return this.strategyValidator.isValid(this.strategy);
     }
 
     reset(): void {

@@ -1,4 +1,7 @@
-function init(app, passport) {
+const AuthenticationInitializer = require('./index');
+
+function initialize() {
+  const passport = AuthenticationInitializer.passport;
 
   const AnonymousStrategy = require('passport-anonymous').Strategy;
   passport.use(new AnonymousStrategy());
@@ -11,5 +14,5 @@ function init(app, passport) {
 };
 
 module.exports = {
-  init
+  initialize
 }

@@ -5,29 +5,14 @@ const LdapStrategy = require('passport-ldapauth')
   , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , config = require('../config.js')
   , userTransformer = require('../transformers/user')
-  , AuthenticationConfiguration = require('../models/authenticationconfiguration')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender')
-  , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
+  , AuthenticationInitializer = require('./index')
+  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-let authenticationOptions = {
-};
+function doConfigure(strategyConfig) {
+  log.info('Configuring ' + strategyConfig.title + ' authentication');
 
-function doConfigure(passport, strategyConfig) {
-  log.info('Configuring LDAP authentication');
-  authenticationOptions = {
-    invalidLogonHours: `Not Permitted to login to ${strategyConfig.title} account at this time.`,
-    invalidWorkstation: `Not permited to logon to ${strategyConfig.title} account at this workstation.`,
-    passwordExpired: `${strategyConfig.title} password expired.`,
-    accountDisabled: `${strategyConfig.title} account disabled.`,
-    accountExpired: `${strategyConfig.title} account expired.`,
-    passwordMustChange: `User must reset ${strategyConfig.title} password.`,
-    accountLockedOut: `${strategyConfig.title} user account locked.`,
-    invalidCredentials: `Invalid ${strategyConfig.title} username/password.`
-  };
-
-  passport.use(new LdapStrategy({
+  const strategy = new LdapStrategy({
     server: {
       url: strategyConfig.settings.url,
       bindDN: strategyConfig.settings.bindDN,
@@ -38,7 +23,7 @@ function doConfigure(passport, strategyConfig) {
   },
     function (profile, done) {
       const username = profile[strategyConfig.settings.ldapUsernameField];
-      User.getUserByAuthenticationStrategy('ldap', username, function (err, user) {
+      User.getUserByAuthenticationStrategy(strategyConfig.type, username, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
@@ -53,10 +38,10 @@ function doConfigure(passport, strategyConfig) {
               active: false,
               roleId: role._id,
               authentication: {
-                type: 'ldap',
+                type: strategyConfig.name,
                 id: username,
                 authenticationConfiguration: {
-                  name: 'ldap'
+                  name: strategyConfig.name
                 }
               }
             };
@@ -80,30 +65,16 @@ function doConfigure(passport, strategyConfig) {
           return done(null, user);
         }
       });
-    }));
-
+    });
+    
+  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
 }
 
-function configure(passport, config) {
-  if (config) {
-    SecurePropertyAppender.appendToConfig(config).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    });
-  } else {
-    AuthenticationConfiguration.getConfiguration('ldap', 'ldap').then(strategyConfig => {
-      if (strategyConfig) {
-        return SecurePropertyAppender.appendToConfig(strategyConfig);
-      }
-      return Promise.reject('LDAP not configured');
-    }).then(appendedConfig => {
-      doConfigure(passport, appendedConfig);
-    }).catch(err => {
-      log.info(err);
-    });
-  }
-}
-
-function init(app, passport, provision, tokenService) {
+function initialize(config) {
+  const app = AuthenticationInitializer.app;
+  const passport = AuthenticationInitializer.passport;
+  const provision = AuthenticationInitializer.provision;
+  const tokenService = AuthenticationInitializer.tokenService;
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -114,12 +85,23 @@ function init(app, passport, provision, tokenService) {
     next();
   }
 
-  configure(passport);
+  doConfigure(config);
+
+  const authenticationOptions = {
+    invalidLogonHours: `Not Permitted to login to ${config.title} account at this time.`,
+    invalidWorkstation: `Not permited to logon to ${config.title} account at this workstation.`,
+    passwordExpired: `${config.title} password expired.`,
+    accountDisabled: `${config.title} account disabled.`,
+    accountExpired: `${config.title} account expired.`,
+    passwordMustChange: `User must reset ${config.title} password.`,
+    accountLockedOut: `${config.title} user account locked.`,
+    invalidCredentials: `Invalid ${config.title} username/password.`
+  };
 
   app.post(
-    '/auth/ldap/signin',
+    '/auth/' + config.name + '/signin',
     function authenticate(req, res, next) {
-      passport.authenticate('ldapauth', authenticationOptions, function (err, user, info = {}) {
+      passport.authenticate(config.name, authenticationOptions, function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) {
@@ -167,7 +149,7 @@ function init(app, passport, provision, tokenService) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/ldap/devices',
+  app.post('/auth/' + config.name + '/devices',
     function (req, res, next) {
       // check user session
       if (req.user) {
@@ -204,7 +186,7 @@ function init(app, passport, provision, tokenService) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/ldap/authorize',
+    '/auth/' + config.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -218,7 +200,7 @@ function init(app, passport, provision, tokenService) {
         next();
       })(req, res, next);
     },
-    provision.check('ldap'),
+    provision.check(config.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
@@ -243,6 +225,5 @@ function init(app, passport, provision, tokenService) {
 };
 
 module.exports = {
-  init,
-  configure
+  initialize
 }
