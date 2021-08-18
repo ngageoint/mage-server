@@ -187,10 +187,10 @@ class AdminFormFieldsEditController {
     }
 
     const fields = this.form.fields;
-    const id = _.isEmpty(fields) ? 1 : _.max(fields, field => { return field.id; }).id + 1;
+    const id = _.isEmpty(fields) ? 0 : _.max(fields, field => { return field.id; }).id + 1;
 
     this.newField.id = id;
-    this.newField.name =  'field' + (id - 1);
+    this.newField.name =  'field' + id;
 
     if (this.newField.type === 'userDropdown') {
       this.form.userFields.push(this.newField.name);
