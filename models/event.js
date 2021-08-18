@@ -206,15 +206,11 @@ EventSchema.post('remove', function(event) {
 });
 
 function transformForm(form, ret) {
-  console.log('************************** transform form called *****************************');
-
   ret.id = ret._id;
   delete ret._id;
 }
 
 function transform(event, ret, options) {
-  console.log('************************** transform event called *****************************');
-
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
