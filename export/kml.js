@@ -110,7 +110,7 @@ Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
   const startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
   const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
 
-  const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+  const cursor = self.requestLocations({ userId: user._id, startDate: startDate, endDate: endDate, stream: true });
 
   let locations = [];
   let locationString = "";

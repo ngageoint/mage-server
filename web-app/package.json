@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage-web",
-  "version": "5.5.0",
+  "version": "5.5.2",
   "description": "MAGE Web",
   "keywords": [
     "NGA",
@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "ng serve",
-    "build": "ng build --prod=false",
+    "build": "ng build --prod=true",
     "ng": "ng",
     "test": "ng test",
     "test-headless": "ng test --watch=false --browsers=ChromeHeadless",
