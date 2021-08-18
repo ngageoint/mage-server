@@ -20,8 +20,8 @@ class ExportTask {
     for (const exp of exports) {
       if (exp.status === this.exportResource.ExportStatus.Running) {
         log.info('Updating status of ' + exp.physicalPath + ' to failed');
-        exp.status = Export.ExportStatus.Failed;
-        await Export.updateExport(exp);
+        exp.status = this.exportResource.ExportStatus.Failed;
+        await this.exportResource.updateExport(exp);
       }
     }
 

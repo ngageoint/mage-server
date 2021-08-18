@@ -166,8 +166,8 @@ export class ObservationViewComponent implements OnChanges {
     this.isUserFavorite = this.observation.favoriteUserIds.includes(this.userService.myself.id)
     this.canEdit = this.userService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.userService.hasPermission('UPDATE_OBSERVATION_ALL')
 
-    const myAccess = this.event.acl[this.userService.myself.id]
-    const aclPermissions = myAccess ? myAccess.permissions : []
+    const myAccess = this.event.acl[this.userService.myself.id] || {}
+    const aclPermissions = myAccess.permissions || []
     this.canEditImportant = this.userService.myself.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
     const formMap = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
