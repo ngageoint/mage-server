@@ -1,7 +1,7 @@
 class Media {
   static mimetypes = {
     image: ['image/png', 'image/jpg', 'image/jpeg'],
-    video: ['video/mp4'],
+    video: ['video/mp4','video/quicktime'],
     audio: ['audio/mp4']
   };
 
