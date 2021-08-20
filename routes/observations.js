@@ -440,7 +440,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
+    validateObservationCreateAccess(false),
     function (req, res, next) {
       new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
         if (err) {
@@ -458,7 +458,7 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
+    validateObservationCreateAccess(false),
     function (req, res, next) {
 
       new api.Observation(req.event).removeFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
