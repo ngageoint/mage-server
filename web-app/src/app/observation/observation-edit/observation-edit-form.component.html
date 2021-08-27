@@ -50,6 +50,7 @@
         <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>
         <observation-edit-text *ngSwitchCase="'textfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-text>
         <observation-edit-textarea *ngSwitchCase="'textarea'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-textarea>
+        <observation-edit-password *ngSwitchCase="'password'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-password>
         <observation-edit-geometry *ngSwitchCase="'geometry'"
           [formGroup]="formGroup"
           [definition]="fieldDefinitions[fieldName]"

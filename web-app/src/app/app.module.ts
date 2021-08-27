@@ -143,6 +143,9 @@ import { ObservationEditFormPickerComponent } from './observation/observation-ed
 import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
 import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
 import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
+import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
+import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
+import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 
 @NgModule({
   declarations: [
@@ -220,7 +223,10 @@ import { ObservationEditAttachmentComponent } from './observation/observation-ed
     ExportDialogComponent,
     ObservationEditFormPickerComponent,
     ObservationOptionsComponent,
-    ObservationEditDiscardComponent
+    ObservationEditDiscardComponent,
+    ObservationEditPasswordComponent,
+    ObservationViewPasswordComponent,
+    PasswordPipe
   ],
   imports: [
     CommonModule,
