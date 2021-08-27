@@ -467,6 +467,11 @@ exports.removeFavorite = function (event, observationId, user, callback) {
   observationModel(event).findByIdAndUpdate(observationId, update, {new: true}, callback);
 };
 
+exports.addImportant = function(event, observationId, important, callback) {
+  const update = { important};
+  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+}
+
 exports.removeImportant = function(event, id, callback) {
   const update = {
     '$unset': {

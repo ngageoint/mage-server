@@ -239,7 +239,7 @@ Observation.prototype.removeFavorite = function(observation, user, callback) {
 };
 
 Observation.prototype.addImportant = function(observationId, important, callback) {
-  ObservationModel.updateObservation(this._event, observationId, {important: important}, callback);
+  ObservationModel.addImportant(this._event, observationId, important, callback);
 };
 
 Observation.prototype.removeImportant = function(observation, callback) {
