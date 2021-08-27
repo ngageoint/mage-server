@@ -108,26 +108,28 @@ Observation.prototype.validate = function(observation) {
 
   // Validate forms min/max occurrences
   const formError = {};
-  this._event.forms.forEach(formDefinition => {
-    formDefinitions[formDefinition._id] = formDefinition;
+  this._event.forms
+    .filter(form => !form.archived)
+    .forEach(formDefinition => {
+      formDefinitions[formDefinition._id] = formDefinition;
 
-    const count = formCount[formDefinition.id] || 0;
-    if (formDefinition.min && count < formDefinition.min) {
-      formError[formDefinition.id] = {
-        error: 'min',
-        message: `${formDefinition.name} form must be included in observation at least ${formDefinition.min} times`
+      const count = formCount[formDefinition.id] || 0;
+      if (formDefinition.min && count < formDefinition.min) {
+        formError[formDefinition.id] = {
+          error: 'min',
+          message: `${formDefinition.name} form must be included in observation at least ${formDefinition.min} times`
+        }
+
+        message += `\u2022 ${formDefinition.name} form must be included in observation at least ${formDefinition.min} times\n`;
+      } else if  (formDefinition.max && (count > formDefinition.max)) {
+        formError[formDefinition.id] = {
+          error: 'max',
+          message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times`
+        }
+
+        message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times\n`;
       }
-
-      message += `\u2022 ${formDefinition.name} form must be included in observation at least ${formDefinition.min} times\n`;
-    } else if  (formDefinition.max && (count > formDefinition.max)) {
-      formError[formDefinition.id] = {
-        error: 'max',
-        message: `${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times`
-      }
-
-      message += `\u2022 ${formDefinition.name} form cannot be included in observation more than ${formDefinition.max} times\n`;
-    }
-  });
+    });
 
   // TODO attachment-work, validate attachment restrictions and min/max
 
