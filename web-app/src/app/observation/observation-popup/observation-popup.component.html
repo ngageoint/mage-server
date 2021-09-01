@@ -1,16 +1,4 @@
 <div class="item">
-  <div *ngIf="observation?.important" class="item-important">
-    <mat-icon class="item-important--icon">flag</mat-icon>
-    <div>
-      <div>
-        <span class="item-important--overline">Flagged By {{observation?.important?.user?.displayName}}</span>
-      </div>
-      <div class="item-important--description">
-        {{observation?.important?.description}}
-      </div>
-    </div>
-  </div>
-
   <div class="item-header">
     <div class="item-header-content">
       <div class="item-overline">
@@ -23,14 +11,14 @@
 
       <div *ngIf="primaryField?.value">
         <div class="item-header-text">
-          <div [ngSwitch]="primaryField?.field?.type">
-            <div *ngSwitchCase="'geometry'">
+          <span [ngSwitch]="primaryField?.field?.type">
+            <span *ngSwitchCase="'geometry'">
               {{primaryField?.value | geometry:5}}
-            </div>
-            <div *ngSwitchDefault>
+            </span>
+            <span *ngSwitchDefault>
               {{primaryField?.value}}
-            </div>
-          </div>
+            </span>
+          </span>
         </div>
       </div>
 

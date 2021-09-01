@@ -7,8 +7,8 @@
       <div class="navigation__title">
         <span>{{primaryFeedField?.value}}</span>
       </div>
-
-      <button *ngIf="canEdit" mat-button (click)="onEdit()">EDIT</button>
+  
+      <button *ngIf="canEdit" mat-button (click)="editObservation()">EDIT</button>
     </mat-toolbar-row>
   </mat-toolbar>
 
@@ -38,14 +38,14 @@
 
           <div *ngIf="primaryFeedField.value">
             <div class="item-header-text">
-              <div [ngSwitch]="primaryFeedField.field?.type">
-                <div *ngSwitchCase="'geometry'">
+              <span [ngSwitch]="primaryFeedField.field?.type">
+                <span *ngSwitchCase="'geometry'">
                   {{primaryFeedField?.value | geometry:5}}
-                </div>
-                <div *ngSwitchDefault>
+                </span>
+                <span *ngSwitchDefault>
                   {{primaryFeedField?.value}}
-                </div>
-              </div>
+                </span>
+              </span>
             </div>
           </div>
 
@@ -78,6 +78,11 @@
         <button mat-button color="primary" (click)="onObservationLocationClick()" class="actions__location-button">
           <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
         </button>
+        <span class="item-location-accuracy" *ngIf="observation?.properties?.accuracy">
+          <span class="item-location-provider">{{observation.properties?.provider}} </span>
+          <span>&#177;</span>
+          <span> {{observation.properties?.accuracy | number:'0.0-5'}}m</span>
+        </span>
       </div>
 
       <mat-divider></mat-divider>
@@ -113,24 +118,16 @@
               <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
             </div>
 
-            <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download" matTooltipPosition="above">
-              <mat-icon>save_alt</mat-icon>
-            </a>
+            <button *ngIf="canEdit" mat-icon-button (click)="onOptions()" class="actions--inactive">
+              <mat-icon>more_vert</mat-icon>
+            </button>
           </div>
         </div>
       </mat-card-actions>
     </mat-card>
 
-    <mat-card *ngIf="observation?.attachments?.length" class="observation-attachments">
-      <mat-grid-list cols="2" rowHeight="210px" gutterSize="4px">
-        <mat-grid-tile *ngFor="let attachment of observation?.attachments; first as isFirst" [rowspan]="1" [colspan]="isFirst && (observation?.attachments?.length % 2 === 1) ? 2 : 1">
-          <observation-attachment [observation]="observation" [attachment]="attachment" clickable="true"></observation-attachment>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </mat-card>
-
-    <div class="form-card" *ngFor="let form of observationForm.forms">
-      <observation-view-form [form]="form"></observation-view-form>
+    <div class="form-card" *ngFor="let form of observationForm.forms; let i = index">
+      <observation-view-form [form]="form" [attachments]="observation.attachments" [expand]="i === 0"></observation-view-form>
     </div>
   </div>
 </div>

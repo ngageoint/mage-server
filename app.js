@@ -1,12 +1,18 @@
 const mongoose = require('mongoose'),
+  util = require('util')
   fs = require('fs-extra'),
   environment = require('./environment/env'),
   log = require('./logger');
 
 const mongooseLogger = log.loggers.get('mongoose');
 
-mongoose.set('debug', function (collection, method, query, doc, options) {
-  mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
+// mongoose.set('debug', true);
+mongoose.set('debug', function (collection, method, ...methodArgs) {
+  const formatter = (arg) => {
+    return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');
+  };
+
+  mongooseLogger.log('mongoose', `${collection}.${method}` + `(${methodArgs.map(formatter).join(', ')})`)
 });
 
 mongoose.Error.messages.general.required = "{PATH} is required.";

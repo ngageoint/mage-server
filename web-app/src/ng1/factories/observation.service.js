@@ -1,11 +1,11 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
 module.exports = ObservationService;
 
 ObservationService.$inject = ['$q', '$httpParamSerializer', 'Observation', 'ObservationAttachment', 'ObservationState', 'ObservationImportant', 'ObservationFavorite', 'LocalStorageService'];
 
 function ObservationService($q, $httpParamSerializer, Observation, ObservationAttachment, ObservationState, ObservationImportant, ObservationFavorite, LocalStorageService) {
-  var service = {
+  const service = {
     getObservationsForEvent: getObservationsForEvent,
     saveObservationForEvent: saveObservationForEvent,
     archiveObservationForEvent: archiveObservationForEvent,
@@ -112,11 +112,17 @@ function ObservationService($q, $httpParamSerializer, Observation, ObservationAt
   }
 
   function addAttachmentToObservationForEvent(event, observation, attachment) {
-    observation.attachments.push(attachment);
+    const attachments = observation.attachments.slice();
+    const update = attachments.find(a => a.id === attachment.id);
+    if (update) {
+      update.url = attachment.url;
+    }
+
+    observation.attachments = attachments;
   }
 
   function deleteAttachmentInObservationForEvent(event, observation, attachment) {
-    var deferred = $q.defer();
+    const deferred = $q.defer();
 
     ObservationAttachment.delete({eventId: event.id, observationId: observation.id, id: attachment.id}, function() {
       observation.attachments = _.reject(observation.attachments, function(a) { return attachment.id === a.id; });

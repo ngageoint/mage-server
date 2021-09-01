@@ -3,7 +3,7 @@
   <img *ngIf="attachment?.preview" class="upload-preview" [src]="attachment?.preview" />
 </div>
 <div class="upload-delete" *ngIf="attachment?.preview">
-  <button mat-mini-fab color="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.markedForDelete">
+  <button mat-mini-fab color="warn" (click)="removeAttachment(attachment?.id)" [disabled]="attachment?.action === actions.DELETE">
     <mat-icon>delete</mat-icon>
   </button>
 </div>

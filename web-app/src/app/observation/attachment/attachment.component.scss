@@ -16,6 +16,8 @@
 .media-unknown {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   color: #eee;
   background-color: #555;
 }

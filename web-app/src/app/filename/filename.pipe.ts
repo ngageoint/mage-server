@@ -9,7 +9,7 @@ export class FilenamePipe implements PipeTransform {
     if (!value || !limit) return value;
 
     let name = value.substr(0, value.lastIndexOf('.'));
-    name = name.length > 6 ? name.substring(0, 5) + '~' : name
+    name = name.length > limit ? name.substring(0, limit - 1) + '~' : name
     return name + value.substr(value.lastIndexOf('.'));
   }
 }

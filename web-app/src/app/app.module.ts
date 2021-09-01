@@ -14,6 +14,7 @@ import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-
 
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -44,8 +45,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatStepperModule } from '@angular/material/stepper';
 
-import { MatDatetimepickerModule } from '@nader-eloshaiker/mat-datetimepicker'
-import { MatMomentDatetimeModule } from '@nader-eloshaiker/mat-datetimepicker-moment'
+import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
+import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
@@ -78,7 +79,6 @@ import { ObservationViewComponent } from './observation/observation-view/observa
 import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
 import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
 import { TokenInterceptorService } from './http/token-interceptor.service';
-import { ObservationFormComponent } from './observation/observation-form/observation-form.component';
 import { ObservationListComponent } from './observation/observation-list/observation-list.component';
 import { UserViewComponent } from './user/user-view/user-view.component';
 import { UserListItemComponent } from './user/user-list/user-list-item.component';
@@ -92,6 +92,7 @@ import {
   geometryServiceProvider,
   observationServiceProvider,
   filterServiceProvider,
+  locationServiceProvider,
   userServiceProvider,
   settingsProvider,
   teamProvider,
@@ -110,8 +111,6 @@ import {
 } from './observation/observation-view/observation-view';
 
 import {
-  MinValueDirective,
-  MaxValueDirective,
   MGRSValidatorDirective,
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -138,6 +137,15 @@ import { PasswordPolicyComponent } from './admin/admin-settings/authentication-s
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
+import { CommonModule } from '@angular/common';
+import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
+import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
+import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
+import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
+import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
+import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
+import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
+import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 
 @NgModule({
   declarations: [
@@ -153,13 +161,14 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
-    MinValueDirective,
-    MaxValueDirective,
     MGRSValidatorDirective,
+    FeedPanelComponent,
     ObservationListItemComponent,
     ObservationEditComponent,
     ObservationDeleteComponent,
+    ObservationEditAttachmentComponent,
     ObservationEditFormComponent,
+    ObservationEditFormPickerComponent,
     ObservationEditMultiselectComponent,
     ObservationEditCheckboxComponent,
     ObservationEditSelectComponent,
@@ -173,6 +182,7 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     ObservationEditGeometryFormComponent,
     ObservationEditDateComponent,
     ObservationViewComponent,
+    ObservationViewAttachmentComponent,
     ObservationViewTextComponent,
     ObservationViewTextareaComponent,
     ObservationViewCheckboxComponent,
@@ -181,8 +191,8 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     ObservationViewMultiselectdropdownComponent,
     ObservationViewFormComponent,
     ObservationFavoritesComponent,
-    ObservationFormComponent,
     ObservationListComponent,
+    ObservationOptionsComponent,
     MapClipComponent,
     BootstrapComponent,
     AttachmentComponent,
@@ -210,9 +220,16 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     IconUploadComponent,
     DatetimePickerComponent,
     ExportComponent,
-    ExportDialogComponent
+    ExportDialogComponent,
+    ObservationEditFormPickerComponent,
+    ObservationOptionsComponent,
+    ObservationEditDiscardComponent,
+    ObservationEditPasswordComponent,
+    ObservationViewPasswordComponent,
+    PasswordPipe
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     HttpClientModule,
     UpgradeModule,
@@ -222,6 +239,7 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     BrowserAnimationsModule,
     DragDropModule,
     MatBadgeModule,
+    MatBottomSheetModule,
     MatDialogModule,
     MatButtonToggleModule,
     MatNativeDateModule,
@@ -276,6 +294,7 @@ import { DatetimePickerComponent } from './datetime-picker/datetime-picker.compo
     geometryServiceProvider,
     observationServiceProvider,
     localStorageServiceProvider,
+    locationServiceProvider,
     settingsProvider,
     teamProvider,
     eventProvider,

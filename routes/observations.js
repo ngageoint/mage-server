@@ -1,6 +1,6 @@
 module.exports = function(app, security) {
 
-  var async = require('async')
+  const async = require('async')
     , api = require('../api')
     , log = require('winston')
     , archiver = require('archiver')
@@ -15,13 +15,15 @@ module.exports = function(app, security) {
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , {default: upload} = require('../upload')
+    , Media = require('../validation/media')
+    , FileType = require('file-type')
     , passport = security.authentication.passport;
 
-  var sortColumnWhitelist = ["lastModified"];
+  const sortColumnWhitelist = ["lastModified"];
 
   function transformOptions(req) {
     return {
-      eventId: req.event._id,
+      event: req.event,
       path: req.getPath().match(/(.*observations)/)[0]
     };
   }
@@ -90,6 +92,28 @@ module.exports = function(app, security) {
     }
   }
 
+  function validateAttachmentFile(req, res, next) {
+    FileType.fromFile(req.file.path).then(fileType => {
+      const media = new Media(fileType.mime);
+      const attachment = req.observation.attachments.find(attachment => attachment._id.toString() === req.params.attachmentId);
+      const observationForm = req.observation.properties.forms.find(observationForm => {
+        return observationForm._id.toString() === attachment.observationFormId.toString()
+      });
+
+      if (!observationForm) return res.status(400).send('Attachment form not found');
+      const formDefinition = req.event.forms.find(form => form._id === observationForm.formId);
+
+      const fieldDefinition = formDefinition.fields.find(field => field.name === attachment.fieldName);
+      if (!fieldDefinition) return res.status(400).send('Attachment field not found');
+
+      if (!media.validate(fieldDefinition.allowedAttachmentTypes)) {
+        return res.status(400).send(`Invalid attachment '${attachment.name}', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(' or ')}`);
+      }
+
+      next();
+    });
+  }
+
   function validateCreateOrUpdateAccess(req, res, next) {
     req.existingObservation ?
       validateObservationUpdateAccess(req, res, next) :
@@ -148,11 +172,6 @@ module.exports = function(app, security) {
       if (deviceId) {
         req.observation.deviceId = deviceId;
       }
-      const state = { name: 'active' };
-      if (userId) {
-        state.userId = userId;
-      }
-      req.observation.states = [state];
     }
 
     req.observation.type = req.body.type;
@@ -164,6 +183,8 @@ module.exports = function(app, security) {
     if (req.body.properties) {
       req.observation.properties = req.body.properties;
     }
+
+    req.observation.attachments = req.existingObservation ? req.existingObservation.attachments : [];
 
     next();
   }
@@ -292,7 +313,7 @@ module.exports = function(app, security) {
       new api.Observation().createObservationId(function(err, doc) {
         if (err) return next(err);
 
-        var response = observationXform.transform(doc, transformOptions(req));
+        const response = observationXform.transform(doc, transformOptions(req));
         res.status(201).json(response);
       });
     }
@@ -306,15 +327,28 @@ module.exports = function(app, security) {
     populateObservation,
     populateUserFields,
     function (req, res, next) {
-      new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
-        if (err) {
-          return next(err);
+      const existingObservation = req.existingObservation;
+      req.observation.properties.forms.map(observationForm => {
+        if (existingObservation) {
+          const exisitingForm = existingObservation.properties.forms.find(exisitingForm => exisitingForm._id.toString() === observationForm.id);
+          if (exisitingForm) {
+            observationForm._id = exisitingForm._id;
+            delete observationForm.id;
+          }
         }
+
+        return observationForm;
+      });
+
+      new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
+        if (err) return next(err);
+
         if (!updatedObservation) {
           return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
         }
-        const body = observationXform.transform(updatedObservation, transformOptions(req));
-        res.json(body);
+
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
       });
     }
   );
@@ -326,9 +360,9 @@ module.exports = function(app, security) {
     getUserForObservation,
     getIconForObservation,
     function (req, res) {
-      var formMap = {};
+      const formMap = {};
       req.event.forms.forEach(function (form) {
-        var fieldsByName = {};
+        const fieldsByName = {};
         form.fields.forEach(function (field) {
           fieldsByName[field.name] = field;
         });
@@ -337,7 +371,7 @@ module.exports = function(app, security) {
         formMap[form.id] = form;
       });
 
-      var archive = archiver('zip');
+      const archive = archiver('zip');
       archive.pipe(res);
 
       app.render('observation', {
@@ -406,7 +440,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
+    validateObservationCreateAccess(false),
     function (req, res, next) {
       new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
         if (err) {
@@ -424,14 +458,14 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
+    validateObservationCreateAccess(false),
     function (req, res, next) {
 
       new api.Observation(req.event).removeFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.observationIdInPath + " does not exist");
 
-        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       });
     }
@@ -442,7 +476,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
-      var important = {
+      const important = {
         userId: req.user._id,
         timestamp: new Date(),
         description: req.body.description
@@ -452,7 +486,7 @@ module.exports = function(app, security) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
-        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       });
     }
@@ -468,7 +502,7 @@ module.exports = function(app, security) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
-        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       });
     }
@@ -502,56 +536,25 @@ module.exports = function(app, security) {
     }
   );
 
-  app.post(
-    '/api/events/:eventId/observations/:observationId/attachments',
-    passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
-    upload.single('attachment'),
-    function(req, res, next) {
-      if (!req.file) {
-        return res.status(400).send('no attachment');
-      }
-      new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
-        if (err) {
-          return next(err);
-        }
-        const observation = req.observation;
-        observation.attachments = [attachment.toObject()];
-        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
-      });
-    }
-  );
-
-  app.get(
-    '/api/events/:eventId/observations/:observationIdInPath/attachments',
-    passport.authenticate('bearer'),
-    validateObservationReadAccess,
-    function(req, res, next) {
-      var fields = {attachments: true};
-      var options = {fields: fields};
-      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
-        if (err) {
-          return next(err);
-        }
-        var response = observationXform.transform(observation, transformOptions(req));
-        res.json(response.attachments);
-      });
-    }
-  );
-
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),
     validateObservationUpdateAccess,
     upload.single('attachment'),
-    function(req, res, next) {
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function(err, attachment) {
-        if (err) {
-          return next(err);
-        }
-        const observation = req.observation;
-        observation.attachments = [attachment.toObject()];
-        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
+    validateAttachmentFile,
+    function (req, res, next) {
+      if (!req.file) {
+        return res.status(400).send('no attachment');
+      }
+
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function (err, attachment) {
+        if (err) return next(err);
+
+        if (!attachment) return res.sendStatus(404);
+
+        req.observation.attachments = [attachment];
+        const response = observationXform.transform(req.observation, transformOptions(req)).attachments[0]
+        return res.json(response);
       });
     }
   );
@@ -564,17 +567,16 @@ module.exports = function(app, security) {
       new api.Attachment(req.event, req.observation).getById(req.params.attachmentId, {size: req.query.size}, function(err, attachment) {
         if (err) return next(err);
 
-        if (!attachment) return res.sendStatus(404);
+        if (!attachment || !attachment.path) return res.sendStatus(404);
 
-        var stream;
+        let stream;
         if (req.headers.range) {
-          var attachmentRangeEnd = attachment.size > 0 ? attachment.size - 1 : 0;
-          var range = req.headers.range;
-          var rangeParts = range.replace(/bytes=/, "").split("-");
-          var rangeStart = parseInt(rangeParts[0], 10);
-          var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachmentRangeEnd;
-          var contentLength = (rangeEnd - rangeStart) + 1;
-
+          const attachmentRangeEnd = attachment.size > 0 ? attachment.size - 1 : 0;
+          const range = req.headers.range;
+          const rangeParts = range.replace(/bytes=/, "").split("-");
+          const rangeStart = parseInt(rangeParts[0], 10);
+          const rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachmentRangeEnd;
+          const contentLength = (rangeEnd - rangeStart) + 1;
 
           stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
           stream.on('open', function() {
@@ -618,10 +620,9 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeDeleteAccess,
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).delete(req.params.attachmentId, function(err) {
-        if (err) {
-          return next(err);
-        }
+      new api.Attachment(req.event, req.observation).delete(req.params.attachmentId, err => {
+        if (err) return next(err);
+
         res.sendStatus(204);
       });
     }

@@ -1,8 +1,23 @@
 import { animate, style, transition, trigger } from '@angular/animations'
-import { ChangeDetectorRef, Component, DoCheck, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core'
-import { MatDialog } from '@angular/material/dialog';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
+import { DOCUMENT } from '@angular/common'
+import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
+import { DomSanitizer } from '@angular/platform-browser'
+import { first } from 'rxjs/operators'
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
-import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component'
+import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
+import * as moment from 'moment';
+import { ObservationEditDiscardComponent } from './observation-edit-discard/observation-edit-discard.component'
+import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar'
+import { MatIconRegistry } from '@angular/material/icon'
+import { MatDialog } from '@angular/material/dialog'
+import { MatBottomSheet } from '@angular/material/bottom-sheet'
+import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from '../attachment/attachment.service'
+import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
+import { AttachmentAction } from './observation-edit-attachment/observation-edit-attachment-action'
+
+export type ObservationFormControl = FormControl & { definition: any }
 
 @Component({
   selector: 'observation-edit',
@@ -29,29 +44,44 @@ import { ObservationDeleteComponent } from '../observation-delete/observation-de
     ])
   ]
 })
-export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
-  @Input() form: any
-  @Input() observation: any
+export class ObservationEditComponent implements OnInit, OnChanges {
   @Input() preview: boolean
+  @Input() observation: any
+  attachments =[]
 
   @Output() close = new EventEmitter<any>()
-  @Output() delete = new EventEmitter<any>()
 
   @ViewChild('editContent', { static: true }) editContent: ElementRef
+  @ViewChild('dragHandle', { static: true }) dragHandle: ElementRef
+  @ViewChildren('form') formElements: QueryList<ElementRef>
 
   event: any
+  formGroup: FormGroup
+  formDefinitions: any
+  timestampDefinition = {
+    title: '',
+    type: 'date',
+    name: 'timestamp',
+    required: true
+  }
+  geometryDefinition = {
+    title: 'Location',
+    type: 'geometry',
+    name: 'geometry',
+    required: true
+  }
 
   mask = false
   saving = false
   error: any
-  uploadId = 0
-  uploadAttachments = false
-  attachments = []
+
+  uploads: FileUpload[] = []
+  attachmentUrl: string
 
   isNewObservation: boolean
   canDeleteObservation: boolean
-  // TODO: define type in forms model
-  observationForm: any = {}
+  observationForm = {}
+  formOptions = { expand: false }
 
   initialObservation: any
   geometryStyle: any
@@ -61,59 +91,59 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
   secondaryField: any
   secondaryFieldValue: string
 
+  formRemoveSnackbar: MatSnackBarRef<SimpleSnackBar>
+
   constructor(
+    sanitizer: DomSanitizer,
+    matIconRegistry: MatIconRegistry,
     public dialog: MatDialog,
-    private changeDetector: ChangeDetectorRef,
+    private formBuilder: FormBuilder,
+    private bottomSheet: MatBottomSheet,
+    private snackBar: MatSnackBar,
+    private attachmentService: AttachmentService,
+    @Inject(DOCUMENT) private document: Document,
     @Inject(MapService) private mapService: any,
     @Inject(UserService) private userService: any,
     @Inject(FilterService) private filterService: any,
     @Inject(EventService) private eventService: any,
     @Inject(ObservationService) private observationService: any,
     @Inject(LocalStorageService) private localStorageService: any) {
+
+    matIconRegistry.addSvgIcon('handle', sanitizer.bypassSecurityTrustResourceUrl('assets/images/handle-24px.svg'));
   }
 
   ngOnInit(): void {
-    this.canDeleteObservation = this.hasEventUpdatePermission() || this.isCurrentUsersObservation() || this.hasUpdatePermissionsInEventAcl()
+    if (this.observation.id === 'new') {
+      this.formOptions.expand = true
+    }
+
+    this.canDeleteObservation = this.observation.id !== 'new' &&
+      (this.hasEventUpdatePermission() || this.isCurrentUsersObservation() || this.hasUpdatePermissionsInEventAcl())
+
+    this.attachmentService.upload$.subscribe(event => this.onAttachmentUpload(event))
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.observation  && changes.observation.currentValue) {
       this.event = this.eventService.getEventById(this.observation.eventId)
+      this.formDefinitions = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
+        map[form.id] = form
+        return map
+      }, {})
 
       this.isNewObservation = this.observation.id === 'new'
       this.initialObservation = JSON.parse(JSON.stringify(this.observation))
-      this.geometryStyle = { ...this.observation.style }
+
+      if (this.observation.style) {
+        this.geometryStyle = JSON.parse(JSON.stringify(this.observation.style))
+      }
 
       if (this.isNewObservation) {
         this.mapService.addFeaturesToLayer([this.observation], 'Observations')
       }
-    }
 
-    if (changes.form && changes.form.currentValue) {
-      const primaryForm = this.form.forms.length ? this.form.forms[0] : { fields: [] }
-      this.primaryField = primaryForm.fields.find(field => {
-        return field.name === primaryForm.primaryField
-      }) || {}
-
-      this.secondaryField = primaryForm.fields.find(field => {
-        return field.name === primaryForm.variantField
-      }) || {}
-    }
-  }
-
-  ngDoCheck(): void {
-    if (this.primaryField.value !== this.primaryFieldValue || this.secondaryField.value !== this.secondaryFieldValue) {
-      this.primaryFieldValue = this.primaryField.value
-      this.secondaryFieldValue = this.secondaryField.value
-
-      const observation = { ...this.observation }
-      this.formToObservation(this.form, observation)
-
-      const style = this.observationService.getObservationStyleForForm(observation, this.event, this.form.forms[0])
-      observation.style = style
-      this.geometryStyle = style
-
-      this.mapService.updateFeatureForLayer(observation, 'Observations')
+      this.toFormGroup(this.observation)
+      this.updatePrimarySecondary()
     }
   }
 
@@ -135,75 +165,98 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     return this.localStorageService.getToken()
   }
 
-  formToObservation(form, observation): any {
-    const geometry = form.geometryField.value;
+  // TODO multi-form build out validators here as well for each form control
+  toFormGroup(observation: any): void {
+    const timestampControl = new FormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
+    const geometryControl = new FormControl(observation.geometry, Validators.required);
 
-    // put all coordinates in -180 to 180
-    switch (geometry.type) {
-      case 'Point':
-        if (geometry.coordinates[0] < -180) geometry.coordinates[0] = geometry.coordinates[0] + 360
-        else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360
-        break;
-      case 'LineString':
-        for (let i = 0; i < geometry.coordinates.length; i++) {
-          const coord = geometry.coordinates[i];
-          while (coord[0] < -180) coord[0] = coord[0] + 360
-          while (coord[0] > 180) coord[0] = coord[0] - 360
-        }
-        break;
-      case 'Polygon':
-        for (let p = 0; p < geometry.coordinates.length; p++) {
-          const poly = geometry.coordinates[p];
-          for (let i = 0; i < poly.length; i++) {
-            const coord = poly[i];
-            while (coord[0] < -180) coord[0] = coord[0] + 360
-            while (coord[0] > 180) coord[0] = coord[0] - 360
-          }
-        }
-        break;
-    }
-    observation.geometry = geometry;
-
-    observation.properties.timestamp = form.timestampField.value;
-
-    observation.properties.forms = [];
-    form.forms.forEach(observationForm => {
-      const propertiesForm = {
-        formId: observationForm.id
-      };
-
-      const fields = observationForm.fields.filter(field => {
-        return !field.archived;
-      });
-
-      fields.forEach(field => {
-        propertiesForm[field.name] = field.value;
+    const formArray = new FormArray([])
+    const observationForms = observation.properties.forms || []
+    observationForms.forEach(observationForm => {
+      const formDefinition = this.formDefinitions[observationForm.formId]
+      const fieldGroup = new FormGroup({
+        id: new FormControl(observationForm.id),
+        formId: new FormControl(formDefinition.id)
       })
 
-      observation.properties.forms.push(propertiesForm);
+      formDefinition.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(field => {
+          const value = this.isNewObservation ? field.value : observationForm[field.name]
+          const fieldControl = new FormControl(value, field.required ? Validators.required : null)
+          fieldGroup.addControl(field.name, fieldControl)
+        })
+
+      formArray.push(fieldGroup)
     })
+
+    this.formGroup = this.formBuilder.group({
+      id: observation.id,
+      eventId: new FormControl(observation.eventId),
+      type: new FormControl(observation.type),
+      geometry: geometryControl,
+      properties: new FormGroup({
+        timestamp: timestampControl,
+        forms: formArray
+      })
+    })
+
+    if (observation.properties.forms.length === 0 && this.hasForms() && observation.id === 'new') {
+      this.pickForm()
+    }
+  }
+
+  updatePrimarySecondary(): void {
+    const forms = this.formGroup.get('properties').get('forms') as FormArray
+    if (forms.length) {
+      const primaryFormGroup = forms.at(0) as FormGroup
+      const definition = this.formDefinitions[primaryFormGroup.get('formId').value]
+
+      let primaryFieldValue
+      if (primaryFormGroup.contains(definition.primaryFeedField)) {
+        this.primaryField = definition.fields.find(field => field.name === definition.primaryFeedField)
+        primaryFieldValue = primaryFormGroup.get(definition.primaryFeedField).value
+      }
+
+      let secondaryFieldValue
+      if (primaryFormGroup.contains(definition.secondaryFeedField)) {
+        this.secondaryField = definition.fields.find(field => field.name === definition.secondaryFeedField)
+        secondaryFieldValue = primaryFormGroup.get(definition.secondaryFeedField).value
+      }
+
+      if ((this.primaryField && primaryFieldValue !== this.primaryFieldValue) || 
+          ((this.secondaryField && secondaryFieldValue !== this.secondaryFieldValue))) {
+        this.primaryFieldValue = this.primaryField ? primaryFieldValue : null
+        this.secondaryFieldValue = this.secondaryField ? secondaryFieldValue : null
+
+        const observation = this.formGroup.value
+
+        const style = this.observationService.getObservationStyleForForm(observation, this.event, definition)
+        observation.style = style
+        this.geometryStyle = style
+
+        this.mapService.updateFeatureForLayer(observation, 'Observations')
+      }
+    }
   }
 
   save(): void {
-    // TODO touch all fields so errors show
-    // Maybe just trigger form submit
-
-    if (!this.form.geometryField.value) {
-      this.error = {
-        message: 'Location is required'
-      }
-      return
+    if (this.formRemoveSnackbar) {
+      this.formRemoveSnackbar.dismiss()
     }
 
     this.saving = true
-    const markedForDelete = this.observation.attachments ? this.observation.attachments.filter(attachment => attachment.markedForDelete) : []
-    this.formToObservation(this.form, this.observation);
+    this.uploads = []
+
     // TODO look at this: this is a hack that will be corrected when we pull ids from the server
-    const id = this.observation.id;
-    if (id === 'new') {
-      delete this.observation.id;
+    const form = this.formGroup.getRawValue()
+    const id = form.id;
+    if (form.id === 'new') {
+      delete form.id
     }
-    this.eventService.saveObservation(this.observation).then(observation => {
+
+    this.eventService.saveObservation(form).then(observation => {
       // If this feature was added to the map as a new observation, remove it
       // as the event service will add it back to the map based on it new id
       // if it passes the current filter.
@@ -211,34 +264,47 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
         this.mapService.removeFeatureFromLayer({ id: id }, 'Observations')
       }
 
-      this.error = null;
+      this.error = null
       this.observation = observation
+      this.formGroup.get('id').setValue(observation.id)
 
-      if (this.attachments.length) {
-        this.uploadAttachments = true;
+      form.properties.forms.forEach(form => {
+        const formDefinition = this.formDefinitions[form.formId];
+        Object.keys(form).forEach(fieldName => {
+          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+          const value = form[fieldName];
+          if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
+            value.forEach(fieldAttachment => {
+              const attachment = observation.attachments.find(attachment => {
+                return !attachment.url &&
+                  attachment.name === fieldAttachment.name && 
+                  attachment.contentType == fieldAttachment.contentType
+              });
+
+              if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
+                fieldAttachment.attachmentId = attachment.id
+                this.uploads.push(attachment)
+              }
+            })
+          }
+        })
+      })
+
+      if (this.uploads.length) {
+        this.attachmentUrl = observation.url
       } else {
-        this.form = null
-        this.attachments = []
-      }
-
-      // delete any attachments that were marked for delete
-      markedForDelete.forEach(attachment => {
-        this.eventService.deleteAttachmentForObservation(this.observation, attachment);
-        observation.attachments = observation.attachments.filter(a => a.id !== attachment.id)
-      });
-
-      if (!this.uploadAttachments) {
-        this.saving = false
-        this.close.emit(observation)
+        this.close.emit(this.observation)
       }
     }, err => {
+      this.formGroup.markAllAsTouched()
+
       if (id === 'new') {
         this.observation.id = 'new'
       }
 
       this.saving = false;
       this.error = {
-        message: err.data
+        message: err.data.message
       }
     })
   }
@@ -251,77 +317,27 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
       this.mapService.removeFeatureFromLayer(this.observation, 'Observations')
     }
 
-    const attachments = this.observation.attachments || []
-    attachments.forEach(attachment => {
-      delete attachment.markedForDelete;
-    })
-
-    this.close.emit()
-  }
-
-  trackByAttachment(index: number, attachment: any): any {
-    return attachment.id;
-  }
-
-  allAttachments(): any[] {
-    const attachments = this.observation.attachments || [];
-    return attachments.concat(this.attachments)
-  }
-
-  onAttachmentFile(event): void {
-    const files = Array.from(event.target.files)
-    files.forEach(file => {
-      const id = this.uploadId++;
-      this.attachments.push({
-        id: id,
-        file: file
-      })
-    })
-
-    this.changeDetector.detectChanges()
-  }
-
-  onAttachmentRemove($event): void {
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-  }
-
-  onAttachmentUploaded($event): void {
-    this.eventService.addAttachmentToObservation(this.observation, $event.response);
-
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-    if (this.attachments.length === 0) {
-      this.saving = false;
-      this.uploadAttachments = false;
-      this.close.emit();
+    if (this.formRemoveSnackbar) {
+      this.formRemoveSnackbar.dismiss()
     }
-  }
 
-  onAttachmentError($event): void {
-    // TODO warn user in some way that attachment didn't upload
-    this.attachments = this.attachments.filter(attachment => attachment.id !== $event.id)
-
-    if (this.attachments.length === 0) {
-      this.saving = false;
-      this.uploadAttachments = false;
-      this.close.emit();
-    }
-  }
-
-  onDeleteObservation(): void {
-    this.dialog.open(ObservationDeleteComponent, {
-      width: '500px',
-      data: this.observation,
-      autoFocus: false
+    this.dialog.open(ObservationEditDiscardComponent, {
+      width: '300px',
+      autoFocus: false,
+      position: { left: '75px' }
     }).afterClosed().subscribe(result => {
-      if (result === 'delete') {
-        this.delete.emit({
-          observation: this.observation
-        })
+      if (result === 'discard') {
+        this.close.emit()
       }
     })
   }
 
-  onGeometryEdit(event: any): void {
+  hasForms(): boolean {
+    const definitions = this.formDefinitions || {}
+    return Object.keys(definitions).length > 0
+  }
+
+  onGeometryEdit(event): void {
     this.mask = event.action === 'edit';
 
     if (this.mask) {
@@ -333,8 +349,101 @@ export class ObservationEditComponent implements OnInit, OnChanges, DoCheck {
     }
   }
 
-  onGeometryChanged(event: any): void {
-    this.form.geometryField.value = event.feature ? event.feature.geometry : null;
+  pickForm(): void {
+    this.formOptions.expand = true
+    this.bottomSheet.open(ObservationEditFormPickerComponent, {
+      panelClass: 'feed-panel'
+    }).afterDismissed().subscribe(form => {
+      if (!form) return
+
+      const fieldsGroup = new FormGroup({
+        formId: new FormControl(form.id)
+      });
+
+      form.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(field => {
+          const fieldControl = new FormControl(field.value, field.required ? Validators.required : null)
+          fieldsGroup.addControl(field.name, fieldControl)
+        });
+
+      (this.formGroup.get('properties').get('forms') as FormArray).push(fieldsGroup);
+
+      this.formElements.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
+        queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
+      })
+    })
   }
 
+  removeForm(formGroup: FormGroup): void {
+    const formArray = this.formGroup.get('properties').get('forms') as FormArray
+    const index = formArray.controls.indexOf(formGroup)
+    formArray.removeAt(index)
+
+    this.formRemoveSnackbar = this.snackBar.open('Form Deleted', 'UNDO', {
+      duration: 5000,
+      panelClass: 'form-remove-snackbar',
+    })
+    
+    this.formRemoveSnackbar.onAction().subscribe(() => {
+      formArray.insert(index, formGroup)
+    })
+  }
+
+  reorderForm(event: CdkDragDrop<any, any>): void {
+    if (event.currentIndex === event.previousIndex) return
+
+    const forms = (this.formGroup.get('properties').get('forms') as FormArray).controls
+    moveItemInArray(forms, event.previousIndex, event.currentIndex)
+
+    // re-calculate primary/secondary based new first form
+    if (event.currentIndex === 0 || event.previousIndex === 0) {
+      this.updatePrimarySecondary()
+    }
+  }
+
+  dragStart(event: DragEvent): void {
+    this.document.body.classList.add('item-drag')
+  }
+
+  dragEnd(event: DragEvent): void {
+    this.document.body.classList.remove('item-drag')
+  }
+
+  private onAttachmentUpload(event: AttachmentUploadEvent): void {
+    switch (event.status) {
+      case AttachmentUploadStatus.COMPLETE: {
+        this.eventService.addAttachmentToObservation(this.observation, event.response)
+
+        this.uploads = this.uploads.filter(attachment => attachment.id !== event.upload.attachmentId)
+        if (this.uploads.length === 0) {
+          this.saving = false
+          this.close.emit(this.observation)
+        }
+
+        break;
+      }
+      case AttachmentUploadStatus.ERROR: {
+        this.snackBar.open(event.response?.error, null, { duration: 4000 })
+
+        const formArray = this.formGroup.get('properties').get('forms') as FormArray
+        formArray.controls.forEach((formGroup: FormGroup) => {
+          const formId = formGroup.get('formId').value
+          const formDefinition = this.formDefinitions[formId];
+          Object.keys(formGroup.controls).forEach(fieldName => {
+            const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+            if (fieldDefinition && fieldDefinition.type === 'attachment') {
+              let attachments = formGroup.get(fieldName).value || []
+              attachments = attachments.filter(attachment => attachment.attachmentId !== event.upload.attachmentId)
+              formGroup.get(fieldName).setValue(attachments)
+            }
+          })
+        })
+      
+        this.saving = false;
+        break;
+      }
+    }
+  }
 }

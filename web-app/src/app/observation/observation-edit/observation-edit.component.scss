@@ -24,6 +24,7 @@
   bottom: 0;
   width: 100%;
   overflow-y: auto;
+  padding-bottom: 54px;
 }
 
 .edit-content--scroll-lock {
@@ -31,7 +32,7 @@
 }
 
 .edit-banner {
-  background: white;
+  background: #e7e7e7;
   border-bottom: 1px solid rgba($color: #000000, $alpha: .12);
   display: flex;
   flex-direction: column;
@@ -40,33 +41,30 @@
   z-index: 1;
 }
 
-.edit-banner--content {
-  background: white;
-  margin-top: 24px;
-  margin-bottom: 12px;
+.edit-banner-container {
+  margin: 16px;
   display: flex;
-  align-items: center;
+  flex-direction: row;
 }
 
-.edit-banner--content mat-icon {
-  margin-left: 16px;
-  margin-right: 16px;
-  font-size: 40px;
-  width: 40px;
-  height: 40px;
-  color: rgba(176,0,32, 0.87);
+.edit-banner-content {
+  display: flex;
+  flex-direction: column;
 }
 
-.edit-banner--content__text {
-  font-size: 1rem;
+.edit-banner-content__title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: rgba(213, 0, 0, 1);
+}
+
+.edit-banner-content__summary {
+  font-size: 16px;
+  white-space: pre-wrap;
   color: rgba($color: #000000, $alpha: .87);
 }
 
-.edit-banner--content__text:first-letter {
-  text-transform: uppercase;
-}
-
-.edit-banner--actions {
+.edit-banner-actions {
   display: flex;
   justify-content: flex-end;
   margin-right: 8px;
@@ -87,31 +85,54 @@
   opacity: .2;
 }
 
-.edit-attachments { 
-  margin: 16px 8px;
+.add-form {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
 }
 
-.edit-attachments {
-  padding: 4px;
+.extended-fab-button {
+  width: unset;
+  padding: 0 16px;
+  border-radius: 24px;
+  height: 48px;
+
+  .mat-icon {
+    margin-right: 12px;
+    color: white;
+  }
+
+  .extended-fab-button__text {
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: white;
+  }
 }
 
-.edit-attachments__grid {
-  margin-bottom: 16px;
+:host .extended-fab-button > ::ng-deep.mat-button-wrapper {
+  padding: unset;
 }
 
-.delete {
-  margin: 16px;
+.edit-forms {
+  padding-bottom: 16px;
 }
 
-.delete__button {
-  width: 100%;
+.form-drag-handle {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: rgba(0, 0, 0, 0.6);
 }
 
-// Need this to override bootstrap, can be removed when bootstrap is removed
-input[type="file"] { 
-  display: none;
+.cdk-drag-placeholder {
+  opacity: 0;
 }
 
-.add__button {
-  width: 100%;
+.cdk-drop-list-dragging {
+  cursor: grabbing !important;
+}
+
+.cdk-drag-handle {
+  cursor: grab;
 }

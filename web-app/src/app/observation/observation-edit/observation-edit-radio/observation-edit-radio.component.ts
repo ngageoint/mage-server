@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
 /**
  * TODO: move to forms model module (which doesn't exist yet)
@@ -6,7 +7,6 @@ import { Component, Input } from '@angular/core';
 interface RadioField {
   title: string,
   name: string,
-  value: string,
   required: boolean,
   choices: { title: string }[]
 }
@@ -17,5 +17,6 @@ interface RadioField {
   styleUrls: ['./observation-edit-radio.component.scss']
 })
 export class ObservationEditRadioComponent {
-  @Input() field: RadioField
+  @Input() formGroup: FormGroup
+  @Input() definition: RadioField
 }

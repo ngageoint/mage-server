@@ -24,14 +24,14 @@
 
         <div *ngIf="primaryFeedField.value">
           <div class="item-header-text">
-            <div [ngSwitch]="primaryFeedField.field?.type">
-              <div *ngSwitchCase="'geometry'">
+            <span [ngSwitch]="primaryFeedField.field?.type">
+              <span *ngSwitchCase="'geometry'">
                 {{primaryFeedField?.value | geometry:5}}
-              </div>
-              <div *ngSwitchDefault>
+              </span>
+              <span *ngSwitchDefault>
                 {{primaryFeedField?.value}}
-              </div>
-            </div>
+              </span>
+            </span>
           </div>
         </div>
 
@@ -50,12 +50,12 @@
       </div>
 
       <div class="item-thumbnail">
-        <img [src]="observation.style.iconUrl" />
+        <img [src]="observation.style?.iconUrl" />
       </div>
     </div>
 
-    <div *ngIf="observation.attachments && observation.attachments.length > 0" class="item-media" matCardImage>
-      <observation-attachment [observation]="observation" [attachment]="observation.attachments[0]" [label]="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></observation-attachment>
+    <div *ngIf="observation.attachments[0]?.url" class="item-media" matCardImage>
+      <observation-attachment [attachment]="observation.attachments[0]" [label]="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></observation-attachment>
     </div>
   </div>
 

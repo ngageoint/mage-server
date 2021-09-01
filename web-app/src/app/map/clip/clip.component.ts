@@ -1,10 +1,17 @@
 import { Component, Input, ElementRef, Inject, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
 import { Feature } from 'geojson'
-import { Map, GeoJSON, PathOptions, Layer, FixedWidthMarker, control, TileLayer, WMSOptions } from 'leaflet'
+import { Map, GeoJSON, PathOptions, Layer, FixedWidthMarker, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
 import { LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 
 interface FeatureWithStyle extends Feature {
   style?: any
+}
+
+export interface PointAccuracy {
+  latlng: LatLng,
+  radius: number,
+  color: string,
+  zoomTo: boolean
 }
 
 @Component({
@@ -14,11 +21,13 @@ interface FeatureWithStyle extends Feature {
 })
 export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   @Input() feature: Feature
+  @Input() accuracy: PointAccuracy
 
   @ViewChild('map', { static: true }) mapElement: ElementRef
 
   map: Map
   layer: GeoJSON
+  accuracyLayer: Circle
   layers = {}
   zoomControl = control.zoom()
   mapListener = {
@@ -28,7 +37,6 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     @Inject(MapService) private mapService: any,
     @Inject(LocalStorageService) private localStorageService: any) {
-
   }
 
   ngOnInit(): void {
@@ -119,7 +127,22 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
       }
     })
 
+    let bounds = this.layer.getBounds()
+    if (this.accuracy && this.accuracy.radius > 0) {
+      this.accuracyLayer = new Circle(this.accuracy.latlng, this.accuracy.radius, {
+        color: this.accuracy.color,
+        fillColor: this.accuracy.color,
+        fillOpacity: 0.15,
+        weight: 2,
+        opacity: 0.5
+      }).addTo(this.map)
+
+      if (this.accuracy.zoomTo) {
+        bounds = this.accuracyLayer.getBounds()
+      }
+    }
+
     this.layer.addTo(this.map)
-    this.map.fitBounds(this.layer.getBounds())
+    this.map.fitBounds(bounds)
   }
 }

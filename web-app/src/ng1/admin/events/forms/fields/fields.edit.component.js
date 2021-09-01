@@ -23,6 +23,9 @@ class AdminFormFieldsEditController {
     this.saveTime = 0;
 
     this.fieldTypes = [{
+      name: 'attachment',
+      title: 'Attachment'
+    },{
       name: 'checkbox',
       title: 'Checkbox'
     },{
@@ -65,6 +68,17 @@ class AdminFormFieldsEditController {
       hidden: true
     }];
 
+    this.attachmentAllowedTypes = [{
+      name: 'image',
+      title: 'Image'
+    }, {
+      name: 'video',
+      title: 'Video'
+    }, {
+      name: 'audio',
+      title: 'Audio'
+    }]
+
     this.fieldNameMap = _.indexBy(this.fieldTypes, 'name');
     this.newField = this.createField();
 
@@ -79,7 +93,7 @@ class AdminFormFieldsEditController {
       this.event = event;
   
       if (this.$stateParams.formId && this.$stateParams.formId !== 'new') {
-        var form = _.find(event.forms, form => {
+        const form = _.find(event.forms, form => {
           return form.id.toString() === this.$stateParams.formId;
         });
         this.form = new this.Form(form);
@@ -110,7 +124,7 @@ class AdminFormFieldsEditController {
 
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
-        var modalInstance = this.$uibModal.open({
+        const modalInstance = this.$uibModal.open({
           component: 'adminEventFormEditUnsaved'
         });
   
@@ -130,7 +144,7 @@ class AdminFormFieldsEditController {
     if (!this.form) return;
     if (this.saving) return;
 
-    var dirty = _.some(Object.values(this.fieldForms), form => { return form && form.$dirty; });
+    const dirty = _.some(Object.values(this.fieldForms), form => { return form && form.$dirty; });
     if (dirty) {
       this.unSavedChanges = true;
     }
@@ -159,13 +173,21 @@ class AdminFormFieldsEditController {
     return this.fieldNameMap[field.type].title;
   }
 
+  onFieldTypeChange() {
+    if (this.newField.type === 'attachment') {
+      this.newField.allowedAttachmentTypes = this.attachmentAllowedTypes.map(type => type.name);
+    } else {
+      delete this.newField.attachmentAllowedTypes;
+    }
+  }
+
   addField() {
     if (this.newFieldForm.$invalid) {
       return;
     }
 
-    var fields = this.form.fields;
-    var id = _.isEmpty(fields) ? 1 : _.max(fields, field => { return field.id; }).id + 1;
+    const fields = this.form.fields;
+    const id = _.isEmpty(fields) ? 0 : _.max(fields, field => { return field.id; }).id + 1;
 
     this.newField.id = id;
     this.newField.name =  'field' + id;
@@ -187,7 +209,7 @@ class AdminFormFieldsEditController {
   }
 
   removeField(id) {
-    var deletedField = _.find(this.form.fields, field => { return id === field.id; });
+    const deletedField = _.find(this.form.fields, field => { return id === field.id; });
     if (deletedField) {
       deletedField.archived = true;
     }
@@ -201,13 +223,13 @@ class AdminFormFieldsEditController {
 
     // find first non-archived field above me
     // and switch our ids to re-order
-    var sortedFields = _.sortBy(this.form.fields, field => {
+    const sortedFields = _.sortBy(this.form.fields, field => {
       return field.id;
     });
 
-    var fieldToMoveDown = null;
-    for (var i = sortedFields.length - 1; i >= 0; i--) {
-      var field = sortedFields[i];
+    let fieldToMoveDown = null;
+    for (let i = sortedFields.length - 1; i >= 0; i--) {
+      const field = sortedFields[i];
       if (field.id < fieldToMoveUp.id && !field.archived) {
         fieldToMoveDown = field;
         break;
@@ -215,7 +237,7 @@ class AdminFormFieldsEditController {
     }
 
     if (fieldToMoveDown) {
-      var fieldToMoveDownId = fieldToMoveDown.id;
+      const fieldToMoveDownId = fieldToMoveDown.id;
       fieldToMoveDown.id = fieldToMoveUp.id;
       fieldToMoveUp.id = fieldToMoveDownId;
     }
@@ -229,13 +251,13 @@ class AdminFormFieldsEditController {
 
     // find the first non-archived field below me
     // and switch our ids to re-order
-    var sortedFields = _.sortBy(this.form.fields, field => {
+    const sortedFields = _.sortBy(this.form.fields, field => {
       return field.id;
     });
 
-    var fieldToMoveUp = null;
-    for (var i = 0; i < sortedFields.length; i++) {
-      var field = sortedFields[i];
+    let fieldToMoveUp = null;
+    for (let i = 0; i < sortedFields.length; i++) {
+      const field = sortedFields[i];
       if (field.id > fieldToMoveDown.id && !field.archived) {
         fieldToMoveUp = field;
         break;
@@ -243,7 +265,7 @@ class AdminFormFieldsEditController {
     }
 
     if (fieldToMoveUp) {
-      var fieldToMoveUpId = fieldToMoveUp.id;
+      const fieldToMoveUpId = fieldToMoveUp.id;
       fieldToMoveUp.id = fieldToMoveDown.id;
       fieldToMoveDown.id = fieldToMoveUpId;
     }
@@ -263,7 +285,7 @@ class AdminFormFieldsEditController {
   }
 
   save() {
-    var unarchivedFields = _.filter(this.form.fields, field => {
+    const unarchivedFields = _.filter(this.form.fields, field => {
       return !field.archived;
     });
     if (_.isEmpty(unarchivedFields)) {
@@ -284,7 +306,7 @@ class AdminFormFieldsEditController {
       this.formSaved = true;
       this.completeSave();
     }, response => {
-      var data = response.data || {};
+      const data = response.data || {};
       this.showError({
         title:  'Error Saving Form',
         message: data.errors ?
@@ -317,7 +339,7 @@ class AdminFormFieldsEditController {
   addOption(field, optionTitle) {
     field.choices = field.choices || new Array();
 
-    var choiceId = _.isEmpty(field.choices) ? 1 : _.max(field.choices, choice => { return choice.id; }).id + 1;
+    const choiceId = _.isEmpty(field.choices) ? 1 : _.max(field.choices, choice => { return choice.id; }).id + 1;
     field.choices.push({
       id: choiceId,
       title: optionTitle,
@@ -339,7 +361,7 @@ class AdminFormFieldsEditController {
   }
 
   reorderOption(field, option) {
-    var modalInstance = this.$uibModal.open({
+    const modalInstance = this.$uibModal.open({
       component: 'adminEventFormFieldOptionReorder',
       resolve: {
         option: () => {

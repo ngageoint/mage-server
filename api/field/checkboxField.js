@@ -1,4 +1,4 @@
-var util = require('util')
+const util = require('util')
   , Field = require('./field');
 
 function CheckboxField(fieldDefinition, form) {
@@ -7,10 +7,11 @@ function CheckboxField(fieldDefinition, form) {
 util.inherits(CheckboxField, Field);
 
 CheckboxField.prototype.validate = function() {
-  CheckboxField.super_.prototype.validate.call(this);
+  const error = CheckboxField.super_.prototype.validate.call(this);
+  if (error) return error;
 
   if (this.value != null && !isBoolean(this.value)) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a Boolean");
+    return { error: 'value', message: `${this.definition.title} must be a Boolean` }
   }
 };
 
