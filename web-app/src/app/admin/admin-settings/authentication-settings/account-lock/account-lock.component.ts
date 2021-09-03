@@ -42,4 +42,8 @@ export class AccountLockComponent implements OnInit {
             }
         }
     }
+
+    setDirty(): void {
+        this.strategy.isDirty = true;
+    }
 }
