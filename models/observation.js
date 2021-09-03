@@ -18,6 +18,8 @@ const FormSchema = new Schema({
 const PropertiesSchema = new Schema({
   timestamp: { type: Date, required: true },
   forms: [FormSchema]
+},{
+  strict: false
 });
 
 const StateSchema = new Schema({
