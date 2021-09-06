@@ -207,7 +207,8 @@ Observation.prototype.update = function(observationId, observation, callback) {
       EventEmitter.emit(ObservationEvents.events.update, updatedObservation.toObject({event: this._event}), this._event, this._user);
 
       // Remove any deleted attachments from file system
-      observation.properties.forms.forEach(observationForm => {
+      const {forms: observationForms = []}  = observation.properties || {};
+      observationForms.forEach(observationForm => {
         const formDefinition = this._event.forms.find(form => form._id === observationForm.formId);
         Object.keys(observationForm).forEach(fieldName => {
           const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);

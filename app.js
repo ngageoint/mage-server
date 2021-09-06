@@ -6,7 +6,6 @@ const mongoose = require('mongoose'),
 
 const mongooseLogger = log.loggers.get('mongoose');
 
-// mongoose.set('debug', true);
 mongoose.set('debug', function (collection, method, ...methodArgs) {
   const formatter = (arg) => {
     return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');

@@ -328,7 +328,8 @@ module.exports = function(app, security) {
     populateUserFields,
     function (req, res, next) {
       const existingObservation = req.existingObservation;
-      req.observation.properties.forms.map(observationForm => {
+      const {forms = []} = req.observation.properties || {}
+      forms.map(observationForm => {
         if (existingObservation) {
           const exisitingForm = existingObservation.properties.forms.find(exisitingForm => exisitingForm._id.toString() === observationForm.id);
           if (exisitingForm) {

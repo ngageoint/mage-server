@@ -325,8 +325,8 @@ exports.getObservationById = function(event, observationId, options, callback) {
 exports.updateObservation = function(event, observationId, update, callback) {
   let addAttachments = [];
   let removeAttachments = [];
-  update.properties.forms
-    .map(observationForm => {
+  const {forms = []} = update.properties || {};
+  forms.map(observationForm => {
       observationForm._id = observationForm._id || mongoose.Types.ObjectId();
       delete observationForm.id;
       return observationForm;
@@ -471,7 +471,12 @@ exports.removeFavorite = function (event, observationId, user, callback) {
 
 exports.addImportant = function(event, observationId, important, callback) {
   const update = { important};
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+
+  observationModel(event)
+    .findByIdAndUpdate(observationId, update, { new: true })
+    .populate({ path: 'userId', select: 'displayName' })
+    .populate({ path: 'important.userId', select: 'displayName' })
+    .exec(callback);
 }
 
 exports.removeImportant = function(event, id, callback) {

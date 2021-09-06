@@ -146,20 +146,25 @@ describe("observation create tests", function () {
       },
       properties: {
         timestamp: '2016-01-01T00:00:00'
-      }
+      },
+      forms: []
     });
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .yields(null, null);
+      .twice()
+      .onFirstCall()
+      .yields(null, null)
+      .onSecondCall()
+      .resolves(mockObservation);
 
-    sinon.mock(ObservationModel)
-      .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match.any, { new: true, upsert: true })
-      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
-      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
-      .chain('exec')
-      .yields(null, mockObservation);
+    sinon.mock(mockObservation)
+      .expects('save')
+      .resolves(mockObservation);
+
+    sinon.mock(mockObservation)
+      .expects('execPopulate')
+      .resolves(mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())

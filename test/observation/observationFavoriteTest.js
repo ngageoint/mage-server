@@ -11,6 +11,9 @@ require('sinon-mongoose');
 require('../../models/event');
 var EventModel = mongoose.model('Event');
 
+require('../../models/team');
+var TeamModel = mongoose.model('Team');
+
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
@@ -92,13 +95,18 @@ describe("marking favorite observations", function () {
   }
 
   it("favorites an observation", function (done) {
-    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
 
     const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
+
     const observationId = mongoose.Types.ObjectId();
     const mockObservation = new ObservationModel({
       _id: observationId,
@@ -137,7 +145,11 @@ describe("marking favorite observations", function () {
   });
 
   it("unfavorites an observation", function (done) {
-    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
       _id: 1,

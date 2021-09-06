@@ -15,6 +15,7 @@ var EventModel = mongoose.model('Event');
 
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
+var ObservationIdModel = mongoose.model('ObservationId');
 
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
@@ -99,14 +100,19 @@ describe("observation update tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .yields(null, mockObservation);
+      .twice()
+      .onFirstCall()
+      .yields(null, mockObservation)
+      .onSecondCall()
+      .resolves(mockObservation);
 
-    sinon.mock(ObservationModel)
-      .expects('findByIdAndUpdate')
-      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
-      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
-      .chain('exec')
-      .yields(null, mockObservation);
+    sinon.mock(mockObservation)
+      .expects('save')
+      .resolves(mockObservation);
+
+    sinon.mock(mockObservation)
+      .expects('execPopulate')
+      .resolves(mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -165,14 +171,19 @@ describe("observation update tests", function () {
 
     sinon.mock(ObservationModel)
       .expects('findById')
-      .yields(null, mockObservation);
+      .twice()
+      .onFirstCall()
+      .yields(null, mockObservation)
+      .onSecondCall()
+      .resolves(mockObservation);
 
-    sinon.mock(ObservationModel)
-      .expects('findByIdAndUpdate')
-      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
-      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
-      .chain('exec')
-      .yields(null, mockObservation);
+    sinon.mock(mockObservation)
+      .expects('save')
+      .resolves(mockObservation);
+
+    sinon.mock(mockObservation)
+      .expects('execPopulate')
+      .resolves(mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
@@ -329,7 +340,7 @@ describe("observation update tests", function () {
   });
 
   it("should deny update observation for id that does not exist", function (done) {
-    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+    mockTokenWithPermission('CREATE_OBSERVATION');
 
     sinon.mock(EventModel)
       .expects('populate')
@@ -348,16 +359,21 @@ describe("observation update tests", function () {
     });
 
     var observationId = mongoose.Types.ObjectId();
-    sinon.mock(ObservationModel)
-      .expects('findById')
-      .yields(null, { _id: observationId });
+    var mockObservation = new ObservationModel({
+      _id: observationId
+    });
 
     sinon.mock(ObservationModel)
-      .expects('findByIdAndUpdate')
-      .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
-      .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
-      .chain('exec')
+      .expects('findById')
       .yields(null, null);
+
+    sinon.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, null)
+
+    sinon.mock(mockObservation)
+      .expects('save')
+      .resolves(mockObservation);
 
     request(app)
       .put('/api/events/1/observations/' + observationId)
@@ -374,9 +390,6 @@ describe("observation update tests", function () {
         }
       })
       .expect(404)
-      .expect(function (res) {
-        res.text.should.equal('Observation with ID ' + observationId + ' does not exist');
-      })
       .end(done);
   });
 
