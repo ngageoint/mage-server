@@ -5,7 +5,6 @@ const mockfs = require('mock-fs');
 const expect = require('chai').expect;
 const MockToken = require('../mockToken');
 const TokenModel = mongoose.model('Token');
-const env = require('../../environment/env');
 const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
@@ -20,6 +19,7 @@ const EventModel = mongoose.model('Event');
 
 const Observation = require('../../models/observation');
 const observationModel = Observation.observationModel;
+var ObservationIdModel = mongoose.model('ObservationId');
 
 describe("creating attachments", function() {
 
@@ -27,11 +27,22 @@ describe("creating attachments", function() {
   const userId = mongoose.Types.ObjectId();
 
   beforeEach(function() {
-    const mockEvent = new EventModel({
+    var mockEvent = EventModel({
       _id: 1,
       name: 'Event 1',
-      collectionName: 'observations1'
+      collectionName: 'observations1',
+      forms: [{
+        _id: 1,
+        fields: [{
+          type: "attachment",
+          name: "attachment",
+          title: "Attachment",
+          allowedAttachmentTypes: ['image']
+        }],
+        userFields: []
+      }]
     });
+
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
@@ -73,13 +84,6 @@ describe("creating attachments", function() {
     let mockObservation;
 
     beforeEach(function() {
-      const fs = {
-        'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
-        'var/lib/mage': {}
-      };
-      fs[env.tempDirectory] = {};
-      mockfs(fs);
-
       sinon.mock(TeamModel)
         .expects('find')
         .yields(null, [{ name: 'Team 1' }]);
@@ -93,14 +97,24 @@ describe("creating attachments", function() {
             userIds: [userId]
           }]
         });
+    });
 
-      const ObservationModel = observationModel({
+    it("creates attachment metadata with global permisison", async function() {
+
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      var observationId = mongoose.Types.ObjectId();
+      sinon.mock(ObservationIdModel)
+        .expects('findById')
+        .yields(null, { _id: observationId });
+
+      var ObservationModel = observationModel({
         _id: 1,
         name: 'Event 1',
         collectionName: 'observations1'
       });
-      const observationId = mongoose.Types.ObjectId();
-      mockObservation = new ObservationModel({
+
+      var mockObservation = new ObservationModel({
         _id: observationId,
         type: 'Feature',
         geometry: {
@@ -108,29 +122,62 @@ describe("creating attachments", function() {
           coordinates: [0, 0]
         },
         properties: {
-          timestamp: Date.now()
-        }
+          timestamp: '2016-01-01T00:00:00'
+        },
+        forms: [{
+          formId: 1,
+          'attachment': [{
+            action: 'add',
+            observationFormId: 1,
+            fieldName: 'attachment',
+            name: 'test.jpeg',
+            contentType: 'image/jpeg'
+          }]
+        }]
       });
 
       sinon.mock(ObservationModel)
         .expects('findById')
-        .withArgs(observationId.toString())
-        .yields(null, mockObservation);
+        .twice()
+        .onFirstCall()
+        .yields(null, null)
+        .onSecondCall()
+        .resolves(mockObservation);
 
-      sinon.mock(ObservationModel)
-        .expects('update')
-        .yields(null, mockObservation);
-    });
+      sinon.mock(mockObservation)
+        .expects('save')
+        .resolves(mockObservation);
 
-    it("creates attachment with global permisison", async function() {
-
-      mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
+      sinon.mock(mockObservation)
+        .expects('execPopulate')
+        .resolves(mockObservation);
 
       const res = await request(app)
-        .post(`/api/events/1/observations/${mockObservation._id}/attachments`)
-        .attach('attachment', 'mock/path/attachment.jpeg')
-        .set('Authorization', 'Bearer 12345');
+        .put(`/api/events/1/observations/${mockObservation._id}`)
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            type: 'test',
+            timestamp: '2016-01-01T00:00:00',
+            forms: [{
+              formId: 1,
+              'attachment': [{
+                action: 'add',
+                observationFormId: 1,
+                fieldName: 'attachment',
+                name: 'test.jpeg',
+                contentType: 'image/jpeg'
+              }]
+            }]
+          }
+        });
 
+      // TODO need to validate that the attachment is saved in observation
       expect(res.status).to.equal(200);
     });
 
@@ -138,10 +185,79 @@ describe("creating attachments", function() {
 
       mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
+      var observationId = mongoose.Types.ObjectId();
+      sinon.mock(ObservationIdModel)
+        .expects('findById')
+        .yields(null, { _id: observationId });
+
+      var ObservationModel = observationModel({
+        _id: 1,
+        name: 'Event 1',
+        collectionName: 'observations1'
+      });
+
+      var mockObservation = new ObservationModel({
+        _id: observationId,
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          timestamp: '2016-01-01T00:00:00'
+        },
+        forms: [{
+          formId: 1,
+          'attachment': [{
+            action: 'add',
+            observationFormId: 1,
+            fieldName: 'attachment',
+            name: 'test.jpeg',
+            contentType: 'image/jpeg'
+          }]
+        }]
+      });
+
+      sinon.mock(ObservationModel)
+        .expects('findById')
+        .twice()
+        .onFirstCall()
+        .yields(null, mockObservation)
+        .onSecondCall()
+        .resolves(mockObservation);
+
+      sinon.mock(mockObservation)
+        .expects('save')
+        .resolves(mockObservation);
+
+      sinon.mock(mockObservation)
+        .expects('execPopulate')
+        .resolves(mockObservation);
+
       const res = await request(app)
-        .post(`/api/events/1/observations/${mockObservation._id}/attachments`)
-        .attach('attachment', 'mock/path/attachment.jpeg')
-        .set('Authorization', 'Bearer 12345');
+        .put(`/api/events/1/observations/${mockObservation._id}`)
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            type: 'test',
+            timestamp: '2016-01-01T00:00:00',
+            forms: [{
+              formId: 1,
+              'attachment': [{
+                action: 'add',
+                observationFormId: 1,
+                fieldName: 'attachment',
+                name: 'test.jpeg',
+                contentType: 'image/jpeg'
+              }]
+            }]
+          }
+        });
 
       expect(res.status).to.equal(200);
     });
@@ -149,66 +265,47 @@ describe("creating attachments", function() {
     it('fails without proper permission', async function() {
 
       mockTokenWithPermission('CREATE_OBSERVATION_ALL');
+      var observationId = mongoose.Types.ObjectId();
+      sinon.mock(ObservationIdModel)
+        .expects('findById')
+        .yields(null, { _id: observationId });
+
+      var ObservationModel = observationModel({
+        _id: 1,
+        name: 'Event 1',
+        collectionName: 'observations1'
+      });
+
+      sinon.mock(ObservationModel)
+        .expects('findById')
+        .yields(null, null)
 
       const res = await request(app)
-        .post(`/api/events/1/observations/${mockObservation._id}/attachments`)
-        .attach('attachment', 'mock/path/attachment.jpeg')
-        .set('Authorization', 'Bearer 12345');
+        .put(`/api/events/1/observations/${observationId}`)
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            type: 'test',
+            timestamp: '2016-01-01T00:00:00',
+            forms: [{
+              formId: 1,
+              'attachment': [{
+                action: 'add',
+                observationFormId: 1,
+                fieldName: 'attachment',
+                name: 'test.jpeg',
+                contentType: 'image/jpeg'
+              }]
+            }]
+          }
+        });
 
       expect(res.status).to.equal(403);
     });
-  });
-
-  it("fails without a request body", async function() {
-
-    mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
-
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
-
-    const ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      }
-    });
-
-    sinon.mock(ObservationModel)
-      .expects('findById')
-      .withArgs(observationId.toString())
-      .yields(null, mockObservation);
-
-    sinon.mock(ObservationModel)
-      .expects('update')
-      .yields(null, mockObservation);
-
-    const res = await request(app)
-      .post('/api/events/1/observations/' + observationId + '/attachments')
-      .set('Authorization', 'Bearer 12345');
-
-    expect(res.status).to.equal(400);
-    expect(res.text).to.equal('no attachment');
   });
 });
