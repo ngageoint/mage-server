@@ -17,13 +17,13 @@ services:
 
   mage-server:
     depends_on: [mage-db]
-    image: "mage-server:${MAGE_VERSION:-6.0.0-beta3}"
+    image: "mage-server:${MAGE_VERSION:-6.0.0}"
     # image: "mage-server:debug"
     build:
       context: ./server
       # dockerfile: Dockerfile-debug
       args:
-        MAGE_VERSION: "${MAGE_VERSION:-6.0.0-beta3}"
+        MAGE_VERSION: "${MAGE_VERSION:-6.0.0}"
     volumes:
       - ./server/resources:/var/lib/mage
       - ..:/home/mage/mage-server
@@ -38,7 +38,7 @@ services:
       - mage.net
     environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
-      MAGE_TOKEN_EXPIRATION: "2419200"
+      MAGE_TOKEN_EXPIRATION: "28800"
 
   # Uncomment the following block to enable the TLS reverse proxy.  You will
   # also need to generate the key and certificate as the README describes.

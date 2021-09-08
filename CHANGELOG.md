@@ -6,7 +6,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Local user signup captcha.
+
+##### Bug Fixes
+
+## [6.0.0](https://github.com/ngageoint/mage-server/releases/tag/6.0.0)
+
+### Release Notes
+**This release includes database migrations, please remember to backup your database before upgrading.**
+
+##### Features
+* Multi form support. Users will be able to add multiple forms to an observation when the server configuration allows. Administrators can restrict total amount of forms, as well as min/max for individual forms.
+* Attachments are now form fields.  All existing forms will be migrated to include and "Attachments" form field as the first first field in each form.  Administrators can edit forms to include any number of attachments fields.  In addition administrators can restrict the number of attachments allowed in each field as well as the types of attachments.
+* Local user signup captcha.  All new local users will need to enter a captcha to create a local MAGE account.
 * New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
 * Moving security settings to more secure location.
 * Adding support for connecting to a generic OAuth server.

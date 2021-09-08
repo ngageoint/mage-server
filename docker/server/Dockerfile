@@ -1,6 +1,6 @@
 FROM node:14.17.5
 
-ARG MAGE_VERSION=6.0.0-beta3
+ARG MAGE_VERSION=6.0.0
 
 LABEL author="NGA"
 
