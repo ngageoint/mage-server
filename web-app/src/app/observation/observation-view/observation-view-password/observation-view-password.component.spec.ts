@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ObservationViewPasswordComponent } from './observation-view-password.component';
+import { PasswordPipe } from './password.pipe';
 
 describe('ObservationViewPasswordComponent', () => {
   let component: ObservationViewPasswordComponent;
@@ -8,7 +9,7 @@ describe('ObservationViewPasswordComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ObservationViewPasswordComponent ]
+      declarations: [ ObservationViewPasswordComponent, PasswordPipe ]
     })
     .compileComponents();
   }));

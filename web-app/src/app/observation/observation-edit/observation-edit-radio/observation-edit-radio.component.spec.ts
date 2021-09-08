@@ -1,21 +1,26 @@
-import { Component, ViewChild } from '@angular/core'
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
-import { FormsModule } from '@angular/forms'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
-import { MatRadioGroup, MatRadioModule } from '@angular/material/radio';
+import { MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser'
+import { by } from 'protractor';
 
 import { ObservationEditRadioComponent } from './observation-edit-radio.component'
 
 @Component({
   selector: `host-component`,
-  template: `<observation-edit-radio [field]="field"></observation-edit-radio>`
+  template: `<observation-edit-radio [definition]="definition" [formGroup]="formGroup"></observation-edit-radio>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 class TestHostComponent {
+  formGroup = new FormGroup({
+    radio: new FormControl()
+  })
 
-  field = {
+  definition = {
     title: 'Radio',
-    name: 'field1',
+    name: 'radio',
     choices: [{
       title: 'choice1'
     },{
@@ -33,7 +38,7 @@ describe('ObservationEditRadioComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, MatFormFieldModule, MatRadioModule],
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatRadioModule],
       declarations: [ObservationEditRadioComponent, TestHostComponent]
     })
       .compileComponents()
@@ -50,40 +55,61 @@ describe('ObservationEditRadioComponent', () => {
     expect(component).toBeTruthy()
   })
 
-  it('should not indicate required', () => {
-    component.field.required = false
-    fixture.detectChanges()
-    const label = fixture.debugElement.query(By.directive(ObservationEditRadioComponent)).query(By.css('label')).nativeElement
-    expect(label.innerText).not.toContain('*')
-  })
+  it('should not indicate required', async () => {
+    component.definition.required = false
 
-  it('should indicate required', () => {
-    component.field.required = true
-    fixture.detectChanges()
-    const label = fixture.debugElement.query(By.directive(ObservationEditRadioComponent)).query(By.css('label')).nativeElement
-    expect(label.innerText).toContain('*')
-  })
-
-  it('should show error on invalid and touched', async () => {
-    component.field.required = true
-
-    const input = fixture.debugElement.query(By.directive(MatRadioGroup)).references['radio']
-    input.control.markAsTouched()
+    const control = component.formGroup.get('radio')
+    control.clearValidators()
+    control.updateValueAndValidity()
 
     fixture.detectChanges()
     await fixture.whenStable()
 
+    expect(control.valid).toBe(true)
     const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
-    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeNull()
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
+  })
+
+  it('should indicate required', async () => {
+    component.definition.required = true
+
+    const control = component.formGroup.get('radio')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
+
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(control.valid).toBe(false)
+  })
+
+  it('should show error on invalid and touched', async () => {
+    component.definition.required = true
+
+    const control = component.formGroup.get('radio')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
+    control.markAsTouched()
+
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(control.valid).toBe(false)
+    const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
     expect(error.nativeElement.innerText).toBe('Radio is required')
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.field.required = true
+    component.definition.required = true
+
+    const control = component.formGroup.get('radio')
+    control.setValidators(Validators.required)
+    control.updateValueAndValidity()
 
     fixture.detectChanges()
     await fixture.whenStable()
 
+    expect(control.valid).toBe(false)
     const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
     expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
   })

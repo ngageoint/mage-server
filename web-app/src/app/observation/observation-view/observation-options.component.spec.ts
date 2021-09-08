@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 
 import { ObservationOptionsComponent } from './observation-options.component';
 
@@ -8,7 +9,11 @@ describe('ObservationOptionsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ObservationOptionsComponent ]
+      declarations: [ ObservationOptionsComponent ],
+      providers: [{
+        provide: MatBottomSheetRef,
+        useValue: {}
+      }]
     })
     .compileComponents();
   }));

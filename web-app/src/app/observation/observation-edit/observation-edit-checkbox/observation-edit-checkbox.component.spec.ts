@@ -1,25 +1,32 @@
 import { Component, ViewChild } from '@angular/core'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
-import { FormsModule } from '@angular/forms'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser'
-
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component'
 
 @Component({
   selector: `host-component`,
-  template: `<observation-edit-checkbox [field]="field"></observation-edit-checkbox>`
+  template: `<observation-edit-checkbox [definition]="definition" [formGroup]="formGroup"></observation-edit-checkbox>`
 })
 class TestHostComponent {
-
-  field = {
-    title: 'Checkbox',
-    name: 'field1'
+  formGroup = new FormGroup({
+    checkbox: new FormControl(true, Validators.required)
+  });
+  definition = {
+    name: 'checkbox',
+    title: 'Checkbox Field',
+    required: true
   }
 
   @ViewChild(ObservationEditCheckboxComponent) component: ObservationEditCheckboxComponent
 }
+
+let loader: HarnessLoader;
 
 describe('ObservationEditCheckboxComponent', () => {
   let component: ObservationEditCheckboxComponent
@@ -28,7 +35,7 @@ describe('ObservationEditCheckboxComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, MatFormFieldModule, MatCheckboxModule ],
+      imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatCheckboxModule ],
       declarations: [ObservationEditCheckboxComponent, TestHostComponent ]
     })
     .compileComponents()
@@ -36,6 +43,7 @@ describe('ObservationEditCheckboxComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestHostComponent)
+    loader = TestbedHarnessEnvironment.loader(fixture);
     hostComponent = fixture.componentInstance
     fixture.detectChanges();
     component = hostComponent.component
@@ -46,7 +54,7 @@ describe('ObservationEditCheckboxComponent', () => {
   })
 
   it('should not indicate required', () => {
-    component.field.required = false
+    component.definition.required = false
     fixture.detectChanges()
     const checkbox = fixture.nativeElement.querySelector('mat-checkbox')
     const label = checkbox.querySelector('.mat-checkbox-label')
@@ -54,7 +62,7 @@ describe('ObservationEditCheckboxComponent', () => {
   })
 
   it('should indicate required', () => {
-    component.field.required = true
+    component.definition.required = true
     fixture.detectChanges()
     const checkbox = fixture.nativeElement.querySelector('mat-checkbox')
     const label = checkbox.querySelector('.mat-checkbox-label')
@@ -62,44 +70,43 @@ describe('ObservationEditCheckboxComponent', () => {
   })
 
   it('should not be checked', (done) => {
-    component.field.value = false
+    component.definition.value = false
     fixture.detectChanges()
 
     fixture.whenStable().then(() => {
       const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).componentInstance
-      expect(checkbox.checked).toBe(false)
+      expect(checkbox.checked).toBeFalsy
       done();
     });
   })
 
   it('should be checked', (done) => {
-    component.field.value = true
+    component.definition.value = true
     fixture.detectChanges()
 
     fixture.whenStable().then(() => {
       const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).componentInstance
-      expect(checkbox.checked).toBe(true)
+      expect(checkbox.checked).toBeTruthy
       done();
     });
   })
 
   it('should show error on invalid and touched', async () => {
-    component.field.value = false
-    component.field.required = true
-    
-    const checkbox = fixture.debugElement.query(By.directive(MatCheckbox)).references['checkbox']
-    checkbox.control.markAsTouched()
+    const checkboxes = await loader.getAllHarnesses(MatCheckboxHarness);
+    component.definition.value = true
+    component.definition.required = true
+    checkboxes[0].toggle()
 
     fixture.detectChanges()
     await fixture.whenStable()
 
     const error = fixture.debugElement.query(By.directive(MatError)).query(By.css('span'))
-    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeNull()
+    expect(error.nativeElement.attributes.getNamedItem('hidden')).toBeTruthy()
   })
 
   it('should not show error on invalid if not touched', async () => {
-    component.field.value = false
-    component.field.required = true
+    component.definition.value = false
+    component.definition.required = true
 
     fixture.detectChanges()
     await fixture.whenStable()
