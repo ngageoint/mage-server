@@ -132,7 +132,7 @@ import { ObservationPopupComponent } from './observation/observation-popup/obser
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
+import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent, ContactInfoComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
@@ -218,6 +218,7 @@ import { PasswordPipe } from './observation/observation-view/observation-view-pa
     EditSettingComponent,
     DeleteSettingComponent,
     IconUploadComponent,
+    ContactInfoComponent,
     DatetimePickerComponent,
     ExportComponent,
     ExportDialogComponent,

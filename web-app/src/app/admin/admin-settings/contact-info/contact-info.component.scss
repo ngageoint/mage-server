@@ -1,0 +1,29 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.page__container {
+    display: flex;
+    padding: 0 16px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    max-width: 1170px;
+}
+  
+.page__container-content {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    background-color: white;
+}
+
+label {
+    font-weight: unset;
+    margin-left: 8px;
+}
+
+mat-form-field {
+    font-size: unset;
+    width: 100%;
+}

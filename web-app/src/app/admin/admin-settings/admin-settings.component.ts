@@ -123,6 +123,18 @@ export class AdminSettingsComponent implements OnInit {
         };
     }
 
+    onContactInfoSaved(status: boolean): void {
+        if (status) {
+            this._snackBar.open('Contact info successfully saved', null, {
+                duration: 2000,
+            });
+        } else {
+            this._snackBar.open('Failed to save contact info', null, {
+                duration: 2000,
+            });
+        };
+    }
+
     private saveAuthentication(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
