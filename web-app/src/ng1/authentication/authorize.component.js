@@ -1,4 +1,4 @@
-import {textField, snackbar} from 'material-components-web';
+import {textField} from 'material-components-web';
 
 class AuthorizeController {
 
@@ -10,7 +10,6 @@ class AuthorizeController {
 
   $postLink() {
     this.deviceIdField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
-    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
   $onInit() {
@@ -33,7 +32,12 @@ class AuthorizeController {
         this.statusMessage = data.errorMessage || 'Device ID is invalid, please check your device ID, and try again.';
         this.deviceIdField.valid = false;
         this.statusLevel = 'alert-warning';
-        this.snackbar.open();
+        this.info = {
+          statusTitle: this.statusTitle,
+          statusMessage: this.statusMessage,
+          id: this.uid
+        };
+        this.contactOpen = { opened: true };
       }
     }).error((data, status) => {
       if (status === 403) {
@@ -45,8 +49,17 @@ class AuthorizeController {
       } else if (status === 401) {
         this.onCancel();
       }
-      this.snackbar.open();
+      this.info = {
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: this.uid
+      };
+      this.contactOpen = { opened: true };
     });
+  }
+
+  onContactClose() {
+    this.contactOpen = { opened: false };
   }
 }
 
