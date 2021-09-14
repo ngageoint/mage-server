@@ -146,6 +146,8 @@ import { ObservationEditAttachmentComponent } from './observation/observation-ed
 import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
+import { ContactComponent } from './contact/contact.component';
+import { ContactDialogComponent } from "./contact/contact-dialog.component";
 
 @NgModule({
   declarations: [
@@ -227,7 +229,9 @@ import { PasswordPipe } from './observation/observation-view/observation-view-pa
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
-    PasswordPipe
+    PasswordPipe,
+    ContactComponent,
+    ContactDialogComponent
   ],
   imports: [
     CommonModule,
