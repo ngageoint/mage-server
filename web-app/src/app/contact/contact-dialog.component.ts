@@ -21,9 +21,9 @@ export class ContactDialogComponent implements OnInit {
         @Inject(MAT_DIALOG_DATA) public data: any) {
 
         this.api = data.api;
-        this.statusTitle = data.statusTitle;
-        this.statusMessage = data.statusMessage;
-        this.id = data.id;
+        this.statusTitle = data.info.statusTitle;
+        this.statusMessage = data.info.statusMessage;
+        this.id = data.info.id;
         this.strategy = data.strategy;
     }
 

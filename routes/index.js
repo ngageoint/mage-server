@@ -26,12 +26,18 @@ module.exports = function (app, security) {
         Setting.getSetting('disclaimer')
           .then(disclaimer => done(null, disclaimer || {}))
           .catch(err => done(err));
+      },
+      contactinfo: function (done) {
+        Setting.getSetting('contactinfo')
+          .then(contactinfo => done(null, contactinfo || {}))
+          .catch(err => done(err));
       }
     }, function (err, results) {
       if (err) return next(err);
 
       const api = extend({}, config.api);
       api.disclaimer = results.disclaimer.settings;
+      api.contactinfo = results.contactinfo.settings;
 
       if (results.initial) {
         api.initial = true;

@@ -9,9 +9,7 @@ import { ContactDialogComponent } from './contact-dialog.component';
 })
 export class ContactComponent implements OnChanges {
   @Input() open: any;
-  @Input() statusTitle: string;
-  @Input() statusMessage: string;
-  @Input() id: string;
+  @Input() info: any;
   @Input() strategy: any;
   @Input() api: any;
   @Output() onContactClose = new EventEmitter<void>();
@@ -39,9 +37,7 @@ export class ContactComponent implements OnChanges {
   openContactDialog(): void {
 
     const data = {
-      statusTitle: this.statusTitle,
-      statusMessage: this.statusMessage,
-      id: this.id,
+      info: this.info,
       strategy: this.strategy,
       api: this.api
     };

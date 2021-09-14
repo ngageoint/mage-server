@@ -1,4 +1,4 @@
-import {textField, snackbar} from 'material-components-web';
+import { textField } from 'material-components-web';
 
 class LocalSigninController {
 
@@ -10,26 +10,34 @@ class LocalSigninController {
   $postLink() {
     this.usernameField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
     this.passwordField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[1]);
-    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
   signin() {
-    this._UserService.signin({username: this.username, password: this.password}).then(response => {
+    this._UserService.signin({ username: this.username, password: this.password }).then(response => {
       this.onSignin({
-        $event: { 
-          user: response.user, 
-          token: response.token, 
-          strategy: this.strategy.name 
+        $event: {
+          user: response.user,
+          token: response.token,
+          strategy: this.strategy.name
         }
       });
     }, response => {
-      this.showStatus = true;
       this.statusTitle = 'Error signing in';
       this.statusMessage = response.data || 'Please check your username and password and try again.';
+      this.id = this.username;
       this.usernameField.valid = false;
       this.passwordField.valid = false;
-      this.snackbar.open();
+      this.info = {
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: this.username
+      };
+      this.contactOpen = { opened: true };
     });
+  }
+
+  onContactClose() {
+    this.contactOpen = { opened: false };
   }
 }
 
