@@ -46,6 +46,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   viewUser: any
 
+  contactOpen: any;
+  info = {};
+  statusTitle = 'Cannot Create Observation';
+  statusMessage = 'You are not part of this event.';
+
   constructor(
     public dialog: MatDialog,
     private feedPanelService: FeedPanelService,
@@ -149,10 +154,12 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
     if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
-      this.dialog.open(this.permissionDialog, {
-        autoFocus: false,
-        width: '500px'
-      })
+      this.info = {
+          statusTitle: this.statusTitle,
+          statusMessage: this.statusMessage,
+          id: this.userService.myself.username
+      };
+      this.contactOpen = { opened: true };
 
       return
     }
@@ -218,5 +225,9 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     if (event === 0) {
       this.observationBadge = null
     }
+  }
+
+  onContactClose() : void {
+    this.contactOpen = { opened: false };
   }
 }

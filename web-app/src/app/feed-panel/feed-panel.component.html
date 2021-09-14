@@ -48,12 +48,5 @@
   </mat-tab>
 </mat-tab-group>
 
-<ng-template #permissionDialog>
-  <h1 matDialogTitle>Cannot Create Observation</h1>
-  <div matDialogContent>
-    <p>You are not part of this event. Please contact you MAGE administrator if you need access to this event.</p>
-  </div>
-  <div matDialogActions class="permission__actions">
-    <button matButtonColor="primary" matDialogClose="ok">Ok</button>
-  </div>
-</ng-template>
+<contact *ngIf="contactOpen" [open]="contactOpen" [info]="info"
+  (on-contact-close)="onContactClose()"></contact>
