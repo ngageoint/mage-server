@@ -1,5 +1,5 @@
 export interface Disclaimer {
-    showDisclaimer: boolean,
-    disclaimerTitle: string,
-    disclaimerText: string
+    show: boolean,
+    title: string,
+    text: string
 }
