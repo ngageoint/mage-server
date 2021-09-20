@@ -10,9 +10,9 @@ import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 export class SecurityDisclaimerComponent implements OnInit {
     @Output() saveEvent = new EventEmitter<boolean>();
     disclaimer: Disclaimer = {
-        showDisclaimer: false,
-        disclaimerTitle: '',
-        disclaimerText: ''
+        show: false,
+        title: '',
+        text: ''
     }
 
     constructor(

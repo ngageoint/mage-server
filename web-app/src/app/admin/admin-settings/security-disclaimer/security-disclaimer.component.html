@@ -14,7 +14,7 @@
         <div class="content">
             <legend>Disclaimer</legend>
             <mat-list-item>
-                <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer"
+                <mat-checkbox [(ngModel)]="disclaimer.show" [checked]="disclaimer.show"
                     color="primary" [ngModelOptions]="{standalone: true}" id="show-disclaimer">
                 </mat-checkbox>
                 <label for="show-disclaimer">Show Disclaimer</label>
@@ -22,15 +22,15 @@
             <mat-list-item>
                 <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
                 <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="disclaimer.disclaimerTitle" [ngModelOptions]="{standalone: true}"
-                        [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer title">
+                    <input matInput [(ngModel)]="disclaimer.title" [ngModelOptions]="{standalone: true}"
+                        [disabled]="!disclaimer.show" placeholder="Disclaimer title">
                 </mat-form-field>
             </mat-list-item>
             <mat-list-item>
                 <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
                 <mat-form-field appearance="outline">
-                    <textarea matInput [(ngModel)]="disclaimer.disclaimerText" [ngModelOptions]="{standalone: true}"
-                        [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer text"> </textarea>
+                    <textarea matInput [(ngModel)]="disclaimer.text" [ngModelOptions]="{standalone: true}"
+                        [disabled]="!disclaimer.show" placeholder="Disclaimer text"> </textarea>
                 </mat-form-field>
             </mat-list-item>
         </div>
