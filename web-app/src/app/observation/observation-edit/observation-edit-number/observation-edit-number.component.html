@@ -1,0 +1,9 @@
+<div [formGroup]="formGroup">
+  <mat-form-field appearance="fill">
+    <mat-label>{{definition.title}}</mat-label>
+    <input matInput type="number" formControlName="{{definition.name}}" [required]="definition.required">
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('required')">You must enter a value</mat-error>
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('min')">Must be greater than {{definition.min}}</mat-error>
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('max')">Must be less than {{definition.max}}</mat-error>
+  </mat-form-field>
+</div>

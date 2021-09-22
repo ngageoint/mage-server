@@ -1,0 +1,17 @@
+<div class="form-picker-header">
+  <div class="form-picker-header__text">Add a Form To Your Observation</div>
+</div>
+
+<mat-divider class="form-picker-header__divider"></mat-divider>
+
+<mat-nav-list class="form-picker-list">
+  <mat-list-item *ngFor="let form of forms" (click)="formPicked(form)">
+    <mat-icon mat-list-icon [style.color]="form.color">description</mat-icon>
+    <div mat-line>{{form.name}}</div>
+    <div mat-line> {{form.description}} </div>
+  </mat-list-item>
+</mat-nav-list>
+
+<div class="form-picker-actions">
+  <button mat-button color="primary" (click)="cancel()">CANCEL</button>
+</div>

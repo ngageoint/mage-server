@@ -1,0 +1,59 @@
+<user-view *ngIf="viewUser" @slide
+  class="component__view"
+  [user]="viewUser"
+  [event]="event"
+  (close)="onUserViewClose()">
+</user-view>
+
+<observation-view *ngIf="viewObservation" @slide
+  class="component__view"
+  [event]="event"
+  [observation]="viewObservation"
+  (close)="onObservationViewClose()"
+  (delete)="onObservationDelete($event)">
+</observation-view>
+
+<observation-edit *ngIf="editObservation" @slide
+  class="component__view"
+  [observation]="editObservation"
+  (close)="onObservationEditClose($event)">
+</observation-edit>
+
+<observation-edit *ngIf="newObservation" @slide
+  class="component__view"
+  [observation]="newObservation"
+  (close)="onObservationEditClose()">
+</observation-edit>
+
+<mat-tab-group class="tabs" #tabGroup mat-stretch-tabs [selectedIndex]="0" animationDuration="0ms" (selectedIndexChange)="tabChanged($event)">
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon class="tabs__icon">place</mat-icon>
+      <div [matBadge]="observationBadge" matBadgeOverlap="false">Observations</div>
+    </ng-template>
+    <ng-template matTabContent>
+      <observation-list></observation-list>
+    </ng-template>
+  </mat-tab>
+
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon class="tabs__icon">people</mat-icon>
+      <div>People</div>
+    </ng-template>
+
+    <ng-template matTabContent>
+      <user-list></user-list>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>
+
+<ng-template #permissionDialog>
+  <h1 matDialogTitle>Cannot Create Observation</h1>
+  <div matDialogContent>
+    <p>You are not part of this event. Please contact you MAGE administrator if you need access to this event.</p>
+  </div>
+  <div matDialogActions class="permission__actions">
+    <button matButtonColor="primary" matDialogClose="ok">Ok</button>
+  </div>
+</ng-template>

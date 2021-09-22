@@ -1,0 +1,11 @@
+<div [hidden]="!attachments.length">
+  <div class="mat-body-1">{{field?.title}}</div>
+
+  <ng-container *ngIf="attachments.length">
+    <mat-grid-list class="edit-attachments__grid" cols="2" rowHeight="210px" gutterSize="4px">
+      <mat-grid-tile *ngFor="let attachment of attachments; first as isFirst" [rowspan]="1" [colspan]="isFirst && (attachments.length % 2 === 1) ? 2 : 1">
+        <observation-attachment [attachment]="attachment" clickable="true"></observation-attachment>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </ng-container>
+</div>

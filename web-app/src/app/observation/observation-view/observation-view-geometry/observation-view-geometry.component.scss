@@ -1,0 +1,18 @@
+.mat-body-1 {
+  font: 400 14px/24px Roboto, "Helvetica Neue", sans-serif; 
+  color: rgba(0, 0, 0, .60);
+  margin-bottom: 6px;
+}
+
+.map-view {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.location {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+  margin-right: 4px;
+}

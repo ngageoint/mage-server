@@ -1,0 +1,22 @@
+<div class="datetime">
+  <div class="date">
+    <mat-form-field appearance="fill">
+      <mat-label>{{definition.title}} Date</mat-label>
+      <input matInput [matDatepicker]="datePicker" [(ngModel)]="date" [required]="definition.required" (ngModelChange)="onDate()" #dateModel="ngModel" autocomplete="off">
+      <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+      <mat-datepicker #datePicker></mat-datepicker>
+      <mat-error *ngIf="dateModel.errors?.required && !dateModel.errors?.matDatepickerParse">Date is required</mat-error>
+      <mat-error *ngIf="dateModel.errors?.matDatepickerParse">Invalid date</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div class="time">
+    <mat-form-field appearance="fill">
+      <mat-label>{{definition.title}} Time {{timeZone === 'gmt' ? '(GMT)' : '(Local)'}}</mat-label>
+      <input matInput [matDatetimepicker]="timePicker" [(ngModel)]="time" (ngModelChange)="onTime()" #timeModel="ngModel" autocomplete="off">
+      <mat-datetimepicker-toggle [for]="timePicker" matSuffix></mat-datetimepicker-toggle>
+      <mat-datetimepicker #timePicker type="time" openOnFocus="false"></mat-datetimepicker>
+      <mat-error>Invalid time</mat-error>
+    </mat-form-field>
+  </div>
+</div>

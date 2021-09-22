@@ -1,0 +1,14 @@
+<mat-form-field appearance="fill" [formGroup]="formGroup">
+  <mat-label>{{definition.title}}</mat-label>
+  <mat-select formControlName="{{definition.name}}" (selectionChange)="onSelectionChange($event)" [required]="definition.required">
+    <mat-option>
+      <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="{{definition.title}}" noEntriesFoundLabel=""></ngx-mat-select-search>
+    </mat-option>
+
+    <mat-option [value]="null"></mat-option>
+    <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
+      {{choice.title}}
+    </mat-option>
+  </mat-select>
+  <mat-error *ngIf="formGroup.get(definition.name).hasError('required')">You must enter a value</mat-error>
+</mat-form-field>

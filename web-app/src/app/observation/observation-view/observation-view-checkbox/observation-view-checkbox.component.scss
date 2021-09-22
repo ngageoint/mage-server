@@ -1,0 +1,26 @@
+
+mat-checkbox {
+  margin-right: 8px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.mat-body-1 {
+  font: 400 14px/24px Roboto, "Helvetica Neue", sans-serif; 
+  color: rgba(0, 0, 0, .60);
+}
+
+.mat-body-2 {
+  font: 400 16px/28px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, .87);
+}
+
+:host ::ng-deep label {
+  margin-bottom: 0;
+  display: unset;
+  max-width: unset;
+  font-weight: unset;
+}
+
+::ng-deep .mat-checkbox-checked.mat-accent .mat-checkbox-background,.mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+  background-color: rgb(102, 102, 102);
+}

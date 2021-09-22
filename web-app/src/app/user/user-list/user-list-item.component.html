@@ -1,0 +1,51 @@
+<mat-card matRipple [matRippleTrigger]="ripple">
+  <div class="item" (click)="viewUser()" (mousedown)="onRipple()">
+    <div class="item-header">
+      <div class="item-thumbnail">
+        <user-avatar [user]="user" avatarWidth="40" avatarHeight="40"></user-avatar>
+      </div>
+
+      <div class="item-header-content">
+        <div class="item-title">
+          <div>
+            <span>{{user?.user?.displayName}}</span>
+            <span></span>
+          </div>
+        </div>
+
+        <div *ngIf="user?.location?.properties?.timestamp">
+          <div class="item-subtitle">
+            {{user?.location?.properties?.timestamp | moment}}
+          </div>
+        </div>
+
+        <div *ngIf="user?.location?.geometry">
+          <div class="item-subtitle">
+            {{user?.location?.geometry | geometry:5}}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="user?.user?.iconUrl">
+        <img class="item-icon" [src]="user?.user?.iconUrl + '?access_token=' + token"/>
+      </div>
+    </div>
+  </div>
+
+  <mat-card-footer>
+    <div class="actions">
+      <div class="action-buttons">
+        <button *ngIf="followingUser.id !== user.id" mat-button color="primary" (click)="followUser($event)" class="actions__location-button">FOLLOW</button>
+        <button *ngIf="followingUser.id === user.id" mat-flat-button color="primary" (click)="followUser($event)" class="actions__location-button">FOLLOWING</button>
+      </div>
+
+      <div class="actions-icons">
+        <button mat-icon-button (click)="onUserLocation()" class="actions--inactive">
+          <mat-icon>my_location</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-card-footer>
+
+  <div #ripple></div>
+</mat-card>

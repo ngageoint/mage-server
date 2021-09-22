@@ -1,0 +1,64 @@
+.attachment-field {
+  border-radius: 4px 4px 0 0;
+  background-color: rgb(245, 245, 245);
+  margin-bottom: 16px;
+}
+
+.attachment-field__underline {
+  width: 100%;
+  pointer-events: none;
+  transform: scaleY(1.0001);
+  bottom: 1.34375em;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.attachment-field__label {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.125;
+  padding: 12px 16px 8px 16px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6)
+}
+
+.no-attachments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 194px;
+  background-color: #F5F5F5
+}
+
+.no-attachments__icon {
+  font-size: 60px;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, .4);
+}
+
+.no-attachments__text {
+  font-size: 24px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .4)
+}
+
+.edit-attachments__grid {
+}
+
+// Need this to override bootstrap, can be removed when bootstrap is removed
+input[type="file"] { 
+  display: none;
+}
+
+.attachment-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.add__button {
+  margin: 8px;
+}

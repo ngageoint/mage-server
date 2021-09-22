@@ -1,0 +1,35 @@
+.tabs {
+  height: 100%;
+  background-color: white;
+}
+
+.tabs__icon {
+  margin-right: 8px;
+}
+
+:host ::ng-deep.mat-tab-body-wrapper {
+  flex-grow: 1;
+}
+
+.component__view {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  bottom: 0;
+  z-index: 3;
+  background-color: #E1E2E1;
+}
+
+.permission__actions {
+  justify-content: flex-end;
+}
+
+observation-feed {
+  display: block;
+  height: 100%;
+}
+
+user-feed {
+  display: block;
+  height: 100%;
+}

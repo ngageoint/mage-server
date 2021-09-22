@@ -1,0 +1,25 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.mat-dialog-title {
+  color: mat-color($app-primary);
+}
+
+.observation {
+  position: relative;
+  margin: 16px 0;
+}
+
+.delete-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+:host ::ng-deep.mat-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,0 +1,164 @@
+.observation-feed {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+}
+
+.actions {
+  padding: 8px;
+}
+
+.feed-pages {
+  margin: 0 8px 8px;
+}
+
+.feed-pages__select {
+  width: 100%;
+}
+
+:host ::ng-deep.mat-form-field-wrapper {
+  padding-bottom: unset;
+}
+
+:host ::ng-deep.mat-card-image { 
+  margin-bottom: 0;
+}
+
+.page-container {
+  background: #E1E2E1;
+  padding: 8px 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.feed-observation {
+  margin: 0 8px 8px;
+}
+
+.item-card {
+  margin: 0 8px 8px;
+}
+
+.item-header {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 16px;
+}
+
+.item-header-text {
+  font-size: 24px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+
+.item-header-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-right: 16px;
+}
+
+.item-overline {
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .16667em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.item-thumbnail {
+  width: 72px;
+  height: 72px;
+  font-size: 72px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.20);
+}
+
+.item-header-text,
+.item-overline,
+.item-subhead,
+.item-time {
+  color: #E1E2E1;
+  background-color: #E1E2E1;
+  margin-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 8px;
+}
+
+.actions-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.actions-icons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.2);
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.actions-icons > * + * {
+  margin-left: 8px;
+}
+
+.actions__location-button {
+  padding: 4px;
+}
+
+.actions__location-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  margin-right: 4px;
+  margin-top: -2px;
+}
+
+.actions__location-text {
+  color: #E1E2E1;
+  background-color: #E1E2E1;
+}
+
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  display: block;
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .3), transparent);
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  100% {
+    transform: translateX(100%);
+  }
+}
