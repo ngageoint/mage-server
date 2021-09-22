@@ -1,4 +1,4 @@
-import 'hammerjs';
+
 import angular from 'angular';
 import mage from './ng1/app.js';
 

@@ -20,9 +20,9 @@ function NavbarController($element, $state, $transitions, UserService) {
     visible: true
   };
 
-  this.$onInit = function() {
+  this.$onInit = function () {
     this.state = $state.current.name;
-    $transitions.onBefore({}, transition => { 
+    $transitions.onSuccess({}, transition => {
       this.state = transition.to().name;
     });
   };

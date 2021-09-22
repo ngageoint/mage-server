@@ -27,6 +27,16 @@ L.FixedWidthMarker = L.Marker.extend({
     }
 
     L.Marker.prototype.initialize.call(this, latlng, options);
+  },
+
+  bindPopup: function (popup, options = {}) {
+    if (this._icon) {
+      options.offset = [0, ($(this._icon).height() - 8) * -1];
+    }
+
+    L.Marker.prototype.bindPopup.call(this, popup, options);
+
+    return this;
   }
 });
 

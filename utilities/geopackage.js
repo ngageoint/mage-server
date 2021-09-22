@@ -74,6 +74,7 @@ async function optimize(path, progress) {
         const featureDao = geoPackage.getFeatureDao(table);
         success = success && (await featureDao.index(progress));
       }
+      geoPackage.close();
       resolve(success);
     }, 0);
   });

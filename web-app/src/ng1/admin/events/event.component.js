@@ -43,14 +43,14 @@ class AdminEventController {
 
   $onInit() {
     this.$q.all({ teams: this.Team.query({ populate: false }).$promise, layers: this.Layer.query().$promise, event: this.Event.get({ id: this.$stateParams.eventId, populate: false }).$promise }).then(result => {
-      let teamsById = _.indexBy(result.teams, 'id');
+      const teamsById = _.indexBy(result.teams, 'id');
 
       this.layers = result.layers;
-      let layersById = _.indexBy(result.layers, 'id');
+      const layersById = _.indexBy(result.layers, 'id');
 
       this.event = result.event;
 
-      var eventTeamId = _.find(this.event.teamIds, teamId => {
+      const eventTeamId = _.find(this.event.teamIds, teamId => {
         if (teamsById[teamId]) {
           return teamsById[teamId].teamEventId === this.event.id;
         }
@@ -88,7 +88,7 @@ class AdminEventController {
       this.hasUpdatePermission = _.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
       this.hasDeletePermission = _.contains(this.UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
 
-      let clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
+      const clone = JSON.parse(JSON.stringify(this.stateAndData[this.userState]));
       this.stateAndData[this.nonMemberUserState] = clone;
       delete this.stateAndData['active'];
       delete this.stateAndData['inactive'];
@@ -137,7 +137,7 @@ class AdminEventController {
 
   search() {
     this.UserPagingService.search(this.stateAndData[this.userState], this.memberSearch).then(users => {
-      let filteredTeams = this.$filter('filter')(this.teamsInEvent, this.memberSearch);
+      const filteredTeams = this.$filter('filter')(this.teamsInEvent, this.memberSearch);
       this.eventMembers = _.map(users.concat(filteredTeams), item => { return this.normalize(item); });
     });
   }
@@ -213,20 +213,18 @@ class AdminEventController {
   addUser(user) {
     this.nonMember = null;
     this.eventTeam.userIds.push(user.id);
-    const self = this;
     this.eventTeam.$save(() => {
       this.event.$get({ populate: false }).then(() => {
-        self.refresh(self);
+        this.refresh(self);
       });
     });
   }
 
   removeUser(user) {
     this.eventTeam.userIds = _.reject(this.eventTeam.userIds, u => { return user.id === u; });
-    const self = this;
     this.eventTeam.$save(() => {
       this.event.$get({ populate: false }).then(() => {
-        self.refresh(self);
+        this.refresh(self);
       });
     });
   }
@@ -246,6 +244,48 @@ class AdminEventController {
     this.nonLayers.push(layer);
 
     this.Event.removeLayer({ id: this.event.id, layerId: layer.id });
+  }
+
+  saveFormRestrictions() {
+    this.restrictions.minObservationForms.$setValidity('formsMax', true);
+    this.restrictions.maxObservationForms.$setValidity('formsMin', true);
+
+    const forms = this.event.forms || [];
+    const totalMin = forms.reduce((total, form) => total += form.min, 0);
+    if (this.event.maxObservationForms && totalMin > this.event.maxObservationForms) {
+      this.restrictions.maxObservationForms.$setValidity('formsMin', false);
+    }
+
+    if (forms.every(form => form.max != null)) {
+      const totalMax = forms.reduce((total, form) => total += form.max, 0)
+      if (this.event.minObservationForms && this.event.minObservationForms > totalMax) {
+        this.restrictions.minObservationForms.$setValidity('formsMax', false);
+      }
+    }
+
+    if (this.restrictions.$invalid) return;
+
+    const event = new this.Event({
+      id: this.event.id,
+      forms: this.event.forms,
+      minObservationForms: this.event.minObservationForms,
+      maxObservationForms: this.event.maxObservationForms,
+    })
+    event.$save(() => {
+      delete this.restrictionsError;
+      this.restrictions.$setPristine();
+    }, response => {
+      if (response.status === 500) {
+        restrictionsError
+        this.restrictionsError = {
+          message: response.data
+        };
+      } else if (response.data && response.data.message) {
+        this.restrictionsError = {
+          errors: response.data.errors
+        };
+      }
+    });
   }
 
   editEvent(event) {

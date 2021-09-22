@@ -6,7 +6,7 @@ import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import uiRouter from "@uirouter/angularjs";
 import { SwaggerComponent } from "../app/swagger/swagger.component";
-import { downgradeComponent } from '@angular/upgrade/static';
+import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static';
 
 import {
   MatIcon,
@@ -16,18 +16,31 @@ import {
   MatFormField,
   MatSidenav,
   MatSidenavContent,
-  MatSidenavContainer,
+  MatSidenavContainer
 } from '@angular/material';
+
+import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
 
 import { ZoomComponent } from '../app/map/controls/zoom.component';
 import { SearchComponent } from '../app/map/controls/search.component';
 import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
+import { ExportComponent } from '../app/export/export.component';
+import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
 
-import { ScrollWrapperComponent } from '../app/wrapper/scroll/feed-scroll.component';
-import { DropdownComponent } from '../app/observation/edit/dropdown/dropdown.component';
-import { MultiSelectDropdownComponent } from '../app/observation/edit/multiselectdropdown/multiselectdropdown.component';
+import { ExportService } from '../app/export/export.service'
+import { FeedPanelService } from '../app/feed-panel/feed-panel.service'
+import { MapPopupService } from '../app/map/map-popup.service'
+
+import { FeedPanelComponent } from '../app/feed-panel/feed-panel.component';
+
+import { ObservationPopupComponent } from '../app/observation/observation-popup/observation-popup.component';
+import { ObservationListItemComponent } from '../app/observation/observation-list/observation-list-item.component';
+
+import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
+import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
 
 require('angular-minicolors');
 require('select2');
@@ -45,8 +58,15 @@ const app = angular.module('mage', [
   require('./auth/http-auth-interceptor')
 ]);
 
+// Downgraded Angular services 
+app
+  .factory('ExportService', downgradeInjectable(ExportService))
+  .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
+  .factory('MapPopupService', downgradeInjectable(MapPopupService));
+
 // Downgraded Angular components 
 app
+  .directive('bootstrap', downgradeComponent({ component: BootstrapComponent }))
   .directive('matIcon', downgradeComponent({ component: MatIcon }))
   .directive('matButton', downgradeComponent({ component: MatButton }))
   .directive('matToolbar', downgradeComponent({ component: MatToolbar }))
@@ -55,23 +75,25 @@ app
   .directive('matSidenav', downgradeComponent({ component: MatSidenav }))
   .directive('matSidenavContent', downgradeComponent({ component: MatSidenavContent }))
   .directive('matSidenavContainer', downgradeComponent({ component: MatSidenavContainer }))
-  .directive('feedScrollWrapper', downgradeComponent({ component: ScrollWrapperComponent }))
-  .directive('observationEditDropdown', downgradeComponent({ component: DropdownComponent }))
-  .directive('observationEditMultiselectdropdown', downgradeComponent({ component: MultiSelectDropdownComponent }))
+  .directive('feedPanel', downgradeComponent({ component: FeedPanelComponent }))
+  .directive('observationPopup', downgradeComponent({ component: ObservationPopupComponent }))
+  .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
+  .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
+  .directive('userMapPopup', downgradeComponent({ component: UserPopupComponent }))
   .directive('mapLeaflet', downgradeComponent({ component: LeafletComponent }))
   .directive('mapControlZoom', downgradeComponent({ component: ZoomComponent }))
   .directive('mapControlSearch', downgradeComponent({ component: SearchComponent }))
   .directive('mapControlLocation', downgradeComponent({ component: LocationComponent }))
   .directive('mapControlAddObservation', downgradeComponent({ component: AddObservationComponent }))
-  .directive('swagger', downgradeComponent({ component: SwaggerComponent }));
-
+  .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
+  .directive('export', downgradeComponent({ component: ExportComponent }))
+  .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
+  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))
-  .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
-  .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
   .component('setup', require('./setup/setup.controller'))
   .component('about', about)
@@ -99,7 +121,6 @@ require('./filters');
 require('./leaflet-extensions');
 require('./mage');
 require('./authentication');
-require('./observation');
 require('./user');
 require('./admin');
 require('./material-components');
@@ -366,7 +387,13 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   // Admin settings routes
   $stateProvider.state('admin.settings', {
     url: '/settings',
-    component: "adminSettings",
+    component: "upgradedAdminSettings",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.authenticationCreate', {
+    url: '/settings/new',
+    component: "authenticationCreate",
     resolve: resolveAdmin()
   });
 
@@ -383,10 +410,9 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   });
 }
 
-run.$inject = ['$rootScope', '$uibModal', '$templateCache', '$state', 'Api'];
+run.$inject = ['$rootScope', '$uibModal', '$state', 'Api'];
 
-function run($rootScope, $uibModal, $templateCache, $state, Api) {
-  $templateCache.put("observation/observation-important.html", require("./observation/observation-important.html"));
+function run($rootScope, $uibModal, $state, Api) {
 
   $rootScope.$on('event:auth-loginRequired', function(e, response) {
     const stateExceptions = ['landing'];

@@ -75,7 +75,7 @@
             <div class="col-md-8 pointer" ng-click="$ctrl.gotoUser(member)">
               <div class="admin-event-member">
                 <div class="right-gap">
-                  <div avatar-user="member" avatar-width="40" avatar-height="40"></div>
+                  <user-avatar [user]="member" avatar-width="40" avatar-height="40"></user-avatar>
                 </div>
                 <span class="strong">{{member.displayName}}</span>
                 <span class="muted">{{member.email}}</span>

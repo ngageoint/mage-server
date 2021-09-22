@@ -5,9 +5,6 @@ const config = require('../config.js'),
 
 exports.id = 'set-default-password-policy';
 
-const { local = { } } = config.api.authenticationStrategies
-if (local.passwordMinLength === undefined) local.passwordMinLength = 14;
-
 const passwordPolicy = {
   minCharsEnabled: false,
   minChars: 0,
@@ -23,7 +20,7 @@ const passwordPolicy = {
   specialChars: 0,
   restrictSpecialCharsEnabled: false,
   restrictSpecialChars: "",
-  passwordMinLength: local.passwordMinLength,
+  passwordMinLength: 14,
   passwordMinLengthEnabled: true,
   customizeHelpText: false,
   helpText: 'Your password is invalid and must be at least 14 characters in length.',
@@ -44,6 +41,13 @@ const passwordPolicy = {
 
 exports.up = function (done) {
   log.info('Setting default password policy');
+
+  if (config.api.authenticationStrategies && config.api.authenticationStrategies['local']) {
+    const local = config.api.authenticationStrategies['local'];
+    if (local.passwordMinLength) {
+      passwordPolicy.passwordMinLength = local.passwordMinLength;
+    }
+  }
 
   const update = {
     $rename: {

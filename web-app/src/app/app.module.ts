@@ -12,46 +12,49 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
 
-import {
-  MatIcon,
-  MatButton,
-  MatToolbar,
-  MatSpinner,
-  MatFormField,
-  MatIconModule,
-  MatButtonModule,
-  MatChipsModule,
-  MatToolbarModule,
-  MatProgressSpinnerModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatAutocompleteModule,
-  MatSelectModule,
-  MatTooltipModule,
-  MatCardModule,
-  MatListModule,
-  MatRippleModule,
-  MatSidenavModule,
-  MatSidenav,
-  MatSidenavContent,
-  MatSidenavContainer,
-  MatRadioModule,
-  MatCheckboxModule,
-  MatSliderModule,
-  MatExpansionModule
-} from '@angular/material';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatRippleModule, MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatStepperModule } from '@angular/material/stepper';
+
+import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
+import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
 import { SwaggerComponent } from './swagger/swagger.component';
-import { ScrollWrapperComponent } from './wrapper/scroll/feed-scroll.component';
-import { DropdownComponent } from './observation/edit/dropdown/dropdown.component';
-import { MultiSelectDropdownComponent } from './observation/edit/multiselectdropdown/multiselectdropdown.component';
 
-// import app from '../ng1/app.js';
 import { LocationComponent } from './map/controls/location.component';
 import { SearchComponent } from './map/controls/search.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
 import { LeafletComponent } from './map/leaflet.component';
@@ -59,15 +62,94 @@ import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
 import { ColorPickerComponent } from './color-picker/color-picker.component';
+import { ExportComponent } from './export/export.component';
+import { ExportDialogComponent } from "./export/export-dialog.component";
 
-import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
+import { MapClipComponent } from './map/clip/clip.component';
+import { GeometryModule } from './geometry/geometry.module';
+import { ObservationDeleteComponent } from './observation/observation-delete/observation-delete.component';
+import { ObservationListItemComponent } from './observation/observation-list/observation-list-item.component';
+import { MomentModule } from './moment/moment.module';
+import { BootstrapComponent } from './bootstrap/bootstrap.component';
+import { AttachmentComponent } from './observation/attachment/attachment.component';
+import { FilenamePipe } from './filename/filename.pipe';
+import { AttachUploadComponent } from './observation/attachment/attachment-upload/attachment-upload.component';
+import { ObservationViewFormComponent } from './observation/observation-view/observation-view-form.component';
+import { ObservationViewComponent } from './observation/observation-view/observation-view.component';
+import { ObservationFavoritesComponent } from './observation/observation-favorites/observation-favorites.component';
+import { UserAvatarComponent } from './user/user-avatar/user-avatar.component';
+import { TokenInterceptorService } from './http/token-interceptor.service';
+import { ObservationListComponent } from './observation/observation-list/observation-list.component';
+import { UserViewComponent } from './user/user-view/user-view.component';
+import { UserListItemComponent } from './user/user-list/user-list-item.component';
+import { UserListComponent } from './user/user-list/user-list.component';
+import { FeedPanelComponent } from './feed-panel/feed-panel.component';
+
+import {
+  mapServiceProvider,
+  eventServiceProvider,
+  localStorageServiceProvider,
+  geometryServiceProvider,
+  observationServiceProvider,
+  filterServiceProvider,
+  locationServiceProvider,
+  userServiceProvider,
+  settingsProvider,
+  teamProvider,
+  eventProvider,
+  authenticationConfigurationServiceProvider,
+  userPagingServiceProvider
+} from './upgrade/ajs-upgraded-providers';
+
+import {
+  ObservationViewCheckboxComponent,
+  ObservationViewDateComponent,
+  ObservationViewGeometryComponent,
+  ObservationViewMultiselectdropdownComponent,
+  ObservationViewTextComponent,
+  ObservationViewTextareaComponent
+} from './observation/observation-view/observation-view';
+
+import {
+  MGRSValidatorDirective,
+  ObservationEditCheckboxComponent,
+  ObservationEditDateComponent,
+  ObservationEditSelectComponent,
+  ObservationEditEmailComponent,
+  ObservationEditGeometryComponent,
+  ObservationEditGeometryFormComponent,
+  ObservationEditGeometryMapComponent,
+  ObservationEditMultiselectComponent,
+  ObservationEditNumberComponent,
+  ObservationEditRadioComponent,
+  ObservationEditTextComponent,
+  ObservationEditTextareaComponent,
+  ObservationEditFormComponent,
+  ObservationEditComponent
+} from './observation/observation-edit/observation-edit';
+
+import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
+import { UserPopupComponent } from './user/user-popup/user-popup.component';
+import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
+import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
+import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
+import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
+import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
+import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
+import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
+import { CommonModule } from '@angular/common';
+import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
+import { ObservationEditFormPickerComponent } from './observation/observation-edit/observation-edit-form-picker.component';
+import { ObservationEditDiscardComponent } from './observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
+import { ObservationViewAttachmentComponent } from './observation/observation-view/observation-view-attachment/observation-view-attachment.component';
+import { ObservationEditAttachmentComponent } from './observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
+import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
+import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
+import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 
 @NgModule({
   declarations: [
     SwaggerComponent,
-    DropdownComponent,
-    MultiSelectDropdownComponent,
-    ScrollWrapperComponent,
     ZoomComponent,
     AddObservationComponent,
     LocationComponent,
@@ -78,9 +160,76 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     LayersComponent,
     LayerHeaderComponent,
     LayerContentComponent,
-    ColorPickerComponent
+    ColorPickerComponent,
+    MGRSValidatorDirective,
+    FeedPanelComponent,
+    ObservationListItemComponent,
+    ObservationEditComponent,
+    ObservationDeleteComponent,
+    ObservationEditAttachmentComponent,
+    ObservationEditFormComponent,
+    ObservationEditFormPickerComponent,
+    ObservationEditMultiselectComponent,
+    ObservationEditCheckboxComponent,
+    ObservationEditSelectComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent,
+    ObservationEditDateComponent,
+    ObservationViewComponent,
+    ObservationViewAttachmentComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewDateComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewMultiselectdropdownComponent,
+    ObservationViewFormComponent,
+    ObservationFavoritesComponent,
+    ObservationListComponent,
+    ObservationOptionsComponent,
+    MapClipComponent,
+    BootstrapComponent,
+    AttachmentComponent,
+    FilenamePipe,
+    AttachUploadComponent,
+    UserAvatarComponent,
+    UserViewComponent,
+    UserListItemComponent,
+    UserListComponent,
+    FeedPanelComponent,
+    ObservationPopupComponent,
+    UserPopupComponent,
+    AdminSettingsComponent,
+    AuthenticationSettingsComponent,
+    PasswordPolicyComponent,
+    GenericSettingsComponent,
+    AccountLockComponent,
+    AuthenticationCreateComponent,
+    AuthenticationDeleteComponent,
+    SecurityBannerComponent,
+    SecurityDisclaimerComponent,
+    DuplicateKeyComponent,
+    EditSettingComponent,
+    DeleteSettingComponent,
+    IconUploadComponent,
+    DatetimePickerComponent,
+    ExportComponent,
+    ExportDialogComponent,
+    ObservationEditFormPickerComponent,
+    ObservationOptionsComponent,
+    ObservationEditDiscardComponent,
+    ObservationEditPasswordComponent,
+    ObservationViewPasswordComponent,
+    PasswordPipe
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     HttpClientModule,
     UpgradeModule,
@@ -89,11 +238,21 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     ReactiveFormsModule,
     BrowserAnimationsModule,
     DragDropModule,
+    MatBadgeModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    MatButtonToggleModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatMomentDatetimeModule,
+    MatDatetimepickerModule,
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
+    MatTabsModule,
     MatButtonModule,
     MatCardModule,
+    MatGridListModule,
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatRadioModule,
@@ -108,36 +267,40 @@ import { mapServiceProvider } from './upgrade/ajs-upgraded-providers';
     NgxMatSelectSearchModule,
     MatChipsModule,
     MatSidenavModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+    MomentModule,
+    GeometryModule,
     ScrollingModule,
     SaturationModule,
     HueModule,
     AlphaModule,
-    CheckboardModule
+    CheckboardModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatSnackBarModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    AdminBreadcrumbModule,
+    MatSlideToggleModule,
+    MatStepperModule
   ],
   providers: [
-    mapServiceProvider
-  ],
-  bootstrap: [],
-  entryComponents: [
-    MatIcon,
-    MatButton,
-    MatToolbar,
-    MatSpinner,
-    MatFormField,
-    MatSidenav,
-    MatSidenavContent,
-    MatSidenavContainer,
-    DropdownComponent, 
-    MultiSelectDropdownComponent,
-    LeafletComponent,
-    ZoomComponent,
-    SearchComponent,
-    LocationComponent,
-    AddObservationComponent,
-    LayersControlComponent,
-    ScrollWrapperComponent,
-    SwaggerComponent,
-    ColorPickerComponent
+    mapServiceProvider,
+    userServiceProvider,
+    filterServiceProvider,
+    eventServiceProvider,
+    geometryServiceProvider,
+    observationServiceProvider,
+    localStorageServiceProvider,
+    locationServiceProvider,
+    settingsProvider,
+    teamProvider,
+    eventProvider,
+    authenticationConfigurationServiceProvider,
+    userPagingServiceProvider,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })
 export class AppModule {

@@ -12,7 +12,7 @@ class FileUploadController {
   }
 
   $postLink() {
-    var img = this.$element.find('img');
+    const img = this.$element.find('img');
     img.on('load', () => {
       this.uploadImageMissing = false;
     });
@@ -28,7 +28,7 @@ class FileUploadController {
       }
     });
 
-    var self = this;
+    const self = this;
     this.$element.find(':file').bind('change', function() {
       self.$timeout(() => {
         self.onFile.call(self, this.files[0]);
@@ -37,11 +37,11 @@ class FileUploadController {
   }
 
   $onChanges(changes) {
-    if (changes.allowUpload.currentValue === true) {
+    if (changes.allowUpload && changes.allowUpload.currentValue === true) {
       this.upload();
     }
 
-    if (changes.url.currentValue !== this.url) {
+    if (changes.url && changes.url.currentValue !== this.url) {
       this.uploadImageMissing = false;
       this.$element.find('.preview').html(['<img class="preview-image" src="', this.icon || this.url, '"/>'].join(''));
     }
@@ -50,7 +50,7 @@ class FileUploadController {
   onFile(file) {
     this.file = file;
 
-    var element = $(this.$element.find('.upload-file')[0]);
+    const element = $(this.$element.find('.upload-file')[0]);
     if (this.preview) {
       this.previewFile(this.file, element);
     }
@@ -68,7 +68,7 @@ class FileUploadController {
 
   previewFile(file, element) {
     if (window.FileReader) {
-      var reader = new FileReader();
+      const reader = new FileReader();
 
       reader.onload = (theFile => {
         return e => {
@@ -126,17 +126,18 @@ class FileUploadController {
   upload() {
     if (!this.url || !this.allowUpload || !this.file) return;
 
-    var formData = new FormData();
+    const formData = new FormData();
     formData.append(this.uploadFileFormName, this.file);
 
+    const self = this;
     jQuery.ajax({
       url: this.url,
       type: 'POST',
       xhr: () => {
-        var myXhr = jQuery.ajaxSettings.xhr();
+        const myXhr = jQuery.ajaxSettings.xhr();
         if (myXhr.upload) {
           myXhr.upload.addEventListener('progress', e => {
-            this.uploadProgress(e);
+            self.uploadProgress(e);
           }, false);
         }
         return myXhr;
@@ -170,7 +171,8 @@ export default {
     uploadFileFormName: '<',
     defaultImageUrl: '<',
     onUploadFile: '&',
-    onUploadComplete: '&'
+    onUploadComplete: '&',
+    onUploadFailed: '&'
   },
   controller: FileUploadController
 };

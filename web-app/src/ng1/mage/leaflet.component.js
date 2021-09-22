@@ -107,6 +107,9 @@ class LeafletController {
     this.onMapAvailable({ map: this.map });
 
     this.map.on('locationfound', this.onLocation, this);
+    this.map.on('locationerror', function(err) {
+      console.log('LOCATION ERROR', err);
+    });
 
     function saveMapPosition() {
       const center = this.map.getCenter();
@@ -396,6 +399,8 @@ class LeafletController {
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: (feature, latlng) => {
+        let marker;
+
         if (layerInfo.options.temporal) {
           const temporalOptions = {
             pane: pane,
@@ -405,7 +410,7 @@ class LeafletController {
           if (feature.style && feature.style.iconUrl) {
             temporalOptions.iconUrl = feature.style.iconUrl;
           }
-          return L.locationMarker(latlng, temporalOptions);
+          marker = L.locationMarker(latlng, temporalOptions);
         } else {
           const options = {
             pane: pane,
@@ -415,8 +420,14 @@ class LeafletController {
             options.iconUrl = feature.style.iconUrl;
           }
           options.tooltip = editMode;
-          return L.observationMarker(latlng, options);
+          marker = L.observationMarker(latlng, options);
         }
+
+        if (layerInfo.options.onLayer) {
+          layerInfo.options.onLayer(marker, feature);
+        }
+
+        return marker
       },
       style: function(feature) {
         return feature.style;
@@ -556,11 +567,11 @@ class LeafletController {
     options = options || {};
     if (options.zoomToLocation) {
       this.map.once('moveend', function() {
-        layer.openPopup();
+        layer.fire('click');
       });
       this.map.setView(layer.getLatLng(), options.zoomToLocation ? 17 : this.map.getZoom());
     } else {
-      layer.openPopup();
+      layer.fire('click');
     }
   }
 

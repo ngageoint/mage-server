@@ -1,4 +1,4 @@
-var angular = require('angular')
+const angular = require('angular')
   , EventResource = require('./event.resource')
   , TeamResource = require('./team.resource')
   , FormResource = require('./form.resource')
@@ -36,4 +36,5 @@ angular.module('mage')
   .factory('PollingService', require('./polling.service'))
   .factory('UserPagingService', require('./user-paging.service'))
   .factory('DevicePagingService', require('./device-paging.service'))
-  .factory('TeamPagingService', require('./team-paging.service'));
+  .factory('TeamPagingService', require('./team-paging.service'))
+  .factory('AuthenticationConfigurationService', require('./authentication-configuration.service'));

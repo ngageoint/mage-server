@@ -24,7 +24,7 @@ L.FixedWidthIcon = L.DivIcon.extend({
     if (this.options.iconUrl) {
       img.src = this.options.iconUrl;
     } else {
-      img.src = 'images/marker-icon.png';
+      img.src = '/assets/images/default_marker.png';
     }
     $(img).on('load', () => {
       if (this.options.onIconLoad) this.options.onIconLoad(this);

@@ -26,7 +26,7 @@ L.LocationMarker.include({
   },
 
   unbindPopup: function () {
-    this._getMarker().unbindPopup(popup);
+    this._getMarker().unbindPopup();
     return this;
   },
 

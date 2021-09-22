@@ -1,20 +1,23 @@
-var Shapefile = require('./shapefile')
+const Shapefile = require('./shapefile')
   , Kml = require('./kml')
   , Csv = require('./csv')
-  , GeoJson = require('./geojson');
-  
-function ExporterFactory() {}
+  , GeoJson = require('./geojson')
+  , GeoPackage = require('./geopackage');
 
-ExporterFactory.prototype.createExporter = function(type, options) {
+function ExporterFactory() { }
+
+ExporterFactory.prototype.createExporter = function (type, options) {
   switch (type) {
-  case 'shapefile':
-    return new Shapefile(options);
-  case 'kml':
-    return new Kml(options);
-  case 'geojson':
-    return new GeoJson(options);
-  case 'csv':
-    return new Csv(options);
+    case 'shapefile':
+      return new Shapefile(options);
+    case 'kml':
+      return new Kml(options);
+    case 'geojson':
+      return new GeoJson(options);
+    case 'csv':
+      return new Csv(options);
+    case 'geopackage':
+      return new GeoPackage(options);
   }
 };
 
