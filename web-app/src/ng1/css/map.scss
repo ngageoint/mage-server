@@ -2,6 +2,10 @@
 @import "~leaflet.markercluster/dist/MarkerCluster.css";
 @import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
 
+.foo-bar-nope {
+  background-color: #000;
+}
+
 .leaflet-control-geocoder-icon {
   border-radius: 4px;
   width: 26px;

@@ -15,17 +15,17 @@ function mapObservationProperties(observation, event) {
   observation.properties = observation.properties || {};
   observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
 
-  var centroid = turfCentroid(observation);
+  const centroid = turfCentroid(observation);
   observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
-  observation.properties.forms.forEach(function(observationForm) {
+  observation.properties.forms.forEach(function (observationForm) {
     if (Object.keys(observationForm).length === 0) return;
 
-    var form = event.formMap[observationForm.formId];
-    var formPrefix = event.forms.length > 1 ? form.name + '.' : '';
+    const form = event.formMap[observationForm.formId];
+    const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
 
-    for (var name in observationForm) {
-      var field = form.fieldNameToField[name];
+    for (const name in observationForm) {
+      const field = form.fieldNameToField[name];
       if (field && !field.archived) {
         observation.properties[formPrefix + field.title] = observationForm[name];
         delete observation.properties[name];
@@ -38,12 +38,12 @@ function mapObservationProperties(observation, event) {
   observation.properties.id = observation._id;
 }
 
-Exporter.prototype.mapObservations = function(observations) {
-  var self = this;
+Exporter.prototype.mapObservations = function (observations) {
+  const self = this;
 
   if (!Array.isArray(observations)) observations = [observations];
 
-  observations.forEach(function(o) {
+  observations.forEach(function (o) {
     mapObservationProperties(o, self._event);
 
     if (self._users[o.userId]) o.properties.user = self._users[o.userId].username;
@@ -54,7 +54,7 @@ Exporter.prototype.mapObservations = function(observations) {
   });
 };
 
-Exporter.prototype.requestObservations = function(filter, done) {
+Exporter.prototype.requestObservations = function (filter, done) {
   const options = {
     filter: {
       states: ['active'],
@@ -69,8 +69,8 @@ Exporter.prototype.requestObservations = function(filter, done) {
   new api.Observation(this._event).getAll(options, done);
 };
 
-Exporter.prototype.requestLocations = function(options, done) {
-  var filter = {
+Exporter.prototype.requestLocations = function (options, done) {
+  const filter = {
     eventId: this._event._id
   };
 
@@ -79,7 +79,7 @@ Exporter.prototype.requestLocations = function(options, done) {
   if (options.startDate) filter.startDate = options.startDate.toDate();
   if (options.endDate) filter.endDate = options.endDate.toDate();
 
-  Location.getLocations({filter: filter, limit: options.limit}, done);
+  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream }, done);
 };
 
 module.exports = Exporter;

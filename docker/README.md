@@ -1,5 +1,16 @@
 # Running with Docker
 
+## Building an image
+
+Building a server image
+
+```bash
+$ cd ./docker
+$ docker build -t <name>:<tag> server
+```
+
+## Docker compose
+
 You can start a MAGE server by using [docker-compose](https://docs.docker.com/compose/overview/) to start services
 defined in MAGE's [Compose file](docker-compose.yml).
 
@@ -97,33 +108,33 @@ runs MongoDB as the service `mage-db`.
 The Compose file references a custom, local [Dockerfile](server/Dockerfile) based on the official [Node.js](https://hub.docker.com/_/node/)
 image to build the MAGE server image.  At build time, the MAGE server Dockerfile downloads an archive of the MAGE server
 code from [Github](https://github.com/ngageoint/mage-server).  This defaults to some (hopefully) recent release version of
-the MAGE server, e.g., 5.1.0.  The Dockerfile accepts an [argument](https://docs.docker.com/engine/reference/builder/#arg),
-`MAGE_VER`, which you can specify to `docker-compose` like
+the MAGE server, e.g., 6.0.0.  The Dockerfile accepts an [argument](https://docs.docker.com/engine/reference/builder/#arg),
+`MAGE_VERSION`, which you can specify to `docker-compose` like
 ```bash
-MAGE_VER=develop docker-compose build
+MAGE_VERSION=develop docker-compose build
 ```
 to build with whatever version of MAGE server you wish.  Github should accept any valid, uniquely identifiable refspec in
 the download URL the Docker file uses, so you could use a branch name, tag name, or commit hash.  By way of the
 ```yaml
-image: "mage-server:${MAGE_VER:-5.1.0}"
+image: "mage-server:${MAGE_VERSION:-6.0.0}"
 ```
 entry the Compose file tells Docker to [tag](https://docs.docker.com/get-started/part2/#tag-the-image) the `mage-server`
-image with value of `MAGE_VER`.
+image with value of `MAGE_VERSION`.
 
-Be aware that every different value you specify for `MAGE_VER` to `docker-compose build`, Docker will build a separate
+Be aware that every different value you specify for `MAGE_VERSION` to `docker-compose build`, Docker will build a separate
 `mage-server` image because changing that value modifies the [build stage](https://docs.docker.com/develop/develop-images/multistage-build/)
 that downloads the MAGE server baseline.  For example after running
 ```bash
-$ MAGE_VER=5.1.0 docker-compose build
+$ MAGE_VERSION=6.0.0 docker-compose build
 # ... Docker build output
-$ MAGE_VER=develop docker-compose build
+$ MAGE_VERSION=develop docker-compose build
 # ... Docker build output
 ```
 then listing your Docker images ...
 ```bash
 $ docker images
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-mage-server         5.1.0               877f79a739b7        8 minutes ago       949MB
+mage-server         6.0.0               877f79a739b7        8 minutes ago       949MB
 mage-server         develop             75a73b7b7c3e        2 days ago          961MB
 node                8.11.1              4635bc7d130c        3 weeks ago         673MB
 mongo               3.6-jessie          5b1317f8158f        6 weeks ago         366MB
@@ -134,8 +145,8 @@ you can always remove images you don't need.
 ```bash
 $ docker rmi mage-server:develop
 ```
-Another consequence of building the images using the `MAGE_VER=xxx docker-compose build` syntax is that you must then
-supply the same `MAGE_VER=xxx` value when you run the subsequent `docker-compose up -d` command.  Otherwise, `docker-compose`
+Another consequence of building the images using the `MAGE_VERSION=xxx docker-compose build` syntax is that you must then
+supply the same `MAGE_VERSION=xxx` value when you run the subsequent `docker-compose up -d` command.  Otherwise, `docker-compose`
 will rebuild the `mage-server` image with the version the Compose file defines if it differs from the one you specified on
 the command line, and run a container with that version instead.
 

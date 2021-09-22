@@ -1,4 +1,7 @@
-module.exports = function(passport) {
+const AuthenticationInitializer = require('./index');
+
+function initialize() {
+  const passport = AuthenticationInitializer.passport;
 
   const AnonymousStrategy = require('passport-anonymous').Strategy;
   passport.use(new AnonymousStrategy());
@@ -9,3 +12,7 @@ module.exports = function(passport) {
     passport: passport
   };
 };
+
+module.exports = {
+  initialize
+}

@@ -2,9 +2,7 @@
 
 const request = require('supertest')
   , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , app = require('../../express')
-  , Setting = require('../../models/setting');
+  , mongoose = require('mongoose');
 
 require('sinon-mongoose');
 
@@ -20,24 +18,13 @@ const DeviceModel = mongoose.model('Device');
 require('../../models/user');
 const UserModel = mongoose.model('User');
 
-require('../../models/authentication');
-const AuthenticationModel = mongoose.model('Authentication');
+const Authentication = require('../../models/authentication');
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-let userId = mongoose.Types.ObjectId();
-let mockUser = new UserModel({
-  _id: userId,
-  username: 'test',
-  displayName: 'test',
-  active: true,
-  enabled: true,
-  roleId: mongoose.Types.ObjectId(),
-  authenticationId: mongoose.Types.ObjectId()
-});
-mockUser.authentication = {
-  _id: mockUser.authenticationId,
-  type: 'local', 
-  security: {}
-};
+let userId;
+let mockUser;
+let app;
 
 async function authenticate() {
   userId = mongoose.Types.ObjectId();
@@ -48,28 +35,34 @@ async function authenticate() {
     active: true,
     enabled: true,
     roleId: mongoose.Types.ObjectId(),
-    authenticationId: new AuthenticationModel({
+    authenticationId: new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
+      authenticationConfigurationId: new AuthenticationConfiguration.Model({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        name: 'local',
+        settings: {}
+      }),
       security: {}
     })
   });
-  mockUser.authentication = {
-    _id: mockUser.authenticationId,
-    type: 'local', 
-    security: {}
-  };
+
+  sinon.mock(AuthenticationConfiguration.Model)
+    .expects('findOne')
+    .chain('exec')
+    .resolves(mockUser.authentication.authenticationConfiguration);
 
   sinon.mock(UserModel)
     .expects('findOne')
     .withArgs({ username: 'test' })
     .chain('populate', 'roleId')
-    .chain('populate', 'authenticationId')
+    .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
     .chain('exec')
     .yields(null, mockUser);
 
-  sinon.mock(AuthenticationModel.prototype)
+  sinon.mock(Authentication.Local.prototype)
     .expects('validatePassword')
     .yields(null, true);
 
@@ -90,38 +83,54 @@ async function authenticate() {
       sinon.restore();
     });
 
-  return jwt; 
+  return jwt;
 }
 
-describe("device provision tests", function() {
+describe("device provision tests", function () {
+
   let jwt;
 
   beforeEach(async () => {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
     jwt = await authenticate();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
-  it("should not authorize non provisioned device", function(done) {
+  it("should not authorize non provisioned device", function (done) {
     const deviceId = mongoose.Types.ObjectId();
+
+    mockUser.authentication.authenticationConfiguration.settings = {
+      usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
+    };
 
     sinon.mock(UserModel)
       .expects('findById')
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .resolves(mockUser);
 
-    sinon.mock(Setting)
-      .expects('getSetting')
-      .withArgs('security')
-      .resolves({
-        type: 'security',
-        settings: {
-          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true } }
-        }
-      });
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(DeviceModel)
       .expects('findOne')
@@ -143,7 +152,7 @@ describe("device provision tests", function() {
         userId: userId,
         deviceId: deviceId
       })
-    .yields(null, {});
+      .yields(null, {});
 
     const reqDevice = {
       uid: 'test',
@@ -163,21 +172,20 @@ describe("device provision tests", function() {
   it("should authorize provisioned device", function (done) {
     const deviceId = mongoose.Types.ObjectId();
 
+    mockUser.authentication.authenticationConfiguration.settings = {
+      usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true }
+    };
+
     sinon.mock(UserModel)
       .expects('findById')
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .resolves(mockUser);
 
-    sinon.mock(Setting)
-      .expects('getSetting')
-      .withArgs('security')
-      .resolves({
-        type: 'security',
-        settings: {
-          local: { usersReqAdmin: { enabled: true }, devicesReqAdmin: { enabled: true } }
-        }
-      });
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(DeviceModel)
       .expects('findOne')
@@ -189,6 +197,10 @@ describe("device provision tests", function() {
         registered: true
       });
 
+    sinon.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .resolves({});
+
     sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
@@ -197,11 +209,17 @@ describe("device provision tests", function() {
 
     sinon.mock(LoginModel)
       .expects('create')
-      .withArgs({
-        userId: userId,
-        deviceId: deviceId
-      })
       .yields(null, {});
+
+    const mockAuth = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password'
+    });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('find')
+      .resolves([mockAuth]);
 
     const reqDevice = {
       uid: 'test',
@@ -231,20 +249,19 @@ describe("device provision tests", function() {
   it("device provisioning should default to enabled", function (done) {
     const deviceId = mongoose.Types.ObjectId();
 
+    mockUser.authentication.authenticationConfiguration.settings = {
+    };
+
     sinon.mock(UserModel)
       .expects('findById')
       .chain('populate', 'roleId')
-      .chain('populate', 'authenticationId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
       .resolves(mockUser);
 
-    sinon.mock(Setting)
-      .expects('getSetting')
-      .withArgs('security')
-      .resolves({
-        settings: {
-          local: {}
-        }
-      });
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
 
     sinon.mock(DeviceModel)
       .expects('findOne')
@@ -256,6 +273,10 @@ describe("device provision tests", function() {
         registered: true
       });
 
+    sinon.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .resolves({});
+
     sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
@@ -264,11 +285,17 @@ describe("device provision tests", function() {
 
     sinon.mock(LoginModel)
       .expects('create')
-      .withArgs({
-        userId: userId,
-        deviceId: deviceId
-      })
       .yields(null, {});
+
+    const mockAuth = new Authentication.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password'
+    });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('find')
+      .resolves([mockAuth]);
 
     const reqDevice = {
       uid: 'test',

@@ -3,7 +3,6 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , mockfs = require('mock-fs')
   , TokenModel = mongoose.model('Token');
 
@@ -18,9 +17,14 @@ var EventModel = mongoose.model('Event');
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
-describe("attachment read tests", function() {
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-  beforeEach(function() {
+describe("attachment read tests", function () {
+
+  let app;
+
+  beforeEach(function () {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
@@ -29,9 +33,26 @@ describe("attachment read tests", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
     mockfs.restore();
   });
@@ -40,76 +61,13 @@ describe("attachment read tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should get attachments for event I am a part of", function(done) {
-    mockTokenWithPermission('READ_OBSERVATION_EVENT');
-
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      },
-      attachments: [{
-        size: 200,
-        contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
-      },{
-        size: 4096,
-        contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
-      }]
-    });
-
-    sinon.mock(ObservationModel)
-      .expects('findById')
-      .withArgs(observationId.toString())
-      .yields(null, mockObservation);
-
-    request(app)
-      .get('/api/events/1/observations/' + observationId + '/attachments')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect(function(res) {
-        var attachments = res.body;
-        should.exist(attachments);
-        attachments.should.be.an('array');
-        attachments.should.have.length(2);
-      })
-      .end(done);
-  });
-
-  it("should get attachment for any event", function(done) {
+  it("should get attachment for any event", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
@@ -126,6 +84,7 @@ describe("attachment read tests", function() {
       collectionName: 'observations1'
     });
     var observationId = mongoose.Types.ObjectId();
+    var attachmentId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -137,6 +96,7 @@ describe("attachment read tests", function() {
         timestamp: Date.now()
       },
       attachments: [{
+        _id: attachmentId,
         size: 7,
         contentType: 'image/jpeg',
         relativePath: 'mock/path/attachment.jpeg'
@@ -150,22 +110,22 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId, 'attachments._id': attachmentId.toString() })
       .yields(null, mockObservation);
 
     request(app)
-      .get('/api/events/1/observations/' + observationId + '/attachments/456')
+      .get('/api/events/1/observations/' + observationId + '/attachments/' + attachmentId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', 'image/jpeg')
       .expect('Content-Length', "7")
-      .end(function(err) {
+      .end(function (err) {
         done(err);
       });
   });
 
-  it("should fail to get attachment that does not exist", function(done) {
+  it("should fail to get attachment that does not exist", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
@@ -198,7 +158,7 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId, 'attachments._id': '456' })
       .yields(null, mockObservation);
 
     request(app)
@@ -209,7 +169,7 @@ describe("attachment read tests", function() {
       .end(done);
   });
 
-  it("should get attachment range", function(done) {
+  it("should get attachment range", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     mockfs({
@@ -226,6 +186,7 @@ describe("attachment read tests", function() {
       collectionName: 'observations1'
     });
     var observationId = mongoose.Types.ObjectId();
+    var attachmentId = mongoose.Types.ObjectId();
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
@@ -237,6 +198,7 @@ describe("attachment read tests", function() {
         timestamp: Date.now()
       },
       attachments: [{
+        _id: attachmentId,
         size: 7,
         contentType: 'image/jpeg',
         relativePath: 'mock/path/attachment.jpeg'
@@ -250,11 +212,11 @@ describe("attachment read tests", function() {
 
     sinon.mock(ObservationModel)
       .expects('findOne')
-      .withArgs({_id: observationId})
+      .withArgs({ _id: observationId, 'attachments._id': attachmentId.toString() })
       .yields(null, mockObservation);
 
     request(app)
-      .get('/api/events/1/observations/' + observationId + '/attachments/456')
+      .get('/api/events/1/observations/' + observationId + '/attachments/' + attachmentId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .set('Range', 'bytes=0-4')

@@ -8,12 +8,12 @@ describe('LayerService', () => {
   }));
 
   it('should be created', () => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
     expect(service).toBeTruthy();
   });
 
   it('should toggle on', (done) => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
 
     const layer = {};
     const checked = true;
@@ -28,7 +28,7 @@ describe('LayerService', () => {
   });
 
   it('should toggle off', (done) => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
 
     const layer = {};
     const checked = false;
@@ -42,7 +42,7 @@ describe('LayerService', () => {
   });
 
   it('should toggle zoom', (done) => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
 
     const layer = {};
     service.zoom$.subscribe(event => {
@@ -54,7 +54,7 @@ describe('LayerService', () => {
   });
 
   it('should change opacity', (done) => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
 
     const layer = {};
     const opacity = .5;
@@ -68,7 +68,7 @@ describe('LayerService', () => {
   });
 
   it('should change style', (done) => {
-    const service: LayerService = TestBed.get(LayerService);
+    const service: LayerService = TestBed.inject(LayerService);
 
     const layer = {};
     const style = { stroke: '#FFFFFF', fill: '#000000', width: 2};

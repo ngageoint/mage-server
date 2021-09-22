@@ -1,6 +1,7 @@
 const express = require("express")
   , crypto = require('crypto')
   , cookieSession = require('cookie-session')
+  , bodyParser = require('body-parser')
   , fs = require('fs')
   , passport = require('passport')
   , path = require('path')
@@ -9,7 +10,8 @@ const express = require("express")
   , log = require('./logger')
   , api = require('./api')
   , env = require('./environment/env')
-  , yaml = require('yaml');
+  , yaml = require('yaml')
+  , AuthenticationInitializer = require('./authentication');
 
 const app = express();
 app.use(function(req, res, next) {
@@ -49,7 +51,7 @@ app.enable('trust proxy');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(require('body-parser')({
+app.use(bodyParser({
   limit: '16mb',
   keepExtensions: true
 }));
@@ -70,7 +72,7 @@ app.use('/private',
   express.static(path.join(__dirname, 'private')));
   
 // Configure authentication
-const authentication = require('./authentication')(app, passport, provision, config.api.authenticationStrategies);
+const authentication = AuthenticationInitializer.initialize(app, passport, provision);
 
 // Configure routes
 require('./routes')(app, { authentication: authentication });

@@ -9,6 +9,56 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
+## [6.0.0](https://github.com/ngageoint/mage-server/releases/tag/6.0.0)
+
+### Release Notes
+**This release includes database migrations, please remember to backup your database before upgrading.**
+
+##### Features
+* Multi form support. Users will be able to add multiple forms to an observation when the server configuration allows. Administrators can restrict total amount of forms, as well as min/max for individual forms.
+* Attachments are now form fields.  All existing forms will be migrated to include and "Attachments" form field as the first first field in each form.  Administrators can edit forms to include any number of attachments fields.  In addition administrators can restrict the number of attachments allowed in each field as well as the types of attachments.
+* Local user signup captcha.  All new local users will need to enter a captcha to create a local MAGE account.
+* New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
+* Moving security settings to more secure location.
+* Adding support for connecting to a generic OAuth server.
+
+##### Bug Fixes
+
+## [5.5.2](https://github.com/ngageoint/mage-server/releases/tag/5.5.2)
+
+##### Features
+
+##### Bug Fixes
+* GeoPackage export properly formats observation form data to allowed geopackage types.
+* Fix invalid reference in export startup service.
+* KML user location export properly groups user locations.
+
+## [5.5.1](https://github.com/ngageoint/mage-server/releases/tag/5.5.1)
+
+##### Features
+
+##### Bug Fixes
+* Fixed attachment upload regression when creating a new observation.
+* Fixed user role not seeing observation details
+* Fixed admin observation delete button missing
+
+## [5.5.0](https://github.com/ngageoint/mage-server/releases/tag/5.5.0)
+
+##### Features
+* Export as GeoPackage.
+* New export UI, allowing users to view previous exports.
+* Exports are now done in the background, this will eliminate client timeouts for larger exports. 
+* Minor performance enhancements to existing export types.
+* Adding icons to search results on admin pages.
+
+##### Bug Fixes
+* Fix bug detecting invalid KML files on upload in some web clients.
+* Login search on device page correctly filters on device.
+* Display device uid, not user-agent, when filtering on devices from admin dashboard.
+* Default admin approval as enabled for new user accounts.  This was causing new user account creation to fail.
+* User map icon now appears on the map.  Default icon is also displayed instead of a missing icon image.
+* Fixing grammar and misspellings on various admin pages.
+
 ## [5.4.4](https://github.com/ngageoint/mage-server/releases/tag/5.4.4)
 
 ##### Features

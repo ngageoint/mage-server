@@ -10,6 +10,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     myself: null,
     amAdmin: false,
     signup,
+    signupVerify,
     signin,
     idpSignin,
     ldapSignin,
@@ -36,11 +37,39 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
   return service;
 
-  function signup(user, success, error, progress) {
-    saveUser(user, {
-      url: '/api/users',
-      type: 'POST'
-    }, success, error, progress);
+  function signup(username) {
+    const deferred = $q.defer();
+
+    $http.post('/api/users/signups', { username: username }, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      ignoreAuthModule: true
+    }).then(function (response) {
+      deferred.resolve(response.data);
+    }).catch(function (response) {
+      deferred.reject(response);
+    });
+
+    return deferred.promise;
+  }
+
+  function signupVerify(data, token) {
+    const deferred = $q.defer();
+
+    $http.post('/api/users/signups/verifications', data, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      ignoreAuthModule: true
+    }).then(function (response) {
+      deferred.resolve(response.data);
+    }).catch(function (response) {
+      deferred.reject(response);
+    });
+
+    return deferred.promise;
   }
 
   function ldapSignin(data) {

@@ -1,12 +1,13 @@
 var _ = require('underscore')
   , angular = require('angular')
   , moment = require('moment');
+const { Observation } = require('./observation.resource');
 
 module.exports = EventService;
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', '$httpParamSerializer', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'LocalStorageService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', '$httpParamSerializer', 'Observation', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'LocalStorageService'];
 
-function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Event, ObservationService, LocationService, LayerService, FilterService, PollingService, LocalStorageService) {
+function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Observation, ObservationService, LocationService, LayerService, FilterService, PollingService, LocalStorageService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
@@ -142,7 +143,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
     PollingService.removeListener(pollingServiceListener);
   });
 
-  var service = {
+  const service = {
     addObservationsChangedListener: addObservationsChangedListener,
     removeObservationsChangedListener: removeObservationsChangedListener,
     addUsersChangedListener: addUsersChangedListener,
@@ -233,9 +234,13 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
   }
 
   function saveObservation(observation) {
-    var event = eventsById[observation.eventId];
-    var isNewObservation = !observation.id;
-    return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
+    const resource = new Observation(observation)
+
+    const event = eventsById[resource.eventId];
+    const isNewObservation = !resource.id;
+    const promise = ObservationService.saveObservationForEvent(event, resource)
+    
+    promise.then(function(observation) {
       event.observationsById[observation.id] = observation;
 
       // Check if this new observation passes the current filter
@@ -244,6 +249,8 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
       }
     });
+
+    return promise;
   }
 
   function addObservationFavorite(observation) {
@@ -296,13 +303,13 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
   }
 
   function addAttachmentToObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     ObservationService.addAttachmentToObservationForEvent(event, observation, attachment);
     observationsChanged({updated: [observation]});
   }
 
   function deleteAttachmentForObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     return ObservationService.deleteAttachmentInObservationForEvent(event, observation, attachment).then(function(observation) {
       observationsChanged({updated: [observation]});
     });
@@ -329,25 +336,21 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
     return forms;
   }
 
-  function createForm(observation, form, viewMode) {
+  function createForm(observationForm, formDefinition, viewMode) {
+    const form = angular.copy(formDefinition);
+    form.remoteId = observationForm.id;
 
-    var observationForm = angular.copy(form);
+    const existingPropertyFields = [];
 
-    var existingPropertyFields = [];
-    _.each(observation.properties.forms, function(form) {
-      if (form.formId === observationForm.id) {
-        _.each(form, function(value, key) {
-
-          var field = service.getFormField(observationForm, key);
-          if (field) {
-            if (field.type === 'date' && field.value) {
-              field.value = moment(value).toDate();
-            } else {
-              field.value = value;
-            }
-            existingPropertyFields.push(field);
-          }
-        });
+    _.each(observationForm, function(value, key) {
+      const field = service.getFormField(form, key);
+      if (field) {
+        if (field.type === 'date' && field.value) {
+          field.value = moment(value).toDate();
+        } else {
+          field.value = value;
+        }
+        existingPropertyFields.push(field);
       }
     });
 
@@ -355,7 +358,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Eve
       observationForm.fields = _.intersection(observationForm.fields, existingPropertyFields);
     }
 
-    return observationForm;
+    return form;
   }
 
   function exportForm(event) {

@@ -35,6 +35,12 @@ mage {
   height: 100%;
 }
 
+.application {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .typeahead-dropdown-menu {
   margin-top: 0px;
 }
@@ -204,6 +210,11 @@ a:hover, a:focus {
 }
 
 .export-panel .export-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+}
+
+.export-info-panel .export-button:not(:disabled) {
   background-color: #1E88E5 !important;
   color: white;
 }
@@ -1160,6 +1171,10 @@ admin {
   font-size: 25px;
 }
 
+.admin-layer-snackbar {
+  z-index: 1000;
+}
+
 .admin-delete-icon {
   color: red;
 }
@@ -1444,4 +1459,10 @@ h4.image-delete {
 .btn .logo i {
   position: relative;
   top: 9px;
+}
+
+.col-equal-height {
+  display: flex;
+  display: -webkit-flex;
+  flex-wrap: wrap;
 }

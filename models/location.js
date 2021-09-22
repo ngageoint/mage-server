@@ -35,9 +35,9 @@ exports.createLocations = function(locations, callback) {
 };
 
 exports.getLocations = function(options, callback) {
-  var conditions = {};
+  let conditions = {};
 
-  var filter = options.filter || {};
+  const filter = options.filter || {};
   if (filter.eventId) {
     conditions.eventId = filter.eventId;
   }
@@ -64,9 +64,8 @@ exports.getLocations = function(options, callback) {
     if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-
   if (options.stream === true) {
-    var queryOptions = {sort: {"properties.timestamp": 1, _id: 1}};
+    let queryOptions = {sort: {"properties.timestamp": 1, _id: 1}};
     if (options.limit) {
       queryOptions.limit = options.limit;
     }
@@ -74,7 +73,7 @@ exports.getLocations = function(options, callback) {
     return Location.find(conditions, {}, queryOptions).cursor();
   } else {
     // If we are not streaming limit number of locations to 2000
-    var limit = 2000;
+    let limit = 2000;
     if (options.limit && options.limit < 2000) {
       limit = options.limit;
     }
@@ -86,7 +85,7 @@ exports.getLocations = function(options, callback) {
 };
 
 exports.removeLocationsForUser = function(user, callback) {
-  var conditions = {"userId": user._id};
+  const conditions = {"userId": user._id};
   Location.remove(conditions, function(err) {
     callback(err);
   });

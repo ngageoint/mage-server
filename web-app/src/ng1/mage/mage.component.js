@@ -1,19 +1,20 @@
 import _ from 'underscore';
-import moment from 'moment';
 
 class MageController {
-  constructor($animate, $document, $timeout, $uibModal, UserService, FilterService, EventService, MapService, ObservationService, Location, Observation) {
+  constructor($animate, $document, $timeout, $uibModal, UserService, PollingService, FilterService, EventService, MapService, ObservationService, Location, Observation, Event) {
     this.$animate = $animate;
     this.$document = $document;
     this.$timeout = $timeout;
     this.$uibModal = $uibModal;
     this.UserService = UserService;
+    this.PollingService = PollingService;
     this.FilterService = FilterService;
     this.EventService = EventService;
     this.MapService = MapService;
     this.ObservationService = ObservationService;
     this.Location = Location;
     this.Observation = Observation;
+    this.Event = Event;
 
     this.hideFeed = false;
     this.feedChangedUsers = {};
@@ -39,7 +40,7 @@ class MageController {
     };
     this.FilterService.addListener(this.filterChangedListener);
   
-    var locationListener = {
+    const locationListener = {
       onLocation: location => {
         this.onLocation(location);
       },
@@ -48,6 +49,21 @@ class MageController {
       }
     };
     this.MapService.addListener(locationListener);
+
+    this.Event.query(events => {
+      const recentEventId = this.UserService.getRecentEventId();
+      const recentEvent = _.find(events, event => { return event.id === recentEventId; });
+      if (recentEvent) {
+        this.FilterService.setFilter({ event: recentEvent });
+        this.PollingService.setPollingInterval(this.PollingService.getPollingInterval());
+      } else if (events.length > 0) {
+        // TODO 'welcome to MAGE dialog'
+        this.FilterService.setFilter({ event: events[0] });
+        this.PollingService.setPollingInterval(this.PollingService.getPollingInterval());
+      } else {
+        // TODO welcome to mage, sorry you have no events
+      }
+    });
   }
 
   $onChanges(changes) {
@@ -58,6 +74,10 @@ class MageController {
 
   $onDestroy() {
     this.FilterService.removeListener(this.filterChangedListener);
+    this.FilterService.removeFilters();
+
+    this.PollingService.setPollingInterval(0);
+
     this.MapService.destroy();
   }
 
@@ -83,7 +103,7 @@ class MageController {
 
     if (filter.teams) this.filteredTeams = _.map(this.FilterService.getTeams(), t => { return t.name; }).join(', ');
     if (filter.timeInterval) {
-      var intervalChoice = this.FilterService.getIntervalChoice();
+      const intervalChoice = this.FilterService.getIntervalChoice();
       if (intervalChoice.filter !== 'all') {
         if (intervalChoice.filter === 'custom') {
           // TODO format custom time interval
@@ -119,7 +139,7 @@ class MageController {
   }
 
   onLocation(location) {
-    var event = this.FilterService.getEvent();
+    const event = this.FilterService.getEvent();
     this.Location.create({
       eventId: event.id,
       geometry: {
@@ -157,7 +177,7 @@ class MageController {
   }
 }
 
-MageController.$inject = ['$animate', '$document', '$timeout', '$uibModal', 'UserService', 'FilterService', 'EventService', 'MapService', 'ObservationService', 'Location', 'Observation'];
+MageController.$inject = ['$animate', '$document', '$timeout', '$uibModal', 'UserService', 'PollingService', 'FilterService', 'EventService', 'MapService', 'ObservationService', 'Location', 'Observation', 'Event'];
 
 export default {
   template: require('./mage.html'),

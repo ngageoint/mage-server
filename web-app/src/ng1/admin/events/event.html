@@ -20,10 +20,8 @@
         </div>
         <div class="col-md-4">
           <h2 ng-if="$ctrl.hasUpdatePermission">
-            <button class="btn btn-default pull-right" ng-click="$ctrl.editEvent($ctrl.event)"><i
-                class="fa fa-edit"></i> Edit</button>
-            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.event)"><i
-                class="fa fa-shield"></i> Access</button>
+            <button class="btn btn-default pull-right" ng-click="$ctrl.editEvent($ctrl.event)"><i class="fa fa-edit"></i> Edit</button>
+            <button class="btn btn-default pull-right right-gap" ng-click="$ctrl.editAccess($ctrl.event)"><i class="fa fa-shield"></i> Access</button>
           </h2>
         </div>
       </div>
@@ -31,7 +29,6 @@
 
       <div class="row top-gap-l">
         <div class="col-sm-6">
-
           <div class="row top-gap-l">
             <div class="col-md-3">
               <span class="muted">Name:&nbsp;</span>
@@ -40,7 +37,7 @@
               <span>{{$ctrl.event.name}}</span>
             </div>
           </div>
-
+          
           <div class="row top-gap-s bottom-gap">
             <div class="col-md-3">
               <span class="muted">Description:&nbsp;</span>
@@ -54,7 +51,7 @@
         <div class="col-md-6">
           <div class="card" ng-if="!$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Complete event</strong>
+              <strong class="text-primary">Complete Event</strong>
               <p class="text-primary">Marking an event as complete will remove it as a selectable event. The event is
                 not destroyed and can be changed back to an active state at any time.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.completeEvent($ctrl.event)">Complete</button>
@@ -63,7 +60,7 @@
 
           <div class="card" ng-if="$ctrl.event.complete && $ctrl.hasUpdatePermission">
             <div class="card-content">
-              <strong class="text-primary">Activate event</strong>
+              <strong class="text-primary">Activate Event</strong>
               <p class="text-primary">Marking an event as active will show it as a selectable event on clients. At that
                 point users can contribute observations and locations to the event.</p>
               <button class="btn btn-primary top-gap" ng-click="$ctrl.activateEvent($ctrl.event)">Activate</button>
@@ -72,9 +69,9 @@
 
           <div class="card top-gap" ng-if="$ctrl.hasDeletePermission">
             <div class="card-content">
-              <strong class="text-danger">Delete event</strong>
-              <p class="text-danger">Deleting event will remove all event information including observation and location
-                data. This cannot be undone, all event data will be unrecoverable.</p>
+              <strong class="text-danger">Delete Event</strong>
+              <p class="text-danger">Deleting an event will remove all event information including observation and location
+                data. This cannot be undone, and all event data will be unrecoverable.</p>
               <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteEvent($ctrl.event)"> <i
                   class="fa fa-trash-o"></i> Delete</button>
             </div>
@@ -94,7 +91,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add a user or team to the event</a>
+                      <a class="navbar-brand">Add a <i class="fa fa-user fa-small"></i> User or <i class="fa fa-users fa-small"></i> Team to the Event</a>
                     </div>
                   </div>
                 </nav>
@@ -102,12 +99,21 @@
             </div>
 
             <div class="admin-table">
+             <script type="text/ng-template" id="teamUserTemplate.html">
+                <a>
+                     <i ng-show="match.model.type == 'team'" class="fa fa-users fa-small"></i>
+                    <i ng-show="match.model.type == 'user'" class="fa fa-user fa-small"></i>
+                    <span ng-bind-html="match.model.name"></span>
+                </a>
+              </script>
+
               <div class="well-item">
                 <div class="row">
                   <div class="col-md-12">
                     <input type="text" ng-model="$ctrl.nonMember" placeholder="Search for a user/team to add to event"
                       uib-typeahead="user as user.name for user in $ctrl.searchNonMembers($viewValue)"
-                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }">
+                      typeahead-min-length="0" class="form-control" ng-model-options="{ debounce: 1000 }"
+                      typeahead-template-url="teamUserTemplate.html">
                   </div>
                 </div>
 
@@ -129,14 +135,13 @@
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
                   <div class="navbar-header">
-                    <a class="navbar-brand">Users/Teams <sup><span
-                          class="badge">{{$ctrl.count()}}</span></sup></a>
+                    <a class="navbar-brand">Users/Teams <sup><span class="badge">{{$ctrl.count()}}</span></sup></a>
                   </div>
 
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
                       <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearch"
-                      ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
+                        ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                     </div>
                   </form>
                   <div class="navbar-form navbar-right right-gap-s" ng-show="$ctrl.hasUpdatePermission">
@@ -151,8 +156,7 @@
           <div class="row">
             <div class="col-md-12">
               <div class="admin-table">
-                <div class="well-item"
-                  ng-repeat="member in $ctrl.eventMembers">
+                <div class="well-item" ng-repeat="member in $ctrl.eventMembers">
                   <div class="row pointer" ng-click="$ctrl.gotoMember(member)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
@@ -197,7 +201,7 @@
                 <nav class="navbar navbar-default admin-dashboard-navbar">
                   <div class="container-fluid">
                     <div class="navbar-header">
-                      <a class="navbar-brand">Add layer to the event</a>
+                      <a class="navbar-brand">Add Layer to the Event</a>
                     </div>
                   </div>
                 </nav>
@@ -296,64 +300,127 @@
           </div>
         </div>
       </div>
+
       <hr>
-      <div class="row top-gap-l">
-        <div class="col-md-12">
-          <nav class="navbar navbar-default admin-dashboard-navbar">
-            <div class="container-fluid">
-              <div class="navbar-header">
-                <a class="navbar-brand">Forms</a>
-              </div>
 
-              <form class="navbar-form navbar-right">
-                <div class="form-group">
-                  <button ng-hide="$ctrl.showArchivedForms" class="btn btn-default"
-                    ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Show Archived Forms</button>
-                  <button ng-show="$ctrl.showArchivedForms" class="btn btn-default"
-                    ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Hide Archived Forms</button>
-                </div>
-              </form>
+      <div class="card">
+        <div class="card-content">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-event-header">Forms</div>
             </div>
-          </nav>
-        </div>
-      </div>
+          </div>
 
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="admin-table">
-            <div class="well-item"
-              ng-repeat="form in $ctrl.event.forms | filter: (!$ctrl.showArchivedForms || '') && {archived: '!true'}"
-              ng-click="$ctrl.editForm($ctrl.event, form)">
-              <div class="row pointer">
-                <div class="col-md-12">
-                  <div class="right-gap pull-left">
-                    <i class="fa fa-file-text-o"></i>
+          <div class="row top-gap">
+            <div class="col-md-12">
+              <div class="admin-event-list-item pointer"
+                ng-repeat="form in $ctrl.event.forms | filter: (!$ctrl.showArchivedForms || '') && {archived: '!true'}"
+                ng-click="$ctrl.editForm($ctrl.event, form)">
+                <div class="admin-event-list-item__icon">
+                  <i class="fa fa-file-text-o"></i>
+                </div>
+                <div class="admin-event-list-item-content">
+                  <div class="admin-event-list-item-content__title">
+                    <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
                   </div>
-                  <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
-
-                  <i class="pull-right fa fa-arrow-up clearfix" ng-if="!$first"
-                    ng-click="$ctrl.moveFormUp($event, form)" uib-tooltip="Move form up" tooltip-placement="right"
-                    tooltip-append-to-body="true"></i>
-                  <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="$ctrl.moveFormDown($event, form)"
+                  <div class="admin-event-list-item-content__summary">
+                    {{form.description}}
+                  </div>
+                </div>
+                <div class="admin-event-list-item-actions">
+                  <i class=" fa fa-eye" ng-click="$ctrl.preview($event, form)" uib-tooltip="Preview Form"
+                    tooltip-placement="right" tooltip-append-to-body="true"></i>
+                  <i class=" fa fa-arrow-up admin-event-list-item-actions__icon" ng-if="!$first" ng-click="$ctrl.moveFormUp($event, form)"
+                    uib-tooltip="Move form up" tooltip-placement="right" tooltip-append-to-body="true"></i>
+                  <i class="fa fa-arrow-down admin-event-list-item-actions__icon" ng-if="!$last" ng-click="$ctrl.moveFormDown($event, form)"
                     uib-tooltip="Move form down" tooltip-placement="right" tooltip-append-to-body="true"></i>
-                  <button class="btn btn-info btn-xs pull-right right-gap"
-                    ng-click="$ctrl.preview($event, form)">Preview</button>
                 </div>
               </div>
-              <div class="row" ng-if="form.description">
-                <div class="col-md-12">
-                  <span class="muted">{{form.description}}</span>
-                </div>
-              </div>
-            </div>
 
-            <div class="well-item">
-              <button class="btn btn-success" ng-click="$ctrl.createForm($event, $ctrl.event)"><i
-                  class="fa fa-plus"></i> Create Form</button>
+              <div class="top-gap">
+                <button ng-hide="$ctrl.showArchivedForms" class="btn btn-default" ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Show Archived Forms</button>
+                <button ng-show="$ctrl.showArchivedForms" class="btn btn-default" ng-click="$ctrl.showArchivedForms = !$ctrl.showArchivedForms">Hide Archived Forms</button>
+                <button class="btn btn-success" ng-click="$ctrl.createForm($event, $ctrl.event)"><i class="fa fa-plus"></i> Create Form</button>
+              </div>
             </div>
           </div>
         </div>
-
       </div>
+
+      <form name="$ctrl.restrictions" novalidate>
+        <div class="card top-gap-l">
+          <div class="card-content">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="admin-event-header">Form Restrictions</div>
+              </div>
+            </div>
+            <div class="row top-gap-l">
+              <div class="col-md-12">
+                <div class="form-group" ng-class="{'has-error': $ctrl.restrictions.minObservationForms.$invalid}">
+                  <label class="control-label">Min Forms Per Observation</label>
+                  <input class="form-control" type="number" name="minObservationForms" ng-model="$ctrl.event.minObservationForms" placeholder="No Minimum" min="0" max="{{$ctrl.event.maxObservationForms}}" />
+                  <p class="help-block" ng-if="$ctrl.restrictions.minObservationForms.$valid">Minimum number of forms that must be present in an observation for this event</p>
+                  <p class="help-block" ng-if="$ctrl.restrictions.minObservationForms.$error.min">Value cannot be negative.</p>
+                  <p class="help-block" ng-if="$ctrl.restrictions.minObservationForms.$error.max">Value cannot be greater than 'Max Forms Per Observation'</p>
+                  <p class="help-block" ng-if="$ctrl.restrictions.minObservationForms.$error.formsMax">The minimum forms per observation must be equal to or less than the sum of the maximum of all individual forms.</p>
+
+                </div>
+                <div class="form-group" ng-class="{'has-error': $ctrl.restrictions.maxObservationForms.$invalid}">
+                  <label class="control-label">Max Forms Per Observation</label>
+                  <input class="form-control" type="number" name="maxObservationForms" ng-model="$ctrl.event.maxObservationForms" placeholder="No Maximum" min="1" />
+                  <p class="help-block" ng-if="$ctrl.restrictions.maxObservationForms.$valid">Limit the total number of forms that can be added to an observation for this event</p>
+                  <p class="help-block" ng-if="$ctrl.restrictions.maxObservationForms.$error.min">Value must be greater than 0</p>
+                  <p class="help-block" ng-if="$ctrl.restrictions.maxObservationForms.$error.formsMin">The maximum forms per observation must be equal to or greater than the sum of the minimum of all individual forms.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row top-gap-l">
+              <div class="col-md-12">
+                <div class="admin-event-restriction-header">
+                  <p>Add restrictions to individual forms that include the minimum number times a form must be present in an observation, and/or the maximum number times this form can be present in an observation.</p>
+                </div>
+                <div class="admin-event-restriction-list-item" ng-repeat="form in $ctrl.event.forms | filter: {archived: '!true'}">
+                  <div class="admin-event-restriction-list-item__icon">
+                    <i class="fa fa-files-o"></i>
+                  </div>
+                  <div class="admin-event-restriction-list-item-content">
+                    <div class="admin-event-restriction-list-item-content__title">
+                      {{form.name}}
+                    </div>
+                    <div class="form-inline">
+                      <div class="form-group right-gap" ng-class="{'has-error': $ctrl.restrictions.maxObservationForms.$error.formsMin || $ctrl.restrictions['form{{form.id}}_min'].$invalid}">
+                        <label class="control-label admin-event-restriction-list-item-content__label">Min</label>
+                        <input class="form-control input-sm admin-event-restriction-list-item-content__control" name="form{{form.id}}_min" type="number" ng-model="form.min" min="1" max="{{form.max}}">
+                      </div>
+                      <div class="form-group" ng-class="{'has-error': $ctrl.restrictions.minObservationForms.$error.formsMax || $ctrl.restrictions['form{{form.id}}_min'].$invalid}">
+                        <label class="control-label admin-event-restriction-list-item-content__label">Max</label>
+                        <input class="form-control input-sm admin-event-restriction-list-item-content__control" name="form{{form.id}}_max" type="number" ng-model="form.max" min="1">
+                        <p class="help-block" ng-if="$ctrl.generalForm.$error.max">Cannot exceed the maximum number of forms per observation of {{$ctrl.event.maxObservationForms}}</p>
+                      </div>
+                    </div>
+                    <div class="text-danger admin-event-restriction-list-item-content__error" ng-if="$ctrl.restrictions['form' + form.id + '_min'].$error.min">Min must be greater than 0</div>
+                    <div class="text-danger admin-event-restriction-list-item-content__error" ng-if="$ctrl.restrictions['form' + form.id + '_min'].$error.max">Min greater than Max</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div ng-if="$ctrl.restrictionsError" class="alert alert-danger admin-event-restrictions-error">
+              <div><strong>Form Restriction Error</strong></div>
+              <p class="admin-event-restrictions-error__text" ng-if="$ctrl.restrictionsError.message">{{$ctrl.restrictionsError.message}}</p>
+              <ul class="admin-event-restrictions-error__text" ng-if="$ctrl.restrictionsError.errors">
+                <li ng-repeat="(key, error) in $ctrl.restrictionsError.errors">{{error.message}}</li>
+              </ul>
+            </div>
+          
+            <div class="top-gap">
+              <button class="btn btn-success" ng-click="$ctrl.saveFormRestrictions()" ng-disabled="!$ctrl.restrictions.$dirty">Save Restrictions</button>
+            </div>
+          </div>
+        </div>
+     </form>
+
     </div>
   </div>

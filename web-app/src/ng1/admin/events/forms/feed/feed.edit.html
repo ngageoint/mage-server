@@ -64,7 +64,9 @@
   <div class="row top-gap-l">
     <div class="col-md-12">
       <h4>Sample Observation Feed</h4>
-      <div class="mdc-card" ng-repeat="observation in $ctrl.observations track by observation.id" observation-news-item="observation" event="$ctrl.event" selected-observation-form="$ctrl.form" container-element="side-bar"></div>
+      <div class="mdc-card" ng-repeat="observation in $ctrl.observations track by observation.id" container-element="side-bar">
+        <observation-list-item [observation]="observation" [event]="$ctrl.event" [form]="$ctrl.form"></observation-list-item>
+      </div>
     </div>
   </div>
 </div>
