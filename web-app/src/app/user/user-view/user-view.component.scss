@@ -1,0 +1,148 @@
+.navigation {
+  display: flex;
+}
+
+.navigation__icon {
+  margin-right: 24px;
+}
+
+.navigation__title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-container {
+  background-color: #E1E2E1;
+  position: absolute;
+  top: 64px;
+  bottom: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.user-info {
+  flex-grow: 1;
+}
+
+.user-card {
+  margin: 8px;
+}
+
+.user-map {
+  margin: -16px -16px 0;
+}
+
+.user-map__view {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  z-index: 0;
+  overflow: hidden;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+}
+
+.user-avatar {
+  margin-top: -62px;
+  z-index: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 125px;
+}
+
+.user-avatar__border {
+  width: 125px;
+  height: 125px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.user-avatar__img {
+  position: absolute;
+}
+
+.user__name {
+  padding-left: 72px;
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.87);
+  font: 400 34px/40px Roboto, "Helvetica Neue", sans-serif;
+}
+
+.user__divider {
+  margin: 16px -16px 16px 72px;
+  height: 0;
+  border: none;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 0.12)
+}
+
+.user__row {
+  margin-left: 16px;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user__row:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.user__icon {
+  margin-right: 16px;
+}
+
+.user__icon--location {
+  color: #1976D2;
+}
+
+.user__icon--phone {
+  color: #4CAF50;
+}
+
+.user__icon--email {
+  color: #03A9F4
+}
+
+.user__location--accuracy {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.user__location--provider {
+  text-transform: uppercase;
+}
+
+.user__text {
+  font: 400 16px/28px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.user-observations__subheader {
+  margin-left: 16px;
+  font: 500 24px/48px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.user-observations {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  margin-top: 16px;
+}
+
+.user-observation {
+  margin: 0 8px 8px;
+}
+
+.listViewPort {
+  flex-grow: 1;
+}

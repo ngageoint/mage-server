@@ -1,0 +1,23 @@
+<mat-form-field appearance="fill" [formGroup]="formGroup">
+  <mat-label>{{definition.title}}</mat-label>
+  <mat-chip-list #chipList formControlName="{{definition.name}}" [required]="definition.required">
+    <mat-chip *ngFor="let choice of formGroup.get(this.definition.name).value" [removable]="removable" (removed)="remove(choice)">
+      {{choice}}
+      <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+    </mat-chip>
+    <input #choiceInput #trigger="matAutocompleteTrigger"  
+      (click)="trigger.openPanel()"
+      [formControl]="choiceControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipList" 
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)">
+  </mat-chip-list>
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+    <mat-option *ngFor="let choice of filteredChoices | async" [value]="choice.title">
+      <span [ngClass]="{'select__choice--disabled ': control.value && control.value.includes(choice.title)}">{{choice.title}}</span>
+    </mat-option>
+  </mat-autocomplete>
+
+  <mat-error>You must enter a value</mat-error>
+</mat-form-field>

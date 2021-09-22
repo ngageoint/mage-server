@@ -1,0 +1,9 @@
+<div [hidden]="!field?.value">
+  <div class="mat-body-1">{{field?.title}}</div>
+  <div class="map-view">
+    <map-clip class="geometry-map" [feature]="feature"></map-clip>
+  </div>
+  <div class="location">
+    <span class="mat-caption">{{feature?.geometry | geometry:5}}</span>
+  </div>
+</div>

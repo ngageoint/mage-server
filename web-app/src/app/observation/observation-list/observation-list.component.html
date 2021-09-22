@@ -1,0 +1,89 @@
+<div class="observation-feed">
+  <div class="actions">
+    <mat-chip-list selectable="true">
+      <mat-chip color="primary" [selected]="filter === 'all'" (click)="filterChanged('all')">All</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'favorite'" (click)="filterChanged('favorite')">Favorites</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'important'" (click)="filterChanged('important')">Important</mat-chip>
+      <mat-chip color="primary" [selected]="filter === 'attachments'" (click)="filterChanged('attachments')">Attachments</mat-chip>
+    </mat-chip-list>
+  </div>
+
+  <div class="feed-pages">
+    <mat-form-field class="feed-pages__select" appearance="outline">
+      <mat-label>Observation Page</mat-label>
+      <mat-select [(ngModel)]="currentObservationPage">
+        <mat-option *ngFor="let observationPage of observationPages; index as i; trackBy: trackByPageId" [value]="i">
+          {{observationPage[0].properties.timestamp | moment: 'fromNow'}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="page-container">
+    <div *ngIf="loaded; else mask">
+      <ng-container *ngFor="let observation of observationPages[currentObservationPage]; trackBy: trackByObservationId">
+        <div class="feed-observation">
+          <observation-list-item [observation]="observation" [event]="event" [form]=[event.form]></observation-list-item>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<ng-template #mask>
+  <div *ngFor="let i of [].constructor(20); trackBy: trackByPageId">
+    <mat-card class="feed-observation loading">
+      <div class="item-header">
+        <div class="item-header-content">
+          <div class="item-overline">
+            <div>
+              <span>Display Name</span>
+              <span>·</span>
+              <span>JUL 11 2012 10:00 AM</span>
+            </div>
+          </div>
+
+          <div class="item-header-text">
+            Primary Value
+          </div>
+
+          <div class="item-subhead">
+            Secondary Value
+          </div>
+        </div>
+
+        <div>
+          <mat-icon class="item-thumbnail">place</mat-icon>
+        </div>
+      </div>
+      <mat-card-footer>
+        <div class="actions">
+          <div class="action-buttons">
+            <button mat-button disabled class="actions__location-button">
+              <mat-icon class="actions__location-icon">my_location</mat-icon> <span
+                class="actions__location-text">0.000000, 0.000000</span>
+            </button>
+          </div>
+
+          <div class="actions-icons">
+            <div>
+              <button mat-icon-button disabled>
+                <mat-icon>flag</mat-icon>
+              </button>
+            </div>
+
+            <div class="actions__favorite">
+              <button mat-icon-button disabled>
+                <mat-icon>favorite</mat-icon>
+              </button>
+            </div>
+
+            <button mat-icon-button disabled>
+              <mat-icon>save_alt</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</ng-template>

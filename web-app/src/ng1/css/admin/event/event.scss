@@ -1,0 +1,129 @@
+.admin-event-header {
+  font-size: 20px;
+  font-weight: 500;
+  color: #1E88E5;
+}
+
+.admin-event-list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 72px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+}
+
+.admin-event-list-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.admin-event-list-item:nth-last-child(-n+2) {
+	border-bottom: none;
+}
+
+.admin-event-list-item__icon {
+  font-size: 40px;
+  margin: 16px;
+  color: rgba(0, 0, 0, .6);
+}
+
+.admin-event-list-item-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.admin-event-list-item-content__title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, .87);
+}
+
+.admin-event-list-item-content__summary {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, .6);
+}
+
+.admin-event-list-item-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 16px;
+  font-size: 20px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.admin-event-list-item-actions__icon {
+  margin-left: 16px;
+}
+
+.admin-event-restriction-header {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, .6);
+  margin-bottom: 8px;
+}
+
+.admin-event-restriction-list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 80px;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+}
+
+.admin-event-restriction-list-item:nth-last-child(-n+2) {
+	border-bottom: none;
+}
+
+.admin-event-restriction-list-item__icon {
+  font-size: 40px;
+  margin: 16px;
+  color: rgba(0, 0, 0, .6);
+}
+
+.admin-event-restriction-list-item-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.admin-event-restriction-list-item-content__title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.admin-event-restriction-list-item-content-input {
+  display: flex;
+  flex-direction: row;
+}
+
+.admin-event-restriction-list-item-content__label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 4px;
+  color: rgba(0, 0, 0, .6);
+}
+
+.admin-event-restriction-list-item-content__error {
+  margin-left: 16px;
+}
+
+.form-inline .admin-event-restriction-list-item-content__control {
+  width: 100px;
+}
+
+.admin-event-restrictions-error {
+  margin: 16px 0;
+}
+
+.admin-event-restrictions-error__text {
+  margin-top: 8px;
+}
+
+
+

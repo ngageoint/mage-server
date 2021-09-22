@@ -1,0 +1,123 @@
+.item {
+}
+
+.item-header {
+  display: flex;
+  flex-direction: row;
+  margin: 16px;
+  min-width: 0;
+}
+
+.item-header-text {
+  font-size: 24px;
+  color: rgba(30, 136, 229, 0.87);
+  font-weight: 500;
+  margin-top: 16px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-header-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-overline {
+  color: rgba(0, 0, 0, 0.6);
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .16667em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.item-important {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  padding: 8px 0;
+  display: flex;
+  background: #FF9103;
+}
+
+.item-important--icon {
+  margin: 0 16px;
+  align-self: center;
+  font-size: 32px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.item-important--overline {
+  color: rgba(0, 0, 0, .6);
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .16667em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.item-important--description {
+  margin-top: 8px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.item-subhead {
+  font-family: Roboto, sans-serif;
+  font-size: 16px;
+  margin-top: 4px;
+  color: rgba(0, 0, 0, 0.6);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 0 8px;
+}
+
+.actions-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.actions-icons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.6);
+  flex-grow: 1;
+  justify-content: flex-end;
+}
+
+.actions-icons > * + * {
+  margin-left: 8px;
+}
+
+.actions__location-button {
+  padding: 4px;
+}
+
+.actions__location-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  margin-right: 4px;
+  margin-top: -2px;
+}
