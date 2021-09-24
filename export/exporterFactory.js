@@ -1,5 +1,4 @@
-const Shapefile = require('./shapefile')
-  , Kml = require('./kml')
+const Kml = require('./kml')
   , Csv = require('./csv')
   , GeoJson = require('./geojson')
   , GeoPackage = require('./geopackage');
@@ -8,8 +7,6 @@ function ExporterFactory() { }
 
 ExporterFactory.prototype.createExporter = function (type, options) {
   switch (type) {
-    case 'shapefile':
-      return new Shapefile(options);
     case 'kml':
       return new Kml(options);
     case 'geojson':
