@@ -15,7 +15,7 @@ export class GeoPackageLayer extends TileLayer {
   style?: SimpleStyle;
   type = 'GeoPackage';
 
-  constructor(urlTemplate: string, options?: GeoPackageLayerOptions) {
+  constructor(urlTemplate: string, options: GeoPackageLayerOptions) {
     super(urlTemplate, options);
 
     this.layerId = options.layerId;
@@ -34,16 +34,15 @@ export class GeoPackageLayer extends TileLayer {
       access_token: options.token
     };
 
-    if (this.style.stroke) {
-      params.stroke = this.style.stroke;
+    const style = this.style || {}
+    if (style.stroke) {
+      params.stroke = style.stroke;
     }
-
-    if (this.style.fill) {
-      params.fill = this.style.fill;
+    if (style.fill) {
+      params.fill = style.fill;
     }
-    
-    if (this.style.width) {
-      params.width = this.style.width;
+    if (style.width) {
+      params.width = style.width;
     }
 
     return url + Util.getParamString(params);

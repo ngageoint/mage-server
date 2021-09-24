@@ -1,0 +1,20 @@
+<mat-list>
+  <mat-list-item class="item" (click)="onInfo()">
+    <span *ngIf="hasContent" matLine class="overline">{{timestamp | moment}}</span>
+    <span *ngIf="hasContent" matLine class="mat-body-2">{{primary || "&nbsp;"}}</span>
+    <span *ngIf="hasContent" matLine class="mat-body-1">{{secondary || "&nbsp;"}}</span>
+
+    <div class="no-content">
+      <span *ngIf="!hasContent" matLine>No Content</span>
+      <span *ngIf="!hasContent" matLine></span>
+      <span *ngIf="!hasContent" matLine></span>
+    </div>
+
+    <mat-action-list>
+      <button mat-icon-button>
+        <mat-icon ngClass="action">info_outline</mat-icon>
+      </button>
+    </mat-action-list>
+  </mat-list-item>
+</mat-list>
+

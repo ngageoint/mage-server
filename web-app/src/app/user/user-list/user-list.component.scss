@@ -1,8 +1,16 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
 .user-feed {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: white;
+}
+
+.user-feed-toolbar {
+  color: mat-color($app-primary);
+  background-color: white;
 }
 
 .feed-pages {

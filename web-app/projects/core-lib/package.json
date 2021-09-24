@@ -1,0 +1,16 @@
+{
+  "name": "@ngageoint/mage.web-core-lib",
+  "version": "5.5.0",
+  "peerDependencies": {
+    "@angular/cdk": "^9.2.4",
+    "@angular/common": "^9.1.13",
+    "@angular/core": "^9.1.13",
+    "@angular/platform-browser": "~9.1.13",
+    "@ng-select/ng-select": "4.0.4",
+    "rxjs": "~6.6.7"
+  },
+  "dependencies": {
+    "@types/geojson": "^7946.0.7",
+    "tslib": "^1.10.0"
+  }
+}

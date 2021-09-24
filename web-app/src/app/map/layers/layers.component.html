@@ -25,6 +25,21 @@
     </ng-container>
   </mat-accordion>
 
+  <h4 class="header">Feeds</h4>
+  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true"
+    (cdkDropListDropped)="reorderLayers($event, 'feature', feedLayers)">
+    <ng-container *ngFor="let layer of feedLayers">
+      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
+        <mat-expansion-panel-header cdkDragHandle class="drag-handle"
+          (click)="preventHeaderToggle($event, expansionPanel)">
+          <layer-header [layer]="layer" multi="true" (onToggle)="expansionPanel.toggle()"></layer-header>
+        </mat-expansion-panel-header>
+  
+        <layer-content [layer]="layer"></layer-content>
+      </mat-expansion-panel>
+    </ng-container>
+  </mat-accordion>
+
   <h4 class="header" *ngIf="featureOverlays.length">Feature Overlays</h4>
   <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
     <ng-container *ngFor="let layer of featureOverlays">

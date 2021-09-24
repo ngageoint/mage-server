@@ -1,0 +1,67 @@
+.page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #F0F0F3;
+}
+
+.page-container {
+  display: flex;
+  padding: 0 16px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 16px;
+  max-width: 1170px;
+}
+
+.mat-breadcrumb {
+  display: flex;
+  flex-direction: row;
+  padding: 16px;
+  background-color: white;
+}
+
+.content {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  background-color: white;
+}
+
+.feed__icon {
+  padding-left: 16px !important;
+  color: rgba(0, 0, 0, .6);
+}
+
+.action__icon {
+  color: rgba(0, 0, 0, .6);
+}
+
+:host ::ng-deep .feed__action--search div.mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  margin: 0 16px;
+}
+
+.feed__action--search {
+  display: flex;
+  flex-direction:column;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.feed__action--new {
+  display: flex;
+  flex-direction:column;
+  align-items: flex-start;
+}
+
+:host ::ng-deep .mat-form-field-infix {
+  width: unset;
+}

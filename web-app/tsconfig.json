@@ -17,7 +17,18 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "@ngageoint/mage.web-core-lib": [
+        "dist/core-lib",
+      ],
+      "@ngageoint/mage.web-core-lib/*": [
+        "dist/core-lib/*"
+      ],
+      "core-lib-src/*": [
+        "projects/core-lib/*/public-api.ts"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

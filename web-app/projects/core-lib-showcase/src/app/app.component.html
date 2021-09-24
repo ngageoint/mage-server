@@ -1,0 +1,21 @@
+
+
+<div class="main">
+
+  <h1>MAGE Web Core Lib Showcase</h1>
+
+  <div class="components">
+
+    <div class="component main__user-select">
+      <h2>User select control with virtual scroll</h2>
+      <mage-user-select [formControl]="userControl">
+      </mage-user-select>
+      <p>
+        You selected {{userControl.value?.displayName}}
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<router-outlet></router-outlet>

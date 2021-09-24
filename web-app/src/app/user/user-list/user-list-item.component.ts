@@ -30,11 +30,11 @@ export class UserListItemComponent {
 
   followUser(event): void {
     event.stopPropagation();
-    this.mapService.followFeatureInLayer(this.user, 'People')
+    this.mapService.followFeatureInLayer(this.user, 'people')
   }
 
   onUserLocation(): void {
-    this.mapService.zoomToFeatureInLayer(this.user, 'People')
+    this.mapService.zoomToFeatureInLayer(this.user, 'people')
   }
 
   viewUser(): void {

@@ -1,0 +1,20 @@
+<mat-expansion-panel [expanded]="expanded" (opened)="opened.emit()" hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Set The Topic Query Parameters
+    </mat-panel-title>
+    <mat-panel-description>
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div *ngIf="fetchParametersSchema">
+    <mage-json-schema-form framework="material-design" [options]="formOptions"
+      [schema]="fetchParametersSchema" [data]="initialFetchParameters"
+      (onChanges)="onFetchParametersChanged($event)">
+    </mage-json-schema-form>
+  </div>
+  <mat-action-row>
+    <button *ngIf="showPrevious" mat-button color="warn" (click)="cancel()">Previous</button>
+    <button mat-button color="primary" (click)="finish()">Next</button>
+  </mat-action-row>
+</mat-expansion-panel>
+

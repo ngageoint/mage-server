@@ -1,0 +1,23 @@
+<ng-select [items]="users"
+  [typeahead]="searchTerm$"
+  [virtualScroll]="true"
+  [loading]="loading"
+  [trackByFn]="trackByUserId"
+  appendTo="body"
+  placeholder="Choose a user"
+  bindLabel="displayName"
+  (open)="onOpen()"
+  (scroll)="onScroll($event)"
+  (scrollToEnd)="onScrollToEnd()"
+  >
+  <ng-template ng-header-tmp>
+    <small class="form-text text-muted">{{totalCount}} matching users</small>
+  </ng-template>
+  <ng-template class="user-option" ng-option-tmp let-user="item" let-index="index">
+    <div class="user-option">
+      <p class="user-option__line primary">{{user.displayName}} ({{user.username}})</p>
+      <p class="user-option__line detail">{{user.email || '[no email]'}}</p>
+      <p class="user-option__line detail">{{user.allPhones || '[no phone]'}}</p>
+    </div>
+  </ng-template>
+</ng-select>

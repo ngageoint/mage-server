@@ -1,24 +1,11 @@
-var _ = require('underscore');
-
-module.exports = PollingService;
-
-PollingService.$inject = ['LocalStorageService'];
+const _ = require('underscore');
 
 function PollingService(LocalStorageService) {
-  var listeners = [];
-  var pollingInterval = LocalStorageService.getPollingInterval();
+  let listeners = [];
+  let pollingInterval = LocalStorageService.getPollingInterval();
   if (!pollingInterval || parseInt(pollingInterval) === 0 || Number.isNaN(parseInt(pollingInterval))) {
     pollingInterval = 30000;
   }
-
-  var service = {
-    addListener: addListener,
-    removeListener: removeListener,
-    setPollingInterval: setPollingInterval,
-    getPollingInterval: getPollingInterval
-  };
-
-  return service;
 
   function addListener(listener) {
     listeners.push(listener);
@@ -47,4 +34,17 @@ function PollingService(LocalStorageService) {
   function getPollingInterval() {
     return pollingInterval;
   }
+
+  const service = {
+    addListener: addListener,
+    removeListener: removeListener,
+    setPollingInterval: setPollingInterval,
+    getPollingInterval: getPollingInterval
+  };
+
+  return service;
 }
+
+PollingService.$inject = ['LocalStorageService'];
+
+module.exports = PollingService;

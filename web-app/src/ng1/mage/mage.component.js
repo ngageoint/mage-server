@@ -12,13 +12,14 @@ class MageController {
     this.EventService = EventService;
     this.MapService = MapService;
     this.ObservationService = ObservationService;
+    this.Event = Event;
     this.Location = Location;
     this.Observation = Observation;
     this.Event = Event;
 
     this.hideFeed = false;
     this.feedChangedUsers = {};
-  
+
     this.filteredEvent = FilterService.getEvent();
     this.filteredInterval = FilterService.getIntervalChoice().label;
   }
@@ -39,7 +40,7 @@ class MageController {
       }
     };
     this.FilterService.addListener(this.filterChangedListener);
-  
+
     const locationListener = {
       onLocation: location => {
         this.onLocation(location);
@@ -79,6 +80,8 @@ class MageController {
     this.PollingService.setPollingInterval(0);
 
     this.MapService.destroy();
+
+    this.EventService.destroy();
   }
 
   resolveMapAfterFeaturesPaneTransition(animationPhase) {

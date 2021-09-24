@@ -6,7 +6,7 @@ module.exports = {
 Event.$inject = ['$rootScope', '$resource'];
 
 function Event($rootScope, $resource) {
-  var Event = $resource('/api/events/:id', {
+  const Event = $resource('/api/events/:id', {
     id: '@id'
   },{
     get: {
@@ -63,6 +63,20 @@ function Event($rootScope, $resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    addFeed: {
+      method: 'POST',
+      url: '/api/events/:id/feeds',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    removeFeed: {
+      method: 'DELETE',
+      url: '/api/events/:id/feeds/:feedId',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 
@@ -80,7 +94,7 @@ function Event($rootScope, $resource) {
 EventAccess.$inject = ['$resource'];
 
 function EventAccess($resource) {
-  var EventAccess = $resource('/api/events/:eventId/acl', {
+  const EventAccess = $resource('/api/events/:eventId/acl', {
     eventId: '@eventId',
     userId: '@userId'
   },{

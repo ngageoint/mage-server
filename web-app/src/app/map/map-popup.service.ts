@@ -2,6 +2,9 @@ import { Injectable, ComponentFactoryResolver, Injector, ApplicationRef } from '
 import { Marker, LeafletMouseEvent } from 'leaflet';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
+import { Feature } from 'geojson';
+import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +40,23 @@ export class MapPopupService {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(UserPopupComponent);
     const component = componentFactory.create(this.injector);
     component.instance.userWithLocation = user;
+    this.applicationRef.attachView(component.hostView);
+
+    marker
+      .unbindPopup()
+      .bindPopup(component.location.nativeElement)
+      .openPopup();
+  }
+
+  public registerFeedItem(marker: Marker, feed: Feed, item: Feature): void {
+    marker.on('click', ($event: LeafletMouseEvent) => this.popupFeedItem($event.target, feed, item));
+  }
+
+  public popupFeedItem(marker: Marker, feed: Feed, item: Feature): void {
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(FeedItemMapPopupComponent);
+    const component = componentFactory.create(this.injector);
+    component.instance.item = item;
+    component.instance.feed = feed;
     this.applicationRef.attachView(component.hostView);
 
     marker

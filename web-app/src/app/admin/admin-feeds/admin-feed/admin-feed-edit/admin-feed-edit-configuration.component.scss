@@ -1,0 +1,19 @@
+.meta-data-form {
+    display: flex;
+    flex-direction: column;
+
+    .mat-form-field {
+      margin-bottom: 1em;
+    }
+
+    .mat-checkbox {
+      margin-bottom: 0.5em;
+    }
+
+    .icon-field mage-static-icon-form-field {
+      display: block;
+    }
+}
+
+
+

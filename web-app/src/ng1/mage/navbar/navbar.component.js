@@ -33,9 +33,6 @@ function NavbarController($element, $state, $transitions, UserService) {
     }
   }
 
-  this.$postLink = function() {
-  };
-
   this.openDrawer = function() {
     pollingMenu = pollingMenu || new MDCMenuSurface($element.find('.nav-menu')[0]);
     pollingMenu.open = !pollingMenu.open;

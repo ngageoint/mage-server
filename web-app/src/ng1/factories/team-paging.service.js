@@ -19,17 +19,15 @@ function TeamPagingService(Team, $q) {
     return service;
 
     function constructDefault() {
-        var itemsPerPage = 10;
-        var stateAndData = new Map();
-        stateAndData['all'] = {
-            countFilter: {},
-            teamFilter: { populate: false, limit: itemsPerPage, sort: { name: 1, _id: 1 }, e: { teamEventId: null} },
-            searchFilter: '',
-            teamCount: 0,
-            pageInfo: {}
+        return {
+            all: {
+                countFilter: {},
+                teamFilter: { populate: false, limit: 10, sort: { name: 1, _id: 1 }, e: { teamEventId: null} },
+                searchFilter: '',
+                teamCount: 0,
+                pageInfo: {}
+            }
         };
-
-        return stateAndData;
     }
 
     function refresh(stateAndData) {
@@ -143,7 +141,7 @@ function TeamPagingService(Team, $q) {
                     description: '.*' + teamSearch + '.*'
                 };
             }
-           
+
             promise = $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
                 data.pageInfo = result.pageInfo[0];
                 return $q.resolve(data.pageInfo.teams);

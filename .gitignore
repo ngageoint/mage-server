@@ -1,13 +1,17 @@
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
-.vscode
-public/.tmp
-public/dist/*
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
 .test_run
-coverage
-.test_run
+.vscode/
+coverage/
+docker/database/
+docker/server/resources/
 npm-debug.log
-scratch
-docker/database
-docker/server/resources
+pnpm-debug.log
+scratch/
+*.scratch/
+*.scratch.*

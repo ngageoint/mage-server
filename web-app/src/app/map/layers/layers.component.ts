@@ -1,5 +1,6 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { Feed } from '@ngageoint/mage.web-core-lib/feed';
 
 export interface ReorderEvent {
   type: string;
@@ -15,6 +16,7 @@ export interface ReorderEvent {
 })
 export class LayersComponent {
   @Input() mageLayers: [any];
+  @Input() feedLayers: [Feed];
   @Input() baseLayers: [any];
   @Input() tileOverlays: [any];
   @Input() featureOverlays: [any];
