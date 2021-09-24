@@ -22,9 +22,7 @@ util.inherits(Kml, Exporter);
 module.exports = Kml;
 
 Kml.prototype.export = function (streamable) {
-  const self = this;
-
-  // Known limitation in Google Earth, embedded images from a kmz file not render.
+  // Known limitation in Google Earth, embedded media from a kmz file not render in a popup
   // Treating it as a zip, rather than a kmz.
   const archive = archiver('zip');
   archive.pipe(streamable);
@@ -35,34 +33,29 @@ Kml.prototype.export = function (streamable) {
   kmlStream.write(writer.generateKMLDocument());
 
   async.series([
-    function (done) {
-      if (!self._filter.exportObservations) return done();
-      self.streamObservations(kmlStream, archive, function (err) {
-        done(err);
-      });
+    done => {
+      if (!this._filter.exportObservations) return done();
+      this.streamObservations(kmlStream, archive, done);
     },
-    function (done) {
-      if (!self._filter.exportLocations) return done();
+    done => {
+      if (!this._filter.exportLocations) return done();
 
-      kmlStream.write(writer.generateUserStyles(self._users));
+      kmlStream.write(writer.generateUserStyles(this._users));
 
-      async.eachSeries(Object.keys(self._users), function (userId, callback) {
-        self.streamUserLocations(kmlStream, archive, self._users[userId], callback);
-      },
-        function (err) {
-          done(err);
-        });
+      async.eachSeries(Object.keys(this._users), (userId, callback) => {
+        this.streamUserLocations(kmlStream, archive, this._users[userId], callback);
+      }, done);
     }
   ],
-    function (err) {
-      if (err) log.info(err);
+  err => {
+    if (err) log.info(err);
 
-      kmlStream.write(writer.generateKMLDocumentClose());
-      kmlStream.write(writer.generateKMLClose());
-      kmlStream.end();
+    kmlStream.write(writer.generateKMLDocumentClose());
+    kmlStream.write(writer.generateKMLClose());
+    kmlStream.end();
 
-      archive.finalize();
-    });
+    archive.finalize();
+  });
 };
 
 Kml.prototype.streamObservations = function (stream, archive, done) {
@@ -103,18 +96,16 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
 };
 
 Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
-  const self = this;
-
   log.info('writing locations for user ' + user.username);
 
-  const startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
-  const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
+  const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const cursor = self.requestLocations({ userId: user._id, startDate: startDate, endDate: endDate, stream: true });
+  const cursor = this.requestLocations({ userId: user._id, startDate: startDate, endDate: endDate, stream: true });
 
-  let locations = [];
+  const locations = [];
   let locationString = "";
-  cursor.eachAsync(async function (location, i) {
+  cursor.eachAsync(async location => {
     locationString += writer.generateLocationPlacemark(user, location);
     locations.push(location);
   }).then(() => {
@@ -140,7 +131,5 @@ Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
     log.info('done writing all locations for ' + user.username);
 
     done();
-  }).catch(err => {
-    done(err);
-  });
+  }).catch(err => done(err));
 };

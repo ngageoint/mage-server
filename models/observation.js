@@ -9,18 +9,18 @@ const Schema = mongoose.Schema;
 const ObservationIdSchema = new Schema();
 const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
-const FormSchema = new Schema({
-  formId: { type: Number, required: true }
-},{
-  strict: false
-});
+// const FormSchema = new Schema({
+//   formId: { type: Number, required: true }
+// },{
+//   strict: false
+// });
 
-const PropertiesSchema = new Schema({
-  timestamp: { type: Date, required: true },
-  forms: [FormSchema]
-},{
-  strict: false
-});
+// const PropertiesSchema = new Schema({
+//   timestamp: { type: Date, required: true },
+//   forms: [FormSchema]
+// },{
+//   strict: false
+// });
 
 const StateSchema = new Schema({
   name: { type: String, required: true },
@@ -62,7 +62,7 @@ const ObservationSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true},
   deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
-  properties: PropertiesSchema,
+  properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
   states: [StateSchema],
   important: {
