@@ -2,7 +2,7 @@ const moment = require('moment')
   , path = require('path')
   , mgrs = require('mgrs')
   , turfCentroid = require('@turf/centroid')
-  , { create, fragment } = require('xmlbuilder2');
+  , { fragment } = require('xmlbuilder2');
 
 function KmlWriter() {}
 module.exports = new KmlWriter();
@@ -66,35 +66,67 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, primary, secondary) {
+KmlWriter.prototype.generateObservationPlacemark = function(observation, event) {
   const observationTimestamp = generateTimestamp(observation.properties.timestamp);
   const forms = event.formMap;
 
+  const names = [];
+  const firstForm = observation.properties.forms.length ? observation.properties.forms[0] : null;
+  if (firstForm) {
+    const form = event.formMap[firstForm.formId];
+    if (firstForm[form.primaryFeedField]) {
+      names.push(firstForm[form.primaryFeedField])
+    }
+
+    if (firstForm[form.secondaryFeedField]) {
+      names.push(firstForm[form.secondaryFeedField])
+    }
+  }
+
+  const name = names.length ? names.join(' - ') : event.name;
+
   const sections = observation.properties.forms.map(observationForm => {
     const form = forms[observationForm.formId]
-    const fields = form.fields
-      // .filter(field => !field.archived || field.type !== 'password' || field.type !== 'geometry')
-      .sort((a, b) => a.id - b.id);
 
+    const properties = form.fields
+      .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
+      .filter(field => {
+        let hasValue = false;
+        switch (field.type) {
+          case 'attachment': {
+            hasValue = observation.attachments.some(attachment => {
+              return attachment.fieldName === field.name &&
+                attachment.observationFormId.toString() === observationForm._id.toString();
+            });
 
-    console.log('*************************** fields', fields.toObject());
+            break;
+          }
+          case 'checkbox': {
+            hasValue = field.value != null
+          }
+          default: {
+            hasValue = observationForm[field.name]
+          }
+        }
 
-    const properties = fields
-      // .filter(field => observationForm.hasOwnProperty(field.name))
+        return hasValue;
+      })
+      .sort((a, b) => a.id - b.id)
       .map(field => {
-        console.log('*************************** field name', field.name);
-        console.log('*************************** field value', observationForm[field.name]);
-        console.log('*************************** field value', observationForm.field1);
-
-        console.log('*************************** observationForm', observationForm);
+        let value = observationForm[field.name];
+        if (field.type === 'attachment') {
+          value = observation.attachments.filter(attachment => {
+            return attachment.fieldName === field.name &&
+              attachment.observationFormId.toString() === observationForm._id.toString();
+          });
+        }
 
         return {
           key: field.title,
-          value: observationForm[field.name]
+          type: field.type,
+          value: value
         };
       });
-
-    console.log('*************************** properties', properties);
 
 
     return {
@@ -111,17 +143,16 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
     sections.push({ title: 'GPS', properties: gpsProperties })
   }
 
-  console.log('************************* description w/ sections', sections);
   const description = generateDescription(observation, sections, observation.attachments);
 
   const styles = [event._id.toString()];
-  if (observation.properties.forms && observation.properties.forms.length) {
+  if (firstForm) {
     const form = forms[observation.properties.forms[0].formId];
     styles.push(form._id.toString());
-    if (primary) {
-      styles.push(primary);
-      if (secondary) {
-        styles.push(secondary);
+    if (firstForm[form.primaryField]) {
+      styles.push(firstForm[form.primaryField]);
+      if (firstForm[form.secondaryField]) {
+        styles.push(firstForm[form.secondaryField]);
       }
     }
   }
@@ -264,80 +295,86 @@ function generateTimestamp(timestamp) {
     "</TimeStamp>";
 }
 
-function generateDescription(geojson, sections, attachments = []) {
-  const table = {
-    '@style': 'font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px',
-    tr: []
-  }
-
-  table.tr.push({
-    '@style': 'background-color: #F3F3F3;',
-    td: ['Timestamp', moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
-  });
-
+function generateDescription(geojson, sections) {
   const centroid = turfCentroid(geojson);
-  table.tr.push({
-    td: ['Latitude', centroid.geometry.coordinates[1]]
-  });
-  table.tr.push({
-    td: ['Longitude', centroid.geometry.coordinates[0]]
-  });
-  table.tr.push({
-    td: ['MGRS', mgrs.forward(centroid.geometry.coordinates)]
+
+  const header = [];
+  header.push({
+    section: [{
+      span: [{ label: 'Timestamp' }, moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
+    },{
+      span: [{ label: 'Latitude' }, centroid.geometry.coordinates[1]]
+    },{
+      span: [{ label: 'Longitude' }, centroid.geometry.coordinates[0]]
+    },{
+      span: [{ label: 'MGRS' }, mgrs.forward(centroid.geometry.coordinates)]
+    }]
   });
 
+  const properties = [];
   sections.forEach(section => {
     if (section.title) {
-      table.tr.push({
-        h3: section.title
+      properties.push({
+        h4: section.title
       });
     }
 
-    section.properties.forEach((property, index) => {
-      const color = (index % 2 === 0) ? "#F3F3F3" : "";
-      table.tr.push({
-        '@style': `background-color: ${color};`,
-        td: [property.key, property.value]
-      });
+    section.properties.forEach(property => {
+      if (property.type === 'attachment') {
+        properties.push({
+          span: { label: property.key }
+        });
+
+        property.value.forEach(attachment => {
+          const group = [];
+
+          group.push({
+            a: {
+              '@href': attachment.relativePath,
+              '#': attachment.name
+            }
+          });
+
+          if ((/^image/).test(attachment.contentType)) {
+            group.push({
+              img: {
+                '@src': attachment.relativePath,
+                '@width': 150
+              }
+            });
+          }
+
+          properties.push({
+            div: group
+          })
+        });
+      } else {
+        properties.push({
+          span: [{ label: property.key }, property.value]
+        });
+      }
     });
   });
 
-  const attachmentsElements = attachments.map(attachment => {
-    const element = {
-      div: [{
-        '@style': 'padding-top:15px;',
-        a: {
-          '@href': attachment.relativePath,
-          '#': attachment.name
-        }
-      }]
-    }
+  const content = {
+    section: properties
+  }
 
-    if ((/^image/).test(attachment.contentType)) {
-      element.div.push({
-        img: {
-          '@src': attachment.relativePath,
-          '@width': 150,
-          '@height': 150
-        }
-      });
-    }
-
-    return element;
-  });
-
-  const description = {
+  return fragment({
     description: {
       '$': fragment({
         html: {
-          table: table,
-          div: attachmentsElements
+          head: {
+            style: {
+              '@type': 'text/css',
+              '#': 'h4 { margin-bottom: 8px; } label { opacity: .6; font-size: 11px; } span { margin-right: 4px; } section { margin-bottom: 8px; white-space: nowrap }'
+            }
+          },
+          div: [header, content],
         }
       }).end()
     }
-  }
-
-  return fragment(description).end();
+  }).end()
 }
 
 function generatePlacemarkCoordinates(geojson) {
@@ -406,7 +443,5 @@ function generatePlacemarkElement(name, style, coordinates, timestamp, descripti
 }
 
 function getFieldByName(form, name) {
-  return form.fields.find(field => {
-    field.name === name
-  });
+  return form.fields.find(field => field.name === name);
 }
