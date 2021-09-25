@@ -29,7 +29,6 @@ Kml.prototype.export = function (streamable) {
   const kmlStream = new stream.PassThrough();
   archive.append(kmlStream, { name: 'mage-export.kml' });
 
-  kmlStream.write(writer.generateKMLHeader());
   kmlStream.write(writer.generateKMLDocument());
 
   async.series([
