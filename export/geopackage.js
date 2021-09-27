@@ -219,7 +219,7 @@ GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) 
     dataType: 'REAL'
   });
 
-  return geopackage.createFeatureTableFromProperties('Locations' + userId, columns);
+  return geopackage.createFeatureTableFromProperties('Locations_' + userId, columns);
 }
 
 GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, lastLocationId, startDate, endDate) {
@@ -499,7 +499,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
         }
 
         const relatedTables = geopackage.relatedTablesExtension;
-        await relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
+        await relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.SIMPLE_ATTRIBUTES);
       }
       catch (e) {
         console.error('error is ', e);
