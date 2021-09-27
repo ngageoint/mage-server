@@ -29,7 +29,6 @@ Kml.prototype.export = function (streamable) {
   const kmlStream = new stream.PassThrough();
   archive.append(kmlStream, { name: 'mage-export.kml' });
 
-  kmlStream.write(writer.generateKMLHeader());
   kmlStream.write(writer.generateKMLDocument());
 
   async.series([
@@ -67,18 +66,7 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
       stream.write(writer.generateKMLFolderStart(this._event.name, false));
 
       observations.forEach(observation => {
-        let form = null;
-        let primary = null;
-        let secondary = null;
-        if (observation.properties.forms.length) {
-          form = this._event.formMap[observation.properties.forms[0].formId];
-          primary = observation.properties.forms[0][form.primaryField];
-          secondary = observation.properties.forms[0][form.variantField];
-        }
-
-        const name = primary || this._event.name;
-
-        stream.write(writer.generateObservationPlacemark(name, observation, this._event, primary, secondary));
+        stream.write(writer.generateObservationPlacemark(observation, this._event));
 
         observation.attachments.forEach(attachment => {
           archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });

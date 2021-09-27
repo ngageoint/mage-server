@@ -2,32 +2,10 @@ const moment = require('moment')
   , path = require('path')
   , mgrs = require('mgrs')
   , turfCentroid = require('@turf/centroid')
-  , { create, fragment } = require('xmlbuilder2');
+  , { fragment } = require('xmlbuilder2');
 
 function KmlWriter() {}
 module.exports = new KmlWriter();
-
-KmlWriter.prototype.generateKMLHeader = function() {
-  return "<?xml version='1.0' encoding='UTF-8'?>" +
-               "<kml xmlns='http://www.opengis.net/kml/2.2' " +
-               "xmlns:gx='http://www.google.com/kml/ext/2.2' " +
-               "xmlns:kml='http://www.opengis.net/kml/2.2' " +
-               "xmlns:atom='http://www.w3.org/2005/Atom'>";
-};
-
-KmlWriter.prototype.generateUserStyles = function(users) {
-  const styles = [];
-
-  Object.keys(users).forEach(function(userId) {
-    const user = users[userId];
-
-    if (!user.icon || !user.icon.relativePath) return;
-
-    styles.push("<Style id='user-" + user._id.toString() + "'><IconStyle><Icon><href>" + path.join("icons/users/", user._id.toString()) + "</href></Icon></IconStyle></Style>");
-  });
-
-  return styles.join("");
-};
 
 function hexToParts(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -43,58 +21,255 @@ function convert(integer) {
   return str.length === 1 ? "0" + str : str;
 }
 
-KmlWriter.prototype.generateObservationStyles = function(event, icons) {
-  let styles = [generateEventStyle(event, icons)];
-
-  event.forms.forEach(function(form) {
-    const formIcons = icons.filter(function(icon) {
-      return icon.formId === form._id;
-    });
-    styles = styles.concat(generateFormStyles(event, form, formIcons));
-  });
-
-  return styles.join("");
-};
-
-KmlWriter.prototype.generateKMLDocument = function() {
-  return "<Document>" +
+KmlWriter.prototype.generateKMLDocument = function () {
+  return "<?xml version='1.0' encoding='UTF-8'?>" +
+    "<kml xmlns='http://www.opengis.net/kml/2.2' " +
+    "xmlns:gx='http://www.google.com/kml/ext/2.2' " +
+    "xmlns:kml='http://www.opengis.net/kml/2.2' " +
+    "xmlns:atom='http://www.w3.org/2005/Atom'>" +
+    "<Document>" +
     "<name>MAGE-Export.kml</name>" +
     "<open>1</open>";
 };
 
-KmlWriter.prototype.generateKMLFolderStart = function(name) {
-  return "<Folder>" + "<name>" + name + "</name>";
+KmlWriter.prototype.generateKMLFolderStart = function (name) {
+  return `<Folder><name>${name}</name>`;
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, primary, secondary) {
-  const observationTimestamp = generateTimestamp(observation.properties.timestamp);
+KmlWriter.prototype.generateUserStyles = function (users) {
+  const userStyles = Object.values(users)
+    .filter(user => user.icon && user.icon.relativePath)
+    .map(user => {
+      return fragment({
+        Style: {
+          '@id': `user-${user._id.toString()}`,
+          IconStyle: {
+            Icon: {
+              href: path.join('icons/users', user._id.toString())
+            }
+          }
+        }
+      }).end()
+    });
+
+  return userStyles.join("");
+};
+
+KmlWriter.prototype.generateEventStyle = function (event, icons) {
+  const defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant);
+  const strokeParts = hexToParts(event.style.stroke);
+  const fillParts = hexToParts(event.style.fill);
+  const strokeOpacity = convert(~~(event.style.strokeOpacity * 255));
+  const fillOpacity = convert(~~(event.style.fillOpacity * 255));
+
+  return fragment({
+    Style: {
+      '@id': event._id.toString(),
+      IconStyle: {
+        Icon: {
+          href: path.join('icons', defaultIcon.relativePath)
+        }
+      },
+      LineStyle: {
+        width: event.style.strokeWidth,
+        color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+      },
+      PolyStyle: {
+        color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+      }
+    }
+  }).end();
+}
+
+KmlWriter.prototype.generateFormStyles = function (event, form, icons) {
+  const styles = [];
+
+  const style = form.style || event.style;
+
+  let defaultIconPath = "";
+  const primaryPathMap = {};
+  const secondaryPathMap = {};
+  let strokeWidth = style.strokeWidth;
+  let strokeParts = hexToParts(style.stroke);
+  let fillParts = hexToParts(style.fill);
+  let strokeOpacity = convert(~~(style.strokeOpacity * 255));
+  let fillOpacity = convert(~~(style.fillOpacity * 255));
+
+  icons.forEach(icon => {
+    if (icon.variant) {
+      secondaryPathMap[icon.primary] = secondaryPathMap[icon.primary] || {};
+      secondaryPathMap[icon.primary][icon.variant] = icon.relativePath;
+    } else if (icon.primary) {
+      primaryPathMap[icon.primary] = icon.relativePath;
+    } else {
+      defaultIconPath = icon.relativePath;
+    }
+  });
+
+  // default form style
+  const defaultStyle = fragment({
+    Style: {
+      '@id': [event._id.toString(), form._id.toString()].join("-"),
+      IconStyle: {
+        Icon: {
+          href: path.join('icons', defaultIconPath)
+        }
+      },
+      LineStyle: {
+        width: strokeWidth,
+        color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+      },
+      PolyStyle: {
+        color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+      }
+    }
+  }).end();
+  styles.push(defaultStyle);
+  
+  const primaryField = this.getFieldByName(form, form.primaryField);
+
+  if (primaryField) {
+    primaryField.choices.forEach(choice => {
+      let iconPath = primaryPathMap[choice.title] ? primaryPathMap[choice.title] : defaultIconPath;
+      if (style[choice.title]) {
+        strokeWidth = style[choice.title].strokeWidth
+        strokeParts = hexToParts(style[choice.title].stroke);
+        fillParts = hexToParts(style[choice.title].fill);
+        strokeOpacity = convert(~~(style[choice.title].strokeOpacity * 255));
+        fillOpacity = convert(~~(style[choice.title].fillOpacity * 255));
+      }
+
+      const primaryStyle = fragment({
+        Style: {
+          '@id': [event._id.toString(), form._id.toString(), choice.title].join("-"),
+          IconStyle: {
+            Icon: {
+              href: path.join('icons', iconPath)
+            }
+          },
+          LineStyle: {
+            width: strokeWidth,
+            color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+          },
+          PolyStyle: {
+            color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+          }
+        }
+      }).end();
+      styles.push(primaryStyle);
+
+      // secondary styles for each type
+      const secondaryField = this.getFieldByName(form, form.variantField);
+      if (secondaryField) {
+        secondaryField.choices.forEach(secondaryChoice => {
+          if (secondaryPathMap[choice.title] && secondaryPathMap[choice.title][secondaryChoice.title]) {
+            iconPath = secondaryPathMap[choice.title][secondaryChoice.title];
+          } else if (primaryPathMap[choice.title]) {
+            iconPath = primaryPathMap[choice.title];
+          } else {
+            iconPath = defaultIconPath;
+          }
+
+          if (style[choice.title] && style[choice.title][secondaryChoice.title]) {
+            strokeWidth = style[choice.title][secondaryChoice.title].strokeWidth;
+            strokeParts = hexToParts(style[choice.title][secondaryChoice.title].stroke);
+            fillParts = hexToParts(style[choice.title][secondaryChoice.title].fill);
+            strokeOpacity = convert(~~(style[choice.title][secondaryChoice.title].strokeOpacity * 255));
+            fillOpacity = convert(~~(style[choice.title][secondaryChoice.title].fillOpacity * 255));
+          }
+
+          const secondaryStyle = fragment({
+            Style: {
+              '@id': [event._id.toString(), form._id.toString(), choice.title, secondaryChoice.title].join("-"),
+              IconStyle: {
+                Icon: {
+                  href: path.join('icons', iconPath)
+                }
+              },
+              LineStyle: {
+                width: strokeWidth,
+                color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+              },
+              PolyStyle: {
+                color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+              }
+            }
+          }).end();
+          styles.push(secondaryStyle);
+        });
+      }
+    });
+  }
+
+  return styles;
+}
+
+KmlWriter.prototype.generateObservationStyles = function(event, icons) {
+  const formStyles = event.forms.map(form => {
+    return this.generateFormStyles(event, form, icons.filter(icon => icon.formId === form._id));
+  });
+
+  return [this.generateEventStyle(event, icons), ...formStyles].join("");
+};
+
+KmlWriter.prototype.generateObservationPlacemark = function(observation, event) {
   const forms = event.formMap;
+
+  const names = [];
+  const firstForm = observation.properties.forms.length ? observation.properties.forms[0] : null;
+  if (firstForm) {
+    const form = event.formMap[firstForm.formId];
+    if (firstForm[form.primaryFeedField]) {
+      names.push(firstForm[form.primaryFeedField])
+    }
+
+    if (firstForm[form.secondaryFeedField]) {
+      names.push(firstForm[form.secondaryFeedField])
+    }
+  }
 
   const sections = observation.properties.forms.map(observationForm => {
     const form = forms[observationForm.formId]
-    const fields = form.fields
-      // .filter(field => !field.archived || field.type !== 'password' || field.type !== 'geometry')
-      .sort((a, b) => a.id - b.id);
 
+    const properties = form.fields
+      .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
+      .filter(field => {
+        let hasValue = false;
+        switch (field.type) {
+          case 'attachment': {
+            hasValue = observation.attachments.some(attachment => {
+              return attachment.fieldName === field.name &&
+                attachment.observationFormId.toString() === observationForm._id.toString();
+            });
 
-    console.log('*************************** fields', fields.toObject());
+            break;
+          }
+          case 'checkbox': {
+            hasValue = field.value != null
+          }
+          default: {
+            hasValue = observationForm[field.name]
+          }
+        }
 
-    const properties = fields
-      // .filter(field => observationForm.hasOwnProperty(field.name))
+        return hasValue;
+      })
+      .sort((a, b) => a.id - b.id)
       .map(field => {
-        console.log('*************************** field name', field.name);
-        console.log('*************************** field value', observationForm[field.name]);
-        console.log('*************************** field value', observationForm.field1);
-
-        console.log('*************************** observationForm', observationForm);
+        let value = observationForm[field.name];
+        if (field.type === 'attachment') {
+          value = observation.attachments.filter(attachment => {
+            return attachment.fieldName === field.name &&
+              attachment.observationFormId.toString() === observationForm._id.toString();
+          });
+        }
 
         return {
           key: field.title,
-          value: observationForm[field.name]
+          type: field.type,
+          value: value
         };
       });
-
-    console.log('*************************** properties', properties);
 
 
     return {
@@ -111,47 +286,61 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
     sections.push({ title: 'GPS', properties: gpsProperties })
   }
 
-  console.log('************************* description w/ sections', sections);
-  const description = generateDescription(observation, sections, observation.attachments);
 
   const styles = [event._id.toString()];
-  if (observation.properties.forms && observation.properties.forms.length) {
+  if (firstForm) {
     const form = forms[observation.properties.forms[0].formId];
     styles.push(form._id.toString());
-    if (primary) {
-      styles.push(primary);
-      if (secondary) {
-        styles.push(secondary);
+    if (firstForm[form.primaryField]) {
+      styles.push(firstForm[form.primaryField]);
+      if (firstForm[form.secondaryField]) {
+        styles.push(firstForm[form.secondaryField]);
       }
     }
   }
+  
+  const coordinates = this.generatePlacemarkCoordinates(observation);
+  const description = this.generateDescription(observation, sections, observation.attachments);
+  const placemark = {
+    name: names.length ? names.join(' - ') : event.name,
+    visibility: 0,
+    styleUrl: '#' + styles.join('-'),
+    TimeStamp: {
+      when: moment(observation.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z'
+    }
+  };
 
-  const style = '#' + styles.join('-');
-  const coordinates = generatePlacemarkCoordinates(observation);
-
-  return generatePlacemarkElement(name, style, coordinates, observationTimestamp, description);
+  return fragment({
+    Placemark: {...placemark, ...coordinates, ...description}
+  }).end();
 };
 
 KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
-  const style = '#user-' + user._id.toString();
-  const coordinates = generatePlacemarkCoordinates(location);
-
-  const properties = [];
-  Object.entries(location.properties).forEach(([key, value]) => {
-    properties.push({
-      key: key,
-      value: value
-    });
+  const properties = Object.entries(location.properties).map(([key, value]) => {
+    return {
+      key,
+      value: value.toString()
+    }
   });
 
   const sections = [{
     properties: properties
   }];
-  const description = generateDescription(location, sections);
 
-  const name = moment(location.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
-  const timestamp = generateTimestamp(location.properties.timestamp);
-  return generatePlacemarkElement(name, style, coordinates, timestamp, description);
+  const coordinates = this.generatePlacemarkCoordinates(location);
+  const description = this.generateDescription(location, sections);
+  const placemark = {
+    name: moment(location.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z',
+    visibility: 0,
+    styleUrl: '#user-' + user._id.toString(),
+    TimeStamp: {
+      when: moment(location.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z'
+    }
+  };
+
+  return fragment({
+    Placemark: { ...placemark, ...coordinates, ...description }
+  }).end();
 };
 
 KmlWriter.prototype.generateKMLDocumentClose = function() {
@@ -166,247 +355,126 @@ KmlWriter.prototype.generateKMLClose = function() {
   return "</kml>";
 };
 
-function generateEventStyle(event, icons) {
-  const style = event.style;
+KmlWriter.prototype.generateDescription = function(geojson, sections) {
+  const centroid = turfCentroid(geojson);
+  const header = [{
+    section: [{
+      span: [{ label: 'Timestamp' }, moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
+    },{
+      span: [{ label: 'Latitude' }, centroid.geometry.coordinates[1]]
+    },{
+      span: [{ label: 'Longitude' }, centroid.geometry.coordinates[0]]
+    },{
+      span: [{ label: 'MGRS' }, mgrs.forward(centroid.geometry.coordinates)]
+    }]
+  }];
 
-  const defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant);
-
-  const strokeParts = hexToParts(style.stroke);
-  const fillParts = hexToParts(style.fill);
-  const strokeOpacity = convert(~~(style.strokeOpacity * 255));
-  const fillOpacity = convert(~~(style.fillOpacity * 255));
-  const defaultStyle = '<LineStyle><width>'+style.strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>'+ fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
-
-  return `<Style id="${event._id.toString()}">${defaultStyle}<IconStyle><Icon><href>${path.join("icons", defaultIcon.relativePath)}</href></Icon></IconStyle></Style>`;
-}
-
-function generateFormStyles(event, form, icons) {
-  const styles = [];
-
-  const style = form.style || event.style;
-
-  let defaultIconPath = "";
-  const typePathMap = {};
-  const variantPathMap = {};
-  const styleTypeMap = {};
-  const styleVariantMap = {};
-  let strokeParts = hexToParts(style.stroke);
-  let fillParts = hexToParts(style.fill);
-  let strokeOpacity = convert(~~(style.strokeOpacity * 255));
-  let fillOpacity = convert(~~(style.fillOpacity * 255));
-  const defaultStyle = '<LineStyle><width>'+style.strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>'+ fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
-  icons.forEach(function(icon) {
-    if (icon.variant) {
-      variantPathMap[icon.primary] = variantPathMap[icon.primary] || {};
-      variantPathMap[icon.primary][icon.variant] = icon.relativePath;
-    } else if (icon.primary) {
-      typePathMap[icon.primary] = icon.relativePath;
-    } else {
-      defaultIconPath = icon.relativePath;
+  const properties = [];
+  sections.forEach(section => {
+    if (section.title) {
+      properties.push({
+        h4: section.title
+      });
     }
-  });
 
-  // default form style
-  styles.push('<Style id="' + [event._id.toString(), form._id.toString()].join("-") + '">' + defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+    section.properties.forEach(property => {
+      if (property.type === 'attachment') {
+        properties.push({
+          span: { label: property.key }
+        });
 
-  const typeField = getFieldByName(form, form.primaryField);
+        property.value.forEach(attachment => {
+          const group = [];
 
-  if (typeField) {
-    typeField.choices.forEach(function(choice) {
-      // create style for choice (determine if choice is in map or pick default)
-      let iconPath = typePathMap[choice.title] ? typePathMap[choice.title] : defaultIconPath;
+          group.push({
+            a: {
+              '@href': attachment.relativePath,
+              '#': attachment.name
+            }
+          });
 
-      if (!style[choice.title]) {
-        styleTypeMap[choice.title] = defaultStyle;
+          if ((/^image/).test(attachment.contentType)) {
+            group.push({
+              img: {
+                '@src': attachment.relativePath,
+                '@width': 150
+              }
+            });
+          }
+
+          properties.push({
+            div: group
+          })
+        });
       } else {
-        strokeParts = hexToParts(style[choice.title].stroke);
-        fillParts = hexToParts(style[choice.title].fill);
-        strokeOpacity = convert(~~(style[choice.title].strokeOpacity * 255));
-        fillOpacity = convert(~~(style[choice.title].fillOpacity * 255));
-        styleTypeMap[choice.title] = '<LineStyle><width>'+style[choice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
-      }
-      styleVariantMap[choice.title] = {};
-      styles.push('<Style id="' + [event._id.toString(), form._id.toString(), choice.title].join("-") + '">' + styleTypeMap[choice.title] + "<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
-
-      // variant styles for each type
-      const variantField = getFieldByName(form, form.variantField);
-      if (variantField) {
-        variantField.choices.forEach(function(variantChoice) {
-          if (variantPathMap[choice.title] && variantPathMap[choice.title][variantChoice.title]) {
-            iconPath = variantPathMap[choice.title][variantChoice.title];
-          } else if (typePathMap[choice.title]) {
-            iconPath = typePathMap[choice.title];
-          } else {
-            iconPath = defaultIconPath;
-          }
-          if (!style[choice.title] || !style[choice.title][variantChoice.title]) {
-            styleVariantMap[choice.title][variantChoice.title] = styleTypeMap[choice.title];
-          } else {
-            strokeParts = hexToParts(style[choice.title][variantChoice.title].stroke);
-            fillParts = hexToParts(style[choice.title][variantChoice.title].fill);
-            strokeOpacity = convert(~~(style[choice.title][variantChoice.title].strokeOpacity * 255));
-            fillOpacity = convert(~~(style[choice.title][variantChoice.title].fillOpacity * 255));
-            styleVariantMap[choice.title][variantChoice.title] = '<LineStyle><width>'+style[choice.title][variantChoice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
-          }
-          styles.push('<Style id="' + [event._id.toString(), form._id.toString(), choice.title, variantChoice.title].join("-") + '">' + styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+        properties.push({
+          span: [{ label: property.key }, property.value.toString()]
         });
       }
     });
+  });
+
+  const content = {
+    section: properties
   }
 
-
-  return styles;
-}
-
-function generateTimestamp(timestamp) {
-  return "<TimeStamp>" +
-    "<when>" + moment(timestamp).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z</when>" +
-    "</TimeStamp>";
-}
-
-function generateDescription(geojson, sections, attachments = []) {
-  const table = {
-    '@style': 'font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px',
-    tr: []
-  }
-
-  table.tr.push({
-    '@style': 'background-color: #F3F3F3;',
-    td: ['Timestamp', moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
-  });
-
-  const centroid = turfCentroid(geojson);
-  table.tr.push({
-    td: ['Latitude', centroid.geometry.coordinates[1]]
-  });
-  table.tr.push({
-    td: ['Longitude', centroid.geometry.coordinates[0]]
-  });
-  table.tr.push({
-    td: ['MGRS', mgrs.forward(centroid.geometry.coordinates)]
-  });
-
-  sections.forEach(section => {
-    if (section.title) {
-      table.tr.push({
-        h3: section.title
-      });
-    }
-
-    section.properties.forEach((property, index) => {
-      const color = (index % 2 === 0) ? "#F3F3F3" : "";
-      table.tr.push({
-        '@style': `background-color: ${color};`,
-        td: [property.key, property.value]
-      });
-    });
-  });
-
-  const attachmentsElements = attachments.map(attachment => {
-    const element = {
-      div: [{
-        '@style': 'padding-top:15px;',
-        a: {
-          '@href': attachment.relativePath,
-          '#': attachment.name
-        }
-      }]
-    }
-
-    if ((/^image/).test(attachment.contentType)) {
-      element.div.push({
-        img: {
-          '@src': attachment.relativePath,
-          '@width': 150,
-          '@height': 150
-        }
-      });
-    }
-
-    return element;
-  });
-
-  const description = {
+  return {
     description: {
       '$': fragment({
         html: {
-          table: table,
-          div: attachmentsElements
+          head: {
+            style: {
+              '@type': 'text/css',
+              '#': 'h4 { margin-bottom: 8px; } label { opacity: .6; font-size: 11px; } span { margin-right: 4px; } section { margin-bottom: 8px; white-space: nowrap }'
+            }
+          },
+          div: [header, content],
         }
       }).end()
     }
   }
-
-  return fragment(description).end();
 }
 
-function generatePlacemarkCoordinates(geojson) {
-  let coordinates = '<'+geojson.geometry.type+'>';
-
-  if (geojson.properties.altitude) {
-    coordinates += "," + geojson.properties.altitude;
-  }
-
+KmlWriter.prototype.generatePlacemarkCoordinates = function(geojson) {
   if (geojson.geometry.type === 'Point') {
-    coordinates += "<coordinates>" +
-      geojson.geometry.coordinates[0] + "," +
-      geojson.geometry.coordinates[1];
-
-    if (geojson.properties.altitude) {
-      coordinates += "," + geojson.properties.altitude;
+    return {
+      Point: {
+        coordinates: geojson.geometry.coordinates.join(',')
+      }
     }
-
-    coordinates += "</coordinates>";
   } else if (geojson.geometry.type === 'Polygon') {
-    // this will only work for simple polygons with no holes
-    coordinates += '<extrude>1</extrude>';
-    coordinates += '<outerBoundaryIs><LinearRing><coordinates>';
-    const polyPoints = geojson.geometry.coordinates[0];
-    for (let i = 0; i < polyPoints.length; i++) {
-      coordinates += polyPoints[i][0] + ',' + polyPoints[i][1];
-      if (geojson.properties.altitude) {
-        coordinates += "," + geojson.properties.altitude;
+    // Ignore holes, no holes in MAGE observations
+    const coordinates = geojson.geometry.coordinates[0].reduce((coordinates, points) => {
+      return coordinates.concat(points.join(','))
+    }, []);
+    return {
+      Polygon: {
+        extrude: 1,
+        outerBoundaryIs: {
+          LinearRing: {
+            coordinates: coordinates.join(' ')
+          }
+        }
       }
-      coordinates += ' ';
     }
-    coordinates += '</coordinates></LinearRing></outerBoundaryIs>';
   } else if (geojson.geometry.type === 'LineString') {
-    coordinates += '<extrude>1</extrude>';
-    coordinates += '<altitudeMode>clampToGround</altitudeMode>';
-    coordinates += '<tessellate>1</tessellate>';
-    coordinates += '<coordinates>';
-    for (let j = 0; j < geojson.geometry.coordinates.length; j++) {
-      coordinates += geojson.geometry.coordinates[j][0] + ',' + geojson.geometry.coordinates[j][1];
-      if (geojson.properties.altitude) {
-        coordinates += "," + geojson.properties.altitude;
-      }
-      coordinates += ' ';
-    }
-    coordinates += '</coordinates>';
-  }
+    const coordinates = geojson.geometry.coordinates.reduce((coordinates, points) => {
+      return coordinates.concat(points.join(','))
+    }, []);
 
-  coordinates += '</' + geojson.geometry.type+'>';
+    return {
+      LineString: {
+        extrude: 1,
+        altitudeMode: 'clampToGround',
+        tessellate: 1,
+        coordinates: coordinates.join(' ')
+      }
+    }
+  }
 
   return coordinates;
 }
 
-function generatePlacemarkElement(name, style, coordinates, timestamp, description) {
-  //build the actual placemark
-  const placemark =
-    "<Placemark>" +
-      "<name>" + name + "</name>" +
-      "<visibility>0</visibility>" +
-      "<styleUrl>" + style + "</styleUrl>" +
-      coordinates +
-      timestamp +
-      description +
-    "</Placemark>";
-
-  return placemark;
-}
-
-function getFieldByName(form, name) {
-  return form.fields.find(field => {
-    field.name === name
-  });
+KmlWriter.prototype.getFieldByName = function(form, name) {
+  return form.fields.find(field => field.name === name);
 }
