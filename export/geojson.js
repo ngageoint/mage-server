@@ -62,15 +62,6 @@ GeoJson.prototype.mapObservationProperties = function(observation, archive) {
 
     const form = this._event.formMap[observationForm.formId];
     const formProperties = observation.properties[form.name] || [];
-    // const formProperty = Object.fromEntries(
-    //   Object.entries(observationForm)
-    //     .filter(([name]) => form.fieldNameToField[name])
-    //     .map(([name, value]) => {
-    //       const field = form.fieldNameToField[name];
-    //       return [field.title, value];
-    //     })
-    // );
-
     const properties = Object.fromEntries(form.fields
       .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
       .filter(field => {
@@ -114,10 +105,6 @@ GeoJson.prototype.mapObservationProperties = function(observation, archive) {
         return [field.title, value];
       }));
 
-    // TODO map attachments
-    // have to loop through the form definition here right.
-    // maybe loop through the form def above instead of each observationForm entry
-
     formProperties.push(properties);
     observation.properties[form.name] = formProperties;
   });
@@ -142,23 +129,6 @@ GeoJson.prototype.streamObservations = function (stream, archive, done) {
         properties: observation.properties
       };
     });
-
-    // observations.forEach(o => {
-    //   o.attachments = o.attachments.map(attachment => {
-    //     return {
-    //       name: attachment.name,
-    //       relativePath: attachment.relativePath,
-    //       size: attachment.size,
-    //       contentType: attachment.contentType,
-    //       width: attachment.width,
-    //       height: attachment.height,
-    //     };
-    //   });
-
-    //   o.attachments.forEach(attachment => {
-    //     archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-    //   });
-    // });
 
     stream.write(JSON.stringify({
       type: 'FeatureCollection',
