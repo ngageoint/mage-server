@@ -7,25 +7,6 @@ const moment = require('moment')
 function KmlWriter() {}
 module.exports = new KmlWriter();
 
-KmlWriter.prototype.generateUserStyles = function (users) {
-  const userStyles = Object.values(users)
-    .filter(user => user.icon && user.icon.relativePath)
-    .map(user => {
-      return fragment({
-        Style: {
-          '@id': `user-${user._id.toString()}`,
-          IconStyle: {
-            Icon: {
-              href: path.join('icons/users', user._id.toString())
-            }
-          }
-        }
-      }).end()
-    });
-
-  return userStyles.join("");
-};
-
 function hexToParts(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
@@ -53,6 +34,25 @@ KmlWriter.prototype.generateKMLDocument = function () {
 
 KmlWriter.prototype.generateKMLFolderStart = function (name) {
   return `<Folder><name>${name}</name>`;
+};
+
+KmlWriter.prototype.generateUserStyles = function (users) {
+  const userStyles = Object.values(users)
+    .filter(user => user.icon && user.icon.relativePath)
+    .map(user => {
+      return fragment({
+        Style: {
+          '@id': `user-${user._id.toString()}`,
+          IconStyle: {
+            Icon: {
+              href: path.join('icons/users', user._id.toString())
+            }
+          }
+        }
+      }).end()
+    });
+
+  return userStyles.join("");
 };
 
 KmlWriter.prototype.generateEventStyle = function (event, icons) {
