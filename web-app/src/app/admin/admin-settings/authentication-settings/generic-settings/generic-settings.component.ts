@@ -2,7 +2,6 @@ import { OnInit, Component, Input, ViewChild, AfterViewInit } from '@angular/cor
 import { GenericSetting } from './generic-settings.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
 import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
@@ -11,129 +10,111 @@ import { DeleteSettingComponent } from './delete-setting/delete-setting.componen
 import { SettingsKeyHandler } from './utilities/settings-key-handler';
 
 @Component({
-    selector: 'generic-settings',
-    templateUrl: 'generic-settings.component.html',
-    styleUrls: ['./generic-settings.component.scss']
+   selector: 'generic-settings',
+   templateUrl: 'generic-settings.component.html',
+   styleUrls: ['./generic-settings.component.scss']
 })
 export class GenericSettingsComponent implements OnInit, AfterViewInit {
-    @Input() strategy: Strategy;
-    @Input() editable = true;
-    dataSource: MatTableDataSource<GenericSetting>;
-    readonly displayedColumns: string[] = ['key', 'value', 'action'];
-    readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
-    newRow: GenericSetting = {
-        key: '',
-        value: ''
-    }
-    readonly settingsKeyHandler = new SettingsKeyHandler();
+   @Input() strategy: Strategy;
+   @Input() editable = true;
+   dataSource: MatTableDataSource<GenericSetting>;
+   readonly displayedColumns: string[] = ['key', 'value', 'action'];
+   readonly settingsKeysToIgnore: string[] = ['accountLock', 'devicesReqAdmin', 'usersReqAdmin', 'passwordPolicy', 'newUserTeams', 'newUserEvents'];
+   newRow: GenericSetting = {
+      key: '',
+      value: ''
+   }
+   readonly settingsKeyHandler = new SettingsKeyHandler();
 
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
+   @ViewChild(MatSort) sort: MatSort;
 
-    constructor(private dialog: MatDialog) {
+   constructor(private dialog: MatDialog) {}
 
-    }
+   ngOnInit(): void {
+      this.dataSource = new MatTableDataSource([])
+      this.refresh()
+   }
 
-    ngOnInit(): void {
-        this.dataSource = new MatTableDataSource([]);
-        this.refresh();
-    }
+   ngAfterViewInit(): void {
+      this.dataSource.sort = this.sort
+   }
 
-    ngAfterViewInit(): void {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-    }
+   refresh(): void {
+      this.dataSource.data = this.convertObjectToSettings(this.strategy.settings)
+   }
 
-    refresh(): void {
-        this.dataSource.data = this.convertObjectToSettings(this.strategy.settings);
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
-    }
+   convertObjectToSettings(obj: any): GenericSetting[] {
+      const settings: GenericSetting[] = []
+      Object.keys(obj)
+         .filter(key => !this.settingsKeysToIgnore.includes(key))
+         .forEach(key => {
+            settings.push({
+               displayKey: key,
+               key: key,
+               value: obj[key],
+               required: true,
+               isSecret: false
+            })
+         })
 
-    convertObjectToSettings(obj: any): GenericSetting[] {
-        const settings: GenericSetting[] = [];
-        for (const [key, value] of Object.entries(obj)) {
+      return settings;
+   }
 
-            if (this.settingsKeysToIgnore.includes(key)) {
-                continue;
-            }
+   editSetting(setting: GenericSetting): void {
+      this.dialog.open(EditSettingComponent, {
+         width: '500px',
+         data: setting,
+         autoFocus: false
+      }).afterClosed().subscribe(result => {
+         if (result.event === 'confirm') {
+            const updatedSetting = result.data;
+            const key = updatedSetting.key;
+            this.settingsKeyHandler.flattenAndSet(key, updatedSetting.value, this.strategy.settings);
+            this.strategy.isDirty = true;
+            this.refresh();
+         }
+      })
+   }
 
-            if (typeof value == 'string') {
-                const castedValue = value as string;
-                //TODO detect if this field is required
-                const gs: GenericSetting = {
-                    displayKey: key,
-                    key: key,
-                    value: castedValue,
-                    required: false,
-                    isSecret: false
-                };
-                settings.push(gs);
-            } else {
-                const objSettings = this.convertObjectToSettings(value);
-                objSettings.forEach(setting => {
-                    setting.key = key + "." + setting.key;
-                    settings.push(setting);
-                })
-            }
-        }
-
-        return settings;
-    }
-
-    editSetting(setting: GenericSetting): void {
-        this.dialog.open(EditSettingComponent, {
+   addSetting(): void {
+      if (this.settingsKeyHandler.exists(this.newRow.key, this.strategy.settings)) {
+         this.dialog.open(DuplicateKeyComponent, {
             width: '500px',
-            data: setting,
+            data: this.newRow,
             autoFocus: false
-        }).afterClosed().subscribe(result => {
+         }).afterClosed().subscribe(result => {
             if (result.event === 'confirm') {
-                const updatedSetting = result.data;
-                const key = updatedSetting.key;
-                this.settingsKeyHandler.flattenAndSet(key, updatedSetting.value, this.strategy.settings);
-                this.strategy.isDirty = true;
-                this.refresh();
+               this.doAddSetting();
             }
-        });
-    }
+         })
+      } else {
+         this.doAddSetting()
+      }
+   }
 
-    addSetting(): void {
-        if (this.settingsKeyHandler.exists(this.newRow.key, this.strategy.settings)) {
-            this.dialog.open(DuplicateKeyComponent, {
-                width: '500px',
-                data: this.newRow,
-                autoFocus: false
-            }).afterClosed().subscribe(result => {
-                if (result.event === 'confirm') {
-                    this.doAddSetting();
-                }
-            });
-        } else {
-            this.doAddSetting();
-        }
-    }
+   private doAddSetting(): void {
+      this.settingsKeyHandler.flattenAndSet(this.newRow.key, this.newRow.value, this.strategy.settings);
+      this.dataSource.data.push({
+         displayKey: this.newRow.key,
+         key: this.newRow.key,
+         value: this.newRow.value,
+         required: false,
+         isSecret: false
+      })
+      this.dataSource.data = this.dataSource.data.slice()
+   }
 
-    private doAddSetting(): void {
-        this.settingsKeyHandler.flattenAndSet(this.newRow.key, this.newRow.value, this.strategy.settings);
-
-        this.newRow.key = '';
-        this.newRow.value = '';
-        this.strategy.isDirty = true;
-        this.refresh();
-    }
-
-    deleteSetting(setting: GenericSetting): void {
-        this.dialog.open(DeleteSettingComponent, {
-            width: '500px',
-            data: setting,
-            autoFocus: false
-        }).afterClosed().subscribe(result => {
-            if (result.event === 'confirm') {
-                this.settingsKeyHandler.delete(setting.key, this.strategy.settings);
-                this.strategy.isDirty = true;
-                this.refresh();
-            }
-        });
-    }
+   deleteSetting(setting: GenericSetting): void {
+      this.dialog.open(DeleteSettingComponent, {
+         width: '500px',
+         data: setting,
+         autoFocus: false
+      }).afterClosed().subscribe(result => {
+         if (result.event === 'confirm') {
+            this.settingsKeyHandler.delete(setting.key, this.strategy.settings)
+            this.strategy.isDirty = true
+            this.dataSource.data = this.dataSource.data.filter(row => row.key !== setting.key)
+         }
+      })
+   }
 }

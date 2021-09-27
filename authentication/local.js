@@ -3,17 +3,13 @@ const log = require('winston')
   , LocalStrategy = require('passport-local').Strategy
   , TokenAssertion = require('./verification').TokenAssertion
   , User = require('../models/user')
-  , Device = require('../models/device')
-  , api = require('../api')
-  , config = require('../config.js')
   , userTransformer = require('../transformers/user')
-  , AuthenticationInitializer = require('./index')
-  , AuthenticationApiAppender = require('../utilities/authenticationApiAppender')
+  , { app, passport, tokenService } = require('./index')
   , Authentication = require('../models/authentication');
 
 function configure() {
   log.info('Configuring local authentication');
-  AuthenticationInitializer.passport.use(new LocalStrategy(
+  passport.use(new LocalStrategy(
     function (username, password, done) {
       User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
@@ -69,159 +65,25 @@ function configure() {
 }
 
 function initialize() {
-  const app = AuthenticationInitializer.app;
-  const passport = AuthenticationInitializer.passport;
-  const provision = AuthenticationInitializer.provision;
-  const tokenService = AuthenticationInitializer.tokenService;
-
-  function parseLoginMetadata(req, _res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
-  }
-
   configure();
 
-  // DEPRECATED retain old routes as deprecated until next major version.
-  app.post(
-    '/api/login',
-    function authenticate(req, res, next) {
-      log.warn('DEPRECATED - The /api/login route will be removed in the next major version, please use /auth/local/signin');
-
-      passport.authenticate('local', function (err, user, info = {}) {
-        if (err) return next(err);
-
-        if (!user) return res.status(401).send(info.message);
-
-        req.user = user;
-        next();
-      })(req, res, next);
-    },
-    provision.check(),
-    parseLoginMetadata,
-    function (req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
-        if (err) return next(err);
-
-        AuthenticationApiAppender.append(config.api).then(api => {
-          res.json({
-            token: token.token,
-            expirationDate: token.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            api: api
-          });
-        }).catch(err => {
-          next(err);
-        });
-      });
-    }
-  );
-
-  app.post(
-    '/auth/local/signin',
+  app.post('/auth/local/signin',
     function authenticate(req, res, next) {
       passport.authenticate('local', function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) return res.status(401).send(info.message);
 
-        // DEPRECATED session authorization, remove req.login which creates session in next version
-        req.login(user, function (err) {
-          if (err) return next(err);
-
-          tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-            .then(token => {
-              res.json({
-                token: token,
-                user: userTransformer.transform(user, { path: req.getRoot() })
-              });
-            }).catch(err => {
-              next(err);
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            res.json({
+              token: token,
+              user: userTransformer.transform(user, { path: req.getRoot() })
             });
-
-        });
-      })(req, res, next);
-    }
-  );
-
-  // DEPRECATED retain old routes as deprecated until next major version.
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field will be set to false.
-  app.post('/auth/local/devices',
-    function (req, res, next) {
-      if (req.user) {
-        next();
-      } else {
-        res.sendStatus(401);
-      }
-    },
-    function (req, res, next) {
-      const newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
-
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
-
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
-    }
-  );
-
-  // DEPRECATED session authorization, remove in next version.
-  app.post(
-    '/auth/local/authorize',
-    function (req, res, next) {
-      if (req.user) {
-        log.warn('session authorization is deprecated, please use jwt');
-        return next();
-      }
-
-      passport.authenticate('authorization', function (err, user, info = {}) {
-        if (err) return next(err);
-
-        if (!user) return res.status(401).send(info.message);
-
-        req.user = user;
-        next();
-      })(req, res, next);
-    },
-    provision.check('local', 'local'),
-    parseLoginMetadata,
-    function (req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
-        if (err) return next(err);
-
-        AuthenticationApiAppender.append(config.api).then(api => {
-          res.json({
-            token: token.token,
-            expirationDate: token.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            device: req.provisionedDevice,
-            api: api
+          }).catch(err => {
+            next(err);
           });
-        }).catch(err => {
-          next(err);
-        });
-      });
-
-      req.session = null;
+      })(req, res, next);
     }
   );
 };

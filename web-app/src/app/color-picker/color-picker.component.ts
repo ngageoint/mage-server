@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, OnInit, Input } from '@angular/core';
-import { ColorWrap, RGBA, Color, HSLA, HSVA, toState } from 'ngx-color';
+import { ColorWrap, RGBA, toState } from 'ngx-color';
 import { TinyColor } from '@ctrl/tinycolor';
 
 export interface ColorEvent {
@@ -12,22 +12,29 @@ export interface ColorEvent {
   styleUrls: ['./color-picker.component.scss']
 })
 export class ColorPickerComponent extends ColorWrap implements OnInit {
-  @Input() label: string;
-  @Input() hexColor: string;
-  @Output() onColorChanged = new EventEmitter<ColorEvent>();
+  @Input() label: string
+  @Input() hexColor: string
+  @Output() onColorChanged = new EventEmitter<ColorEvent>()
 
-  background: string;
-  activeBackground: string;
-  showColorPicker = false;
+  background: string
+  activeBackground: string
+  showColorPicker = false
 
   constructor() {
     super();
   }
 
   ngOnInit(): void {
-    super.ngOnInit();
-    this.setState(toState(this.hexColor, 0));
-    this.background = this.getRGBAStyle(this.rgb);
+    this.updateColor()
+  }
+
+  ngOnChanges(): void {
+    this.updateColor()
+  }
+
+  updateColor(): void {
+    this.setState(toState(this.hexColor, 0))
+    this.background = this.getRGBAStyle(this.rgb)
   }
 
   handleValueChange({ data, $event }): void {

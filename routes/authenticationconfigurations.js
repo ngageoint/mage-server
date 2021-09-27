@@ -166,12 +166,12 @@ module.exports = function (app, security) {
                 }
                 return Promise.all(response);
             }).then(response => {
-                //Read any authentications that could be attached to this config
-                //For example: 
-                // 1. authentications attached to google
-                // 2. Google removed
-                // 3. Authentications attached to google no longer have a config
-                // 3. Google recreated
+                // Read any authentications that could be attached to this config
+                // For example: 
+                // 1. authentications attached to saml
+                // 2. saml removed
+                // 3. Authentications attached to saml no longer have a config
+                // 3. saml recreated
                 // 4. Authentications are then atteched to this new config
                 const config = response[0];
                 const promises = [];
@@ -179,7 +179,7 @@ module.exports = function (app, security) {
                 promises.push(Authentication.getAuthenticationsByType(config.name));
                 return Promise.all(promises);
             }).then(response => {
-                //Attach any "dangling" authentications to the new config
+                // Attach any "dangling" authentications to the new config
                 const config = response[0];
                 const authentications = response[1];
 
@@ -192,7 +192,7 @@ module.exports = function (app, security) {
                 });
                 return Promise.all(promises);
             }).then(response => {
-                //Append secure data to config for the purposes of configuring passport
+                // Append secure data to config for the purposes of configuring passport
                 const config = response[0];
                 return SecurePropertyAppender.appendToConfig(config);
             }).then(config => {
@@ -202,10 +202,7 @@ module.exports = function (app, security) {
 
                 const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
                 res.json(transformedConfig);
-            }).catch(err => {
-                //TODO rollback somehow
-                next(err);
-            })
+            }).catch(err => next(err));
         });
 
     app.delete(

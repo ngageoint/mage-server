@@ -1,5 +1,5 @@
 export interface TypeChoice {
-    title: string,
-    type: string,
-    name: string
+   title: string,
+   type: string,
+   name: string,
 }

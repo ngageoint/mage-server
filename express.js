@@ -1,6 +1,6 @@
 const express = require("express")
   , crypto = require('crypto')
-  , cookieSession = require('cookie-session')
+  , session = require('express-session')
   , bodyParser = require('body-parser')
   , fs = require('fs')
   , passport = require('passport')
@@ -27,23 +27,7 @@ app.use(function(req, res, next) {
 });
 
 const secret = crypto.randomBytes(64).toString('hex');
-app.use(cookieSession({
-  secret: secret,
-  name: 'mage-session',
-  maxAge: 2 * 60 * 1000, // 2 minutes
-  secure: env.cookies.secure,
-  sameSite: true
-}));
-
-passport.serializeUser(function (user, done) {
-  done(null, user._id);
-});
-
-passport.deserializeUser(function (id, done) {
-  new api.User().getById(id, function (err, user) {
-    done(err, user);
-  });
-});
+app.use(session({ secret: secret }));
 
 app.set('config', config);
 app.enable('trust proxy');

@@ -146,6 +146,7 @@ import { ObservationEditAttachmentComponent } from './observation/observation-ed
 import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
+import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
 
 @NgModule({
   declarations: [
@@ -226,7 +227,8 @@ import { PasswordPipe } from './observation/observation-view/observation-view-pa
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
-    PasswordPipe
+    PasswordPipe,
+    AdminAuthenticationOidcComponent
   ],
   imports: [
     CommonModule,
