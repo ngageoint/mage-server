@@ -216,7 +216,7 @@ function getEvent(req, res, next) {
     // form map
     event.formMap = {};
 
-    // create a field by name map, I will need this later
+    // field by name map
     event.forms.forEach(function (form) {
       event.formMap[form.id] = form;
 

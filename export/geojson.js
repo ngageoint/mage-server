@@ -19,71 +19,115 @@ util.inherits(GeoJson, Exporter);
 module.exports = GeoJson;
 
 GeoJson.prototype.export = function (streamable) {
-  const self = this;
-
   const archive = archiver('zip');
   archive.pipe(streamable);
 
   async.parallel([
-    function (done) {
-      if (!self._filter.exportObservations) return done();
+    done => {
+      if (!this._filter.exportObservations) return done();
 
       const observationStream = new stream.PassThrough();
       archive.append(observationStream, { name: 'observations.geojson' });
-      self.streamObservations(observationStream, archive, function (err) {
+      this.streamObservations(observationStream, archive, err => {
         observationStream.end();
         done(err);
       });
     },
-    function (done) {
-      if (!self._filter.exportLocations) return done();
+    done => {
+      if (!this._filter.exportLocations) return done();
 
       const locationStream = new stream.PassThrough();
       archive.append(locationStream, { name: 'locations.geojson' });
-      self.streamLocations(locationStream, function (err) {
+      this.streamLocations(locationStream, err => {
         locationStream.end();
         done(err);
       });
     }
   ],
-    function (err) {
-      if (err) {
-        log.info(err);
-      }
-
-      archive.finalize();
-    });
+  err => {
+    if (err) log.info(err);
+    archive.finalize();
+  });
 };
 
+GeoJson.prototype.mapObservationProperties = function(observation, archive) {
+  observation.properties = observation.properties || {};
+  observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
+
+  const centroid = turfCentroid(observation);
+  observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+
+  observation.properties.forms.forEach(observationForm => {
+    if (Object.keys(observationForm).length === 0) return;
+
+    const form = this._event.formMap[observationForm.formId];
+    const formProperties = observation.properties[form.name] || [];
+    const properties = Object.fromEntries(form.fields
+      .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
+      .filter(field => {
+        let hasValue = false;
+        switch (field.type) {
+          case 'attachment': {
+            hasValue = observation.attachments.some(attachment => {
+              return attachment.fieldName === field.name &&
+                attachment.observationFormId.toString() === observationForm._id.toString();
+            });
+
+            break;
+          }
+          case 'checkbox': {
+            hasValue = field.value != null
+          }
+          default: {
+            hasValue = observationForm[field.name]
+          }
+        }
+
+        return hasValue;
+      })
+      .sort((a, b) => a.id - b.id)
+      .map(field => {
+        let value = observationForm[field.name];
+        if (field.type === 'attachment') {
+          value = observation.attachments.filter(attachment => {
+            return attachment.fieldName === field.name &&
+              attachment.observationFormId.toString() === observationForm._id.toString();
+          })
+          .map(attachment => {
+            return attachment.relativePath
+          });
+
+          value.forEach(attachmentPath => {
+            archive.file(path.join(attachmentBase, attachmentPath), { name: attachmentPath });
+          });
+        }
+
+        return [field.title, value];
+      }));
+
+    formProperties.push(properties);
+    observation.properties[form.name] = formProperties;
+  });
+
+  delete observation.properties.forms;
+
+  observation.properties.id = observation._id;
+}
+
 GeoJson.prototype.streamObservations = function (stream, archive, done) {
-  const self = this;
-  self.requestObservations(self._filter, function (err, observations) {
+  this.requestObservations(this._filter, (err, observations) => {
     if (err) return err;
 
-    self.mapObservations(observations);
-    observations = observations.map(function (o) {
+    observations = observations.map(observation => {
+      this.mapObservationProperties(observation, archive);
+
+      if (this._users[observation.userId]) observation.properties.user = this._users[observation.userId].username;
+      if (this._devices[observation.deviceId]) observation.properties.device = this._devices[observation.deviceId].uid;
+
       return {
-        geometry: o.geometry,
-        properties: o.properties,
-        attachments: o.attachments
+        geometry: observation.geometry,
+        properties: observation.properties
       };
-    });
-
-    observations.forEach(function (o) {
-      o.attachments = o.attachments.map(function (attachment) {
-        return {
-          name: attachment.name,
-          relativePath: attachment.relativePath,
-          size: attachment.size,
-          contentType: attachment.contentType,
-          width: attachment.width,
-          height: attachment.height,
-        };
-      });
-
-      o.attachments.forEach(function (attachment) {
-        archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-      });
     });
 
     stream.write(JSON.stringify({
@@ -92,7 +136,7 @@ GeoJson.prototype.streamObservations = function (stream, archive, done) {
     }));
 
     // throw in icons
-    archive.directory(new api.Icon(self._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
+    archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
 
     done();
   });
@@ -101,17 +145,15 @@ GeoJson.prototype.streamObservations = function (stream, archive, done) {
 GeoJson.prototype.streamLocations = function (stream, done) {
   log.info('writing locations...');
 
-  const self = this;
+  const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
-  const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
-
-  let locations = [];
+  const locations = [];
 
   stream.write('{"type": "FeatureCollection", "features": [');
-  cursor.eachAsync(async function (location, i) {
+  cursor.eachAsync(async location => {
     const centroid = turfCentroid(location);
     location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
     locations.push(location);
@@ -128,7 +170,5 @@ GeoJson.prototype.streamLocations = function (stream, done) {
     log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
 
     done();
-  }).catch(err => {
-    done(err);
-  });
+  }).catch(err => done(err));
 };
