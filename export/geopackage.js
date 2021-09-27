@@ -620,6 +620,7 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
                 });
               });
             } else {
+              this.iconMap[formDir][primaryDir][variantDir] = this.iconMap[formDir][primaryDir][variantDir] || {};
               await new Promise((resolve, reject) => {
                 fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'), (err, iconBuffer) => {
                   if (err) return reject(err);
