@@ -1,9 +1,9 @@
 <section class="mat-typography">
-    <h1 mat-dialog-title>{{statusTitle}}</h1>
+    <div class="mat-title">{{statusTitle}}</div>
 </section>
 <section class="mat-typography">
     <mat-dialog-content>
-        <div [innerHTML]="statusMessage"></div>
+        <div [innerHTML]="statusMessage" class="mat-body"></div>
     </mat-dialog-content>
 </section>
 <section class="mat-typography">
