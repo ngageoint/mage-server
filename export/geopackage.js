@@ -455,6 +455,8 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
     for (let f = 0; f < observation.properties.forms.length; f++) {
       const observationForm = observation.properties.forms[f];
       const formDefinition = this._event.formMap[observationForm.formId];
+      primary = observationForm[formDefinition.primaryField];
+      variant = observationForm[formDefinition.variantField];
       const formToSave = {
         primaryField: primary,
         variantField: variant,
