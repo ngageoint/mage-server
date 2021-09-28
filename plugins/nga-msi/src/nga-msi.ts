@@ -11,8 +11,10 @@ import querystring from 'querystring'
  */
 export class MsiServiceType implements FeedServiceType {
 
+  static readonly SERVICE_TYPE_ID = 'urn:mage:nga-msi:feeds:service_type'
+
   readonly id: FeedServiceTypeId = FeedServiceTypeUnregistered
-  readonly pluginServiceTypeId: string = 'nga-msi'
+  readonly pluginServiceTypeId: string = MsiServiceType.SERVICE_TYPE_ID
   readonly title: string = 'NGA MSI'
   readonly summary: string = 'NGA Maritime Safety Information service'
   readonly configSchema: JSONSchema4 = {
