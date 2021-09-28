@@ -70,6 +70,7 @@ Csv.prototype.export = function (streamable) {
       form.fields
         .filter(field => !field.archived)
         .sort((a, b) => a.id - b.id)
+        .filter(field => field.type !== 'attachment')
         .forEach(field => {
           observationFields.push({
             label: formPrefix + field.title,
