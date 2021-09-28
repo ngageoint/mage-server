@@ -2213,6 +2213,7 @@ paths:
           - disclaimer
           - blacklist
           - authconfigsetup
+          - contactinfo
       responses:
         200:
           description: Success - setting document
@@ -2238,6 +2239,7 @@ paths:
           - disclaimer
           - blacklist
           - authconfigsetup
+          - contactinfo
       responses:
         200:
           description: Success - the update settings document
