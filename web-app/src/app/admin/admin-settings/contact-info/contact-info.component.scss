@@ -1,7 +1,7 @@
 @import '~@angular/material/theming';
 @import "variables.scss";
 
-.page__container {
+.contact-info {
     display: flex;
     padding: 0 16px;
     margin-left: auto;
@@ -9,9 +9,10 @@
     margin-top: 16px;
     margin-bottom: 16px;
     max-width: 1170px;
+    align-items: center;
 }
   
-.page__container-content {
+.contact-info__content {
     display: block;
     flex: 1;
     min-width: 0;
@@ -21,6 +22,10 @@
 label {
     font-weight: unset;
     margin-left: 8px;
+}
+
+mat-icon {
+    color: mat-color($app-primary);
 }
 
 mat-form-field {
