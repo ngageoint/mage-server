@@ -499,7 +499,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
         }
 
         const relatedTables = geopackage.relatedTablesExtension;
-        await relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.SIMPLE_ATTRIBUTES);
+        await relatedTables.linkRelatedIds('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
       }
       catch (e) {
         console.error('error is ', e);
