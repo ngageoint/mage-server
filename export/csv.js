@@ -19,8 +19,8 @@ function Csv(options) {
 util.inherits(Csv, Exporter);
 module.exports = Csv;
 
-function excelLink(attachment, attachmentNumber) {
-  return '=HYPERLINK("' + attachment.name + '", "attachment' + attachmentNumber + '")';
+function excelLink(attachmentName, attachmentNumber) {
+  return `=HYPERLINK("${attachmentName}", "attachment${attachmentNumber}")`;
 }
 
 Csv.prototype.export = function (streamable) {
@@ -201,13 +201,14 @@ Csv.prototype.flattenObservations = function (observations, archive) {
       });
 
       observation.attachments.forEach((attachment, index) => {
+        const name = path.basename(attachment.relativePath);
         rows.push({
           id: observation.id,
           attachment: attachment.name,
-          attachmentExcelLink: excelLink(attachment, index)
+          attachmentExcelLink: excelLink(name, index)
         });
 
-        archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
+        archive.file(path.join(attachmentBase, attachment.relativePath), { name: name });
       });
     });
 
