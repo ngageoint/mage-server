@@ -5,7 +5,6 @@ import { MatSort } from '@angular/material/sort';
 import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { EditSettingComponent } from './edit-setting/edit-setting.component';
-import { DeleteSettingComponent } from './delete-setting/delete-setting.component';
 import { SettingsKeyHandler } from './utilities/settings-key-handler';
 
 @Component({
@@ -51,7 +50,6 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
                displayKey: key,
                key: key,
                value: obj[key],
-               required: true,
                isSecret: false
             })
          })
@@ -71,20 +69,6 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             this.settingsKeyHandler.flattenAndSet(key, updatedSetting.value, this.strategy.settings);
             this.strategy.isDirty = true;
             this.refresh();
-         }
-      })
-   }
-
-   deleteSetting(setting: GenericSetting): void {
-      this.dialog.open(DeleteSettingComponent, {
-         width: '500px',
-         data: setting,
-         autoFocus: false
-      }).afterClosed().subscribe(result => {
-         if (result.event === 'confirm') {
-            this.settingsKeyHandler.delete(setting.key, this.strategy.settings)
-            this.strategy.isDirty = true
-            this.dataSource.data = this.dataSource.data.filter(row => row.key !== setting.key)
          }
       })
    }
