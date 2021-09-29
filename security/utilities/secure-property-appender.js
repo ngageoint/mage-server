@@ -9,7 +9,7 @@ const SecretStoreService = require('../secret-store-service');
  * @returns A copy of the config with secure properties appended (if any exist)
  */
 async function appendToConfig(config) {
-    const configCopy = JSON.parse(JSON.stringify(config));
+    const configCopy = config; //JSON.parse(JSON.stringify(config));
 
     const sss = new SecretStoreService();
 

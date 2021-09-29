@@ -5,17 +5,18 @@ const AuthenticationConfiguration = require('../models/authenticationconfigurati
 function transformAuthenticationConfiguration(authenticationConfiguration, options) {
     if (!authenticationConfiguration) return null;
 
-    authenticationConfiguration = authenticationConfiguration.toObject ? authenticationConfiguration.toObject({ whitelist: options.whitelist, path: options.path, transform: AuthenticationConfiguration.transform }) : authenticationConfiguration;
+    authenticationConfiguration = authenticationConfiguration.toObject ? authenticationConfiguration.toObject({ whitelist: options.whitelist, blacklist: options.blacklist, transform: AuthenticationConfiguration.transform }) : authenticationConfiguration;
 
     return authenticationConfiguration;
 };
 
 function transformAuthenticationConfigurations(authenticationConfigurations, options) {
-    authenticationConfigurations = authenticationConfigurations.map(function (authenticationConfiguration) {
-        return transformAuthenticationConfiguration(authenticationConfiguration, options);
+    const transformed = [];
+    authenticationConfigurations.forEach(authenticationConfiguration => {
+        transformed.push(transformAuthenticationConfiguration(authenticationConfiguration, options));
     });
 
-    return authenticationConfigurations;
+    return transformed;
 };
 
 exports.transform = function (authenticationConfigurations, options) {

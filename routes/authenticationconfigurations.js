@@ -32,7 +32,16 @@ module.exports = function (app, security) {
                         return true;
                     }
                 });
-                const transformedConfigs = AuthenticationConfigurationTransformer.transform(filtered);
+
+                const promises = [];
+                
+                filtered.forEach(config => {
+                    promises.push(SecurePropertyAppender.appendToConfig(config));
+                });
+
+                return Promise.all(promises);
+            }).then(configs => {
+                const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs, { blacklist: true });
                 res.json(transformedConfigs);
             }).catch(err => {
                 next(err);
@@ -117,7 +126,7 @@ module.exports = function (app, security) {
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
-                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                 res.json(transformedConfig);
             }).catch(err => {
                 next(err);
@@ -196,7 +205,7 @@ module.exports = function (app, security) {
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
-                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                 res.json(transformedConfig);
             }).catch(err => next(err));
         });
@@ -235,7 +244,7 @@ module.exports = function (app, security) {
 
                     log.info("Successfully removed strategy with id " + req.params.id);
                     //TODO not sure how to disable passport strategy, but this will effectively disable it
-                    const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                    const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                     res.json(transformedConfig);
                 }).catch(err => {
                     next(err);

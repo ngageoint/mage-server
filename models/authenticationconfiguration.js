@@ -24,6 +24,7 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+const blacklist = ['clientid', 'clientsecret', 'client_id', 'bindcredentials'];
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -37,6 +38,14 @@ const transform = function (config, ret, options) {
       Object.keys(ret).forEach(key => {
         if (!whitelist.includes(key)) {
           delete ret[key];
+        }
+      });
+    }
+
+    if (options.blacklist) {
+      Object.keys(ret.settings).forEach(key => {
+        if (blacklist.includes(key.toLowerCase())) {
+          ret.settings[key] = '*****';
         }
       });
     }
