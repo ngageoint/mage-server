@@ -39,24 +39,3 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
    </table>
 </div>
-
-
-<div class="settings-add" *ngIf="editable">
-   <div>
-      <h4>Add Setting</h4>
-   </div>
-
-   <mat-form-field appearance="outline" class="settings-add__item">
-      <mat-label>Key</mat-label>
-      <input matInput type="text" id="inputKey" name="inputKey" [(ngModel)]="newRow.key"
-         [ngModelOptions]="{standalone: true}" placeholder="Key" #inputKey="ngModel" required>
-   </mat-form-field>
-   <mat-form-field appearance="outline" class="settings-add__item">
-      <mat-label>Value</mat-label>
-      <input matInput type="text" id="inputValue" name="inputValue" [(ngModel)]="newRow.value"
-         [ngModelOptions]="{standalone: true}" placeholder="Value" />
-   </mat-form-field>
-   <button class="settings-add__button" mat-flat-button color="primary" (click)="addSetting()" [disabled]="inputKey.invalid">
-      Add
-   </button>
-</div>

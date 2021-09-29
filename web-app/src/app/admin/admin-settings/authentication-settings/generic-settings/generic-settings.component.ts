@@ -4,7 +4,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { Strategy } from '../../admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
-import { DuplicateKeyComponent } from './duplicate-key/duplicate-key.component';
 import { EditSettingComponent } from './edit-setting/edit-setting.component';
 import { DeleteSettingComponent } from './delete-setting/delete-setting.component';
 import { SettingsKeyHandler } from './utilities/settings-key-handler';
@@ -74,34 +73,6 @@ export class GenericSettingsComponent implements OnInit, AfterViewInit {
             this.refresh();
          }
       })
-   }
-
-   addSetting(): void {
-      if (this.settingsKeyHandler.exists(this.newRow.key, this.strategy.settings)) {
-         this.dialog.open(DuplicateKeyComponent, {
-            width: '500px',
-            data: this.newRow,
-            autoFocus: false
-         }).afterClosed().subscribe(result => {
-            if (result.event === 'confirm') {
-               this.doAddSetting();
-            }
-         })
-      } else {
-         this.doAddSetting()
-      }
-   }
-
-   private doAddSetting(): void {
-      this.settingsKeyHandler.flattenAndSet(this.newRow.key, this.newRow.value, this.strategy.settings);
-      this.dataSource.data.push({
-         displayKey: this.newRow.key,
-         key: this.newRow.key,
-         value: this.newRow.value,
-         required: false,
-         isSecret: false
-      })
-      this.dataSource.data = this.dataSource.data.slice()
    }
 
    deleteSetting(setting: GenericSetting): void {
