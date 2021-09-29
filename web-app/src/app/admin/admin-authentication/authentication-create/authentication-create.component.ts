@@ -1,5 +1,4 @@
 import { Component, Inject, OnInit } from '@angular/core'
-import { Strategy } from '../admin-settings.model';
 import { TypeChoice } from './admin-create.model';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
@@ -8,6 +7,7 @@ import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { ColorEvent } from 'ngx-color';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Strategy } from '../../admin-settings/admin-settings.model';
 
 @Component({
    selector: 'authentication-create',

@@ -132,7 +132,7 @@ import { ObservationPopupComponent } from './observation/observation-popup/obser
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { AuthenticationCreateComponent, SecurityBannerComponent, SecurityDisclaimerComponent, EditSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
+import { SecurityBannerComponent, SecurityDisclaimerComponent, EditSettingComponent } from './admin/admin-settings/admin-settings';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
@@ -150,6 +150,8 @@ import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/
 import { PasswordPolicyComponent } from './admin/admin-authentication/admin-authentication-local//password-policy/password-policy.component';
 import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';
 import { AdminAuthenticationComponent } from './admin/admin-authentication/admin-authentication.component';
+import { IconUploadComponent } from './admin/admin-authentication/authentication-create/icon-upload/icon-upload.component';
+import { AuthenticationCreateComponent } from './admin/admin-authentication/authentication-create/authentication-create.component';
 
 @NgModule({
   declarations: [

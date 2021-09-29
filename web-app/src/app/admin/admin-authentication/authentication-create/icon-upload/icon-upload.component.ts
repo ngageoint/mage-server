@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Strategy } from '../../admin-settings.model';
+import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
 
 @Component({
   selector: 'icon-upload',

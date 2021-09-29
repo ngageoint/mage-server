@@ -40,7 +40,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
-import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
+import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/authentication-create/authentication-create.component';
 
 require('angular-minicolors');
 require('select2');
