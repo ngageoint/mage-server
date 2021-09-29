@@ -47,6 +47,9 @@
         <mat-hint align="end">If disabled, new devices do <b>NOT</b> require
             admin approval to access MAGE.</mat-hint>
     </mat-form-field>
+    <div *ngIf="strategy.type.toLowerCase() === 'local'">
+        <admin-authentication-local [strategy]="strategy"></admin-authentication-local>
+    </div>
     <div *ngIf="strategy.type.toLowerCase() !== 'local'">
         <generic-settings [strategy]="strategy"></generic-settings>
     </div>
