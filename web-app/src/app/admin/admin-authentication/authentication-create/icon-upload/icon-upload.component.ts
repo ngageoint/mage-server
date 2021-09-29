@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
 
 @Component({
@@ -8,19 +8,22 @@ import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
 })
 export class IconUploadComponent {
   @Input() strategy: Strategy;
-  imgFile: string;
 
-  onImageChange(e: any) {
+  constructor(private changeDetector: ChangeDetectorRef) { }
+
+  onImageChange(e: any): void {
     const reader = new FileReader();
 
     if (e.target.files && e.target.files.length) {
       const file = e.target.files[0];
-      reader.readAsDataURL(file);
 
-      reader.onload = (e: any) => {
-        this.imgFile = reader.result as string;
-        this.strategy.icon = this.imgFile;
+      reader.onload = (e: Event): void => {
+        const target = e.target as FileReader;
+        this.strategy.icon = target.result as string;
+        this.changeDetector.detectChanges();
       };
+
+      reader.readAsDataURL(file);
     }
   }
 }
