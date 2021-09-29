@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Strategy, AdminChoice } from '../../admin-settings.model';
+import { Strategy, AdminChoice } from 'src/app/admin/admin-settings/admin-settings.model';
 import { MaxLock } from './account-lock.model';
 
 

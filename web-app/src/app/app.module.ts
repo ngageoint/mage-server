@@ -133,9 +133,7 @@ import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { AuthenticationSettingsComponent, AuthenticationCreateComponent, SecurityBannerComponent, SecurityDisclaimerComponent, EditSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
-import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
-import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
@@ -148,6 +146,9 @@ import { ObservationViewPasswordComponent } from './observation/observation-view
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
 import { AuthenticationDeleteComponent } from './admin/admin-authentication/authentication-delete/authentication-delete.component';
+import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/admin-authentication-local/admin-authentication-local.component';
+import { PasswordPolicyComponent } from './admin/admin-authentication/admin-authentication-local//password-policy/password-policy.component';
+import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';
 
 @NgModule({
   declarations: [
@@ -227,7 +228,8 @@ import { AuthenticationDeleteComponent } from './admin/admin-authentication/auth
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
     PasswordPipe,
-    AdminAuthenticationOidcComponent
+    AdminAuthenticationOidcComponent,
+    AdminAuthenticationLocalComponent
   ],
   imports: [
     CommonModule,

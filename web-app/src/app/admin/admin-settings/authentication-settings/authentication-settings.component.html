@@ -47,12 +47,6 @@
         <mat-hint align="end">If disabled, new devices do <b>NOT</b> require
             admin approval to access MAGE.</mat-hint>
     </mat-form-field>
-    <div *ngIf="strategy.settings.accountLock">
-        <account-lock [strategy]="strategy"></account-lock>
-    </div>
-    <div *ngIf="strategy.settings.passwordPolicy">
-        <password-policy [strategy]="strategy"></password-policy>
-    </div>
     <div *ngIf="strategy.type.toLowerCase() !== 'local'">
         <generic-settings [strategy]="strategy"></generic-settings>
     </div>
