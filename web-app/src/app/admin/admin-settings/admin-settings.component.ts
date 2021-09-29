@@ -5,9 +5,10 @@ import { Team, Event, LocalStorageService, AuthenticationConfigurationService, U
 import { Strategy } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
+import { SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
 import { StateService } from '@uirouter/angular'
+import { AuthenticationDeleteComponent } from '../admin-authentication/authentication-delete/authentication-delete.component';
 
 @Component({
     selector: 'admin-settings',
