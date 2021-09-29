@@ -1,9 +1,8 @@
 <section class="mat-typography">
-    <h4>Account Lock</h4>
-    <hr>
+    <div class="mat-subheading-2">Account Lock</div>
 </section>
 <section class="mat-typography">
-    <mat-label><b>Enabled</b></mat-label>
+    <mat-label>Enabled</mat-label>
     <mat-form-field appearance="outline">
         <mat-select [(ngModel)]="strategy.settings.accountLock.enabled" [ngModelOptions]="{standalone: true}"
             (selectionChange)="setDirty()">
