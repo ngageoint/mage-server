@@ -5,13 +5,13 @@ const log = require('winston')
     , Authentication = require('../models/authentication')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
-    , Settings = require('../models/setting')
     , SecretStoreService = require('../security/secret-store-service')
     , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 module.exports = function (app, security) {
 
     const passport = security.authentication.passport;
+    const blacklist = ['clientid', 'clientsecret', 'client_id', 'bindcredentials'];
 
     app.get(
         '/api/authentication/configuration/',
@@ -73,18 +73,16 @@ module.exports = function (app, security) {
 
             const securityData = {};
 
-            Settings.getSetting('blacklist').then(blacklist => {
-                const settings = JSON.parse(req.body.settings);
+            const settings = JSON.parse(req.body.settings);
 
-                Object.keys(settings).forEach(key => {
-                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
-                        securityData[key] = settings[key];
-                    } else {
-                        updatedConfig.settings[key] = settings[key];
-                    }
-                });
-                return AuthenticationConfiguration.update(req.params.id, updatedConfig);
-            }).then(config => {
+            Object.keys(settings).forEach(key => {
+                if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
+                    securityData[key] = settings[key];
+                } else {
+                    updatedConfig.settings[key] = settings[key];
+                }
+            });
+            AuthenticationConfiguration.update(req.params.id, updatedConfig).then(config => {
                 //Read any existing secure data (for append purposes)
                 const promises = [];
                 promises.push(Promise.resolve(config));
@@ -144,19 +142,17 @@ module.exports = function (app, security) {
 
             const securityData = {};
 
-            Settings.getSetting('blacklist').then(blacklist => {
-                const settings = JSON.parse(req.body.settings);
+            const settings = JSON.parse(req.body.settings);
 
-                Object.keys(settings).forEach(key => {
-                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
-                        securityData[key] = settings[key];
-                    } else {
-                        newConfig.settings[key] = settings[key];
-                    }
-                });
+            Object.keys(settings).forEach(key => {
+                if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
+                    securityData[key] = settings[key];
+                } else {
+                    newConfig.settings[key] = settings[key];
+                }
+            });
 
-                return AuthenticationConfiguration.create(newConfig);
-            }).then(config => {
+            AuthenticationConfiguration.create(newConfig).then(config => {
                 //Create secure data, if any
                 const response = [];
                 response.push(Promise.resolve(config));
