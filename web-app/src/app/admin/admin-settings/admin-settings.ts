@@ -1,4 +1,3 @@
-export * from './authentication-settings/authentication-settings.component'
 export * from './authentication-create/authentication-create.component'
 export * from './authentication-create/icon-upload/icon-upload.component'
 export * from './security-banner/security-banner.component'

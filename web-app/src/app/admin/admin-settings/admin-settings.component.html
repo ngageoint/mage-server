@@ -41,8 +41,8 @@
                                         <label>Enable Authentication</label>
                                         <hr>
                                     </section>
-                                    <authentication-settings [strategy]="strategy" [teams]="teams" [events]="events">
-                                    </authentication-settings>
+                                    <admin-authentication [strategy]="strategy" [teams]="teams" [events]="events">
+                                    </admin-authentication>
                                     <div class="top-gap">
                                         <button mat-button color="warn" id="delete-strategy-button"
                                             (click)="$event.stopPropagation(); deleteStrategy(strategy)"

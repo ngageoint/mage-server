@@ -1,12 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { AdminChoice, Strategy } from '../admin-settings.model';
+import { Strategy, AdminChoice } from '../admin-settings/admin-settings.model';
 
 @Component({
-    selector: 'authentication-settings',
-    templateUrl: 'authentication-settings.component.html',
-    styleUrls: ['./authentication-settings.component.scss']
+    selector: 'admin-authentication',
+    templateUrl: 'admin-authentication.component.html',
+    styleUrls: ['./admin-authentication.component.scss']
 })
-export class AuthenticationSettingsComponent {
+export class AdminAuthenticationComponent {
     @Input() strategy: Strategy;
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
