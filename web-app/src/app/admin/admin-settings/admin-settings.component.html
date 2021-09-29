@@ -15,7 +15,7 @@
                     </div>
                     <mat-accordion class="headers-align">
                         <div *ngFor="let strategy of strategies; index as i; first as isFirst">
-                            <mat-expansion-panel class="mat-elevation-z0" [expanded]="isFirst">
+                            <mat-expansion-panel [expanded]="isFirst">
                                 <mat-expansion-panel-header>
                                     <mat-panel-title>
                                         <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
