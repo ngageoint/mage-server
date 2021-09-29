@@ -47,9 +47,6 @@
             </mat-step>
             <mat-step>
                <ng-template matStepLabel>Colors</ng-template>
-               <div class="bottom-gap">
-                  These are the colors for the login button that the users will see.
-               </div>
                <mat-list-item>
                   <mat-label for="textColorPicker"><b>Text Color</b></mat-label>
                   <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')"
@@ -69,12 +66,9 @@
             </mat-step>
             <mat-step>
                <ng-template matStepLabel>Icon</ng-template>
-               <div class="bottom-gap">
-                  This is the icon for the login button that the users will see.
-               </div>
-               <legend>Default Icon</legend>
+               <div class="mat-title">Default Icon</div>
                <i id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}" class="fa fa-lg fa-shield"></i>
-               <legend>Custom Icon</legend>
+               <div class="mat-title">Custom Icon</div>
                <icon-upload [strategy]="strategy"></icon-upload>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
@@ -82,10 +76,10 @@
                </div>
             </mat-step>
             <mat-step label="Done">
-               <h2>{{strategy.title}} ({{strategy.type}})</h2>
+               <div class="mat-title">{{strategy.title}} ({{strategy.type}})</div>
                <mat-divider></mat-divider>
                <div class="preview-button">
-                  <h4>Button</h4>
+                  <div class="mat-subheading-2">Button</div>
                   <div class="auth-button-container">
                      <button mat-raised-button disabled
                         [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
