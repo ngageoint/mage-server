@@ -1,0 +1,33 @@
+<div>
+    <form [formGroup]="formGroup" class="oauth2-settings">
+        <mat-form-field appearance="outline">
+          <mat-label>Client ID</mat-label>
+          <input matInput type="text" formControlName="clientID" required [readonly]="!editable">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Client Secret</mat-label>
+          <input matInput type="text" formControlName="clientSecret" required [readonly]="!editable">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Issuer</mat-label>
+          <input matInput type="text" formControlName="issuer" required [readonly]="!editable">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Authentication URL</mat-label>
+          <input matInput type="text" formControlName="authenticationURL" required [readonly]="!editable">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Token URL</mat-label>
+          <input matInput type="text" formControlName="tokenURL" required [readonly]="!editable">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>User Info URL</mat-label>
+          <input matInput type="text" formControlName="userInfoURL" required [readonly]="!editable">
+        </mat-form-field>
+    </form>
+  </div>

@@ -152,6 +152,9 @@ import { AccountLockComponent } from './admin/admin-authentication/admin-authent
 import { AdminAuthenticationComponent } from './admin/admin-authentication/admin-authentication.component';
 import { IconUploadComponent } from './admin/admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
 import { AuthenticationCreateComponent } from './admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
+import { AdminAuthenticationOAuth2Component } from './admin/admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
+import { AdminAuthenticationLDAPComponent } from './admin/admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
+import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
 
 @NgModule({
   declarations: [
@@ -232,7 +235,10 @@ import { AuthenticationCreateComponent } from './admin/admin-authentication/admi
     PasswordPipe,
     AdminAuthenticationOidcComponent,
     AdminAuthenticationLocalComponent,
-    AdminAuthenticationComponent
+    AdminAuthenticationComponent,
+    AdminAuthenticationOAuth2Component,
+    AdminAuthenticationLDAPComponent,
+    AdminAuthenticationSAMLComponent
   ],
   imports: [
     CommonModule,

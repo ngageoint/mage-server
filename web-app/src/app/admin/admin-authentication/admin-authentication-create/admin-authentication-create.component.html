@@ -38,6 +38,10 @@
             <mat-step label="Settings">
                <div [ngSwitch]="strategy.type">
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"></admin-authentication-oidc>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy"></admin-authentication-oauth2>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy"></admin-authentication-oauth2>
+                  <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy"></admin-authentication-ldap>
+                  <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy"></admin-authentication-saml>
                </div>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
