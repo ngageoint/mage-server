@@ -46,6 +46,9 @@
         <mat-hint align="end">If disabled, new devices do <b>NOT</b> require
             admin approval to access MAGE.</mat-hint>
     </mat-form-field>
+</section>
+<section class="mat-typography">
+    <div class="mat-title">Settings</div>
     <div [ngSwitch]="strategy.type">
         <admin-authentication-local *ngSwitchCase="'local'" [strategy]="strategy"></admin-authentication-local>
         <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"></admin-authentication-oidc>
@@ -53,5 +56,5 @@
         <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy"></admin-authentication-oauth2>
         <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy"></admin-authentication-ldap>
         <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy"></admin-authentication-saml>
-     </div>
+    </div>
 </section>
