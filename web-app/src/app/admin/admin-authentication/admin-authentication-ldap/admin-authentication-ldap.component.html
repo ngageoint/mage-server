@@ -1,4 +1,68 @@
 <div>
-    <form [formGroup]="formGroup" class="ldap-settings">
-    </form>
-  </div>
+  <form [formGroup]="formGroup" class="ldap-settings">
+    <mat-form-field appearance="outline">
+      <mat-label>URL</mat-label>
+      <input matInput type="text" formControlName="url" required [readonly]="!editable">
+      <mat-hint align="end">
+        An LDAP URL describes an LDAP search operation that is used to retrieve information from an LDAP directory and
+        begins with the protocol prefix "ldap".
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Bind DN</mat-label>
+      <input matInput type="text" formControlName="bindDN" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Bind Credentials</mat-label>
+      <input matInput type="text" formControlName="bindCredentials" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Search Base</mat-label>
+      <input matInput type="text" formControlName="searchBase" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Search Filter</mat-label>
+      <input matInput type="text" formControlName="searchFilter" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Username Field</mat-label>
+      <input matInput type="text" formControlName="usernameField" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Display Name Field</mat-label>
+      <input matInput type="text" formControlName="displayNameField" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>E-Mail Field</mat-label>
+      <input matInput type="text" formControlName="emailField" required [readonly]="!editable">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+  </form>
+</div>
