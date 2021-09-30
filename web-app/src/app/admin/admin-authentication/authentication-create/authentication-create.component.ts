@@ -1,6 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
@@ -13,20 +12,6 @@ import { Strategy } from '../../admin-settings/admin-settings.model';
    selector: 'authentication-create',
    templateUrl: './authentication-create.component.html',
    styleUrls: ['./authentication-create.component.scss'],
-   animations: [
-      trigger('slide', [
-         state('1', style({ height: '*', opacity: 1, })),
-         state('0', style({ height: '0', opacity: 0 })),
-         transition('1 => 0', animate('400ms ease-in-out')),
-         transition('0 => 1', animate('400ms ease-in-out'))
-      ]),
-      trigger('rotate', [
-         state('0', style({ transform: 'rotate(0)' })),
-         state('1', style({ transform: 'rotate(45deg)' })),
-         transition('1 => 0', animate('250ms ease-out')),
-         transition('0 => 1', animate('250ms ease-in'))
-      ])
-   ],
    providers: [{
       provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true }
    }]
