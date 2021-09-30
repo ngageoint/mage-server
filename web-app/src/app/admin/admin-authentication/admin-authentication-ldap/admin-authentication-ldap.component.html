@@ -9,11 +9,14 @@
       </mat-hint>
     </mat-form-field>
 
+    <div class="mat-subheading-2">Authentication</div>
+
     <mat-form-field appearance="outline">
       <mat-label>Bind DN</mat-label>
       <input matInput type="text" formControlName="bindDN" required [readonly]="!editable">
       <mat-hint align="end">
-        TODO.
+        The bind DN is basically the credential you are using to authenticate against an LDAP. When using a bind DN it
+        usually comes with a password associated with it, which is set in the bind credentials.
       </mat-hint>
     </mat-form-field>
 
@@ -21,15 +24,17 @@
       <mat-label>Bind Credentials</mat-label>
       <input matInput type="text" formControlName="bindCredentials" required [readonly]="!editable">
       <mat-hint align="end">
-        TODO.
+        Password used to authenticate against an LDAP.
       </mat-hint>
     </mat-form-field>
+
+    <div class="mat-subheading-2">Search</div>
 
     <mat-form-field appearance="outline">
       <mat-label>Search Base</mat-label>
       <input matInput type="text" formControlName="searchBase" required [readonly]="!editable">
       <mat-hint align="end">
-        TODO.
+        The search base defines the starting point for the search in an LDAP.
       </mat-hint>
     </mat-form-field>
 
@@ -37,31 +42,7 @@
       <mat-label>Search Filter</mat-label>
       <input matInput type="text" formControlName="searchFilter" required [readonly]="!editable">
       <mat-hint align="end">
-        TODO.
-      </mat-hint>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Username Field</mat-label>
-      <input matInput type="text" formControlName="usernameField" required [readonly]="!editable">
-      <mat-hint align="end">
-        TODO.
-      </mat-hint>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Display Name Field</mat-label>
-      <input matInput type="text" formControlName="displayNameField" required [readonly]="!editable">
-      <mat-hint align="end">
-        TODO.
-      </mat-hint>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>E-Mail Field</mat-label>
-      <input matInput type="text" formControlName="emailField" required [readonly]="!editable">
-      <mat-hint align="end">
-        TODO.
+        This requires knowledge of the LDAP search filter grammar.
       </mat-hint>
     </mat-form-field>
   </form>
