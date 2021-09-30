@@ -14,13 +14,13 @@ export class AdminAuthenticationOAuth2Component implements OnChanges {
 
   formGroup = new FormGroup({})
 
+  //https://datatracker.ietf.org/doc/html/rfc6749
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.strategy) {
       this.formGroup = new FormGroup({
         clientID: new FormControl(this.strategy.settings.clientID, Validators.required),
         clientSecret: new FormControl(this.strategy.settings.clientSecret, Validators.required),
-        issuer: new FormControl(this.strategy.settings.issuer, Validators.required),
-        authenticationURL: new FormControl(this.strategy.settings.authenticationURL, Validators.required),
+        authorizationURL: new FormControl(this.strategy.settings.authorizationURL, Validators.required),
         tokenURL: new FormControl(this.strategy.settings.tokenURL, Validators.required),
         userInfoURL: new FormControl(this.strategy.settings.userInfoURL, Validators.required)
       })

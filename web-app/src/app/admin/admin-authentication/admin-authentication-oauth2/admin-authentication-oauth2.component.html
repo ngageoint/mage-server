@@ -1,33 +1,49 @@
 <div>
-    <form [formGroup]="formGroup" class="oauth2-settings">
-        <mat-form-field appearance="outline">
-          <mat-label>Client ID</mat-label>
-          <input matInput type="text" formControlName="clientID" required [readonly]="!editable">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Client Secret</mat-label>
-          <input matInput type="text" formControlName="clientSecret" required [readonly]="!editable">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Issuer</mat-label>
-          <input matInput type="text" formControlName="issuer" required [readonly]="!editable">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Authentication URL</mat-label>
-          <input matInput type="text" formControlName="authenticationURL" required [readonly]="!editable">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Token URL</mat-label>
-          <input matInput type="text" formControlName="tokenURL" required [readonly]="!editable">
-        </mat-form-field>
-        
-        <mat-form-field appearance="outline">
-          <mat-label>User Info URL</mat-label>
-          <input matInput type="text" formControlName="userInfoURL" required [readonly]="!editable">
-        </mat-form-field>
-    </form>
-  </div>
+  <form [formGroup]="formGroup" class="oauth2-settings">
+
+    <div class="mat-subheading-2">OAuth 2.0 Credentials</div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Client ID</mat-label>
+      <input matInput type="text" formControlName="clientID" required [readonly]="!editable">
+      <mat-hint align="end">
+        This is obtained from the OAuth 2.0 server. The client identifier is unique to
+        the OAuth 2.0 server.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Client Secret</mat-label>
+      <input matInput type="text" formControlName="clientSecret" required [readonly]="!editable">
+      <mat-hint align="end">
+        This is obtained from the OAuth 2.0 server.
+      </mat-hint>
+    </mat-form-field>
+
+    <div class="mat-subheading-2">URLs</div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Authorization URL</mat-label>
+      <input matInput type="text" formControlName="authorizationURL" required [readonly]="!editable">
+      <mat-hint align="end">
+        The URL that provides the authorization.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Token URL</mat-label>
+      <input matInput type="text" formControlName="tokenURL" required [readonly]="!editable">
+      <mat-hint align="end">
+        The URL where the token is obtained.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>User Info URL</mat-label>
+      <input matInput type="text" formControlName="userInfoURL" required [readonly]="!editable">
+      <mat-hint align="end">
+        The URL where the user profile is obtained.
+      </mat-hint>
+    </mat-form-field>
+  </form>
+</div>
