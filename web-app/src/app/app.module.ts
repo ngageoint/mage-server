@@ -145,7 +145,7 @@ import { ObservationEditPasswordComponent } from './observation/observation-edit
 import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
-import { AuthenticationDeleteComponent } from './admin/admin-authentication/admin-authentication-delete/authentication-delete.component';
+import { AuthenticationDeleteComponent } from './admin/admin-authentication/admin-authentication-delete/admin-authentication-delete.component';
 import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/admin-authentication-local/admin-authentication-local.component';
 import { PasswordPolicyComponent } from './admin/admin-authentication/admin-authentication-local//password-policy/password-policy.component';
 import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';

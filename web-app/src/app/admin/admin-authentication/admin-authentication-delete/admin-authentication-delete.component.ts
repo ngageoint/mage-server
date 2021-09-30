@@ -4,9 +4,9 @@ import { Strategy } from '../../admin-settings/admin-settings.model';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
-  selector: 'authentication-delete',
-  templateUrl: './authentication-delete.component.html',
-  styleUrls: ['./authentication-delete.component.scss']
+  selector: 'admin-authentication-delete',
+  templateUrl: './admin-authentication-delete.component.html',
+  styleUrls: ['./admin-authentication-delete.component.scss']
 })
 export class AuthenticationDeleteComponent implements AfterViewInit {
   userCount = 0;
