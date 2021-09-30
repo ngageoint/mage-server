@@ -154,7 +154,7 @@ export class AuthenticationCreateComponent implements OnInit {
 
    reset(): void {
       this.strategy = {
-         enabled: false,
+         enabled: true,
          name: '',
          type: '',
          title: '',
