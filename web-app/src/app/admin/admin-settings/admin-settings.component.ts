@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
 import { StateService } from '@uirouter/angular'
-import { AuthenticationDeleteComponent } from '../admin-authentication/authentication-delete/authentication-delete.component';
+import { AuthenticationDeleteComponent } from '../admin-authentication/admin-authentication-delete/authentication-delete.component';
 
 @Component({
     selector: 'admin-settings',
