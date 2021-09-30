@@ -1,18 +1,18 @@
 <section class="mat-typography">
     <div class="page-container">
         <div class="content">
-            <span class="bottom-gap">
+            <div class="mat-body">
                 MAGE can present a disclaimer after login. If the disclaimer is shown users will
                 have to accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
                 Android, iOS, and the Web.
-            </span>
+            </div>
         </div>
     </div>
 </section>
 <section class="mat-typography">
     <div class="page-container">
         <div class="content">
-            <legend>Disclaimer</legend>
+            <div class="mat-title">Disclaimer</div>
             <mat-list-item>
                 <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer"
                     color="primary" [ngModelOptions]="{standalone: true}" id="show-disclaimer">
@@ -20,14 +20,14 @@
                 <label for="show-disclaimer">Show Disclaimer</label>
             </mat-list-item>
             <mat-list-item>
-                <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
+                <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
                 <mat-form-field appearance="outline">
                     <input matInput [(ngModel)]="disclaimer.disclaimerTitle" [ngModelOptions]="{standalone: true}"
                         [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer title">
                 </mat-form-field>
             </mat-list-item>
             <mat-list-item>
-                <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
+                <mat-label for="disclaimerText">Disclaimer Text</mat-label>
                 <mat-form-field appearance="outline">
                     <textarea matInput [(ngModel)]="disclaimer.disclaimerText" [ngModelOptions]="{standalone: true}"
                         [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer text"> </textarea>
