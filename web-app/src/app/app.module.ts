@@ -151,7 +151,7 @@ import { PasswordPolicyComponent } from './admin/admin-authentication/admin-auth
 import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';
 import { AdminAuthenticationComponent } from './admin/admin-authentication/admin-authentication.component';
 import { IconUploadComponent } from './admin/admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
-import { AuthenticationCreateComponent } from './admin/admin-authentication/admin-authentication-create/authentication-create.component';
+import { AuthenticationCreateComponent } from './admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 
 @NgModule({
   declarations: [

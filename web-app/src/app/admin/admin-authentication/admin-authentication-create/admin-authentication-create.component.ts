@@ -9,9 +9,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-settings/admin-settings.model';
 
 @Component({
-   selector: 'authentication-create',
-   templateUrl: './authentication-create.component.html',
-   styleUrls: ['./authentication-create.component.scss'],
+   selector: 'admin-authentication-create',
+   templateUrl: './admin-authentication-create.component.html',
+   styleUrls: ['./admin-authentication-create.component.scss'],
    providers: [{
       provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true }
    }]
