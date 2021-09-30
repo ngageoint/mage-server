@@ -39,37 +39,29 @@
                <div [ngSwitch]="strategy.type">
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"></admin-authentication-oidc>
                </div>
-
                <div>
                   <button mat-button matStepperPrevious>Back</button>
                   <button mat-button matStepperNext [disabled]="false">Next</button>
                </div>
             </mat-step>
             <mat-step>
-               <ng-template matStepLabel>Colors</ng-template>
+               <ng-template matStepLabel>Login Button</ng-template>
                <mat-list-item>
-                  <mat-label for="textColorPicker"><b>Text Color</b></mat-label>
+                  <mat-label for="textColorPicker">Text Color</mat-label>
                   <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')"
                      id="textColorPicker">
                   </color-picker>
                </mat-list-item>
                <mat-list-item>
-                  <mat-label for="buttonColorPicker"><b>Button Color</b></mat-label>
+                  <mat-label for="buttonColorPicker">Button Color</mat-label>
                   <color-picker [hexColor]="strategy.buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')"
                      id="buttonColorPicker">
                   </color-picker>
                </mat-list-item>
-               <div>
-                  <button mat-button matStepperPrevious>Back</button>
-                  <button mat-button matStepperNext>Next</button>
-               </div>
-            </mat-step>
-            <mat-step>
-               <ng-template matStepLabel>Icon</ng-template>
-               <div class="mat-title">Default Icon</div>
-               <i id="defaultIcon" [ngStyle]="{'color': strategy.buttonColor}" class="fa fa-lg fa-shield"></i>
-               <div class="mat-title">Custom Icon</div>
-               <icon-upload [strategy]="strategy"></icon-upload>
+               <mat-list-item>
+                  <mat-label>Button Icon</mat-label>
+                  <icon-upload [strategy]="strategy"></icon-upload>
+               </mat-list-item>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
                   <button mat-button matStepperNext>Next</button>

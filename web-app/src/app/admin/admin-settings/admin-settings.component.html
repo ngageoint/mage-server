@@ -30,12 +30,14 @@
                                         <div *ngIf="!strategy.enabled">Disabled</div>
                                     </mat-panel-description>
                                 </mat-expansion-panel-header>
-                                <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
-                                    color="primary" [ngModelOptions]="{standalone: true}"
-                                    *ngIf="hasAuthConfigEditPermission"
-                                    (click)="$event.stopPropagation(); strategy.isDirty = 'true'">
-                                    Enable Authentication
-                                </mat-slide-toggle>
+                                <div class="auth__action--enable">
+                                    <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
+                                        color="primary" [ngModelOptions]="{standalone: true}"
+                                        *ngIf="hasAuthConfigEditPermission"
+                                        (click)="$event.stopPropagation(); strategy.isDirty = 'true'">
+                                    </mat-slide-toggle>
+                                    <label>Enable Authentication</label>
+                                </div>
                                 <admin-authentication [strategy]="strategy" [teams]="teams" [events]="events">
                                 </admin-authentication>
                                 <div class="auth__action--delete">

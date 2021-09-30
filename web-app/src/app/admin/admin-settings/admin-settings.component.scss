@@ -16,6 +16,13 @@
   margin-top: 10px;
 }
 
+.auth__action--enable {
+  display: flex;
+  flex-direction:row;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
 .auth__action--save {
   display: flex;
   flex-direction:column;
@@ -56,4 +63,9 @@ mat-card-actions {
   display: flex;
   flex-direction:column;
   align-items: flex-end;
+}
+
+label {
+  margin-left: 10px;
+  font-weight: unset;
 }
