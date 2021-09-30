@@ -17,7 +17,11 @@ export class AdminAuthenticationSAMLComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.strategy) {
       this.formGroup = new FormGroup({
-      
+        uidAttribute: new FormControl(this.strategy.settings.uidAttribute, Validators.required),
+        displayNameAttribute: new FormControl(this.strategy.settings.displayNameAttribute, Validators.required),
+        emailAttribute: new FormControl(this.strategy.settings.emailAttribute, Validators.required),
+        issuer: new FormControl(this.strategy.settings.options.issuer, Validators.required),
+        entryPoint: new FormControl(this.strategy.settings.options.entryPoint, Validators.required)
       })
     }
   }
