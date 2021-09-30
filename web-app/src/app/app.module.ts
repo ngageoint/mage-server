@@ -132,8 +132,7 @@ import { ObservationPopupComponent } from './observation/observation-popup/obser
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { SecurityBannerComponent, SecurityDisclaimerComponent, EditSettingComponent } from './admin/admin-settings/admin-settings';
-import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
+import { SecurityBannerComponent, SecurityDisclaimerComponent } from './admin/admin-settings/admin-settings';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
@@ -216,13 +215,11 @@ import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/a
     UserPopupComponent,
     AdminSettingsComponent,
     PasswordPolicyComponent,
-    GenericSettingsComponent,
     AccountLockComponent,
     AuthenticationCreateComponent,
     AuthenticationDeleteComponent,
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
-    EditSettingComponent,
     IconUploadComponent,
     DatetimePickerComponent,
     ExportComponent,
