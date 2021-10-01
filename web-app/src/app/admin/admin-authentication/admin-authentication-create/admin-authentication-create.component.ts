@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core'
+import { Component, Inject, OnInit, SimpleChanges } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
@@ -6,6 +6,7 @@ import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-settings/admin-settings.model';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
    selector: 'admin-authentication-create',
@@ -29,15 +30,15 @@ export class AuthenticationCreateComponent implements OnInit {
       title: 'Open ID Connect',
       type: 'openidconnect',
       name: 'openidconnect'
-   },{
+   }, {
       title: 'OAuth2',
       type: 'oauth',
       name: 'oauth'
-   },{
+   }, {
       title: 'LDAP',
       type: 'ldap',
       name: 'ldap'
-   },{
+   }, {
       title: 'SAML',
       type: 'saml',
       name: 'saml'
@@ -47,20 +48,26 @@ export class AuthenticationCreateComponent implements OnInit {
       oauth: ['clientSecret', 'clientID'],
       openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'userInfoURL'],
    }
-   missingSettings: string[] = []
+   _missingSettings: string[] = []
+   titleFormGroup: FormGroup;
 
    constructor(
-      private stateService: StateService,
+      private _stateService: StateService,
       private _snackBar: MatSnackBar,
       @Inject(AuthenticationConfigurationService)
-      private authenticationConfigurationService: any) {
+      private _authenticationConfigurationService: any,
+      private _formBuilder: FormBuilder) {
 
       this.breadcrumbs.push({ title: 'New' });
       this.reset();
    }
 
    ngOnInit(): void {
-      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
+      this.titleFormGroup = this._formBuilder.group({
+         titleCtrl: new FormControl(this.strategy.title, Validators.required)
+      });
+
+      this._authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
          const strategies = response.data
          strategies.forEach(strategy => {
             let idx = -1;
@@ -109,8 +116,8 @@ export class AuthenticationCreateComponent implements OnInit {
    }
 
    save(): void {
-      this.authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
-         this.stateService.go('admin.settings', { strategy: newStrategy });
+      this._authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
+         this._stateService.go('admin.settings', { strategy: newStrategy });
       }).catch((err: any) => {
          console.error(err);
          this._snackBar.open('Failed to create ' + this.strategy.title, null, {
@@ -121,11 +128,11 @@ export class AuthenticationCreateComponent implements OnInit {
 
    isValid(): boolean {
       const requiredSettings = this.requiredSettings[this.strategy.type] || []
-      this.missingSettings = requiredSettings.filter(setting => !Object.keys(this.strategy.settings).includes(setting))
+      this._missingSettings = requiredSettings.filter(setting => !Object.keys(this.strategy.settings).includes(setting))
 
       return this.strategy.type.length > 0 &&
          this.strategy.name.length > 0 &&
-         this.missingSettings.length === 0
+         this._missingSettings.length === 0
    }
 
    reset(): void {
