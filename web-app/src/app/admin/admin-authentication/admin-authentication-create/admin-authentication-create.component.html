@@ -59,27 +59,9 @@
             <mat-step label="Summary">
                <div class="mat-title">{{strategy.title}} ({{strategy.type}})</div>
                <mat-divider></mat-divider>
-               <div class="preview-button">
-                  <div class="auth-button-container">
-                     <button mat-raised-button disabled
-                        [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
-                        class="third-party-button">
-                        <span class="third-party-button-content">
-                           <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
-                              class="third-party-logo fa fa-lg fa-shield"></i>
-                           <span *ngIf="strategy.icon" class="third-party-logo">
-                              <img [src]="strategy.icon" style="width:32px; height:32px">
-                           </span>
-                           <span class="third-party-button-text" [ngStyle]="{color: strategy.textColor}">
-                              Sign In With {{strategy.title}}
-                           </span>
-                        </span>
-                     </button>
-                  </div>
-               </div>
+               <button-preview [strategy]="strategy" [previewOnly]="true"></button-preview>
 
                <div [ngSwitch]="strategy.type">
-                  <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false"></admin-authentication-oidc>
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false"></admin-authentication-oidc>
                   <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy" [editable]="false"></admin-authentication-oauth2>
                   <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy" [editable]="false"></admin-authentication-oauth2>
