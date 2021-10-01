@@ -4,7 +4,6 @@ import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { ColorEvent } from 'ngx-color';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-settings/admin-settings.model';
 
@@ -107,14 +106,6 @@ export class AuthenticationCreateComponent implements OnInit {
       settings.forEach(setting => {
          this.strategy.settings[setting] = null
       })
-   }
-
-   colorChanged(event: ColorEvent, key: string): void {
-      if (this.strategy.hasOwnProperty(key)) {
-         this.strategy[key] = event.color;
-      } else {
-         console.log(key + ' is not a valid strategy property');
-      }
    }
 
    save(): void {

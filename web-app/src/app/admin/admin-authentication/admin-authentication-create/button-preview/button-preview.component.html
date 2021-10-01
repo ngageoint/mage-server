@@ -1,0 +1,16 @@
+<mat-list-item>
+    <mat-label for="textColorPicker">Text Color</mat-label>
+    <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')"
+        id="textColorPicker">
+    </color-picker>
+</mat-list-item>
+<mat-list-item>
+    <mat-label for="buttonColorPicker">Button Color</mat-label>
+    <color-picker [hexColor]="strategy.buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')"
+        id="buttonColorPicker">
+    </color-picker>
+</mat-list-item>
+<mat-list-item>
+    <mat-label>Button Icon</mat-label>
+    <icon-upload [strategy]="strategy"></icon-upload>
+</mat-list-item>
