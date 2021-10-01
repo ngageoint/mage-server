@@ -80,6 +80,11 @@
 
                <div [ngSwitch]="strategy.type">
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false"></admin-authentication-oidc>
+                  <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false"></admin-authentication-oidc>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy" [editable]="false"></admin-authentication-oauth2>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy" [editable]="false"></admin-authentication-oauth2>
+                  <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy" [editable]="false"></admin-authentication-ldap>
+                  <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy" [editable]="false"></admin-authentication-saml>
                </div>
 
                <div>
