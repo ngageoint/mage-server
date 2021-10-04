@@ -13,7 +13,7 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
    constructor(options, verify) {
       super(options, verify);
 
-      if (!options.profileURL) { throw new TypeError('OAuth2Strategy requires a authorizationURL option'); }
+      if (!options.profileURL) { throw new TypeError('OAuth2Strategy requires a profileURL option'); }
       this._profileURL = options.profileURL;
 
       this._oauth2.useAuthorizationHeaderforGET(true);

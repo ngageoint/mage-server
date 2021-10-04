@@ -22,7 +22,7 @@ export class AdminAuthenticationOAuth2Component implements OnChanges {
         clientSecret: new FormControl(this.strategy.settings.clientSecret, Validators.required),
         authorizationURL: new FormControl(this.strategy.settings.authorizationURL, Validators.required),
         tokenURL: new FormControl(this.strategy.settings.tokenURL, Validators.required),
-        userInfoURL: new FormControl(this.strategy.settings.userInfoURL, Validators.required)
+        profileURL: new FormControl(this.strategy.settings.profileURL, Validators.required)
       })
     }
   }

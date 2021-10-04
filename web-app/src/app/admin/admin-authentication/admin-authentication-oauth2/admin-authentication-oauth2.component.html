@@ -5,7 +5,8 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Client ID</mat-label>
-      <input matInput type="text" formControlName="clientID" required [readonly]="!editable">
+      <input matInput type="text" formControlName="clientID" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.clientID">
       <mat-hint align="end">
         This is obtained from the OAuth 2.0 server. The client identifier is unique to
         the OAuth 2.0 server.
@@ -14,7 +15,8 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Client Secret</mat-label>
-      <input matInput type="text" formControlName="clientSecret" required [readonly]="!editable">
+      <input matInput type="text" formControlName="clientSecret" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.clientSecret">
       <mat-hint align="end">
         This is obtained from the OAuth 2.0 server.
       </mat-hint>
@@ -24,7 +26,8 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Authorization URL</mat-label>
-      <input matInput type="text" formControlName="authorizationURL" required [readonly]="!editable">
+      <input matInput type="text" formControlName="authorizationURL" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.authorizationURL">
       <mat-hint align="end">
         The URL that provides the authorization.
       </mat-hint>
@@ -32,7 +35,8 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Token URL</mat-label>
-      <input matInput type="text" formControlName="tokenURL" required [readonly]="!editable">
+      <input matInput type="text" formControlName="tokenURL" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.tokenURL">
       <mat-hint align="end">
         The URL where the token is obtained.
       </mat-hint>
@@ -40,7 +44,8 @@
 
     <mat-form-field appearance="outline">
       <mat-label>User Info URL</mat-label>
-      <input matInput type="text" formControlName="userInfoURL" required [readonly]="!editable">
+      <input matInput type="text" formControlName="profileURL" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.profileURL">
       <mat-hint align="end">
         The URL where the user profile is obtained.
       </mat-hint>

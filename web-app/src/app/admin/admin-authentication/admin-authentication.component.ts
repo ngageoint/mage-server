@@ -80,9 +80,9 @@ export class AdminAuthenticationComponent implements OnInit {
     save(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
-            if (strategy.isDirty) {
+            //if (strategy.isDirty) {
                 promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            }
+            //}
         });
 
         if (promises.length > 0) {
