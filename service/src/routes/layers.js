@@ -9,7 +9,7 @@ module.exports = function(app, security) {
     api = require('../api'),
     environment = require('../environment/env'),
     layerXform = require('../transformers/layer'),
-    geopackage = require('../utilities/geopackage'),
+    GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
     { defaultHandler: upload } = require('../upload'),
     { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
 
@@ -34,6 +34,7 @@ module.exports = function(app, security) {
   }
 
   async function validateGeopackage(req, res, next) {
+    console.log('validate the geopackage')
     if (req.body.type !== 'GeoPackage') {
       return next();
     }
@@ -44,48 +45,29 @@ module.exports = function(app, security) {
     req.newLayer.state = 'unavailable';
 
     try {
-      const result = await geopackage.open(req.file.path);
-      const gp = result.geoPackage;
-      if (!gp) {
-        // GeoPackage is fatally invalid just send back the errors
-        return res.status(400).json(result);
-      }
       req.newLayer.geopackage = req.file;
-      const validationErrors = await geopackage.validate(gp);
+      const validationErrors = await GeoPackageUtility.getInstance().validate(req.file.path);
       if (validationErrors && validationErrors.length) {
         req.newLayer.invalid = {
           errors: validationErrors
         };
       }
-      gp.close();
       return next();
     } catch (err) {
-      return res.status(400).send('cannot create layer, geopackage is not valid ' + err.toString());
+      return res.status(400).send('Cannot create layer, GeoPackage is not valid ' + err.toString());
     }
   }
 
   async function processGeoPackage(req, res, next) {
+    console.log("process the geopackage")
     const layer = req.layer;
     if (layer.type !== 'GeoPackage') {
       return next();
     }
-    try {
-      const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
-      const result = await geopackage.open(geopackagePath);
-      const gp = result.geoPackage;
-      if (!gp) {
-        // GeoPackage is fatally invalid just send back the errors
-        return res.status(400).json(result);
-      }
-
-      req.geoPackage = gp;
-    } catch (err) {
-      return res.status(400).send('cannot create layer, geopackage is not valid ' + err.toString());
-    }
+    const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
     layer.state = 'processing';
-    const gp = req.geoPackage;
     try {
-      layer.tables = geopackage.getTables(gp);
+      layer.tables = await GeoPackageUtility.getInstance().getTables(geopackagePath);
       layer.processing = [];
       for (let i = 0; i < layer.tables.length; i++) {
         const gpLayer = layer.tables[i];
@@ -106,7 +88,7 @@ module.exports = function(app, security) {
           });
         }
       }
-      layer.tables = geopackage.getTables(gp);
+      layer.tables = await GeoPackageUtility.getInstance().getTables(geopackagePath);
       layer.processing = [];
       for (let i = 0; i < layer.tables.length; i++) {
         const gpLayer = layer.tables[i];
@@ -129,8 +111,7 @@ module.exports = function(app, security) {
       }
       await layer.save();
     } catch (err) {
-      gp.close();
-      return res.status(400).send('cannot create layer, geopackage is not valid ' + err.toString());
+      return res.status(400).send('Cannot create layer, GeoPackage is not valid ' + err.toString());
     }
 
     next();
@@ -143,7 +124,7 @@ module.exports = function(app, security) {
     }
 
     let currentLayer;
-    geopackage
+    GeoPackageUtility.getInstance()
       .optimize(path.join(environment.layerBaseDirectory, layer.file.relativePath), function(progress) {
         if (currentLayer && currentLayer !== progress.layer) {
           const oldLayerStatus = layer.processing[layerStatusMap[currentLayer]];
@@ -245,13 +226,13 @@ module.exports = function(app, security) {
           state: 'available'
         });
         const gpLayers = [];
-        for (i = 0; i < layers.length; i++) {
+        for (let i = 0; i < layers.length; i++) {
           gpLayers.push({
             layer: layers[i],
             table: layerIdMap[layers[i].id].table
           });
         }
-        const closest = await geopackage.getClosestFeatures(
+        const closest = await GeoPackageUtility.getInstance().getClosestFeatures(
           gpLayers,
           Number(req.body.latlng.lat),
           Number(req.body.latlng.lng),
@@ -303,12 +284,12 @@ module.exports = function(app, security) {
       if (!table) {
         return res.status(404).send('Table does not exist in layer.');
       }
-      geopackage
+      GeoPackageUtility.getInstance()
         .tile(req.layer, req.params.tableName, style, tileParams)
         .then(tile => {
           if (!tile) return res.status(404);
-          res.contentType('image/jpeg');
-          res.send(tile);
+          res.contentType('image/png');
+          res.send(Buffer.from(tile.split(',')[1], 'base64'))
         })
         .catch(err => next(err));
     }
@@ -399,7 +380,7 @@ module.exports = function(app, security) {
           return res.status(400).send('Cannot request vector tile from a tile layer');
         }
 
-        geopackage.features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
+        GeoPackageUtility.getInstance().features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
           if (err) return next(err);
 
           const tileIndex = geojsonvt(featureCollection, { buffer: tileBuffer * 8, maxZoom: tileParams.z });
@@ -409,14 +390,14 @@ module.exports = function(app, security) {
           res.send(Buffer.from(vectorTile));
         });
       } else {
-        geopackage
-          .tile(req.layer, req.params.tableName, style, tileParams)
-          .then(tile => {
-            if (!tile) return res.status(404);
-            res.contentType('image/jpeg');
-            res.send(tile);
-          })
-          .catch(err => next(err));
+        GeoPackageUtility.getInstance()
+        .tile(req.layer, req.params.tableName, style, tileParams)
+        .then(tile => {
+          if (!tile) return res.status(404);
+          res.contentType('image/png');
+          res.send(Buffer.from(tile.split(',')[1], 'base64'))
+        })
+        .catch(err => next(err));
       }
     }
   );

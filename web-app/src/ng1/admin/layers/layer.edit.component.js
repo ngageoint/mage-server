@@ -91,7 +91,10 @@ class LayerEditController {
         response => {
           // failure
           this.saving = false;
-          if (response.validationErrors) {
+          if (response.error) {
+            this.errorMessage = response.error.text
+            this.errorSnackbar.open();
+          } else if (response.validationErrors) {
             response.validationErrors.forEach(validationError => {
               this.errorMessage += validationError.error + ' ';
             });
