@@ -155,6 +155,7 @@ import { AdminAuthenticationOAuth2Component } from './admin/admin-authentication
 import { AdminAuthenticationLDAPComponent } from './admin/admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
 import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
 import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
+import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
 
 @NgModule({
   declarations: [
@@ -237,7 +238,8 @@ import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authe
     AdminAuthenticationOAuth2Component,
     AdminAuthenticationLDAPComponent,
     AdminAuthenticationSAMLComponent,
-    ButtonPreviewComponent
+    ButtonPreviewComponent,
+    AdminAuthenticationSettingsComponent
   ],
   imports: [
     CommonModule,
