@@ -22,7 +22,7 @@ export class AdminAuthenticationOidcComponent implements OnChanges {
         issuer: new FormControl(this.strategy.settings.issuer, Validators.required),
         authenticationURL: new FormControl(this.strategy.settings.authenticationURL, Validators.required),
         tokenURL: new FormControl(this.strategy.settings.tokenURL, Validators.required),
-        userInfoURL: new FormControl(this.strategy.settings.userInfoURL, Validators.required)
+        profileURL: new FormControl(this.strategy.settings.profileURL, Validators.required)
       })
     }
   }
