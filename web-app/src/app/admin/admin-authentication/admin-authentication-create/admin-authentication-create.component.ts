@@ -116,14 +116,15 @@ export class AuthenticationCreateComponent implements OnInit {
    }
 
    save(): void {
-      this._authenticationConfigurationService.createConfiguration(this.strategy).then(newStrategy => {
-         this._stateService.go('admin.settings', { strategy: newStrategy });
+      this._authenticationConfigurationService.createConfiguration(this.strategy).then(() => {
+         this._stateService.go('admin.settings');
       }).catch((err: any) => {
          console.error(err);
          this._snackBar.open('Failed to create ' + this.strategy.title, null, {
             duration: 2000,
          })
-      })
+         this._stateService.go('admin.settings');
+      });
    }
 
    isValid(): boolean {
