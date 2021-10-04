@@ -1,19 +1,21 @@
 <div>
-    <form [formGroup]="formGroup" class="saml-settings">
-      <mat-form-field appearance="outline">
-        <mat-label>Issuer</mat-label>
-        <input matInput type="text" formControlName="issuer" required [readonly]="!editable">
-        <mat-hint align="end">
-          TODO.
-        </mat-hint>
-      </mat-form-field>
+  <form [formGroup]="formGroup" class="saml-settings">
+    <mat-form-field appearance="outline">
+      <mat-label>Issuer</mat-label>
+      <input matInput type="text" formControlName="issuer" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.options.issuer">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Entry Point</mat-label>
-        <input matInput type="text" formControlName="entryPoint" required [readonly]="!editable">
-        <mat-hint align="end">
-          TODO.
-        </mat-hint>
-      </mat-form-field>
-    </form>
-  </div>
+    <mat-form-field appearance="outline">
+      <mat-label>Entry Point</mat-label>
+      <input matInput type="text" formControlName="entryPoint" required [readonly]="!editable"
+        [(ngModel)]="strategy.settings.options.entryPoint">
+      <mat-hint align="end">
+        TODO.
+      </mat-hint>
+    </mat-form-field>
+  </form>
+</div>
