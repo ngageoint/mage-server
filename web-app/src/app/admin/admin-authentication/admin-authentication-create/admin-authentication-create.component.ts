@@ -142,8 +142,9 @@ export class AuthenticationCreateComponent implements OnInit {
          name: '',
          type: '',
          title: '',
-         textColor: '',
-         buttonColor: '',
+         textColor: null,
+         buttonColor: null,
+         icon: null,
          settings: {
             usersReqAdmin: {
                enabled: true
