@@ -142,7 +142,7 @@ export class GeoPackageUtility {
   private getExpiringGeoPackageConnection(filePath: string): ExpiringGeoPackageConnection {
     if (!this.cachedGeoPackageConnections[filePath]) {
       console.log('Creating a new expiring connection')
-      this.cachedGeoPackageConnections[filePath] = new ExpiringGeoPackageConnection(filePath, 5000)
+      this.cachedGeoPackageConnections[filePath] = new ExpiringGeoPackageConnection(filePath, 60000)
     } else {
       console.log('Using old expiring connection')
     }
