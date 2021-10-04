@@ -5,7 +5,7 @@
       <input matInput type="text" formControlName="issuer" required [readonly]="!editable"
         [(ngModel)]="strategy.settings.options.issuer">
       <mat-hint align="end">
-        TODO.
+        This is given to the identity provider.
       </mat-hint>
     </mat-form-field>
 
@@ -14,7 +14,7 @@
       <input matInput type="text" formControlName="entryPoint" required [readonly]="!editable"
         [(ngModel)]="strategy.settings.options.entryPoint">
       <mat-hint align="end">
-        TODO.
+        Location of the identity provider.  This can be the location of the single sign-on identity provider.
       </mat-hint>
     </mat-form-field>
   </form>
