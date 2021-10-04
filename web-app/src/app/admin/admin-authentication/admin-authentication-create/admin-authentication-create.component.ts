@@ -120,7 +120,7 @@ export class AuthenticationCreateComponent implements OnInit {
          this._stateService.go('admin.settings');
       }).catch((err: any) => {
          console.error(err);
-         this._snackBar.open('Failed to create ' + this.strategy.title, null, {
+         this._snackBar.open('An error occured while creating ' + this.strategy.title, null, {
             duration: 2000,
          })
          this._stateService.go('admin.settings');
