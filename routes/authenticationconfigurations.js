@@ -86,7 +86,9 @@ module.exports = function (app, security) {
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
-                    securityData[key] = settings[key];
+                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
+                        securityData[key] = settings[key];
+                    }
                 } else {
                     updatedConfig.settings[key] = settings[key];
                 }
@@ -155,7 +157,9 @@ module.exports = function (app, security) {
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
-                    securityData[key] = settings[key];
+                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
+                        securityData[key] = settings[key];
+                    }
                 } else {
                     newConfig.settings[key] = settings[key];
                 }

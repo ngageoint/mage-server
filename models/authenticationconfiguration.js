@@ -25,6 +25,7 @@ AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 const blacklist = ['clientid', 'clientsecret', 'client_id', 'bindcredentials'];
+const secureMask = '*****';
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -45,7 +46,7 @@ const transform = function (config, ret, options) {
     if (options.blacklist) {
       Object.keys(ret.settings).forEach(key => {
         if (blacklist.includes(key.toLowerCase())) {
-          ret.settings[key] = '*****';
+          ret.settings[key] = secureMask;
         }
       });
     }
@@ -59,6 +60,8 @@ AuthenticationConfigurationSchema.set("toObject", {
 });
 
 exports.transform = transform;
+
+exports.secureMask = secureMask;
 
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
 exports.Model = AuthenticationConfiguration;
