@@ -14,14 +14,14 @@
             invalid login attempts for a certain amount of time.</mat-hint>
     </mat-form-field>
     <div *ngIf="strategy.settings.accountLock.enabled">
-        <mat-label><b>Account Lockout Threshold</b></mat-label>
+        <mat-label>Account Lockout Threshold</mat-label>
         <mat-form-field appearance="outline">
             <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.threshold"
                 [ngModelOptions]="{standalone: true}" (click)="setDirty()">
             <mat-hint align="end">Number of invalid login attempts, after
                 which the users account will be locked.</mat-hint>
         </mat-form-field>
-        <mat-label><b>Account Lockout Interval (Seconds)</b></mat-label>
+        <mat-label>Account Lockout Interval (Seconds)</mat-label>
         <mat-form-field appearance="outline">
             <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.interval"
                 [ngModelOptions]="{standalone: true}" (click)="setDirty()">
@@ -29,7 +29,7 @@
                 will remain locked after reaching number of invalid login
                 attempts.</mat-hint>
         </mat-form-field>
-        <mat-label><b>Enable Max Lockout</b></mat-label>
+        <mat-label>Enable Max Lockout</mat-label>
         <mat-form-field appearance="outline">
             <mat-select [(ngModel)]="maxLock.enabled" [ngModelOptions]="{standalone: true}"
                 (selectionChange)="setDirty()">
@@ -41,7 +41,7 @@
                 locks their account a certain number of times.</mat-hint>
         </mat-form-field>
         <div *ngIf="maxLock.enabled">
-            <mat-label><b>Max Lockout Threshold</b></mat-label>
+            <mat-label>>Max Lockout Threshold</mat-label>
             <mat-form-field appearance="outline">
                 <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.max"
                     [ngModelOptions]="{standalone: true}" (click)="setDirty()">

@@ -1,5 +1,14 @@
 .oauth2-settings {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-  }
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-checkbox {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+mat-form-field {
+  width: 100%;
+}

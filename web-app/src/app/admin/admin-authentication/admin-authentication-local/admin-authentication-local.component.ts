@@ -1,5 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, Input } from '@angular/core';
 import { Strategy } from '../../admin-settings/admin-settings.model';
 
 @Component({
@@ -7,16 +6,8 @@ import { Strategy } from '../../admin-settings/admin-settings.model';
   templateUrl: './admin-authentication-local.component.html',
   styleUrls: ['./admin-authentication-local.component.scss']
 })
-export class AdminAuthenticationLocalComponent implements OnChanges {
+export class AdminAuthenticationLocalComponent {
 
   @Input() strategy: Strategy
   @Input() editable = true
-
-  formGroup = new FormGroup({})
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.strategy) {
-     
-    }
-  }
 }

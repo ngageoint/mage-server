@@ -43,10 +43,16 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
 function configure(strategy) {
    log.info('Configuring ' + strategy.title + ' authentication');
 
-   // TODO using custom headers to enforce oauth2 basic auth, this should be an option for client admin
    // TODO look up in oauth2 spec to see if this is a standard, if so provide option client side to pick method.
-   // TODO allow client admin to set custom headers
    // TODO allow client admin to set all _oauth settings
+
+   const customHeaders = {};
+
+   if(strategy.settings.headers) {
+      if(strategy.settings.headers.basic) {
+         customHeaders['Authorization'] = `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`;
+      }
+   }
 
    passport.use(strategy.name, new OAuth2ProfileStrategy({
       clientID: strategy.settings.clientID,
@@ -55,15 +61,18 @@ function configure(strategy) {
       authorizationURL: strategy.settings.authorizationURL,
       tokenURL: strategy.settings.tokenURL,
       profileURL: strategy.settings.profileURL,
-      customHeaders: {
-         Authorization: `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`
-      }
+      customHeaders: customHeaders
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 
-      // TODO at the very least we need the user id from the profile.  Should default to 'id', but client admin
-      // should be able to change
-      const idProperty = 'ID';
+      let idProperty = 'ID';
+
+      if(strategy.settings.profile) {
+         if(strategy.settings.profile.id) {
+            idProperty = strategy.settings.profile.id;
+         }
+      }
+
       const profileId = profile[idProperty];
       if (!profile[idProperty]) {
          return done(`OAuth2 user profile does not contain id property ${idProperty}`);
