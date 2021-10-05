@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, SimpleChanges } from '@angular/core'
+import { Component, Inject, OnInit } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
@@ -45,8 +45,8 @@ export class AuthenticationCreateComponent implements OnInit {
    }];
 
    private readonly requiredSettings = {
-      oauth: ['clientSecret', 'clientID'],
-      openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'userInfoURL'],
+      oauth: ['clientSecret', 'clientID', 'authorizationURL', 'tokenURL', 'profileURL'],
+      openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'profileURL'],
       ldap: ['url'],
       saml: ['entryPoint']
    }
