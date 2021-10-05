@@ -131,7 +131,13 @@ export class AuthenticationCreateComponent implements OnInit {
 
    isValid(): boolean {
       const requiredSettings = this.requiredSettings[this.strategy.type] || []
-      this._missingSettings = requiredSettings.filter(setting => !Object.keys(this.strategy.settings).includes(setting))
+      this._missingSettings = requiredSettings.filter(setting => {
+         const value = this.strategy.settings[setting];
+         if(value == null || value === '') {
+            return true;
+         }
+         return false;
+      });
 
       return this.strategy.type.length > 0 &&
          this.strategy.name.length > 0 &&

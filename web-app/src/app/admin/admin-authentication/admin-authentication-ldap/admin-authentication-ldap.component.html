@@ -1,53 +1,46 @@
-<div>
-  <form [formGroup]="formGroup" class="ldap-settings">
-    <mat-form-field appearance="outline">
-      <mat-label>URL</mat-label>
-      <input matInput type="text" formControlName="url" required [readonly]="!editable"
-        [(ngModel)]="strategy.settings.url">
-      <mat-hint align="end">
-        This is the location of the LDAP server.  Begins with the prefix "ldap".
-      </mat-hint>
-    </mat-form-field>
+<div class="ldap-settings">
+  <mat-form-field appearance="outline">
+    <mat-label>URL</mat-label>
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.url">
+    <mat-hint align="end">
+      This is the location of the LDAP server. Begins with the prefix "ldap".
+    </mat-hint>
+  </mat-form-field>
 
-    <div class="mat-subheading-2">Authentication</div>
+  <div class="mat-subheading-2">Authentication</div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Bind DN</mat-label>
-      <input matInput type="text" formControlName="bindDN" [readonly]="!editable"
-        [(ngModel)]="strategy.settings.bindDN">
-      <mat-hint align="end">
-        The bind DN is basically the credential you are using to authenticate against an LDAP. When using a bind DN it
-        usually comes with a password associated with it, which is set in the bind credentials.
-      </mat-hint>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Bind DN</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindDN">
+    <mat-hint align="end">
+      The bind DN is basically the credential you are using to authenticate against an LDAP. When using a bind DN it
+      usually comes with a password associated with it, which is set in the bind credentials.
+    </mat-hint>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Bind Credentials</mat-label>
-      <input matInput type="text" formControlName="bindCredentials" [readonly]="!editable"
-        [(ngModel)]="strategy.settings.bindCredentials">
-      <mat-hint align="end">
-        Password used to authenticate against an LDAP.
-      </mat-hint>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Bind Credentials</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindCredentials">
+    <mat-hint align="end">
+      Password used to authenticate against an LDAP.
+    </mat-hint>
+  </mat-form-field>
 
-    <div class="mat-subheading-2">Search</div>
+  <div class="mat-subheading-2">Search</div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Search Base</mat-label>
-      <input matInput type="text" formControlName="searchBase" [readonly]="!editable"
-        [(ngModel)]="strategy.settings.searchBase">
-      <mat-hint align="end">
-        The search base defines the starting point for the search in an LDAP.
-      </mat-hint>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Search Base</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.searchBase">
+    <mat-hint align="end">
+      The search base defines the starting point for the search in an LDAP.
+    </mat-hint>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Search Filter</mat-label>
-      <input matInput type="text" formControlName="searchFilter" [readonly]="!editable"
-        [(ngModel)]="strategy.settings.searchFilter">
-      <mat-hint align="end">
-        This requires knowledge of the LDAP search filter grammar.
-      </mat-hint>
-    </mat-form-field>
-  </form>
+  <mat-form-field appearance="outline">
+    <mat-label>Search Filter</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.searchFilter">
+    <mat-hint align="end">
+      This requires knowledge of the LDAP search filter grammar.
+    </mat-hint>
+  </mat-form-field>
 </div>
