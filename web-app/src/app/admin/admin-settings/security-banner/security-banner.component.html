@@ -6,16 +6,17 @@
 </section>
 <section class="mat-typography">
     <div class="mat-title">Header</div>
-    <div class="show-section"> 
+    <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
             [ngModelOptions]="{standalone: true}" id="show-header">
         </mat-checkbox>
         <mat-label for="show-header">Show Header</mat-label>
     </div>
     <div>
-        <mat-label for="headerText">Header Text</mat-label>
-        <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.headerText"
-                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showHeader" placeholder="Header text">
+        <mat-form-field appearance="outline">
+            <mat-label for="headerText">Header Text</mat-label>
+            <input matInput [(ngModel)]="banner.headerText" [ngModelOptions]="{standalone: true}"
+                [disabled]="!banner.showHeader">
         </mat-form-field>
     </div>
     <div>
@@ -41,9 +42,10 @@
         <mat-label for="show-footer">Show Footer</mat-label>
     </div>
     <div>
-        <mat-label for="footerText">Footer Text</mat-label>
-        <mat-form-field appearance="outline"> <input matInput [(ngModel)]="banner.footerText"
-                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter" placeholder="Footer text">
+        <mat-form-field appearance="outline"> 
+            <mat-label for="footerText">Footer Text</mat-label>
+            <input matInput [(ngModel)]="banner.footerText"
+                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter">
         </mat-form-field>
     </div>
     <div>

@@ -13,17 +13,17 @@
         <mat-label for="show-disclaimer">Show Disclaimer</mat-label>
     </div>
     <div>
-        <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
         <mat-form-field appearance="outline">
+            <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
             <input matInput [(ngModel)]="disclaimer.disclaimerTitle" [ngModelOptions]="{standalone: true}"
-                [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer title">
+                [disabled]="!disclaimer.showDisclaimer">
         </mat-form-field>
     </div>
     <div>
-        <mat-label for="disclaimerText">Disclaimer Text</mat-label>
         <mat-form-field appearance="outline">
+            <mat-label for="disclaimerText">Disclaimer Text</mat-label>
             <textarea matInput [(ngModel)]="disclaimer.disclaimerText" [ngModelOptions]="{standalone: true}"
-                [disabled]="!disclaimer.showDisclaimer" placeholder="Disclaimer text"> </textarea>
+                [disabled]="!disclaimer.showDisclaimer"> </textarea>
         </mat-form-field>
     </div>
 </section>
