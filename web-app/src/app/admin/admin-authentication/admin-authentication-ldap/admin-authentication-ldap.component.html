@@ -5,8 +5,7 @@
       <input matInput type="text" formControlName="url" required [readonly]="!editable"
         [(ngModel)]="strategy.settings.url">
       <mat-hint align="end">
-        An LDAP URL describes an LDAP search operation that is used to retrieve information from an LDAP directory and
-        begins with the protocol prefix "ldap".
+        This is the location of the LDAP server.  Begins with the prefix "ldap".
       </mat-hint>
     </mat-form-field>
 
@@ -14,7 +13,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Bind DN</mat-label>
-      <input matInput type="text" formControlName="bindDN" required [readonly]="!editable"
+      <input matInput type="text" formControlName="bindDN" [readonly]="!editable"
         [(ngModel)]="strategy.settings.bindDN">
       <mat-hint align="end">
         The bind DN is basically the credential you are using to authenticate against an LDAP. When using a bind DN it
@@ -24,7 +23,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Bind Credentials</mat-label>
-      <input matInput type="text" formControlName="bindCredentials" required [readonly]="!editable"
+      <input matInput type="text" formControlName="bindCredentials" [readonly]="!editable"
         [(ngModel)]="strategy.settings.bindCredentials">
       <mat-hint align="end">
         Password used to authenticate against an LDAP.
@@ -35,7 +34,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Search Base</mat-label>
-      <input matInput type="text" formControlName="searchBase" required [readonly]="!editable"
+      <input matInput type="text" formControlName="searchBase" [readonly]="!editable"
         [(ngModel)]="strategy.settings.searchBase">
       <mat-hint align="end">
         The search base defines the starting point for the search in an LDAP.
@@ -44,7 +43,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Search Filter</mat-label>
-      <input matInput type="text" formControlName="searchFilter" required [readonly]="!editable"
+      <input matInput type="text" formControlName="searchFilter" [readonly]="!editable"
         [(ngModel)]="strategy.settings.searchFilter">
       <mat-hint align="end">
         This requires knowledge of the LDAP search filter grammar.

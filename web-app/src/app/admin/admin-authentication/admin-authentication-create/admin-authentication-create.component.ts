@@ -47,6 +47,8 @@ export class AuthenticationCreateComponent implements OnInit {
    private readonly requiredSettings = {
       oauth: ['clientSecret', 'clientID'],
       openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'userInfoURL'],
+      ldap: ['url'],
+      saml: ['entryPoint']
    }
    _missingSettings: string[] = []
    titleFormGroup: FormGroup;
