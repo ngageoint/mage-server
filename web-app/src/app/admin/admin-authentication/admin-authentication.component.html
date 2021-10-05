@@ -29,7 +29,7 @@
                         [ngModelOptions]="{standalone: true}" *ngIf="hasAuthConfigEditPermission"
                         (click)="$event.stopPropagation(); strategy.isDirty = 'true'">
                     </mat-slide-toggle>
-                    <label>Enable Authentication</label>
+                    <mat-label>Enable Authentication</mat-label>
                 </div>
                 <admin-authentication-settings [strategy]="strategy" [teams]="teams" [events]="events">
                 </admin-authentication-settings>

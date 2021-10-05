@@ -1,18 +1,18 @@
 <div *ngIf="!previewOnly">
-   <mat-list-item>
+   <div>
       <mat-label for="textColorPicker">Text Color</mat-label>
       <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')">
       </color-picker>
-   </mat-list-item>
-   <mat-list-item>
+   </div>
+   <div>
       <mat-label for="buttonColorPicker">Button Color</mat-label>
       <color-picker [hexColor]="strategy.buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')">
       </color-picker>
-   </mat-list-item>
-   <mat-list-item>
+   </div>
+   <div>
       <mat-label>Button Icon</mat-label>
       <icon-upload [strategy]="strategy"></icon-upload>
-   </mat-list-item>
+   </div>
 </div>
 <mat-label>Button Preview</mat-label>
 <div class="preview-button">
