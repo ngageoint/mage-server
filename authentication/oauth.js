@@ -121,16 +121,6 @@ function configure(strategy) {
 }
 
 function initialize(strategy) {
-   if (!strategy.settings.profile) {
-      strategy.settings.profile = {};
-   }
-   if (!strategy.settings.profile.id) {
-      strategy.settings.profile.id = 'ID';
-   }
-   if (!strategy.settings.profile.scope) {
-      strategy.settings.profile.scope = ['UserProfile.me'];
-   }
-
    // TODO lets test with newer geoaxis server to see if this is still needed
    // If it is, this should be a admin client side option, would also need to modify the
    // renderer to provide a more generic message

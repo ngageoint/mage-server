@@ -24,7 +24,11 @@ export class AdminAuthenticationOAuth2Component implements OnInit {
       this.strategy.settings.profile.id = 'ID';
     }
     if (!this.strategy.settings.profile.scope) {
-      this.strategy.settings.profile.scope = ['UserProfile.me'];
+      if(this.strategy.name == 'google') {
+        this.strategy.settings.profile.scope = ['profile', 'email', 'openid'];
+      } else  {
+        this.strategy.settings.profile.scope = ['UserProfile.me'];
+      }
     }
   }
 }
