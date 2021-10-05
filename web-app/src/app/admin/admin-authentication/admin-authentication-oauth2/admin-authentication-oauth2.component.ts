@@ -18,9 +18,13 @@ export class AdminAuthenticationOAuth2Component implements OnInit {
     }
 
     if (!this.strategy.settings.profile) {
-      this.strategy.settings.profile = {
-        id: 'ID'
-      };
+      this.strategy.settings.profile = {};
+    }
+    if (!this.strategy.settings.profile.id) {
+      this.strategy.settings.profile.id = 'ID';
+    }
+    if (!this.strategy.settings.profile.scope) {
+      this.strategy.settings.profile.scope = ['UserProfile.me'];
     }
   }
 }

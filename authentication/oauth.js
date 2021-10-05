@@ -43,13 +43,10 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
 function configure(strategy) {
    log.info('Configuring ' + strategy.title + ' authentication');
 
-   // TODO look up in oauth2 spec to see if this is a standard, if so provide option client side to pick method.
-   // TODO allow client admin to set all _oauth settings
-
    const customHeaders = {};
 
-   if(strategy.settings.headers) {
-      if(strategy.settings.headers.basic) {
+   if (strategy.settings.headers) {
+      if (strategy.settings.headers.basic) {
          customHeaders['Authorization'] = `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`;
       }
    }
@@ -65,15 +62,7 @@ function configure(strategy) {
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 
-      let idProperty = 'ID';
-
-      if(strategy.settings.profile) {
-         if(strategy.settings.profile.id) {
-            idProperty = strategy.settings.profile.id;
-         }
-      }
-
-      const profileId = profile[idProperty];
+      const profileId = profile[strategy.settings.profile.id];
       if (!profile[idProperty]) {
          return done(`OAuth2 user profile does not contain id property ${idProperty}`);
       }
@@ -132,8 +121,15 @@ function configure(strategy) {
 }
 
 function initialize(strategy) {
-   // TODO allow for client admin to pick scopes, comma separated string
-   strategy.scope = ['UserProfile.me'];
+   if (!strategy.settings.profile) {
+      strategy.settings.profile = {};
+   }
+   if (!strategy.settings.profile.id) {
+      strategy.settings.profile.id = 'ID';
+   }
+   if (!strategy.settings.profile.scope) {
+      strategy.settings.profile.scope = ['UserProfile.me'];
+   }
 
    // TODO lets test with newer geoaxis server to see if this is still needed
    // If it is, this should be a admin client side option, would also need to modify the
@@ -176,7 +172,7 @@ function initialize(strategy) {
    app.get(`/auth/${strategy.name}/signin`,
       function (req, res, next) {
          passport.authenticate(strategy.name, {
-            scope: strategy.scope,
+            scope: strategy.settings.profile.scope,
             state: req.query.state
          })(req, res, next);
       }
