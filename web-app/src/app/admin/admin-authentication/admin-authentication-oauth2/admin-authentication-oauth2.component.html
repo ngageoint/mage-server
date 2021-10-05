@@ -52,11 +52,16 @@
           Advanced
         </mat-panel-title>
       </mat-expansion-panel-header>
+      <div class="mat-body; advanced-summary">These settings are intended for users with extensive knowledge of OAuth 2.</div>
+      <mat-divider></mat-divider>
+      <div class="mat-subheading-1">Authentication</div>
       <div class="custom-headers">
         <mat-checkbox [readonly]="!editable" color="primary" [(ngModel)]="strategy.settings.headers.basic">
         </mat-checkbox>
         <mat-label>Use Basic Authentication</mat-label>
       </div>
+
+      <div class="mat-subheading-1">User Profile</div>
       <mat-form-field appearance="outline">
         <mat-label>Profile ID Property</mat-label>
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id">
