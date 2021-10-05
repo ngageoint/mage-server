@@ -51,7 +51,6 @@ export class AuthenticationCreateComponent implements OnInit {
       saml: ['entryPoint']
    }
    _missingSettings: string[] = []
-   titleFormGroup: FormGroup;
 
    constructor(
       private _stateService: StateService,
@@ -65,10 +64,6 @@ export class AuthenticationCreateComponent implements OnInit {
    }
 
    ngOnInit(): void {
-      this.titleFormGroup = this._formBuilder.group({
-         titleCtrl: new FormControl(this.strategy.title, Validators.required)
-      });
-
       this._authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
          const strategies = response.data
          strategies.forEach(strategy => {
@@ -150,8 +145,8 @@ export class AuthenticationCreateComponent implements OnInit {
          name: '',
          type: '',
          title: '',
-         textColor: null,
-         buttonColor: null,
+         textColor: '#FFFFFF',
+         buttonColor: '#1E88E5',
          icon: null,
          settings: {
             usersReqAdmin: {

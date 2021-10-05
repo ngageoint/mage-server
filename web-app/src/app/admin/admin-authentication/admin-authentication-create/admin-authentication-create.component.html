@@ -5,20 +5,17 @@
    <div class="page-container">
       <div class="content">
          <mat-horizontal-stepper [linear]="true" #stepper>
-            <mat-step label="Title" [stepControl]="titleFormGroup" errorMessage="Title is required.">
-               <form [formGroup]="titleFormGroup">
-                  <mat-form-field appearance="outline">
-                     <mat-label>Authentication Title</mat-label>
-                     <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title"
-                        formControlName="titleCtrl" required>
-                     <button mat-button *ngIf="strategy.title" matSuffix mat-icon-button (click)="strategy.title=''">
-                        <mat-icon>close</mat-icon>
-                     </button>
-                  </mat-form-field>
-                  <div>
-                     <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
-                  </div>
-               </form>
+            <mat-step label="Title">
+               <mat-form-field appearance="outline">
+                  <mat-label>Authentication Title</mat-label>
+                  <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title" required>
+                  <button mat-button *ngIf="strategy.title" matSuffix mat-icon-button (click)="strategy.title=''">
+                     <mat-icon>close</mat-icon>
+                  </button>
+               </mat-form-field>
+               <div>
+                  <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
+               </div>
             </mat-step>
             <mat-step label="Type">
                <mat-form-field appearance="outline">
