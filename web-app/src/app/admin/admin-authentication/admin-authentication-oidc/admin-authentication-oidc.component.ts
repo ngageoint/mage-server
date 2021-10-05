@@ -12,6 +12,6 @@ export class AdminAuthenticationOidcComponent implements OnInit {
   @Input() editable = true
 
   ngOnInit(): void {
-    this.strategy.settings.callbackURL = '/auth/' + this.strategy.name + '/callback';
+    this.strategy.settings.callbackURL = '/auth/' + this.strategy.type + '/callback';
   }
 }

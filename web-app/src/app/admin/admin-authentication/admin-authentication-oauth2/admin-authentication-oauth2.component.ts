@@ -14,6 +14,6 @@ export class AdminAuthenticationOAuth2Component implements OnInit {
 
 
   ngOnInit(): void {
-    this.strategy.settings.callbackURL = '/auth/' + this.strategy.name + '/callback';
+    this.strategy.settings.callbackURL = '/auth/' + this.strategy.type + '/callback';
   }
 }
