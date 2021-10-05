@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Strategy } from '../../admin-settings/admin-settings.model';
 
 @Component({
@@ -7,13 +7,8 @@ import { Strategy } from '../../admin-settings/admin-settings.model';
   styleUrls: ['./admin-authentication-oauth2.component.scss']
 })
 //https://datatracker.ietf.org/doc/html/rfc6749
-export class AdminAuthenticationOAuth2Component implements OnInit {
+export class AdminAuthenticationOAuth2Component {
 
   @Input() strategy: Strategy
   @Input() editable = true
-
-
-  ngOnInit(): void {
-    this.strategy.settings.callbackURL = '/auth/' + this.strategy.type + '/callback';
-  }
 }

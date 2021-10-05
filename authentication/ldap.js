@@ -20,7 +20,7 @@ function configure(strategy) {
     }
   },
     function (profile, done) {
-      const username = profile[strategy.settings.ldapUsernameField];
+      const username = profile['cn'];
       User.getUserByAuthenticationStrategy(strategy.type, username, function (err, user) {
         if (err) return done(err);
 
@@ -31,8 +31,8 @@ function configure(strategy) {
 
             const user = {
               username: username,
-              displayName: profile[strategy.settings.ldapDisplayNameField],
-              email: profile[strategy.settings.ldapEmailField],
+              displayName: profile['givenname'],
+              email: profile['mail'],
               active: false,
               roleId: role._id,
               authentication: {

@@ -12,10 +12,10 @@ const SamlStrategy = require('passport-saml').Strategy
 function doConfigure(strategyConfig) {
   log.info('Configuring ' + strategyConfig.title + ' authentication');
   AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
-    const uid = profile[strategyConfig.settings.uidAttribute];
+    const uid = profile['uid'];
 
     if (!uid) {
-      log.warn('Failed to find property ' + strategyConfig.settings.uidAttribute + '. SAML profile keys ' + Object.keys(profile));
+      log.warn('Failed to find property uid. SAML profile keys ' + Object.keys(profile));
       return done('Failed to load user id from SAML profile');
     }
 
@@ -29,8 +29,8 @@ function doConfigure(strategyConfig) {
 
           const user = {
             username: uid,
-            displayName: profile[strategyConfig.settings.displayNameAttribute],
-            email: profile[strategyConfig.settings.emailAttribute],
+            displayName: profile['email'],
+            email: profile['email'],
             active: false,
             roleId: role._id,
             authentication: {
@@ -143,6 +143,7 @@ function initialize(config) {
     next();
   }
 
+  config.settings.options.callbackPath = '/auth/saml/callback';
   doConfigure(config);
 
   app.get(
