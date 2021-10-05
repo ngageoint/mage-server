@@ -6,11 +6,11 @@
 </section>
 <section class="mat-typography">
     <div class="mat-title">Header</div>
-    <div>
+    <div class="show-section"> 
         <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
             [ngModelOptions]="{standalone: true}" id="show-header">
         </mat-checkbox>
-        <label for="show-header">Show Header</label>
+        <mat-label for="show-header">Show Header</mat-label>
     </div>
     <div>
         <mat-label for="headerText">Header Text</mat-label>
@@ -34,11 +34,11 @@
 </section>
 <section class="mat-typography">
     <div class="mat-title">Footer</div>
-    <div>
+    <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
             [ngModelOptions]="{standalone: true}" id="show-footer">
         </mat-checkbox>
-        <label for="show-footer">Show Footer</label>
+        <mat-label for="show-footer">Show Footer</mat-label>
     </div>
     <div>
         <mat-label for="footerText">Footer Text</mat-label>

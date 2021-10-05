@@ -3,6 +3,10 @@
   margin-bottom: 16px;
 }
 
+.show-section {
+  margin-bottom: 8px;
+}
+
 color-picker {
   display: block;
   width: 25%;
@@ -13,7 +17,6 @@ mat-label {
 }
 
 mat-form-field {
-  font-size: unset;
   width: 100%;
 }
 
