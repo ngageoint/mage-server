@@ -12,8 +12,9 @@
             <mat-expansion-panel [expanded]="isFirst">
                 <mat-expansion-panel-header>
                     <mat-panel-title>
-                        <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
-                            class="fa fa-lg fa-shield right-gap"></i>
+                        <span *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}">
+                            <mat-icon>security</mat-icon>
+                         </span>
                         <span *ngIf="strategy.icon">
                             <img [src]="strategy.icon" style="width:24px; height:24px">
                         </span>

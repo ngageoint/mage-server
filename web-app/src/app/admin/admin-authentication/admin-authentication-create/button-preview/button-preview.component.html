@@ -22,8 +22,9 @@
          [ngStyle]="{'color': strategy.textColor, 'background-color': strategy.buttonColor, 'border-color': strategy.buttonColor}"
          class="third-party-button">
          <span class="third-party-button-content">
-            <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
-               class="third-party-logo fa fa-lg fa-shield"></i>
+            <span *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}">
+               <mat-icon>security</mat-icon>
+            </span>
             <span *ngIf="strategy.icon" class="third-party-logo">
                <img [src]="strategy.icon" style="width:32px; height:32px">
             </span>
