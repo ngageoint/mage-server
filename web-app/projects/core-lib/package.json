@@ -2,9 +2,12 @@
   "name": "@ngageoint/mage.web-core-lib",
   "version": "6.0.0",
   "peerDependencies": {
+    "@angular/animations": "~9.1.13",
     "@angular/cdk": "^9.2.4",
     "@angular/common": "^9.1.13",
     "@angular/core": "^9.1.13",
+    "@angular/forms": "~9.1.13",
+    "@angular/material": "~9.2.4",
     "@angular/platform-browser": "~9.1.13",
     "@ng-select/ng-select": "4.0.4",
     "rxjs": "~6.6.7"
