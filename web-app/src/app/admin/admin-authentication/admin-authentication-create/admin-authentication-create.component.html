@@ -52,7 +52,7 @@
                </div>
             </mat-step>
             <mat-step label="Login Button">
-               <button-preview [strategy]="strategy"></button-preview>
+               <button-preview [strategy]="strategy" [editable]="true"></button-preview>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
                   <button mat-button matStepperNext>Next</button>
@@ -60,7 +60,7 @@
             </mat-step>
             <mat-step label="Summary">
                <div class="mat-title">{{strategy.title}} ({{strategy.type}})</div>
-               <button-preview [strategy]="strategy" [previewOnly]="true"></button-preview>
+               <button-preview [strategy]="strategy" [editable]="false"></button-preview>
 
                <div [ngSwitch]="strategy.type">
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false">
