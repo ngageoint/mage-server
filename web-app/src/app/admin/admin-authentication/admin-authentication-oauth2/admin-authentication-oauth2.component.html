@@ -6,8 +6,8 @@
     <mat-label>Client Identifier</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientID">
     <mat-hint align="end">
-      This is obtained from the OAuth 2.0 server. The client identifier is unique to
-      the OAuth 2.0 server, and is not considered secret.
+      This is obtained from the OAuth 2.0 server (typically once you register your app). The client identifier is unique
+      to the OAuth 2.0 server, and is not considered secret.
     </mat-hint>
   </mat-form-field>
 
@@ -15,7 +15,7 @@
     <mat-label>Client Secret</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret">
     <mat-hint align="end">
-      This is obtained from the OAuth 2.0 server.
+      This is obtained from the OAuth 2.0 server (typically once you register your app), and should be kept secret.
     </mat-hint>
   </mat-form-field>
 
@@ -52,7 +52,8 @@
           Advanced
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div class="mat-body; advanced-summary">These settings are intended for users with extensive knowledge of OAuth 2.</div>
+      <div class="mat-body; advanced-summary">These settings are intended for users with extensive knowledge of OAuth 2.
+      </div>
       <div class="mat-subheading-1">Authentication</div>
       <div class="custom-headers">
         <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.headers.basic">
