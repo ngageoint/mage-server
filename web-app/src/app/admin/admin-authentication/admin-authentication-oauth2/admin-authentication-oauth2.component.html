@@ -7,7 +7,7 @@
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientID">
     <mat-hint align="end">
       This is obtained from the OAuth 2.0 server. The client identifier is unique to
-      the OAuth 2.0 server.
+      the OAuth 2.0 server, and is not considered secret.
     </mat-hint>
   </mat-form-field>
 

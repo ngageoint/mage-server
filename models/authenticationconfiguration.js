@@ -24,7 +24,7 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-const blacklist = ['clientid', 'clientsecret', 'client_id', 'bindcredentials'];
+const blacklist = ['clientsecret', 'bindcredentials'];
 const secureMask = '*****';
 
 const transform = function (config, ret, options) {
@@ -62,6 +62,7 @@ AuthenticationConfigurationSchema.set("toObject", {
 exports.transform = transform;
 
 exports.secureMask = secureMask;
+exports.blacklist = blacklist;
 
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
 exports.Model = AuthenticationConfiguration;
