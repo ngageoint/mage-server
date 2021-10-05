@@ -13,7 +13,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Client Secret</mat-label>
-    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret">
+    <input matInput type="password" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret">
     <mat-hint align="end">
       This is obtained from the OAuth 2.0 server (typically once you register your app), and should be kept secret.
     </mat-hint>
