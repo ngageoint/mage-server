@@ -20,7 +20,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Bind Credentials</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindCredentials">
+    <input matInput type="password" [readonly]="!editable" [(ngModel)]="strategy.settings.bindCredentials">
     <mat-hint align="end">
       Password used to authenticate against an LDAP.
     </mat-hint>
