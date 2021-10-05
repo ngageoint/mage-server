@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Strategy, AdminChoice } from '../admin-settings/admin-settings.model';
+import { Strategy, AdminChoice } from '../admin-authentication/admin-settings.model';
 
 @Component({
     selector: 'admin-authentication-settings',

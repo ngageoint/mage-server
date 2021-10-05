@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
+import { Strategy } from '../../../admin-authentication/admin-settings.model';
 
 @Component({
     selector: 'password-policy',

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core'
 import { ColorEvent } from 'ngx-color';
-import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
+import { Strategy } from '../../admin-settings.model';
 
 @Component({
    selector: 'button-preview',

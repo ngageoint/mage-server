@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Strategy } from '../../admin-settings/admin-settings.model';
+import { Strategy } from '../../admin-authentication/admin-settings.model';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({

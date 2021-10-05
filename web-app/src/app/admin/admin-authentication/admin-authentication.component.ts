@@ -1,7 +1,7 @@
 import _ from 'underscore'
 import { Component, OnInit, Inject, EventEmitter, Output } from '@angular/core';
 import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
-import { Strategy } from '../admin-settings/admin-settings.model';
+import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StateService } from '@uirouter/angular';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';

@@ -5,7 +5,7 @@ import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Strategy } from '../../admin-settings/admin-settings.model';
+import { Strategy } from '../../admin-authentication/admin-settings.model';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({

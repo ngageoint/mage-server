@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Strategy } from '../../admin-settings/admin-settings.model';
+import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
   selector: 'admin-authentication-ldap',
