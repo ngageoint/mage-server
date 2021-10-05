@@ -9,7 +9,7 @@ import { Strategy } from 'src/app/admin/admin-settings/admin-settings.model';
 })
 export class ButtonPreviewComponent {
    @Input() strategy: Strategy;
-   @Input() editable: boolean;
+   @Input() editable = true
 
    colorChanged(event: ColorEvent, key: string): void {
       if (this.strategy.hasOwnProperty(key)) {
