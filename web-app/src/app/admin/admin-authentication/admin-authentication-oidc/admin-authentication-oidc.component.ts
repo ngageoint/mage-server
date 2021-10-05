@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Strategy } from '../../admin-settings/admin-settings.model';
 
@@ -7,12 +7,16 @@ import { Strategy } from '../../admin-settings/admin-settings.model';
   templateUrl: './admin-authentication-oidc.component.html',
   styleUrls: ['./admin-authentication-oidc.component.scss']
 })
-export class AdminAuthenticationOidcComponent implements OnChanges {
+export class AdminAuthenticationOidcComponent implements OnInit, OnChanges {
 
   @Input() strategy: Strategy
   @Input() editable = true
 
   formGroup = new FormGroup({})
+
+  ngOnInit(): void {
+    this.strategy.settings.callbackURL = '/auth/' + this.strategy.name + '/callback';
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.strategy) {

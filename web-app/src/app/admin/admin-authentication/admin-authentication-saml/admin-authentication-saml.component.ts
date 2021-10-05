@@ -18,6 +18,7 @@ export class AdminAuthenticationSAMLComponent implements OnInit, OnChanges {
     this.strategy.settings.uidAttribute = "uid";
     this.strategy.settings.displayNameAttribute = "email";
     this.strategy.settings.emailAttribute = "email";
+    this.strategy.settings.options.callbackPath = '/auth/saml/callback';
   }
 
   ngOnChanges(changes: SimpleChanges): void {
