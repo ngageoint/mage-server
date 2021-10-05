@@ -1,6 +1,7 @@
 'use strict';
 
-const SecretStoreService = require('../secret-store-service');
+const SecretStoreService = require('../secret-store-service')
+    , AuthenticationConfiguration = require('../../models/authenticationconfiguration')
 
 /**
  * Helper function to append secure properties to a configuration under the settings property.
@@ -21,7 +22,9 @@ async function appendToConfig(config) {
         }
 
         Object.keys(result.data).forEach(key => {
-            configCopy.settings[key] = result.data[key];
+            if(AuthenticationConfiguration.blacklist.includes(key.toLowerCase())) {
+                configCopy.settings[key] = result.data[key];
+            }
         });
     }
     return Promise.resolve(configCopy);

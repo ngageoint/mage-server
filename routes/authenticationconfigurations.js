@@ -11,7 +11,7 @@ const log = require('winston')
 module.exports = function (app, security) {
 
     const passport = security.authentication.passport;
-    const blacklist = AuthenticationConfiguration.secureMask;
+    const blacklist = AuthenticationConfiguration.blacklist;
 
     app.get(
         '/api/authentication/configuration/',
