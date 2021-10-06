@@ -38,11 +38,11 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Resource URL</mat-label>
+    <mat-label>User Profile URL</mat-label>
     <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.profileURL">
     <mat-hint align="end">
       Once an access token is obtained, this endpoint will be accessed to obtain user information. This may also be
-      referred to as API server, or as user profile.
+      referred to as API server.
     </mat-hint>
   </mat-form-field>
 
