@@ -125,9 +125,6 @@ function configure(strategy) {
 }
 
 function setDefaults(strategy) {
-   if (!strategy.settings.scope) {
-      strategy.settings.scope = ['profile', 'email', 'openid'];
-   }
    if (!strategy.settings.profile) {
       strategy.settings.profile = {};
    }
