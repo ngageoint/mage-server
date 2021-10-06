@@ -1,7 +1,9 @@
 <div class="ldap-settings">
+  <div class="mat-subheading-2">Server</div>
+
   <mat-form-field appearance="outline">
     <mat-label>URL</mat-label>
-    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.url">
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.url">
     <mat-hint align="end">
       This is the location of the LDAP server. Begins with the prefix "ldap".
     </mat-hint>
