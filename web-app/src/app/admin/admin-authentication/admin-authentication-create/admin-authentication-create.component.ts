@@ -154,7 +154,9 @@ export class AuthenticationCreateComponent implements OnInit {
             },
             devicesReqAdmin: {
                enabled: true
-            }
+            },
+            headers: {},
+            profile: {}
          }
       }
    }
