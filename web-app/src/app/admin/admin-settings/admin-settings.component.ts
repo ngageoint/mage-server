@@ -71,7 +71,7 @@ export class AdminSettingsComponent  {
                 duration: 2000,
             });
         } else {
-            this._snackBar.open('Failed to save authentication', null, {
+            this._snackBar.open('1 or more authentications failed to save correctly', null, {
                 duration: 2000,
             });
         };
