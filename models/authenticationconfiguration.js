@@ -95,14 +95,24 @@ function manageIcon(config) {
   }
 }
 
+function manageSettings(config) {
+  if (config.settings.scope) {
+    if (!Array.isArray(config.settings.scope)) {
+      config.settings.scope = config.settings.scope.split(',');
+    }
+  }
+}
+
 exports.create = function (config) {
   manageIcon(config);
+  manageSettings(config);
 
   return AuthenticationConfiguration.create(config);
 };
 
 exports.update = function (id, config) {
   manageIcon(config);
+  manageSettings(config);
 
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };
