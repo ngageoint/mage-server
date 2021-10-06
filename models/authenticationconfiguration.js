@@ -103,6 +103,8 @@ function manageSettings(config) {
   }
 }
 
+//TODO move the 'manage' methods to a pre save method
+
 exports.create = function (config) {
   manageIcon(config);
   manageSettings(config);
