@@ -43,9 +43,10 @@ class OAuth2ProfileStrategy extends OAuth2Strategy {
 function configure(strategy) {
    log.info('Configuring ' + strategy.title + ' authentication');
 
-   const customHeaders = {};
+   let customHeaders = null;
 
    if (strategy.settings.headers) {
+      customHeaders = {};
       if (strategy.settings.headers.basic) {
          customHeaders['Authorization'] = `Basic ${base64.encode(`${strategy.settings.clientID}:${strategy.settings.clientSecret}`)}`;
       }
@@ -62,7 +63,13 @@ function configure(strategy) {
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 
-      const profileId = profile[strategy.settings.profile.id];
+      let idProperty = 'ID';
+
+      if (strategy.settings.profile && strategy.settings.profile.id) {
+         idProperty = strategy.settings.profile.id;
+      }
+
+      const profileId = profile[idProperty];
       if (!profile[idProperty]) {
          return done(`OAuth2 user profile does not contain id property ${idProperty}`);
       }
@@ -75,19 +82,33 @@ function configure(strategy) {
             Role.getRole('USER_ROLE', function (err, role) {
                if (err) return done(err);
 
-               // TODO email property in profile should default to 'email', but client admin should be able to change
-               let email = null;
-               if (profile.emails) {
-                  // TODO check type here, allow for array of strings or string
-                  email = profile.emails.find(email => {
-                     email.verified === true
-                  });
+               let emailProperty = 'emails';
+
+               if (strategy.settings.profile && strategy.settings.profile.email) {
+                  emailProperty = strategy.settings.profile.email;
                }
 
-               // TODO displayName property in profile should default to 'displayName', but client admin should be able to change
+               let email = null;
+               if (profile[emailProperty]) {
+                  if(Array.isArray(profile[emailProperty])) {
+                     email = profile[emailProperty].find(email => {
+                        email.verified === true
+                     });
+                  } else {
+                     email = profile[emailProperty];
+                  }
+                
+               }
+
+               let displayNameProperty = 'displayName';
+
+               if (strategy.settings.profile && strategy.settings.profile.displayName) {
+                  displayNameProperty = strategy.settings.profile.displayName;
+               }
+
                const user = {
                   username: profileId,
-                  displayName: profile.displayName || profileId,
+                  displayName: profile[displayNameProperty] || profileId,
                   email: email,
                   active: false,
                   roleId: role._id,
