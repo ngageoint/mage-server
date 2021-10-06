@@ -63,16 +63,11 @@ function configure(strategy) {
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 
-      let idProperty = 'ID';
-
-      if (strategy.settings.profile && strategy.settings.profile.id) {
-         idProperty = strategy.settings.profile.id;
+      if (!profile[strategy.settings.profile.id]) {
+         return done(`OAuth2 user profile does not contain id property ${strategy.settings.profile.id}`);
       }
 
-      const profileId = profile[idProperty];
-      if (!profile[idProperty]) {
-         return done(`OAuth2 user profile does not contain id property ${idProperty}`);
-      }
+      const profileId = profile[strategy.settings.profile.id];
 
       User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
          if (err) return done(err);
@@ -82,33 +77,21 @@ function configure(strategy) {
             Role.getRole('USER_ROLE', function (err, role) {
                if (err) return done(err);
 
-               let emailProperty = 'emails';
-
-               if (strategy.settings.profile && strategy.settings.profile.email) {
-                  emailProperty = strategy.settings.profile.email;
-               }
-
                let email = null;
-               if (profile[emailProperty]) {
-                  if(Array.isArray(profile[emailProperty])) {
-                     email = profile[emailProperty].find(email => {
+               if (profile[strategy.settings.profile.email]) {
+                  if (Array.isArray(profile[strategy.settings.profile.email])) {
+                     email = profile[strategy.settings.profile.email].find(email => {
                         email.verified === true
                      });
                   } else {
-                     email = profile[emailProperty];
+                     email = profile[strategy.settings.profile.email];
                   }
-                
-               }
 
-               let displayNameProperty = 'displayName';
-
-               if (strategy.settings.profile && strategy.settings.profile.displayName) {
-                  displayNameProperty = strategy.settings.profile.displayName;
                }
 
                const user = {
                   username: profileId,
-                  displayName: profile[displayNameProperty] || profileId,
+                  displayName: profile[strategy.settings.profile.displayName] || profileId,
                   email: email,
                   active: false,
                   roleId: role._id,
@@ -141,7 +124,27 @@ function configure(strategy) {
    }));
 }
 
+function setDefaults(strategy) {
+   if (!strategy.settings.scope) {
+      strategy.settings.scope = ['profile', 'email', 'openid'];
+   }
+   if (!strategy.settings.profile) {
+      strategy.settings.profile = {};
+   }
+   if (!strategy.settings.profile.displayName) {
+      strategy.settings.profile.displayName = 'displayName';
+   }
+   if (!strategy.settings.profile.email) {
+      strategy.settings.profile.email = 'emails';
+   }
+   if (!strategy.settings.profile.id) {
+      strategy.settings.profile.id = 'id';
+   }
+}
+
 function initialize(strategy) {
+   setDefaults(strategy);
+
    // TODO lets test with newer geoaxis server to see if this is still needed
    // If it is, this should be a admin client side option, would also need to modify the
    // renderer to provide a more generic message
@@ -183,7 +186,7 @@ function initialize(strategy) {
    app.get(`/auth/${strategy.name}/signin`,
       function (req, res, next) {
          passport.authenticate(strategy.name, {
-            scope: strategy.settings.profile.scope,
+            scope: strategy.settings.scope,
             state: req.query.state
          })(req, res, next);
       }

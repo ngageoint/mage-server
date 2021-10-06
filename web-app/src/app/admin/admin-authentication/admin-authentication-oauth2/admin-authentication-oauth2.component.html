@@ -66,28 +66,29 @@
         <mat-label>Profile ID Property</mat-label>
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id">
         <mat-hint align="end">
-          The id property that is returned in the user profile.  Defaults to 'ID'.
+          The id property that is returned in the user profile. Defaults to 'id'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Display Name Property</mat-label>
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName">
         <mat-hint align="end">
-          The display name property that is returned in the user profile.  Defaults to 'displayName'.
+          The display name property that is returned in the user profile. Defaults to 'displayName'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Email Name Property</mat-label>
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email">
         <mat-hint align="end">
-          The email property that is returned in the user profile.  Defaults to 'emails'.
+          The email property that is returned in the user profile. Defaults to 'emails'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Scope</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.scope">
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.scope">
         <mat-hint align="end">
           One or more scope values indicating which parts of the user's account you wish to access (comma separated).
+          Defaults to 'profile', 'email', 'openid'.
         </mat-hint>
       </mat-form-field>
     </mat-expansion-panel>
