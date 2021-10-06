@@ -117,8 +117,20 @@ function configure(strategy) {
   );
 }
 
+function setDefaults(strategy) {
+  //openid must be included in scope
+  if (!strategy.settings.scope) {
+    strategy.settings.scope = ['openid'];
+  } else {
+    if (!strategy.settings.scope.includes('openid')) {
+      strategy.settings.scope.push('openid');
+    }
+  }
+}
+
 function initialize(strategy) {
   configure(strategy);
+  setDefaults(strategy);
 
   app.get(`/auth/${strategy.name}/signin`,
     function (req, res, next) {

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -6,8 +6,17 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
   templateUrl: './admin-authentication-oidc.component.html',
   styleUrls: ['./admin-authentication-oidc.component.scss']
 })
-export class AdminAuthenticationOidcComponent  {
+export class AdminAuthenticationOidcComponent implements OnInit {
 
   @Input() strategy: Strategy
   @Input() editable = true
+
+  ngOnInit(): void {
+    if (!this.strategy.settings.scope) {
+      this.strategy.settings.scope = ['openid'];
+    }
+    if (!this.strategy.settings.scope.includes('openid')) {
+      this.strategy.settings.scope.push('openid');
+    }
+  }
 }
