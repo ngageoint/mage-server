@@ -19,10 +19,10 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">Endpoints</div>
+  <div class="mat-subheading-2">Servers</div>
 
   <mat-form-field appearance="outline">
-    <mat-label>Authorization Endpoint</mat-label>
+    <mat-label>Authorization Server</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.authorizationURL">
     <mat-hint align="end">
       Endpoint to obtain authorization grant from the resource owner.
@@ -30,7 +30,7 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Token Endpoint</mat-label>
+    <mat-label>Token Server</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.tokenURL">
     <mat-hint align="end">
       Endpoint to exchange an authorization grant for an access token.
@@ -38,7 +38,7 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>User Profile Endpoint</mat-label>
+    <mat-label>Resource Server</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.profileURL">
     <mat-hint align="end">
       Once an access token is obtained, this endpoint will be accessed to obtain user information.

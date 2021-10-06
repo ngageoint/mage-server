@@ -6,7 +6,7 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
   templateUrl: './admin-authentication-oidc.component.html',
   styleUrls: ['./admin-authentication-oidc.component.scss']
 })
-export class AdminAuthenticationOidcComponent {
+export class AdminAuthenticationOidcComponent  {
 
   @Input() strategy: Strategy
   @Input() editable = true
