@@ -18,5 +18,9 @@ export class AdminAuthenticationOidcComponent implements OnInit {
     if (!this.strategy.settings.scope.includes('openid')) {
       this.strategy.settings.scope.push('openid');
     }
+
+    if (!this.strategy.settings.profile) {
+      this.strategy.settings.profile = {};
+    }
   }
 }
