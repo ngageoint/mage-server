@@ -64,7 +64,7 @@ function configure(strategy) {
       const profile = profileResponse.json;
 
       if (!profile[strategy.settings.profile.id]) {
-         log.warn(JSON.stringify(profile));
+         log.warn("JSON: " + JSON.stringify(profile) + " RAW: " + profileResponse.raw);
          return done(`OAuth2 user profile does not contain id property named ${strategy.settings.profile.id}`);
       }
 
