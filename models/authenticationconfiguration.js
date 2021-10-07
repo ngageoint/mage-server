@@ -100,6 +100,10 @@ function manageSettings(config) {
     if (!Array.isArray(config.settings.scope)) {
       config.settings.scope = config.settings.scope.split(',');
     }
+
+    for (let i = 0; i < config.settings.scope.length; i++) {
+      config.settings.scope[i] = config.settings.scope[i].trim();
+    }
   }
 }
 
