@@ -18,7 +18,13 @@ function configure(strategy) {
     userInfoURL: strategy.settings.userInfoURL,
     callbackURL: `/auth/${strategy.name}/callback`
   }, function (issuer, sub, profile, done) {
-    User.getUserByAuthenticationStrategy(strategy.type, profile.id, function (err, user) {
+    if (!profile[strategy.settings.profile.id]) {
+      return done(`OAuth2 user profile does not contain id property ${strategy.settings.profile.id}`);
+   }
+
+   const profileId = profile[strategy.settings.profile.id];
+
+    User.getUserByAuthenticationStrategy(strategy.type,profileId, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -26,15 +32,27 @@ function configure(strategy) {
         Role.getRole('USER_ROLE', function (err, role) {
           if (err) return done(err);
 
+          let email = null;
+          if (profile[strategy.settings.profile.email]) {
+             if (Array.isArray(profile[strategy.settings.profile.email])) {
+                email = profile[strategy.settings.profile.email].find(email => {
+                   email.verified === true
+                });
+             } else {
+                email = profile[strategy.settings.profile.email];
+             }
+
+          }
+
           const user = {
-            username: profile.id,
-            displayName: profile.displayName,
-            email: profile.email,
+            username: pprofileId,
+            displayName: profile[strategy.settings.profile.displayName] || profileId,
+            email: email,
             active: false,
             roleId: role._id,
             authentication: {
               type: strategy.name,
-              id: profile.id,
+              id: profileId,
               authenticationConfiguration: {
                 name: strategy.name
               }
@@ -126,6 +144,19 @@ function setDefaults(strategy) {
       strategy.settings.scope.push('openid');
     }
   }
+
+  if (!strategy.settings.profile) {
+    strategy.settings.profile = {};
+  }
+  if (!strategy.settings.profile.displayName) {
+    strategy.settings.profile.displayName = 'displayName';
+  }
+  if (!strategy.settings.profile.email) {
+    strategy.settings.profile.email = 'emails';
+  }
+  if (!strategy.settings.profile.id) {
+    strategy.settings.profile.id = 'id';
+  }
 }
 
 function initialize(strategy) {
@@ -135,7 +166,7 @@ function initialize(strategy) {
   app.get(`/auth/${strategy.name}/signin`,
     function (req, res, next) {
       passport.authenticate(strategy.name, {
-        scope: ['openid', 'profile', 'email'],
+        scope: strategy.settings.scope,
         state: req.query.state
       })(req, res, next);
     }
