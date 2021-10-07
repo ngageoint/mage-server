@@ -1,5 +1,9 @@
 .ldap-settings {
-    margin-top: 16px;
-    display: flex;
-    flex-direction: column;
-  }
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-form-field {
+  margin-bottom: 8px;
+}
