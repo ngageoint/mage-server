@@ -1,5 +1,4 @@
 <div *ngIf="editable">
-   <div class="mat-subheading-2">Button Configuration</div>
    <div>
       <mat-label for="textColorPicker">Text Color</mat-label>
       <color-picker [hexColor]="strategy.textColor" (onColorChanged)="colorChanged($event, 'textColor')">
@@ -15,7 +14,6 @@
       <icon-upload [strategy]="strategy"></icon-upload>
    </div>
 </div>
-<div class="mat-subheading-2">Button Preview</div>
 <div class="preview-button">
    <div class="auth-button-container">
       <button mat-raised-button disabled
