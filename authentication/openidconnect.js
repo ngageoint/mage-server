@@ -15,7 +15,7 @@ function configure(strategy) {
     issuer: strategy.settings.issuer,
     authorizationURL: strategy.settings.authorizationURL,
     tokenURL: strategy.settings.tokenURL,
-    userInfoURL: strategy.settings.userInfoURL,
+    userInfoURL: strategy.settings.profileURL,
     callbackURL: `/auth/${strategy.name}/callback`
   }, function (issuer, sub, profile, done) {
     if (!profile[strategy.settings.profile.id]) {
