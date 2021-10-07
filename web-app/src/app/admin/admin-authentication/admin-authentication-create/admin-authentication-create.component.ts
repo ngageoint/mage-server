@@ -27,7 +27,7 @@ export class AuthenticationCreateComponent implements OnInit {
    strategy: Strategy;
 
    readonly typeChoices: TypeChoice[] = [{
-      title: 'Open ID Connect',
+      title: 'OpenID Connect',
       type: 'openidconnect',
       name: 'openidconnect'
    }, {
