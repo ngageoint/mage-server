@@ -473,6 +473,7 @@ describe("Password Validator Tests", function () {
     delete mongoose.connection.models['saml'];
     delete mongoose.connection.models['ldap'];
     delete mongoose.connection.models['oauth'];
+    delete mongoose.connection.models['openidconnect'];
     delete mongoose.connection.models['Authentication'];
 
     const hashPassword = util.promisify(hasher.hashPassword);
