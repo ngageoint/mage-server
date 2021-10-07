@@ -45,7 +45,7 @@ function configure(strategy) {
           }
 
           const user = {
-            username: pprofileId,
+            username: profileId,
             displayName: profile[strategy.settings.profile.displayName] || profileId,
             email: email,
             active: false,
