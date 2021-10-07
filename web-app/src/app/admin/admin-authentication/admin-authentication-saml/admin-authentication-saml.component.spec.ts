@@ -16,6 +16,26 @@ describe('AdminAuthenticationSAMLComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationSAMLComponent);
     component = fixture.componentInstance;
+    component.strategy = {
+      enabled: true,
+      name: '',
+      type: '',
+      title: '',
+      textColor: '#FFFFFF',
+      buttonColor: '#1E88E5',
+      icon: null,
+      settings: {
+        usersReqAdmin: {
+          enabled: true
+        },
+        devicesReqAdmin: {
+          enabled: true
+        },
+        headers: {},
+        profile: {},
+        options: {}
+      }
+    }
     fixture.detectChanges();
   });
 

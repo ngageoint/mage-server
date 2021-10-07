@@ -8,14 +8,33 @@ describe('AdminAuthenticationOAuth2Component', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationOAuth2Component ]
+      declarations: [AdminAuthenticationOAuth2Component]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationOAuth2Component);
     component = fixture.componentInstance;
+    component.strategy = {
+      enabled: true,
+      name: '',
+      type: '',
+      title: '',
+      textColor: '#FFFFFF',
+      buttonColor: '#1E88E5',
+      icon: null,
+      settings: {
+        usersReqAdmin: {
+          enabled: true
+        },
+        devicesReqAdmin: {
+          enabled: true
+        },
+        headers: {},
+        profile: {}
+      }
+    }
     fixture.detectChanges();
   });
 
