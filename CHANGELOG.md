@@ -6,10 +6,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Shapefile export has been removed, please use GeoPackage export.
 
 ##### Bug Fixes
-* CSV export now exports one row for each form in an observation, mapped by observation id.
+
+## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
+
+##### Features
+* Shapefile export has been removed, please use GeoPackage export.
+* Updated all export formats to account for multiple observation forms.
+
+##### Bug Fixes
 
 ## [6.0.0](https://github.com/ngageoint/mage-server/releases/tag/6.0.0)
 
