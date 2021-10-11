@@ -29,7 +29,7 @@ async function createAttachmentField(db) {
         type: 'attachment',
         title: 'Attachments',
         choices: [],
-        allowedAttachmentTypes: ['image', 'video', 'voice']
+        allowedAttachmentTypes: ['image', 'video', 'audio']
       });
 
       log.info('adding attachment field to form', fields[fields.length - 1]);
