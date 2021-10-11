@@ -80,9 +80,6 @@ describe("creating attachments", function() {
   }
 
   describe('required permissions', function() {
-
-    let mockObservation;
-
     beforeEach(function() {
       sinon.mock(TeamModel)
         .expects('find')
