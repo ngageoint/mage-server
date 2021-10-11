@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -7,8 +7,18 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
   styleUrls: ['./admin-authentication-ldap.component.scss']
 })
  //https://datatracker.ietf.org/doc/html/rfc4510
-export class AdminAuthenticationLDAPComponent {
+export class AdminAuthenticationLDAPComponent implements OnInit {
 
   @Input() strategy: Strategy
   @Input() editable = true
+
+  ngOnInit(): void {
+    if (!this.strategy.settings.headers) {
+      this.strategy.settings.headers = {};
+    }
+
+    if (!this.strategy.settings.profile) {
+      this.strategy.settings.profile = {};
+    }
+  }
 }

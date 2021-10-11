@@ -20,7 +20,7 @@ function configure(strategy) {
     }
   },
     function (profile, done) {
-      const username = profile['cn'];
+      const username = profile[strategy.settings.profile.id ];
       User.getUserByAuthenticationStrategy(strategy.type, username, function (err, user) {
         if (err) return done(err);
 
@@ -31,8 +31,8 @@ function configure(strategy) {
 
             const user = {
               username: username,
-              displayName: profile['givenname'],
-              email: profile['mail'],
+              displayName: profile[strategy.settings.profile.displayName],
+              email: profile[strategy.settings.profile.email],
               active: false,
               roleId: role._id,
               authentication: {
@@ -67,7 +67,23 @@ function configure(strategy) {
   );
 }
 
+function setDefaults(strategy) {
+  if (!strategy.settings.profile) {
+     strategy.settings.profile = {};
+  }
+  if (!strategy.settings.profile.displayName) {
+     strategy.settings.profile.displayName = 'givenname';
+  }
+  if (!strategy.settings.profile.email) {
+     strategy.settings.profile.email = 'mail';
+  }
+  if (!strategy.settings.profile.id) {
+     strategy.settings.profile.id = 'cn';
+  }
+}
+
 function initialize(strategy) {
+  setDefaults(strategy);
   configure(strategy);
 
   const authenticationOptions = {
