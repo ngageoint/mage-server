@@ -152,7 +152,7 @@ function setDefaults(strategy) {
     strategy.settings.profile.displayName = 'displayName';
   }
   if (!strategy.settings.profile.email) {
-    strategy.settings.profile.email = 'emails';
+    strategy.settings.profile.email = 'email';
   }
   if (!strategy.settings.profile.id) {
     strategy.settings.profile.id = 'id';
