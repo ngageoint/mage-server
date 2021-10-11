@@ -17,9 +17,9 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
   @Input() editable = true
 
   signatureAlgorithms: SignatureAlgorithm[] = [
-    {value: 'sha1', viewValue: 'sha1'},
-    {value: 'sha256', viewValue: 'sha256'},
-    {value: 'sha512', viewValue: 'sha512'}
+    {value: 'sha1', viewValue: 'SHA-1'},
+    {value: 'sha256', viewValue: 'SHA-256'},
+    {value: 'sha512', viewValue: 'SHA-512'}
   ];
 
   ngOnInit(): void {

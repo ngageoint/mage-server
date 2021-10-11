@@ -31,7 +31,7 @@
     <textarea matInput [(ngModel)]="strategy.settings.options.privateCert"
       [ngModelOptions]="{standalone: true}"></textarea>
     <mat-hint align="end">
-      Private key used to sign requests.
+      Private key used to sign requests. Supports well formatted PEM or single-line.
     </mat-hint>
   </mat-form-field>
 
@@ -40,7 +40,8 @@
     <textarea matInput [(ngModel)]="strategy.settings.options.decryptionPvk"
       [ngModelOptions]="{standalone: true}"></textarea>
     <mat-hint align="end">
-      Private key that will be used to attempt to decrypt any encrypted assertions that are received.
+      Private key that will be used to attempt to decrypt any encrypted assertions that are received. Supports well
+      formatted PEM or single-line.
     </mat-hint>
   </mat-form-field>
 
@@ -52,7 +53,7 @@
       </mat-option>
     </mat-select>
     <mat-hint align="end">
-      Signature algorithm for signing requests.  Default of sha1.
+      Signature algorithm for signing requests. Default of SHA-1.
     </mat-hint>
   </mat-form-field>
 
