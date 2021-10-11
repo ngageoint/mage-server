@@ -28,23 +28,68 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">Search</div>
+  <div class="mat-subheading-2">User Search</div>
 
   <mat-form-field appearance="outline">
     <mat-label>Search Base</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.searchBase">
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.searchBase">
     <mat-hint align="end">
-      The search base defines the starting point for the search in an LDAP.
+      The base DN from which to search for users by username.
     </mat-hint>
   </mat-form-field>
 
   <mat-form-field appearance="outline">
     <mat-label>Search Filter</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.searchFilter">
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.searchFilter">
     <mat-hint align="end">
-      This requires knowledge of the LDAP search filter grammar.
+      LDAP search filter with which to find a user by username. This requires knowledge of
+      the LDAP search filter grammar.
     </mat-hint>
   </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Search Scope</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.searchScope" [ngModelOptions]="{standalone: true}">
+      <mat-option *ngFor="let scope of scopes" [value]="scope.value">
+        {{scope.viewValue}}
+      </mat-option>
+    </mat-select>
+    <mat-hint align="end">
+      Scope of the search. Default of sub.
+    </mat-hint>
+  </mat-form-field>
+
+  <div class="mat-subheading-2">Group Search</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Base</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchBase">
+    <mat-hint align="end">
+      The base DN from which to search for groups.
+    </mat-hint>
+  </mat-form-field>
+
+  <div *ngIf="strategy.settings.groupSearchBase">
+    <mat-form-field appearance="outline">
+      <mat-label>Group Search Filter</mat-label>
+      <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter">
+      <mat-hint align="end">
+        LDAP search filter for groups.. This requires knowledge of the LDAP search filter grammar.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Group Search Scope</mat-label>
+      <mat-select [(ngModel)]="strategy.settings.searchScope" [ngModelOptions]="{standalone: true}">
+        <mat-option *ngFor="let scope of scopes" [value]="scope.value">
+          {{scope.viewValue}}
+        </mat-option>
+      </mat-select>
+      <mat-hint align="end">
+        Scope of the search. Default of sub.
+      </mat-hint>
+    </mat-form-field>
+  </div>
 
   <mat-accordion class="accordian-section">
     <mat-expansion-panel>
@@ -54,10 +99,28 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
 
+      <div class="mat-subheading-1">Authentication</div>
+      <mat-form-field appearance="outline">
+        <mat-label>User Bind Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindProperty">
+        <mat-hint align="end">
+          Property of the LDAP user object to use when binding to verify the password. Default: dn.
+        </mat-hint>
+      </mat-form-field>
+      <div class="mat-subheading-1">Interpolation</div>
+      <mat-form-field appearance="outline">
+        <mat-label>Group DN Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupDnProperty">
+        <mat-hint align="end">
+          The property of user object to use in 'dn' interpolation of groupSearchFilter. Default: 'dn'
+        </mat-hint>
+      </mat-form-field>
+
+
       <div class="mat-subheading-1">User Profile</div>
       <mat-form-field appearance="outline">
         <mat-label>Profile ID Property</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id">
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindProperty">
         <mat-hint align="end">
           The id property that is returned in the user profile. Defaults to 'cn'.
         </mat-hint>
