@@ -9,17 +9,17 @@ const SamlStrategy = require('passport-saml').Strategy
   , AuthenticationInitializer = require('./index')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function doConfigure(strategyConfig) {
-  log.info('Configuring ' + strategyConfig.title + ' authentication');
-  AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
-    const uid = profile['uid'];
+function doConfigure(strategy) {
+  log.info('Configuring ' + strategy.title + ' authentication');
+  AuthenticationInitializer.passport.use(new SamlStrategy(strategy.settings.options, function (profile, done) {
+    const uid = profile[strategy.settings.profile.id];
 
     if (!uid) {
       log.warn('Failed to find property uid. SAML profile keys ' + Object.keys(profile));
       return done('Failed to load user id from SAML profile');
     }
 
-    User.getUserByAuthenticationStrategy(strategyConfig.type, uid, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategy.type, uid, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -29,15 +29,15 @@ function doConfigure(strategyConfig) {
 
           const user = {
             username: uid,
-            displayName: profile['email'],
-            email: profile['email'],
+            displayName: profile[strategy.settings.profile.displayName],
+            email: profile[strategy.settings.profile.email],
             active: false,
             roleId: role._id,
             authentication: {
-              type: strategyConfig.name,
+              type: strategy.name,
               id: uid,
               authenticationConfiguration: {
-                name: strategyConfig.name
+                name: strategy.name
               }
             }
           };
@@ -62,7 +62,7 @@ function doConfigure(strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    AuthenticationInitializer.passport.authenticate(strategyConfig.name, function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate(strategy.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -99,7 +99,7 @@ function doConfigure(strategyConfig) {
   }
 
   AuthenticationInitializer.app.post(
-    strategyConfig.settings.options.callbackPath,
+    strategy.settings.options.callbackPath,
     authenticate,
     function (req, res) {
       const state = JSON.parse(req.body.RelayState) || {};
@@ -129,6 +129,21 @@ function doConfigure(strategyConfig) {
   );
 }
 
+function setDefaults(strategy) {
+  if (!strategy.settings.profile) {
+     strategy.settings.profile = {};
+  }
+  if (!strategy.settings.profile.displayName) {
+     strategy.settings.profile.displayName = 'email';
+  }
+  if (!strategy.settings.profile.email) {
+     strategy.settings.profile.email = 'email';
+  }
+  if (!strategy.settings.profile.id) {
+     strategy.settings.profile.id = 'uid';
+  }
+}
+
 function initialize(config) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
@@ -143,6 +158,7 @@ function initialize(config) {
     next();
   }
 
+  setDefaults(config);
   config.settings.options.callbackPath = '/auth/saml/callback';
   doConfigure(config);
 

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -6,8 +6,18 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
   templateUrl: './admin-authentication-saml.component.html',
   styleUrls: ['./admin-authentication-saml.component.scss']
 })
-export class AdminAuthenticationSAMLComponent {
+export class AdminAuthenticationSAMLComponent implements OnInit {
 
   @Input() strategy: Strategy
-  @Input() editable = true
+  @Input() editable = true 
+
+  ngOnInit(): void {
+    if (!this.strategy.settings.headers) {
+      this.strategy.settings.headers = {};
+    }
+
+    if (!this.strategy.settings.profile) {
+      this.strategy.settings.profile = {};
+    }
+  }
 }
