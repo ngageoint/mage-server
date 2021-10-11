@@ -19,10 +19,10 @@
   <div class="mat-subheading-2">Security</div>
 
   <mat-form-field appearance="outline">
-    <mat-label>IDP's public signing certificate</mat-label>
+    <mat-label>Identity Provider Public Signing Certificate</mat-label>
     <textarea matInput [(ngModel)]="strategy.settings.options.cert" [ngModelOptions]="{standalone: true}"></textarea>
     <mat-hint align="end">
-      The IDP's public signing certificate used to validate the signatures of the incoming SAML Responses.
+      The public signing certificate used to validate the signatures of the incoming SAML Responses.
     </mat-hint>
   </mat-form-field>
 
