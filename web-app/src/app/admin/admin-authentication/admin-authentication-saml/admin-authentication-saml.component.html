@@ -1,4 +1,5 @@
 <div class="saml-settings">
+  <div class="mat-subheading-2">Identity Provider</div>
   <mat-form-field appearance="outline">
     <mat-label>Entry Point</mat-label>
     <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.options.entryPoint">
@@ -12,6 +13,46 @@
     <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.issuer">
     <mat-hint align="end">
       This is given to the identity provider.
+    </mat-hint>
+  </mat-form-field>
+
+  <div class="mat-subheading-2">Security</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>IDP's public signing certificate</mat-label>
+    <textarea matInput [(ngModel)]="strategy.settings.options.cert" [ngModelOptions]="{standalone: true}"></textarea>
+    <mat-hint align="end">
+      The IDP's public signing certificate used to validate the signatures of the incoming SAML Responses.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Private Key</mat-label>
+    <textarea matInput [(ngModel)]="strategy.settings.options.privateCert"
+      [ngModelOptions]="{standalone: true}"></textarea>
+    <mat-hint align="end">
+      Private key used to sign requests.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Decryption Private Key</mat-label>
+    <textarea matInput [(ngModel)]="strategy.settings.options.decryptionPvk"
+      [ngModelOptions]="{standalone: true}"></textarea>
+    <mat-hint align="end">
+      Private key that will be used to attempt to decrypt any encrypted assertions that are received.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Signature Algorithm</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.options.signatureAlgorithm" [ngModelOptions]="{standalone: true}">
+      <mat-option *ngFor="let algorithm of signatureAlgorithms" [value]="algorithm.value">
+        {{algorithm.viewValue}}
+      </mat-option>
+    </mat-select>
+    <mat-hint align="end">
+      Signature algorithm for signing requests.  Default of sha1.
     </mat-hint>
   </mat-form-field>
 

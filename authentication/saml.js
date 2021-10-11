@@ -99,7 +99,7 @@ function configure(strategy) {
   }
 
   AuthenticationInitializer.app.post(
-    strategy.settings.options.callbackPath,
+    strategy.settings.options.path,
     authenticate,
     function (req, res) {
       const state = JSON.parse(req.body.RelayState) || {};
@@ -145,7 +145,7 @@ function setDefaults(strategy) {
   if (!strategy.settings.options) {
     strategy.settings.options = {};
   }
-  strategy.settings.options.callbackPath = '/auth/saml/callback';
+  strategy.settings.options.path = '/auth/saml/callback';
 }
 
 function initialize(strategy) {
