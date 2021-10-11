@@ -9,7 +9,7 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
 export class AdminAuthenticationSAMLComponent implements OnInit {
 
   @Input() strategy: Strategy
-  @Input() editable = true 
+  @Input() editable = true
 
   ngOnInit(): void {
     if (!this.strategy.settings.headers) {
@@ -18,6 +18,10 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
 
     if (!this.strategy.settings.profile) {
       this.strategy.settings.profile = {};
+    }
+
+    if (!this.strategy.settings.options) {
+      this.strategy.settings.options = {};
     }
   }
 }

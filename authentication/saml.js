@@ -9,7 +9,7 @@ const SamlStrategy = require('passport-saml').Strategy
   , AuthenticationInitializer = require('./index')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function doConfigure(strategy) {
+function configure(strategy) {
   log.info('Configuring ' + strategy.title + ' authentication');
   AuthenticationInitializer.passport.use(new SamlStrategy(strategy.settings.options, function (profile, done) {
     const uid = profile[strategy.settings.profile.id];
@@ -131,23 +131,30 @@ function doConfigure(strategy) {
 
 function setDefaults(strategy) {
   if (!strategy.settings.profile) {
-     strategy.settings.profile = {};
+    strategy.settings.profile = {};
   }
   if (!strategy.settings.profile.displayName) {
-     strategy.settings.profile.displayName = 'email';
+    strategy.settings.profile.displayName = 'email';
   }
   if (!strategy.settings.profile.email) {
-     strategy.settings.profile.email = 'email';
+    strategy.settings.profile.email = 'email';
   }
   if (!strategy.settings.profile.id) {
-     strategy.settings.profile.id = 'uid';
+    strategy.settings.profile.id = 'uid';
   }
+  if (!strategy.settings.options) {
+    strategy.settings.options = {};
+  }
+  strategy.settings.options.callbackPath = '/auth/saml/callback';
 }
 
-function initialize(config) {
+function initialize(strategy) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
   const provision = AuthenticationInitializer.provision;
+
+  setDefaults(strategy);
+  configure(strategy);
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -157,20 +164,15 @@ function initialize(config) {
 
     next();
   }
-
-  setDefaults(config);
-  config.settings.options.callbackPath = '/auth/saml/callback';
-  doConfigure(config);
-
   app.get(
-    '/auth/' + config.name + '/signin',
+    '/auth/' + strategy.name + '/signin',
     function (req, res, next) {
       const state = {
         initiator: 'mage',
         client: req.query.state
       };
 
-      passport.authenticate(config.name, {
+      passport.authenticate(strategy.name, {
         additionalParams: { RelayState: JSON.stringify(state) }
       })(req, res, next);
     }
@@ -180,7 +182,7 @@ function initialize(config) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/' + config.name + '/devices',
+  app.post('/auth/' + strategy.name + '/devices',
     function (req, res, next) {
       if (req.user) {
         next();
@@ -216,7 +218,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/' + config.name + '/authorize',
+    '/auth/' + strategy.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -230,13 +232,13 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check(config.name),
+    provision.check(strategy.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        authenticationApiAppender.append(config.api).then(api => {
+        authenticationApiAppender.append(strategy.api).then(api => {
           res.json({
             token: token.token,
             expirationDate: token.expirationDate,
