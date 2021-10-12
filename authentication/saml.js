@@ -30,6 +30,42 @@ function configure(strategy) {
   if (strategy.settings.signatureAlgorithm) {
     options.signatureAlgorithm = strategy.settings.signatureAlgorithm;
   }
+  if(strategy.settings.audience) {
+    options.audience = strategy.settings.audience;
+  }
+  if(strategy.settings.identifierFormat) {
+    options.identifierFormat = strategy.settings.identifierFormat;
+  }
+  if(strategy.settings.acceptedClockSkewMs) {
+    options.acceptedClockSkewMs = strategy.settings.acceptedClockSkewMs;
+  }
+  if(strategy.settings.attributeConsumingServiceIndex) {
+    options.attributeConsumingServiceIndex = strategy.settings.attributeConsumingServiceIndex;
+  }
+  if(strategy.settings.disableRequestedAuthnContext) {
+    options.disableRequestedAuthnContext = strategy.settings.disableRequestedAuthnContext;
+  }
+  if(strategy.settings.authnContext) {
+    options.authnContext = strategy.settings.authnContext;
+  }
+  if(strategy.settings.forceAuthn) {
+    options.forceAuthn = strategy.settings.forceAuthn;
+  }
+  if(strategy.settings.skipRequestCompression) {
+    options.skipRequestCompression = strategy.settings.skipRequestCompression;
+  }
+  if(strategy.settings.authnRequestBinding) {
+    options.authnRequestBinding = strategy.settings.authnRequestBinding;
+  }
+  if(strategy.settings.RACComparison) {
+    options.RACComparison = strategy.settings.RACComparison;
+  }
+  if(strategy.settings.providerName) {
+    options.providerName = strategy.settings.providerName;
+  }
+  if(strategy.settings.idpIssuer) {
+    options.idpIssuer = strategy.settings.idpIssuer;
+  }
 
   AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {
     const uid = profile[strategy.settings.profile.id];

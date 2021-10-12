@@ -6,6 +6,11 @@ interface SignatureAlgorithm {
   viewValue: string;
 }
 
+interface RACComparison {
+  value: string;
+  viewValue: string;
+}
+
 @Component({
   selector: 'admin-authentication-saml',
   templateUrl: './admin-authentication-saml.component.html',
@@ -20,6 +25,13 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
     {value: 'sha1', viewValue: 'SHA-1'},
     {value: 'sha256', viewValue: 'SHA-256'},
     {value: 'sha512', viewValue: 'SHA-512'}
+  ];
+ 
+  racs: RACComparison[] = [
+    {value: 'exact', viewValue: 'Exact'},
+    {value: 'minimum', viewValue: 'Minimum'},
+    {value: 'maximum', viewValue: 'Maximum'},
+    {value: 'better', viewValue: 'Better'}
   ];
 
   ngOnInit(): void {
