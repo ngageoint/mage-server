@@ -18,17 +18,17 @@ function configure(strategy) {
     issuer: strategy.settings.options.issuer
   }
 
-  if (strategy.settings.options.cert) {
-    options.cert = strategy.settings.options.cert;
+  if (strategy.settings.cert) {
+    options.cert = strategy.settings.cert;
   }
-  if (strategy.settings.options.privateCert) {
-    options.privateCert = strategy.settings.options.privateCert;
+  if (strategy.settings.privateCert) {
+    options.privateCert = strategy.settings.privateCert;
   }
-  if (strategy.settings.options.decryptionPvk) {
-    options.decryptionPvk = strategy.settings.options.decryptionPvk;
+  if (strategy.settings.decryptionPvk) {
+    options.decryptionPvk = strategy.settings.decryptionPvk;
   }
-  if (strategy.settings.options.signatureAlgorithm) {
-    options.signatureAlgorithm = strategy.settings.options.signatureAlgorithm;
+  if (strategy.settings.signatureAlgorithm) {
+    options.signatureAlgorithm = strategy.settings.signatureAlgorithm;
   }
 
   AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {

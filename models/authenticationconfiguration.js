@@ -24,7 +24,7 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
-const blacklist = ['clientsecret', 'bindcredentials'];
+const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryptionpvk'];
 const secureMask = '*****';
 
 const transform = function (config, ret, options) {
