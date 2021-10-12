@@ -11,7 +11,27 @@ const SamlStrategy = require('passport-saml').Strategy
 
 function configure(strategy) {
   log.info('Configuring ' + strategy.title + ' authentication');
-  AuthenticationInitializer.passport.use(new SamlStrategy(strategy.settings.options, function (profile, done) {
+
+  const options = {
+    path: `/auth/${strategy.name}/callback`,
+    entryPoint: strategy.settings.options.entryPoint,
+    issuer: strategy.settings.options.issuer
+  }
+
+  if (strategy.settings.options.cert) {
+    options.cert = strategy.settings.options.cert;
+  }
+  if (strategy.settings.options.privateCert) {
+    options.privateCert = strategy.settings.options.privateCert;
+  }
+  if (strategy.settings.options.decryptionPvk) {
+    options.decryptionPvk = strategy.settings.options.decryptionPvk;
+  }
+  if (strategy.settings.options.signatureAlgorithm) {
+    options.signatureAlgorithm = strategy.settings.options.signatureAlgorithm;
+  }
+
+  AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {
     const uid = profile[strategy.settings.profile.id];
 
     if (!uid) {
@@ -99,7 +119,7 @@ function configure(strategy) {
   }
 
   AuthenticationInitializer.app.post(
-    strategy.settings.options.path,
+    `/auth/${strategy.name}/callback`,
     authenticate,
     function (req, res) {
       const state = JSON.parse(req.body.RelayState) || {};
@@ -145,7 +165,6 @@ function setDefaults(strategy) {
   if (!strategy.settings.options) {
     strategy.settings.options = {};
   }
-  strategy.settings.options.path = '/auth/saml/callback';
 }
 
 function initialize(strategy) {
