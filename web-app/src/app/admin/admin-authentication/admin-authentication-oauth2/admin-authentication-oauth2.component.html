@@ -56,6 +56,27 @@
     </mat-hint>
   </mat-form-field>
 
+  <div class="mat-subheading-2">Cross-site Request Forgery (CSRF)</div>
+
+  <div class="pkce">
+    <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.pkce"></mat-checkbox>
+    <mat-label>PKCE (Proof Key for Code Exchange)</mat-label>
+    <div class="mat-caption">
+      Helps prevent CSRF and authorization code injection attacks.  If enabled, then state is required.
+    </div>
+  </div>
+  <div *ngIf="strategy.settings.pkce">
+    <mat-form-field appearance="outline">
+      <mat-label>State</mat-label>
+      <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.state" required>
+      <mat-hint align="end">
+        Used by the client to maintain state between the request and callback. The authorization server includes this
+        value when redirecting the user-agent back to the client. The parameter SHOULD be used for preventing
+        CSRF.
+      </mat-hint>
+    </mat-form-field>
+  </div>
+
   <mat-accordion class="accordian-section">
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -64,7 +85,7 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="mat-subheading-1">Authentication</div>
-      <div class="custom-headers">
+      <div class="basic-auth">
         <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.headers.basic">
         </mat-checkbox>
         <mat-label>Use Basic Authentication</mat-label>
