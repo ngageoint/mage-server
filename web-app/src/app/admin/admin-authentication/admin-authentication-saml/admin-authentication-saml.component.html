@@ -68,6 +68,27 @@
     </mat-hint>
   </mat-form-field>
 
+  <div class="mat-subheading-2">InResponseTo Validation</div>
+
+  <div class="disableRequestedAuthnContext">
+    <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.validateInResponseTo">
+    </mat-checkbox>
+    <mat-label>Validate InResponseTo</mat-label>
+    <div class="mat-caption">
+      InResponseTo will be validated from incoming SAML responses.
+    </div>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Request ID Expiration Period</mat-label>
+    <input matInput type="number" [readonly]="!editable"
+      [(ngModel)]="strategy.settings.options.requestIdExpirationPeriodMs">
+    <mat-hint align="end">
+      Defines the expiration time when a Request ID generated for a SAML request will not be valid if seen in a SAML
+      response in the InResponseTo field. Default is 8 hours.
+    </mat-hint>
+  </mat-form-field>
+
   <div class="mat-subheading-2">Additional SAML Parameters</div>
 
   <mat-form-field appearance="outline">
@@ -88,7 +109,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Clock Skew</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.acceptedClockSkewMs">
+    <input matInput type="number" [readonly]="!editable" [(ngModel)]="strategy.settings.acceptedClockSkewMs">
     <mat-hint align="end">
       Time in milliseconds of skew that is acceptable between client and server when checking NotBefore and NotOnOrAfter
       assertion condition validity timestamps. Setting to -1 will disable checking these conditions entirely. Default is

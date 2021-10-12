@@ -66,6 +66,12 @@ function configure(strategy) {
   if(strategy.settings.idpIssuer) {
     options.idpIssuer = strategy.settings.idpIssuer;
   }
+  if(strategy.settings.validateInResponseTo) {
+    options.validateInResponseTo = strategy.settings.validateInResponseTo;
+  }
+  if(strategy.settings.requestIdExpirationPeriodMs) {
+    options.requestIdExpirationPeriodMs = strategy.settings.requestIdExpirationPeriodMs;
+  }
 
   AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {
     const uid = profile[strategy.settings.profile.id];
