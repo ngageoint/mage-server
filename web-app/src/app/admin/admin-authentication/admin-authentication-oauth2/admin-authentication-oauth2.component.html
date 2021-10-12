@@ -71,8 +71,7 @@
       <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.state" required>
       <mat-hint align="end">
         Used by the client to maintain state between the request and callback. The authorization server includes this
-        value when redirecting the user-agent back to the client. The parameter SHOULD be used for preventing
-        CSRF.
+        value when redirecting the user-agent back to the client.
       </mat-hint>
     </mat-form-field>
   </div>
