@@ -59,7 +59,10 @@ function configure(strategy) {
       authorizationURL: strategy.settings.authorizationURL,
       tokenURL: strategy.settings.tokenURL,
       profileURL: strategy.settings.profileURL,
-      customHeaders: customHeaders
+      customHeaders: customHeaders,
+      scope: strategy.settings.scope,
+      state: strategy.settings.state,
+      pkce: strategy.settings.pkce
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 

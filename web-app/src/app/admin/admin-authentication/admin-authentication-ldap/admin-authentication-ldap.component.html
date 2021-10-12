@@ -80,7 +80,7 @@
 
     <mat-form-field appearance="outline">
       <mat-label>Group Search Scope</mat-label>
-      <mat-select [(ngModel)]="strategy.settings.searchScope" [ngModelOptions]="{standalone: true}">
+      <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [ngModelOptions]="{standalone: true}">
         <mat-option *ngFor="let scope of scopes" [value]="scope.value">
           {{scope.viewValue}}
         </mat-option>

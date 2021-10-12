@@ -16,7 +16,13 @@ function configure(strategy) {
       bindDN: strategy.settings.bindDN,
       bindCredentials: strategy.settings.bindCredentials,
       searchBase: strategy.settings.searchBase,
-      searchFilter: strategy.settings.searchFilter
+      searchFilter: strategy.settings.searchFilter,
+      searchScope: strategy.settings.searchScope,
+      groupSearchBase: strategy.settings.groupSearchBase,
+      groupSearchFilter: strategy.settings.groupSearchFilter,
+      groupSearchScope: strategy.settings.groupSearchScope,
+      bindProperty: strategy.settings.bindProperty,
+      groupDnProperty: strategy.settings.groupDnProperty
     }
   },
     function (profile, done) {
