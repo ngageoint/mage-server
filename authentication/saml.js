@@ -72,6 +72,9 @@ function configure(strategy) {
   if(strategy.settings.requestIdExpirationPeriodMs) {
     options.requestIdExpirationPeriodMs = strategy.settings.requestIdExpirationPeriodMs;
   }
+  if(strategy.settings.logoutUrl) {
+    options.logoutUrl = strategy.settings.logoutUrl;
+  }
 
   AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {
     const uid = profile[strategy.settings.profile.id];

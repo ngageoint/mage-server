@@ -89,6 +89,17 @@
     </mat-hint>
   </mat-form-field>
 
+  <div class="mat-subheading-2">Logout Validation</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Logout URL</mat-label>
+    <input matInput type="text" [readonly]="!editable"
+      [(ngModel)]="strategy.settings.options.logoutUrl">
+    <mat-hint align="end">
+      Base address to call with logout requests. Default is Entry Point.
+    </mat-hint>
+  </mat-form-field>
+
   <div class="mat-subheading-2">Additional SAML Parameters</div>
 
   <mat-form-field appearance="outline">
