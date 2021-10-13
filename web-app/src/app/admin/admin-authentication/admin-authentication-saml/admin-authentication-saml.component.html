@@ -67,7 +67,7 @@
 
   <div class="mat-subheading-2">InResponseTo Validation</div>
 
-  <div class="disableRequestedAuthnContext">
+  <div class="checkbox-spacing">
     <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.validateInResponseTo">
     </mat-checkbox>
     <mat-label>Validate InResponseTo</mat-label>
@@ -80,6 +80,7 @@
     <mat-label>Request ID Expiration Period</mat-label>
     <input matInput type="number" [readonly]="!editable"
       [(ngModel)]="strategy.settings.options.requestIdExpirationPeriodMs">
+    <div class="suffix-spacing" matSuffix>Milliseconds</div>
     <mat-hint align="end">
       Defines the expiration time when a Request ID generated for a SAML request will not be valid if seen in a SAML
       response in the InResponseTo field. Default is 8 hours.
@@ -117,6 +118,7 @@
   <mat-form-field appearance="outline">
     <mat-label>Clock Skew</mat-label>
     <input matInput type="number" [readonly]="!editable" [(ngModel)]="strategy.settings.acceptedClockSkewMs">
+    <div class="suffix-spacing" matSuffix>Milliseconds</div>
     <mat-hint align="end">
       Time in milliseconds of skew that is acceptable between client and server when checking NotBefore and NotOnOrAfter
       assertion condition validity timestamps. Setting to -1 will disable checking these conditions entirely. Default is
@@ -132,7 +134,7 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="disableRequestedAuthnContext">
+  <div class="checkbox-spacing">
     <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.disableRequestedAuthnContext">
     </mat-checkbox>
     <mat-label>Disable Requested Authentication Context</mat-label>
@@ -150,7 +152,7 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="disableRequestedAuthnContext">
+  <div class="checkbox-spacing">
     <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.forceAuthn">
     </mat-checkbox>
     <mat-label>Force Authentication</mat-label>
@@ -159,7 +161,7 @@
     </div>
   </div>
 
-  <div class="disableRequestedAuthnContext">
+  <div class="checkbox-spacing">
     <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.skipRequestCompression">
     </mat-checkbox>
     <mat-label>Skip Request Compression</mat-label>
