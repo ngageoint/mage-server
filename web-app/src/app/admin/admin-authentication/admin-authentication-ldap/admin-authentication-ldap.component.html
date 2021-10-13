@@ -69,27 +69,27 @@
     </mat-hint>
   </mat-form-field>
 
-  <div *ngIf="strategy.settings.groupSearchBase">
-    <mat-form-field appearance="outline">
-      <mat-label>Group Search Filter</mat-label>
-      <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter">
-      <mat-hint align="end">
-        LDAP search filter for groups.. This requires knowledge of the LDAP search filter grammar.
-      </mat-hint>
-    </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Filter</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter"
+      [required]="strategy.settings.groupSearchBase">
+    <mat-hint align="end">
+      LDAP search filter for groups.. This requires knowledge of the LDAP search filter grammar.
+    </mat-hint>
+  </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Group Search Scope</mat-label>
-      <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [ngModelOptions]="{standalone: true}">
-        <mat-option *ngFor="let scope of scopes" [value]="scope.value">
-          {{scope.viewValue}}
-        </mat-option>
-      </mat-select>
-      <mat-hint align="end">
-        Scope of the search. Default of sub.
-      </mat-hint>
-    </mat-form-field>
-  </div>
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Scope</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [ngModelOptions]="{standalone: true}"
+      [required]="strategy.settings.groupSearchBase">
+      <mat-option *ngFor="let scope of scopes" [value]="scope.value">
+        {{scope.viewValue}}
+      </mat-option>
+    </mat-select>
+    <mat-hint align="end">
+      Scope of the search. Default of sub.
+    </mat-hint>
+  </mat-form-field>
 
   <mat-accordion class="accordian-section">
     <mat-expansion-panel>
