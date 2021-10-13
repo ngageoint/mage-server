@@ -19,6 +19,7 @@ function configure(strategy) {
     callbackURL: `/auth/${strategy.name}/callback`
   }, function (issuer, sub, profile, done) {
     if (!profile[strategy.settings.profile.id]) {
+      log.warn("JSON: " + JSON.stringify(profile));
       return done(`OAuth2 user profile does not contain id property ${strategy.settings.profile.id}`);
    }
 
