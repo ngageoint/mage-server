@@ -18,6 +18,8 @@
 
   <div class="mat-subheading-2">Security</div>
 
+  <div class="mat-subheading-1">Certificates</div>
+
   <mat-form-field appearance="outline">
     <mat-label>IdP Public Signing Certificate</mat-label>
     <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.cert"></textarea>
@@ -43,6 +45,8 @@
     </mat-hint>
   </mat-form-field>
 
+  <div class="mat-subheading-1">Signing</div>
+
   <mat-form-field appearance="outline">
     <mat-label>Signature Algorithm</mat-label>
     <mat-select [(ngModel)]="strategy.settings.signatureAlgorithm">
@@ -55,7 +59,9 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">Issuer Validation</div>
+  <div class="mat-subheading-2">Validation</div>
+
+  <div class="mat-subheading-1">Issuer</div>
 
   <mat-form-field appearance="outline">
     <mat-label>IdP Issuer</mat-label>
@@ -65,7 +71,7 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">InResponseTo Validation</div>
+  <div class="mat-subheading-1">InResponseTo</div>
 
   <div class="checkbox-spacing">
     <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.validateInResponseTo">
@@ -87,7 +93,7 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">Logout Validation</div>
+  <div class="mat-subheading-2">Logout</div>
 
   <mat-form-field appearance="outline">
     <mat-label>Logout URL</mat-label>
