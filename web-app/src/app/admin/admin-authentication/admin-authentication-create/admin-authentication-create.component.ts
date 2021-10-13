@@ -6,7 +6,6 @@ import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
    selector: 'admin-authentication-create',
@@ -56,8 +55,7 @@ export class AuthenticationCreateComponent implements OnInit {
       private _stateService: StateService,
       private _snackBar: MatSnackBar,
       @Inject(AuthenticationConfigurationService)
-      private _authenticationConfigurationService: any,
-      private _formBuilder: FormBuilder) {
+      private _authenticationConfigurationService: any) {
 
       this.breadcrumbs.push({ title: 'New' });
       this.reset();
