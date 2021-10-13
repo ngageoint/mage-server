@@ -64,16 +64,6 @@
     </mat-hint>
   </mat-form-field>
 
-  <div class="mat-subheading-2">Cross-site Request Forgery (CSRF)</div>
-
-  <div class="pkce">
-    <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.pkce"></mat-checkbox>
-    <mat-label>PKCE (Proof Key for Code Exchange)</mat-label>
-    <div class="mat-caption">
-      Helps prevent CSRF and authorization code injection attacks.
-    </div>
-  </div>
-
   <mat-accordion class="accordian-section">
     <mat-expansion-panel>
       <mat-expansion-panel-header>
