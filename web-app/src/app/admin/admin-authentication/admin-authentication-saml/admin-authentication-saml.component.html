@@ -20,8 +20,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>IdP Public Signing Certificate</mat-label>
-    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.cert"
-      [ngModelOptions]="{standalone: true}"></textarea>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.cert"></textarea>
     <mat-hint align="end">
       The public signing certificate used to validate the signatures of the incoming SAML Responses.
     </mat-hint>
@@ -29,8 +28,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Private Key</mat-label>
-    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.privateCert"
-      [ngModelOptions]="{standalone: true}"></textarea>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.privateCert"></textarea>
     <mat-hint align="end">
       Private key used to sign requests. Supports well formatted PEM or single-line.
     </mat-hint>
@@ -38,8 +36,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Decryption Private Key</mat-label>
-    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.decryptionPvk"
-      [ngModelOptions]="{standalone: true}"></textarea>
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.decryptionPvk"></textarea>
     <mat-hint align="end">
       Private key that will be used to attempt to decrypt any encrypted assertions that are received. Supports well
       formatted PEM or single-line.
@@ -48,7 +45,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Signature Algorithm</mat-label>
-    <mat-select [(ngModel)]="strategy.settings.signatureAlgorithm" [ngModelOptions]="{standalone: true}">
+    <mat-select [(ngModel)]="strategy.settings.signatureAlgorithm">
       <mat-option *ngFor="let algorithm of signatureAlgorithms" [value]="algorithm.value">
         {{algorithm.viewValue}}
       </mat-option>
@@ -93,8 +90,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Logout URL</mat-label>
-    <input matInput type="text" [readonly]="!editable"
-      [(ngModel)]="strategy.settings.options.logoutUrl">
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.logoutUrl">
     <mat-hint align="end">
       Base address to call with logout requests. Default is Entry Point.
     </mat-hint>
@@ -183,7 +179,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>RAC Comparison</mat-label>
-    <mat-select [(ngModel)]="strategy.settings.RACComparison" [ngModelOptions]="{standalone: true}">
+    <mat-select [(ngModel)]="strategy.settings.RACComparison">
       <mat-option *ngFor="let rac of racs" [value]="rac.value">
         {{rac.viewValue}}
       </mat-option>
