@@ -61,8 +61,8 @@ function configure(strategy) {
       profileURL: strategy.settings.profileURL,
       customHeaders: customHeaders,
       scope: strategy.settings.scope,
-      state: strategy.settings.state,
-      pkce: strategy.settings.pkce
+      pkce: strategy.settings.pkce,
+      store: true
    }, function (accessToken, refreshToken, profileResponse, done) {
       const profile = profileResponse.json;
 
