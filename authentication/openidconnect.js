@@ -16,7 +16,10 @@ function configure(strategy) {
     authorizationURL: strategy.settings.authorizationURL,
     tokenURL: strategy.settings.tokenURL,
     userInfoURL: strategy.settings.profileURL,
-    callbackURL: `/auth/${strategy.name}/callback`
+    callbackURL: `/auth/${strategy.name}/callback`,
+    scope: strategy.settings.scope,
+    pkce: strategy.settings.pkce,
+    store: true
   }, function (issuer, sub, profile, done) {
     if (!profile[strategy.settings.profile.id]) {
       log.warn("JSON: " + JSON.stringify(profile));
