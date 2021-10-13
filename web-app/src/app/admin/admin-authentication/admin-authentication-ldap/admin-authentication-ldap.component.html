@@ -49,7 +49,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Search Scope</mat-label>
-    <mat-select [(ngModel)]="strategy.settings.searchScope">
+    <mat-select [(ngModel)]="strategy.settings.searchScope" [disabled]="!editable">
       <mat-option *ngFor="let scope of scopes" [value]="scope.value">
         {{scope.viewValue}}
       </mat-option>
@@ -71,8 +71,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Group Search Filter</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter"
-      [required]="strategy.settings.groupSearchBase">
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter">
     <mat-hint align="end">
       LDAP search filter for groups. This requires knowledge of the LDAP search filter grammar.
     </mat-hint>
@@ -80,7 +79,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Group Search Scope</mat-label>
-    <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [required]="strategy.settings.groupSearchBase">
+    <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [disabled]="!editable">
       <mat-option *ngFor="let scope of scopes" [value]="scope.value">
         {{scope.viewValue}}
       </mat-option>
