@@ -2,7 +2,7 @@
   <div class="mat-subheading-2">Identity Provider (IdP)</div>
   <mat-form-field appearance="outline">
     <mat-label>Entry Point</mat-label>
-    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.options.entryPoint">
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.entryPoint">
     <mat-hint align="end">
       Location of the IdP. This can be the location of the single sign-on identity provider.
     </mat-hint>
