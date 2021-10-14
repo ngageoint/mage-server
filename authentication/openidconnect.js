@@ -20,13 +20,13 @@ function configure(strategy) {
     scope: strategy.settings.scope
   }, function (issuer, sub, profile, done) {
     if (!profile[strategy.settings.profile.id]) {
-      log.warn("JSON: " + JSON.stringify(profile));
-      return done(`OAuth2 user profile does not contain id property ${strategy.settings.profile.id}`);
-   }
+      log.warn(JSON.stringify(profile));
+      return done(`OIDC user profile does not contain id property ${strategy.settings.profile.id}`);
+    }
 
-   const profileId = profile[strategy.settings.profile.id];
+    const profileId = profile[strategy.settings.profile.id];
 
-    User.getUserByAuthenticationStrategy(strategy.type,profileId, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -36,14 +36,16 @@ function configure(strategy) {
 
           let email = null;
           if (profile[strategy.settings.profile.email]) {
-             if (Array.isArray(profile[strategy.settings.profile.email])) {
-                email = profile[strategy.settings.profile.email].find(email => {
-                   email.verified === true
-                });
-             } else {
-                email = profile[strategy.settings.profile.email];
-             }
-
+            if (Array.isArray(profile[strategy.settings.profile.email])) {
+              email = profile[strategy.settings.profile.email].find(email => {
+                email.verified === true
+              });
+            } else {
+              email = profile[strategy.settings.profile.email];
+            }
+          } else {
+            log.warn(`OIDC user profile does not contain email property named ${strategy.settings.profile.id}`);
+            log.debug(JSON.stringify(profile));
           }
 
           const user = {
