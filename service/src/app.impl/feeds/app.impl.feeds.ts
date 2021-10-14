@@ -1,5 +1,5 @@
 import { URL } from 'url'
-import { FeedServiceTypeRepository, FeedServiceRepository, FeedTopic, FeedService, InvalidServiceConfigError, FeedContent, Feed, FeedTopicId, FeedServiceConnection, FeedRepository, FeedCreateUnresolved, FeedCreateMinimal, FeedServiceType, FeedServiceId, FeedCreateAttrs, MapStyle } from '../../entities/feeds/entities.feeds';
+import { FeedServiceTypeRepository, FeedServiceRepository, FeedTopic, FeedService, InvalidServiceConfigError, FeedContent, Feed, FeedTopicId, FeedServiceConnection, FeedRepository, FeedCreateUnresolved, FeedCreateMinimal, FeedServiceType, FeedServiceId, FeedCreateAttrs, MapStyle, retainSchemaPropertiesInFeatures, FeedsError, InvalidFeedAttrsError } from '../../entities/feeds/entities.feeds';
 import * as api from '../../app.api/feeds/app.api.feeds'
 import { AppRequest, KnownErrorsOf, withPermission, AppResponse } from '../../app.api/app.api.global'
 import { PermissionDeniedError, EntityNotFoundError, InvalidInputError, entityNotFound, invalidInput, MageError, KeyPathError } from '../../app.api/app.api.errors'
@@ -172,12 +172,21 @@ interface WithContentFetchContext<R> {
   then(createFeedOp: (context: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | R>
 }
 
-async function buildFetchContext(deps: ContentFetchDependencies, serviceId: FeedServiceId, topicId: FeedTopicId, variableParamsSchema?: JSONSchema4 | null): Promise<ContentFetchContext | EntityNotFoundError | InvalidInputError> {
-  const service = await deps.serviceRepo.findById(serviceId)
+interface FetchContextParams {
+  service: FeedServiceId
+  topic: FeedTopicId
+  variableParamsSchema?: Feed['variableParamsSchema'] | null
+  itemPropertiesSchema?: Feed['itemPropertiesSchema'] | null
+}
+
+async function buildFetchContext(services: ContentFetchDependencies, fetchContextParams: FetchContextParams): Promise<ContentFetchContext | EntityNotFoundError | InvalidInputError> {
+  // TODO: this logic might belong more in the entity/domain layer
+  const { service: serviceId, topic: topicId, variableParamsSchema } = fetchContextParams
+  const service = await services.serviceRepo.findById(serviceId)
   if (!service) {
     return entityNotFound(serviceId, 'FeedService')
   }
-  const serviceType = await deps.serviceTypeRepo.findById(service.serviceType)
+  const serviceType = await services.serviceTypeRepo.findById(service.serviceType)
   if (!serviceType) {
     return entityNotFound(service.serviceType, 'FeedServiceType')
   }
@@ -188,28 +197,34 @@ async function buildFetchContext(deps: ContentFetchDependencies, serviceId: Feed
     return entityNotFound(topicId, 'FeedTopic')
   }
   let variableParamsValidator: JsonValidator | undefined = undefined
-  if (variableParamsSchema && deps.jsonSchemaService) {
+  if (variableParamsSchema && services.jsonSchemaService) {
     try {
-      variableParamsValidator = await deps.jsonSchemaService.validateSchema(variableParamsSchema)
+      variableParamsValidator = await services.jsonSchemaService.validateSchema(variableParamsSchema)
     }
     catch (err) {
       return invalidInput('invalid variable parameters schema', [ err, 'feed', 'variableParamsSchema' ])
     }
   }
-  return { serviceType, service, topic, conn, variableParamsValidator }
+  const propertyParingConn: FeedServiceConnection = {
+    fetchServiceInfo: () => conn.fetchServiceInfo(),
+    fetchAvailableTopics: () => conn.fetchAvailableTopics(),
+    fetchTopicContent: async (topicId: string, params?: any) => {
+      const sourceContent = await conn.fetchTopicContent(topicId, params)
+      const paredItems = retainSchemaPropertiesInFeatures(sourceContent.items, fetchContextParams.itemPropertiesSchema || topic.itemPropertiesSchema)
+      return {
+        ...sourceContent,
+        items: paredItems
+      }
+    }
+  }
+  return { serviceType, service, topic, conn: propertyParingConn, variableParamsValidator }
 }
 
-interface FetchContextParams {
-  service: FeedServiceId
-  topic: FeedTopicId
-  variableParamsSchema?: JSONSchema4 | null
-}
-
-function withFetchContext<R>(deps: ContentFetchDependencies, { service, topic, variableParamsSchema }: FetchContextParams): WithContentFetchContext<R> {
+function withFetchContext<R>(deps: ContentFetchDependencies, fetchContextParams: FetchContextParams): WithContentFetchContext<R> {
   return {
     then(operation: (fetchContext: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | R> {
       return async (): Promise<EntityNotFoundError | InvalidInputError | R> => {
-        const fetchContext = await buildFetchContext(deps, service, topic, variableParamsSchema)
+        const fetchContext = await buildFetchContext(deps, fetchContextParams)
         if (fetchContext instanceof MageError) {
           return fetchContext
         }
@@ -276,12 +291,15 @@ function keyPathOfIconUrl(url: URL | string, feedMinimal: api.FeedCreateMinimalA
   return []
 }
 
-async function resolveFeedCreate(topic: FeedTopic, feedMinimal: api.FeedCreateMinimalAcceptingStringUrls, iconRepo: StaticIconRepository, iconFetch: StaticIconImportFetch = StaticIconImportFetch.Lazy): Promise<FeedCreateAttrs | KeyPathError[]> {
+async function resolveFeedCreate(topic: FeedTopic, feedMinimal: api.FeedCreateMinimalAcceptingStringUrls, iconRepo: StaticIconRepository, iconFetch: StaticIconImportFetch = StaticIconImportFetch.Lazy): Promise<FeedCreateAttrs | InvalidFeedAttrsError | KeyPathError[]> {
   const feedMinimalParsed = parseIconUrlsIfNecessary(feedMinimal)
   if (Array.isArray(feedMinimalParsed)) {
     return feedMinimalParsed
   }
   const unresolved = FeedCreateUnresolved(topic, feedMinimalParsed)
+  if (unresolved instanceof FeedsError) {
+    return unresolved
+  }
   const errors: KeyPathError[] = []
   const icons = await Promise.all(unresolved.unresolvedIcons.map(iconUrl => {
     return iconRepo.findOrImportBySourceUrl(iconUrl, iconFetch).then(icon => {
@@ -324,6 +342,9 @@ export function PreviewFeed(permissionService: api.FeedsPermissionService, servi
             }
           }
           const previewCreateAttrs = await resolveFeedCreate(context.topic, reqFeed, iconRepo, StaticIconImportFetch.EagerAwait)
+          if (previewCreateAttrs instanceof FeedsError) {
+            return invalidInput()
+          }
           if (Array.isArray(previewCreateAttrs)) {
             return invalidInput('invalid icon urls', ...previewCreateAttrs)
           }
@@ -358,6 +379,9 @@ export function CreateFeed(permissionService: api.FeedsPermissionService, servic
       withFetchContext<api.FeedExpanded | InvalidInputError>({ serviceRepo, serviceTypeRepo, jsonSchemaService }, reqFeed)
         .then(async (context: ContentFetchContext): Promise<api.FeedExpanded | InvalidInputError> => {
           const feedResolved = await resolveFeedCreate(context.topic, reqFeed, iconRepo, StaticIconImportFetch.EagerAwait)
+          if (feedResolved instanceof FeedsError) {
+            return invalidInput(feedResolved.message)
+          }
           if (Array.isArray(feedResolved)) {
             return invalidInput('invalid icon urls', ...feedResolved)
           }
@@ -403,7 +427,7 @@ export function GetFeed(permissionService: api.FeedsPermissionService, serviceTy
         if (!feed) {
           return entityNotFound(req.feed, 'Feed')
         }
-        const feedCompanions = await buildFetchContext({ serviceTypeRepo, serviceRepo }, feed.service, feed.topic)
+        const feedCompanions = await buildFetchContext({ serviceTypeRepo, serviceRepo }, feed)
         if (feedCompanions instanceof MageError) {
           return feedCompanions as EntityNotFoundError
         }
@@ -436,6 +460,9 @@ export function UpdateFeed(permissionService: api.FeedsPermissionService, servic
         async (fetchContext): Promise<api.FeedExpanded | EntityNotFoundError | InvalidInputError> => {
           const updateUnresolved = { ...req.feed, service: feed.service, topic: feed.topic }
           const updateResolved = await resolveFeedCreate(fetchContext.topic, updateUnresolved as FeedCreateMinimal, iconRepo, StaticIconImportFetch.EagerAwait)
+          if (updateResolved instanceof FeedsError) {
+            return invalidInput(updateResolved.message)
+          }
           if (Array.isArray(updateResolved)) {
             return invalidInput('invalid update request', ...updateResolved)
           }
@@ -474,20 +501,16 @@ export function FetchFeedContent(permissionService: api.FeedsPermissionService, 
   return async function fetchFeedContent(req: api.FetchFeedContentRequest): ReturnType<api.FetchFeedContent> {
     return await withPermission<FeedContent, KnownErrorsOf<api.FetchFeedContent>>(
       permissionService.ensureFetchFeedContentPermissionFor(req.context, req.feed),
-      async (): Promise<FeedContent | EntityNotFoundError> => {
+      async (): Promise<FeedContent | EntityNotFoundError | InvalidInputError> => {
         const feed = await feedRepo.findById(req.feed)
         if (!feed) {
           return entityNotFound(req.feed, 'Feed')
         }
-        const service = await serviceRepo.findById(feed.service)
-        if (!service) {
-          return entityNotFound(feed.service, 'FeedService')
+        const fetch = await buildFetchContext({ serviceTypeRepo, serviceRepo, jsonSchemaService }, feed)
+        if (fetch instanceof MageError) {
+          return fetch
         }
-        const serviceType = await serviceTypeRepo.findById(service.serviceType)
-        if (!serviceType) {
-          return entityNotFound(service.serviceType, 'FeedServiceType')
-        }
-        const conn = await serviceType.createConnection(service.config)
+        const conn = fetch.conn
         let params = req.variableParams || {}
         params = Object.assign(params, feed.constantParams || {})
         const content = await conn.fetchTopicContent(feed.topic, params)

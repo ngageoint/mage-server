@@ -9,7 +9,7 @@ import { FeedsPermissionService, ListServiceTopicsRequest, FeedServiceTypeDescri
 import uniqid from 'uniqid'
 import { AppRequestContext, AppRequest } from '../../../lib/app.api/app.api.global'
 import { FeatureCollection } from 'geojson'
-import { JsonObject, JsonSchemaService, JsonValidator } from '../../../lib/entities/entities.json_types'
+import { JsonObject, JsonSchemaService, JsonValidator, JSONSchema4 } from '../../../lib/entities/entities.json_types'
 import _ from 'lodash'
 import { MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { URL } from 'url'
@@ -1502,7 +1502,7 @@ describe('feeds use case interactions', function() {
 
           expect(res.error).to.be.null
           expect(res.success).to.be.an('object')
-          expect(res.success?.feed).to.deep.equal(FeedCreateAttrs(FeedCreateUnresolved(topics[0], feed), {}))
+          expect(res.success?.feed).to.deep.equal(FeedCreateAttrs(FeedCreateUnresolved(topics[0], feed) as FeedCreateUnresolved, {}))
           expect(res.success).to.not.have.key('content')
           serviceConn.received(1).fetchAvailableTopics()
           app.jsonSchemaService.received(1).validateSchema(Arg.deepEquals(topic.paramsSchema))
@@ -1537,7 +1537,7 @@ describe('feeds use case interactions', function() {
 
           expect(res.error).to.be.null
           expect(res.success).to.be.an('object')
-          expect(res.success?.feed).to.deep.equal(FeedCreateAttrs(FeedCreateUnresolved(topics[0], feed), {}))
+          expect(res.success?.feed).to.deep.equal(FeedCreateAttrs(FeedCreateUnresolved(topics[0], feed) as FeedCreateUnresolved, {}))
           expect(res.success?.content).to.deep.equal(<FeedContent>{
             feed: 'preview',
             topic: topic.id,
@@ -1921,7 +1921,7 @@ describe('feeds use case interactions', function() {
           const res = await app.updateFeed(req)
 
           const withTopicAttrs = FeedCreateAttrs(
-            FeedCreateUnresolved(services[1].topics[0], { ...feedMod, service: feeds[1].service, topic: feeds[1].topic }),
+            FeedCreateUnresolved(services[1].topics[0], { ...feedMod, service: feeds[1].service, topic: feeds[1].topic }) as FeedCreateUnresolved,
             { [String(topicIcon.sourceUrl)]: topicIcon.id, [String(mapIcon.sourceUrl)]: mapIcon.id })
           withTopicAttrs.id = feedMod.id
           const expanded = Object.assign({ ...withTopicAttrs }, { service: services[1].service, topic: services[1].topics[0] })
@@ -2361,6 +2361,9 @@ describe('feeds use case interactions', function() {
       const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams )
       const conn = Sub.for<FeedServiceConnection>()
       serviceType.createConnection(Arg.deepEquals(service.config)).resolves(conn)
+      conn.fetchAvailableTopics().resolves([
+        { id: feed.topic } as FeedTopic
+      ])
       conn.fetchTopicContent(feed.topic, mergedParams).resolves(expectedContent)
       const req: FetchFeedContentRequest = requestBy(adminPrincipal, {
         feed: feed.id,
@@ -2394,6 +2397,68 @@ describe('feeds use case interactions', function() {
 
       expect(res.error).to.be.null
       expect(res.success).to.be.an('object')
+    })
+
+    it('removes properties that the feed does not define', async function() {
+
+      const itemPropertiesSchema: JSONSchema4 = {
+        type: 'object',
+        properties: {
+          prop1: { type: 'string' },
+          prop2: { type: 'number' },
+          prop3: { type: 'boolean' }
+        }
+      }
+      const definedPropertiesFeed: Feed = {
+        ..._.cloneDeep(feed),
+        id: uniqid(),
+        itemPropertiesSchema
+      }
+      const extraPropertiesContent: FeedContent = {
+        topic: feed.topic,
+        feed: definedPropertiesFeed.id,
+        items: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              id: 100,
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+              properties: {
+                prop1: 'nor',
+                prop2: 10,
+                prop3: false,
+                wut: 'sup'
+              }
+            },
+            {
+              id: 200,
+              type: 'Feature',
+              geometry: { type: 'Point', coordinates: [ 10, 20 ] },
+              properties: {
+                prop1: 'ler',
+                prop2: 9,
+                wait: 'wut'
+              }
+            },
+          ]
+        }
+      }
+      app.registerFeeds(definedPropertiesFeed)
+      app.permissionService.grantFetchFeedContent(adminPrincipal.user, definedPropertiesFeed.id)
+      const conn = Sub.for<FeedServiceConnection>()
+      conn.fetchAvailableTopics().resolves([ { id: definedPropertiesFeed.topic } as FeedTopic ])
+      conn.fetchTopicContent(Arg.all()).resolves(extraPropertiesContent)
+      serviceType.createConnection(Arg.any()).resolves(conn)
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: definedPropertiesFeed.id })
+      const res = await app.fetchFeedContent(req)
+      const content = res.success!
+      const featureProperties = content.items.features.map(x => x.properties)
+
+      expect(featureProperties).to.deep.equal([
+        _.omit(extraPropertiesContent.items.features[0].properties, 'wut'),
+        _.omit(extraPropertiesContent.items.features[1].properties, 'wait')
+      ])
     })
   })
 })

@@ -1,5 +1,5 @@
 import uniqid from 'uniqid'
-import { FeedCreateUnresolved, FeedTopic, FeedCreateMinimal, ResolvedMapStyle, FeedCreateAttrs } from '../../../lib/entities/feeds/entities.feeds'
+import { FeedCreateUnresolved, FeedTopic, FeedCreateMinimal, ResolvedMapStyle, FeedCreateAttrs, validateItemPropertiesSchemaForFeed, FeedsError, InvalidFeedAttrsErrorData, InvalidFeedAttrsError, ErrInvalidFeedAttrs } from '../../../lib/entities/feeds/entities.feeds'
 import { expect } from 'chai'
 import { URL } from 'url'
 
@@ -186,7 +186,7 @@ describe('feed-create attribute factory', function() {
       summary: 'About the feed',
       itemTemporalProperty: null
     }
-    const createAttrs = FeedCreateUnresolved(topic, minimal)
+    const createAttrs = FeedCreateUnresolved(topic, minimal) as FeedCreateUnresolved
 
     expect(createAttrs.mapStyle).to.deep.equal({
       icon: { sourceUrl: topic.mapStyle.icon?.sourceUrl },
@@ -247,5 +247,171 @@ describe('feed-create attribute factory', function() {
 
     expect(resolvedAgain.icon?.id).to.equal(resolvedIcons[String(unresolvedIcons[0])])
     expect(resolvedAgain.mapStyle?.icon?.id).to.equal('registered1')
+  })
+})
+
+describe('item properties schema validation', function() {
+
+  it('succeeds when the schema is not present', function() {
+
+    let feed: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: uniqid(),
+    }
+    let valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feed,
+      itemPropertiesSchema: null
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feed,
+      itemPropertiesSchema: undefined
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+  })
+
+  it('succeeds when the schema has primary, secondary, and temporal properties', function() {
+
+    const feedBase: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: uniqid(),
+      itemPropertiesSchema: {
+        properties: {
+          type: { type: 'string' },
+          variant: { type: 'string' },
+          when: { type: 'string' }
+        }
+      }
+    }
+
+    let feed: FeedCreateMinimal = {
+      ...feedBase,
+      itemPrimaryProperty: 'type'
+    }
+    let valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feedBase,
+      itemSecondaryProperty: 'variant'
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feedBase,
+      itemTemporalProperty: 'when'
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feedBase,
+      itemPrimaryProperty: 'type',
+      itemSecondaryProperty: 'variant',
+      itemTemporalProperty: 'when'
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+  })
+
+  it('succeeds when primary, secondary, or temporal properties are the same', function() {
+
+    const feedBase: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: uniqid(),
+      itemPropertiesSchema: {
+        properties: {
+          prop1: { type: 'string' },
+          prop2: { type: 'string' },
+          prop3: { type: 'string' }
+        }
+      },
+      itemPrimaryProperty: 'prop1',
+      itemSecondaryProperty: 'prop2',
+      itemTemporalProperty: 'prop3'
+    }
+
+    let feed: FeedCreateMinimal = {
+      ...feedBase,
+      itemPrimaryProperty: 'prop2'
+    }
+    let valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feedBase,
+      itemSecondaryProperty: 'prop1',
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+
+    feed = {
+      ...feedBase,
+      itemTemporalProperty: 'prop2'
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed)
+
+    expect(valid).to.equal(feed)
+  })
+
+  it('fails when the schema is missing any of primary, secondary, or temporal properties', function() {
+
+    const feedBase: FeedCreateMinimal = {
+      service: uniqid(),
+      topic: uniqid(),
+      itemPropertiesSchema: {
+        properties: {
+          prop1: { type: 'string' },
+          prop2: { type: 'string' },
+          prop3: { type: 'string' }
+        }
+      },
+      itemPrimaryProperty: 'prop1',
+      itemSecondaryProperty: 'prop2',
+      itemTemporalProperty: 'prop3'
+    }
+
+    let feed: FeedCreateMinimal = {
+      ...feedBase,
+      itemPrimaryProperty: 'missing'
+    }
+    let valid: InvalidFeedAttrsError = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+
+    expect(valid).to.be.instanceOf(FeedsError)
+    expect(valid.code).to.equal(ErrInvalidFeedAttrs)
+
+    feed = {
+      ...feedBase,
+      itemSecondaryProperty: 'missing',
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+
+    expect(valid).to.be.instanceOf(FeedsError)
+    expect(valid.code).to.equal(ErrInvalidFeedAttrs)
+
+    feed = {
+      ...feedBase,
+      itemTemporalProperty: 'missing'
+    }
+    valid = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+
+    expect(valid).to.be.instanceOf(FeedsError)
+    expect(valid.code).to.equal(ErrInvalidFeedAttrs)
   })
 })

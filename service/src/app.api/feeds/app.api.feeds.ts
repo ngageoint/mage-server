@@ -137,7 +137,7 @@ export interface FetchFeedContentRequest extends AppRequest {
 }
 
 export interface FetchFeedContent {
-  (req: FetchFeedContentRequest): Promise<AppResponse<FeedContent, PermissionDeniedError | EntityNotFoundError>>
+  (req: FetchFeedContentRequest): Promise<AppResponse<FeedContent, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
 }
 
 export interface FeedServiceTypeDescriptor extends Descriptor<'FeedServiceType'>, Pick<FeedServiceType, 'id' | 'title' | 'summary' | 'pluginServiceTypeId'> {

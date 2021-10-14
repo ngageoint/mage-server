@@ -4,9 +4,8 @@ import { FeatureCollection } from 'geojson'
 import { JSONSchema4 } from 'json-schema'
 import { URL } from 'url'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIconId, StaticIconReference } from '../icons/entities.icons'
+import _ from 'lodash'
 
-
-export const ErrInvalidServiceConfig = Symbol.for('err.feeds.invalid_service_config')
 
 export class FeedsError<Code extends symbol, Data> extends Error {
   constructor(readonly code: Code, readonly data?: Data, message?: string) {
@@ -14,14 +13,20 @@ export class FeedsError<Code extends symbol, Data> extends Error {
   }
 }
 
+export const ErrInvalidServiceConfig = Symbol.for('err.feeds.invalid_service_config')
 export interface InvalidServiceConfigErrorData {
   readonly invalidKeys: string[]
   readonly config: Json
 }
-
 export type InvalidServiceConfigError = FeedsError<typeof ErrInvalidServiceConfig, InvalidServiceConfigErrorData>
 
-export const FeedServiceTypeUnregistered = Symbol.for('FeedServiceTypeUnregistered')
+export const ErrInvalidFeedAttrs = Symbol.for('err.feeds.invalid_feed_attrs')
+export type InvalidFeedAttrsErrorData = {
+  readonly invalidKeys?: string[]
+}
+export type InvalidFeedAttrsError = FeedsError<typeof ErrInvalidFeedAttrs, InvalidFeedAttrsErrorData>
+
+export const FeedServiceTypeUnregistered = Symbol.for('err.feeds.service_type_unregistered')
 export type FeedServiceTypeId = string | typeof FeedServiceTypeUnregistered
 
 export interface FeedServiceType {
@@ -296,7 +301,7 @@ export type FeedCreateUnresolved = Omit<FeedCreateAttrs, 'icon' | 'mapStyle'> & 
  * may contain URLs of icons that are not yet registered with MAGE's icon
  * repository.  Any unresolved URLs will be in the `unresolvedIcons` array.
  */
-export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<FeedCreateMinimal>): FeedCreateUnresolved => {
+export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<FeedCreateMinimal>): FeedCreateUnresolved | InvalidFeedAttrsError => {
   type NonNullableCreateAttrs = Omit<FeedCreateAttrs, FeedOverrideTopicNullableKeys>
   const nonNullable: NonNullableCreateAttrs = {
     service: feedMinimal.service,
@@ -346,7 +351,20 @@ export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<Fee
       delete unresolvedAttrs[attr]
     }
   }
-  return unresolvedAttrs
+  return validateItemPropertiesSchemaForFeed(unresolvedAttrs)
+}
+
+export const validateItemPropertiesSchemaForFeed = <T extends Feed | FeedCreateAttrs | FeedCreateMinimal | FeedUpdateMinimal>(feed: T): T | InvalidFeedAttrsError => {
+  const schemaProps = feed.itemPropertiesSchema?.properties
+  if (!schemaProps) {
+    return feed
+  }
+  const referencedProps = [ feed.itemPrimaryProperty, feed.itemSecondaryProperty, feed.itemTemporalProperty ]
+  if (referencedProps.every(key => key ? schemaProps.hasOwnProperty(key) : true)) {
+    return feed
+  }
+  return new FeedsError(ErrInvalidFeedAttrs, { invalidKeys: [ 'itemPropertiesSchema' ] },
+    'feed item properties schema must include primary, secondary, and temporal properties')
 }
 
 const resolvedMapStyle = (unresolved: MapStyle | ResolvedMapStyle, icons: { [iconUrl: string]: StaticIconId }): ResolvedMapStyle => {
@@ -386,6 +404,31 @@ export const FeedCreateAttrs = (unresolved: FeedCreateUnresolved, icons: { [icon
     }
   }
   return resolved
+}
+
+/**
+ * Iterate the features of the given feature collection and remove from the
+ * `properties` object of each feature any entries that the given schema does
+ * not define.  Return a new feature collection object with the modified
+ * @param featureCollection
+ * @param itemPropertiesSchema
+ */
+export const retainSchemaPropertiesInFeatures = (featureCollection: FeatureCollection, itemPropertiesSchema?: Feed['itemPropertiesSchema'] | null): FeatureCollection => {
+  if (!itemPropertiesSchema || !itemPropertiesSchema.properties) {
+    return featureCollection
+  }
+  const retainedPropertyKeys = Object.keys(itemPropertiesSchema.properties)
+  const features = (featureCollection.features || []).map(feature => {
+    const properties = feature.properties ? _.pick(feature.properties, ...retainedPropertyKeys) : null
+    return {
+      ...feature,
+      properties
+    }
+  })
+  return {
+    ...featureCollection,
+    features
+  }
 }
 
 export type FeedContentParams = JsonObject
