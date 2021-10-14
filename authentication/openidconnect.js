@@ -18,7 +18,9 @@ function configure(strategy) {
     userInfoURL: strategy.settings.profileURL,
     callbackURL: `/auth/${strategy.name}/callback`,
     scope: strategy.settings.scope
-  }, function (issuer, sub, profile, done) {
+  }, function (issuer, sub, profileResponse, done) {
+    const profile = profileResponse._json;
+
     if (!profile[strategy.settings.profile.id]) {
       log.warn(JSON.stringify(profile));
       return done(`OIDC user profile does not contain id property ${strategy.settings.profile.id}`);
@@ -44,7 +46,7 @@ function configure(strategy) {
               email = profile[strategy.settings.profile.email];
             }
           } else {
-            log.warn(`OIDC user profile does not contain email property named ${strategy.settings.profile.id}`);
+            log.warn(`OIDC user profile does not contain email property named ${strategy.settings.profile.email}`);
             log.debug(JSON.stringify(profile));
           }
 

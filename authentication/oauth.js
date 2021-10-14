@@ -91,7 +91,7 @@ function configure(strategy) {
                      email = profile[strategy.settings.profile.email];
                   }
                } else {
-                  log.warn(`OAuth2 user profile does not contain email property named ${strategy.settings.profile.id}`);
+                  log.warn(`OAuth2 user profile does not contain email property named ${strategy.settings.profile.email}`);
                   log.debug(JSON.stringify(profile));
                }
 
