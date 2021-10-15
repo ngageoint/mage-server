@@ -20,6 +20,7 @@ export class AdminSettingsComponent  {
     onSave = {};
     bannerDirty = false;
     disclaimerDirty = false;
+    authenticationDirty = false;
 
     constructor(
         private _snackBar: MatSnackBar,
@@ -63,6 +64,10 @@ export class AdminSettingsComponent  {
                 duration: 2000,
             });
         };
+    }
+
+    onAuthenticationDirty(isDirty: boolean): void {
+        this.authenticationDirty = isDirty;
     }
 
     onAuthenticationSaved(status: boolean): void {

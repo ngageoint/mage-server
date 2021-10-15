@@ -13,6 +13,7 @@ import { AuthenticationDeleteComponent } from './admin-authentication-delete/adm
 })
 export class AdminAuthenticationComponent implements OnInit, OnChanges {
     @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
 
     teams: any[] = [];
