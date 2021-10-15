@@ -18,9 +18,9 @@ export class AdminSettingsComponent  {
     token: any;
     selectedTab = new FormControl(0);
     onSave = {};
-    bannerDirty = false;
-    disclaimerDirty = false;
-    authenticationDirty = false;
+    isBannerDirty = false;
+    isDisclaimerDirty = false;
+    isAuthenticationDirty = false;
 
     constructor(
         private _snackBar: MatSnackBar,
@@ -35,7 +35,7 @@ export class AdminSettingsComponent  {
     }
 
     onBannerDirty(isDirty: boolean): void {
-        this.bannerDirty = isDirty;
+        this.isBannerDirty = isDirty;
     }
 
     onBannerSaved(status: boolean): void {
@@ -51,7 +51,7 @@ export class AdminSettingsComponent  {
     }
 
     onDisclaimerDirty(isDirty: boolean): void {
-        this.disclaimerDirty = isDirty;
+        this.isDisclaimerDirty = isDirty;
     }
 
     onDisclaimerSaved(status: boolean): void {
@@ -67,7 +67,7 @@ export class AdminSettingsComponent  {
     }
 
     onAuthenticationDirty(isDirty: boolean): void {
-        this.authenticationDirty = isDirty;
+        this.isAuthenticationDirty = isDirty;
     }
 
     onAuthenticationSaved(status: boolean): void {
@@ -80,5 +80,9 @@ export class AdminSettingsComponent  {
                 duration: 2000,
             });
         };
+    }
+
+    isDirty(): boolean {
+        return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty;
     }
 }

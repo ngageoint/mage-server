@@ -20,7 +20,7 @@
                 </mat-tab>
             </mat-tab-group>
             <div class="settings__action--save">
-                <button mat-flat-button color="primary" (click)="save()">
+                <button mat-flat-button color="primary" (click)="save()" [disabled]="!isDirty()">
                     <mat-icon>check</mat-icon>Save
                 </button>
             </div>
