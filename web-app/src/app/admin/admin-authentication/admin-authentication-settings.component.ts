@@ -31,9 +31,21 @@ export class AdminAuthenticationSettingsComponent {
         value: false
     }];
 
-    onStrategyDirty(isDirty: boolean): void {
+    /**
+     * Set locally
+     * @param isDirty 
+     */
+    setDirty(isDirty: boolean): void {
         this.strategy.isDirty = isDirty;
-        this.strategyDirty.emit(true);
+        this.onStrategyDirty(isDirty);
+    }
+
+    /**
+     * Called by children
+     * @param isDirty 
+     */
+    onStrategyDirty(isDirty: boolean): void {
+        this.strategyDirty.emit(isDirty);
     }
 
     userReqAdminChanged(): void {
