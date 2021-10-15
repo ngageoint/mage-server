@@ -48,4 +48,9 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
       this.strategy.settings.options = {};
     }
   }
+
+  setDirty(isDirty: boolean): void {
+    this.strategy.isDirty = isDirty;
+    this.strategyDirty.emit(isDirty);
+  }
 }
