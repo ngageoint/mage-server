@@ -106,11 +106,6 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
         }
     }
 
-    setDirty(strategy: Strategy, isDirty: boolean): void {
-        strategy.isDirty = isDirty;
-        this.onDirty.emit(isDirty);
-    }
-
     deleteStrategy(strategy: Strategy): void {
         this.dialog.open(AuthenticationDeleteComponent, {
             width: '500px',
