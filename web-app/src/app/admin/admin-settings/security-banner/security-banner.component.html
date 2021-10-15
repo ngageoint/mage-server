@@ -8,57 +8,37 @@
     <div class="mat-title">Header</div>
     <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
-            [ngModelOptions]="{standalone: true}" id="show-header">
+            (change)="isDirty=true">
         </mat-checkbox>
         <mat-label for="show-header">Show Header</mat-label>
     </div>
-    <div>
-        <mat-form-field appearance="outline">
-            <mat-label for="headerText">Header Text</mat-label>
-            <input matInput [(ngModel)]="banner.headerText" [ngModelOptions]="{standalone: true}"
-                [disabled]="!banner.showHeader">
-        </mat-form-field>
-    </div>
-    <div>
-        <mat-label for="headerTextColor">Header Text Color</mat-label>
-        <color-picker [hexColor]="banner.headerTextColor" (onColorChanged)="colorChanged($event, 'headerTextColor')"
-            id="headerTextColor" #headerTextColor>
-        </color-picker>
-    </div>
-    <div>
-        <mat-label for="headerBackgroundColor">Header Background Color</mat-label>
-        <color-picker [hexColor]="banner.headerBackgroundColor"
-            (onColorChanged)="colorChanged($event, 'headerBackgroundColor')" id="headerBackgroundColor"
-            #headerBackgroundColor>
-        </color-picker>
-    </div>
+    <mat-form-field appearance="outline">
+        <mat-label for="headerText">Header Text</mat-label>
+        <input matInput [(ngModel)]="banner.headerText" [disabled]="!banner.showHeader" (click)="isDirty=true">
+    </mat-form-field>
+    <mat-label for="headerTextColor">Header Text Color</mat-label>
+    <color-picker [hexColor]="banner.headerTextColor" id="headerTextColor" #headerTextColor>
+    </color-picker>
+    <mat-label for="headerBackgroundColor">Header Background Color</mat-label>
+    <color-picker [hexColor]="banner.headerBackgroundColor" id="headerBackgroundColor" #headerBackgroundColor>
+    </color-picker>
 </section>
 <section class="mat-typography">
     <div class="mat-title">Footer</div>
     <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
-            [ngModelOptions]="{standalone: true}" id="show-footer">
+            (change)="isDirty=true">
         </mat-checkbox>
         <mat-label for="show-footer">Show Footer</mat-label>
     </div>
-    <div>
-        <mat-form-field appearance="outline"> 
-            <mat-label for="footerText">Footer Text</mat-label>
-            <input matInput [(ngModel)]="banner.footerText"
-                [ngModelOptions]="{standalone: true}" [disabled]="!banner.showFooter">
-        </mat-form-field>
-    </div>
-    <div>
-        <mat-label for="footerTextColor">Footer Text Color</mat-label>
-        <color-picker [hexColor]="banner.footerTextColor" (onColorChanged)="colorChanged($event, 'footerTextColor')"
-            id="footerTextColor" #footerTextColor>
-        </color-picker>
-    </div>
-    <div>
-        <mat-label for="footerBackgroundColor">Footer Background Color</mat-label>
-        <color-picker [hexColor]="banner.footerBackgroundColor"
-            (onColorChanged)="colorChanged($event, 'footerBackgroundColor')" id="footerBackgroundColor"
-            #footerBackgroundColor>
-        </color-picker>
-    </div>
+    <mat-form-field appearance="outline">
+        <mat-label for="footerText">Footer Text</mat-label>
+        <input matInput [(ngModel)]="banner.footerText" [disabled]="!banner.showFooter" (click)="isDirty=true">
+    </mat-form-field>
+    <mat-label for="footerTextColor">Footer Text Color</mat-label>
+    <color-picker [hexColor]="banner.footerTextColor" id="footerTextColor" #footerTextColor>
+    </color-picker>
+    <mat-label for="footerBackgroundColor">Footer Background Color</mat-label>
+    <color-picker [hexColor]="banner.footerBackgroundColor" id="footerBackgroundColor" #footerBackgroundColor>
+    </color-picker>
 </section>

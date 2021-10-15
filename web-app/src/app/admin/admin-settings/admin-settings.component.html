@@ -6,11 +6,10 @@
         <div class="content">
             <mat-tab-group color="primary" mat-stretch-tabs (selectedIndexChange)="selectedTab.setValue($event)">
                 <mat-tab label="Authentication">
-                    <admin-authentication (saveEvent)="onAuthenticationSaved($event)">
-                    </admin-authentication>
+                    <admin-authentication (saveEvent)="onAuthenticationSaved($event)"></admin-authentication>
                 </mat-tab>
                 <mat-tab label="Banner">
-                    <security-banner (saveEvent)="onBannerSaved($event)"></security-banner>
+                    <security-banner (saveComplete)="onBannerSaved($event)" [beginSave]="(onSave)"></security-banner>
                 </mat-tab>
                 <mat-tab label="Disclaimer">
                     <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>

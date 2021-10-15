@@ -1,10 +1,8 @@
-import { Component, Inject, ViewChild } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
-import { AdminAuthenticationComponent } from '../admin-authentication/admin-authentication.component';
 
 @Component({
     selector: 'admin-settings',
@@ -16,12 +14,10 @@ export class AdminSettingsComponent  {
         title: 'Settings',
         icon: 'build'
     }];
-    @ViewChild(SecurityBannerComponent) securityBannerView: SecurityBannerComponent;
-    @ViewChild(SecurityDisclaimerComponent) securityDisclaimerView: SecurityDisclaimerComponent;
-    @ViewChild(AdminAuthenticationComponent) authenticationView: AdminAuthenticationComponent;
-    
+  
     token: any;
     selectedTab = new FormControl(0);
+    onSave = {};
 
     constructor(
         private _snackBar: MatSnackBar,
@@ -32,13 +28,7 @@ export class AdminSettingsComponent  {
     }
 
     save(): void {
-        if (this.selectedTab.value === 1) {
-            this.securityBannerView.save();
-        } else if (this.selectedTab.value === 2) {
-            this.securityDisclaimerView.save();
-        } else {
-            this.authenticationView.save();
-        }
+        this.onSave = {};
     }
 
     onBannerSaved(status: boolean): void {
