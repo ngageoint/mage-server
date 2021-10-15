@@ -27,11 +27,13 @@
                 </mat-expansion-panel-header>
                 <div class="auth__action--enable">
                     <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled" color="primary"
-                        *ngIf="hasAuthConfigEditPermission" (click)="$event.stopPropagation(); setDirty(strategy, true)">
+                        *ngIf="hasAuthConfigEditPermission"
+                        (click)="$event.stopPropagation(); strategy.isDirty=true; onStrategyDirty(true)">
                     </mat-slide-toggle>
                     <mat-label>Enable Authentication</mat-label>
                 </div>
-                <admin-authentication-settings [strategy]="strategy" [teams]="teams" [events]="events">
+                <admin-authentication-settings [strategy]="strategy" [teams]="teams" [events]="events"
+                    (strategyDirty)="onStrategyDirty($event)">
                 </admin-authentication-settings>
                 <div class="auth__action--delete">
                     <button mat-button color="warn" id="delete-strategy-button"

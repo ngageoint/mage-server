@@ -88,7 +88,9 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     private save(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
-            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            if (strategy.isDirty) {
+                promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+            }
         });
 
         if (promises.length > 0) {
@@ -127,5 +129,9 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
 
     createAuthentication(): void {
         this.stateService.go('admin.authenticationCreate')
+    }
+
+    onStrategyDirty(isDirty: boolean): void {
+        this.onDirty.emit(isDirty);
     }
 }

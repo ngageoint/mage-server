@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Strategy, AdminChoice } from '../admin-authentication/admin-settings.model';
 
 @Component({
@@ -10,6 +10,7 @@ export class AdminAuthenticationSettingsComponent {
     @Input() strategy: Strategy;
     @Input() teams: any[] = [];
     @Input() events: any[] = [];
+    @Output() strategyDirty = new EventEmitter<boolean>();
 
     readonly usersReqAdminChoices: AdminChoice[] = [{
         title: 'Enabled',
@@ -32,6 +33,7 @@ export class AdminAuthenticationSettingsComponent {
 
     setDirty(): void {
         this.strategy.isDirty = true;
+        this.strategyDirty.emit(true);
     }
 
     userReqAdminChanged(): void {
