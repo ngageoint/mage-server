@@ -12,7 +12,7 @@
                     <security-banner (saveComplete)="onBannerSaved($event)" [beginSave]="(onSave)"></security-banner>
                 </mat-tab>
                 <mat-tab label="Disclaimer">
-                    <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>
+                    <security-disclaimer (saveComplete)="onDisclaimerSaved($event)" [beginSave]="(onSave)"></security-disclaimer>
                 </mat-tab>
             </mat-tab-group>
             <div class="settings__action--save">
