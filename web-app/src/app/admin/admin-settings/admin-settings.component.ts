@@ -19,6 +19,7 @@ export class AdminSettingsComponent  {
     selectedTab = new FormControl(0);
     onSave = {};
     bannerDirty = false;
+    disclaimerDirty = false;
 
     constructor(
         private _snackBar: MatSnackBar,
@@ -46,6 +47,10 @@ export class AdminSettingsComponent  {
                 duration: 2000,
             });
         };
+    }
+
+    onDisclaimerDirty(isDirty: boolean): void {
+        this.disclaimerDirty = isDirty;
     }
 
     onDisclaimerSaved(status: boolean): void {

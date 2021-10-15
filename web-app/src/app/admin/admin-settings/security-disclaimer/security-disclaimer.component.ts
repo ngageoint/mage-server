@@ -9,6 +9,7 @@ import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 })
 export class SecurityDisclaimerComponent implements OnInit, OnChanges {
     @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
     disclaimer: Disclaimer = {
         showDisclaimer: false,
@@ -52,6 +53,11 @@ export class SecurityDisclaimerComponent implements OnInit, OnChanges {
         }
     }
 
+    setDirty(status: boolean): void {
+        this.isDirty = status;
+        this.onDirty.emit(this.isDirty);
+    }
+
     private save(): void {
         this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
             this.saveComplete.emit(true);
@@ -59,6 +65,6 @@ export class SecurityDisclaimerComponent implements OnInit, OnChanges {
             this.saveComplete.emit(false);
         });
 
-        this.isDirty = false;
+        this.setDirty(false);
     }
 }
