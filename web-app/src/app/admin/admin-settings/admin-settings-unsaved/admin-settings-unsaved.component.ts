@@ -18,7 +18,7 @@ export class AdminSettingsUnsavedComponent {
         this.dialogRef.close('cancel');
     }
 
-    procede(): void {
-        this.dialogRef.close('procede');
+    discard(): void {
+        this.dialogRef.close('discard');
     }
 }
