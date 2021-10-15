@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 interface SignatureAlgorithm {
@@ -20,6 +20,7 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
 
   @Input() strategy: Strategy
   @Input() editable = true
+  @Output() strategyDirty = new EventEmitter<boolean>();
 
   signatureAlgorithms: SignatureAlgorithm[] = [
     {value: 'sha1', viewValue: 'SHA-1'},

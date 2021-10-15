@@ -48,11 +48,17 @@
 <section class="mat-typography">
     <div class="mat-title">Settings</div>
     <div [ngSwitch]="strategy.type">
-        <admin-authentication-local *ngSwitchCase="'local'" [strategy]="strategy"></admin-authentication-local>
-        <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"></admin-authentication-oidc>
-        <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy"></admin-authentication-oauth2>
-        <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy"></admin-authentication-oauth2>
-        <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy"></admin-authentication-ldap>
-        <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy"></admin-authentication-saml>
+        <admin-authentication-local *ngSwitchCase="'local'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-local>
+        <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oidc>
+        <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oauth2>
+        <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oauth2>
+        <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-ldap>
+        <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-saml>
     </div>
 </section>

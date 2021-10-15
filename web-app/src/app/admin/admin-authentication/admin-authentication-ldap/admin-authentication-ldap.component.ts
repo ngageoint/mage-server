@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 interface Scope {
@@ -16,6 +16,7 @@ export class AdminAuthenticationLDAPComponent implements OnInit {
 
   @Input() strategy: Strategy
   @Input() editable = true
+  @Output() strategyDirty = new EventEmitter<boolean>();
 
   scopes: Scope[] = [
     {value: 'sub', viewValue: 'sub'},

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -10,6 +10,7 @@ export class AdminAuthenticationOidcComponent implements OnInit {
 
   @Input() strategy: Strategy
   @Input() editable = true
+  @Output() strategyDirty = new EventEmitter<boolean>();
 
   ngOnInit(): void {
     if (!this.strategy.settings.scope) {

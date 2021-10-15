@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -10,4 +10,5 @@ export class AdminAuthenticationLocalComponent {
 
   @Input() strategy: Strategy
   @Input() editable = true
+  @Output() strategyDirty = new EventEmitter<boolean>();
 }
