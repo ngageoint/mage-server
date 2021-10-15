@@ -11,4 +11,8 @@ export class AdminAuthenticationLocalComponent {
   @Input() strategy: Strategy
   @Input() editable = true
   @Output() strategyDirty = new EventEmitter<boolean>();
+
+  onStrategyDirty(isDirty: boolean): void {
+    this.strategyDirty.emit(isDirty);
+}
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Strategy, AdminChoice } from '../../../admin-authentication/admin-settings.model';
 import { MaxLock } from './account-lock.model';
 
@@ -10,6 +10,7 @@ import { MaxLock } from './account-lock.model';
 })
 export class AccountLockComponent implements OnInit {
     @Input() strategy: Strategy;
+    @Output() strategyDirty = new EventEmitter<boolean>();
 
     readonly accountLockChoices: AdminChoice[] = [{
         title: 'Off',
@@ -43,7 +44,8 @@ export class AccountLockComponent implements OnInit {
         }
     }
 
-    setDirty(): void {
-        this.strategy.isDirty = true;
+    setDirty(isDirty: boolean): void {
+        this.strategy.isDirty = isDirty;
+        this.strategyDirty.emit(isDirty);
     }
 }

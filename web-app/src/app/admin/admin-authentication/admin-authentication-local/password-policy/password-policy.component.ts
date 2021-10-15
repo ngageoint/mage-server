@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
 import { Strategy } from '../../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -8,6 +8,7 @@ import { Strategy } from '../../../admin-authentication/admin-settings.model';
 })
 export class PasswordPolicyComponent implements OnInit {
     @Input() strategy: Strategy;
+    @Output() strategyDirty = new EventEmitter<boolean>();
 
     ngOnInit(): void {
         if (this.strategy.settings.passwordPolicy) {
@@ -27,8 +28,13 @@ export class PasswordPolicyComponent implements OnInit {
                     });
 
                 this.strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
-                this.strategy.isDirty = true;
+                this.setDirty(true);
             }
         }
+    }
+
+    setDirty(isDirty: boolean): void {
+        this.strategy.isDirty = isDirty;
+        this.strategyDirty.emit(isDirty);
     }
 }

@@ -1,4 +1,4 @@
 <div>
-    <account-lock [strategy]="strategy"></account-lock>
-    <password-policy [strategy]="strategy"></password-policy>
+    <account-lock [strategy]="strategy" (strategyDirty)="onStrategyDirty($event)"></account-lock>
+    <password-policy [strategy]="strategy" (strategyDirty)="onStrategyDirty($event)"></password-policy>
 </div>
