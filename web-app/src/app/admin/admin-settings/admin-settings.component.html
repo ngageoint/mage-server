@@ -4,7 +4,7 @@
 <section class="mat-typography">
     <div class="page-container">
         <div class="content">
-            <mat-tab-group color="primary" mat-stretch-tabs (selectedIndexChange)="selectedTab.setValue($event)">
+            <mat-tab-group color="primary" mat-stretch-tabs>
                 <mat-tab label="Authentication">
                     <admin-authentication (saveComplete)="onAuthenticationSaved($event)"
                         (onDirty)="onAuthenticationDirty($event)" [beginSave]="(onSave)">

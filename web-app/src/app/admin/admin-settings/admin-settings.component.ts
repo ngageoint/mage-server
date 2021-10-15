@@ -1,28 +1,29 @@
-import { Component, Inject } from '@angular/core';
+import { Component, HostListener, Inject } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { LocalStorageService } from '../../upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
 
 @Component({
     selector: 'admin-settings',
     templateUrl: 'admin-settings.component.html',
     styleUrls: ['./admin-settings.component.scss']
 })
-export class AdminSettingsComponent  {
+export class AdminSettingsComponent {
     breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build'
     }];
-  
+
     token: any;
-    selectedTab = new FormControl(0);
     onSave = {};
     isBannerDirty = false;
     isDisclaimerDirty = false;
     isAuthenticationDirty = false;
 
     constructor(
+        private dialog: MatDialog,
         private _snackBar: MatSnackBar,
         @Inject(LocalStorageService)
         public localStorageService: any) {
@@ -84,5 +85,22 @@ export class AdminSettingsComponent  {
 
     isDirty(): boolean {
         return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty;
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unsavedChanges(event: Event): void {
+        //TODO implement
+        /*event.preventDefault();
+        if (this.isDirty()) {
+            this.dialog.open(AdminSettingsUnsavedComponent, {
+                width: '500px',
+                data: {},
+                autoFocus: false
+            }).afterClosed().subscribe(result => {
+                if (result === 'discard ') {
+                    console.log("Discard Changes");
+                }
+            });
+        }*/
     }
 }
