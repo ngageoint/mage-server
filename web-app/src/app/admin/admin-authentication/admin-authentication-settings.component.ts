@@ -31,8 +31,8 @@ export class AdminAuthenticationSettingsComponent {
         value: false
     }];
 
-    setDirty(): void {
-        this.strategy.isDirty = true;
+    onStrategyDirty(isDirty: boolean): void {
+        this.strategy.isDirty = isDirty;
         this.strategyDirty.emit(true);
     }
 

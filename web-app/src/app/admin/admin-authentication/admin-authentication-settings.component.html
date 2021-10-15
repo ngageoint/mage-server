@@ -5,7 +5,7 @@
     <mat-label>New User Accounts Require Admin Approval</mat-label>
     <mat-form-field appearance="outline">
         <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled"
-            (selectionChange)="setDirty(); userReqAdminChanged()">
+            (selectionChange)="onStrategyDirty(true); userReqAdminChanged()">
             <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
             </mat-option>
         </mat-select>
@@ -15,7 +15,8 @@
     <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
         <mat-label>New Users Default Event(s)</mat-label>
         <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.newUserEvents" multiple (selectionChange)="setDirty()">
+            <mat-select [(ngModel)]="strategy.settings.newUserEvents" multiple
+                (selectionChange)="onStrategyDirty(true)">
                 <mat-option *ngFor="let event of events" [value]="event.id">
                     {{event.name}}
                 </mat-option>
@@ -25,7 +26,7 @@
         </mat-form-field>
         <mat-label>New Users Default Team(s)</mat-label>
         <mat-form-field appearance="outline">
-            <mat-select [(ngModel)]="strategy.settings.newUserTeams" multiple (selectionChange)="setDirty()">
+            <mat-select [(ngModel)]="strategy.settings.newUserTeams" multiple (selectionChange)="onStrategyDirty(true)">
                 <mat-option *ngFor="let team of teams" [value]="team.name">
                     {{team.name}}
                 </mat-option>
@@ -36,7 +37,7 @@
     </div>
     <mat-label>New Devices Require Admin Approval</mat-label>
     <mat-form-field appearance="outline">
-        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" (selectionChange)="setDirty()">
+        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" (selectionChange)="onStrategyDirty(true)">
             <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
             </mat-option>
         </mat-select>
