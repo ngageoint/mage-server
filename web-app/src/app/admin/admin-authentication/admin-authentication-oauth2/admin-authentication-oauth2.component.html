@@ -4,7 +4,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Client Identifier</mat-label>
-    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientID">
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientID"
+      (click)="setDirty(true)">
     <mat-hint align="end">
       This is obtained from the OAuth 2.0 server (typically once you register your app). The client identifier is unique
       to the OAuth 2.0 server, and is not considered secret.
@@ -13,7 +14,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Client Secret</mat-label>
-    <input matInput type="password" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret">
+    <input matInput type="password" required [readonly]="!editable" [(ngModel)]="strategy.settings.clientSecret"
+      (click)="setDirty(true)">
     <mat-hint align="end">
       This is obtained from the OAuth 2.0 server (typically once you register your app), and should be kept secret.
     </mat-hint>
@@ -23,7 +25,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Authorization URL</mat-label>
-    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.authorizationURL">
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.authorizationURL"
+      (click)="setDirty(true)">
     <mat-hint align="end">
       Endpoint to obtain authorization grant from the resource owner.
     </mat-hint>
@@ -31,7 +34,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Token URL</mat-label>
-    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.tokenURL">
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.tokenURL"
+      (click)="setDirty(true)">
     <mat-hint align="end">
       Endpoint to exchange an authorization grant for an access token.
     </mat-hint>
@@ -39,7 +43,8 @@
 
   <mat-form-field appearance="outline">
     <mat-label>User Profile URL</mat-label>
-    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.profileURL">
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.profileURL"
+      (click)="setDirty(true)">
     <mat-hint align="end">
       Once an access token is obtained, this endpoint will be accessed to obtain user information. This may also be
       referred to as API server.
@@ -50,7 +55,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Scope</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.scope">
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.scope" (click)="setDirty(true)">
     <mat-hint align="end">
       Zero or more scope values indicating which parts of the user's account you wish to access (comma-separated).
     </mat-hint>
@@ -59,7 +64,8 @@
   <div class="mat-subheading-2">Cross-site Request Forgery (CSRF)</div>
 
   <div class="pkce">
-    <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.pkce"></mat-checkbox>
+    <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.pkce" (change)="setDirty(true)">
+    </mat-checkbox>
     <mat-label>PKCE (Proof Key for Code Exchange)</mat-label>
     <div class="mat-caption">
       Helps prevent CSRF and authorization code injection attacks.
@@ -75,7 +81,8 @@
       </mat-expansion-panel-header>
       <div class="mat-subheading-1">Custom Headers</div>
       <div class="basic-auth">
-        <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.headers.basic">
+        <mat-checkbox [disabled]="!editable" color="primary" [(ngModel)]="strategy.settings.headers.basic"
+          (change)="setDirty(true)">
         </mat-checkbox>
         <mat-label>Use Basic Authentication</mat-label>
       </div>
@@ -83,21 +90,24 @@
       <div class="mat-subheading-1">User Profile</div>
       <mat-form-field appearance="outline">
         <mat-label>Profile ID Property</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id">
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
+          (click)="setDirty(true)">
         <mat-hint align="end">
           The id property that is returned in the user profile. Defaults to 'id'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Display Name Property</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName">
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName"
+          (click)="setDirty(true)">
         <mat-hint align="end">
           The display name property that is returned in the user profile. Defaults to 'displayName'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Email Name Property</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email">
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email"
+          (click)="setDirty(true)">
         <mat-hint align="end">
           The email property that is returned in the user profile. Defaults to 'email'.
         </mat-hint>
