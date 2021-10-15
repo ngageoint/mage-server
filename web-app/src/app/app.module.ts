@@ -156,6 +156,7 @@ import { AdminAuthenticationLDAPComponent } from './admin/admin-authentication/a
 import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
 import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
+import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 
 @NgModule({
   declarations: [
@@ -239,7 +240,8 @@ import { AdminAuthenticationSettingsComponent } from './admin/admin-authenticati
     AdminAuthenticationLDAPComponent,
     AdminAuthenticationSAMLComponent,
     ButtonPreviewComponent,
-    AdminAuthenticationSettingsComponent
+    AdminAuthenticationSettingsComponent,
+    AdminSettingsUnsavedComponent
   ],
   imports: [
     CommonModule,
