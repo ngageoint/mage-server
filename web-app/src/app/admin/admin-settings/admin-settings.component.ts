@@ -18,6 +18,7 @@ export class AdminSettingsComponent  {
     token: any;
     selectedTab = new FormControl(0);
     onSave = {};
+    bannerDirty = false;
 
     constructor(
         private _snackBar: MatSnackBar,
@@ -29,6 +30,10 @@ export class AdminSettingsComponent  {
 
     save(): void {
         this.onSave = {};
+    }
+
+    onBannerDirty(isDirty: boolean): void {
+        this.bannerDirty = isDirty;
     }
 
     onBannerSaved(status: boolean): void {

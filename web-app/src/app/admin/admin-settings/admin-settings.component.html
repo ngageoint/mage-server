@@ -9,7 +9,7 @@
                     <admin-authentication (saveComplete)="onAuthenticationSaved($event)" [beginSave]="(onSave)"></admin-authentication>
                 </mat-tab>
                 <mat-tab label="Banner">
-                    <security-banner (saveComplete)="onBannerSaved($event)" [beginSave]="(onSave)"></security-banner>
+                    <security-banner (saveComplete)="onBannerSaved($event)" (onDirty)="onBannerDirty($event)" [beginSave]="(onSave)"></security-banner>
                 </mat-tab>
                 <mat-tab label="Disclaimer">
                     <security-disclaimer (saveComplete)="onDisclaimerSaved($event)" [beginSave]="(onSave)"></security-disclaimer>

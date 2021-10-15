@@ -8,13 +8,13 @@
     <div class="mat-title">Header</div>
     <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showHeader" [checked]="banner.showHeader" color="primary"
-            (change)="isDirty=true">
+            (change)="setDirty(true)">
         </mat-checkbox>
         <mat-label for="show-header">Show Header</mat-label>
     </div>
     <mat-form-field appearance="outline">
         <mat-label for="headerText">Header Text</mat-label>
-        <input matInput [(ngModel)]="banner.headerText" [disabled]="!banner.showHeader" (click)="isDirty=true">
+        <input matInput [(ngModel)]="banner.headerText" [disabled]="!banner.showHeader" (click)="setDirty(true)">
     </mat-form-field>
     <mat-label for="headerTextColor">Header Text Color</mat-label>
     <color-picker [hexColor]="banner.headerTextColor" id="headerTextColor" #headerTextColor>
@@ -27,13 +27,13 @@
     <div class="mat-title">Footer</div>
     <div class="show-section">
         <mat-checkbox [(ngModel)]="banner.showFooter" [checked]="banner.showFooter" color="primary"
-            (change)="isDirty=true">
+            (change)="setDirty(true)">
         </mat-checkbox>
         <mat-label for="show-footer">Show Footer</mat-label>
     </div>
     <mat-form-field appearance="outline">
         <mat-label for="footerText">Footer Text</mat-label>
-        <input matInput [(ngModel)]="banner.footerText" [disabled]="!banner.showFooter" (click)="isDirty=true">
+        <input matInput [(ngModel)]="banner.footerText" [disabled]="!banner.showFooter" (click)="setDirty(true)">
     </mat-form-field>
     <mat-label for="footerTextColor">Footer Text Color</mat-label>
     <color-picker [hexColor]="banner.footerTextColor" id="footerTextColor" #footerTextColor>

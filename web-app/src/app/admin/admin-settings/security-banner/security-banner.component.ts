@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 })
 export class SecurityBannerComponent implements OnInit, OnChanges, OnDestroy {
     @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
     banner: Banner = {
         headerTextColor: '#000000',
@@ -93,13 +94,18 @@ export class SecurityBannerComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
+    setDirty(status: boolean): void {
+        this.isDirty = status;
+        this.onDirty.emit(this.isDirty);
+    }
+
     private save(): void {
         this.settings.update({ type: 'banner' }, this.banner, () => {
             this.saveComplete.emit(true);
         }, () => {
             this.saveComplete.emit(false);
         });
-        this.isDirty = false;
+        this.setDirty(false);
     }
 
     ngOnDestroy(): void {
