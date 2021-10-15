@@ -13,7 +13,6 @@ export class PasswordPolicyComponent implements OnInit {
     ngOnInit(): void {
         if (this.strategy.settings.passwordPolicy) {
             this.buildPasswordHelp();
-            this.strategy.isDirty = false;
         }
     }
 
@@ -28,7 +27,6 @@ export class PasswordPolicyComponent implements OnInit {
                     });
 
                 this.strategy.settings.passwordPolicy.helpText = `Password is invalid, must ${templates.join(' and ')}.`;
-                this.setDirty(true);
             }
         }
     }
