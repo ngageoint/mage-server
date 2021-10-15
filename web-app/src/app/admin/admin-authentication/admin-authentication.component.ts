@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { Component, OnInit, Inject, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Inject, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,8 +11,9 @@ import { AuthenticationDeleteComponent } from './admin-authentication-delete/adm
     templateUrl: 'admin-authentication.component.html',
     styleUrls: ['./admin-authentication.component.scss']
 })
-export class AdminAuthenticationComponent implements OnInit {
-    @Output() saveEvent = new EventEmitter<boolean>();
+export class AdminAuthenticationComponent implements OnInit, OnChanges {
+    @Output() saveComplete = new EventEmitter<boolean>();
+    @Input() beginSave: any;
 
     teams: any[] = [];
     events: any[] = [];
@@ -77,12 +78,16 @@ export class AdminAuthenticationComponent implements OnInit {
         });
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.beginSave && !changes.beginSave.firstChange) {
+            this.save();
+        }
+    }
+
     save(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
-            //if (strategy.isDirty) {
-                promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
-            //}
+            promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
         });
 
         if (promises.length > 0) {
@@ -90,13 +95,13 @@ export class AdminAuthenticationComponent implements OnInit {
                 return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
             }).then(strategies => {
                 this.processUnsortedStrategies(strategies.data);
-                this.saveEvent.emit(true);
+                this.saveComplete.emit(true);
             }).catch(err => {
                 console.log(err);
-                this.saveEvent.emit(false);
+                this.saveComplete.emit(false);
             });
         } else {
-            this.saveEvent.emit(true);
+            this.saveComplete.emit(true);
         }
     }
 
