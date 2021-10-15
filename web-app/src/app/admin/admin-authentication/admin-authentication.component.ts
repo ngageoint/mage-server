@@ -84,7 +84,7 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
         }
     }
 
-    save(): void {
+    private save(): void {
         const promises = [];
         this.strategies.forEach(strategy => {
             promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
@@ -100,8 +100,6 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
                 console.log(err);
                 this.saveComplete.emit(false);
             });
-        } else {
-            this.saveComplete.emit(true);
         }
     }
 
