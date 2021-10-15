@@ -24,4 +24,9 @@ export class AdminAuthenticationOidcComponent implements OnInit {
       this.strategy.settings.profile = {};
     }
   }
+
+  setDirty(isDirty: boolean): void {
+    this.strategy.isDirty = isDirty;
+    this.strategyDirty.emit(isDirty);
+  }
 }
