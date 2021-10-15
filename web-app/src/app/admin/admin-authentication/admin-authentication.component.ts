@@ -104,6 +104,7 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
                 this.saveComplete.emit(false);
             });
         }
+        this.onStrategyDirty(false);
     }
 
     deleteStrategy(strategy: Strategy): void {
