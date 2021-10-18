@@ -105,14 +105,12 @@ export class AdminSettingsComponent implements OnInit {
             });
 
             return ref.afterClosed().toPromise().then(result => {
-                if (!result) {
+                if (result.discard) {
                     this.isAuthenticationDirty = false;
                     this.isBannerDirty = false;
                     this.isDisclaimerDirty = false;
-
-                    return Promise.resolve(true);
                 }
-                return Promise.reject();
+                return Promise.resolve(result.discard);
             });
         }
 

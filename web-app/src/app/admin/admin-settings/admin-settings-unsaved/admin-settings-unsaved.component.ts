@@ -15,10 +15,10 @@ export class AdminSettingsUnsavedComponent {
     }
 
     stay(): void {
-        this.dialogRef.close(true);
+        this.dialogRef.close({ discard: false });
     }
 
     discard(): void {
-        this.dialogRef.close(false);
+        this.dialogRef.close({ discard: true });
     }
 }
