@@ -9,6 +9,7 @@ export const topicDescriptor: FeedTopic = {
   id: 'modu',
   title: 'MODUs',
   summary: 'Mobile Offshore Drilling Units (MODUs) are facilities designed or modified to engage in drilling and exploration activities. The term MODU includes drilling vessels, semisubmersibles, submersibles, jack-ups, and similar facilities that can be moved without substantial effort. These facilities may or may not have self-propulsion equipment on board and may require dynamic positioning equipment or mooring systems to maintain their position.',
+  icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.nga-msi', 'icons/modu.png') },
   paramsSchema: {
     type: 'object',
     properties: {
@@ -29,6 +30,9 @@ export const topicDescriptor: FeedTopic = {
   itemSecondaryProperty: 'rigStatus',
   itemTemporalProperty: 'timestamp',
   updateFrequencySeconds: 60 * 15,
+  mapStyle: {
+    icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.nga-msi', 'icons/modu.png') }
+  },
   itemPropertiesSchema: {
     type: 'object',
     properties: {
