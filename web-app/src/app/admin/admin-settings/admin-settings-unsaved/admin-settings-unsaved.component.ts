@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, NgZone } from '@angular/core'
 import { MatDialogRef } from '@angular/material/dialog';
 
 
@@ -11,14 +11,19 @@ export class AdminSettingsUnsavedComponent {
     userCount = 0;
 
     constructor(
-        public dialogRef: MatDialogRef<AdminSettingsUnsavedComponent>) {
+        private dialogRef: MatDialogRef<AdminSettingsUnsavedComponent>,
+        private ngZone: NgZone) {
     }
 
     stay(): void {
-        this.dialogRef.close({ discard: false });
+        this.ngZone.run(() => {
+            this.dialogRef.close({ discard: false });
+        });
     }
 
     discard(): void {
-        this.dialogRef.close({ discard: true });
+        this.ngZone.run(() => {
+            this.dialogRef.close({ discard: true });
+        });
     }
 }

@@ -98,11 +98,7 @@ export class AdminSettingsComponent implements OnInit {
 
     onUnsavedChanges(): Promise<boolean> {
         if (this.isDirty()) {
-            const ref = this.dialog.open(AdminSettingsUnsavedComponent, {
-                width: '500px',
-                data: {},
-                autoFocus: false
-            });
+            const ref = this.dialog.open(AdminSettingsUnsavedComponent);
 
             return ref.afterClosed().toPromise().then(result => {
                 if (result.discard) {
