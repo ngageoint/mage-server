@@ -14,11 +14,11 @@ export class AdminSettingsUnsavedComponent {
         public dialogRef: MatDialogRef<AdminSettingsUnsavedComponent>) {
     }
 
-    close(): void {
-        this.dialogRef.close('cancel');
+    stay(): void {
+        this.dialogRef.close(true);
     }
 
     discard(): void {
-        this.dialogRef.close('discard');
+        this.dialogRef.close(false);
     }
 }
