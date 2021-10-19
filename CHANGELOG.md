@@ -14,6 +14,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ### Release Notes
 **This release includes database migrations, please remember to backup your database before upgrading.**
 
+##### Upgrading
+
 **If you are using Google for authentication:**
 * Log into MAGE as a user with admin roles.
 * Select 'Administration Options' on the top-right of the screen.
