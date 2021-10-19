@@ -181,6 +181,6 @@
     "bin"
   ],
   "bin": {
-    "mage": "bin/mage.js"
+    "mage.service": "bin/mage.service.js"
   }
 }
