@@ -1,18 +1,15 @@
 import { Component, NgZone } from '@angular/core'
 import { MatDialogRef } from '@angular/material/dialog';
 
-
 @Component({
     selector: 'admin-settings-unsaved',
     templateUrl: './admin-settings-unsaved.component.html',
     styleUrls: ['./admin-settings-unsaved.component.scss']
 })
 export class AdminSettingsUnsavedComponent {
-    userCount = 0;
-
     constructor(
-        private dialogRef: MatDialogRef<AdminSettingsUnsavedComponent>,
-        private ngZone: NgZone) {
+        private readonly dialogRef: MatDialogRef<AdminSettingsUnsavedComponent>,
+        private readonly ngZone: NgZone) {
     }
 
     stay(): void {

@@ -12,25 +12,25 @@ import { TransitionService } from '@uirouter/core';
     styleUrls: ['./admin-settings.component.scss']
 })
 export class AdminSettingsComponent implements OnInit {
-    breadcrumbs: AdminBreadcrumb[] = [{
+    readonly breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build'
     }];
+    readonly token: any;
 
-    token: any;
     onSave = {};
     isBannerDirty = false;
     isDisclaimerDirty = false;
     isAuthenticationDirty = false;
 
     constructor(
-        private dialog: MatDialog,
-        private _snackBar: MatSnackBar,
-        private transitionService: TransitionService,
+        private readonly dialog: MatDialog,
+        private readonly snackBar: MatSnackBar,
+        private readonly transitionService: TransitionService,
         @Inject(LocalStorageService)
-        public localStorageService: any) {
+        private readonly localStorageService: any) {
 
-        this.token = localStorageService.getToken();
+        this.token = this.localStorageService.getToken();
     }
 
     ngOnInit(): void {
@@ -47,11 +47,11 @@ export class AdminSettingsComponent implements OnInit {
 
     onBannerSaved(status: boolean): void {
         if (status) {
-            this._snackBar.open('Banner successfully saved', null, {
+            this.snackBar.open('Banner successfully saved', null, {
                 duration: 2000,
             });
         } else {
-            this._snackBar.open('Failed to save banner', null, {
+            this.snackBar.open('Failed to save banner', null, {
                 duration: 2000,
             });
         };
@@ -64,11 +64,11 @@ export class AdminSettingsComponent implements OnInit {
 
     onDisclaimerSaved(status: boolean): void {
         if (status) {
-            this._snackBar.open('Disclaimer successfully saved', null, {
+            this.snackBar.open('Disclaimer successfully saved', null, {
                 duration: 2000,
             });
         } else {
-            this._snackBar.open('Failed to save disclaimer', null, {
+            this.snackBar.open('Failed to save disclaimer', null, {
                 duration: 2000,
             });
         };
@@ -81,11 +81,11 @@ export class AdminSettingsComponent implements OnInit {
 
     onAuthenticationSaved(status: boolean): void {
         if (status) {
-            this._snackBar.open('Authentication successfully saved', null, {
+            this.snackBar.open('Authentication successfully saved', null, {
                 duration: 2000,
             });
         } else {
-            this._snackBar.open('1 or more authentications failed to save correctly', null, {
+            this.snackBar.open('1 or more authentications failed to save correctly', null, {
                 duration: 2000,
             });
         };

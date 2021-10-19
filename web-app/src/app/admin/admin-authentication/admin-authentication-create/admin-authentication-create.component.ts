@@ -25,7 +25,7 @@ export class AuthenticationCreateComponent implements OnInit {
    }];
    strategy: Strategy;
 
-   readonly typeChoices: TypeChoice[] = [{
+   readonly TYPE_CHOICES: TypeChoice[] = [{
       title: 'OpenID Connect',
       type: 'openidconnect',
       name: 'openidconnect'
@@ -43,38 +43,37 @@ export class AuthenticationCreateComponent implements OnInit {
       name: 'saml'
    }];
 
-   private readonly requiredSettings = {
+   private readonly REQUIRED_SETTINGS = {
       oauth: ['clientSecret', 'clientID', 'authorizationURL', 'tokenURL', 'profileURL'],
       openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'profileURL'],
       ldap: ['url'],
       saml: ['entryPoint']
    }
-   _missingSettings: string[] = []
 
    constructor(
-      private _stateService: StateService,
-      private _snackBar: MatSnackBar,
+      private readonly stateService: StateService,
+      private readonly snackBar: MatSnackBar,
       @Inject(AuthenticationConfigurationService)
-      private _authenticationConfigurationService: any) {
+      private readonly authenticationConfigurationService: any) {
 
       this.breadcrumbs.push({ title: 'New' });
       this.reset();
    }
 
    ngOnInit(): void {
-      this._authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
+      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
          const strategies = response.data
          strategies.forEach(strategy => {
             let idx = -1;
-            for (let i = 0; i < this.typeChoices.length; i++) {
-               const choice = this.typeChoices[i];
+            for (let i = 0; i < this.TYPE_CHOICES.length; i++) {
+               const choice = this.TYPE_CHOICES[i];
                if (choice.name === strategy.name) {
                   idx = i;
                   break;
                }
             }
             if (idx > -1) {
-               this.typeChoices.splice(idx, 1);
+               this.TYPE_CHOICES.splice(idx, 1);
             }
          });
       })
@@ -104,27 +103,27 @@ export class AuthenticationCreateComponent implements OnInit {
             break;
       }
 
-      const settings = this.requiredSettings[this.strategy.type] || []
+      const settings = this.REQUIRED_SETTINGS[this.strategy.type] || []
       settings.forEach(setting => {
          this.strategy.settings[setting] = null
       })
    }
 
    save(): void {
-      this._authenticationConfigurationService.createConfiguration(this.strategy).then(() => {
-         this._stateService.go('admin.settings');
+      this.authenticationConfigurationService.createConfiguration(this.strategy).then(() => {
+         this.stateService.go('admin.settings');
       }).catch((err: any) => {
          console.error(err);
-         this._snackBar.open('An error occured while creating ' + this.strategy.title, null, {
+         this.snackBar.open('An error occured while creating ' + this.strategy.title, null, {
             duration: 2000,
          })
-         this._stateService.go('admin.settings');
+         this.stateService.go('admin.settings');
       });
    }
 
    isValid(): boolean {
-      const requiredSettings = this.requiredSettings[this.strategy.type] || []
-      this._missingSettings = requiredSettings.filter(setting => {
+      const requiredSettings = this.REQUIRED_SETTINGS[this.strategy.type] || []
+      const missingSettings = requiredSettings.filter(setting => {
          const value = this.strategy.settings[setting];
          if(value == null || value === '') {
             return true;
@@ -134,7 +133,7 @@ export class AuthenticationCreateComponent implements OnInit {
 
       return this.strategy.type.length > 0 &&
          this.strategy.name.length > 0 &&
-         this._missingSettings.length === 0
+         missingSettings.length === 0
    }
 
    reset(): void {

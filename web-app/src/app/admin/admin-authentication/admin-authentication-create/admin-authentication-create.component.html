@@ -22,7 +22,7 @@
                   <mat-label>Choose a type</mat-label>
                   <mat-select [(ngModel)]="strategy.name" [ngModelOptions]="{standalone: true}" id="type" name="type"
                      required #type="ngModel">
-                     <mat-option *ngFor="let typeChoice of typeChoices" [value]="typeChoice.name">
+                     <mat-option *ngFor="let typeChoice of TYPE_CHOICES" [value]="typeChoice.name">
                         {{typeChoice.title}}
                      </mat-option>
                   </mat-select>
@@ -48,7 +48,7 @@
                </div>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
-                  <button mat-button matStepperNext [disabled]="false">Next</button>
+                  <button mat-button matStepperNext [disabled]="!isValid()">Next</button>
                </div>
             </mat-step>
             <mat-step label="Login Button">
