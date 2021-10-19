@@ -108,9 +108,6 @@
     "zone.js": "~0.10.2",
     "zxcvbn": "4.4.2"
   },
-  "peerDependencies": {
-    "@ngageoint/mage.service": "~5.4.0"
-  },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.15",
     "@angular-devkit/build-ng-packagr": "~0.901.15",

@@ -34,6 +34,7 @@
     "async": "0.2.x",
     "body-parser": "1.18.3",
     "cfenv": "1.0.3",
+    "commander": "^8.2.0",
     "cookie-session": "1.3.2",
     "dbf": "0.1.0",
     "express": "~4.17.0",
@@ -112,7 +113,6 @@
     "assert": "2.0.0",
     "chai": "4.2.0",
     "chai-as-promised": "^7.1.1",
-    "commander": "^5.1.0",
     "coveralls": "3.0.4",
     "cpy-cli": "^2.0.0",
     "deep-equal": "^2.0.2",
@@ -179,5 +179,8 @@
   "files": [
     "lib",
     "bin"
-  ]
+  ],
+  "bin": {
+    "mage": "bin/mage.js"
+  }
 }

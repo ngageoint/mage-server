@@ -43,6 +43,7 @@ import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.cont
 import { SearchUsers } from './app.impl/users/app.impl.users'
 import { RoleBasedUsersPermissionService } from './permissions/permissions.users'
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose'
+import path from 'path'
 
 
 export interface MageService {
@@ -453,6 +454,14 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
         return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
       }
     }
+  }
+  try {
+    const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
+    const webappDir = path.dirname(webappPackagePath)
+    webController.use(express.static(webappDir))
+  }
+  catch (err) {
+    console.warn('failed to load mage web app package', err)
   }
   return {
     webController,

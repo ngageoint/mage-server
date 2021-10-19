@@ -20,7 +20,7 @@ const post = builderOptions => {
   delete packageDesc.main;
   delete packageDesc.files;
   packageDesc.peerDependencies = {
-    'mage.web-core-lib': packageDesc.version
+    'mage.service': packageDesc.version
   };
   const distDir = path.resolve(process.cwd(), builderOptions.outputPath, 'package.json');
   fs.writeFileSync(distDir, JSON.stringify(packageDesc, null, 2))
