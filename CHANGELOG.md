@@ -13,6 +13,38 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ### Release Notes
 **This release includes database migrations, please remember to backup your database before upgrading.**
+**Follow the following upgrades steps if you are using Google for authentication:**
+* Log into MAGE as a user with admin roles.
+* Select 'Administration Options' on the top-right of the screen.
+* Select 'Settings'
+* Expand 'Google' on the 'Authentication' tab.
+* Populate your 'Client Identifier'.
+* Populate your 'Client Secret'.
+* Set 'Authorization URL' to https://accounts.google.com/o/oauth2/v2/auth.
+* Set 'Token URL' to https://www.googleapis.com/oauth2/v4/token.
+* Set 'User Profile URL' to https://www.googleapis.com/oauth2/v3/userinfo.
+* Set 'Scope' to profile,email,openid.
+* Expand the 'Advanced' section.
+* Set 'Profile ID Property' to sub.
+* Set 'Display Name Property' to name.
+* Click the save button.
+
+**Follow the following upgrades steps if you are using GeoAxis for authentication:**
+* Log into MAGE as a user with admin roles.
+* Select 'Administration Options' on the top-right of the screen.
+* Select 'Settings'
+* Expand 'Geoaxis' on the 'Authentication' tab.
+* Populate your 'Client Identifier'.
+* Populate your 'Client Secret'.
+* Set 'Authorization URL' to https://geoaxis.gxaws.com/ms_oauth/oauth2/endpoints/oauthservice/authorize.
+* Set 'Token URL' to https://gxisapi.gxaws.com/ms_oauth/oauth2/endpoints/oauthservice/tokens.
+* Set 'User Profile URL' to https://gxisapi.gxaws.com/ms_oauth/resources/userprofile/me.
+* Set 'Scope' to UserProfile.me.
+* Expand the 'Advanced' section.
+* Enable the 'Use Basic Authentication' custom header.
+* Set 'Profile ID Property' to mail.
+* Set 'Email Name Property' to mail.
+* Click the save button.
 
 ##### Features
 * Multi form support. Users will be able to add multiple forms to an observation when the server configuration allows. Administrators can restrict total amount of forms, as well as min/max for individual forms.
