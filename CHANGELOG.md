@@ -16,7 +16,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Upgrading
 
-**If you are using Google for authentication:**
+If you are using Google for authentication:
 * Log into MAGE as a user with admin roles.
 * Select 'Administration Options' on the top-right of the screen.
 * Select 'Settings'
@@ -32,7 +32,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Set 'Display Name Property' to name.
 * Click the save button.
 
-**If you are using GeoAxis for authentication:**
+If you are using GeoAxis for authentication:
 * Log into MAGE as a user with admin roles.
 * Select 'Administration Options' on the top-right of the screen.
 * Select 'Settings'
