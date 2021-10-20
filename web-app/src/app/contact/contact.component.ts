@@ -44,8 +44,7 @@ export class ContactComponent implements OnChanges {
 
     this.dialog.open(ContactDialogComponent, {
       width: '500px',
-      data: data,
-      autoFocus: false
+      data: data
     }).afterClosed().subscribe(result => {
       if (!result || result === 'closeAction') {
         this.onContactClose.emit();
