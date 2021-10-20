@@ -21,8 +21,8 @@ If you are using Google for authentication:
 * Select 'Administration Options' on the top-right of the screen.
 * Select 'Settings'
 * Expand 'Google' on the 'Authentication' tab.
-* Populate your 'Client Identifier'.
-* Populate your 'Client Secret'.
+* Populate your 'Client Identifier'. Available from https://console.developers.google.com/.
+* Populate your 'Client Secret'. Available from https://console.developers.google.com/.
 * Set 'Authorization URL' to https://accounts.google.com/o/oauth2/v2/auth.
 * Set 'Token URL' to https://www.googleapis.com/oauth2/v4/token.
 * Set 'User Profile URL' to https://www.googleapis.com/oauth2/v3/userinfo.
