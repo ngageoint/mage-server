@@ -14,7 +14,7 @@
     </div>
     <mat-form-field appearance="outline">
         <mat-label for="headerText">Header Text</mat-label>
-        <input matInput [(ngModel)]="banner.headerText" [disabled]="!banner.showHeader" (click)="setDirty(true)">
+        <input matInput [(ngModel)]="banner.headerText" required [disabled]="!banner.showHeader" (click)="setDirty(true)">
     </mat-form-field>
     <mat-label for="headerTextColor">Header Text Color</mat-label>
     <color-picker [hexColor]="banner.headerTextColor" id="headerTextColor" #headerTextColor>
@@ -33,7 +33,7 @@
     </div>
     <mat-form-field appearance="outline">
         <mat-label for="footerText">Footer Text</mat-label>
-        <input matInput [(ngModel)]="banner.footerText" [disabled]="!banner.showFooter" (click)="setDirty(true)">
+        <input matInput [(ngModel)]="banner.footerText" required [disabled]="!banner.showFooter" (click)="setDirty(true)">
     </mat-form-field>
     <mat-label for="footerTextColor">Footer Text Color</mat-label>
     <color-picker [hexColor]="banner.footerTextColor" id="footerTextColor" #footerTextColor>
