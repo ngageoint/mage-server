@@ -127,7 +127,7 @@
       <div class="mat-subheading-1">User Profile</div>
       <mat-form-field appearance="outline">
         <mat-label>Profile ID Property</mat-label>
-        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindProperty"
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
           (click)="setDirty(true)">
         <mat-hint align="end">
           The id property that is returned in the user profile. Defaults to 'cn'.
