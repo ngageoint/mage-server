@@ -1,9 +1,0 @@
-{
-  "servicePlugins": [
-    "@ngageoint/mage.image.service",
-    "@ngageoint/mage.nga-msi"
-  ],
-  "webUiPlugins": [
-    "@ngageoint/mage.image.webapp"
-  ]
-}
