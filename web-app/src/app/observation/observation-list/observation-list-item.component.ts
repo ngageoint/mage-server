@@ -1,9 +1,9 @@
 import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
 import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import * as moment from 'moment'
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service'
 import { MatRipple } from '@angular/material/core';
 import { animate, style, transition, trigger } from '@angular/animations'
+import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service'
 
 @Component({
   selector: 'observation-list-item',
@@ -114,7 +114,7 @@ export class ObservationListItemComponent implements OnChanges {
   }
 
   onObservationLocationClick(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'Observations')
+    this.mapService.zoomToFeatureInLayer(this.observation, 'observations')
   }
 
   updateItem(): void {

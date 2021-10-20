@@ -28,9 +28,9 @@ class AdminDeviceEditController {
       this.device = {};
     }
 
-    this.stateAndData.delete('active');
-    this.stateAndData.delete('inactive');
-    this.stateAndData.delete('disabled');
+    delete this.stateAndData.active;
+    delete this.stateAndData.inactive;
+    delete this.stateAndData.disabled;
 
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.pocs = this.UserPagingService.users(this.stateAndData[this.userState]);

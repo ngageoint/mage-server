@@ -6,6 +6,7 @@
   <mat-sidenav #drawer mode="over" position="end" autoFocus="false">
     <map-layers-panel 
       [mageLayers]="groups['MAGE'].layers" 
+      [feedLayers]="groups['feed'].layers"
       [baseLayers]="groups['base'].layers" 
       [tileOverlays]="groups['tile'].layers" 
       [featureOverlays]="groups['feature'].layers"

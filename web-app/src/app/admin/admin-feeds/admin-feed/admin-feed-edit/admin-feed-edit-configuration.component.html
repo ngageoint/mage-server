@@ -1,0 +1,55 @@
+<mat-expansion-panel [expanded]="expanded" (opened)="opened.emit()" hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Describe the Feed
+    </mat-panel-title>
+    <mat-panel-description>
+      For any values you omit below, MAGE will assign values based on the topic
+      you selected.
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <form [formGroup]="feedMetaDataForm" class="meta-data-form">
+    <mat-form-field>
+      <mat-label>Title</mat-label>
+      <input matInput type="text" formControlName="title"/>
+      <mat-hint>Short title to identify the feed</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Summary</mat-label>
+      <input matInput type="text" formControlName="summary"/>
+      <mat-hint>Purpose and content of the feed</mat-hint>
+    </mat-form-field>
+    <mat-checkbox formControlName="itemsHaveIdentity">Items have unique ID</mat-checkbox>
+    <mat-checkbox formControlName="itemsHaveSpatialDimension">Items are geospatial features</mat-checkbox>
+    <mat-form-field>
+      <mat-label>Primary property</mat-label>
+      <input matInput type="text" formControlName="itemPrimaryProperty" [matAutocomplete]="itemPropertyAutoComplete"/>
+      <mat-hint>Appears as the main text on the feed's items</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Secondary property</mat-label>
+      <input matInput type="text" formControlName="itemSecondaryProperty" [matAutocomplete]="itemPropertyAutoComplete"/>
+      <mat-hint>Appears as ancillary text on the feed's items</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Date/time property</mat-label>
+      <input matInput type="text" formControlName="itemTemporalProperty" [matAutocomplete]="itemPropertyAutoComplete"/>
+      <mat-hint>Used for sorting items chronologically</mat-hint>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Refresh interval hint (seconds)</mat-label>
+      <input matInput type="number" formControlName="updateFrequencySeconds"/>
+      <mat-hint>Hint how often to query for new feed data</mat-hint>
+    </mat-form-field>
+    <div class="icon-field">
+      <span class="mat-hint">Icon</span> <mage-static-icon-form-field formControlName="icon"></mage-static-icon-form-field>
+    </div>
+    <mat-autocomplete #itemPropertyAutoComplete="matAutocomplete">
+      <mat-option *ngFor="let itemProperty of itemSchemaPropertyTitles" [value]="itemProperty.key">{{itemProperty.title}}</mat-option>
+    </mat-autocomplete>
+  </form>
+  <mat-action-row>
+    <button mat-button color="warn" (click)="onPreviousStep()">Previous</button>
+    <button mat-button color="primary" (click)="onAccepted()">{{buttonText}}</button>
+  </mat-action-row>
+</mat-expansion-panel>

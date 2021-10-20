@@ -1,0 +1,20 @@
+.user-option {
+  margin: 0.85em 0;
+}
+
+.user-option > .user-option__line {
+  margin: 0 0 0.6em 0;
+  padding: 0;
+  line-height: 1.0em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-option > .user-option__line.primary {
+  font-size: 1.0em;
+}
+
+.user-option > .user-option__line.detail {
+  font-size: 0.85em;
+  opacity: 0.75;
+}

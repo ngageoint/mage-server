@@ -21,9 +21,10 @@ export default {
   template: require('./admin.tab.html'),
   controller: AdminTabController,
   bindings: {
-    state: '@',
+    stateName: '@',
     inactiveUsers: '<',
-    unregisteredDevices: '<'
+    unregisteredDevices: '<',
+    pluginTabs: '<'
   }
 };
 

@@ -1,0 +1,16 @@
+
+.main {
+  padding: 1rem;
+}
+
+.components {
+  display: flex;
+  flex-direction: row;
+  padding: 1rem;
+  left: 0;
+  right: 0;
+}
+
+.components > .component {
+  width: 40rem;
+}

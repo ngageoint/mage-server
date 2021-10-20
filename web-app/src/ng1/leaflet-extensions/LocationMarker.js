@@ -47,6 +47,10 @@ L.LocationMarker = L.Layer.extend({
     this.on('popupclose', () => {
       this._group.removeLayer(this._accuracyCircle);
     });
+
+    this.on('click', function() {
+      this.openPopup();
+    })
   },
 
   onAdd: function(map) {

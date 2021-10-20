@@ -1,0 +1,44 @@
+<mat-expansion-panel [expanded]="expanded" (opened)="this.opened.emit()" hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Choose a Service and Topic
+    </mat-panel-title>
+    <mat-panel-description>{{selectedService?.title}} : {{selectedTopic?.title}}</mat-panel-description>
+  </mat-expansion-panel-header>
+
+  <!--
+    TODO: these two lists might work better as scrollable list dialogs that can
+    present the title and summary of the services and topics, and whatever
+    other information might be relevant when choosing those items.
+  -->
+  <div>
+    <mat-form-field appearance="outline" *ngIf="services?.length">
+      <mat-label>Select A Service</mat-label>
+      <mat-select class="service-select" [(ngModel)]="selectedService" (selectionChange)="onServiceSelected()" [required]>
+        <!-- <mat-option>
+          <ngx-mat-select-search placeholderLabel="Select A Service"
+            noEntriesFoundLabel=""></ngx-mat-select-search>
+        </mat-option> -->
+        <mat-option *ngFor="let service of services" [value]="service">
+          {{service.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <mat-form-field appearance="outline">
+      <mat-label>Select A Topic</mat-label>
+      <mat-select class="topic-select" [(ngModel)]="selectedTopic" (selectionChange)="onTopicSelected()" [required]>
+        <!-- <mat-option>
+          <ngx-mat-select-search placeholderLabel="Select A Topic"
+            noEntriesFoundLabel=""></ngx-mat-select-search>
+        </mat-option> -->
+        <mat-option *ngFor="let topic of topics" [value]="topic">
+          {{topic.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+</mat-expansion-panel>

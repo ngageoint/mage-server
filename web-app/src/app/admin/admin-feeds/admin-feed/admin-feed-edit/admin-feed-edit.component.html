@@ -1,0 +1,63 @@
+<div class="page">
+  <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+  <div class="page-container">
+    <div class="header" *ngIf="editState.originalFeed">
+      <mage-static-icon-img class="icon" *ngIf="editState.originalFeed?.icon" [iconRef]="editState.originalFeed?.icon"></mage-static-icon-img>
+      <span class="header__title">{{editState.originalFeed.title}}</span>
+    </div>
+
+    <div class="page-content">
+      <div class="feed__configuration">
+        <mat-accordion class="example-headers-align" [multi]="editState.originalFeed">
+          <app-create-service *ngIf="!editState.originalFeed" [expanded]="step === -1" (opened)="setStep(-1)"
+            (cancelled)="serviceCreationCancelled()" (serviceCreated)="serviceCreated($event)">
+          </app-create-service>
+          <app-choose-service-topic *ngIf="!editState.originalFeed"
+            [services]="editState.availableServices" [topics]="editState.availableTopics"
+            [selectedService]="editState.selectedService" [selectedTopic]="editState.selectedTopic" [expanded]="step === 0"
+            (opened)="setStep(0)" (serviceSelected)="onServiceSelected($event)" (topicSelected)="onTopicSelected($event)">
+          </app-choose-service-topic>
+          <app-topic-configuration [expanded]="step === 1" [showPrevious]="!editState.originalFeed" (opened)="setStep(1)" (cancelled)="setStep(0)"
+            [fetchParametersSchema]="editState.selectedTopic?.paramsSchema"
+            [initialFetchParameters]="editState.originalFeed?.constantParams"
+            (fetchParametersChanged)="onFetchParametersChanged($event)"
+            (fetchParametersAccepted)="onFetchParametersAccepted($event)">
+          </app-topic-configuration>
+          <app-feed-item-properties-configuration [expanded]="step === 2" (opened)="setStep(2)" (cancelled)="setStep(1)"
+            [topicSchema]="editState.selectedTopic?.itemPropertiesSchema || null"
+            [feedSchema]="editState.itemPropertiesSchema"
+            (feedSchemaChanged)="onItemPropertiesSchemaChanged($event)"
+            (feedSchemaAccepted)="onItemPropertiesSchemaAccepted()">
+          </app-feed-item-properties-configuration>
+          <app-feed-configuration [expanded]="step === 3" [buttonText]="editState.originalFeed ? 'Update Feed' : 'Create Feed'"
+            [topic]="editState.selectedTopic"
+            [itemPropertiesSchema]="editState.itemPropertiesSchema || editState.selectedTopic?.itemPropertiesSchema"
+            [feedMetaData]="editState.feedMetaData"
+            (opened)="setStep(3)" (cancelled)="setStep(2)"
+            (feedMetaDataChanged)="onFeedMetaDataChanged($event)"
+            (feedMetaDataAccepted)="onFeedMetaDataAccepted($event)">
+          </app-feed-configuration>
+        </mat-accordion>
+      </div>
+      <div class="feed__preview">
+        <div *ngIf="editState.preview else elseBlockPreview">
+          <div class="preview--list">
+            <mat-nav-list>
+              <div *ngFor="let feature of editState.preview?.content?.items?.features | slice:0:10">
+                <feed-item-summary [item]="feature" [feed]="editState.preview.feed"></feed-item-summary>
+                <mat-divider></mat-divider>
+              </div>
+            </mat-nav-list>
+          </div>
+        </div>
+        <ng-template #elseBlockPreview>
+          <div class="preview--empty">
+            <i class="material-icons preview__img--empty">list</i>
+            <span class="preview__span--empty">Feed Preview</span>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

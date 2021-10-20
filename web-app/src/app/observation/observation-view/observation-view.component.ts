@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { FeedPanelService } from '../../feed-panel/feed-panel.service';
-import * as moment from 'moment'
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
+import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import * as moment from 'moment'
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -123,7 +123,7 @@ export class ObservationViewComponent implements OnChanges {
       panelClass: 'feed-panel'
     }).afterDismissed().subscribe((option: ObservationOption) => {
       switch(option) {
-        case ObservationOption.DOWNLOAD: 
+        case ObservationOption.DOWNLOAD:
           this.downloadObservation()
           break;
         case ObservationOption.DELETE:
@@ -157,7 +157,7 @@ export class ObservationViewComponent implements OnChanges {
   }
 
   onObservationLocationClick(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'Observations');
+    this.mapService.zoomToFeatureInLayer(this.observation, 'observations');
   }
 
   updateObservation(): void {
@@ -188,7 +188,7 @@ export class ObservationViewComponent implements OnChanges {
       },
       forms: []
     }
-    
+
     this.observation.properties.forms.forEach(propertyForm => {
       const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
       this.observationForm.forms.push(observationForm)

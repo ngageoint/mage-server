@@ -1,0 +1,70 @@
+<div class="page" *ngIf="service && serviceType">
+  <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+  <div class="heading">
+    <div class="heading__content">
+      <mat-icon class="heading__icon">cloud_queue</mat-icon>
+      <div class="heading__info">
+        <div class="heading__title">{{service.title}}</div>
+        <div class="heading__summary">{{service.summary}}</div>
+      </div>
+    </div>
+
+    <div class="heading__actions">
+      <button mat-button color="warn" class="heading__action" (click)="deleteService()">
+        <mat-icon>delete</mat-icon>Delete
+      </button>
+    </div>
+  </div>
+
+  <div class="content" *ngIf="service">
+    <div class="row__card">
+      <div class="column__config">
+        <mat-card class="content__card">
+          <mat-card-header>
+            <mat-card-title class="primary-color">Configuration</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mage-json-schema-form
+              [(schema)]="serviceType.configSchema"
+              [data]="service.config"
+              [options]="configOptions"
+              framework="material-design">
+            </mage-json-schema-form>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <div class="column__feeds">
+        <mat-card class="content__card">
+          <mat-card-header>
+            <mat-card-title color="primary">Feeds</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-nav-list>
+              <ng-container *ngFor="let feed of feeds | slice:(feedPage*itemsPerPage):((feedPage+1)*itemsPerPage);">
+
+                <mat-list-item (click)="goToFeed(feed)">
+                  <mat-icon class="feed__icon" mat-list-icon>rss_feed</mat-icon>
+                  <div mat-line>{{feed.title}}</div>
+                  <div mat-line>{{feed.summary}}</div>
+                </mat-list-item>
+
+                <mat-divider [inset]="true"></mat-divider>
+
+              </ng-container>
+            </mat-nav-list>
+
+            <mat-paginator [length]="feeds.length" [pageSize]="itemsPerPage" (page)="feedPage = $event.pageIndex">
+            </mat-paginator>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #loading>
+  <div>
+    Loading
+  </div>
+</ng-template>

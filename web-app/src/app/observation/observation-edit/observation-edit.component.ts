@@ -139,7 +139,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       }
 
       if (this.isNewObservation) {
-        this.mapService.addFeaturesToLayer([this.observation], 'Observations')
+        this.mapService.addFeaturesToLayer([this.observation], 'observations')
       }
 
       this.toFormGroup(this.observation)
@@ -225,7 +225,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         secondaryFieldValue = primaryFormGroup.get(definition.secondaryFeedField).value
       }
 
-      if ((this.primaryField && primaryFieldValue !== this.primaryFieldValue) || 
+      if ((this.primaryField && primaryFieldValue !== this.primaryFieldValue) ||
           ((this.secondaryField && secondaryFieldValue !== this.secondaryFieldValue))) {
         this.primaryFieldValue = this.primaryField ? primaryFieldValue : null
         this.secondaryFieldValue = this.secondaryField ? secondaryFieldValue : null
@@ -261,7 +261,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       // as the event service will add it back to the map based on it new id
       // if it passes the current filter.
       if (id === 'new') {
-        this.mapService.removeFeatureFromLayer({ id: id }, 'Observations')
+        this.mapService.removeFeatureFromLayer({ id: id }, 'observations')
       }
 
       this.error = null
@@ -277,7 +277,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
             value.forEach(fieldAttachment => {
               const attachment = observation.attachments.find(attachment => {
                 return !attachment.url &&
-                  attachment.name === fieldAttachment.name && 
+                  attachment.name === fieldAttachment.name &&
                   attachment.contentType == fieldAttachment.contentType
               });
 
@@ -312,9 +312,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   cancel(): void {
     this.observation.geometry = this.initialObservation.geometry;
     if (this.observation.id !== 'new') {
-      this.mapService.updateFeatureForLayer(this.observation, 'Observations')
+      this.mapService.updateFeatureForLayer(this.observation, 'observations')
     } else {
-      this.mapService.removeFeatureFromLayer(this.observation, 'Observations')
+      this.mapService.removeFeatureFromLayer(this.observation, 'observations')
     }
 
     if (this.formRemoveSnackbar) {
@@ -385,7 +385,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       duration: 5000,
       panelClass: 'form-remove-snackbar',
     })
-    
+
     this.formRemoveSnackbar.onAction().subscribe(() => {
       formArray.insert(index, formGroup)
     })
@@ -440,7 +440,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
             }
           })
         })
-      
+
         this.saving = false;
         break;
       }

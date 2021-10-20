@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, ApplicationRef, DoBootstrap } from '@angular/core';
 
 import { UpgradeModule } from '@angular/upgrade/static';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
@@ -83,10 +83,12 @@ import { ObservationListComponent } from './observation/observation-list/observa
 import { UserViewComponent } from './user/user-view/user-view.component';
 import { UserListItemComponent } from './user/user-list/user-list-item.component';
 import { UserListComponent } from './user/user-list/user-list.component';
+import { FeedListComponent } from './feed/feed-list/feed-list.component';
 import { FeedPanelComponent } from './feed-panel/feed-panel.component';
 
 import {
   mapServiceProvider,
+  eventResourceProvider,
   eventServiceProvider,
   localStorageServiceProvider,
   geometryServiceProvider,
@@ -128,8 +130,17 @@ import {
   ObservationEditComponent
 } from './observation/observation-edit/observation-edit';
 
+import { FeedItemComponent } from './feed/feed-item/feed-item.component';
+import { FeedItemMapPopupComponent } from './feed/feed-item/feed-item-map/feed-item-map-popup.component';
+import { FeedItemSummaryModule } from './feed/feed-item/feed-item-summary/feed-item-summary.module';
+
+import { FeedPanelTabComponent } from './feed-panel/feed-panel-tab.component';
+import { AdminFeedsModule } from './admin/admin-feeds/admin-feeds.module';
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from './user/user-popup/user-popup.component';
+import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
+import { AdminModule } from './admin/admin.module'
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
 import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent, ContactInfoComponent } from './admin/admin-settings/admin-settings';
@@ -163,8 +174,12 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
-    MGRSValidatorDirective,
+    FeedItemComponent,
+    FeedItemMapPopupComponent,
+    FeedListComponent,
     FeedPanelComponent,
+    FeedPanelTabComponent,
+    MGRSValidatorDirective,
     ObservationListItemComponent,
     ObservationEditComponent,
     ObservationDeleteComponent,
@@ -204,7 +219,6 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     UserViewComponent,
     UserListItemComponent,
     UserListComponent,
-    FeedPanelComponent,
     ObservationPopupComponent,
     UserPopupComponent,
     AdminSettingsComponent,
@@ -224,8 +238,6 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     DatetimePickerComponent,
     ExportComponent,
     ExportDialogComponent,
-    ObservationEditFormPickerComponent,
-    ObservationOptionsComponent,
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
@@ -238,7 +250,7 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     BrowserModule,
     HttpClientModule,
     UpgradeModule,
-    UIRouterUpgradeModule.forRoot({ states: [] }),
+    UIRouterUpgradeModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
@@ -269,11 +281,14 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     MatExpansionModule,
     MatListModule,
     MatRippleModule,
-    NgxMatSelectSearchModule,
     MatChipsModule,
     MatSidenavModule,
     MatSnackBarModule,
     MatProgressBarModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MageCommonModule,
     MomentModule,
     GeometryModule,
     ScrollingModule,
@@ -286,7 +301,11 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     MatSortModule,
     MatSnackBarModule,
     MatDatepickerModule,
-    MatNativeDateModule,
+    NgxMatSelectSearchModule,
+    AdminModule,
+    AdminFeedsModule,
+    FeedItemSummaryModule,
+    StaticIconModule,
     AdminBreadcrumbModule,
     MatSlideToggleModule,
     MatStepperModule
@@ -295,6 +314,7 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     mapServiceProvider,
     userServiceProvider,
     filterServiceProvider,
+    eventResourceProvider,
     eventServiceProvider,
     geometryServiceProvider,
     observationServiceProvider,
@@ -308,7 +328,8 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ]
 })
-export class AppModule {
+export class AppModule implements DoBootstrap {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public ngDoBootstrap(): void {}
+  public ngDoBootstrap(appRef: ApplicationRef): void {
+  }
 }

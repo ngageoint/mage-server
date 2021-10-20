@@ -80,6 +80,12 @@ function LayerService($q, Layer, FilterService, LocalStorageService) {
         deferred.resolve(data);
       },
       error: function(e) {
+        if (e.status === 400) {
+          deferred.reject({error: {
+            status: e.status,
+            text: e.responseText
+          }})
+        }
         deferred.reject(e.responseJSON);
       },
       data: formData,

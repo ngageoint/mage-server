@@ -98,7 +98,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
       this.featureEdit.save();
       this.save.emit({ feature: this.feature });
     } else {
-      this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'Observations');
+      this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations');
       this.featureEdit.cancel();
       this.save.emit({});
     }

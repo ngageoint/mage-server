@@ -4,7 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTabGroup } from '@angular/material/tabs';
 import * as moment from 'moment';
 import { EventService, FilterService, MapService, UserService } from '../upgrade/ajs-upgraded-providers';
-import { FeedPanelService } from './feed-panel.service';
+import { FeedAction, FeedPanelService } from './feed-panel.service';
+import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 
 @Component({
   selector: 'feed-panel',
@@ -32,7 +33,20 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   @ViewChild('tabGroup') tabGroup: MatTabGroup
   @ViewChild('permissionDialog') permissionDialog: TemplateRef<any>
 
-  currentFeedPanel = 'observations'
+  defaultTabs = [{
+    id: 'observations',
+    title: 'Observations',
+    icon: 'place'
+  }, {
+    id: 'people',
+    title: 'People',
+    icon: 'people'
+  }]
+  tabs = this.defaultTabs.slice()
+
+  currentTab: any
+
+  feedItem: any
 
   edit = false
   editForm: any
@@ -53,6 +67,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   constructor(
     public dialog: MatDialog,
+    private feedService: FeedService,
     private feedPanelService: FeedPanelService,
     @Inject(MapService) private mapService: any,
     @Inject(UserService) private userService: any,
@@ -60,13 +75,18 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     @Inject(EventService) private eventService: any) { }
 
   ngOnInit(): void {
+    this.currentTab = this.tabs[0]
+
     this.eventService.addObservationsChangedListener(this)
+    this.feedService.feeds.subscribe(feeds => this.onFeedsChanged(feeds));
+    this.feedPanelService.item$.subscribe(event => this.onFeedItemEvent(event));
 
     this.feedPanelService.viewUser$.subscribe(event => {
       this.viewUser = event.user
       this.newObservation = null
       this.editObservation = null
       this.viewObservation = null
+      this.feedItem = null
 
       this.toggle.emit({
         hidden: false
@@ -78,6 +98,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
       this.newObservation = null
       this.editObservation = null
       this.viewUser = null
+      this.feedItem = null
 
       this.toggle.emit({
         hidden: false
@@ -131,6 +152,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
       this.editObservation = null
       this.viewObservation = null
       this.viewUser = null
+      this.feedItem = null
       this.observationBadge = null
     }
 
@@ -142,8 +164,18 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     }
   }
 
+  onTabSwitched(tab): void {
+    this.currentTab = tab;
+
+    this.newObservation = null;
+    this.editObservation = null;
+    this.viewObservation = null;
+    this.viewUser = null;
+    this.feedItem = null;
+  }
+
   onObservationsChanged(changed): void {
-    if (!this.firstObservationChange && this.tabGroup.selectedIndex !== 0) {
+    if (!this.firstObservationChange && this.currentTab.id !== 'observations') {
       if (changed.added && changed.added.length) this.observationBadge += changed.added.length
       if (changed.updated && changed.updated.length) this.observationBadge += changed.updated.length
     }
@@ -155,9 +187,9 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     const event = this.filterService.getEvent()
     if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
       this.info = {
-          statusTitle: this.statusTitle,
-          statusMessage: this.statusMessage,
-          id: this.userService.myself.username
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: this.userService.myself.username
       };
       this.contactOpen = { opened: true };
 
@@ -180,7 +212,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
     this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
       for (let i = 0; i < form.min || 0; i++) {
-        observation.properties.forms.push({ formId: form.id})
+        observation.properties.forms.push({ formId: form.id })
       }
 
       if (form.default && !form.min) {
@@ -196,12 +228,12 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   }
 
   onUserViewClose(): void {
-    this.mapService.deselectFeatureInLayer(this.viewUser, 'People');
+    this.mapService.deselectFeatureInLayer(this.viewUser, 'people');
     this.viewUser = null;
   }
 
   onObservationViewClose(): void {
-    this.mapService.deselectFeatureInLayer(this.viewObservation, 'Observations');
+    this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
     this.viewObservation = null;
   }
 
@@ -218,7 +250,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.newObservation = null;
     this.editObservation = null;
     this.viewObservation = null;
-    this.mapService.removeFeatureFromLayer(event.observation, 'Observations');
+    this.mapService.removeFeatureFromLayer(event.observation, 'observations');
   }
 
   tabChanged(event: number): void {
@@ -227,7 +259,30 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     }
   }
 
-  onContactClose() : void {
+  onContactClose(): void {
     this.contactOpen = { opened: false };
+  }
+
+  onFeedsChanged(feeds): void {
+    this.tabs = this.defaultTabs.concat(feeds.map(feed => {
+      const style = feed.mapStyle || {}
+      return {
+        id: `feed-${feed.id}`,
+        title: feed.title,
+        iconUrl: style.iconUrl,
+        feed: feed
+      }
+    }))
+  }
+
+  onFeedItemEvent(event): void {
+    if (event.action == FeedAction.Select) {
+      this.feedItem = {
+        feed: event.feed,
+        item: event.item
+      };
+    } else {
+      this.feedItem = null;
+    }
   }
 }

@@ -1,4 +1,8 @@
 <div class="observation-feed">
+  <mat-toolbar class="observation-feed-toolbar">
+    <span>Observations</span>
+  </mat-toolbar>
+
   <div class="actions">
     <mat-chip-list selectable="true">
       <mat-chip color="primary" [selected]="filter === 'all'" (click)="filterChanged('all')">All</mat-chip>

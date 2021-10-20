@@ -4,7 +4,7 @@ UserPagingService.$inject = ['UserService', '$q'];
 
 function UserPagingService(UserService, $q) {
 
-  const service = {
+  return {
     constructDefault,
     refresh,
     count,
@@ -16,41 +16,37 @@ function UserPagingService(UserService, $q) {
     search
   };
 
-  return service;
-
   function constructDefault() {
-    const itemsPerPage = 10;
-    const stateAndData = new Map();
-    stateAndData['all'] = {
-      countFilter: {},
-      userFilter: { limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-      searchFilter: '',
-      userCount: 0,
-      pageInfo: {}
-    };
-    stateAndData['active'] = {
-      countFilter: { active: true },
-      userFilter: { active: true, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-      searchFilter: '',
-      userCount: 0,
-      pageInfo: {}
-    };
-    stateAndData['inactive'] = {
-      countFilter: { active: false },
-      userFilter: { active: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-      searchFilter: '',
-      userCount: 0,
-      pageInfo: {}
-    };
-    stateAndData['disabled'] = {
-      countFilter: { enabled: false },
-      userFilter: { enabled: false, limit: itemsPerPage, sort: { displayName: 1, _id: 1 } },
-      searchFilter: '',
-      userCount: 0,
-      pageInfo: {}
-    };
-
-    return stateAndData;
+    return {
+      all: {
+        countFilter: {},
+        userFilter: { limit: 10, sort: { displayName: 1, _id: 1 } },
+        searchFilter: '',
+        userCount: 0,
+        pageInfo: {}
+      },
+      active: {
+        countFilter: { active: true },
+        userFilter: { limit: 10, sort: { displayName: 1, _id: 1 }, active: true },
+        searchFilter: '',
+        userCount: 0,
+        pageInfo: {}
+      },
+      inactive: {
+        countFilter: { active: false },
+        userFilter: { limit: 10, sort: { displayName: 1, _id: 1 }, active: false },
+        searchFilter: '',
+        userCount: 0,
+        pageInfo: {}
+      },
+      disabled: {
+        countFilter: { enabled: false },
+        userFilter: { limit: 10, sort: { displayName: 1, _id: 1 }, enabled: false },
+        searchFilter: '',
+        userCount: 0,
+        pageInfo: {}
+      }
+    }
   }
 
   function refresh(stateAndData) {

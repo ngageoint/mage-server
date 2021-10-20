@@ -1,0 +1,142 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow-y: auto;
+  background-color: #F0F0F0;
+}
+
+.mat-breadcrumb {
+  display: flex;
+  flex-direction: row;
+  padding: 16px;
+  background-color: white;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  background-color: white;
+  margin-top: 16px;
+}
+
+.heading__content {
+  display: flex;
+  flex-direction: row;
+  padding: 32px 16px;
+}
+
+.heading__actions {
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+.heading__icon {
+  color: mat-color($app-primary);
+  margin-right: 16px;
+  font-size: 40px;
+  height: 40px;
+  width: 40px;
+}
+
+.heading__action {
+  margin-right: 16px;
+}
+
+.heading__info {
+  flex: 1;
+}
+
+.heading__title {
+  color: rgba(0, 0, 0, .87)
+}
+
+.heading__summary {
+  color: rgba(0, 0, 0, .6)
+}
+
+.content {
+  display: block;
+  margin: 16px;
+}
+
+.row__card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: -8px;
+}
+
+.column__card {
+  flex-direction: column;
+  display: flex;
+  flex: 1;
+  margin: 8px;
+}
+
+@media screen and (max-width: 1200px) {
+  .column__card {
+    flex-basis: 100%;
+  }
+}
+
+.content__card {
+  width: 100%;
+}
+
+.content__events {
+
+}
+
+mat-card-header {
+  color: white;
+  background-color: mat-color($app-primary);
+  position: relative;
+  padding: 16px 16px 0;
+  margin-bottom: 8px;
+}
+
+mat-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+mat-card-content {
+  padding: 16px;
+}
+
+.events__add {
+  position: absolute;
+  right: 16px;
+  bottom: -18px;
+  z-index: 1;
+}
+
+.events__new > .mat-form-field > ::ng-deep .mat-form-field-wrapper {
+   margin-bottom: -1.25em;
+}
+
+.events__new {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 16px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+:host ::ng-deep .mat-list-base {
+  padding-top: 0;
+}
+
+.feed-icon {
+  width: 24px;
+  margin-right: 8px;
+}

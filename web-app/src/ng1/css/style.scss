@@ -29,6 +29,12 @@
 @import "./admin/index.scss";
 @import "./card/index.scss";
 
+.application {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 mage {
   display: flex;
   flex-direction: column;
@@ -105,10 +111,6 @@ a:hover, a:focus {
 .mdc-top-app-bar .top-app-bar-button:not(:disabled) {
   color: inherit;
 }
-
-/* .map-app-bar-section > * {
-  padding-right: 30px;
-} */
 
 .mdc-top-app-bar {
   position: unset;
@@ -937,6 +939,7 @@ admin {
 .admin-main-content {
   overflow-y: auto;
   height: 100%;
+  position: relative;
 }
 
 .admin-actions {
@@ -1034,7 +1037,7 @@ admin {
 }
 
 .admin-nav-gap {
-  margin: 20px 0 20px;
+  padding: 20px 0 20px;
 }
 
 .admin-fab--absolute {

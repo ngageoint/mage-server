@@ -1,0 +1,120 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.page {
+  background-color: #F0F0F0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow-y: auto;
+}
+
+.mat-breadcrumb {
+  display: flex;
+  flex-direction: row;
+  padding: 16px;
+  background-color: white;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  margin-top: 16px;
+  margin-bottom: 32px;
+  z-index: 1;
+}
+
+.heading__content {
+  display: flex;
+  flex-direction: row;
+  padding: 32px 16px;
+}
+
+.heading__content {
+  display: flex;
+  flex-direction: row;
+}
+
+.heading__icon {
+  color: mat-color($app-primary);
+  margin-right: 16px;
+  font-size: 40px;
+  height: 40px;
+  width: 40px;
+}
+
+.heading__actions {
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+.heading__action {
+  margin-right: 16px;
+}
+
+.heading__info {
+  flex: 1;
+}
+
+.heading__title {
+  color: rgba(0, 0, 0, .87)
+}
+
+.heading__summary {
+  color: rgba(0, 0, 0, .6)
+}
+
+.content {
+  display: block;
+  margin: 16px;
+}
+
+.row__card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: -8px;
+}
+
+.column__card {
+  flex-direction: column;
+  display: flex;
+  flex: 1;
+  margin: 8px;
+}
+
+.column__config {
+  flex-direction: column;
+  display: flex;
+  flex: 1;
+  margin: 8px;
+}
+
+.column__feeds {
+  flex-direction: column;
+  display: flex;
+  flex: 2;
+  margin: 8px;
+  min-width: 0;
+}
+
+@media screen and (max-width: 1200px) {
+  .column__config {
+    flex-basis: 100%;
+  }
+
+  .column__feeds {
+    flex-basis: 100%;
+  }
+}
+
+.content__card {
+  width: 100%
+}
+
+mat-card-header {
+  color: mat-color($app-primary);
+}

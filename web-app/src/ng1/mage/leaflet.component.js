@@ -129,17 +129,18 @@ class LeafletController {
     );
 
     this.map.on('baselayerchange', baseLayer => {
-      const layer = this.layers[baseLayer.name];
+      const layer = this.layers[baseLayer.id];
       this.MapService.selectBaseLayer(layer);
     });
 
     this.map.on('overlayadd', overlay => {
-      const layer = this.layers[overlay.name];
+      const layer = this.layers[overlay.id];
       this.MapService.overlayAdded(layer);
     });
 
     // setup my listeners
     this.listener = {
+      onFeedRemoved: this.onFeedRemoved.bind(this),
       onLayerRemoved: this.onLayerRemoved.bind(this),
       onLayersChanged: this.onLayersChanged.bind(this),
       onFeaturesChanged: this.onFeaturesChanged.bind(this),
@@ -260,7 +261,7 @@ class LeafletController {
     // this.userLocationControl.stopBroadcast();
   }
 
-  onLayersChanged({ name, added = [], removed = [] }) {
+  onLayersChanged({ id, added = [], removed = [] }) {
     added.forEach(added => {
       switch (added.type) {
         case 'GeoPackage':
@@ -276,7 +277,7 @@ class LeafletController {
     });
 
     removed.forEach(removed => {
-      const layer = this.layers[name];
+      const layer = this.layers[id];
       if (layer) {
         this.map.removeLayer(layer.layer);
         delete layer.layer;
@@ -314,7 +315,7 @@ class LeafletController {
     }
 
     layerInfo.layer.pane = pane;
-    this.layers[layerInfo.name] = layerInfo;
+    this.layers[layerInfo.id] = layerInfo;
 
     this.onAddLayer(layerInfo);
   }
@@ -363,7 +364,7 @@ class LeafletController {
     }
 
     layerInfo.layer.pane = pane;
-    this.layers[layerInfo.name] = layerInfo;
+    this.layers[layerInfo.id] = layerInfo;
 
     if (layerInfo.options.temporal) {
       this.temporalLayers.push(layerInfo);
@@ -383,7 +384,7 @@ class LeafletController {
           if (_.isFunction(popup.html)) {
             const options = { autoPan: false, maxWidth: 400 };
             if (popup.closeButton !== undefined) options.closeButton = popup.closeButton;
-            layer.bindPopup(popup.html(feature), options);
+            layer.bindPopup(popup.html(feature, layer), options);
           }
           if (_.isFunction(popup.onOpen)) {
             layer.on('popupopen', function() {
@@ -416,8 +417,14 @@ class LeafletController {
             pane: pane,
             accuracy: feature.properties.accuracy
           };
-          if (feature.style && feature.style.iconUrl) {
+          if (layerInfo.options.iconUrl) {
+            options.iconUrl = layerInfo.options.iconUrl;
+          }
+          else if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl;
+          }
+          if (layerInfo.options.iconWidth) {
+            options.iconWidth = 24;
           }
           options.tooltip = editMode;
           marker = L.observationMarker(latlng, options);
@@ -427,7 +434,7 @@ class LeafletController {
           layerInfo.options.onLayer(marker, feature);
         }
 
-        return marker
+        return marker;
       },
       style: function(feature) {
         return feature.style;
@@ -437,8 +444,8 @@ class LeafletController {
     return geojson;
   }
 
-  onFeaturesChanged({ name, added = [], updated = [], removed = [] }) {
-    const featureLayer = this.layers[name];
+  onFeaturesChanged({ id, added = [], updated = [], removed = [] }) {
+    const featureLayer = this.layers[id];
     const pane = featureLayer.layer.pane;
     added.forEach(feature => {
       if (featureLayer.options.cluster) {
@@ -450,8 +457,10 @@ class LeafletController {
 
     updated.forEach(feature => {
       const layer = featureLayer.featureIdToLayer[feature.id];
-      if (!layer) return;
-      featureLayer.layer.removeLayer(layer);
+      if (layer) {
+        featureLayer.layer.removeLayer(layer);
+      };
+
       if (featureLayer.options.cluster) {
         featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
       } else {
@@ -469,7 +478,7 @@ class LeafletController {
   }
 
   onFeatureZoom(zoom) {
-    const featureLayer = this.layers[zoom.name];
+    const featureLayer = this.layers[zoom.id];
     const layer = featureLayer.featureIdToLayer[zoom.feature.id];
     if (!this.map.hasLayer(featureLayer.layer)) return;
 
@@ -508,10 +517,21 @@ class LeafletController {
   }
 
   onFeatureDeselect(deselected) {
-    const featureLayer = this.layers[deselected.name];
+    const featureLayer = this.layers[deselected.id];
     const layer = featureLayer.featureIdToLayer[deselected.feature.id];
     if (!this.map.hasLayer(featureLayer.layer)) return;
     layer.closePopup();
+  }
+
+  onFeedRemoved(feed) {
+    const layerInfo = this.layers[feed.id];
+    if (layerInfo) {
+      this.map.removeLayer(layerInfo.layer);
+      delete this.layers[this.onFeedRemoved.id];
+      this.onRemoveLayer({
+        layer: layerInfo
+      })
+    }
   }
 
   onLayerRemoved(layer) {
@@ -525,10 +545,10 @@ class LeafletController {
   }
 
   removeLayer(layer) {
-    const layerInfo = this.layers[layer.name];
+    const layerInfo = this.layers[layer.id];
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer);
-      delete this.layers[layer.name];
+      delete this.layers[layer.id];
       this.onRemoveLayer({
         layer: layer
       })
@@ -537,11 +557,11 @@ class LeafletController {
 
   removeGeoPackage(layer) {
     layer.tables.forEach(table => {
-      const name = layer.id + table.name;
-      const layerInfo = this.layers[name];
+      const id = layer.id + table.name;
+      const layerInfo = this.layers[id];
       if (layerInfo) {
         this.map.removeLayer(table.layer);
-        delete this.layers[name];
+        delete this.layers[id];
 
         this.onRemoveLayer({
           layer: table
@@ -595,7 +615,7 @@ class LeafletController {
     });
     this.setPaneOpacity(this.featurePanes, 0.5);
 
-    const layer = this.layers['Observations'].featureIdToLayer[feature.id];
+    const layer = this.layers['observations'].featureIdToLayer[feature.id];
     if (layer) {
       this.map.removeLayer(layer);
     }
@@ -609,7 +629,7 @@ class LeafletController {
         featureEdit.stopEdit();
         if (layer) {
           this.onFeaturesChanged({
-            name: 'Observations',
+            id: 'observations',
             updated: [layer.feature]
           });
         }
@@ -621,7 +641,7 @@ class LeafletController {
         if (layer) {
           layer.feature.geometry = newFeature.geometry;
           this.onFeaturesChanged({
-            name: 'Observations',
+            id: 'observations',
             updated: [layer.feature]
           });
         }

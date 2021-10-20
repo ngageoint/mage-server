@@ -9,12 +9,12 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
   // Map Service should delegate to some map provider that implements delegate interface
   // In this case should delegate to leaflet directive.  See if this is possible
 
-  var followedFeature = {
+  const followedFeature = {
     id: undefined,
     layer: undefined
   };
 
-  var service = {
+   const service = {
     setDelegate: setDelegate,
     addListener: addListener,
     removeListener: removeListener,
@@ -22,11 +22,13 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     selectBaseLayer: selectBaseLayer,
     overlayAdded: overlayAdded,
     removeLayer: removeLayer,
+    removeFeed: removeFeed,
     destroy: destroy,
     initialize: initialize,
     getVectorLayers: getVectorLayers,
     createRasterLayer: createRasterLayer,
     createVectorLayer: createVectorLayer,
+    createFeedLayer: createFeedLayer,
     createFeature: createFeature,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
@@ -43,6 +45,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
 
   var delegate = null;
   var baseLayer = null;
+  var feedLayers = {};
   var rasterLayers = {};
   var vectorLayers = {};
   var listeners = [];
@@ -51,6 +54,9 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
 
   var layersChangedListener = {
     onLayersChanged: onLayersChanged
+  };
+  var feedItemsChangedListenner = {
+    onFeedItemsChanged: onFeedItemsChanged
   };
   var usersChangedListener = {
     onUsersChanged: onUsersChanged
@@ -68,6 +74,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     EventService.addObservationsChangedListener(observationsChangedListener);
     EventService.addUsersChangedListener(usersChangedListener);
     EventService.addLayersChangedListener(layersChangedListener);
+    EventService.addFeedItemsChangedListener(feedItemsChangedListenner)
 
     const observationLayer = {
       id: 'observations',
@@ -120,7 +127,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
   }
 
   function onLayersChanged(changed, event) {
-    var baseLayerFound = false;
+    let baseLayerFound = false;
     _.each(changed.added, function(layer) {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
@@ -147,7 +154,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
               popup: {
                 html: function(feature) {
                   // TODO use leaflet template for this
-                  var content = "";
+                  let content = "";
                   if (feature.properties.name) {
                     content += '<div><strong><u>' + feature.properties.name + '</u></strong></div>';
                   }
@@ -172,52 +179,106 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     });
   }
 
+  function onFeedItemsChanged(changed) {
+
+    // Filter out non geospatial feeds
+    const geospatialFilter = ({feed}) => { return feed.itemsHaveSpatialDimension; }
+    changed.added.filter(geospatialFilter).forEach(({ feed, items }) => {
+      /*
+      TODO: this icon stuff is a band-aid (R) hack. revisit later when this
+      transitions to angular x and static icon api gets better.  consider using
+      blob urls for marker icons as in StaticIconImgComponent/XhrImgComponent
+      or setting the icon url from the server in the web adapter layer.
+      caching works much better with urls that do not have the access token
+      query string parameter.
+      */
+      const iconId = (feed.mapStyle && feed.mapStyle.icon) ? feed.mapStyle.icon.id : feed.icon ? feed.icon.id : null;
+      const iconUrl = iconId ? `/api/icons/${iconId}/content?access_token=${LocalStorageService.getToken()}` : '/assets/images/default_marker.png'
+      service.createFeedLayer({
+        id: `feed-${feed.id}`,
+        name: feed.title,
+        group: 'feed',
+        type: 'geojson',
+        geojson: {
+          type: 'FeatureCollection',
+          features: items
+        },
+        options: {
+          iconWidth: 24,
+          selected: true,
+          popup: (layer, feature) => {
+            MapPopupService.popupFeedItem(layer, feed, feature);
+          },
+          onLayer: (layer, feature) => {
+            MapPopupService.registerFeedItem(layer, feed, feature);
+          },
+          iconUrl
+        }
+      });
+    });
+
+    changed.updated.filter(geospatialFilter).forEach(({feed, items}) => {
+        featuresChanged({
+          id: `feed-${feed.id}`,
+          updated: items
+        });
+    });
+
+    changed.removed.filter(({feed}) => {
+      return feed.itemsHaveSpatialDimension;
+    }).forEach(({feed}) => {
+      const layer = feedLayers[`feed-${feed.id}`];
+      if (layer) {
+        service.removeFeed(layer);
+      }
+    });
+  }
+
   function onObservationsChanged(changed) {
     _.each(changed.added, function(added) {
       observationsById[added.id] = added;
     });
-    if (changed.added.length) service.addFeaturesToLayer(changed.added, 'Observations');
+    if (changed.added.length) service.addFeaturesToLayer(changed.added, 'observations');
 
     _.each(changed.updated, function(updated) {
       const observation = observationsById[updated.id];
       if (observation) {
         observationsById[updated.id] = updated;
-        service.updateFeatureForLayer(updated, 'Observations');
+        service.updateFeatureForLayer(updated, 'observations');
       }
     });
 
     _.each(changed.removed, function(removed) {
       delete observationsById[removed.id];
 
-      service.removeFeatureFromLayer(removed, 'Observations');
+      service.removeFeatureFromLayer(removed, 'observations');
     });
   }
 
   function onUsersChanged(changed) {
     _.each(changed.added, function(added) {
       usersById[added.id] = added;
-      service.addFeaturesToLayer([added.location], 'People');
+      service.addFeaturesToLayer([added.location], 'people');
     });
 
     _.each(changed.updated, function(updated) {
       const user = usersById[updated.id];
       if (user) {
         usersById[updated.id] = updated;
-        service.updateFeatureForLayer(updated.location, 'People');
+        service.updateFeatureForLayer(updated.location, 'people');
 
         // pan/zoom map to user if this is the user we are following
-        if (followFeatureInLayer.layer === 'People' && user.id === followFeatureInLayer.id)
-          service.zoomToFeatureInLayer(user, 'People');
+        if (followFeatureInLayer.layer === 'people' && user.id === followFeatureInLayer.id)
+          service.zoomToFeatureInLayer(user, 'people');
       }
-
     });
 
     _.each(changed.removed, function(removed) {
       delete usersById[removed.id];
-      service.removeFeatureFromLayer(removed.location, 'People');
+      service.removeFeatureFromLayer(removed.location, 'people');
     });
   }
-    
+
   function setDelegate(theDelegate) {
     delegate = theDelegate;
   }
@@ -226,13 +287,13 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     listeners.push(listener);
 
     if (_.isFunction(listener.onLayersChanged)) {
-      var layers = _.values(rasterLayers).concat(_.values(vectorLayers));
+      const layers = _.values(rasterLayers).concat(_.values(vectorLayers));
       listener.onLayersChanged({added: layers});
     }
 
     if (_.isFunction(listener.onFeaturesChanged)) {
       _.each(_.values(vectorLayers), function(vectorLayer) {
-        listener.onFeaturesChanged({name: vectorLayer.name, added: _.values(vectorLayer.featuresById)});
+        listener.onFeaturesChanged({id: vectorLayer.id, added: _.values(vectorLayer.featuresById)});
       });
     }
 
@@ -258,7 +319,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
       added: [layer]
     });
 
-    rasterLayers[layer.name] = layer;
+    rasterLayers[layer.id] = layer;
   }
 
   function createVectorLayer(layer) {
@@ -267,7 +328,16 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     });
 
     layer.featuresById = {};
-    vectorLayers[layer.name] = layer;
+    vectorLayers[layer.id] = layer;
+  }
+
+  function createFeedLayer(layer) {
+    layersChanged({
+      added: [layer]
+    });
+
+    layer.featuresById = {};
+    feedLayers[layer.id] = layer;
   }
 
   function createFeature(feature, style, listeners) {
@@ -275,30 +345,30 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
   }
 
   function addFeaturesToLayer(features, layerId) {
-    var vectorLayer = vectorLayers[layerId];
+    const vectorLayer = vectorLayers[layerId];
     _.each(features, function(feature) {
       vectorLayer.featuresById[feature.id] = feature;
     });
 
     featuresChanged({
-      name: layerId,
+      id: layerId,
       added: [features]
     });
   }
 
   function updateFeatureForLayer(feature, layerId) {
     featuresChanged({
-      name: layerId,
+      id: layerId,
       updated: [feature]
     });
   }
 
   function removeFeatureFromLayer(feature, layerId) {
-    var vectorLayer = vectorLayers[layerId];
+    const vectorLayer = vectorLayers[layerId];
     delete vectorLayer.featuresById[feature.id];
 
     featuresChanged({
-      name: layerId,
+      id: layerId,
       removed: [feature]
     });
   }
@@ -307,7 +377,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onFeatureDeselect)) {
         listener.onFeatureDeselect({
-          name: layerId,
+          id: layerId,
           feature: feature
         });
       }
@@ -318,7 +388,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onFeatureZoom)) {
         listener.onFeatureZoom({
-          name: layerId,
+          id: layerId,
           feature: feature
         });
       }
@@ -424,10 +494,11 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     EventService.removeLayersChangedListener(layersChangedListener);
     EventService.removeObservationsChangedListener(observationsChangedListener);
     EventService.removeUsersChangedListener(usersChangedListener);
+    EventService.removeFeedItemsChangedListener(feedItemsChangedListenner);
   }
 
   function removeLayer(layer) {
-    var vectorLayer = vectorLayers[layer.name];
+    const vectorLayer = vectorLayers[layer.id];
     if (vectorLayer) {
       _.each(listeners, function(listener) {
         if (_.isFunction(listener.onLayerRemoved)) {
@@ -435,10 +506,10 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
         }
       });
 
-      delete vectorLayers[layer.name];
+      delete vectorLayers[layer.id];
     }
 
-    var rasterLayer = rasterLayers[layer.name];
+    const rasterLayer = rasterLayers[layer.id];
     if (rasterLayer) {
       _.each(listeners, function(listener) {
         if (_.isFunction(listener.onLayerRemoved)) {
@@ -446,7 +517,20 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
         }
       });
 
-      delete rasterLayers[layer.name];
+      delete rasterLayers[layer.id];
+    }
+  }
+
+  function removeFeed(feed) {
+    const feedLayer = feedLayers[feed.id];
+    if (feedLayer) {
+      _.each(listeners, function (listener) {
+        if (_.isFunction(listener.onFeedRemoved)) {
+          listener.onFeedRemoved(feedLayer);
+        }
+      });
+
+      delete feedLayers[feed.id];
     }
   }
 

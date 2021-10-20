@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "mage-app": {
+    "app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -12,13 +12,13 @@
       },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "mage",
       "architect": {
         "build": {
           "builder": "ngx-build-plus:browser",
           "options": {
             "extraWebpackConfig": "webpack.extra.js",
-            "outputPath": "dist",
+            "outputPath": "dist/app",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -50,8 +50,12 @@
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/jquery-minicolors/jquery.minicolors.min.js",
               "node_modules/jquery-file-download/src/Scripts/jquery.fileDownload.js",
-              "src/ng1/vendor/bootstrap/js/bootstrap.min.js"
-            ]
+              "src/ng1/vendor/bootstrap/js/bootstrap.min.js",
+              "node_modules/systemjs/dist/system.js",
+              "node_modules/systemjs/dist/extras/amd.js",
+              "node_modules/systemjs/dist/extras/named-register.js"
+            ],
+            "plugin": "~/post_build.js"
           },
           "configurations": {
             "production": {
@@ -74,7 +78,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "2mb",
-                  "maximumError": "8mb"
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -90,18 +94,18 @@
           "options": {
             "extraWebpackConfig": "webpack.extra.js",
             "proxyConfig": "proxy.conf.json",
-            "browserTarget": "mage-app:build"
+            "browserTarget": "app:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "mage-app:build:production"
+              "browserTarget": "app:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "mage-app:build"
+            "browserTarget": "app:build"
           }
         },
         "test": {
@@ -124,7 +128,8 @@
                 "node_modules"
               ]
             },
-            "scripts": []
+            "scripts": [],
+            "codeCoverage": true
           }
         },
         "lint": {
@@ -144,16 +149,177 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "mage-app:serve"
+            "devServerTarget": "app:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "mage-app:serve:production"
+              "devServerTarget": "app:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "core-lib": {
+      "projectType": "library",
+      "root": "projects/core-lib",
+      "sourceRoot": "projects/core-lib",
+      "prefix": "mage",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/core-lib/tsconfig.lib.json",
+            "project": "projects/core-lib/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/core-lib/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/core-lib/src/test.ts",
+            "tsConfig": "projects/core-lib/tsconfig.spec.json",
+            "karmaConfig": "projects/core-lib/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/core-lib/tsconfig.lib.json",
+              "projects/core-lib/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "core-lib-showcase": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/core-lib-showcase",
+      "sourceRoot": "projects/core-lib-showcase/src",
+      "prefix": "mage",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/core-lib-showcase",
+            "index": "projects/core-lib-showcase/src/index.html",
+            "main": "projects/core-lib-showcase/src/main.ts",
+            "polyfills": "projects/core-lib-showcase/src/polyfills.ts",
+            "tsConfig": "projects/core-lib-showcase/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "projects/core-lib-showcase/src/favicon.ico",
+              "projects/core-lib-showcase/src/assets"
+            ],
+            "styles": [
+              "projects/core-lib-showcase/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core-lib-showcase/src/environments/environment.ts",
+                  "with": "projects/core-lib-showcase/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "core-lib-showcase:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "core-lib-showcase:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "core-lib-showcase:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/core-lib-showcase/src/test.ts",
+            "polyfills": "projects/core-lib-showcase/src/polyfills.ts",
+            "tsConfig": "projects/core-lib-showcase/tsconfig.spec.json",
+            "karmaConfig": "projects/core-lib-showcase/karma.conf.js",
+            "assets": [
+              "projects/core-lib-showcase/src/favicon.ico",
+              "projects/core-lib-showcase/src/assets"
+            ],
+            "styles": [
+              "projects/core-lib-showcase/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/core-lib-showcase/tsconfig.app.json",
+              "projects/core-lib-showcase/tsconfig.spec.json",
+              "projects/core-lib-showcase/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/core-lib-showcase/e2e/protractor.conf.js",
+            "devServerTarget": "core-lib-showcase:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "core-lib-showcase:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "mage-app"
+  "defaultProject": "app"
 }

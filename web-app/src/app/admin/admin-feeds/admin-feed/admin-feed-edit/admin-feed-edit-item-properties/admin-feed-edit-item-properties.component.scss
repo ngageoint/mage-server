@@ -1,0 +1,32 @@
+.item-property-list {
+    display: grid;
+    grid-template-columns: max-content auto;
+    column-gap: 3em;
+    padding-block-start: 1em;
+}
+
+.item-property-key-heading {
+    grid-column: 1 / 2;
+    text-align: end;
+}
+
+.item-property-title-heading {
+    grid-column: 2 / 3;
+    text-align: start;
+}
+
+.item-property-key {
+    font-family: monospace;
+    grid-column: 1 / 2;
+    text-align: end;
+    padding-block-start: 1em;
+}
+
+.item-property-title {
+    grid-column: 2 / 3;
+    text-align: start;
+}
+
+.item-property-title > * {
+    width: 100%;
+}

@@ -1,0 +1,97 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow-y: auto;
+  background-color: #F0F0F0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.page-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.page-content > * {
+  min-width: 0px;
+}
+
+@media screen and (max-width: 1200px) {
+  .page-container {
+    flex-direction: column;
+  }
+
+  .feed__configuration {
+    margin-bottom: 16px;
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 16px;
+}
+
+.header__title {
+  font-size: 30px;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.1;
+  color: mat-color($app-primary);
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 16px;
+}
+
+.feed__configuration {
+  flex: 1;
+  margin: 8px;
+}
+
+.feed__preview {
+  flex: 1;
+  margin: 8px;
+}
+
+.preview--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 80vh;
+  background-color: rgba(0, 0, 0, .05);
+}
+
+.preview__img--empty {
+  font-size: 150px;
+  width: 150px;
+  height: 150px;
+  opacity: .4;
+}
+
+.preview__span--empty {
+  font-size: 24px;
+  opacity: .4;
+}
+
+.preview--list {
+}
+
+.mat-list-base {
+  padding-top: 0;
+}

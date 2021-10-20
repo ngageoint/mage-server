@@ -1,0 +1,13 @@
+.warning {
+  display: flex;
+}
+
+.dialog__content {
+  color: rgba(0, 0, 0, .87);
+  margin-bottom: 16px;
+}
+
+.dialog__warning {
+  color: rgba(0, 0, 0, .87);
+  font-weight: 600;
+}

@@ -48,6 +48,7 @@ export default class GeoPackageLayers {
     if (event.layer.type === 'GeoPackage') {
       if (
         this.closestLayer &&
+        this.closestLayer.feature &&
         event.layer.layerId === this.closestLayer.feature.layerId &&
         event.layer.table.name === this.closestLayer.feature.gp_table
       ) {
@@ -105,7 +106,9 @@ export default class GeoPackageLayers {
         const layer = this.visibleGeoPackageLayers.find(layer => {
           return layer.layerId === features[0].layerId && layer.table.name === features[0].gp_table;
         });
-
+        if (!layer) {
+          throw new Error(`no layer found for id ${features[0].layerId}`)
+        }
         this.closestLayer = geoJSON(features[0], {
           pane: layer.pane,
           onEachFeature(

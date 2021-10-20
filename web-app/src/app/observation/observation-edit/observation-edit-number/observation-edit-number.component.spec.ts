@@ -5,8 +5,6 @@ import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MaxValueDirective } from './max-value.directive';
-import { MinValueDirective } from './min-value.directive';
 
 import { ObservationEditNumberComponent } from './observation-edit-number.component';
 
@@ -37,7 +35,7 @@ describe('ObservationEditNumberComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
-      declarations: [ObservationEditNumberComponent, MaxValueDirective, MinValueDirective, TestHostComponent]
+      declarations: [ObservationEditNumberComponent, TestHostComponent]
     })
     .compileComponents()
   }))
@@ -67,7 +65,7 @@ describe('ObservationEditNumberComponent', () => {
     const error = fixture.debugElement.query(By.directive(MatError))
     expect(error).toBeNull()
   })
-  
+
   it('should indicate required', async () => {
     component.definition.required = true
 

@@ -7,9 +7,9 @@ observation-form-edit {
 .feed {
   background: #E1E2E1;
   order: 1;
+  width: 500px;
   display: flex;
-  flex-direction: column;
-  width: 450px;
+  flex-direction: row;
   position: relative;
   transition: margin-left 0.3s linear;
   z-index: 1;
@@ -26,10 +26,6 @@ observation-form-edit {
 .content--active {
   display: block;
   overflow-y: auto;
-}
-
-.observation-feed-container {
-  background: #E1E2E1;
 }
 
 .feed-header {
@@ -159,11 +155,6 @@ observation-form-edit {
   opacity: .2;
 }
 
-.people-feed-container,
-.people-card-background-container {
-  height: 100%;
-}
-
 .feed-card-content {
   padding-bottom: 16px;
 }
@@ -173,9 +164,55 @@ observation-form-edit {
 }
 
 .feed-select-width {
-  width: 430px;
+  width: 100%;
 }
 
 .page-select-width {
   width: 100%;
+}
+
+.feeds-nav {
+  position: absolute;
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.20);
+  width: 57px;
+  height: 100%;
+  padding-top: 8px;
+  z-index: 10;
+  overflow-y: auto;
+  -webkit-transition: width .3s linear;
+  transition: width .3s linear;
+  -webkit-transform: translateZ(0) scale(1, 1);
+}
+
+.feeds-nav:hover {
+  width: 240px;
+}
+
+.feeds-content {
+  position: relative;
+  margin-left: 56px;
+  width: 100%;
+}
+
+.feed-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow-y: auto;
+  background: #E1E2E1;
+}
+
+.feed-toolbar {
+  display: flex;
+  top: 0;
+  background-color: white;
+  z-index: 2;
+}
+
+.feed-toolbar__title {
+  flex: 1 1 auto;
+  color: var(--mdc-theme-primary, #1E88E5);;
 }

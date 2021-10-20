@@ -19,31 +19,29 @@ function DevicePagingService(DeviceService, $q) {
     return service;
 
     function constructDefault() {
-        var itemsPerPage = 10;
-        var stateAndData = new Map();
-        stateAndData['all'] = {
-            countFilter: {},
-            deviceFilter: { limit: itemsPerPage, sort: { userAgent: 1, _id: 1 } },
-            searchFilter: '',
-            deviceCount: 0,
-            pageInfo: {}
-        };
-        stateAndData['registered'] = {
-            countFilter: { registered: true },
-            deviceFilter: { registered: true, limit: itemsPerPage, sort: { userAgent: 1, _id: 1 } },
-            searchFilter: '',
-            deviceCount: 0,
-            pageInfo: {}
-        };
-        stateAndData['unregistered'] = {
-            countFilter: { registered: false },
-            deviceFilter: { registered: false, limit: itemsPerPage, sort: { userAgent: 1, _id: 1 } },
-            searchFilter: '',
-            deviceCount: 0,
-            pageInfo: {}
-        };
-
-        return stateAndData;
+        return {
+            all: {
+                countFilter: {},
+                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 } },
+                searchFilter: '',
+                deviceCount: 0,
+                pageInfo: {}
+            },
+            registered: {
+                countFilter: { registered: true },
+                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 }, registered: true },
+                searchFilter: '',
+                deviceCount: 0,
+                pageInfo: {}
+            },
+            unregistered: {
+                countFilter: { registered: false },
+                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 }, registered: false },
+                searchFilter: '',
+                deviceCount: 0,
+                pageInfo: {}
+            }
+        }
     }
 
     function refresh(stateAndData) {
@@ -119,9 +117,9 @@ function DevicePagingService(DeviceService, $q) {
 
     /**
      * Search against devices or users
-     * 
-     * @param {*} data 
-     * @param {*} deviceSearch 
+     *
+     * @param {*} data
+     * @param {*} deviceSearch
      * @param {*} userSearch leave null to search for devices
      */
     function search(data, deviceSearch, userSearch) {

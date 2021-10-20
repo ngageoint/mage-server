@@ -1,0 +1,41 @@
+<mat-form-field [appearance]="options?.appearance || matFormFieldDefaultOptions?.appearance || 'standard'"
+  [class]="options?.htmlClass || ''"
+  [floatLabel]="options?.floatLabel || matLabelGlobalOptions?.float || (options?.notitle ? 'never' : 'auto')"
+  [hideRequiredMarker]="options?.hideRequired ? 'true' : 'false'" [style.width]="'100%'">
+  <mat-label *ngIf="!options?.notitle">{{options?.title}}</mat-label>
+  <span matPrefix *ngIf="options?.prefix || options?.fieldAddonLeft"
+    [innerHTML]="options?.prefix || options?.fieldAddonLeft"></span>
+    <input type="text"
+          [placeholder]="options?.notitle ? options?.placeholder : options?.title"
+          aria-label="options?.notitle ? options?.placeholder : options?.title"
+           matInput
+           [disabled]="controlDisabled || options?.readonly" 
+           [formControl]="formControl"
+           [required]="options?.required" 
+           [matAutocomplete]="auto">
+    <mat-icon matSuffix>keyboard_arrow_down</mat-icon>
+    <mat-autocomplete #auto 
+      [attr.aria-describedby]="'control' + layoutNode?._id + 'Status'"
+      [attr.name]="controlName"
+      [style.width]="'100%'"
+      [displayWith]="boundDisplayValue"
+      (blur)="options.showErrors = true"
+      (optionSelected)="updateValue($event)"
+      >
+      <ng-container *ngFor="let selectItem of filteredTitleMap | async">
+        <mat-option  *ngIf="!isArray(selectItem?.items)" [value]="selectItem?.value">
+          <span [innerHTML]="selectItem?.name"></span>
+        </mat-option>
+        <mat-optgroup *ngIf="isArray(selectItem?.items)" [label]="selectItem?.group">
+          <mat-option *ngFor="let subItem of selectItem.items" [value]="subItem?.value">
+            <span [innerHTML]="subItem?.name"></span>
+          </mat-option>
+        </mat-optgroup>
+      </ng-container>
+    </mat-autocomplete>
+  <span matSuffix *ngIf="options?.suffix || options?.fieldAddonRight"
+    [innerHTML]="options?.suffix || options?.fieldAddonRight"></span>
+  <mat-hint *ngIf="options?.description && (!options?.showErrors || !options?.errorMessage)" align="end"
+    [innerHTML]="options?.description"></mat-hint>
+</mat-form-field>
+<mat-error *ngIf="options?.showErrors && options?.errorMessage" [innerHTML]="options?.errorMessage"></mat-error>

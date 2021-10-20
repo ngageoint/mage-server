@@ -1,0 +1,17 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      Plugins go here
+    </div>
+  </div>
+
+  <div ng-repeat="plugin in $ctrl.plugins | orderBy:'title'">
+    <div class="row">
+      <div class="col-md-12">
+        <div>Plugin {{$ctrl.title}}</div>
+        <a ng-click="$ctrl.showPlugin()">Show Plugin</a>
+      </div>
+    </div>
+  </div>
+
+</div>

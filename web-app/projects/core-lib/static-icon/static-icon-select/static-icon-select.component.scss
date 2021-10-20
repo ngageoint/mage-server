@@ -1,0 +1,12 @@
+.icon-select-item {
+}
+
+virtual-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, 33%);
+    grid-auto-rows: min-content;
+    grid-gap: 0;
+    justify-content: center;
+    gap: 0;
+}
+

@@ -248,9 +248,9 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
 
     $http.get('/api/users', {params: options})
       .success(function(data) {
-        if(Object.prototype.toString.call(data) === '[object Array]'){
+        if (Array.isArray(data)) {
           deferredUsers.resolve(_.indexBy(data, 'id'));
-        }else{
+        } else {
           deferredUsers.resolve(data);
         }
       });
