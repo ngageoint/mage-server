@@ -1,12 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { CdkStep, CdkStepper, StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { CdkStepper, STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
-import { MatStepper } from '@angular/material/stepper';
 
 @Component({
    selector: 'admin-authentication-create',
@@ -80,7 +79,7 @@ export class AuthenticationCreateComponent implements OnInit {
       })
    }
 
-   stepChanged(event: StepperSelectionEvent, stepper: CdkStepper): void {
+   stepChanged(stepper: CdkStepper): void {
       if (stepper.selected.label === 'Title') {
          stepper.selected.hasError = !this.strategy.title.length;
       } else if (stepper.selected.label === 'Type') {

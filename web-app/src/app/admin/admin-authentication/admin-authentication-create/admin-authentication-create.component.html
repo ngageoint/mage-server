@@ -4,7 +4,7 @@
 <section class="mat-typography">
    <div class="page-container">
       <div class="content">
-         <mat-horizontal-stepper [linear]="true" (selectionChange)="stepChanged($event, stepper)" #stepper>
+         <mat-horizontal-stepper [linear]="true" (selectionChange)="stepChanged(stepper)" #stepper>
             <mat-step label="Title" errorMessage="Title is required.">
                <mat-form-field appearance="outline">
                   <mat-label>Authentication Title</mat-label>
