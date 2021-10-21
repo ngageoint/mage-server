@@ -29,8 +29,7 @@
                </mat-form-field>
                <div>
                   <button mat-button matStepperPrevious>Back</button>
-                  <button [disabled]="!strategy.name.length" mat-button (click)="loadTemplate()"
-                     matStepperNext>Next</button>
+                  <button [disabled]="!strategy.name.length" mat-button matStepperNext>Next</button>
                </div>
             </mat-step>
             <mat-step label="Settings" errorMessage="Missing required settings.">

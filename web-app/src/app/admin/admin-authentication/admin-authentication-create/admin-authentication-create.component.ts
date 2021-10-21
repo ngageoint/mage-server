@@ -85,6 +85,7 @@ export class AuthenticationCreateComponent implements OnInit {
          stepper.selected.hasError = !this.strategy.title.length;
       } else if (stepper.selected.label === 'Type') {
          stepper.selected.hasError = !this.strategy.name.length;
+         this.loadTemplate();
       } else if(stepper.selected.label == "Settings") {
          stepper.selected.hasError = !this.isValid();
       }
