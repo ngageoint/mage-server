@@ -87,7 +87,7 @@ export class AuthenticationCreateComponent implements OnInit {
          stepper.selected.hasError = !this.strategy.name.length;
          this.loadTemplate();
       } else if(stepper.selected.label == "Settings") {
-         stepper.selected.hasError = !this.isValid();
+         stepper.selected.hasError = !this.hasRequiredSettings();
       }
    }
 
@@ -99,7 +99,9 @@ export class AuthenticationCreateComponent implements OnInit {
          },
          devicesReqAdmin: {
             enabled: true
-         }
+         },
+         headers: {},
+         profile: {}
       }
 
       this.strategy.buttonColor = '#1E88E5'
@@ -134,6 +136,12 @@ export class AuthenticationCreateComponent implements OnInit {
    }
 
    isValid(): boolean {
+      return this.strategy.title.length > 0 &&
+         this.strategy.name.length > 0 &&
+         this.hasRequiredSettings();
+   }
+
+   private hasRequiredSettings(): boolean {
       const requiredSettings = this.REQUIRED_SETTINGS[this.strategy.type] || []
       const missingSettings = requiredSettings.filter(setting => {
          const value = this.strategy.settings[setting];
@@ -143,9 +151,7 @@ export class AuthenticationCreateComponent implements OnInit {
          return false;
       });
 
-      return this.strategy.type.length > 0 &&
-         this.strategy.name.length > 0 &&
-         missingSettings.length === 0
+      return missingSettings.length === 0;
    }
 
    reset(): void {
