@@ -3,13 +3,26 @@
   "description": "This is the root package definition for the mage-server monorepo.",
   "private": true,
   "version": "6.0.0",
+  "files": [],
   "scripts": {
-    "start": "npm run service:build && npm run instance:build && npm run instance:start",
-    "start-web": "npm run web-app:start",
+    "start": "npm run instance:start",
+    "build": "npm-run-all service:build web-app:build nga-msi:build instance:build",
+    "pack-all": "npm-run-all service:pack web-app:pack nga-msi:pack",
     "service:build": "npm install --prefix service",
+    "service:pack": "npm pack --prefix service",
+    "web-app:install": "npm run install --prefix web-app",
+    "web-app:build": "npm run build --prefix web-app",
+    "web-app:start": "npm start --prefix web-app",
+    "web-app:pack": "npm pack --prefix web-app/dist/app",
     "instance:build": "npm install --prefix instance",
     "instance:start": "npm start --prefix instance",
-    "web-app:start": "npm start --prefix web-app"
+    "nga-msi:build": "npm run build --prefix plugins/nga-msi",
+    "nga-msi:pack": "npm pack --prefix plugins/nga-msi",
+    "postinstall": "npm run build",
+    "start-web": "npm run web-app:start"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "dependencies": {}
 }
