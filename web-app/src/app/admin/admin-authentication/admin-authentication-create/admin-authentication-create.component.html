@@ -4,8 +4,8 @@
 <section class="mat-typography">
    <div class="page-container">
       <div class="content">
-         <mat-horizontal-stepper [linear]="true" #stepper>
-            <mat-step label="Title">
+         <mat-horizontal-stepper [linear]="true" (selectionChange)="stepChanged($event, stepper)" #stepper>
+            <mat-step label="Title" errorMessage="Title is required.">
                <mat-form-field appearance="outline">
                   <mat-label>Authentication Title</mat-label>
                   <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title" required>
@@ -17,7 +17,7 @@
                   <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
                </div>
             </mat-step>
-            <mat-step label="Type">
+            <mat-step label="Type" errorMessage="Type is required.">
                <mat-form-field appearance="outline">
                   <mat-label>Choose a type</mat-label>
                   <mat-select [(ngModel)]="strategy.name" [ngModelOptions]="{standalone: true}" id="type" name="type"
@@ -33,7 +33,7 @@
                      matStepperNext>Next</button>
                </div>
             </mat-step>
-            <mat-step label="Settings">
+            <mat-step label="Settings" errorMessage="Missing required settings.">
                <div [ngSwitch]="strategy.type">
                   <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy">
                   </admin-authentication-oidc>

@@ -1,11 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
-import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { CdkStep, CdkStepper, StepperSelectionEvent, STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
 import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { MatStepper } from '@angular/material/stepper';
 
 @Component({
    selector: 'admin-authentication-create',
@@ -79,6 +80,16 @@ export class AuthenticationCreateComponent implements OnInit {
       })
    }
 
+   stepChanged(event: StepperSelectionEvent, stepper: CdkStepper): void {
+      if (stepper.selected.label === 'Title') {
+         stepper.selected.hasError = !this.strategy.title.length;
+      } else if (stepper.selected.label === 'Type') {
+         stepper.selected.hasError = !this.strategy.name.length;
+      } else if(stepper.selected.label == "Settings") {
+         stepper.selected.hasError = !this.isValid();
+      }
+   }
+
    loadTemplate(): void {
       // Clear out any settings in case a user navigated back
       this.strategy.settings = {
@@ -125,7 +136,7 @@ export class AuthenticationCreateComponent implements OnInit {
       const requiredSettings = this.REQUIRED_SETTINGS[this.strategy.type] || []
       const missingSettings = requiredSettings.filter(setting => {
          const value = this.strategy.settings[setting];
-         if(value == null || value === '') {
+         if (value == null || value === '') {
             return true;
          }
          return false;
