@@ -130,4 +130,9 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     onStrategyDirty(isDirty: boolean): void {
         this.onDirty.emit(isDirty);
     }
+
+    onAuthenticationToggled(strategy: Strategy): void {
+        strategy.isDirty = true;
+        this.onStrategyDirty(true)
+    }
 }

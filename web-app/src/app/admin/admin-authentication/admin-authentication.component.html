@@ -28,7 +28,7 @@
                 <div class="auth__action--enable">
                     <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled" color="primary"
                         *ngIf="hasAuthConfigEditPermission"
-                        (click)="$event.stopPropagation(); strategy.isDirty=true; onStrategyDirty(true)">
+                        (click)="$event.stopPropagation(); onAuthenticationToggled(strategy)">
                     </mat-slide-toggle>
                     <mat-label>Enable Authentication</mat-label>
                 </div>
