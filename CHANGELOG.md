@@ -9,6 +9,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
+## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
+
+##### Features
+* Shapefile export has been removed, please use GeoPackage export.
+* Updated all export formats to account for multiple observation forms.
+
+##### Bug Fixes
+
 ## [6.0.0](https://github.com/ngageoint/mage-server/releases/tag/6.0.0)
 
 ### Release Notes

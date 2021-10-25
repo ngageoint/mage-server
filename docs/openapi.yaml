@@ -2247,7 +2247,7 @@ paths:
       tags: [ Export ]
       operationId: exportStream
       description: >
-        Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
+        Export mage data (GeoJSON, KML, GeoPackage, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
       summary: Perform export during request.  May timeout, so please use /api/exports instead.
@@ -2260,7 +2260,7 @@ paths:
           enum:
           - geojson
           - kml
-          - shapefile
+          - geopackage
           - csv
       - name: eventId
         in: query
@@ -2326,7 +2326,7 @@ paths:
       tags: [ Export ]
       operationId: export
       description: >
-        Export MAGE data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
+        Export MAGE data (GeoJSON, KML, GeoPackage, CSV) in the background. The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
       summary: Export MAGE data using a background task.
@@ -2339,7 +2339,6 @@ paths:
           enum:
           - geojson
           - kml
-          - shapefile
           - geopackage
           - csv
       - name: eventId
@@ -3339,7 +3338,7 @@ components:
           type: string
         exportType:
           type: string
-          enum: [ geojson, kml, geopackage, shapefile, csv ]
+          enum: [ geojson, kml, geopackage, csv ]
         location:
           type: string
         status:

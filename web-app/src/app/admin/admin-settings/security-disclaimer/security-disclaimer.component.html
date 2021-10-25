@@ -7,7 +7,7 @@
 </section>
 <section class="mat-typography">
     <div class="show-section">
-        <mat-checkbox [(ngModel)]="disclaimer.showDisclaimer" [checked]="disclaimer.showDisclaimer" color="primary"
+        <mat-checkbox [(ngModel)]="disclaimer.show" [checked]="disclaimer.show" color="primary"
             (change)="setDirty(true)">
         </mat-checkbox>
         <mat-label for="show-disclaimer">Show Disclaimer</mat-label>
@@ -15,14 +15,14 @@
     <div>
         <mat-form-field appearance="outline">
             <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
-            <input matInput [(ngModel)]="disclaimer.disclaimerTitle" [disabled]="!disclaimer.showDisclaimer"
+            <input matInput [(ngModel)]="disclaimer.title" [disabled]="!disclaimer.show"
                 (click)="setDirty(true)">
         </mat-form-field>
     </div>
     <div>
         <mat-form-field appearance="outline">
             <mat-label for="disclaimerText">Disclaimer Text</mat-label>
-            <textarea matInput [(ngModel)]="disclaimer.disclaimerText" [disabled]="!disclaimer.showDisclaimer"
+            <textarea matInput [(ngModel)]="disclaimer.text" [disabled]="!disclaimer.show"
                 (click)="setDirty(true)"> </textarea>
         </mat-form-field>
     </div>

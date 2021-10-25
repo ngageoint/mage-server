@@ -12,9 +12,9 @@ export class SecurityDisclaimerComponent implements OnInit, OnChanges {
     @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
     disclaimer: Disclaimer = {
-        showDisclaimer: false,
-        disclaimerTitle: '',
-        disclaimerText: ''
+        show: false,
+        title: '',
+        text: ''
     }
 
     isDirty = false;

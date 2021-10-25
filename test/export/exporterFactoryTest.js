@@ -1,17 +1,9 @@
-const sinon = require('sinon')
-    , expect = require('chai').expect
+const expect = require('chai').expect
     , ExporterFactory = require('../../export/exporterFactory');
 
 require('chai').should();
 
 describe("exporter factory tests", function () {
-
-    it("should create shapefile exporter", function (done) {
-        const exporter = ExporterFactory.createExporter('shapefile', {});
-        expect(exporter).to.not.be.undefined;
-        expect(exporter).not.not.be.null;
-        done();
-    });
 
     it("should create kml exporter", function (done) {
         const exporter = ExporterFactory.createExporter('kml', {});
