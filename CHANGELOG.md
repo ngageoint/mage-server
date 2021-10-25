@@ -23,6 +23,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
 * Moving security settings to more secure location.
 * Adding support for connecting to a generic OAuth server.
+* Adding support for connecting to an OpenID Connect server.
 
 ##### Bug Fixes
 
