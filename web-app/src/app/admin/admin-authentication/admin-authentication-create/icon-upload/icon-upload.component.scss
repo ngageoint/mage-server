@@ -1,0 +1,14 @@
+.icon-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+// Need this to override bootstrap, can be removed when bootstrap is removed
+input[type="file"] { 
+  display: none;
+}
+
+button {
+  margin-bottom: 8px;
+}

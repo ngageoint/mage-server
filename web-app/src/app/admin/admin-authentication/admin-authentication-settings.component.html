@@ -1,0 +1,63 @@
+<section class="mat-typography">
+    <div class="mat-title">New Accounts</div>
+</section>
+<section class="mat-typography">
+    <mat-label>New User Accounts Require Admin Approval</mat-label>
+    <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="strategy.settings.usersReqAdmin.enabled"
+            (selectionChange)="setDirty(true); userReqAdminChanged()">
+            <mat-option *ngFor="let option of usersReqAdminChoices" [value]="option.value">{{option.title}}
+            </mat-option>
+        </mat-select>
+        <mat-hint align="end">If disabled, new user accounts do <b>NOT</b>
+            require admin approval to access MAGE.</mat-hint>
+    </mat-form-field>
+    <div *ngIf="!strategy.settings.usersReqAdmin.enabled">
+        <mat-label>New Users Default Event(s)</mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.newUserEvents" multiple (selectionChange)="setDirty(true)">
+                <mat-option *ngFor="let event of events" [value]="event.id">
+                    {{event.name}}
+                </mat-option>
+            </mat-select>
+            <mat-hint align="end">When new users are created, this is the event
+                that they will be added to by default.</mat-hint>
+        </mat-form-field>
+        <mat-label>New Users Default Team(s)</mat-label>
+        <mat-form-field appearance="outline">
+            <mat-select [(ngModel)]="strategy.settings.newUserTeams" multiple (selectionChange)="setDirty(true)">
+                <mat-option *ngFor="let team of teams" [value]="team.name">
+                    {{team.name}}
+                </mat-option>
+            </mat-select>
+            <mat-hint align="end">When new users are created, this is the team
+                that they will be added to by default.</mat-hint>
+        </mat-form-field>
+    </div>
+    <mat-label>New Devices Require Admin Approval</mat-label>
+    <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="strategy.settings.devicesReqAdmin.enabled" (selectionChange)="setDirty(true)">
+            <mat-option *ngFor="let option of devicesReqAdminChoices" [value]="option.value">{{option.title}}
+            </mat-option>
+        </mat-select>
+        <mat-hint align="end">If disabled, new devices do <b>NOT</b> require
+            admin approval to access MAGE.</mat-hint>
+    </mat-form-field>
+</section>
+<section class="mat-typography">
+    <div class="mat-title">Settings</div>
+    <div [ngSwitch]="strategy.type">
+        <admin-authentication-local *ngSwitchCase="'local'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-local>
+        <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oidc>
+        <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oauth2>
+        <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-oauth2>
+        <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-ldap>
+        <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy"
+            (strategyDirty)="onStrategyDirty($event)"></admin-authentication-saml>
+    </div>
+</section>

@@ -1,0 +1,12 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+button {
+    margin-left: 8px; 
+    color: mat-color($app-primary);
+}
+
+mat-dialog-actions {
+    display: flex;
+    justify-content: right;
+}

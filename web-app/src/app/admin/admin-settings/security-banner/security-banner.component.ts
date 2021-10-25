@@ -1,16 +1,18 @@
-import { Component, OnInit, Inject, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject, Output, EventEmitter, ViewChild, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { Banner } from './security-banner.model';
-import { ColorEvent } from 'ngx-color';
 import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 import { ColorPickerComponent } from 'src/app/color-picker/color-picker.component';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'security-banner',
     templateUrl: 'security-banner.component.html',
     styleUrls: ['./security-banner.component.scss']
 })
-export class SecurityBannerComponent implements OnInit {
-    @Output() saveEvent = new EventEmitter<boolean>();
+export class SecurityBannerComponent implements OnInit, OnChanges, OnDestroy {
+    @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
+    @Input() beginSave: any;
     banner: Banner = {
         headerTextColor: '#000000',
         headerText: '',
@@ -24,11 +26,15 @@ export class SecurityBannerComponent implements OnInit {
     @ViewChild('headerTextColor') headerTextColorPicker: ColorPickerComponent;
     @ViewChild('headerBackgroundColor') headerBackgroundColorPicker: ColorPickerComponent;
     @ViewChild('footerTextColor') footerTextColorPicker: ColorPickerComponent;
-    @ViewChild('footerBackgroundColor') footerBackgroundColoricker: ColorPickerComponent;
+    @ViewChild('footerBackgroundColor') footerBackgroundColorPicker: ColorPickerComponent;
+
+    isDirty = false;
+    subscriptions: Subscription[];
 
     constructor(
         @Inject(Settings)
         public settings: any) {
+        this.subscriptions = [];
     }
 
     ngOnInit(): void {
@@ -48,33 +54,63 @@ export class SecurityBannerComponent implements OnInit {
 
             this.banner = settings.banner ? settings.banner.settings : this.banner;
 
-            //TODO dont call ngoninit
             this.headerTextColorPicker.hexColor = this.banner.headerTextColor;
-            this.headerTextColorPicker.ngOnInit();
+            this.headerTextColorPicker.updateColor();
+            this.subscriptions.push(this.headerTextColorPicker.onColorChanged.subscribe(event => {
+                this.banner.headerTextColor = event.color;
+                this.isDirty = true;
+            }));
+
             this.headerBackgroundColorPicker.hexColor = this.banner.headerBackgroundColor;
-            this.headerBackgroundColorPicker.ngOnInit();
+            this.headerBackgroundColorPicker.updateColor();
+            this.subscriptions.push(this.headerBackgroundColorPicker.onColorChanged.subscribe(event => {
+                this.banner.headerBackgroundColor = event.color;
+                this.isDirty = true;
+            }));
+
             this.footerTextColorPicker.hexColor = this.banner.footerTextColor;
-            this.footerTextColorPicker.ngOnInit();
-            this.footerBackgroundColoricker.hexColor = this.banner.footerBackgroundColor;
-            this.footerBackgroundColoricker.ngOnInit();
+            this.footerTextColorPicker.updateColor();
+            this.subscriptions.push(this.footerTextColorPicker.onColorChanged.subscribe(event => {
+                this.banner.footerTextColor = event.color;
+                this.isDirty = true;
+            }));
+
+            this.footerBackgroundColorPicker.hexColor = this.banner.footerBackgroundColor;
+            this.footerBackgroundColorPicker.updateColor();
+            this.subscriptions.push(this.footerBackgroundColorPicker.onColorChanged.subscribe(event => {
+                this.banner.footerBackgroundColor = event.color;
+                this.isDirty = true;
+            }));
         }).catch(err => {
             console.log(err);
         });
     }
 
-    colorChanged(event: ColorEvent, key: string): void {
-        if (this.banner.hasOwnProperty(key)) {
-            this.banner[key] = event.color;
-        } else {
-            console.log(key + ' is not a valid banner property');
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.beginSave && !changes.beginSave.firstChange) {
+            if (this.isDirty) {
+                this.save();
+            }
         }
     }
 
-    save(): void {
+    setDirty(status: boolean): void {
+        this.isDirty = status;
+        this.onDirty.emit(this.isDirty);
+    }
+
+    private save(): void {
         this.settings.update({ type: 'banner' }, this.banner, () => {
-            this.saveEvent.emit(true);
+            this.saveComplete.emit(true);
         }, () => {
-            this.saveEvent.emit(false);
+            this.saveComplete.emit(false);
+        });
+        this.setDirty(false);
+    }
+
+    ngOnDestroy(): void {
+        this.subscriptions.forEach(sub => {
+            sub.unsubscribe();
         });
     }
 }

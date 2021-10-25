@@ -54,7 +54,7 @@ class FileSystemSecretStore {
         const file = path.join(this._config.storageLocation, id + this._config.suffix);
         if (fs.existsSync(file)) {
             fs.accessSync(file, fs.constants.W_OK);
-            fs.rmSync(file);
+            fs.unlinkSync(file);
         }
     }
 }

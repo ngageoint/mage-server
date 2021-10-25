@@ -84,8 +84,7 @@ class AuthenticationInitializer {
       provision.check(req.user.authentication.authenticationConfiguration.type, req.user.authentication.authenticationConfiguration.name)(req, res, next);
     }
 
-    app.post(
-      '/auth/token',
+    app.post('/auth/token',
       authorize,
       provisionDevice,
       function (req, res, next) {

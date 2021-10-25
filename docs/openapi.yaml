@@ -119,7 +119,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [ local, ldap, saml, geoaxis, google ]
+            enum: [ local, ldap, saml, geoaxis, openidconnect ]
       requestBody:
         required: true
         content:
@@ -2211,8 +2211,6 @@ paths:
           enum:
           - banner
           - disclaimer
-          - blacklist
-          - authconfigsetup
       responses:
         200:
           description: Success - setting document
@@ -2236,8 +2234,6 @@ paths:
           enum:
           - banner
           - disclaimer
-          - blacklist
-          - authconfigsetup
       responses:
         200:
           description: Success - the update settings document

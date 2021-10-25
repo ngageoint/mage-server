@@ -1,0 +1,51 @@
+.auth-button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.third-party-button {
+    flex-direction: row;
+    justify-content: space-between !important;
+    width: 25%;
+    height: 50px;
+}
+  
+.third-party-button-content {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 1px;
+    left: 1px;
+    bottom: 1px;
+    right: 1px;
+}
+
+.third-party-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFFFFF;
+    border-radius: 3px;
+    width: 42px;
+    padding: 4px;
+    height: 100%;
+  
+    img {
+      width: 60%;
+    }
+}
+
+.third-party-button-text {
+    text-align: center;
+    flex: 1;
+}
+
+.preview-button {
+    margin: 16px 0;
+}
+
+color-picker {
+    display: block;
+    width: 25%;
+}

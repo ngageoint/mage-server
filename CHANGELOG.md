@@ -22,6 +22,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ### Release Notes
 **This release includes database migrations, please remember to backup your database before upgrading.**
 
+**If you are using geoaxis or google auth, you will need to login with a mage username/password account and follow the new setup in Adminstration options -> settings -> authentication.**
+
 ##### Features
 * Multi form support. Users will be able to add multiple forms to an observation when the server configuration allows. Administrators can restrict total amount of forms, as well as min/max for individual forms.
 * Attachments are now form fields.  All existing forms will be migrated to include and "Attachments" form field as the first first field in each form.  Administrators can edit forms to include any number of attachments fields.  In addition administrators can restrict the number of attachments allowed in each field as well as the types of attachments.
@@ -29,6 +31,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * New authentication functionality ability under admin->settings (e.g. create, edit, etc.).
 * Moving security settings to more secure location.
 * Adding support for connecting to a generic OAuth server.
+* Adding support for connecting to an OpenID Connect server.
 
 ##### Bug Fixes
 

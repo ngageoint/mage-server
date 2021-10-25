@@ -1,0 +1,10 @@
+<section class="mat-typography">
+    <img *ngIf="strategy.icon" [src]="strategy.icon" style="width:32px; height:32px">
+
+    <div class="icon-actions">
+        <button mat-button color="primary" (click)="file.click()">
+          Upload an Icon
+        </button>
+        <input [hidden]="true" type="file" #file accept="image/*" (change)="onImageChange($event)">
+      </div>
+</section>

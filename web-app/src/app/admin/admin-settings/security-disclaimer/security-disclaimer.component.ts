@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Inject, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Disclaimer } from './security-disclaimer.model';
 import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
 
@@ -7,13 +7,17 @@ import { Settings } from 'src/app/upgrade/ajs-upgraded-providers';
     templateUrl: 'security-disclaimer.component.html',
     styleUrls: ['./security-disclaimer.component.scss']
 })
-export class SecurityDisclaimerComponent implements OnInit {
-    @Output() saveEvent = new EventEmitter<boolean>();
+export class SecurityDisclaimerComponent implements OnInit, OnChanges {
+    @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
+    @Input() beginSave: any;
     disclaimer: Disclaimer = {
         show: false,
         title: '',
         text: ''
     }
+
+    isDirty = false;
 
     constructor(
         @Inject(Settings)
@@ -41,11 +45,26 @@ export class SecurityDisclaimerComponent implements OnInit {
         });
     }
 
-    save(): void {
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.beginSave && !changes.beginSave.firstChange) {
+            if (this.isDirty) {
+                this.save();
+            }
+        }
+    }
+
+    setDirty(status: boolean): void {
+        this.isDirty = status;
+        this.onDirty.emit(this.isDirty);
+    }
+
+    private save(): void {
         this.settings.update({ type: 'disclaimer' }, this.disclaimer, () => {
-            this.saveEvent.emit(true);
+            this.saveComplete.emit(true);
         }, () => {
-            this.saveEvent.emit(false);
+            this.saveComplete.emit(false);
         });
+
+        this.setDirty(false);
     }
 }
