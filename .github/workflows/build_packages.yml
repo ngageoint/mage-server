@@ -47,8 +47,9 @@ jobs:
       - name: upload package artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mage-server-packages
+          name: mage_server_packages-node-{{ matrix.node }}
           path: |
-            service/ngageoint_mage.service-*.tgz
+            service/ngageoint-mage.service-*.tgz
             web-app/dist/app/ngageoint-mage.web-app-*.tgz
             plugins/nga-msi/ngageoint-mage.nga-msi-*.tgz
+          retention-days: 10
