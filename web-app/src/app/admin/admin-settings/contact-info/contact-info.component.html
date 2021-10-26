@@ -10,7 +10,7 @@
                 <mat-form-field appearance="outline" id="email">
                     <mat-label>MAGE Administrator E-Mail</mat-label>
                     <mat-icon matPrefix>mail</mat-icon>
-                    <input matInput [(ngModel)]="contactinfo.email">
+                    <input matInput type="email" [(ngModel)]="contactinfo.email">
                     <button *ngIf="contactinfo.email" matSuffix mat-icon-button (click)="contactinfo.email=''">
                         <mat-icon>close</mat-icon>
                     </button>
@@ -18,7 +18,7 @@
                 <mat-form-field appearance="outline" id="phone">
                     <mat-label>MAGE Administrator Phone</mat-label>
                     <mat-icon matPrefix>phone</mat-icon>
-                    <input matInput [(ngModel)]="contactinfo.phone">
+                    <input matInput type="tel" [(ngModel)]="contactinfo.phone">
                     <button *ngIf="contactinfo.phone" matSuffix mat-icon-button (click)="contactinfo.phone=''">
                         <mat-icon>close</mat-icon>
                     </button>
