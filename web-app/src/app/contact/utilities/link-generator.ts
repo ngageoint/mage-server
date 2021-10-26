@@ -8,8 +8,8 @@ export class LinkGenerator {
             emailBuilder.build();
 
             url = 'mailto:' + encodeURIComponent(adminContactInfo.email);
-            url += '?subject=' + encodeURIComponent(emailBuilder.subject());
-            url += '&body=' + encodeURIComponent(emailBuilder.body());
+            url += '?subject=' + encodeURIComponent(emailBuilder.subject);
+            url += '&body=' + encodeURIComponent(emailBuilder.body);
         }
 
         return url;

@@ -14,11 +14,11 @@ export class EmailBuilder {
         this._body = '';
     }
 
-    subject(): string {
+    get subject(): string {
         return this._subject;
     }
 
-    body(): string {
+    get body(): string {
         return this._body;
     }
 
