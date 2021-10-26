@@ -44,7 +44,7 @@ const options = [
   new Option('--export-sweep-interval <number>').env('MAGE_EXPORT_SWEEP_INTERVAL').default(28800, '8 hours').argParser(x => parseInt(x)),
   new Option('--export-ttl <number>').env('MAGE_EXPORT_TTL').default(259200, '72 hours').argParser(x => parseInt(x)),
   new Option('--token-expiration <number>').env('MAGE_TOKEN_EXPIRATION').default(28800, '8 hours').argParser(x => parseInt(x)),
-  new Option('--mongo.url <string>', 'The URL to the MongoDB database, e.g., mongodb://127.0.0.1/mage').env('MAGE_MONGO_URL').default('mongodb://127.0.0.1:27001/magedb'),
+  new Option('--mongo.url <string>', 'The URL to the MongoDB database, e.g., mongodb://127.0.0.1/mage').env('MAGE_MONGO_URL').default('mongodb://127.0.0.1:27017/magedb'),
   new Option('--mongo.conn-timeout <string>').env('MAGE_MONGO_CONN_TIMEOUT').default(300, '300 seconds').argParser(x => parseInt(x)),
   new Option('--mongo.conn-retry-delay <string>').env('MAGE_MONGO_CONN_RETRY_DELAY').default(5, '5 seconds').argParser(x => parseInt(x)),
   new Option('--mongo.pool-size <string>').env('MAGE_MONGO_POOL_SIZE').default(5).argParser(x => parseInt(x)),
