@@ -57,11 +57,16 @@ export interface MageService {
  */
 export const MageReadyEvent = 'comingOfMage'
 export type BootConfig = {
-  /**
-   * An array of service plugin package names
-   */
-  servicePlugins?: string[]
-  webUIPlugins?: string[]
+  plugins: {
+    /**
+     * An array of service plugin package names
+     */
+    servicePlugins?: string[]
+    /**
+     * An array of web app plugin package names
+     */
+    webUIPlugins?: string[]
+  }
 }
 
 let service: MageService | null = null
@@ -108,7 +113,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const repos = await initRepositories(models, config)
   const appLayer = await initAppLayer(repos)
 
-  const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.webUIPlugins || [])
+  const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
   const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
   const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
     routesForPluginId[pluginId] = initPluginRoutes
@@ -124,7 +129,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     [ FeedsAppServiceTokens.UpdateFeed, appLayer.feeds.updateFeed ],
     [ FeedsAppServiceTokens.DeleteFeed, appLayer.feeds.deleteFeed ],
   ])
-  for (const pluginId of config.servicePlugins || []) {
+  for (const pluginId of config.plugins?.servicePlugins || []) {
     console.info(`loading plugin ${pluginId}...`)
     const pluginScopeServices = new Map<InjectionToken<any>, any>()
     const injectService: InjectableServices = <Service>(token: InjectionToken<Service>) => {
@@ -289,7 +294,7 @@ async function initRepositories(models: DatabaseModels, config: BootConfig): Pro
     models.icons.staticIcon,
     new SimpleIdFactory(),
     new FileSystemIconContentStore(),
-    [ new PluginUrlScheme(config.servicePlugins || []) ])
+    [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
   return {
     feeds: {

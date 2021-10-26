@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 
 const { Command, Option, InvalidArgumentError } = require('commander');
-const fsx = require('fs-extra')
-const { boot } = require('../lib/app');
+const path = require('path');
+const _ = require('lodash');
 const magePackage = require('../package.json');
 
-/*
-TODO: collect environment variables using commander options here as well,
-allowing to them to be overridden with command line args.  remove all instances
-in service code that directly reference the `environment/env` module
-*/
+const mageCmd = new Command('mage');
+mageCmd.version(magePackage.version);
 
-const mage = new Command('mage');
-mage.version(magePackage.version);
+const optConfigDesc =
+  `A JSON document or path to a JSON file with the full MAGE configuration, e.g.
+  ${JSON.stringify({
+
+  }, null, 2).replace(/\n/g, '\n  ')}
+
+Further individual command line parameters will override those in the configuration document.
+`;
 
 const optPluginsDesc =
   `A JSON document or path to a JSON file in the form
@@ -25,23 +28,52 @@ const optPluginsDesc =
     ]
   }, null, 2).replace(/\n/g, '\n  ')}
 
-`
-const optPlugins = new Option('--plugins <plugins_descriptor>', optPluginsDesc).env('MAGE_PLUGINS').argParser(parsePluginsJsonFromStringOrFile);
+`;
 
-mage.addOption(optPlugins);
+const options = [
+  new Option('-C, --config <string>', optConfigDesc).env('MAGE_CONFIG').argParser(parseConfigJsonFromStringOrFile),
+  new Option('-a --address <string>', 'The address on which the web server listens for HTTP requests').env('MAGE_ADDRESS').default('0.0.0.0'),
+  new Option('-p --port <number>', 'The port on which which the web server listens for HTTP requests').env('MAGE_PORT').default(4242).argParser(x => parseInt(x)),
+  new Option('--attachment-dir <string>').env('MAGE_ATTACHMENT_DIR').default('/var/lib/mage/attachments'),
+  new Option('--export-dir <string>').env('MAGE_EXPORT_DIR').default('/var/lib/mage/export'),
+  new Option('--icon-dir <string>').env('MAGE_ICON_DIR').default('/var/lib/mage/icons'),
+  new Option('--layer-dir <string>').env('MAGE_LAYER_DIR').default('/var/lib/mage/layers'),
+  new Option('--security-dir <string>').env('MAGE_SECURITY_DIR').default('/var/lib/mage/security'),
+  new Option('--temp-dir <string>').env('MAGE_TEMP_DIR').default('/tmp'),
+  new Option('--user-dir <string>').env('MAGE_USER_DIR').default('/var/lib/mage/users'),
+  new Option('--export-sweep-interval <number>').env('MAGE_EXPORT_SWEEP_INTERVAL').default(28800, '8 hours').argParser(x => parseInt(x)),
+  new Option('--export-ttl <number>').env('MAGE_EXPORT_TTL').default(259200, '72 hours').argParser(x => parseInt(x)),
+  new Option('--token-expiration <number>').env('MAGE_TOKEN_EXPIRATION').default(28800, '8 hours').argParser(x => parseInt(x)),
+  new Option('--mongo.url <string>', 'The URL to the MongoDB database, e.g., mongodb://127.0.0.1/mage').env('MAGE_MONGO_URL').default('mongodb://127.0.0.1:27001/magedb'),
+  new Option('--mongo.conn-timeout <string>').env('MAGE_MONGO_CONN_TIMEOUT').default(300, '300 seconds').argParser(x => parseInt(x)),
+  new Option('--mongo.conn-retry-delay <string>').env('MAGE_MONGO_CONN_RETRY_DELAY').default(5, '5 seconds').argParser(x => parseInt(x)),
+  new Option('--mongo.pool-size <string>').env('MAGE_MONGO_POOL_SIZE').default(5).argParser(x => parseInt(x)),
+  new Option('--mongo.user <string>').env('MAGE_MONGO_USER'),
+  new Option('--mongo.password <string>').env('MAGE_MONGO_PASSWORD'),
+  new Option('--mongo.ssl').env('MAGE_MONGO_SSL'),
+  new Option('--mongo.replica-set <string>').env('MAGE_MONGO_REPLICA_SET'),
+  new Option('--mongo.x509-key <string>').env('MAGE_MONGO_X509_KEY'),
+  new Option('--mongo.x509-key-file <string>').env('MAGE_MONGO_X509_KEY_FILE'),
+  new Option('--mongo.x509-cert <string>').env('MAGE_MONGO_X509_CERT'),
+  new Option('--mongo.x509-cert-file <string>').env('MAGE_MONGO_X509_CERT_FILE'),
+  new Option('--mongo.x509-ca-cert <string>').env('MAGE_MONGO_X509_CA_CERT'),
+  new Option('--mongo.x509-ca-cert-file <string>').env('MAGE_MONGO_X509_CA_CERT_FILE'),
+  new Option('-P --plugins <string>', optPluginsDesc).env('MAGE_PLUGINS').argParser(parsePluginsJsonFromStringOrModule),
+  new Option('--plugin <module_name...>'),
+  new Option('--web-plugin <module_name...>')
+]
 
-mage.option('-p --plugin <module_name...>');
+options.forEach(x => mageCmd.addOption(x))
 
-mage.option('-w --web-plugin <module_name...>');
-
-const opts = mage.parseAsync().then(
-  async mage => {
-    const opts = mage.opts();
-    const pluginsConfig = mergePluginsOpts(opts);
-    console.log(pluginsConfig);
-    boot(pluginsConfig).then(service => {
-      service.open();
-    });
+mageCmd.parseAsync().then(
+  async mageCmd => {
+    const opts = mageCmd.opts();
+    const merged = mergeOptsToConfig(opts);
+    tempEnvHack(merged);
+    console.info(`starting mage with config\n${JSON.stringify(merged, null, 2)}`);
+    const { boot } = require('../lib/app');
+    const service = await boot(merged);
+    service.open();
   },
   err => {
     console.error(err);
@@ -49,28 +81,76 @@ const opts = mage.parseAsync().then(
   }
 );
 
-function mergePluginsOpts(opts) {
-  const plugins = opts.plugins || {}
-  const servicePlugins = (opts.plugin || []).concat(plugins.servicePlugins || [])
-  const webUIPlugins = (opts.webPlugin || []).concat(plugins.webUIPlugins || [])
+const configKeyForOptKey = {
+  exportTtl: 'exportTTL'
+};
+
+function mergeOptsToConfig(opts) {
+  const config = opts.config ? opts.config.mage || {} : {};
+  const manualMergeKeys = [ 'config', 'plugins', 'plugin', 'webPlugin' ];
+  const optsSimple = _.omit(opts, manualMergeKeys);
+  const DefaultValue = function(x) {
+    this.value = x;
+  };
+  const optsDefaultsMarked = _.mapValues(optsSimple, (value, key) => {
+    const optionDef = options.find(x => x.attributeName() === key);
+    if (optionDef.defaultValue && optionDef.defaultValue === value) {
+      return new DefaultValue(value);
+    }
+    return value;
+  });
+  const optsWithConfigKeys = _.mapKeys(optsDefaultsMarked, (v, k) => configKeyForOptKey[k] || k);
+  const optsNested = Object.entries(optsWithConfigKeys).reduce((optsNested, entry) => {
+    if (manualMergeKeys[entry[0]]) {
+      return optsNested;
+    }
+    const nestedEntry = dotsToNested(entry);
+    return _.merge(optsNested, nestedEntry);
+  }, {});
+  const overriddenDefaults = _.mergeWith(optsNested, config, (optValue, configValue) => {
+    if (!optValue) {
+      return configValue;
+    }
+    if (!configValue) {
+      return optValue instanceof DefaultValue ? optValue.value : optValue;
+    }
+    if (optValue instanceof DefaultValue) {
+      return configValue;
+    }
+    if (typeof optValue === 'object') {
+      // nested object - continue recursive merge
+      return void(0);
+    }
+    return optValue;
+  });
+  const plugins = mergePlugins(opts, config);
+  return { ...overriddenDefaults, plugins };
+}
+
+function dotsToNested(entry) {
+  const steps = entry[0].split('.');
+  const nested = steps.slice(0, -1).reduceRight((nested, key) => {
+    return { [key]: nested };
+  }, { [steps.slice(-1)]: entry[1] });
+  return nested;
+}
+
+function mergePlugins(opts, config) {
+  const optsPlugins = opts.plugins || {};
+  const configPlugins = config.plugins || {};
+  const servicePlugins = (opts.plugin || []).concat(optsPlugins.servicePlugins || []).concat(configPlugins.servicePlugins || [])
+  const webUIPlugins = (opts.webPlugin || []).concat(optsPlugins.webUIPlugins || []).concat(configPlugins.webUIPlugins || [])
   return { servicePlugins, webUIPlugins }
 }
 
-function parsePluginsJsonFromStringOrFile(jsonOrPath) {
-  let plugins = null;
-  try {
-    plugins = JSON.parse(jsonOrPath);
-  }
-  catch (err) { }
-  if (!plugins) {
-    try {
-      plugins = fsx.readJSONSync(jsonOrPath);
-    }
-    catch (err) {
-      console.error(err);
-      throw new InvalidArgumentError(`failed to parse JSON file from path ${jsonOrPath}`);
-    }
-  }
+function parseConfigJsonFromStringOrFile(jsonOrPath) {
+  const config = parseJsonFromStringOrModule(jsonOrPath);
+  // TODO: validation
+  return config;
+}
+
+function parsePluginsJsonFromStringOrModule(jsonOrPath) {
+  const plugins = parseJsonFromStringOrModule(jsonOrPath);
   if (!plugins || typeof plugins !== 'object') {
     throw new InvalidArgumentError('plugins must be a JSON object');
   }
@@ -81,4 +161,50 @@ function parsePluginsJsonFromStringOrFile(jsonOrPath) {
     throw new InvalidArgumentError('plugins JSON key webUIPlugins must an array of strings')
   }
   return plugins;
+}
+
+function parseJsonFromStringOrModule(jsonOrModulePath) {
+  let json = null;
+  try {
+    json = JSON.parse(jsonOrModulePath);
+  }
+  catch (err) { }
+  if (!json) {
+    try {
+      const jsonPath = path.resolve(process.cwd(), jsonOrModulePath);
+      json = require(jsonPath);
+    }
+    catch (err) {
+      console.error(err);
+      throw new InvalidArgumentError(`failed to parse JSON file from path ${jsonOrModulePath}`);
+    }
+  }
+  return json;
+}
+
+/**
+TODO: this will go away when we remove all direct env references
+from downstream code, let commander handle the env vars, and pass
+the configuration object to the mage app
+*/
+function tempEnvHack(config) {
+  options.forEach(option => {
+    const optKey = option.attributeName();
+    const configKey = configKeyForOptKey[optKey] || optKey;
+    const { envVar } = option;
+    if (!envVar) {
+      return;
+    }
+    const optVal = _.get(config, configKey);
+    if (typeof optVal === 'object') {
+      return;
+    }
+    if (process.env[envVar] && process.env[envVar] === String(optVal)) {
+      return;
+    }
+    if (!optVal) {
+      return;
+    }
+    process.env[envVar] = String(optVal);
+  });
 }
