@@ -17,9 +17,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      # - name: Install dev tools
-      #   run: |
-      #     sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: install dev tools
+        run: |
+          sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v2
         with:
