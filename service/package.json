@@ -167,7 +167,6 @@
     "migration:run": "node bin/migration.js run",
     "start": "node lib/app.js",
     "debug": "node --inspect-brk=9229 lib/app.js",
-    "prepare": "npm run build",
     "clean": "rm -rf lib test-lib"
   },
   "config": {
