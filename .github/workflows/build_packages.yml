@@ -44,12 +44,15 @@ jobs:
           cd plugins/nga-msi
           npm ci
           npm pack
+      - name: flatten package artifacts
+        run: |
+          mkdir packages
+          mv service/ngageoint-mage.service-*.tgz ./packages
+          mv web-app/dist/app/ngageoint-mage.web-app-*.tgz ./packages
+          mv plugins/nga-msi/ngageoint-mage.nga-msi-*.tgz ./packages
       - name: upload package artifacts
         uses: actions/upload-artifact@v2
         with:
           name: mage_server_packages-node-{{ matrix.node }}
-          path: |
-            service/ngageoint-mage.service-*.tgz
-            web-app/dist/app/ngageoint-mage.web-app-*.tgz
-            plugins/nga-msi/ngageoint-mage.nga-msi-*.tgz
+          path: packages/*
           retention-days: 10
