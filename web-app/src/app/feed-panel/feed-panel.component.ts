@@ -37,7 +37,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     id: 'observations',
     title: 'Observations',
     icon: 'place'
-  },{
+  }, {
     id: 'people',
     title: 'People',
     icon: 'people'
@@ -59,6 +59,11 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   editObservation: any
 
   viewUser: any
+
+  contactOpen: any;
+  info = {};
+  statusTitle = 'Cannot Create Observation';
+  statusMessage = 'You are not part of this event.';
 
   constructor(
     public dialog: MatDialog,
@@ -181,10 +186,12 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
     if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
-      this.dialog.open(this.permissionDialog, {
-        autoFocus: false,
-        width: '500px'
-      })
+      this.info = {
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: this.userService.myself.username
+      };
+      this.contactOpen = { opened: true };
 
       return
     }
@@ -205,7 +212,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
     this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
       for (let i = 0; i < form.min || 0; i++) {
-        observation.properties.forms.push({ formId: form.id})
+        observation.properties.forms.push({ formId: form.id })
       }
 
       if (form.default && !form.min) {
@@ -250,6 +257,10 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     if (event === 0) {
       this.observationBadge = null
     }
+  }
+
+  onContactClose(): void {
+    this.contactOpen = { opened: false };
   }
 
   onFeedsChanged(feeds): void {

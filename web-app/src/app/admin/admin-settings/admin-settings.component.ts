@@ -5,7 +5,7 @@ import { Team, Event, LocalStorageService, AuthenticationConfigurationService, U
 import { Strategy } from './admin-settings.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent } from './admin-settings';
+import { AuthenticationDeleteComponent, SecurityDisclaimerComponent, SecurityBannerComponent, ContactInfoComponent } from './admin-settings';
 import { FormControl } from '@angular/forms';
 import { StateService } from '@uirouter/angular'
 
@@ -21,6 +21,7 @@ export class AdminSettingsComponent implements OnInit {
     }];
     @ViewChild(SecurityBannerComponent) securityBannerView: SecurityBannerComponent;
     @ViewChild(SecurityDisclaimerComponent) securityDisclaimerView: SecurityDisclaimerComponent;
+    @ViewChild(ContactInfoComponent) contactInfoView: ContactInfoComponent;
     token: any;
     selectedTab = new FormControl(0);
     teams: any[] = [];
@@ -94,6 +95,8 @@ export class AdminSettingsComponent implements OnInit {
             this.securityBannerView.save();
         } else if (this.selectedTab.value === 2) {
             this.securityDisclaimerView.save();
+        } else if (this.selectedTab.value === 3) {
+            this.contactInfoView.save();
         } else {
             this.saveAuthentication();
         }
@@ -118,6 +121,18 @@ export class AdminSettingsComponent implements OnInit {
             });
         } else {
             this._snackBar.open('Failed to save disclaimer', null, {
+                duration: 2000,
+            });
+        };
+    }
+
+    onContactInfoSaved(status: boolean): void {
+        if (status) {
+            this._snackBar.open('Contact info successfully saved', null, {
+                duration: 2000,
+            });
+        } else {
+            this._snackBar.open('Failed to save contact info', null, {
                 duration: 2000,
             });
         };

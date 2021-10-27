@@ -1,13 +1,7 @@
-import { snackbar } from 'material-components-web';
-
 class OAuthSigninController {
   constructor($element, UserService) {
     this.$element = $element;
     this.UserService = UserService;
-  }
-
-  $postLink() {
-    this.snackbar = new snackbar.MDCSnackbar(this.$element.find('.mdc-snackbar')[0]);
   }
 
   signin() {
@@ -24,7 +18,12 @@ class OAuthSigninController {
 
         this.statusTitle = 'Signin Failed';
         this.statusMessage = message
-        this.snackbar.open();
+        this.info = {
+          statusTitle: this.statusTitle,
+          statusMessage: this.statusMessage,
+          id: user
+        };
+        this.contactOpen = { opened: true };
         return;
       }
 
@@ -38,8 +37,17 @@ class OAuthSigninController {
     }, ({errorMessage}) => {
       this.statusTitle = 'Error signing in';
       this.statusMessage = errorMessage;
-      this.snackbar.open();
+      this.info = {
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: user
+      };
+      this.contactOpen = { opened: true };
     });
+  }
+
+  onContactClose() {
+    this.contactOpen = { opened: false };
   }
 }
 

@@ -22,7 +22,7 @@ describe("api route tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     this.timeout(10000);
 
     const configs = [];
@@ -58,8 +58,9 @@ describe("api route tests", function () {
       .expects('append')
       .resolves(api);
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
+    const settingMock = sinon.mock(SettingModel);
+
+    settingMock.expects('findOne')
       .withArgs({ type: 'disclaimer' })
       .chain('exec')
       .resolves({
@@ -73,6 +74,15 @@ describe("api route tests", function () {
           footerTextColor: "#000000",
           headerBackgroundColor: "#ffffff",
           headerTextColor: "#000000"
+        }
+      });
+
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
+      .chain('exec')
+      .resolves({
+        type: "contactinfo",
+        settings: {
         }
       });
 
@@ -117,9 +127,15 @@ describe("api route tests", function () {
       .expects('append')
       .resolves(api);
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
+    const settingMock = sinon.mock(SettingModel);
+
+    settingMock.expects('findOne')
       .withArgs({ type: 'disclaimer' })
+      .chain('exec')
+      .resolves({});
+
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
       .chain('exec')
       .resolves({});
 
@@ -161,9 +177,15 @@ describe("api route tests", function () {
       .expects('append')
       .resolves(api);
 
-    sinon.mock(SettingModel)
-      .expects('findOne')
+    const settingMock = sinon.mock(SettingModel);
+
+    settingMock.expects('findOne')
       .withArgs({ type: 'disclaimer' })
+      .chain('exec')
+      .resolves({});
+
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
       .chain('exec')
       .resolves({});
 

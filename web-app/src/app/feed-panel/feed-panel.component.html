@@ -5,39 +5,26 @@
 </div>
 
 <div class="feeds-content">
-  <user-view *ngIf="viewUser" @slide
-    class="component__view"
-    [user]="viewUser"
-    [event]="event"
+  <user-view *ngIf="viewUser" @slide class="component__view" [user]="viewUser" [event]="event"
     (close)="onUserViewClose()">
   </user-view>
 
-  <observation-view *ngIf="viewObservation" @slide
-    class="component__view"
-    [event]="event"
-    [observation]="viewObservation"
-    (close)="onObservationViewClose()"
-    (delete)="onObservationDelete($event)">
+  <observation-view *ngIf="viewObservation" @slide class="component__view" [event]="event"
+    [observation]="viewObservation" (close)="onObservationViewClose()" (delete)="onObservationDelete($event)">
   </observation-view>
 
-  <observation-edit *ngIf="editObservation" @slide
-    class="component__view"
-    [observation]="editObservation"
+  <observation-edit *ngIf="editObservation" @slide class="component__view" [observation]="editObservation"
     (close)="onObservationEditClose()">
   </observation-edit>
 
-  <observation-edit *ngIf="newObservation" @slide
-    class="component__view"
-    [observation]="newObservation"
+  <observation-edit *ngIf="newObservation" @slide class="component__view" [observation]="newObservation"
     (close)="onObservationEditClose()">
   </observation-edit>
 
-  <feed-item *ngIf="feedItem" @slide
-    class="component__view"
-    [item]="feedItem.item"
-    [feed]="feedItem.feed">
+  <feed-item *ngIf="feedItem" @slide class="component__view" [item]="feedItem.item" [feed]="feedItem.feed">
   </feed-item>
 
+  <contact *ngIf="contactOpen" [open]="contactOpen" [info]="info" (on-contact-close)="onContactClose()"></contact>
   <observation-list class="feed-container" *ngIf="currentTab.id === 'observations'"></observation-list>
   <user-list class="feed-container" *ngIf="currentTab.id === 'people'"></user-list>
   <feed-list class="feed-container" [feed]="currentTab.feed" *ngIf="currentTab.feed"></feed-list>

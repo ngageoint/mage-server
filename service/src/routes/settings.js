@@ -1,5 +1,5 @@
 module.exports = function(app, security) {
-  var access = require('../access')
+  const access = require('../access')
     , Setting = require('../models/setting')
     , passport = security.authentication.passport;
 
@@ -17,7 +17,7 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup)',
+    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup|contactinfo)',
     function (req, res, next) {
       Setting.getSetting(req.params.type)
         .then(setting => res.json(setting))
@@ -26,7 +26,7 @@ module.exports = function(app, security) {
   );
 
   app.put(
-    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup)',
+    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup|contactinfo)',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {

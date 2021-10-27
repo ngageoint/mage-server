@@ -1,4 +1,4 @@
-import { textField, snackbar } from 'material-components-web';
+import { textField } from 'material-components-web';
 
 class LdapSigninController {
   constructor($element, $uibModal, UserService) {
@@ -10,7 +10,6 @@ class LdapSigninController {
   $postLink() {
     this.usernameField = new textField.MDCTextField(this.$element.find('.mdc-text-field')[0]);
     this.passwordField = new textField.MDCTextField(this.$element.find('.mdc-text-field')[1]);
-    this.snackbar = new snackbar.MDCSnackbar(this.$element.find('.mdc-snackbar')[0]);
   }
 
   signin() {
@@ -27,8 +26,17 @@ class LdapSigninController {
       this.statusMessage = response.data || 'Please check your username and password and try again.';
       this.usernameField.valid = false;
       this.passwordField.valid = false;
-      this.snackbar.open();
+      this.info = {
+        statusTitle: this.statusTitle,
+        statusMessage: this.statusMessage,
+        id: this.username
+      };
+      this.contactOpen = { opened: true };
     });
+  }
+
+  onContactClose() {
+    this.contactOpen = { opened: false };
   }
 }
 

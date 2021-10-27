@@ -143,7 +143,7 @@ import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
 import { AdminModule } from './admin/admin.module'
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent } from './admin/admin-settings/admin-settings';
+import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent, ContactInfoComponent } from './admin/admin-settings/admin-settings';
 import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
 import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
 import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
@@ -157,6 +157,8 @@ import { ObservationEditAttachmentComponent } from './observation/observation-ed
 import { ObservationEditPasswordComponent } from './observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ObservationViewPasswordComponent } from './observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
+import { ContactComponent } from './contact/contact.component';
+import { ContactDialogComponent } from "./contact/contact-dialog.component";
 
 @NgModule({
   declarations: [
@@ -232,13 +234,16 @@ import { PasswordPipe } from './observation/observation-view/observation-view-pa
     EditSettingComponent,
     DeleteSettingComponent,
     IconUploadComponent,
+    ContactInfoComponent,
     DatetimePickerComponent,
     ExportComponent,
     ExportDialogComponent,
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
-    PasswordPipe
+    PasswordPipe,
+    ContactComponent,
+    ContactDialogComponent
   ],
   imports: [
     CommonModule,

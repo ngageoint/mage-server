@@ -44,6 +44,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
 import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
+import { ContactComponent } from '../app/contact/contact.component';
 
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
@@ -104,7 +105,8 @@ app
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
   .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
-  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }));
+  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
+  .directive('contact', downgradeComponent({ component: ContactComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))

@@ -60,6 +60,9 @@
                     <mat-tab label="Disclaimer">
                         <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>
                     </mat-tab>
+                    <mat-tab label="Contact Info">
+                        <contact-info (saveEvent)="onContactInfoSaved($event)"></contact-info>
+                    </mat-tab>
                 </mat-tab-group>
                 <mat-card-actions>
                     <button mat-flat-button color="primary" (click)="save()">
