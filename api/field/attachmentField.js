@@ -39,13 +39,13 @@ AttachmentField.prototype.validate = function() {
 
   const addAttachments = fieldValue.filter(attachment => attachment.action === 'add');
   if (addAttachments.length) {
-    const validType = addAttachments.every(attachment => {
+    const invalidAttachments = addAttachments.filter(attachment => {
       const media = new Media(attachment.contentType);
-      return media.validate(this.definition.allowedAttachmentTypes);
+      return !media.validate(this.definition.allowedAttachmentTypes);
     });
 
-    if (!validType) {
-      return { error: 'type', message: `${this.definition.title} must be ${this.definition.allowedAttachmentTypes.length > 1 ? 'one of' : ''} ${this.definition.allowedAttachmentTypes.join(', ')} ` }
+    if (invalidAttachments.length != 0) {
+      return { error: 'type', message: `${this.definition.title} fields contains invalid attachment ${invalidAttachments.length > 1 ? 'types' : 'type'} ${invalidAttachments.map(attachment => attachment.contentType).join(', ')} ` }
     }
   }
 };

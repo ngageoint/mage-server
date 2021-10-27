@@ -6,6 +6,7 @@ import { AttachmentService } from '../attachment.service';
 
 export interface FileUpload {
   id: number | string,
+  name: string,
   formControl: FormControl,
   attachmentId: string,
   action: AttachmentAction,
@@ -13,6 +14,10 @@ export interface FileUpload {
   preview?: string,
   uploading?: boolean,
   uploadProgress?: number
+}
+
+enum PreviewType {
+  LOADING, IMAGE, VIDEO, AUDIO, UNKNOWN
 }
 
 @Component({
@@ -28,6 +33,8 @@ export class AttachUploadComponent implements OnChanges {
   @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>()
   @Output() error = new EventEmitter<{ id: number | string }>()
 
+  preview: PreviewType = PreviewType.LOADING
+  previewType = PreviewType
   attachmentsToUpload = 0
   actions: typeof AttachmentAction = AttachmentAction
 
@@ -36,9 +43,19 @@ export class AttachUploadComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.attachment && this.attachment) {
       if (this.attachment.file.type.match('image')) {
-        this.previewImage(this.attachment);
+        this.preview = PreviewType.LOADING
+        this.previewImage(this.attachment)
+          .then(() => { this.preview = PreviewType.IMAGE })
+          .catch(() => this.preview = PreviewType.UNKNOWN)
       } else if (this.attachment.file.type.match('video')) {
-        this.previewVideo(this.attachment);
+        this.preview = PreviewType.LOADING
+        this.previewVideo(this.attachment)
+          .then(() => { this.preview = PreviewType.VIDEO })
+          .catch(() => this.preview = PreviewType.UNKNOWN)
+      } else if (this.attachment.file.type.match('audio')) {
+        this.preview = PreviewType.AUDIO
+      } else {
+        this.preview = PreviewType.UNKNOWN
       }
     }
 
@@ -67,7 +84,7 @@ export class AttachUploadComponent implements OnChanges {
   }
 
   previewVideo(info: FileUpload): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader()
 
       reader.onload = (): void => {
@@ -85,6 +102,11 @@ export class AttachUploadComponent implements OnChanges {
           URL.revokeObjectURL(url)
           this.changeDetector.detectChanges()
           resolve()
+        })
+
+        video.addEventListener('error', () => {
+          this.changeDetector.detectChanges()
+          reject()
         })
 
         video.preload = 'metadata'
