@@ -226,7 +226,9 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		this.showAdvanced = !this.showAdvanced
 
 		this.advanced.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
-			queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
+			if (queryList && queryList.last) {
+				queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
+			}
 		})
 	}
 

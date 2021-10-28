@@ -58,7 +58,6 @@ GeoPackage.prototype.export = function (streamable) {
     })
     .catch(function (error) {
       log.info('Error exporting GeoPackage', error);
-      throw error;
     });
 };
 
