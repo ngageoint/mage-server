@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: [ 12.x, 14.x ]
+        node: [ 14.x ]
         os: [ ubuntu-latest ]
 
     steps:
@@ -24,35 +24,30 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
+      - name: install dependencies
+        run: npm install
       - name: build service
         run: |
           cd service
           npm ci
           npm run build
-          npm pack
       - name: build web-app
         run: |
           cd web-app
           npm ci
           npm run build
           cd dist/app
-          npm pack
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: build plugin nga-msi
         run: |
           cd plugins/nga-msi
           npm ci
-          npm pack
-      - name: flatten package artifacts
-        run: |
-          mkdir packages
-          mv service/ngageoint-mage.service-*.tgz ./packages
-          mv web-app/dist/app/ngageoint-mage.web-app-*.tgz ./packages
-          mv plugins/nga-msi/ngageoint-mage.nga-msi-*.tgz ./packages
+      - name: package components
+        run: npm run pack-all
       - name: upload package artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mage_server_packages-node-{{ matrix.node }}
-          path: packages/*
+          name: mage_server_packages-
+          path: ngageoint-mage*.tgz
           retention-days: 10
