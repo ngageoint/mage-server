@@ -16,7 +16,6 @@
     "build": "npm-run-all build:tsc",
     "test:run": "jest lib",
     "test": "npm-run-all build test:run",
-    "prepare": "npm run build",
     "clean": "rm -rf lib"
   },
   "repository": {
