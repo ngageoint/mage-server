@@ -48,6 +48,6 @@ jobs:
       - name: upload package artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mage_server_packages-
+          name: mage_server_packages
           path: ngageoint-mage*.tgz
           retention-days: 10
