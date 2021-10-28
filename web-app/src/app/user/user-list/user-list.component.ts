@@ -55,7 +55,7 @@ export class UserListComponent implements OnInit, OnDestroy {
     updated.forEach(user => {
       const updatedUser = this.usersById[user.id];
       if (updatedUser) {
-        this.usersById[user.id] = updatedUser;
+        this.usersById[updatedUser.id] = user
       }
     })
 
