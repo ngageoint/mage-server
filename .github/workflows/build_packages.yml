@@ -1,0 +1,53 @@
+on:
+  push:
+    branches:
+      - 'actions-*'
+
+name: Build All MAGE Server Packages
+
+jobs:
+  build-packages:
+    name: Build All MAGE Server Packages
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: [ 14.x ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: install dev tools
+        run: |
+          sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install dependencies
+        run: npm install
+      - name: build service
+        run: |
+          cd service
+          npm ci
+          npm run build
+      - name: build web-app
+        run: |
+          cd web-app
+          npm ci
+          npm run build
+          cd dist/app
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: build plugin nga-msi
+        run: |
+          cd plugins/nga-msi
+          npm ci
+      - name: package components
+        run: npm run pack-all
+      - name: upload package artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: mage_server_packages
+          path: ngageoint-mage*.tgz
+          retention-days: 10
