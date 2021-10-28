@@ -35,6 +35,6 @@
 <div class="upload-container" *ngIf="attachment?.uploading">
   <div class="upload-progress">
     <div class="upload__label mat-title">Uploading {{attachment?.uploadProgress}}%</div>
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar mode="determinate" [value]="attachment.uploadProgress"></mat-progress-bar>
   </div>
 </div>

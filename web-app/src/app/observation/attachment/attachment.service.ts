@@ -26,12 +26,12 @@ export class AttachmentService {
 
   constructor(private httpClient: HttpClient) { }
 
-  upload(upload: FileUpload, observationUrl: string): Observable<HttpEvent<HttpResponse<Object>>> {
+  upload(upload: FileUpload, observationUrl: string): Observable<HttpEvent<Object>> {
     const formData = new FormData();
     formData.append('attachment', upload.file);
 
     const url = `${observationUrl}/attachments/${upload.attachmentId}`
-    const observable = this.httpClient.put<HttpResponse<Object>>(url, formData, { observe: 'events' }).pipe(share())
+    const observable = this.httpClient.put(url, formData, { observe: 'events', reportProgress: true }).pipe(share())
 
     observable.subscribe((response: HttpEvent<HttpResponse<Object>>) => {
       if (response.type === HttpEventType.Response) {
