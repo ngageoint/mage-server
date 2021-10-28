@@ -277,4 +277,15 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		}
 		this.exportFormat = format;
 	}
+
+	showExport(): boolean {
+		if (this.isExportOpen) {
+			return true;
+		} else {
+			if (this.isLoadingResults) {
+				return false;
+			}
+		}
+		return this.dataSource.data == null || this.dataSource.data.length === 0;
+	}
 }

@@ -1,6 +1,6 @@
 <div class="export">
 
-  <div class="export-panel" [hidden]="isExportOpen === true">
+  <div class="export-panel" [hidden]="showExport()">
     <div class="export-panel-container">
       <h1 mat-dialog-title>Exports</h1>
 
@@ -19,12 +19,12 @@
             <mat-header-cell *matHeaderCellDef mat-sort-header> Status </mat-header-cell>
             <mat-cell *matCellDef="let export"> {{export.status}} </mat-cell>
           </ng-container>
-      
+
           <ng-container matColumnDef="type">
             <mat-header-cell *matHeaderCellDef mat-sort-header="exportType"> Type </mat-header-cell>
             <mat-cell *matCellDef="let export"> {{export.exportType}} </mat-cell>
           </ng-container>
-      
+
           <ng-container matColumnDef="url">
             <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
             <mat-cell *matCellDef="let export">
@@ -34,12 +34,12 @@
               <mat-spinner *ngIf="export.status === 'Running'" diameter="25"></mat-spinner>
             </mat-cell>
           </ng-container>
-      
+
           <ng-container matColumnDef="event">
             <mat-header-cell *matHeaderCellDef mat-sort-header="eventName"> Event </mat-header-cell>
             <mat-cell *matCellDef="let export"> {{export.options.event.name}} </mat-cell>
           </ng-container>
-      
+
           <ng-container matColumnDef="delete">
             <mat-header-cell *matHeaderCellDef> Delete </mat-header-cell>
             <mat-cell *matCellDef="let export">
@@ -64,7 +64,8 @@
                       <div matLine *ngIf="export.options.filter?.endDate">
                         End: {{export.options.filter.endDate | moment}}
                       </div>
-                      <div matLine *ngIf="!export.options.filter?.startDate && !export.options.filter?.endDate">ALL</div>
+                      <div matLine *ngIf="!export.options.filter?.startDate && !export.options.filter?.endDate">ALL
+                      </div>
                     </mat-list-item>
                   </div>
                   <div mat-subheader>
@@ -80,10 +81,12 @@
                     <mat-checkbox [checked]="true" color="primary" disabled>Exclude All Attachments</mat-checkbox>
                   </mat-list-item>
                   <mat-list-item *ngIf="export.options.filter?.favorites" class="export-details-info">
-                    <mat-checkbox [checked]="true" color="primary" disabled>Export Only Your Favorite Observations</mat-checkbox>
+                    <mat-checkbox [checked]="true" color="primary" disabled>Export Only Your Favorite Observations
+                    </mat-checkbox>
                   </mat-list-item>
                   <mat-list-item *ngIf="export.options.filter?.important" class="export-details-info">
-                    <mat-checkbox [checked]="true" color="primary" disabled>Export Only Observations Flagged Important</mat-checkbox>
+                    <mat-checkbox [checked]="true" color="primary" disabled>Export Only Observations Flagged Important
+                    </mat-checkbox>
                   </mat-list-item>
                 </mat-list>
               </div>
@@ -91,16 +94,14 @@
           </ng-container>
 
           <mat-header-row *matHeaderRowDef="columnsToDisplay; sticky: true"></mat-header-row>
-          <mat-row *matRowDef="let export; columns: columnsToDisplay;" [@cell]
-            mat-ripple
-            class="export-row"
+          <mat-row *matRowDef="let export; columns: columnsToDisplay;" [@cell] mat-ripple class="export-row"
             [class.example-expanded-row]="expandedExport === export"
             (click)="expandedExport = expandedExport === export ? null : export">
           </mat-row>
           <mat-row mat-row *matRowDef="let row; columns: ['expandedExport']" class="export-detail-row"></mat-row>
         </mat-table>
       </mat-dialog-content>
-      
+
       <mat-divider class="actions-divider"></mat-divider>
       <mat-dialog-actions class="export-actions">
         <button mat-button color="primary" mat-dialog-close="closeAction">CLOSE</button>
@@ -109,27 +110,29 @@
     </div>
   </div>
 
-  <div class="export-panel" *ngIf="isExportOpen === true" [@slide]>
+  <div class="export-panel" *ngIf="showExport()" [@slide]>
     <div class="export-panel-container">
       <h1 mat-dialog-title>Export Data</h1>
 
       <mat-dialog-content class="export-content">
         <div class="mat-subheading-2">What to Export</div>
         <div class="export-options">
-          <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">Observations</mat-checkbox>
+          <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">Observations
+          </mat-checkbox>
           <mat-checkbox [(ngModel)]="exportLocations" color="primary" id="export-locations">Locations</mat-checkbox>
         </div>
-      
+
         <div class="mat-subheading-2">Export Format</div>
         <div class="export-format">
           <mat-chip-list [(ngModel)]="exportFormat">
-            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)" color="primary">
+            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)"
+              color="primary">
               {{format}}
             </mat-chip>
           </mat-chip-list>
         </div>
 
-      
+
         <div class="mat-subheading-2">Time</div>
         <mat-form-field class="time-field" appearance="outline">
           <mat-label>Time Range</mat-label>
@@ -137,12 +140,14 @@
             <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}} </mat-option>
           </mat-select>
         </mat-form-field>
-      
+
         <div *ngIf="exportTime === 'custom'">
-          <datetime-picker title="Start" required="true" [datetime]="defaultStartDate" (dateTimeChange)="onStartDate($event)"></datetime-picker>
-          <datetime-picker title="End" required="true" [datetime]="defaultEndDate" (dateTimeChange)="onEndDate($event)"></datetime-picker>
+          <datetime-picker title="Start" required="true" [datetime]="defaultStartDate"
+            (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          <datetime-picker title="End" required="true" [datetime]="defaultEndDate" (dateTimeChange)="onEndDate($event)">
+          </datetime-picker>
         </div>
-      
+
         <div class="advanced">
           <div class="advanced-header">
             <div class="advanced-header__title mat-subheading-2">More Options</div>
@@ -150,16 +155,25 @@
               <mat-icon [@rotate]="showAdvanced">expand_more</mat-icon>
             </button>
           </div>
-      
+
           <div class="advanced-content" *ngIf="showAdvanced" [@expand] #advanced>
-            <p><mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">Exclude all attachments</mat-checkbox></p>
-            <p><mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary" id="export-only-obs">Export only your favorite observations</mat-checkbox></p>
-            <p><mat-checkbox [(ngModel)]="exportImportantObservations" color="primary" id="export-only-important">Export only observations flagged important</mat-checkbox></p>
+            <p>
+              <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">
+                Exclude all attachments</mat-checkbox>
+            </p>
+            <p>
+              <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary" id="export-only-obs">Export only
+                your favorite observations</mat-checkbox>
+            </p>
+            <p>
+              <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary" id="export-only-important">
+                Export only observations flagged important</mat-checkbox>
+            </p>
           </div>
         </div>
-      
+
       </mat-dialog-content>
-      
+
       <mat-divider class="actions-divider"></mat-divider>
       <mat-dialog-actions class="export-actions">
         <button mat-button color="primary" mat-dialog-close="closeAction">CANCEL</button>
