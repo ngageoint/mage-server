@@ -67,7 +67,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	@ViewChild(MatTable, { static: true }) table: MatTable<Export>
 	@ViewChild(MatSort, { static: true }) sort: MatSort
 	@ViewChildren('advanced') advanced: QueryList<any>
-	
+
 	columnsToDisplay: string[] = ['status', 'type', 'url', 'event', 'delete'];
 	expandedExport: any
 	dataSource = new MatTableDataSource<Export>();
@@ -110,9 +110,9 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		key: 'custom'
 	}];
 
-	exportTime = 'five';
+	exportTime = 'twentyfour';
 	exportFormat: string;
-	exportFormats: string[] = ['KML', 'GeoJSON', 'GeoPackage', 'CSV', 'Shapefile'];
+	exportFormats: string[] = ['GeoPackage', 'KML', 'GeoJSON', 'CSV', 'Shapefile'];
 	defaultStartDate: Date
 	defaultEndDate: Date
 	startDate: Date
@@ -142,7 +142,9 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnDestroy(): void {
-		this.refreshSubscription.unsubscribe()
+		if (this.refreshSubscription) {
+			this.refreshSubscription.unsubscribe();
+		}
 	}
 
 	openExport(): void {
@@ -196,7 +198,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		const ref = this.snackBar.open("Export Deleted", "Undo", {
 			duration: 5000,
 		})
-		
+
 		ref.afterDismissed().subscribe(event => {
 			console.log('CODE = snackbar dismissed', event)
 			if (event.dismissedByAction) {
@@ -224,7 +226,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		this.showAdvanced = !this.showAdvanced
 
 		this.advanced.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
-			queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth'})
+			queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
 		})
 	}
 
