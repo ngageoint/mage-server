@@ -1,10 +1,11 @@
 {
   "name": "@ngageoint/mage.instance",
   "version": "6.0.0",
-  "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.",
+  "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool the dependencies point to relative directories instead of production packages.  This can however serve a starting point to build a production MAGE instance package.json.",
   "scripts": {
-    "start": "mage.service -C config.js",
+    "start": "npm run start:dev-env",
     "start:dev": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service -C config.js",
+    "start:dev-env": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service",
     "postinstall": "node ./init.js"
   },
   "repository": {

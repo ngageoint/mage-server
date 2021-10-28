@@ -13,15 +13,16 @@
     "service:pack": "npm pack ./service",
     "web-app:install": "npm ci --prefix web-app",
     "web-app:build": "npm run build --prefix web-app",
-    "web-app:start": "npm start --prefix web-app",
+    "web-app:debug": "npm start --prefix web-app",
     "web-app:pack": "npm pack ./web-app/dist/app",
     "instance:build": "npm install --prefix instance",
-    "instance:start": "npm run start:dev --prefix instance",
+    "instance:start-config": "npm run start:dev --prefix instance",
+    "instance:start-env": "npm run start:dev-env --prefix instance",
     "nga-msi:install": "npm ci --prefix plugins/nga-msi",
     "nga-msi:build": "npm run build --prefix plugins/nga-msi",
     "nga-msi:pack": "npm pack ./plugins/nga-msi",
-    "start": "npm run instance:start",
-    "start-web": "npm run web-app:start"
+    "start": "npm run instance:start-env",
+    "start-web": "npm run web-app:debug"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"
