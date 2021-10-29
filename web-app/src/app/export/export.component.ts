@@ -14,8 +14,10 @@ export class ExportComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.open && this.open.opened && this.dialog.openDialogs.length === 0) {
-      this.openExportDialog();
+    if (changes.open) {
+      if (this.open && this.open.opened) {
+        this.openExportDialog();
+      }
     }
   }
 
@@ -23,7 +25,7 @@ export class ExportComponent implements OnChanges {
     this.dialog.open(ExportDialogComponent).afterClosed().subscribe(result => {
       if (!result || result === 'closeAction') {
         this.onExportClose.emit();
-      } 
+      }
     });
   }
 }
