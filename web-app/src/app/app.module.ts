@@ -159,6 +159,7 @@ import { ObservationViewPasswordComponent } from './observation/observation-view
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 import { ContactComponent } from './contact/contact.component';
 import { ContactDialogComponent } from "./contact/contact-dialog.component";
+import { ExportDataComponent } from './export/export-data/export-data.component';
 
 @NgModule({
   declarations: [
@@ -238,6 +239,7 @@ import { ContactDialogComponent } from "./contact/contact-dialog.component";
     DatetimePickerComponent,
     ExportComponent,
     ExportDialogComponent,
+    ExportDataComponent,
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
