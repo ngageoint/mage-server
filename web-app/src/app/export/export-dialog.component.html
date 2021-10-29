@@ -2,7 +2,7 @@
 
   <div class="export-panel" [hidden]="showExport()">
     <div class="export-panel-container">
-      <h1 mat-dialog-title>Exports</h1>
+      <div class="mat-headline" mat-dialog-title>Exports</div>
 
       <mat-dialog-content>
         <div class="loading-shade" *ngIf="isLoadingResults">
@@ -112,14 +112,14 @@
 
   <div class="export-panel" *ngIf="showExport()" [@slide]>
     <div class="export-panel-container">
-      <h1 mat-dialog-title>Export Data</h1>
+      <div class="mat-headline" mat-dialog-title>Export Data</div>
 
       <mat-dialog-content class="export-content">
         <div class="mat-subheading-2">What to Export</div>
         <div class="export-options">
-          <mat-checkbox [(ngModel)]="exportObservations" color="primary" id="export-observations">Observations
+          <mat-checkbox [(ngModel)]="exportObservations" color="primary">Observations
           </mat-checkbox>
-          <mat-checkbox [(ngModel)]="exportLocations" color="primary" id="export-locations">Locations</mat-checkbox>
+          <mat-checkbox [(ngModel)]="exportLocations" color="primary">Locations</mat-checkbox>
         </div>
 
         <div class="mat-subheading-2">Export Format</div>
@@ -158,15 +158,15 @@
 
           <div class="advanced-content" *ngIf="showAdvanced" [@expand] #advanced>
             <p>
-              <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary" id="exclude-attachments">
+              <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary">
                 Exclude all attachments</mat-checkbox>
             </p>
             <p>
-              <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary" id="export-only-obs">Export only
+              <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary">Export only
                 your favorite observations</mat-checkbox>
             </p>
             <p>
-              <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary" id="export-only-important">
+              <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary">
                 Export only observations flagged important</mat-checkbox>
             </p>
           </div>
