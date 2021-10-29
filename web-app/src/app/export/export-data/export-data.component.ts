@@ -1,9 +1,8 @@
-import { Component, OnInit, Inject, QueryList, ViewChildren, ElementRef, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Inject, QueryList, ViewChildren, ElementRef, EventEmitter, Output } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExportService, ExportResponse, ExportRequest } from '../export.service';
 import { FilterService } from '../../upgrade/ajs-upgraded-providers';
 import * as moment from 'moment'
-import { Observable, Subscription, timer } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { trigger, transition, style, animate, state } from '@angular/animations';
 
@@ -36,7 +35,7 @@ export interface ExportTimeOption {
 		])
 	]
 })
-export class ExportDataComponent implements OnInit, OnDestroy {
+export class ExportDataComponent implements OnInit {
 
 	@ViewChildren('advanced') advanced: QueryList<any>;
 	@Output() close = new EventEmitter<void>();
@@ -84,9 +83,6 @@ export class ExportDataComponent implements OnInit, OnDestroy {
 	startDate: Date
 	endDate: Date
 
-	refreshTimer: Observable<number> = timer(0, 5000)
-	private refreshSubscription: Subscription;
-
 	constructor(
 		public snackBar: MatSnackBar,
 		@Inject(ExportService) public exportService: ExportService,
@@ -99,12 +95,6 @@ export class ExportDataComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 		this.exportEvent = { selected: this.filterService.getEvent() };
 		this.exportFormat = this.exportFormats[0];
-	}
-
-	ngOnDestroy(): void {
-		if (this.refreshSubscription) {
-			this.refreshSubscription.unsubscribe();
-		}
 	}
 
 	onStartDate(date: Date): void {
