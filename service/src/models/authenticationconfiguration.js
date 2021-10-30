@@ -24,6 +24,8 @@ const AuthenticationConfigurationSchema = new Schema({
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
 const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryptionpvk'];
+const secureMask = '*****';
 
 const transform = function (config, ret, options) {
   if ('function' !== typeof config.ownerDocument) {
@@ -41,6 +43,14 @@ const transform = function (config, ret, options) {
       });
     }
 
+    if (options.blacklist) {
+      Object.keys(ret.settings).forEach(key => {
+        if (blacklist.includes(key.toLowerCase())) {
+          ret.settings[key] = secureMask;
+        }
+      });
+    }
+
     ret.icon = ret.icon ? ret.icon.toString('base64') : null;
   }
 };
@@ -50,6 +60,9 @@ AuthenticationConfigurationSchema.set("toObject", {
 });
 
 exports.transform = transform;
+
+exports.secureMask = secureMask;
+exports.blacklist = blacklist;
 
 const AuthenticationConfiguration = mongoose.model('AuthenticationConfiguration', AuthenticationConfigurationSchema);
 exports.Model = AuthenticationConfiguration;
@@ -82,14 +95,30 @@ function manageIcon(config) {
   }
 }
 
+function manageSettings(config) {
+  if (config.settings.scope) {
+    if (!Array.isArray(config.settings.scope)) {
+      config.settings.scope = config.settings.scope.split(',');
+    }
+
+    for (let i = 0; i < config.settings.scope.length; i++) {
+      config.settings.scope[i] = config.settings.scope[i].trim();
+    }
+  }
+}
+
+//TODO move the 'manage' methods to a pre save method
+
 exports.create = function (config) {
   manageIcon(config);
+  manageSettings(config);
 
   return AuthenticationConfiguration.create(config);
 };
 
 exports.update = function (id, config) {
   manageIcon(config);
+  manageSettings(config);
 
   return AuthenticationConfiguration.findByIdAndUpdate(id, config, { new: true }).exec();
 };

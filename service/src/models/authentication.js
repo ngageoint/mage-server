@@ -8,7 +8,6 @@ const mongoose = require('mongoose')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
   , PasswordValidator = require('../utilities/passwordValidator');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const AuthenticationSchema = new Schema({
@@ -33,24 +32,13 @@ const LocalSchema = new Schema({
   }
 });
 
-const SamlSchema = new Schema({
-});
-
-const LdapSchema = new Schema({
-});
-
-const OauthSchema = new Schema({
-  //login-gov
-  loa: { type: String },
-  client_id: { type: String },
-  acr_values: { type: String },
-  keyFile: { type: String }
-});
+const SamlSchema = new Schema({});
+const LdapSchema = new Schema({});
+const OauthSchema = new Schema({});
+const OpenIdConnectSchema = new Schema({});
 
 AuthenticationSchema.method('validatePassword', function (password, callback) {
-  const authentication = this;
-
-  hasher.validPassword(password, authentication.password, callback);
+  hasher.validPassword(password, this.password, callback);
 });
 
 // Encrypt password before save
@@ -148,11 +136,13 @@ exports.LDAP = LdapAuthentication;
 const OauthAuthentication = Authentication.discriminator('oauth', OauthSchema);
 exports.Oauth = OauthAuthentication;
 
+const OpenIdConnectAuthentication = Authentication.discriminator('openidconnect', OpenIdConnectSchema);
+exports.OpenIdConnect = OpenIdConnectAuthentication;
+
 exports.getAuthenticationByStrategy = function (strategy, uid, callback) {
   if (callback) {
     Authentication.findOne({ id: uid, type: strategy }, callback);
-  }
-  else {
+  } else {
     return Authentication.findOne({ id: uid, type: strategy });
   }
 };
@@ -170,55 +160,20 @@ exports.countAuthenticationsByAuthConfigId = function (authConfigId) {
 };
 
 exports.createAuthentication = function (authentication) {
-  let newAuth;
-  switch (authentication.type) {
-    case "local": {
-      newAuth = new LocalAuthentication({
-        type: 'local',
-        id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId,
-        password: authentication.password,
-        security: {
-          lockedUntil: null
-        }
-      });
-      break;
-    }
-    case "saml": {
-      newAuth = new SamlAuthentication({
-        type: 'saml',
-        id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId
-      });
-      break;
-    }
-    case "ldap": {
-      newAuth = new LdapAuthentication({
-        type: 'ldap',
-        id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId
-      });
-      break;
-    }
-    case 'google':
-    case 'geoaxis':
-    case 'login-gov':
-    case "oauth": {
-      newAuth = new OauthAuthentication({
-        type: 'oauth',
-        id: authentication.id,
-        authenticationConfigurationId: authentication.authenticationConfigurationId,
-        //login-gov
-        loa: authentication.loa,
-        client_id: authentication.client_id,
-        acr_values: authentication.acr_values,
-        keyFile: authentication.keyFile
-      });
-      break;
+  const document = {
+    id: authentication.id,
+    type: authentication.type,
+    authenticationConfigurationId: authentication.authenticationConfigurationId,
+  }
+
+  if (authentication.type === 'local') {
+    document.password = authentication.password;
+    document.security ={
+      lockedUntil: null
     }
   }
 
-  return newAuth.save();
+  return Authentication.create(document);
 };
 
 exports.updateAuthentication = function (authentication) {

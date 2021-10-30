@@ -2,7 +2,7 @@
   "name": "@ngageoint/mage.project",
   "description": "This is the root package definition for the mage-server monorepo.",
   "private": true,
-  "version": "6.0.0",
+  "version": "6.0.1",
   "files": [],
   "scripts": {
     "postinstall": "npm-run-all service:install web-app:install nga-msi:install",

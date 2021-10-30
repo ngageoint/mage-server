@@ -9,17 +9,82 @@ const SamlStrategy = require('passport-saml').Strategy
   , AuthenticationInitializer = require('./index')
   , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
-function doConfigure(strategyConfig) {
-  log.info('Configuring ' + strategyConfig.title + ' authentication');
-  AuthenticationInitializer.passport.use(new SamlStrategy(strategyConfig.settings.options, function (profile, done) {
-    const uid = profile[strategyConfig.settings.uidAttribute];
+function configure(strategy) {
+  log.info('Configuring ' + strategy.title + ' authentication');
+
+  const options = {
+    path: `/auth/${strategy.name}/callback`,
+    entryPoint: strategy.settings.options.entryPoint,
+    issuer: strategy.settings.options.issuer
+  }
+
+  if (strategy.settings.cert) {
+    options.cert = strategy.settings.cert;
+  }
+  if (strategy.settings.privateCert) {
+    options.privateCert = strategy.settings.privateCert;
+  }
+  if (strategy.settings.decryptionPvk) {
+    options.decryptionPvk = strategy.settings.decryptionPvk;
+  }
+  if (strategy.settings.signatureAlgorithm) {
+    options.signatureAlgorithm = strategy.settings.signatureAlgorithm;
+  }
+  if(strategy.settings.audience) {
+    options.audience = strategy.settings.audience;
+  }
+  if(strategy.settings.identifierFormat) {
+    options.identifierFormat = strategy.settings.identifierFormat;
+  }
+  if(strategy.settings.acceptedClockSkewMs) {
+    options.acceptedClockSkewMs = strategy.settings.acceptedClockSkewMs;
+  }
+  if(strategy.settings.attributeConsumingServiceIndex) {
+    options.attributeConsumingServiceIndex = strategy.settings.attributeConsumingServiceIndex;
+  }
+  if(strategy.settings.disableRequestedAuthnContext) {
+    options.disableRequestedAuthnContext = strategy.settings.disableRequestedAuthnContext;
+  }
+  if(strategy.settings.authnContext) {
+    options.authnContext = strategy.settings.authnContext;
+  }
+  if(strategy.settings.forceAuthn) {
+    options.forceAuthn = strategy.settings.forceAuthn;
+  }
+  if(strategy.settings.skipRequestCompression) {
+    options.skipRequestCompression = strategy.settings.skipRequestCompression;
+  }
+  if(strategy.settings.authnRequestBinding) {
+    options.authnRequestBinding = strategy.settings.authnRequestBinding;
+  }
+  if(strategy.settings.RACComparison) {
+    options.RACComparison = strategy.settings.RACComparison;
+  }
+  if(strategy.settings.providerName) {
+    options.providerName = strategy.settings.providerName;
+  }
+  if(strategy.settings.idpIssuer) {
+    options.idpIssuer = strategy.settings.idpIssuer;
+  }
+  if(strategy.settings.validateInResponseTo) {
+    options.validateInResponseTo = strategy.settings.validateInResponseTo;
+  }
+  if(strategy.settings.requestIdExpirationPeriodMs) {
+    options.requestIdExpirationPeriodMs = strategy.settings.requestIdExpirationPeriodMs;
+  }
+  if(strategy.settings.logoutUrl) {
+    options.logoutUrl = strategy.settings.logoutUrl;
+  }
+
+  AuthenticationInitializer.passport.use(new SamlStrategy(options, function (profile, done) {
+    const uid = profile[strategy.settings.profile.id];
 
     if (!uid) {
-      log.warn('Failed to find property ' + strategyConfig.settings.uidAttribute + '. SAML profile keys ' + Object.keys(profile));
+      log.warn('Failed to find property uid. SAML profile keys ' + Object.keys(profile));
       return done('Failed to load user id from SAML profile');
     }
 
-    User.getUserByAuthenticationStrategy(strategyConfig.type, uid, function (err, user) {
+    User.getUserByAuthenticationStrategy(strategy.type, uid, function (err, user) {
       if (err) return done(err);
 
       if (!user) {
@@ -29,15 +94,15 @@ function doConfigure(strategyConfig) {
 
           const user = {
             username: uid,
-            displayName: profile[strategyConfig.settings.displayNameAttribute],
-            email: profile[strategyConfig.settings.emailAttribute],
+            displayName: profile[strategy.settings.profile.displayName],
+            email: profile[strategy.settings.profile.email],
             active: false,
             roleId: role._id,
             authentication: {
-              type: strategyConfig.name,
+              type: strategy.name,
               id: uid,
               authenticationConfiguration: {
-                name: strategyConfig.name
+                name: strategy.name
               }
             }
           };
@@ -62,7 +127,7 @@ function doConfigure(strategyConfig) {
   }));
 
   function authenticate(req, res, next) {
-    AuthenticationInitializer.passport.authenticate(strategyConfig.name, function (err, user, info = {}) {
+    AuthenticationInitializer.passport.authenticate(strategy.name, function (err, user, info = {}) {
       if (err) return next(err);
 
       req.user = user;
@@ -99,7 +164,7 @@ function doConfigure(strategyConfig) {
   }
 
   AuthenticationInitializer.app.post(
-    strategyConfig.settings.options.callbackPath,
+    `/auth/${strategy.name}/callback`,
     authenticate,
     function (req, res) {
       const state = JSON.parse(req.body.RelayState) || {};
@@ -129,10 +194,31 @@ function doConfigure(strategyConfig) {
   );
 }
 
-function initialize(config) {
+function setDefaults(strategy) {
+  if (!strategy.settings.profile) {
+    strategy.settings.profile = {};
+  }
+  if (!strategy.settings.profile.displayName) {
+    strategy.settings.profile.displayName = 'email';
+  }
+  if (!strategy.settings.profile.email) {
+    strategy.settings.profile.email = 'email';
+  }
+  if (!strategy.settings.profile.id) {
+    strategy.settings.profile.id = 'uid';
+  }
+  if (!strategy.settings.options) {
+    strategy.settings.options = {};
+  }
+}
+
+function initialize(strategy) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
   const provision = AuthenticationInitializer.provision;
+
+  setDefaults(strategy);
+  configure(strategy);
 
   function parseLoginMetadata(req, res, next) {
     req.loginOptions = {
@@ -142,18 +228,15 @@ function initialize(config) {
 
     next();
   }
-
-  doConfigure(config);
-
   app.get(
-    '/auth/' + config.name + '/signin',
+    '/auth/' + strategy.name + '/signin',
     function (req, res, next) {
       const state = {
         initiator: 'mage',
         client: req.query.state
       };
 
-      passport.authenticate(config.name, {
+      passport.authenticate(strategy.name, {
         additionalParams: { RelayState: JSON.stringify(state) }
       })(req, res, next);
     }
@@ -163,7 +246,7 @@ function initialize(config) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/' + config.name + '/devices',
+  app.post('/auth/' + strategy.name + '/devices',
     function (req, res, next) {
       if (req.user) {
         next();
@@ -199,7 +282,7 @@ function initialize(config) {
 
   // DEPRECATED session authorization, remove in next version.
   app.post(
-    '/auth/' + config.name + '/authorize',
+    '/auth/' + strategy.name + '/authorize',
     function (req, res, next) {
       if (req.user) {
         log.warn('session authorization is deprecated, please use jwt');
@@ -213,13 +296,13 @@ function initialize(config) {
         next();
       })(req, res, next);
     },
-    provision.check(config.name),
+    provision.check(strategy.name),
     parseLoginMetadata,
     function (req, res, next) {
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 
-        authenticationApiAppender.append(config.api).then(api => {
+        authenticationApiAppender.append(strategy.api).then(api => {
           res.json({
             token: token.token,
             expirationDate: token.expirationDate,

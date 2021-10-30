@@ -1,7 +1,7 @@
 <div #editForm>
   <mat-toolbar color="primary">
     <mat-toolbar-row class="navigation">
-      <button mat-icon-button class="navigation__icon" (click)="cancel()"><mat-icon>close</mat-icon></button>
+      <button mat-icon-button class="navigation__icon" (click)="cancel()" [disabled]="saving || mask"><mat-icon>close</mat-icon></button>
       <div class="navigation__title">
         <span *ngIf="!isNewObservation">Edit Observation</span>
         <span *ngIf="isNewObservation">Create Observation</span>

@@ -108,7 +108,7 @@ runs MongoDB as the service `mage-db`.
 The Compose file references a custom, local [Dockerfile](server/Dockerfile) based on the official [Node.js](https://hub.docker.com/_/node/)
 image to build the MAGE server image.  At build time, the MAGE server Dockerfile downloads an archive of the MAGE server
 code from [Github](https://github.com/ngageoint/mage-server).  This defaults to some (hopefully) recent release version of
-the MAGE server, e.g., 6.0.0.  The Dockerfile accepts an [argument](https://docs.docker.com/engine/reference/builder/#arg),
+the MAGE server, e.g., 6.0.1.  The Dockerfile accepts an [argument](https://docs.docker.com/engine/reference/builder/#arg),
 `MAGE_VERSION`, which you can specify to `docker-compose` like
 ```bash
 MAGE_VERSION=develop docker-compose build
@@ -116,7 +116,7 @@ MAGE_VERSION=develop docker-compose build
 to build with whatever version of MAGE server you wish.  Github should accept any valid, uniquely identifiable refspec in
 the download URL the Docker file uses, so you could use a branch name, tag name, or commit hash.  By way of the
 ```yaml
-image: "mage-server:${MAGE_VERSION:-6.0.0}"
+image: "mage-server:${MAGE_VERSION:-6.0.1}"
 ```
 entry the Compose file tells Docker to [tag](https://docs.docker.com/get-started/part2/#tag-the-image) the `mage-server`
 image with value of `MAGE_VERSION`.
@@ -125,7 +125,7 @@ Be aware that every different value you specify for `MAGE_VERSION` to `docker-co
 `mage-server` image because changing that value modifies the [build stage](https://docs.docker.com/develop/develop-images/multistage-build/)
 that downloads the MAGE server baseline.  For example after running
 ```bash
-$ MAGE_VERSION=6.0.0 docker-compose build
+$ MAGE_VERSION=6.0.1 docker-compose build
 # ... Docker build output
 $ MAGE_VERSION=develop docker-compose build
 # ... Docker build output
@@ -134,7 +134,7 @@ then listing your Docker images ...
 ```bash
 $ docker images
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-mage-server         6.0.0               877f79a739b7        8 minutes ago       949MB
+mage-server         6.0.1               877f79a739b7        8 minutes ago       949MB
 mage-server         develop             75a73b7b7c3e        2 days ago          961MB
 node                8.11.1              4635bc7d130c        3 weeks ago         673MB
 mongo               3.6-jessie          5b1317f8158f        6 weeks ago         366MB

@@ -1,38 +1,29 @@
 <section class="mat-typography">
-    <div class="page-container">
-        <div class="content">
-            <span class="bottom-gap">
-                MAGE can present a disclaimer after login. If the disclaimer is shown users will
-                have to accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
-                Android, iOS, and the Web.
-            </span>
-        </div>
+    <div class="mat-body; disclaimer-summary">
+        MAGE can present a disclaimer after login. If the disclaimer is shown users will
+        have to accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
+        Android, iOS, and the Web.
     </div>
 </section>
 <section class="mat-typography">
-    <div class="page-container">
-        <div class="content">
-            <legend>Disclaimer</legend>
-            <mat-list-item>
-                <mat-checkbox [(ngModel)]="disclaimer.show" [checked]="disclaimer.show"
-                    color="primary" [ngModelOptions]="{standalone: true}" id="show-disclaimer">
-                </mat-checkbox>
-                <label for="show-disclaimer">Show Disclaimer</label>
-            </mat-list-item>
-            <mat-list-item>
-                <mat-label for="disclaimerTitle"><b>Disclaimer Title</b></mat-label>
-                <mat-form-field appearance="outline">
-                    <input matInput [(ngModel)]="disclaimer.title" [ngModelOptions]="{standalone: true}"
-                        [disabled]="!disclaimer.show" placeholder="Disclaimer title">
-                </mat-form-field>
-            </mat-list-item>
-            <mat-list-item>
-                <mat-label for="disclaimerText"><b>Disclaimer Text</b></mat-label>
-                <mat-form-field appearance="outline">
-                    <textarea matInput [(ngModel)]="disclaimer.text" [ngModelOptions]="{standalone: true}"
-                        [disabled]="!disclaimer.show" placeholder="Disclaimer text"> </textarea>
-                </mat-form-field>
-            </mat-list-item>
-        </div>
+    <div class="show-section">
+        <mat-checkbox [(ngModel)]="disclaimer.show" [checked]="disclaimer.show" color="primary"
+            (change)="setDirty(true)">
+        </mat-checkbox>
+        <mat-label for="show-disclaimer">Show Disclaimer</mat-label>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
+            <input matInput [(ngModel)]="disclaimer.title" [disabled]="!disclaimer.show"
+                (click)="setDirty(true)">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label for="disclaimerText">Disclaimer Text</mat-label>
+            <textarea matInput [(ngModel)]="disclaimer.text" [disabled]="!disclaimer.show"
+                (click)="setDirty(true)"> </textarea>
+        </mat-form-field>
     </div>
 </section>

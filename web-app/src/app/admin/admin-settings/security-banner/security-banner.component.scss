@@ -1,39 +1,26 @@
-@import '~@angular/material/theming';
-@import "variables.scss";
-
-.admin-settings-gap {
-    //top right bottom left
-    margin: 0px 10px 0px 10px;
+.banner-summary {
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
-.page-container {
-    display: flex;
-    padding: 0 16px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 16px;
-    margin-bottom: 16px;
-    max-width: 1170px;
-  }
-  
-  .content {
-    display: block;
-    flex: 1;
-    min-width: 0;
-    background-color: white;
-  }
+.show-section {
+  margin-bottom: 8px;
+}
 
 color-picker {
-    display: block;
-    width: 25%;
+  display: block;
+  width: 25%;
 }
 
-label {
-    font-weight: unset;
-    margin-left: 8px;
+mat-label {
+  margin-left: 8px;
 }
 
 mat-form-field {
-    font-size: unset;
-    width: 100%;
+  width: 100%;
+}
+
+section {
+  margin-left: 16px;
+  margin-right: 16px;
 }

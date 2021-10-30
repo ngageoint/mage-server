@@ -133,7 +133,6 @@ import {
 import { FeedItemComponent } from './feed/feed-item/feed-item.component';
 import { FeedItemMapPopupComponent } from './feed/feed-item/feed-item-map/feed-item-map-popup.component';
 import { FeedItemSummaryModule } from './feed/feed-item/feed-item-summary/feed-item-summary.module';
-
 import { FeedPanelTabComponent } from './feed-panel/feed-panel-tab.component';
 import { AdminFeedsModule } from './admin/admin-feeds/admin-feeds.module';
 import { ObservationPopupComponent } from './observation/observation-popup/observation-popup.component';
@@ -143,10 +142,8 @@ import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
 import { AdminModule } from './admin/admin.module'
 import { AdminSettingsComponent } from './admin/admin-settings/admin-settings.component';
 import { AdminBreadcrumbModule } from './admin/admin-breadcrumb/admin-breadcrumb.module';
-import { AuthenticationSettingsComponent, AuthenticationCreateComponent, AuthenticationDeleteComponent, SecurityBannerComponent, SecurityDisclaimerComponent, DuplicateKeyComponent, EditSettingComponent, DeleteSettingComponent, IconUploadComponent, ContactInfoComponent } from './admin/admin-settings/admin-settings';
-import { PasswordPolicyComponent } from './admin/admin-settings/authentication-settings/password-policy/password-policy.component';
-import { GenericSettingsComponent } from './admin/admin-settings/authentication-settings/generic-settings/generic-settings.component';
-import { AccountLockComponent } from './admin/admin-settings/authentication-settings/account-lock/account-lock.component';
+import { ContactInfoComponent } from './admin/admin-settings/admin-settings';
+import { SecurityBannerComponent, SecurityDisclaimerComponent } from './admin/admin-settings/admin-settings';
 import { DatetimePickerComponent } from './datetime-picker/datetime-picker.component';
 import { CommonModule } from '@angular/common';
 import { ObservationOptionsComponent } from './observation/observation-view/observation-options.component';
@@ -159,6 +156,20 @@ import { ObservationViewPasswordComponent } from './observation/observation-view
 import { PasswordPipe } from './observation/observation-view/observation-view-password/password.pipe';
 import { ContactComponent } from './contact/contact.component';
 import { ContactDialogComponent } from "./contact/contact-dialog.component";
+import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
+import { AuthenticationDeleteComponent } from './admin/admin-authentication/admin-authentication-delete/admin-authentication-delete.component';
+import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/admin-authentication-local/admin-authentication-local.component';
+import { PasswordPolicyComponent } from './admin/admin-authentication/admin-authentication-local//password-policy/password-policy.component';
+import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';
+import { AdminAuthenticationComponent } from './admin/admin-authentication/admin-authentication.component';
+import { IconUploadComponent } from './admin/admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
+import { AuthenticationCreateComponent } from './admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
+import { AdminAuthenticationOAuth2Component } from './admin/admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
+import { AdminAuthenticationLDAPComponent } from './admin/admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
+import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
+import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
+import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
+import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { ExportDataComponent } from './export/export-data/export-data.component';
 
 @NgModule({
@@ -223,17 +234,12 @@ import { ExportDataComponent } from './export/export-data/export-data.component'
     ObservationPopupComponent,
     UserPopupComponent,
     AdminSettingsComponent,
-    AuthenticationSettingsComponent,
     PasswordPolicyComponent,
-    GenericSettingsComponent,
     AccountLockComponent,
     AuthenticationCreateComponent,
     AuthenticationDeleteComponent,
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
-    DuplicateKeyComponent,
-    EditSettingComponent,
-    DeleteSettingComponent,
     IconUploadComponent,
     ContactInfoComponent,
     DatetimePickerComponent,
@@ -245,7 +251,16 @@ import { ExportDataComponent } from './export/export-data/export-data.component'
     ObservationViewPasswordComponent,
     PasswordPipe,
     ContactComponent,
-    ContactDialogComponent
+    ContactDialogComponent,
+    AdminAuthenticationOidcComponent,
+    AdminAuthenticationLocalComponent,
+    AdminAuthenticationComponent,
+    AdminAuthenticationOAuth2Component,
+    AdminAuthenticationLDAPComponent,
+    AdminAuthenticationSAMLComponent,
+    ButtonPreviewComponent,
+    AdminAuthenticationSettingsComponent,
+    AdminSettingsUnsavedComponent
   ],
   imports: [
     CommonModule,

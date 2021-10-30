@@ -103,12 +103,12 @@ paths:
       responses:
         200:
           description: logout response
-   
+
   /auth/{authenticationStrategy}/signin:
     post:
       tags: [ Authentication & Authorization ]
-      summary: Authentication 
-      description: Authenticate a user using a given strategy. 
+      summary: Authentication
+      description: Authenticate a user using a given strategy.
       operationId: authenticate
       security:
         []
@@ -119,7 +119,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [ local, ldap, saml, geoaxis, google ]
+            enum: [ local, ldap, saml, geoaxis, openidconnect ]
       requestBody:
         required: true
         content:
@@ -197,7 +197,7 @@ paths:
     post:
       tags: [Authentication Configuration]
       summary: Create a new authentication configuration
-      description: Create a new authentication configuration.  If enabled, it will allow users to use this method.  
+      description: Create a new authentication configuration.  If enabled, it will allow users to use this method.
                    The client must have `UPDATE_AUTH_CONFIG` permission.
       operationId: createNewAuthConfig
       requestBody:
@@ -259,7 +259,7 @@ paths:
       responses:
         200:
           description: The number of users created from the provided authentication.
-          
+
   /api/users:
     post:
       tags: [ User ]
@@ -312,14 +312,14 @@ paths:
             type: integer
         - in: query
           name: limit
-          description: Used with pagination.  Maximum number of records to return. 
+          description: Used with pagination.  Maximum number of records to return.
           schema:
             type: integer
         - in: query
           name: sort
           description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
           content:
-            application/json:  
+            application/json:
               schema:
                 type: object
                 required:
@@ -591,14 +591,14 @@ paths:
             type: integer
         - in: query
           name: limit
-          description: Used with pagination.  Maximum number of records to return. 
+          description: Used with pagination.  Maximum number of records to return.
           schema:
             type: integer
         - in: query
           name: sort
           description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
           content:
-            application/json:  
+            application/json:
               schema:
                 type: object
                 required:
@@ -722,14 +722,14 @@ paths:
             type: integer
         - in: query
           name: limit
-          description: Used with pagination.  Maximum number of records to return. 
+          description: Used with pagination.  Maximum number of records to return.
           schema:
             type: integer
         - in: query
           name: sort
           description: Describes the sort order.  Values allowed are asc, desc, ascending, descending, 1, and -1.
           content:
-            application/json:  
+            application/json:
               schema:
                 type: object
                 required:
@@ -2211,8 +2211,6 @@ paths:
           enum:
           - banner
           - disclaimer
-          - blacklist
-          - authconfigsetup
           - contactinfo
       responses:
         200:
@@ -2237,8 +2235,6 @@ paths:
           enum:
           - banner
           - disclaimer
-          - blacklist
-          - authconfigsetup
           - contactinfo
       responses:
         200:
@@ -2253,7 +2249,7 @@ paths:
       tags: [ Export ]
       operationId: exportStream
       description: >
-        Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
+        Export mage data (GeoJSON, KML, GeoPackage, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
       summary: Perform export during request.  May timeout, so please use /api/exports instead.
@@ -2266,7 +2262,7 @@ paths:
           enum:
           - geojson
           - kml
-          - shapefile
+          - geopackage
           - csv
       - name: eventId
         in: query
@@ -2302,7 +2298,7 @@ paths:
           type: boolean
       - name: favorites
         in: query
-        description: Boolean flag indicating whether or not to export only favorite observations 
+        description: Boolean flag indicating whether or not to export only favorite observations
         schema:
           type: boolean
       - name: important
@@ -2323,7 +2319,7 @@ paths:
       responses:
         200:
           description: all exports.
-          content: 
+          content:
             application/json:
               schema:
                 type: array
@@ -2332,7 +2328,7 @@ paths:
       tags: [ Export ]
       operationId: export
       description: >
-        Export MAGE data (GeoJSON, KML, GeoPackage, Shapefile, CSV) in the background. The requesting user must have
+        Export MAGE data (GeoJSON, KML, GeoPackage, CSV) in the background. The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
       summary: Export MAGE data using a background task.
@@ -2345,7 +2341,6 @@ paths:
           enum:
           - geojson
           - kml
-          - shapefile
           - geopackage
           - csv
       - name: eventId
@@ -2382,7 +2377,7 @@ paths:
           type: boolean
       - name: favorites
         in: query
-        description: Boolean flag indicating whether or not to export only favorite observations 
+        description: Boolean flag indicating whether or not to export only favorite observations
         schema:
           type: boolean
       - name: important
@@ -2398,7 +2393,7 @@ paths:
               description: The URI of the export download.
               schema:
                 type: string
-          content: 
+          content:
             text/plain:
               schema:
                 type: string
@@ -2412,7 +2407,7 @@ paths:
       responses:
         200:
           description: exports
-          content: 
+          content:
             application/json:
               schema:
                 type: array
@@ -2433,7 +2428,7 @@ paths:
       responses:
         200:
           description: The exported data as a compressed file.
-          content: 
+          content:
             application/zip:
               schema:
                 type: object
@@ -2442,7 +2437,7 @@ components:
     authenticationToken:
       type: http
       description: >
-        Token generated after successful authentication.  The client will exchange 
+        Token generated after successful authentication.  The client will exchange
         this token with an approved device for and API token.
       scheme: bearer
       bearerFormat: JWT
@@ -3345,7 +3340,7 @@ components:
           type: string
         exportType:
           type: string
-          enum: [ geojson, kml, geopackage, shapefile, csv ]
+          enum: [ geojson, kml, geopackage, csv ]
         location:
           type: string
         status:
@@ -3362,7 +3357,7 @@ components:
           type: string
         type:
           type: string
-        title: 
+        title:
           type: string
         textColor:
           type: string

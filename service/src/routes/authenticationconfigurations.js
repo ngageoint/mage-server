@@ -5,13 +5,13 @@ const log = require('winston')
     , Authentication = require('../models/authentication')
     , AuthenticationConfiguration = require('../models/authenticationconfiguration')
     , AuthenticationConfigurationTransformer = require('../transformers/authenticationconfiguration')
-    , Settings = require('../models/setting')
     , SecretStoreService = require('../security/secret-store-service')
     , SecurePropertyAppender = require('../security/utilities/secure-property-appender');
 
 module.exports = function (app, security) {
 
     const passport = security.authentication.passport;
+    const blacklist = AuthenticationConfiguration.blacklist;
 
     app.get(
         '/api/authentication/configuration/',
@@ -32,7 +32,16 @@ module.exports = function (app, security) {
                         return true;
                     }
                 });
-                const transformedConfigs = AuthenticationConfigurationTransformer.transform(filtered);
+
+                const promises = [];
+                
+                filtered.forEach(config => {
+                    promises.push(SecurePropertyAppender.appendToConfig(config));
+                });
+
+                return Promise.all(promises);
+            }).then(configs => {
+                const transformedConfigs = AuthenticationConfigurationTransformer.transform(configs, { blacklist: true });
                 res.json(transformedConfigs);
             }).catch(err => {
                 next(err);
@@ -73,18 +82,18 @@ module.exports = function (app, security) {
 
             const securityData = {};
 
-            Settings.getSetting('blacklist').then(blacklist => {
-                const settings = JSON.parse(req.body.settings);
+            const settings = JSON.parse(req.body.settings);
 
-                Object.keys(settings).forEach(key => {
-                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
+            Object.keys(settings).forEach(key => {
+                if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
+                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
                         securityData[key] = settings[key];
-                    } else {
-                        updatedConfig.settings[key] = settings[key];
                     }
-                });
-                return AuthenticationConfiguration.update(req.params.id, updatedConfig);
-            }).then(config => {
+                } else {
+                    updatedConfig.settings[key] = settings[key];
+                }
+            });
+            AuthenticationConfiguration.update(req.params.id, updatedConfig).then(config => {
                 //Read any existing secure data (for append purposes)
                 const promises = [];
                 promises.push(Promise.resolve(config));
@@ -119,7 +128,7 @@ module.exports = function (app, security) {
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
-                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                 res.json(transformedConfig);
             }).catch(err => {
                 next(err);
@@ -144,19 +153,19 @@ module.exports = function (app, security) {
 
             const securityData = {};
 
-            Settings.getSetting('blacklist').then(blacklist => {
-                const settings = JSON.parse(req.body.settings);
+            const settings = JSON.parse(req.body.settings);
 
-                Object.keys(settings).forEach(key => {
-                    if (blacklist && Object.keys(blacklist.settings).includes(key)) {
+            Object.keys(settings).forEach(key => {
+                if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
+                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
                         securityData[key] = settings[key];
-                    } else {
-                        newConfig.settings[key] = settings[key];
                     }
-                });
+                } else {
+                    newConfig.settings[key] = settings[key];
+                }
+            });
 
-                return AuthenticationConfiguration.create(newConfig);
-            }).then(config => {
+            AuthenticationConfiguration.create(newConfig).then(config => {
                 //Create secure data, if any
                 const response = [];
                 response.push(Promise.resolve(config));
@@ -166,12 +175,12 @@ module.exports = function (app, security) {
                 }
                 return Promise.all(response);
             }).then(response => {
-                //Read any authentications that could be attached to this config
-                //For example: 
-                // 1. authentications attached to google
-                // 2. Google removed
-                // 3. Authentications attached to google no longer have a config
-                // 3. Google recreated
+                // Read any authentications that could be attached to this config
+                // For example: 
+                // 1. authentications attached to saml
+                // 2. saml removed
+                // 3. Authentications attached to saml no longer have a config
+                // 3. saml recreated
                 // 4. Authentications are then atteched to this new config
                 const config = response[0];
                 const promises = [];
@@ -179,7 +188,7 @@ module.exports = function (app, security) {
                 promises.push(Authentication.getAuthenticationsByType(config.name));
                 return Promise.all(promises);
             }).then(response => {
-                //Attach any "dangling" authentications to the new config
+                // Attach any "dangling" authentications to the new config
                 const config = response[0];
                 const authentications = response[1];
 
@@ -192,7 +201,7 @@ module.exports = function (app, security) {
                 });
                 return Promise.all(promises);
             }).then(response => {
-                //Append secure data to config for the purposes of configuring passport
+                // Append secure data to config for the purposes of configuring passport
                 const config = response[0];
                 return SecurePropertyAppender.appendToConfig(config);
             }).then(config => {
@@ -200,12 +209,9 @@ module.exports = function (app, security) {
                 const strategy = require('../authentication/' + config.type);
                 strategy.initialize(config);
 
-                const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                 res.json(transformedConfig);
-            }).catch(err => {
-                //TODO rollback somehow
-                next(err);
-            })
+            }).catch(err => next(err));
         });
 
     app.delete(
@@ -242,7 +248,7 @@ module.exports = function (app, security) {
 
                     log.info("Successfully removed strategy with id " + req.params.id);
                     //TODO not sure how to disable passport strategy, but this will effectively disable it
-                    const transformedConfig = AuthenticationConfigurationTransformer.transform(config);
+                    const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
                     res.json(transformedConfig);
                 }).catch(err => {
                     next(err);

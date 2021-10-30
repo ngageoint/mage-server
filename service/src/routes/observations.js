@@ -329,7 +329,8 @@ module.exports = function(app, security) {
       const {forms = []} = req.observation.properties || {}
       forms.map(observationForm => {
         if (existingObservation) {
-          const exisitingForm = existingObservation.properties.forms.find(exisitingForm => exisitingForm._id.toString() === observationForm.id);
+          const { forms: exisitingForms = [] } = existingObservation.properties || {}
+          const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === observationForm.id);
           if (exisitingForm) {
             observationForm._id = exisitingForm._id;
             delete observationForm.id;

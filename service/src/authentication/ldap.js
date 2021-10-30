@@ -2,28 +2,32 @@ const LdapStrategy = require('passport-ldapauth')
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
-  , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
   , userTransformer = require('../transformers/user')
-  , AuthenticationInitializer = require('./index')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
+  , { app, passport, tokenService } = require('./index');
 
-function doConfigure(strategyConfig) {
-  log.info('Configuring ' + strategyConfig.title + ' authentication');
+function configure(strategy) {
+  log.info('Configuring ' + strategy.title + ' authentication');
 
-  const strategy = new LdapStrategy({
+  passport.use(strategy.name, new LdapStrategy({
     server: {
-      url: strategyConfig.settings.url,
-      bindDN: strategyConfig.settings.bindDN,
-      bindCredentials: strategyConfig.settings.bindCredentials,
-      searchBase: strategyConfig.settings.searchBase,
-      searchFilter: strategyConfig.settings.searchFilter
+      url: strategy.settings.url,
+      bindDN: strategy.settings.bindDN,
+      bindCredentials: strategy.settings.bindCredentials,
+      searchBase: strategy.settings.searchBase,
+      searchFilter: strategy.settings.searchFilter,
+      searchScope: strategy.settings.searchScope,
+      groupSearchBase: strategy.settings.groupSearchBase,
+      groupSearchFilter: strategy.settings.groupSearchFilter,
+      groupSearchScope: strategy.settings.groupSearchScope,
+      bindProperty: strategy.settings.bindProperty,
+      groupDnProperty: strategy.settings.groupDnProperty
     }
   },
     function (profile, done) {
-      const username = profile[strategyConfig.settings.ldapUsernameField];
-      User.getUserByAuthenticationStrategy(strategyConfig.type, username, function (err, user) {
+      const username = profile[strategy.settings.profile.id ];
+      User.getUserByAuthenticationStrategy(strategy.type, username, function (err, user) {
         if (err) return done(err);
 
         if (!user) {
@@ -33,15 +37,15 @@ function doConfigure(strategyConfig) {
 
             const user = {
               username: username,
-              displayName: profile[strategyConfig.settings.ldapDisplayNameField],
-              email: profile[strategyConfig.settings.ldapEmailField],
+              displayName: profile[strategy.settings.profile.displayName],
+              email: profile[strategy.settings.profile.email],
               active: false,
               roleId: role._id,
               authentication: {
-                type: strategyConfig.name,
+                type: strategy.name,
                 id: username,
                 authenticationConfiguration: {
-                  name: strategyConfig.name
+                  name: strategy.name
                 }
               }
             };
@@ -65,43 +69,43 @@ function doConfigure(strategyConfig) {
           return done(null, user);
         }
       });
-    });
-    
-  AuthenticationInitializer.passport.use(strategyConfig.name, strategy);
+    })
+  );
 }
 
-function initialize(config) {
-  const app = AuthenticationInitializer.app;
-  const passport = AuthenticationInitializer.passport;
-  const provision = AuthenticationInitializer.provision;
-  const tokenService = AuthenticationInitializer.tokenService;
-
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
-
-    next();
+function setDefaults(strategy) {
+  if (!strategy.settings.profile) {
+     strategy.settings.profile = {};
   }
+  if (!strategy.settings.profile.displayName) {
+     strategy.settings.profile.displayName = 'givenname';
+  }
+  if (!strategy.settings.profile.email) {
+     strategy.settings.profile.email = 'mail';
+  }
+  if (!strategy.settings.profile.id) {
+     strategy.settings.profile.id = 'cn';
+  }
+}
 
-  doConfigure(config);
+function initialize(strategy) {
+  setDefaults(strategy);
+  configure(strategy);
 
   const authenticationOptions = {
-    invalidLogonHours: `Not Permitted to login to ${config.title} account at this time.`,
-    invalidWorkstation: `Not permited to logon to ${config.title} account at this workstation.`,
-    passwordExpired: `${config.title} password expired.`,
-    accountDisabled: `${config.title} account disabled.`,
-    accountExpired: `${config.title} account expired.`,
-    passwordMustChange: `User must reset ${config.title} password.`,
-    accountLockedOut: `${config.title} user account locked.`,
-    invalidCredentials: `Invalid ${config.title} username/password.`
+    invalidLogonHours: `Not Permitted to login to ${strategy.title} account at this time.`,
+    invalidWorkstation: `Not permited to logon to ${strategy.title} account at this workstation.`,
+    passwordExpired: `${strategy.title} password expired.`,
+    accountDisabled: `${strategy.title} account disabled.`,
+    accountExpired: `${strategy.title} account expired.`,
+    passwordMustChange: `User must reset ${strategy.title} password.`,
+    accountLockedOut: `${strategy.title} user account locked.`,
+    invalidCredentials: `Invalid ${strategy.title} username/password.`
   };
 
-  app.post(
-    '/auth/' + config.name + '/signin',
+  app.post(`/auth/${strategy.name}/signin`,
     function authenticate(req, res, next) {
-      passport.authenticate(config.name, authenticationOptions, function (err, user, info = {}) {
+      passport.authenticate(strategy.name, authenticationOptions, function (err, user, info = {}) {
         if (err) return next(err);
 
         if (!user) {
@@ -127,99 +131,14 @@ function initialize(config) {
           return res.status(401).send(user.authentication.authenticationConfiguration.title + ' authentication is disabled, please contact a MAGE administrator for assistance.')
         }
 
-        // DEPRECATED session authorization, remove req.login which creates session in next version
-        req.login(user, function (err) {
-          if (err) return next(err);
-
-          tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
-            .then(token => {
-              res.json({
-                user: userTransformer.transform(req.user, { path: req.getRoot() }),
-                token: token
-              });
-            }).catch(err => {
-              next(err);
+        tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
+          .then(token => {
+            res.json({
+              user: userTransformer.transform(req.user, { path: req.getRoot() }),
+              token: token
             });
-        });
+          }).catch(err => next(err));
       })(req, res, next);
-    }
-  );
-
-  // DEPRECATED, this will be removed in next major server version release
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field
-  // will be set to false.
-  app.post('/auth/' + config.name + '/devices',
-    function (req, res, next) {
-      // check user session
-      if (req.user) {
-        next();
-      } else {
-        return res.sendStatus(403);
-      }
-    },
-    function (req, res, next) {
-      const newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
-
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
-
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
-    }
-  );
-
-  // DEPRECATED session authorization, remove in next version.
-  app.post(
-    '/auth/' + config.name + '/authorize',
-    function (req, res, next) {
-      if (req.user) {
-        log.warn('session authorization is deprecated, please use jwt');
-        return next();
-      }
-
-      passport.authenticate('authorization', function (err, user, info = {}) {
-        if (!user) return res.status(401).send(info.message);
-
-        req.user = user;
-        next();
-      })(req, res, next);
-    },
-    provision.check(config.name),
-    parseLoginMetadata,
-    function (req, res, next) {
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
-        if (err) return next(err);
-
-        authenticationApiAppender.append(config.api).then(api => {
-          res.json({
-            token: token.token,
-            expirationDate: token.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            device: req.provisionedDevice,
-            api: api
-          });
-        }).catch(err => {
-          next(err);
-        });
-      });
-
-      req.session = null;
     }
   );
 };

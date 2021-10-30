@@ -77,7 +77,7 @@ export class ExportDataComponent implements OnInit {
 
 	exportTime = 'twentyfour';
 	exportFormat: string;
-	exportFormats: string[] = ['GeoPackage', 'KML', 'GeoJSON', 'CSV', 'Shapefile'];
+	exportFormats: string[] = ['GeoPackage', 'KML', 'GeoJSON', 'CSV'];
 	defaultStartDate: Date
 	defaultEndDate: Date
 	startDate: Date

@@ -3,15 +3,19 @@
 const sinon = require('sinon')
     , expect = require("chai").expect
     , fs = require('fs')
-    , SecurePropertyAppender = require("../../../lib/security/utilities/secure-property-appender");
+    , SecurePropertyAppender = require("../../../lib/security/utilities/secure-property-appender")
+    , AuthenticationConfiguration = require('../../../lib/models/authenticationconfiguration');
 
-describe("Secret Store Tests", function () {
+describe("Secure Property Appender Tests", function () {
 
     afterEach(function () {
         sinon.restore();
     });
 
     it('Test append with no secure store', function (done) {
+        sinon.stub(AuthenticationConfiguration, 'blacklist')
+            .value([]);
+
         const config = {
             _id: '12345'
         };
@@ -25,6 +29,9 @@ describe("Secret Store Tests", function () {
     });
 
     it('Test append', function (done) {
+        sinon.stub(AuthenticationConfiguration, 'blacklist')
+            .value(['testdata', 'addldata']);
+
         const config = {
             _id: '12345'
         };

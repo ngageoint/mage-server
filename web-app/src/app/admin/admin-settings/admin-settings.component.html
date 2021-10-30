@@ -4,73 +4,29 @@
 <section class="mat-typography">
     <div class="page-container">
         <div class="content">
-            <mat-card>
-                <mat-tab-group color="primary" mat-stretch-tabs (selectedIndexChange)="selectedTab.setValue($event)">
-                    <mat-tab label="Authentication">
-                        <div class="top-gap bottom-gap auth__action--new">
-                            <button mat-stroked-button color="primary"
-                                (click)="$event.stopPropagation(); createAuthentication()"
-                                *ngIf="hasAuthConfigEditPermission">
-                                <mat-icon>add</mat-icon>New Authentication
-                            </button>
-                        </div>
-                        <div *ngFor="let strategy of strategies; index as i; first as isFirst">
-                            <mat-accordion class="top-gap admin-settings-gap headers-align"
-                                style="padding-bottom: 25px;">
-                                <mat-expansion-panel class="mat-elevation-z0" [expanded]="isFirst">
-                                    <mat-expansion-panel-header>
-                                        <mat-panel-title>
-                                            <i *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}"
-                                                class="fa fa-lg fa-shield right-gap"></i>
-                                            <span *ngIf="strategy.icon" class="right-gap">
-                                                <img [src]="strategy.icon" style="width:24px; height:24px">
-                                            </span>
-                                            {{strategy.title}}
-                                        </mat-panel-title>
-                                        <mat-panel-description>
-                                            <div *ngIf="strategy.enabled">Enabled</div>
-                                            <div *ngIf="!strategy.enabled">Disabled</div>
-                                        </mat-panel-description>
-                                    </mat-expansion-panel-header>
-                                    <section class="mat-typography">
-                                        <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled"
-                                            color="primary" [ngModelOptions]="{standalone: true}"
-                                            *ngIf="hasAuthConfigEditPermission"
-                                            (click)="$event.stopPropagation(); strategy.isDirty = 'true'">
-                                        </mat-slide-toggle>
-                                        <label>Enable Authentication</label>
-                                        <hr>
-                                    </section>
-                                    <authentication-settings [strategy]="strategy" [teams]="teams" [events]="events">
-                                    </authentication-settings>
-                                    <div class="top-gap">
-                                        <button mat-button color="warn" id="delete-strategy-button"
-                                            (click)="$event.stopPropagation(); deleteStrategy(strategy)"
-                                            *ngIf="hasAuthConfigEditPermission && strategy.type.toLowerCase() !== 'local'">
-                                            <mat-icon>delete</mat-icon>Delete Authentication
-                                        </button>
-                                    </div>
-                                </mat-expansion-panel>
-                            </mat-accordion>
-                        </div>
-                    </mat-tab>
-                    <mat-tab label="Banner">
-                        <security-banner (saveEvent)="onBannerSaved($event)"></security-banner>
-                    </mat-tab>
-                    <mat-tab label="Disclaimer">
-                        <security-disclaimer (saveEvent)="onDisclaimerSaved($event)"></security-disclaimer>
-                    </mat-tab>
-                    <mat-tab label="Contact Info">
-                        <contact-info (saveEvent)="onContactInfoSaved($event)"></contact-info>
-                    </mat-tab>
-                </mat-tab-group>
-                <mat-card-actions>
-                    <button mat-flat-button color="primary" (click)="save()">
-                        <mat-icon>check</mat-icon>
-                        <span>Save</span>
-                    </button>
-                </mat-card-actions>
-            </mat-card>
+            <mat-tab-group color="primary" mat-stretch-tabs>
+                <mat-tab label="Authentication">
+                    <admin-authentication (saveComplete)="onAuthenticationSaved($event)"
+                        (onDirty)="onAuthenticationDirty($event)" [beginSave]="(onSave)">
+                    </admin-authentication>
+                </mat-tab>
+                <mat-tab label="Banner">
+                    <security-banner (saveComplete)="onBannerSaved($event)" (onDirty)="onBannerDirty($event)"
+                        [beginSave]="(onSave)"></security-banner>
+                </mat-tab>
+                <mat-tab label="Disclaimer">
+                    <security-disclaimer (saveComplete)="onDisclaimerSaved($event)"
+                        (onDirty)="onDisclaimerDirty($event)" [beginSave]="(onSave)"></security-disclaimer>
+                </mat-tab>
+                <mat-tab label="Contact Info">
+                    <contact-info (saveEvent)="onContactInfoSaved($event)"></contact-info>
+                </mat-tab>
+            </mat-tab-group>
+            <div class="settings__action--save">
+                <button mat-flat-button color="primary" (click)="save()" [disabled]="!isDirty()">
+                    <mat-icon>check</mat-icon>Save
+                </button>
+            </div>
         </div>
     </div>
 </section>

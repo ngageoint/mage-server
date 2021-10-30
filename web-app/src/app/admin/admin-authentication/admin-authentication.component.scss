@@ -1,0 +1,60 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+.auth__action--new {
+  display: flex;
+  flex-direction:column;
+  align-items: flex-end;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  margin-right: 8px;
+}
+
+.auth__action--delete {
+  display: flex;
+  flex-direction:column;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.auth__action--enable {
+  display: flex;
+  flex-direction:row;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.headers-align .mat-expansion-panel-header-title,
+.headers-align .mat-expansion-panel-header-description {
+  flex-basis: 0;
+}
+
+.headers-align .mat-expansion-panel-header-description {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.headers-align .mat-form-field + .mat-form-field {
+  margin-left: 8px;
+}
+
+.accordian-section {
+  margin-bottom: 4px;
+}
+
+mat-label {
+  margin-left: 8px;
+}
+
+mat-expansion-panel {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+img {
+  margin-right: 8px;
+}
+
+mat-icon {
+  margin-right: 8px;
+}

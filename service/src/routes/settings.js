@@ -17,7 +17,7 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup|contactinfo)',
+    '/api/settings/:type(banner|disclaimer|contactinfo)',
     function (req, res, next) {
       Setting.getSetting(req.params.type)
         .then(setting => res.json(setting))
@@ -26,7 +26,7 @@ module.exports = function(app, security) {
   );
 
   app.put(
-    '/api/settings/:type(banner|disclaimer|blacklist|authconfigsetup|contactinfo)',
+    '/api/settings/:type(banner|disclaimer|contactinfo)',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {

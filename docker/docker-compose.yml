@@ -17,13 +17,13 @@ services:
 
   mage-server:
     depends_on: [mage-db]
-    image: "mage-server:${MAGE_VERSION:-6.0.0}"
+    image: "mage-server:${MAGE_VERSION:-6.0.1}"
     # image: "mage-server:debug"
     build:
       context: ./server
       # dockerfile: Dockerfile-debug
       args:
-        MAGE_VERSION: "${MAGE_VERSION:-6.0.0}"
+        MAGE_VERSION: "${MAGE_VERSION:-6.0.1}"
     volumes:
       - ./server/resources:/var/lib/mage
       - ..:/home/mage/mage-server

@@ -420,12 +420,12 @@ function EventRoutes(app: express.Application, security: { authentication: authe
           return next();
         }
         async.map(icons, function(icon: any, done: any) {
-          fs.readFile(icon.path, function(err, data) {
+          fs.readFile(icon.path, async (err, data) => {
             if (err) {
               return done(err);
             }
             let base64;
-            const metadata = fileType(data);
+            const metadata = await fileType.fromBuffer(data);
             if (metadata) {
               base64 = util.format('data:%s;base64,%s', metadata.mime, data.toString('base64'));
             }
@@ -481,16 +481,17 @@ function EventRoutes(app: express.Application, security: { authentication: authe
             res.sendFile(icon.path);
           },
           'application/json': function() {
-            fs.readFile(icon.path, function(err: any, data) {
+            fs.readFile(icon.path, async (err: any, data) => {
               if (err) {
                 return next(err);
               }
+              const dataType = await fileType.fromBuffer(data)
               res.json({
                 eventId: icon.eventId,
                 formId: icon.formId,
                 primary: icon.primary,
                 variant: icon.variant,
-                icon: util.format('data:%s;base64,%s', fileType(data).mime, data.toString('base64'))
+                icon: util.format('data:%s;base64,%s', dataType.mime, data.toString('base64'))
               });
             });
           }

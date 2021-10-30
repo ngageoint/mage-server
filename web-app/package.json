@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@ngageoint/mage.web-app",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "The MAGE web-app is the UI for interacting with the MAGE service in a web browser.",
   "keywords": [
     "NGA",
@@ -92,7 +92,7 @@
     "md-date-time-picker": "./src/ng1/vendor/md-date-time-picker",
     "mgrs": "1.0.0",
     "moment": "2.22.2",
-    "ngx-color": "^5.0.1",
+    "ngx-color": "5.1.4",
     "ngx-mat-select-search": "^2.1.1",
     "ngx-virtual-scroller": "^3.0.3",
     "papaparse": "4.1.4",

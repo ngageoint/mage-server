@@ -44,55 +44,6 @@ module.exports = function (app, security) {
     }
   }
 
-  /**
-   * Stream export file to client
-   *
-   * @deprecated Use {@code /api/exports/} instead.
-   */
-  app.get(
-    '/api/:exportType(geojson|kml|shapefile|csv)',
-    passport.authenticate('bearer'),
-    parseQueryParams,
-    getEvent,
-    authorizeEventAccess,
-    mapUsers,
-    mapDevices,
-    function (req, res) {
-      log.warn('DEPRECATED - /api/:exportType called.  Please use /api/exports instead.');
-
-      res.type('application/zip');
-      switch (req.params.exportType) {
-        case 'shapefile':
-          res.attachment('mage-shapefile.zip');
-          break;
-        case 'kml':
-          res.attachment('mage-kml.zip');
-          break;
-        case 'geojson':
-          res.attachment("mage-geojson.zip");
-          break;
-        case 'csv':
-          res.attachment("mage-export-csv.zip");
-          break;
-        case 'geopackage':
-          res.attachment("mage-geojson.zip");
-          break;
-      }
-
-      const options = {
-        event: req.event,
-        users: req.users,
-        devices: req.devices,
-        filter: req.parameters.filter
-      };
-      const exporter = exporterFactory.createExporter(req.params.exportType, options);
-      exporter.export(res);
-    }
-  );
-
-  /**
-   * Export async, return export metadata immediately
-   */
   app.post('/api/exports',
     passport.authenticate('bearer'),
     parseQueryParams,
@@ -266,7 +217,7 @@ function getEvent(req, res, next) {
     // form map
     event.formMap = {};
 
-    // create a field by name map, I will need this later
+    // field by name map
     event.forms.forEach(function (form) {
       event.formMap[form.id] = form;
 

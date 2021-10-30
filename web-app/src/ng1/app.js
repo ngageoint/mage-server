@@ -43,13 +43,14 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
-import { AuthenticationCreateComponent } from '../app/admin/admin-settings/admin-settings';
+
 import { ContactComponent } from '../app/contact/contact.component';
 
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
 import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
 import { AdminFeedEditComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed-edit/admin-feed-edit.component';
+import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 
 require('angular-minicolors');
 require('select2');

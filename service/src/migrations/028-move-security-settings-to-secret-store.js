@@ -16,21 +16,8 @@ function moveSecuritySettings(settings, blacklist) {
     return data;
 }
 
-async function loadBlacklist(db) {
-    const blacklist = [];
-
-    const settingsCollection = await db.collection('settings');
-    const blacklistSettings = await settingsCollection.findOne({ type: 'blacklist' });
-    Object.keys(blacklistSettings.settings).forEach(key => {
-        blacklist.push(key.toLowerCase());
-    });
-
-    return blacklist;
-}
-
 exports.up = async function (done) {
-
-    const blacklist = await loadBlacklist(this.db);
+    const blacklist = ['clientid', 'clientsecret', 'client_id', 'bindcredentials'];
 
     const authenticationConfigurationsCollection = await this.db.collection('authenticationconfigurations');
     const cursor = authenticationConfigurationsCollection.find();
