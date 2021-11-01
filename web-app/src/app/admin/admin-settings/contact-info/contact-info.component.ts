@@ -1,4 +1,4 @@
-import { Component, DoCheck, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { Settings } from "src/app/upgrade/ajs-upgraded-providers";
 
 @Component({
