@@ -19,7 +19,9 @@
                         (onDirty)="onDisclaimerDirty($event)" [beginSave]="(onSave)"></security-disclaimer>
                 </mat-tab>
                 <mat-tab label="Contact Info">
-                    <contact-info (saveEvent)="onContactInfoSaved($event)"></contact-info>
+                    <contact-info (saveComplete)="onContactInfoSaved($event)" (onDirty)="onContactInfoDirty($event)"
+                        [beginSave]="(onSave)">
+                    </contact-info>
                 </mat-tab>
             </mat-tab-group>
             <div class="settings__action--save">

@@ -1,4 +1,4 @@
-import { Component, DoCheck, EventEmitter, Inject, OnInit, Output } from "@angular/core";
+import { Component, DoCheck, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
 import { Settings } from "src/app/upgrade/ajs-upgraded-providers";
 
 @Component({
@@ -6,8 +6,11 @@ import { Settings } from "src/app/upgrade/ajs-upgraded-providers";
     templateUrl: 'contact-info.component.html',
     styleUrls: ['./contact-info.component.scss']
 })
-export class ContactInfoComponent implements OnInit, DoCheck {
-    @Output() saveEvent = new EventEmitter<boolean>();
+export class ContactInfoComponent implements OnInit, OnChanges {
+    @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() onDirty = new EventEmitter<boolean>();
+    @Input() beginSave: any;
+
     oldEmail: string;
     oldPhone: string;
     isDirty = false;
@@ -44,20 +47,24 @@ export class ContactInfoComponent implements OnInit, DoCheck {
         });
     }
 
-    ngDoCheck(): void {
-        if (this.oldPhone !== this.contactinfo.phone) {
-            this.isDirty = true;
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.beginSave && !changes.beginSave.firstChange) {
+            if (this.isDirty) {
+                this.save();
+            }
         }
-        if (this.oldEmail !== this.contactinfo.email) {
-            this.isDirty = true;
-        }
+    }
+
+    setDirty(status: boolean): void {
+        this.isDirty = status;
+        this.onDirty.emit(this.isDirty);
     }
 
     save(): void {
         this.settings.update({ type: 'contactinfo' }, this.contactinfo, () => {
-            this.saveEvent.emit(true);
+            this.saveComplete.emit(true);
         }, () => {
-            this.saveEvent.emit(false);
+            this.saveComplete.emit(false);
         });
     }
 }
