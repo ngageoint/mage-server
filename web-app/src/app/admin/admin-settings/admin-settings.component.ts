@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,6 +21,7 @@ export class AdminSettingsComponent implements OnInit {
     isBannerDirty = false;
     isDisclaimerDirty = false;
     isAuthenticationDirty = false;
+    isContactInfoDirty = false;
 
     constructor(
         private readonly dialog: MatDialog,
@@ -69,6 +70,10 @@ export class AdminSettingsComponent implements OnInit {
         this.isDisclaimerDirty = false;
     }
 
+    onContactInfoDirty(isDirty: boolean): void {
+        this.isContactInfoDirty = isDirty;
+    }
+
     onContactInfoSaved(status: boolean): void {
         if (status) {
             this.snackBar.open('Contact info successfully saved', null, {
@@ -79,6 +84,7 @@ export class AdminSettingsComponent implements OnInit {
                 duration: 2000,
             });
         };
+        this.isContactInfoDirty = false;
     }
 
     onAuthenticationDirty(isDirty: boolean): void {
@@ -99,7 +105,7 @@ export class AdminSettingsComponent implements OnInit {
     }
 
     isDirty(): boolean {
-        return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty;
+        return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty || this.isContactInfoDirty;
     }
 
     onUnsavedChanges(): Promise<boolean> {
@@ -111,6 +117,7 @@ export class AdminSettingsComponent implements OnInit {
                     this.isAuthenticationDirty = false;
                     this.isBannerDirty = false;
                     this.isDisclaimerDirty = false;
+                    this.isContactInfoDirty = false;
                 }
                 return Promise.resolve(result.discard);
             });
