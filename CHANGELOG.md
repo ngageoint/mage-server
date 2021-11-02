@@ -6,8 +6,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Contact info can now be provided to users when they receive an error.
 
 ##### Bug Fixes
+* Minor UI fixes for the export dialog.
 
 ## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
 
