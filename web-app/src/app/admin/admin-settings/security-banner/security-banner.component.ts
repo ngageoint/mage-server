@@ -58,28 +58,28 @@ export class SecurityBannerComponent implements OnInit, OnChanges, OnDestroy {
             this.headerTextColorPicker.updateColor();
             this.subscriptions.push(this.headerTextColorPicker.onColorChanged.subscribe(event => {
                 this.banner.headerTextColor = event.color;
-                this.isDirty = true;
+                this.setDirty(true);
             }));
 
             this.headerBackgroundColorPicker.hexColor = this.banner.headerBackgroundColor;
             this.headerBackgroundColorPicker.updateColor();
             this.subscriptions.push(this.headerBackgroundColorPicker.onColorChanged.subscribe(event => {
                 this.banner.headerBackgroundColor = event.color;
-                this.isDirty = true;
+                this.setDirty(true);
             }));
 
             this.footerTextColorPicker.hexColor = this.banner.footerTextColor;
             this.footerTextColorPicker.updateColor();
             this.subscriptions.push(this.footerTextColorPicker.onColorChanged.subscribe(event => {
                 this.banner.footerTextColor = event.color;
-                this.isDirty = true;
+                this.setDirty(true);
             }));
 
             this.footerBackgroundColorPicker.hexColor = this.banner.footerBackgroundColor;
             this.footerBackgroundColorPicker.updateColor();
             this.subscriptions.push(this.footerBackgroundColorPicker.onColorChanged.subscribe(event => {
                 this.banner.footerBackgroundColor = event.color;
-                this.isDirty = true;
+                this.setDirty(true);
             }));
         }).catch(err => {
             console.log(err);
