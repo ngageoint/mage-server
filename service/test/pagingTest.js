@@ -35,8 +35,9 @@ describe("Paging Tests", function () {
             exec: sinon.stub().resolves([user0])
         });
 
-        var callback = function (error, users, pageInfo) {
-            expect(error).to.be.null;
+        let options = { limit: '10' };
+        Paging.page(countQuery, query, options, 'users').then(pageInfo => {
+            const users = pageInfo['users'];
             expect(users).to.not.be.null;
             expect(users.length).to.equal(1);
             expect(pageInfo).to.not.be.null;
@@ -45,10 +46,9 @@ describe("Paging Tests", function () {
             expect(pageInfo.links).to.not.be.null;
             expect(pageInfo.links.next).to.be.null;
             done();
-        };
-        let spy = sinon.spy(callback);
-        let options = { limit: '10' };
-        Paging.pageUsers(countQuery, query, options, spy);
+        }).catch(err => {
+            done(err);
+        })
     });
 
     it('Test page to end', function (done) {
@@ -77,8 +77,9 @@ describe("Paging Tests", function () {
             exec: sinon.stub().resolves([user1])
         });
 
-        var callback = function (error, users, pageInfo) {
-            expect(error).to.be.null;
+        const options = { limit: '1' };
+        Paging.countAndPage(countQuery, query, options, 'users').then(pageInfo => {
+            const users = pageInfo['users'];
             expect(users).to.not.be.null;
             expect(users.length).to.equal(1);
             expect(pageInfo).to.not.be.null;
@@ -87,12 +88,10 @@ describe("Paging Tests", function () {
             expect(pageInfo.links).to.not.be.null;
             expect(pageInfo.links.next).to.not.be.null;
 
-            let spy = sinon.spy(callback1);
-            let options = { limit: '1', start: pageInfo.links.next };
-            Paging.pageUsers(countQuery, query1, options, spy);
-        };
-        var callback1 = function (error, users, pageInfo) {
-            expect(error).to.be.null;
+            const options1 = { limit: '1', start: pageInfo.links.next };
+            return Paging.countAndPage(countQuery, query1, options1, 'users');
+        }).then(pageInfo => {
+            const users = pageInfo['users'];
             expect(users).to.not.be.null;
             expect(users.length).to.equal(1);
             expect(pageInfo).to.not.be.null;
@@ -102,11 +101,9 @@ describe("Paging Tests", function () {
             expect(pageInfo.links.next).to.be.null;
             expect(pageInfo.links.prev).to.not.be.null;
             done();
-        };
-
-        let spy = sinon.spy(callback);
-        let options = { limit: '1' };
-        Paging.pageUsers(countQuery, query, options, spy);
+        }).catch(err => {
+            done(err);
+        })
     });
 
     it('Test page no results', function (done) {
@@ -122,8 +119,9 @@ describe("Paging Tests", function () {
             exec: sinon.stub().resolves([])
         });
 
-        var callback = function (error, users, pageInfo) {
-            expect(error).to.be.null;
+        let options = { limit: '10' };
+        Paging.page(countQuery, query, options, 'users').then(pageInfo => {
+            const users = pageInfo['users'];
             expect(users).to.not.be.null;
             expect(users.length).to.equal(0);
             expect(pageInfo).to.not.be.null;
@@ -133,10 +131,9 @@ describe("Paging Tests", function () {
             expect(pageInfo.links.next).to.be.null;
             expect(pageInfo.links.prev).to.be.null;
             done();
-        };
-        let spy = sinon.spy(callback);
-        let options = { limit: '10' };
-        Paging.pageUsers(countQuery, query, options, spy);
+        }).catch(err => {
+            done(err);
+        })
     });
 
     it('Test page devices', function (done) {
@@ -155,13 +152,12 @@ describe("Paging Tests", function () {
             exec: sinon.stub().resolves([device0])
         });
 
-        let conditions = {};
         let options = { limit: '10' };
-        Paging.pageDevices(countQuery, query, options, conditions).then(pageInfo => {
+        Paging.page(countQuery, query, options, 'devices').then(pageInfo => {
             expect(pageInfo).to.not.be.null;
             expect(pageInfo.size).to.equal(1);
-            expect(pageInfo.devices).to.not.be.null;
-            expect(pageInfo.devices).to.have.lengthOf(1);
+            expect(pageInfo['devices']).to.not.be.null;
+            expect(pageInfo['devices']).to.have.lengthOf(1);
             done();
         });
     });
@@ -203,13 +199,12 @@ describe("Paging Tests", function () {
             .expects('find')
             .returns(query);
 
-        let conditions = {};
         let options = { limit: '10' };
-        Paging.pageDevices(null, null, options, conditions).then(pageInfo => {
+        Paging.page(null, query, options, 'devices').then(pageInfo => {
             expect(pageInfo).to.not.be.null;
             expect(pageInfo.size).to.equal(2);
-            expect(pageInfo.devices).to.not.be.null;
-            expect(pageInfo.devices).to.have.lengthOf(2);
+            expect(pageInfo['devices']).to.not.be.null;
+            expect(pageInfo['devices']).to.have.lengthOf(2);
             done();
         });
     });
