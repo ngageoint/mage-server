@@ -60,13 +60,6 @@ describe('event mongoose repository', function() {
     })
   })
 
-  describe('finding events with a feed', function() {
-
-    it('returns all the events with the given feed id', async function() {
-      expect.fail('todo')
-    })
-  })
-
   describe('adding feeds to events', function() {
 
     it('adds a feed id when the feeds list does not exist', async function() {

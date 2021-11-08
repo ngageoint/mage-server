@@ -34,10 +34,6 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return updated?.toJSON() || null
   }
 
-  async findEventsWithFeed(feed: FeedId): Promise<MageEvent[]> {
-    throw new Error('unimplemented.')
-  }
-
   async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null> {
     const updated = await this.model.findByIdAndUpdate(
       event,
