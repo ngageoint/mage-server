@@ -458,13 +458,6 @@ invalid request
     })
   })
 
-  describe('PUT /services/{serviceId}', function() {
-
-    it('has tests', async function() {
-      expect.fail('todo')
-    })
-  })
-
   describe('DELETE /services/{serviceId}', function() {
 
     it('deletes the service for the service id in the path', async function() {
