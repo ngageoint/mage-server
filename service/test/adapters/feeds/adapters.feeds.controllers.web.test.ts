@@ -23,7 +23,7 @@ declare module 'express-serve-static-core' {
 
 const jsonMimeType = /^application\/json/
 
-describe('feeds web controller', function() {
+describe('feeds web controller', function () {
 
   const adminPrincipal = {
     user: 'admin'
@@ -55,7 +55,7 @@ describe('feeds web controller', function() {
   let appLayer: SubstituteOf<FeedsAppLayer>
   let appRequestFactory: SubstituteOf<AppRequestFactoryHandle>
 
-  beforeEach(function() {
+  beforeEach(function () {
     appLayer = Substitute.for<FeedsAppLayer>()
     appRequestFactory = Substitute.for<AppRequestFactoryHandle>()
     const feedsRoutes: express.Router = FeedsRoutes(appLayer, appRequestFactory.createRequest)
@@ -68,9 +68,9 @@ describe('feeds web controller', function() {
     client = supertest(endpoint)
   })
 
-  describe('GET /service_types', function() {
+  describe('GET /service_types', function () {
 
-    it('lists service types', async function() {
+    it('lists service types', async function () {
 
       const serviceTypes: FeedServiceTypeDescriptor[] = [
         {
@@ -106,7 +106,7 @@ describe('feeds web controller', function() {
       expect(res.body).to.deep.equal(serviceTypes)
     })
 
-    it('fails without permission', async function() {
+    it('fails without permission', async function () {
 
       appLayer.listServiceTypes(Arg.any()).resolves(AppResponse.error<any, PermissionDeniedError>(permissionDenied('list service types', 'admin')))
 
@@ -118,9 +118,9 @@ describe('feeds web controller', function() {
     })
   })
 
-  describe('POST /service_types/:serviceTypeId/topic_preview', function() {
+  describe('POST /service_types/:serviceTypeId/topic_preview', function () {
 
-    it('returns the list of topics for the service config', async function() {
+    it('returns the list of topics for the service config', async function () {
 
       const topics: FeedTopic[] = [
         {
@@ -156,7 +156,7 @@ describe('feeds web controller', function() {
       expect(res.body).to.deep.equal(topics)
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
 
       appLayer.previewTopics(Arg.any())
         .resolves(AppResponse.error<FeedTopic[], PermissionDeniedError>(permissionDenied('preview topics', 'you')))
@@ -170,7 +170,7 @@ describe('feeds web controller', function() {
       expect(res.body).to.equal('permission denied: preview topics')
     })
 
-    it('fails with 404 if the service type does not exist', async function() {
+    it('fails with 404 if the service type does not exist', async function () {
 
       appLayer.previewTopics(Arg.any())
         .resolves(AppResponse.error<FeedTopic[], EntityNotFoundError>(entityNotFound('nga-msi', 'feed service type')))
@@ -184,10 +184,10 @@ describe('feeds web controller', function() {
       expect(res.body).to.equal('feed service type not found: nga-msi')
     })
 
-    it('fails with 400 if the service config is invalid', async function() {
+    it('fails with 400 if the service config is invalid', async function () {
 
       appLayer.previewTopics(Arg.any())
-        .resolves(AppResponse.error<FeedTopic[], InvalidInputError>(invalidInput('bad service config', [ 'unexpected null', 'serviceConfig' ])))
+        .resolves(AppResponse.error<FeedTopic[], InvalidInputError>(invalidInput('bad service config', ['unexpected null', 'serviceConfig'])))
 
       const res = await client.post(`${rootPath}/service_types/nga-msi/topic_preview`).send({
         serviceConfig: null
@@ -199,9 +199,9 @@ describe('feeds web controller', function() {
     })
   })
 
-  describe('POST /services', function() {
+  describe('POST /services', function () {
 
-    it('creates a service', async function() {
+    it('creates a service', async function () {
 
       const submitted = {
         serviceType: 'wfs',
@@ -228,7 +228,7 @@ describe('feeds web controller', function() {
       expect(res.body).to.deep.equal(created)
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
 
       appLayer.createService(Arg.any()).resolves(AppResponse.error<any, PermissionDeniedError>(permissionDenied('create service', 'admin')))
 
@@ -244,7 +244,7 @@ describe('feeds web controller', function() {
       expect(res.body).to.equal('permission denied: create service')
     })
 
-    it('fails with 400 if the request is invalid', async function() {
+    it('fails with 400 if the request is invalid', async function () {
 
       const reqBody = {
         serviceType: 'wfs',
@@ -253,7 +253,7 @@ describe('feeds web controller', function() {
           url: 'https://invalid.service.url'
         },
       }
-      appLayer.createService(Arg.any()).resolves(AppResponse.error<any, InvalidInputError>(invalidInput('invalid service config', [ 'url is invalid', 'config', 'url' ])))
+      appLayer.createService(Arg.any()).resolves(AppResponse.error<any, InvalidInputError>(invalidInput('invalid service config', ['url is invalid', 'config', 'url'])))
 
       const res = await client.post(`${rootPath}/services`).send(reqBody)
 
@@ -266,7 +266,7 @@ invalid service config
       appLayer.received(1).createService(Arg.any())
     })
 
-    it('fails with 400 if the service type does not exist', async function() {
+    it('fails with 400 if the service type does not exist', async function () {
 
       const reqBody = {
         serviceType: 'not_found',
@@ -283,9 +283,9 @@ invalid service config
       appLayer.received(1).createService(Arg.any())
     })
 
-    describe('request body mapping', function() {
+    describe('request body mapping', function () {
 
-      it('fails with 400 if the request body has no service type', async function() {
+      it('fails with 400 if the request body has no service type', async function () {
 
         appLayer.createService(Arg.any()).rejects(new Error('unexpected'))
         const res = await client.post(`${rootPath}/services`)
@@ -305,7 +305,7 @@ invalid request
         appLayer.didNotReceive().createService(Arg.any())
       })
 
-      it('fails if the request body has no title', async function() {
+      it('fails if the request body has no title', async function () {
 
         appLayer.createService(Arg.any()).rejects(new Error('unexpected'))
         const res = await client.post(`${rootPath}/services`)
@@ -325,7 +325,7 @@ invalid request
         appLayer.didNotReceive().createService(Arg.any())
       })
 
-      it('maps absent config to null', async function() {
+      it('maps absent config to null', async function () {
 
         const params = {
           serviceType: 'configless',
@@ -357,9 +357,9 @@ invalid request
     })
   })
 
-  describe('GET /services', function() {
+  describe('GET /services', function () {
 
-    it('returns all the services', async function() {
+    it('returns all the services', async function () {
 
       const appReq = createAdminRequest()
       appRequestFactory.createRequest(Arg.any()).returns(appReq)
@@ -388,7 +388,7 @@ invalid request
       expect(res.body).to.deep.equal(services)
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       appLayer.listServices(Arg.any())
         .resolves(AppResponse.error<FeedService[], PermissionDeniedError>(permissionDenied('list services', 'you')))
@@ -400,9 +400,9 @@ invalid request
     })
   })
 
-  describe('GET /services/{serviceId}', function() {
+  describe('GET /services/{serviceId}', function () {
 
-    it('fetches the service for the service id in the path', async function() {
+    it('fetches the service for the service id in the path', async function () {
 
       const service: FeedServiceExpanded = {
         id: uniqid(),
@@ -429,7 +429,7 @@ invalid request
       appLayer.received(1).getService(Arg.any())
     })
 
-    it('fails with 404 if the service is not found', async function() {
+    it('fails with 404 if the service is not found', async function () {
 
       const service = uniqid()
       const appReq: GetFeedServiceRequest = createAdminRequest({ service })
@@ -443,7 +443,7 @@ invalid request
       appLayer.received(1).getService(Arg.any())
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
 
       const service = uniqid()
       const appReq: GetFeedServiceRequest = createAdminRequest({ service })
@@ -458,9 +458,9 @@ invalid request
     })
   })
 
-  describe('DELETE /services/{serviceId}', function() {
+  describe('DELETE /services/{serviceId}', function () {
 
-    it('deletes the service for the service id in the path', async function() {
+    it('deletes the service for the service id in the path', async function () {
 
       const service = uniqid()
       const appReq = createAdminRequest({ service })
@@ -472,7 +472,7 @@ invalid request
       expect(res.text).to.equal('')
     })
 
-    it('fails with 404 if the service is not found', async function() {
+    it('fails with 404 if the service is not found', async function () {
 
       const service = uniqid()
       const appReq: DeleteFeedServiceRequest = createAdminRequest({ service })
@@ -486,7 +486,7 @@ invalid request
       appLayer.received(1).deleteService(Arg.any())
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
 
       const service = uniqid()
       const appReq: DeleteFeedServiceRequest = createAdminRequest({ service })
@@ -501,9 +501,9 @@ invalid request
     })
   })
 
-  describe('GET /services/{serviceId}/topics', function() {
+  describe('GET /services/{serviceId}/topics', function () {
 
-    it('lists the service topcis', async function() {
+    it('lists the service topcis', async function () {
 
       const service = uniqid()
       const topics: FeedTopic[] = [
@@ -540,7 +540,7 @@ invalid request
       expect(res.body).to.deep.equal(topics)
     })
 
-    it('fails with 404 if the service does not exist', async function() {
+    it('fails with 404 if the service does not exist', async function () {
 
       const service = uniqid()
       const appReq: ListServiceTopicsRequest = createAdminRequest({ service })
@@ -554,7 +554,7 @@ invalid request
       expect(res.body).to.equal(`FeedService not found: ${service}`)
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
 
       const service = uniqid()
       const appReq: ListServiceTopicsRequest = createAdminRequest({ service })
@@ -569,7 +569,7 @@ invalid request
     })
   })
 
-  describe('POST /services/{serviceId}/topics/{topicId}/feed_preview', function() {
+  describe('POST /services/{serviceId}/topics/{topicId}/feed_preview', function () {
 
     type CompletePreviewFeedRequestParams = Required<Omit<PreviewFeedRequest, 'context' | 'skipContentFetch'>> & {
       feed: Omit<Required<PreviewFeedRequest['feed']>, 'id'>
@@ -579,7 +579,7 @@ invalid request
       feed: Required<FeedPreview['feed']>
     }
 
-    it('maps the web request to the app request', async function() {
+    it('maps the web request to the app request', async function () {
 
       const service = uniqid()
       const topic = uniqid()
@@ -602,7 +602,7 @@ invalid request
           variableParamsSchema: {
             type: 'object',
             properties: {
-              bbox: { type: 'array', items: { type: 'number' }}
+              bbox: { type: 'array', items: { type: 'number' } }
             }
           },
           mapStyle: {
@@ -615,7 +615,7 @@ invalid request
           }
         },
         variableParams: {
-          bbox: [ 12, 13, 14, 15 ]
+          bbox: [12, 13, 14, 15]
         }
       })
       const appReq: PreviewFeedRequest = createAdminRequest(appReqParams)
@@ -660,7 +660,7 @@ invalid request
       expect(res.body).to.deep.equal(preview)
     })
 
-    it('accepts empty body', async function() {
+    it('accepts empty body', async function () {
 
       const service = uniqid()
       const topic = uniqid()
@@ -714,7 +714,7 @@ invalid request
       expect(res.body).to.deep.equal(preview)
     })
 
-    it('adds the skip content fetch flag when parameter is true', async function() {
+    it('adds the skip content fetch flag when parameter is true', async function () {
 
       const service = uniqid()
       const topic = uniqid()
@@ -762,7 +762,7 @@ invalid request
       appLayer.received(1).previewFeed(Arg.deepEquals(appReq))
     })
 
-    it('does not add skip content fetch flag when parameter is not true', async function() {
+    it('does not add skip content fetch flag when parameter is not true', async function () {
 
       const service = uniqid()
       const topic = uniqid()
@@ -817,22 +817,69 @@ invalid request
       appLayer.received(1).previewFeed(Arg.deepEquals(appReq))
     })
 
-    it('fails with 404 if the service does not exist', async function() {
+    it('fails with 404 if the service does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 404 if the topic does not exist', async function() {
+    it('fails with 404 if the topic does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 403 without permission', async function() {
-      expect.fail('todo')
+    it('fails with 403 without permission', async function () {
+      const service = uniqid()
+      const topic = uniqid()
+      const minimalFeed: FeedMinimalVerbose = Object.freeze({
+        service,
+        topic,
+        title: undefined,
+        summary: undefined,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        constantParams: undefined,
+        variableParamsSchema: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      })
+      const appReq: PreviewFeedRequest = createAdminRequest({
+        feed: minimalFeed
+      })
+      const preview: FeedPreview = {
+        feed: {
+          id: 'preview',
+          service,
+          topic,
+          title: 'Topic Title',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPrimaryProperty: 'topicPrimary',
+        },
+        content: {
+          topic,
+          feed: 'preview',
+          items: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        }
+      }
+
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
+      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, PermissionDeniedError>(permissionDenied('FEEDS_CREATE_FEED', adminPrincipal.user)))
+
+      const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
+
+      expect(res.status).to.equal(403)
     })
   })
 
-  describe('POST /services/{serviceId}/topics/{topicId}/feeds', function() {
+  describe('POST /services/{serviceId}/topics/{topicId}/feeds', function () {
 
-    it('creates a feed for service and topic', async function() {
+    it('creates a feed for service and topic', async function () {
 
       const service = uniqid()
       const topic = uniqid()
@@ -902,26 +949,26 @@ invalid request
       expect(res.body).to.deep.equal(feed)
     })
 
-    it('tests all the input parameters', async function() {
+    it('tests all the input parameters', async function () {
       expect.fail('todo')
     })
 
-    it('returns 403 for permission denied error', async function() {
+    it('returns 403 for permission denied error', async function () {
       expect.fail('todo')
     })
 
-    it('returns 404 when the service does not exist', async function() {
+    it('returns 404 when the service does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('returns 500 when the service type is not found', async function() {
+    it('returns 500 when the service type is not found', async function () {
       expect.fail('todo')
     })
   })
 
-  describe('GET /services/{serviceId}/feeds', function() {
+  describe('GET /services/{serviceId}/feeds', function () {
 
-    it('returns the list of feeds that reference the service', async function() {
+    it('returns the list of feeds that reference the service', async function () {
 
       const service = uniqid()
       const feeds: Feed[] = [
@@ -952,7 +999,7 @@ invalid request
       expect(res.body).to.deep.equal(feeds)
     })
 
-    it('returns 404 if the service is not found', async function() {
+    it('returns 404 if the service is not found', async function () {
 
       appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error<Feed[], EntityNotFoundError>(entityNotFound('404', 'feed service')))
       const res = await client.get(`${rootPath}/services/404/feeds`)
@@ -962,7 +1009,7 @@ invalid request
       expect(res.body).to.equal('feed service not found: 404')
     })
 
-    it('returns 403 without permission', async function() {
+    it('returns 403 without permission', async function () {
 
       appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error<Feed[], PermissionDeniedError>(permissionDenied('list feeds', adminPrincipal.user, 'abc123')))
       const res = await client.get(`${rootPath}/services/abc123/feeds`)
@@ -973,9 +1020,9 @@ invalid request
     })
   })
 
-  describe('GET /', function() {
+  describe('GET /', function () {
 
-    it('returns all the feeds', async function() {
+    it('returns all the feeds', async function () {
 
       const feeds: Feed[] = [
         {
@@ -1010,9 +1057,9 @@ invalid request
     })
   })
 
-  describe('GET /{feedId}', function() {
+  describe('GET /{feedId}', function () {
 
-    it('returns the feed for the id in the path', async function() {
+    it('returns the feed for the id in the path', async function () {
 
       const feedId = uniqid()
       const feed: FeedExpanded = {
@@ -1054,26 +1101,26 @@ invalid request
       expect(res.body).to.deep.equal(feed)
     })
 
-    it('fails with 404 if the feed does not exist', async function() {
+    it('fails with 404 if the feed does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 500 if the service does not exist', async function() {
+    it('fails with 500 if the service does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 500 if the topic does not exist', async function() {
+    it('fails with 500 if the topic does not exist', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 500 if the service type does not exist', async function() {
+    it('fails with 500 if the service type does not exist', async function () {
       expect.fail('todo')
     })
   })
 
-  describe('PUT /{feedId}', async function() {
+  describe('PUT /{feedId}', async function () {
 
-    it('maps the request body to a feed update', async function() {
+    it('maps the request body to a feed update', async function () {
 
       const body: Required<FeedUpdateMinimal> & { superfluous: any, service: string, topic: string } = {
         id: uniqid(),
@@ -1087,7 +1134,7 @@ invalid request
         itemTemporalProperty: 'updatedTime',
         constantParams: { updated: 'yes' },
         variableParamsSchema: {
-          properties: { updated: { type: 'object' }}
+          properties: { updated: { type: 'object' } }
         },
         mapStyle: {
           icon: { id: uniqid() }
@@ -1116,7 +1163,7 @@ invalid request
         itemTemporalProperty: 'updatedTime',
         constantParams: { updated: 'yes' },
         variableParamsSchema: {
-          properties: { updated: { type: 'object' }}
+          properties: { updated: { type: 'object' } }
         },
         mapStyle: {
           icon: { id: body.mapStyle?.icon?.id! }
@@ -1143,14 +1190,14 @@ invalid request
       expect(res.body).to.deep.equal(appRes.success)
     })
 
-    it('fails with 404 if the feed id is not found', async function() {
+    it('fails with 404 if the feed id is not found', async function () {
       expect.fail('todo')
     })
   })
 
-  describe('DELETE /{feed}', async function() {
+  describe('DELETE /{feed}', async function () {
 
-    it('deletes the feed for the id in the path', async function() {
+    it('deletes the feed for the id in the path', async function () {
 
       const feedId = uniqid()
       const appReq: DeleteFeedRequest = createAdminRequest({ feed: feedId })
@@ -1163,11 +1210,11 @@ invalid request
       expect(res.text).to.equal('')
     })
 
-    it('fails with 403 without permission', async function() {
+    it('fails with 403 without permission', async function () {
       expect.fail('todo')
     })
 
-    it('fails with 404 if the feed id is not found', async function() {
+    it('fails with 404 if the feed id is not found', async function () {
       expect.fail('todo')
     })
   })
