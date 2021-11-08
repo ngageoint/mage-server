@@ -206,9 +206,7 @@ describe('event feeds web controller', function () {
         .resolves(AppResponse.error<UserFeed[], PermissionDeniedError>(permissionDenied('READ_EVENT_USER', testUser)))
       const res = await client.get(`${rootPath}/${event.id}/feeds`)
 
-      expect(res.status).to.equal(200)
-      expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.deep.equal(eventFeeds)
+      expect(res.status).to.equal(403)
       eventFeedsApp.received(1).listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
     })
   })
@@ -267,7 +265,7 @@ describe('event feeds web controller', function () {
         .resolves(AppResponse.error<MageEvent, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', String(testUser))))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
-      expect(res.status).to.equal(400)
+      expect(res.status).to.equal(403)
       eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
   })
