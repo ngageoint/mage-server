@@ -12,12 +12,13 @@ import { AddFeedToEventRequest, ListEventFeedsRequest, UserFeed, RemoveFeedFromE
 import { FeedId, FeedContent } from '../../../lib/entities/feeds/entities.feeds'
 import { FetchFeedContentRequest } from '../../../lib/app.api/feeds/app.api.feeds'
 import { EventFeedsApp, EventFeedsRoutes } from '../../../lib/adapters/events/adapters.events.controllers.web'
+import { entityNotFound, EntityNotFoundError, PermissionDeniedError, permissionDenied } from '../../../lib/app.api/app.api.errors'
 
 const rootPath = '/test/events'
 const jsonMimeType = /^application\/json/
 const testUser = 'lummytin'
 
-describe('event feeds web controller', function() {
+describe('event feeds web controller', function () {
 
   let createAppRequest: WebAppRequestFactory = <P>(webReq: express.Request, params?: P): AppRequest<typeof testUser> & P => {
     return {
@@ -37,8 +38,8 @@ describe('event feeds web controller', function() {
   let client: supertest.SuperTest<supertest.Test>
   let event: MageEvent
 
-  beforeEach(function() {
-    const eventId = Date.now()
+  beforeEach(function () {
+    const eventId = Math.floor(Math.random() * 1000);
     event = {
       id: eventId,
       name: 'Test Event',
@@ -52,7 +53,7 @@ describe('event feeds web controller', function() {
       acl: {
         [testUser]: {
           role: 'GUEST',
-          permissions: [ 'read' ]
+          permissions: ['read']
         }
       }
     }
@@ -66,9 +67,9 @@ describe('event feeds web controller', function() {
     client = supertest(app)
   })
 
-  describe('POST /events/{eventId}/feeds', function() {
+  describe('POST /events/{eventId}/feeds', function () {
 
-    it('adds a feed to the context event', async function() {
+    it('adds a feed to the context event', async function () {
 
       const feedId = uniqid()
       event.feedIds.push(feedId)
@@ -89,22 +90,52 @@ describe('event feeds web controller', function() {
       eventFeedsApp.received(1).addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
     })
 
-    it('fails with 404 if the event does not exist', async function() {
-      expect.fail('todo')
+    it('fails with 404 if the event does not exist', async function () {
+      const feedId = uniqid()
+      const badEventId = 1234567890;
+
+      eventRepo.findById(badEventId).resolves(null);
+
+      const res = await client
+        .post(`${rootPath}/${badEventId}/feeds`)
+        .type('json')
+        .send(JSON.stringify(feedId))
+
+      expect(res.status).to.equal(404)
     })
 
-    it('fails with 400 if the feed does not exist', async function() {
-      expect.fail('todo')
+    it('fails with 400 if the feed does not exist', async function () {
+      const res = await client
+        .post(`${rootPath}/${event.id}/feeds`)
+        .type('json')
+        .send();
+
+      expect(res.status).to.equal(400)
     })
 
-    it('fails with 403 without permission', async function() {
-      expect.fail('todo')
+    it('fails with 403 without permission', async function () {
+      const feedId = uniqid()
+      event.feedIds.push(feedId)
+      const requestParams: Partial<AddFeedToEventRequest> = {
+        event: event.id,
+        feed: feedId
+      }
+      eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
+        .resolves(AppResponse.error<MageEvent, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', testUser)))
+
+      const res = await client
+        .post(`${rootPath}/${event.id}/feeds`)
+        .type('json')
+        .send(JSON.stringify(feedId))
+
+      expect(res.status).to.equal(403)
+      eventFeedsApp.received(1).addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
     })
   })
 
-  describe('GET /events/{eventId}/feeds', function() {
+  describe('GET /events/{eventId}/feeds', function () {
 
-    it('returns the list of feeds assigned to the event', async function() {
+    it('returns the list of feeds assigned to the event', async function () {
 
       const eventFeeds: UserFeed[] = [
         {
@@ -138,18 +169,53 @@ describe('event feeds web controller', function() {
       eventFeedsApp.received(1).listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
     })
 
-    it('fails with 404 if the event does not exist', async function() {
-      expect.fail('todo')
+    it('fails with 404 if the event does not exist', async function () {
+      const badEventId = 1234567890;
+
+      eventRepo.findById(badEventId).resolves(null);
+
+      const res = await client.get(`${rootPath}/${badEventId}/feeds`)
+
+      expect(res.status).to.equal(404)
     })
 
-    it('fails with 403 without permission', async function() {
-      expect.fail('todo')
+    it('fails with 403 without permission', async function () {
+      const eventFeeds: UserFeed[] = [
+        {
+          id: uniqid(),
+          service: 'service1',
+          topic: 'ringram',
+          title: 'Feed 1',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+        },
+        {
+          id: uniqid(),
+          service: 'service2',
+          topic: 'dingdorf',
+          title: 'Feed 2',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+        }
+      ]
+      event.feedIds.concat(eventFeeds[0].id, eventFeeds[1].id)
+      const reqParams: Partial<ListEventFeedsRequest> = {
+        event: event.id
+      }
+      eventFeedsApp.listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
+        .resolves(AppResponse.error<UserFeed[], PermissionDeniedError>(permissionDenied('READ_EVENT_USER', testUser)))
+      const res = await client.get(`${rootPath}/${event.id}/feeds`)
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal(eventFeeds)
+      eventFeedsApp.received(1).listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
     })
   })
 
-  describe('DELETE /events/{eventId}/feeds/{feedId}', function() {
+  describe('DELETE /events/{eventId}/feeds/{feedId}', function () {
 
-    it('removes the feed id from the event feeds list', async function() {
+    it('removes the feed id from the event feeds list', async function () {
 
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
@@ -166,26 +232,53 @@ describe('event feeds web controller', function() {
       eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
 
-    it('fails with 400 if the feed is not assigned to the event', async function() {
-      expect.fail('todo')
+    it('fails with 400 if the feed is not assigned to the event', async function () {
+      const feedId = uniqid()
+      const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
+        event: event.id,
+        feed: feedId
+      }
+      eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
+        .resolves(AppResponse.error<MageEvent, EntityNotFoundError>(entityNotFound(event, 'MageEvent')))
+      const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
+
+      expect(res.status).to.equal(400)
+      eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
 
-    it('fails with 404 if the event does not exist', async function() {
-      expect.fail('todo')
+    it('fails with 404 if the event does not exist', async function () {
+      const feedId = uniqid()
+      const badEventId = 1234567890;
+
+      eventRepo.findById(badEventId).resolves(null);
+
+      const res = await client.delete(`${rootPath}/${badEventId}/feeds/${feedId}`)
+
+      expect(res.status).to.equal(404)
     })
 
-    it('fails with 403 without permission', async function() {
-      expect.fail('todo')
+    it('fails with 403 without permission', async function () {
+      const feedId = uniqid()
+      const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
+        event: event.id,
+        feed: feedId
+      }
+      eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
+        .resolves(AppResponse.error<MageEvent, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', String(testUser))))
+      const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
+
+      expect(res.status).to.equal(400)
+      eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
   })
 
-  describe('POST /events/{eventId}/feeds/{feedId}/content', function() {
+  describe('POST /events/{eventId}/feeds/{feedId}/content', function () {
 
-    it('fetches the feed content', async function() {
+    it('fetches the feed content', async function () {
 
       const feedId: FeedId = uniqid()
       const variableParams = {
-        bbox: [ -104.25, 44.02, -104.20, 44.025 ]
+        bbox: [-104.25, 44.02, -104.20, 44.025]
       }
       const appReqParams: Partial<FetchFeedContentRequest> = {
         feed: feedId,
@@ -200,7 +293,7 @@ describe('event feeds web controller', function() {
             {
               type: 'Feature',
               id: uniqid(),
-              geometry: { type: 'Point', coordinates: [ -104.23, 44.022 ] },
+              geometry: { type: 'Point', coordinates: [-104.23, 44.022] },
               properties: {
                 title: 'fetches the feed content'
               }
