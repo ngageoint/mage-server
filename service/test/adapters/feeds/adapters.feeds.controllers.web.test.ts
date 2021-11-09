@@ -818,11 +818,111 @@ invalid request
     })
 
     it('fails with 404 if the service does not exist', async function () {
-      expect.fail('todo')
+      const service = uniqid()
+      const topic = uniqid()
+
+      const minimalFeed: FeedMinimalVerbose = Object.freeze({
+        service,
+        topic,
+        title: undefined,
+        summary: undefined,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        constantParams: undefined,
+        variableParamsSchema: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      })
+      const appReq: PreviewFeedRequest = createAdminRequest({
+        feed: minimalFeed
+      })
+      const preview: FeedPreview = {
+        feed: {
+          id: 'preview',
+          service,
+          topic,
+          title: 'Topic Title',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPrimaryProperty: 'topicPrimary',
+        },
+        content: {
+          topic,
+          feed: 'preview',
+          items: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        }
+      }
+
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
+      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, EntityNotFoundError>(entityNotFound(service, 'FeedService')))
+
+      const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
+      appLayer.received(1).previewFeed(Arg.any())
     })
 
     it('fails with 404 if the topic does not exist', async function () {
-      expect.fail('todo')
+      const service = uniqid()
+      const topic = uniqid()
+
+      const minimalFeed: FeedMinimalVerbose = Object.freeze({
+        service,
+        topic,
+        title: undefined,
+        summary: undefined,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        constantParams: undefined,
+        variableParamsSchema: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      })
+      const appReq: PreviewFeedRequest = createAdminRequest({
+        feed: minimalFeed
+      })
+      const preview: FeedPreview = {
+        feed: {
+          id: 'preview',
+          service,
+          topic,
+          title: 'Topic Title',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPrimaryProperty: 'topicPrimary',
+        },
+        content: {
+          topic,
+          feed: 'preview',
+          items: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        }
+      }
+
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
+      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, EntityNotFoundError>(entityNotFound(topic, 'FeedTopic')))
+
+      const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
+      appLayer.received(1).previewFeed(Arg.any())
     })
 
     it('fails with 403 without permission', async function () {
@@ -954,15 +1054,204 @@ invalid request
     })
 
     it('returns 403 for permission denied error', async function () {
-      expect.fail('todo')
+      const service = uniqid()
+      const topic = uniqid()
+      const postBody = {
+        title: 'Created Feed',
+        summary: 'The feed we created',
+        constantParams: {
+          test: true
+        },
+        variableParamsSchema: <JSONSchema4>{
+          type: 'object',
+          properties: {
+            where: {
+              type: 'array', items: { type: 'number' }
+            },
+            when: {
+              type: 'number'
+            }
+          }
+        }
+      }
+      const feedMinimal: FeedMinimalVerbose = {
+        ...postBody,
+        service,
+        topic,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      }
+      const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
+      const feed: FeedExpanded = {
+        id: uniqid(),
+        service: {
+          id: service,
+          serviceType: 'servicetype1',
+          title: 'Service 1',
+          summary: 'Service 1 summary',
+          config: { test: true }
+        },
+        topic: {
+          id: topic,
+          title: 'Topic 1'
+        },
+        title: appReq.feed.title!,
+        summary: appReq.feed.summary!,
+        itemsHaveIdentity: false,
+        itemsHaveSpatialDimension: false,
+        constantParams: appReq.feed.constantParams || undefined,
+        variableParamsSchema: appReq.feed.variableParamsSchema || undefined
+      }
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, PermissionDeniedError>(permissionDenied(service, 'feed service')))
+
+      const res = await client
+        .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
+        .send(postBody)
+
+      expect(res.status).to.equal(403)
+      expect(res.type).to.match(jsonMimeType)
     })
 
     it('returns 404 when the service does not exist', async function () {
-      expect.fail('todo')
+      const service = uniqid()
+      const topic = uniqid()
+      const postBody = {
+        title: 'Created Feed',
+        summary: 'The feed we created',
+        constantParams: {
+          test: true
+        },
+        variableParamsSchema: <JSONSchema4>{
+          type: 'object',
+          properties: {
+            where: {
+              type: 'array', items: { type: 'number' }
+            },
+            when: {
+              type: 'number'
+            }
+          }
+        }
+      }
+      const feedMinimal: FeedMinimalVerbose = {
+        ...postBody,
+        service,
+        topic,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      }
+      const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
+      const feed: FeedExpanded = {
+        id: uniqid(),
+        service: {
+          id: service,
+          serviceType: 'servicetype1',
+          title: 'Service 1',
+          summary: 'Service 1 summary',
+          config: { test: true }
+        },
+        topic: {
+          id: topic,
+          title: 'Topic 1'
+        },
+        title: appReq.feed.title!,
+        summary: appReq.feed.summary!,
+        itemsHaveIdentity: false,
+        itemsHaveSpatialDimension: false,
+        constantParams: appReq.feed.constantParams || undefined,
+        variableParamsSchema: appReq.feed.variableParamsSchema || undefined
+      }
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service, 'feed service')))
+
+      const res = await client
+        .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
+        .send(postBody)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
 
-    it('returns 500 when the service type is not found', async function () {
-      expect.fail('todo')
+    it('returns 404 when the service type is not found', async function () {
+      const service = uniqid()
+      const topic = uniqid()
+      const postBody = {
+        title: 'Created Feed',
+        summary: 'The feed we created',
+        constantParams: {
+          test: true
+        },
+        variableParamsSchema: <JSONSchema4>{
+          type: 'object',
+          properties: {
+            where: {
+              type: 'array', items: { type: 'number' }
+            },
+            when: {
+              type: 'number'
+            }
+          }
+        }
+      }
+      const feedMinimal: FeedMinimalVerbose = {
+        ...postBody,
+        service,
+        topic,
+        icon: undefined,
+        itemsHaveIdentity: undefined,
+        itemsHaveSpatialDimension: undefined,
+        itemPrimaryProperty: undefined,
+        itemSecondaryProperty: undefined,
+        itemTemporalProperty: undefined,
+        updateFrequencySeconds: undefined,
+        mapStyle: undefined,
+        itemPropertiesSchema: undefined
+      }
+      const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
+      const feed: FeedExpanded = {
+        id: uniqid(),
+        service: {
+          id: service,
+          serviceType: 'servicetype1',
+          title: 'Service 1',
+          summary: 'Service 1 summary',
+          config: { test: true }
+        },
+        topic: {
+          id: topic,
+          title: 'Topic 1'
+        },
+        title: appReq.feed.title!,
+        summary: appReq.feed.summary!,
+        itemsHaveIdentity: false,
+        itemsHaveSpatialDimension: false,
+        constantParams: appReq.feed.constantParams || undefined,
+        variableParamsSchema: appReq.feed.variableParamsSchema || undefined
+      }
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service.serviceType, 'feed service type')))
+
+      const res = await client
+        .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
+        .send(postBody)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
   })
 
@@ -1102,19 +1391,163 @@ invalid request
     })
 
     it('fails with 404 if the feed does not exist', async function () {
-      expect.fail('todo')
+      const feedId = uniqid()
+      const feed: FeedExpanded = {
+        id: feedId,
+        service: {
+          id: uniqid(),
+          title: 'The Service That Provides the Topic',
+          summary: null,
+          config: { test: true },
+          serviceType: uniqid(),
+        },
+        topic: {
+          id: uniqid(),
+          title: 'The Topic of the Feed',
+        },
+        title: 'Get the Feed',
+        summary: 'Get it and test it',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        constantParams: {
+          test: 'yes'
+        },
+        itemPrimaryProperty: 'title',
+        itemTemporalProperty: 'date',
+        variableParamsSchema: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number' }
+          }
+        }
+      }
+      const appReq = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.all()).returns(appReq)
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed, 'feed')))
+      const res = await client.get(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
 
-    it('fails with 500 if the service does not exist', async function () {
-      expect.fail('todo')
+    it('fails with 404 if the service does not exist', async function () {
+      const feedId = uniqid()
+      const feed: FeedExpanded = {
+        id: feedId,
+        service: {
+          id: uniqid(),
+          title: 'The Service That Provides the Topic',
+          summary: null,
+          config: { test: true },
+          serviceType: uniqid(),
+        },
+        topic: {
+          id: uniqid(),
+          title: 'The Topic of the Feed',
+        },
+        title: 'Get the Feed',
+        summary: 'Get it and test it',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        constantParams: {
+          test: 'yes'
+        },
+        itemPrimaryProperty: 'title',
+        itemTemporalProperty: 'date',
+        variableParamsSchema: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number' }
+          }
+        }
+      }
+      const appReq = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.all()).returns(appReq)
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service, 'service')))
+      const res = await client.get(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
 
-    it('fails with 500 if the topic does not exist', async function () {
-      expect.fail('todo')
+    it('fails with 404 if the topic does not exist', async function () {
+      const feedId = uniqid()
+      const feed: FeedExpanded = {
+        id: feedId,
+        service: {
+          id: uniqid(),
+          title: 'The Service That Provides the Topic',
+          summary: null,
+          config: { test: true },
+          serviceType: uniqid(),
+        },
+        topic: {
+          id: uniqid(),
+          title: 'The Topic of the Feed',
+        },
+        title: 'Get the Feed',
+        summary: 'Get it and test it',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        constantParams: {
+          test: 'yes'
+        },
+        itemPrimaryProperty: 'title',
+        itemTemporalProperty: 'date',
+        variableParamsSchema: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number' }
+          }
+        }
+      }
+      const appReq = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.all()).returns(appReq)
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.topic, 'topic')))
+      const res = await client.get(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
 
-    it('fails with 500 if the service type does not exist', async function () {
-      expect.fail('todo')
+    it('fails with 404 if the service type does not exist', async function () {
+      const feedId = uniqid()
+      const feed: FeedExpanded = {
+        id: feedId,
+        service: {
+          id: uniqid(),
+          title: 'The Service That Provides the Topic',
+          summary: null,
+          config: { test: true },
+          serviceType: uniqid(),
+        },
+        topic: {
+          id: uniqid(),
+          title: 'The Topic of the Feed',
+        },
+        title: 'Get the Feed',
+        summary: 'Get it and test it',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        constantParams: {
+          test: 'yes'
+        },
+        itemPrimaryProperty: 'title',
+        itemTemporalProperty: 'date',
+        variableParamsSchema: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number' }
+          }
+        }
+      }
+      const appReq = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.all()).returns(appReq)
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service.serviceType, 'service type')))
+      const res = await client.get(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
   })
 
@@ -1191,7 +1624,42 @@ invalid request
     })
 
     it('fails with 404 if the feed id is not found', async function () {
-      expect.fail('todo')
+      const body: Required<FeedUpdateMinimal> & { superfluous: any, service: string, topic: string } = {
+        id: uniqid(),
+        title: 'Update Title',
+        summary: 'Update summary',
+        icon: { id: uniqid() },
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        itemPrimaryProperty: 'updated1',
+        itemSecondaryProperty: 'updated2',
+        itemTemporalProperty: 'updatedTime',
+        constantParams: { updated: 'yes' },
+        variableParamsSchema: {
+          properties: { updated: { type: 'object' } }
+        },
+        mapStyle: {
+          icon: { id: uniqid() }
+        },
+        updateFrequencySeconds: 987,
+        itemPropertiesSchema: {
+          type: 'object',
+          title: 'Updated Schema'
+        },
+        superfluous: {
+          partOfUpdate: false
+        },
+        service: 'service not allowed',
+        topic: 'topic not allowed'
+      }
+      const feedUpdate: Required<FeedUpdateMinimal> = _.omit(body, 'superfluous', 'service', 'topic')
+      const appReq = createAdminRequest({ feed: feedUpdate })
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedUpdate })).returns(appReq)
+      appLayer.updateFeed(appReq).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(body.id, 'feed')))
+      const res = await client.put(`${rootPath}/${body.id}`).send(body)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
   })
 
@@ -1211,11 +1679,25 @@ invalid request
     })
 
     it('fails with 403 without permission', async function () {
-      expect.fail('todo')
+      const feedId = uniqid()
+      const appReq: DeleteFeedRequest = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedId })).returns(appReq)
+      appLayer.deleteFeed(appReq).resolves(AppResponse.error<true, PermissionDeniedError>(permissionDenied('delete feed', adminPrincipal.user)))
+      const res = await client.delete(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(403)
+      expect(res.type).to.match(jsonMimeType)
     })
 
     it('fails with 404 if the feed id is not found', async function () {
-      expect.fail('todo')
+      const feedId = uniqid()
+      const appReq: DeleteFeedRequest = createAdminRequest({ feed: feedId })
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedId })).returns(appReq)
+      appLayer.deleteFeed(appReq).resolves(AppResponse.error<true, EntityNotFoundError>(entityNotFound(feedId, 'feed')))
+      const res = await client.delete(`${rootPath}/${feedId}`)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMimeType)
     })
   })
 })
