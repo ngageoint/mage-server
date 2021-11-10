@@ -13,7 +13,7 @@ import { JsonObject, JsonSchemaService, JsonValidator, JSONSchema4 } from '../..
 import _ from 'lodash'
 import { MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { URL } from 'url'
-import { StaticIcon, StaticIconId, StaticIconImportFetch, StaticIconRepository } from '../../../lib/entities/icons/entities.icons'
+import { SourceUrlStaticIconReference, StaticIcon, StaticIconId, StaticIconImportFetch, StaticIconReference, StaticIconRepository } from '../../../lib/entities/icons/entities.icons'
 
 
 function mockServiceType(descriptor: FeedServiceTypeDescriptor): SubstituteOf<RegisteredFeedServiceType> {
@@ -1654,7 +1654,37 @@ describe('feeds use case interactions', function() {
         })
 
         it('registers the feed icon url for immediate fetch', async function() {
-          expect.fail('todo')
+          const icon: StaticIcon = {
+            id: uniqid(),
+            sourceUrl: new URL('test:///icon.png'),
+            registeredTimestamp: Date.now()
+          }
+          const feed: FeedCreateMinimal = {
+            service: service.id,
+            topic: uniqid(),
+            title: 'Save From Preview',
+            constantParams: {
+              limit: 50
+            },
+            itemsHaveIdentity: true,
+            itemsHaveSpatialDimension: true,
+            icon: {
+              sourceUrl: new URL('test:///icon.png')
+            }
+          }
+          const req: CreateFeedRequest = requestBy(adminPrincipal, { feed })
+          app.iconRepo.findOrImportBySourceUrl(
+            Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            Arg.is(x => x === StaticIconImportFetch.EagerAwait)
+          ).resolves(icon)
+          const res = await app.createFeed(req)
+
+          expect(res.error).to.be.null
+          expect(res.success).to.be.an('object')
+          expect(res.success?.icon).to.deep.equal({ id: icon.id })
+          app.iconRepo.received(1).findOrImportBySourceUrl(
+            Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            Arg.is(x => x === StaticIconImportFetch.EagerAwait))
         })
 
         it('fails if the immediate icon fetch fails', async function() {
