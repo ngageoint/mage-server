@@ -13,7 +13,8 @@ import { JsonObject, JsonSchemaService, JsonValidator, JSONSchema4 } from '../..
 import _ from 'lodash'
 import { MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { URL } from 'url'
-import { SourceUrlStaticIconReference, StaticIcon, StaticIconId, StaticIconImportFetch, StaticIconReference, StaticIconRepository } from '../../../lib/entities/icons/entities.icons'
+import { StaticIcon, StaticIconId, StaticIconImportFetch, StaticIconRepository } from '../../../lib/entities/icons/entities.icons'
+import { UrlResolutionError } from '../../../lib/entities/entities.global'
 
 
 function mockServiceType(descriptor: FeedServiceTypeDescriptor): SubstituteOf<RegisteredFeedServiceType> {
@@ -43,7 +44,7 @@ const someServiceTypeDescs: FeedServiceTypeDescriptor[] = [
           format: 'uri',
         }
       },
-      required: [ 'url' ]
+      required: ['url']
     },
   }),
   Object.freeze({
@@ -62,7 +63,7 @@ const someServiceTypeDescs: FeedServiceTypeDescriptor[] = [
           format: 'uri',
         }
       },
-      required: [ 'url' ]
+      required: ['url']
     },
   })
 ]
@@ -94,32 +95,32 @@ function requestBy<RequestType>(principal: TestPrincipal, params?: RequestType):
   )
 }
 
-describe('feeds use case interactions', function() {
+describe('feeds use case interactions', function () {
 
   let app: TestApp
   let someServiceTypes: SubstituteOf<RegisteredFeedServiceType>[]
 
-  beforeEach(function() {
+  beforeEach(function () {
     app = new TestApp()
     someServiceTypes = someServiceTypeDescs.map(mockServiceType)
   })
 
-  describe('feeds administration', function() {
+  describe('feeds administration', function () {
 
-    describe('listing available feed service types', async function() {
+    describe('listing available feed service types', async function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
       })
 
-      it('returns all the feed service types', async function() {
+      it('returns all the feed service types', async function () {
 
         const serviceTypes = await app.listServiceTypes(requestBy(adminPrincipal)).then(res => res.success)
 
         expect(serviceTypes).to.deep.equal(someServiceTypeDescs)
       })
 
-      it('checks permission for listing service types', async function() {
+      it('checks permission for listing service types', async function () {
 
         const error = await app.listServiceTypes(requestBy(bannedPrincipal)).then(res => res.error)
 
@@ -128,13 +129,13 @@ describe('feeds use case interactions', function() {
       })
     })
 
-    describe('creating a feed service', async function() {
+    describe('creating a feed service', async function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
       })
 
-      it('checks permission for creating a feed service', async function() {
+      it('checks permission for creating a feed service', async function () {
 
         const serviceType = someServiceTypes[1]
         const config = { url: 'https://does.not/matter' }
@@ -147,7 +148,7 @@ describe('feeds use case interactions', function() {
         serviceType.didNotReceive().validateServiceConfig(Arg.any())
       })
 
-      it('fails if the feed service config is invalid', async function() {
+      it('fails if the feed service config is invalid', async function () {
 
         const serviceType = someServiceTypes[0]
         const invalidConfig = {
@@ -160,12 +161,12 @@ describe('feeds use case interactions', function() {
 
         expect(err).to.be.instanceOf(MageError)
         expect(err.code).to.equal(ErrInvalidInput)
-        expect(err.data).to.deep.equal([[ 'url is invalid', 'config', 'url' ]])
+        expect(err.data).to.deep.equal([['url is invalid', 'config', 'url']])
         expect(app.serviceRepo.db).to.be.empty
         serviceType.received(1).validateServiceConfig(Arg.deepEquals(invalidConfig) as any)
       })
 
-      it('fails if the feed service type does not exist', async function() {
+      it('fails if the feed service type does not exist', async function () {
 
         const invalidServiceType = `${someServiceTypes[0].id}.${uniqid()}`
         const invalidConfig = {
@@ -184,7 +185,7 @@ describe('feeds use case interactions', function() {
         }
       })
 
-      it('saves the feed service config', async function() {
+      it('saves the feed service config', async function () {
 
         const serviceType = someServiceTypes[0]
         const config = { url: 'https://some.service/somewhere' }
@@ -206,7 +207,7 @@ describe('feeds use case interactions', function() {
         expect(inDb).to.deep.equal(created)
       })
 
-      it('redacts the feed service config in the result', async function() {
+      it('redacts the feed service config in the result', async function () {
 
         const serviceType = someServiceTypes[0]
         const config = { url: 'https://lerp', secret: 'redact me' }
@@ -233,7 +234,7 @@ describe('feeds use case interactions', function() {
       })
     })
 
-    describe('listing services', async function() {
+    describe('listing services', async function () {
 
       const someServices: FeedService[] = [
         {
@@ -257,12 +258,12 @@ describe('feeds use case interactions', function() {
         }
       ]
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
         app.registerServices(...someServices)
       })
 
-      it('checks permission for listing services', async function() {
+      it('checks permission for listing services', async function () {
 
         const bannedReq = requestBy(bannedPrincipal)
         let res = await app.listServices(bannedReq)
@@ -278,7 +279,7 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.be.instanceOf(Array)
       })
 
-      it('returns the saved services', async function() {
+      it('returns the saved services', async function () {
 
         someServiceTypes[0].redactServiceConfig(Arg.all()).returns(someServices[0].config)
         someServiceTypes[1].redactServiceConfig(Arg.all()).returns(someServices[1].config)
@@ -292,7 +293,7 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.deep.include(someServices[1])
       })
 
-      it('redacts service configurations', async function() {
+      it('redacts service configurations', async function () {
 
         const anotherService: FeedService = {
           id: uniqid(),
@@ -311,7 +312,7 @@ describe('feeds use case interactions', function() {
         const res = await app.listServices(req)
         const services = res.success!
 
-        const anotherServiceRedacted = Object.assign({ ...anotherService }, { config: {}})
+        const anotherServiceRedacted = Object.assign({ ...anotherService }, { config: {} })
         expect(services).to.have.length(3)
         expect(services).to.have.deep.members([
           someServices[0],
@@ -324,13 +325,13 @@ describe('feeds use case interactions', function() {
       })
     })
 
-    describe('previewing topics', async function() {
+    describe('previewing topics', async function () {
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
       })
 
-      it('checks permission for previewing topics', async function() {
+      it('checks permission for previewing topics', async function () {
 
         const serviceType = someServiceTypes[0]
         const req: PreviewTopicsRequest = requestBy(
@@ -357,7 +358,7 @@ describe('feeds use case interactions', function() {
         expect(res.error).to.be.null
       })
 
-      it('fails if the service type does not exist', async function() {
+      it('fails if the service type does not exist', async function () {
 
         const req: PreviewTopicsRequest = requestBy(
           adminPrincipal,
@@ -375,7 +376,7 @@ describe('feeds use case interactions', function() {
         expect(err?.data?.entityId).to.equal(req.serviceType)
       })
 
-      it('fails if the service config is invalid', async function() {
+      it('fails if the service config is invalid', async function () {
 
         const serviceType = someServiceTypes[1]
         const req: PreviewTopicsRequest = requestBy(
@@ -393,10 +394,10 @@ describe('feeds use case interactions', function() {
         const err = res.error as InvalidInputError | undefined
         expect(err).to.be.instanceOf(MageError)
         expect(err?.code).to.equal(ErrInvalidInput)
-        expect(err?.data).to.deep.equal([[ 'invalid is invalid', 'serviceConfig', 'invalid' ]])
+        expect(err?.data).to.deep.equal([['invalid is invalid', 'serviceConfig', 'invalid']])
       })
 
-      it('lists the topics for the service config', async function() {
+      it('lists the topics for the service config', async function () {
 
         const serviceType = someServiceTypes[1]
         const req: PreviewTopicsRequest = requestBy(
@@ -439,7 +440,7 @@ describe('feeds use case interactions', function() {
       })
     })
 
-    describe('single service operations', function() {
+    describe('single service operations', function () {
 
       const someServices: FeedService[] = [
         {
@@ -462,7 +463,7 @@ describe('feeds use case interactions', function() {
         }
       ]
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
         app.registerServices(...someServices)
         for (const service of someServices) {
@@ -470,9 +471,9 @@ describe('feeds use case interactions', function() {
         }
       })
 
-      describe('fetching a service', function() {
+      describe('fetching a service', function () {
 
-        it('returns the expanded and redacted service', async function() {
+        it('returns the expanded and redacted service', async function () {
 
           const redactedConfig = { redacted: true }
           someServiceTypes[0].redactServiceConfig(Arg.deepEquals(someServices[1].config)).returns(redactedConfig)
@@ -484,7 +485,7 @@ describe('feeds use case interactions', function() {
           expect(res.success).to.deep.equal(Object.assign({ ...someServices[1] }, { serviceType: someServiceTypeDescs[0], config: redactedConfig }))
         })
 
-        it('checks permission for fetching a service', async function() {
+        it('checks permission for fetching a service', async function () {
 
           const req: GetFeedServiceRequest = requestBy(bannedPrincipal, { service: someServices[1].id })
           let res = await app.getService(req)
@@ -504,7 +505,7 @@ describe('feeds use case interactions', function() {
           expect(res.success).to.be.an('object')
         })
 
-        it('fails if the service does not exist', async function() {
+        it('fails if the service does not exist', async function () {
 
           const req: GetFeedServiceRequest = requestBy(adminPrincipal, { service: uniqid() })
           let res = await app.getService(req)
@@ -518,16 +519,16 @@ describe('feeds use case interactions', function() {
         })
       })
 
-      describe('updating a service', function() {
+      describe('updating a service', function () {
 
-        it('works', async function() {
+        it('works', async function () {
           expect.fail('todo')
         })
       })
 
-      describe('deleting a service', function() {
+      describe('deleting a service', function () {
 
-        it('removes the service from the repository', async function() {
+        it('removes the service from the repository', async function () {
 
           const service = someServices[1]
           const req: DeleteFeedServiceRequest = requestBy(adminPrincipal, {
@@ -544,7 +545,7 @@ describe('feeds use case interactions', function() {
           expect(inDb).to.be.undefined
         })
 
-        it('removes related feeds and their event entries', async function() {
+        it('removes related feeds and their event entries', async function () {
 
           const service = someServices[0]
           const feeds: Feed[] = [
@@ -582,7 +583,7 @@ describe('feeds use case interactions', function() {
           app.eventRepo.received(1).removeFeedsFromEvents(feeds[0].id, feeds[1].id)
         })
 
-        it('fails if the service does not exist', async function() {
+        it('fails if the service does not exist', async function () {
 
           const req: DeleteFeedServiceRequest = requestBy(adminPrincipal, { service: uniqid() })
           const res = await app.deleteService(req)
@@ -594,7 +595,7 @@ describe('feeds use case interactions', function() {
           expect(err.data.entityType).to.equal('FeedService')
         })
 
-        it('checks permission for deleting a service', async function() {
+        it('checks permission for deleting a service', async function () {
 
           const service = someServices[1]
           const req: DeleteFeedServiceRequest = requestBy(bannedPrincipal, {
@@ -624,9 +625,9 @@ describe('feeds use case interactions', function() {
         })
       })
 
-      describe('listing topics from a saved service', async function() {
+      describe('listing topics from a saved service', async function () {
 
-        it('checks permission for listing topics', async function() {
+        it('checks permission for listing topics', async function () {
 
           const serviceDesc = someServices[0]
           const req: ListServiceTopicsRequest = requestBy(
@@ -656,7 +657,7 @@ describe('feeds use case interactions', function() {
           serviceType.received(1).createConnection(Arg.any())
         })
 
-        it('returns all the topics for a service', async function() {
+        it('returns all the topics for a service', async function () {
 
           const topics: FeedTopic[] = [
             Object.freeze({
@@ -690,7 +691,7 @@ describe('feeds use case interactions', function() {
                     maximum: 250
                   }
                 },
-                required: [ '$mage:currentLocation' ]
+                required: ['$mage:currentLocation']
               },
               updateFrequency: { seconds: 60 },
               itemsHaveIdentity: true,
@@ -717,7 +718,7 @@ describe('feeds use case interactions', function() {
                     }
                   }
                 },
-                required: [ '$mage:currentLocation' ]
+                required: ['$mage:currentLocation']
               },
               updateFrequency: undefined,
               itemsHaveIdentity: false,
@@ -740,7 +741,7 @@ describe('feeds use case interactions', function() {
       })
     })
 
-    describe('creating a feed', function() {
+    describe('creating a feed', function () {
 
       const service: FeedService = Object.freeze({
         id: uniqid(),
@@ -768,7 +769,7 @@ describe('feeds use case interactions', function() {
 
       let serviceConn: SubstituteOf<FeedServiceConnection>
 
-      beforeEach(function() {
+      beforeEach(function () {
         app.registerServiceTypes(...someServiceTypes)
         app.registerServices(service)
         app.permissionService.grantCreateFeed(adminPrincipal.user, service.id)
@@ -781,7 +782,7 @@ describe('feeds use case interactions', function() {
       const sharedBehaviors: [string, (op: PreviewOrCreateOp) => any][] = [
         [
           'fails if the service type does not exist',
-          async function(appOperation) {
+          async function (appOperation) {
             const service: FeedService = {
               id: 'defunct',
               serviceType: 'not there',
@@ -810,7 +811,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'fails if the service does not exist',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feed: FeedCreateMinimal = {
               service: 'not there',
               topic: topics[0].id
@@ -831,7 +832,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'fails if the topic does not exist',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feed: FeedCreateMinimal = {
               service: service.id,
               topic: 'not there'
@@ -852,7 +853,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'checks permission for creating a feed',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feed: FeedCreateMinimal = {
               service: service.id,
               topic: topics[0].id
@@ -881,7 +882,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'validates the variable params schema',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feed: FeedCreateMinimal = {
               service: service.id,
               topic: topics[0].id,
@@ -890,7 +891,7 @@ describe('feeds use case interactions', function() {
                 properties: {
                   bbox: {
                     type: 'array',
-                    items: { type: 'number'},
+                    items: { type: 'number' },
                     minItems: 4,
                     maxItems: 4
                   },
@@ -912,14 +913,14 @@ describe('feeds use case interactions', function() {
             const err = res.error as InvalidInputError
             expect(err.code).to.equal(ErrInvalidInput)
             expect(err.data.length).to.equal(1)
-            expect(err.data[0]).to.have.members([ validationError, 'feed', 'variableParamsSchema' ])
+            expect(err.data[0]).to.have.members([validationError, 'feed', 'variableParamsSchema'])
             expect(err.message).to.match(/invalid variable parameters schema/)
             expect(err.message).to.match(/feed > variableParamsSchema: bad schema/)
           }
         ],
         [
           'does not validate the variable params schema when the schema is undefined',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feed: FeedCreateMinimal = {
               service: service.id,
               topic: topics[0].id,
@@ -936,13 +937,13 @@ describe('feeds use case interactions', function() {
         ],
         [
           'registers icon for the topic',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const iconUrl = new URL('test:///register/for/preview')
             const topic = {
               ...topics[0],
               icon: { sourceUrl: iconUrl }
             }
-            serviceConn.fetchAvailableTopics().resolves([ topic ])
+            serviceConn.fetchAvailableTopics().resolves([topic])
             const registeredIcon: StaticIcon = {
               id: uniqid(),
               sourceUrl: iconUrl,
@@ -972,7 +973,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'registers the icon for the topic map style',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const iconUrl = new URL('test:///register/for/preview')
             const topic: FeedTopic = {
               ...topics[0],
@@ -980,7 +981,7 @@ describe('feeds use case interactions', function() {
                 icon: { sourceUrl: iconUrl }
               }
             }
-            serviceConn.fetchAvailableTopics().resolves([ topic ])
+            serviceConn.fetchAvailableTopics().resolves([topic])
             const registeredIcon: StaticIcon = {
               id: uniqid(),
               sourceUrl: iconUrl,
@@ -1014,7 +1015,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'registers icons for the topic and topic map style',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const topicIcon: StaticIcon = {
               id: uniqid(),
               sourceUrl: new URL('test:///icons/topic.png'),
@@ -1036,7 +1037,7 @@ describe('feeds use case interactions', function() {
             }
             app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(topicIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(topicIcon)
             app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
-            serviceConn.fetchAvailableTopics().resolves([ topic ])
+            serviceConn.fetchAvailableTopics().resolves([topic])
             const feed = {
               service: service.id,
               topic: topic.id
@@ -1064,7 +1065,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'does not register any icons if they are not urls',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const topic: FeedTopic = {
               ...topics[0],
               icon: { sourceUrl: new URL('test:///icons/topic.png') },
@@ -1072,7 +1073,7 @@ describe('feeds use case interactions', function() {
                 icon: { sourceUrl: new URL('test:///icons/map_marker.png') }
               }
             }
-            serviceConn.fetchAvailableTopics().resolves([ topic ])
+            serviceConn.fetchAvailableTopics().resolves([topic])
             const feed: FeedCreateMinimal = {
               service: service.id,
               topic: topic.id,
@@ -1102,7 +1103,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'accepts and parses icon urls as strings',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feedIcon: StaticIcon = {
               id: uniqid(),
               sourceUrl: new URL('test:///icons/topic.png'),
@@ -1117,7 +1118,7 @@ describe('feeds use case interactions', function() {
             }
             app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(feedIcon)
             app.iconRepo.findOrImportBySourceUrl(Arg.is(x => String(x) === String(mapIcon.sourceUrl)), StaticIconImportFetch.EagerAwait).resolves(mapIcon)
-            serviceConn.fetchAvailableTopics().resolves([ topics[0] ])
+            serviceConn.fetchAvailableTopics().resolves([topics[0]])
             const feed = {
               service: service.id,
               topic: topics[0].id,
@@ -1149,7 +1150,7 @@ describe('feeds use case interactions', function() {
         ],
         [
           'returns invalid input error if icon url strings are invalid',
-          async function(appOperation: PreviewOrCreateOp) {
+          async function (appOperation: PreviewOrCreateOp) {
             const feedMod: PreviewFeedRequest['feed'] = {
               service: service.id,
               topic: topics[0].id,
@@ -1159,7 +1160,7 @@ describe('feeds use case interactions', function() {
               }
             }
             const req: PreviewFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
-            serviceConn.fetchAvailableTopics().resolves([ topics[0] ])
+            serviceConn.fetchAvailableTopics().resolves([topics[0]])
             const res = await app[appOperation](req)
 
             expect(res.success).to.be.null
@@ -1167,8 +1168,8 @@ describe('feeds use case interactions', function() {
             console.log(err)
             expect(err.code).to.equal(ErrInvalidInput)
             expect(err.data).to.have.lengthOf(2)
-            expect(err.data).to.deep.include([ 'invalid icon url', 'feed', 'icon' ])
-            expect(err.data).to.deep.include([ 'invalid icon url', 'feed', 'mapStyle', 'icon' ])
+            expect(err.data).to.deep.include(['invalid icon url', 'feed', 'icon'])
+            expect(err.data).to.deep.include(['invalid icon url', 'feed', 'mapStyle', 'icon'])
             app.iconRepo.didNotReceive().findOrImportBySourceUrl(Arg.all())
           }
         ]
@@ -1180,9 +1181,9 @@ describe('feeds use case interactions', function() {
         }
       }
 
-      describe('previewing the feed', function() {
+      describe('previewing the feed', function () {
 
-        it('fetches items and creates feed preview with minimal inputs', async function() {
+        it('fetches items and creates feed preview with minimal inputs', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1203,7 +1204,7 @@ describe('feeds use case interactions', function() {
                 type: 'Feature',
                 geometry: {
                   type: 'Point',
-                  coordinates: [ -72, 20 ]
+                  coordinates: [-72, 20]
                 },
                 properties: {
                   when: '2020-06-01T23:23:00'
@@ -1231,7 +1232,7 @@ describe('feeds use case interactions', function() {
           expect(res.success?.content).to.deep.equal(previewContent)
         })
 
-        it('applies request inputs to the feed preview', async function() {
+        it('applies request inputs to the feed preview', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1278,7 +1279,7 @@ describe('feeds use case interactions', function() {
           expect(preview.feed).to.deep.include(feed)
         })
 
-        it('validates the variable params against the variable params schema', async function() {
+        it('validates the variable params against the variable params schema', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1288,7 +1289,7 @@ describe('feeds use case interactions', function() {
               properties: {
                 bbox: {
                   type: 'array',
-                  items: { type: 'number'},
+                  items: { type: 'number' },
                   minItems: 4,
                   maxItems: 4
                 },
@@ -1316,11 +1317,11 @@ describe('feeds use case interactions', function() {
           expect(err.code).to.equal(ErrInvalidInput)
           expect(err.message).to.match(/invalid variable parameters/)
           expect(err.data).to.deep.equal([
-            [ validationError, 'variableParams' ]
+            [validationError, 'variableParams']
           ])
         })
 
-        it('validates the merged params against the topic params schema', async function() {
+        it('validates the merged params against the topic params schema', async function () {
 
           const topic: FeedTopic = {
             id: 'topic_with_params_schema',
@@ -1352,11 +1353,11 @@ describe('feeds use case interactions', function() {
               }
             }
           }
-          const variableParams = { bbox: [ -22.6, 38.1, -22.5, 38.3 ]}
+          const variableParams = { bbox: [-22.6, 38.1, -22.5, 38.3] }
           const mergedParams = Object.assign({}, variableParams, feed.constantParams)
           const paramsValidator = Sub.for<JsonValidator>()
           const validationError = new Error('bad parameters')
-          serviceConn.fetchAvailableTopics().resolves([ topic ])
+          serviceConn.fetchAvailableTopics().resolves([topic])
           paramsValidator.validate(Arg.deepEquals(variableParams) as any).resolves(null)
           paramsValidator.validate(Arg.deepEquals(mergedParams)).resolves(validationError)
           app.jsonSchemaService.validateSchema(Arg.deepEquals(feed.variableParamsSchema)).resolves(paramsValidator)
@@ -1369,15 +1370,15 @@ describe('feeds use case interactions', function() {
           expect(res.error).to.be.instanceOf(MageError)
           expect(res.error?.code).to.equal(ErrInvalidInput)
           expect(res.error?.data).to.have.deep.members([
-            [ validationError, 'feed', 'constantParams' ],
-            [ validationError, 'variableParams' ]
+            [validationError, 'feed', 'constantParams'],
+            [validationError, 'variableParams']
           ])
           expect(res.error?.message).to.match(/invalid parameters/)
           app.jsonSchemaService.received(1).validateSchema(Arg.deepEquals(topic.paramsSchema))
           paramsValidator.received(1).validate(Arg.deepEquals(mergedParams))
         })
 
-        it('does not validate merged params if topic params schema is undefined', async function() {
+        it('does not validate merged params if topic params schema is undefined', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1403,7 +1404,7 @@ describe('feeds use case interactions', function() {
           validator.received(1).validate(Arg.all())
         })
 
-        it('prefers constant params over variable params', async function() {
+        it('prefers constant params over variable params', async function () {
 
           const variableParams = { limit: 1000 }
           const constantParams = { limit: 25 }
@@ -1422,7 +1423,7 @@ describe('feeds use case interactions', function() {
           }
           const mergedValidator = Sub.for<JsonValidator>()
           const variableValidator = Sub.for<JsonValidator>()
-          serviceConn.fetchAvailableTopics().resolves([ topic ])
+          serviceConn.fetchAvailableTopics().resolves([topic])
           app.jsonSchemaService.validateSchema(Arg.deepEquals(topic.paramsSchema)).resolves(mergedValidator)
           app.jsonSchemaService.validateSchema(Arg.deepEquals(feed.variableParamsSchema)).resolves(variableValidator)
           mergedValidator.validate(Arg.all()).resolves(null)
@@ -1440,7 +1441,7 @@ describe('feeds use case interactions', function() {
           mergedValidator.received(1).validate(Arg.deepEquals(constantParams) as any)
         })
 
-        it('does not save the preview feed', async function() {
+        it('does not save the preview feed', async function () {
 
           const feed = {
             service: service.id,
@@ -1463,9 +1464,9 @@ describe('feeds use case interactions', function() {
           expect(app.feedRepo.db).to.be.empty
         })
 
-        it('does not fetch content when skip flag is true', async function() {
+        it('does not fetch content when skip flag is true', async function () {
 
-          const variableParams = { limit: 1000, timestampBetween: [ 12345, 23456 ] }
+          const variableParams = { limit: 1000, timestampBetween: [12345, 23456] }
           const constantParams = { limit: 25 }
           const topic: FeedTopic = Object.assign({
             paramsSchema: {
@@ -1487,7 +1488,7 @@ describe('feeds use case interactions', function() {
           }
           const mergedValidator = Sub.for<JsonValidator>()
           const variableValidator = Sub.for<JsonValidator>()
-          serviceConn.fetchAvailableTopics().resolves([ topic ])
+          serviceConn.fetchAvailableTopics().resolves([topic])
           app.jsonSchemaService.validateSchema(Arg.deepEquals(topic.paramsSchema)).resolves(mergedValidator)
           app.jsonSchemaService.validateSchema(Arg.deepEquals(feed.variableParamsSchema)).resolves(variableValidator)
           mergedValidator.validate(Arg.all()).resolves(null)
@@ -1512,14 +1513,14 @@ describe('feeds use case interactions', function() {
           serviceConn.didNotReceive().fetchTopicContent(Arg.all())
         })
 
-        it('does not skip fetching the content if the skip is not strictly equal to true', async function() {
+        it('does not skip fetching the content if the skip is not strictly equal to true', async function () {
 
           const topic: FeedTopic = topics[0]
           const feed: FeedCreateMinimal = {
             service: service.id,
             topic: topics[0].id,
           }
-          serviceConn.fetchAvailableTopics().resolves([ topic ])
+          serviceConn.fetchAvailableTopics().resolves([topic])
           serviceConn.fetchTopicContent(topic.id, Arg.deepEquals({} as JsonObject)).resolves({
             topic: topic.id,
             items: <FeatureCollection<any>>{
@@ -1553,14 +1554,14 @@ describe('feeds use case interactions', function() {
           serviceConn.received(1).fetchTopicContent(Arg.all())
         })
 
-        describe('behaviors shared with creating a feed', function() {
+        describe('behaviors shared with creating a feed', function () {
           testSharedBehaviorFor.call(this.ctx, 'previewFeed')
         })
       })
 
-      describe('saving the feed', function() {
+      describe('saving the feed', function () {
 
-        it('saves the feed with minimal inputs', async function() {
+        it('saves the feed with minimal inputs', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1588,7 +1589,7 @@ describe('feeds use case interactions', function() {
           expect(inDb).to.deep.include({ ...created, service: created.service.id, topic: created.topic.id })
         })
 
-        it('saves a feed from a preview', async function() {
+        it('saves a feed from a preview', async function () {
 
           const feed: FeedCreateMinimal = {
             service: service.id,
@@ -1602,7 +1603,7 @@ describe('feeds use case interactions', function() {
           }
           serviceConn.fetchAvailableTopics().resolves(topics)
 
-          const previewReq = requestBy(adminPrincipal, { feed, variableParams: { bbox: [ 20, 20, 21, 21 ]}})
+          const previewReq = requestBy(adminPrincipal, { feed, variableParams: { bbox: [20, 20, 21, 21] } })
           const previewRes = await app.previewFeed(previewReq)
 
           expect(previewRes.error).to.be.null
@@ -1619,7 +1620,7 @@ describe('feeds use case interactions', function() {
           expect(app.feedRepo.db.get(createRes.success!.id)).to.deep.include(feed)
         })
 
-        it('registers the topic icon for immediate fetch', async function() {
+        it('registers the topic icon for immediate fetch', async function () {
 
           const icon: StaticIcon = {
             id: uniqid(),
@@ -1653,7 +1654,7 @@ describe('feeds use case interactions', function() {
             Arg.is(x => x === StaticIconImportFetch.EagerAwait))
         })
 
-        it('registers the feed icon url for immediate fetch', async function() {
+        it('registers the feed icon url for immediate fetch', async function () {
           const icon: StaticIcon = {
             id: uniqid(),
             sourceUrl: new URL('test:///icon.png'),
@@ -1687,22 +1688,44 @@ describe('feeds use case interactions', function() {
             Arg.is(x => x === StaticIconImportFetch.EagerAwait))
         })
 
-        it('fails if the immediate icon fetch fails', async function() {
-          expect.fail('todo')
+        it('fails if the immediate icon fetch fails', async function () {
+          const feed: FeedCreateMinimal = {
+            service: service.id,
+            topic: uniqid(),
+            title: 'Save From Preview',
+            constantParams: {
+              limit: 50
+            },
+            itemsHaveIdentity: true,
+            itemsHaveSpatialDimension: true,
+            icon: {
+              sourceUrl: new URL('test:///icon.png')
+            }
+          }
+          const req: CreateFeedRequest = requestBy(adminPrincipal, { feed })
+          app.iconRepo.findOrImportBySourceUrl(
+            Arg.is(x => String(x) === String(feed.icon?.sourceUrl)),
+            Arg.is(x => x === StaticIconImportFetch.EagerAwait)
+          ).resolves(new UrlResolutionError(new URL('test:///icon.png')))
+          const res = await app.createFeed(req)
+
+          expect(res.success).to.be.null
+          const err = res.error as EntityNotFoundError | undefined
+          expect(err).to.be.instanceOf(MageError)
         })
 
-        describe('behaviors shared with previewing a feed', function() {
+        describe('behaviors shared with previewing a feed', function () {
           testSharedBehaviorFor.call(this.ctx, 'createFeed')
         })
       })
     })
 
-    describe('single feed operations', function() {
+    describe('single feed operations', function () {
 
       let feeds: Feed[]
       let services: { service: FeedService, topics: Required<FeedTopic>[], conn: SubstituteOf<FeedServiceConnection> }[]
 
-      beforeEach(function() {
+      beforeEach(function () {
         services = [
           {
             service: Object.freeze({
@@ -1797,7 +1820,7 @@ describe('feeds use case interactions', function() {
             constantParams: {
               limit: 50
             },
-            updateFrequencySeconds:  10 * 60
+            updateFrequencySeconds: 10 * 60
           })
         ]
         app.registerServiceTypes(...someServiceTypes)
@@ -1810,9 +1833,9 @@ describe('feeds use case interactions', function() {
         }
       })
 
-      describe('getting an expanded feed', function() {
+      describe('getting an expanded feed', function () {
 
-        it('returns the feed with redacted service and topic populated', async function() {
+        it('returns the feed with redacted service and topic populated', async function () {
 
           const redactedConfig = { redacted: true }
           const feedExpanded: FeedExpanded = Object.assign({ ...feeds[0] }, {
@@ -1828,7 +1851,7 @@ describe('feeds use case interactions', function() {
           someServiceTypes[1].received(1).redactServiceConfig(Arg.deepEquals(services[0].service.config))
         })
 
-        it('checks permission for getting the feed', async function() {
+        it('checks permission for getting the feed', async function () {
 
           app.permissionService.revokeListFeeds(adminPrincipal.user)
           const req: GetFeedRequest = requestBy(adminPrincipal, { feed: feeds[0].id })
@@ -1840,14 +1863,14 @@ describe('feeds use case interactions', function() {
         })
       })
 
-      describe('updating a feed', function() {
+      describe('updating a feed', function () {
 
-        beforeEach(function() {
+        beforeEach(function () {
           app.permissionService.grantCreateFeed(adminPrincipal.user, feeds[0].service)
           app.permissionService.grantCreateFeed(adminPrincipal.user, feeds[1].service)
         })
 
-        it('saves the new feed attributes', async function() {
+        it('saves the new feed attributes', async function () {
 
           const feedMod: Omit<Required<FeedUpdateMinimal>, 'service' | 'topic'> = {
             id: feeds[1].id,
@@ -1887,7 +1910,7 @@ describe('feeds use case interactions', function() {
           expect(inDb).to.deep.equal(referenced)
         })
 
-        it('does not allow changing the service and topic', async function() {
+        it('does not allow changing the service and topic', async function () {
 
           const feedMod: FeedUpdateMinimal & Pick<Feed, 'service' | 'topic'> = Object.freeze({
             id: feeds[0].id,
@@ -1904,14 +1927,14 @@ describe('feeds use case interactions', function() {
           expect(res.error?.message).to.contain('topic')
           const errData = res.error?.data as KeyPathError[]
           expect(errData).to.have.deep.members([
-            [ 'changing feed service is not allowed', 'feed', 'service' ],
-            [ 'changing feed topic is not allowed', 'feed', 'topic' ]
+            ['changing feed service is not allowed', 'feed', 'service'],
+            ['changing feed topic is not allowed', 'feed', 'topic']
           ])
           const inDb = app.feedRepo.db.get(feeds[0].id)
           expect(inDb).to.deep.equal(feeds[0])
         })
 
-        it('accepts service and topic if they match the existing feed', async function() {
+        it('accepts service and topic if they match the existing feed', async function () {
 
           const feedMod: FeedUpdateMinimal & Pick<Feed, 'service' | 'topic'> = Object.freeze({
             id: feeds[0].id,
@@ -1930,13 +1953,13 @@ describe('feeds use case interactions', function() {
           expect(inDb).to.deep.include({ id: feedMod.id, title: feedMod.title, service: feedMod.service, topic: feedMod.topic })
         })
 
-        it('applies topic attributes for attributes the update does not specify', async function() {
+        it('applies topic attributes for attributes the update does not specify', async function () {
 
           const feedMod: FeedUpdateMinimal = {
             id: feeds[1].id
           }
           const topicIcon: StaticIcon = {
-            id:  uniqid(),
+            id: uniqid(),
             sourceUrl: services[1].topics[0].icon.sourceUrl,
             registeredTimestamp: Date.now()
           }
@@ -1964,7 +1987,7 @@ describe('feeds use case interactions', function() {
           app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
         })
 
-        it('does not apply topic attributes for explicit null update keys', async function() {
+        it('does not apply topic attributes for explicit null update keys', async function () {
 
           const feedMod: Required<FeedUpdateMinimal> = {
             id: feeds[0].id,
@@ -1998,7 +2021,7 @@ describe('feeds use case interactions', function() {
           expect(res.success).to.deep.equal(Object.assign({ ...expected }, { service: services[0].service, topic: services[0].topics[0] }))
         })
 
-        it('registers updated icon urls', async function() {
+        it('registers updated icon urls', async function () {
 
           const feedMod: FeedUpdateMinimal = {
             id: feeds[0].id,
@@ -2048,7 +2071,7 @@ describe('feeds use case interactions', function() {
           app.iconRepo.received(2).findOrImportBySourceUrl(Arg.all())
         })
 
-        it('accepts and parses icon urls as strings', async function() {
+        it('accepts and parses icon urls as strings', async function () {
 
           const feedMod: UpdateFeedRequest['feed'] = {
             id: feeds[0].id,
@@ -2076,7 +2099,7 @@ describe('feeds use case interactions', function() {
           })
         })
 
-        it('returns invalid input error if icon url strings are invalid', async function() {
+        it('returns invalid input error if icon url strings are invalid', async function () {
 
           const feedMod: UpdateFeedRequest['feed'] = {
             id: feeds[0].id,
@@ -2092,12 +2115,12 @@ describe('feeds use case interactions', function() {
           const err = res.error as InvalidInputError
           expect(err.code).to.equal(ErrInvalidInput)
           expect(err.data).to.have.lengthOf(2)
-          expect(err.data).to.deep.include([ 'invalid icon url', 'feed', 'icon' ])
-          expect(err.data).to.deep.include([ 'invalid icon url', 'feed', 'mapStyle', 'icon' ])
+          expect(err.data).to.deep.include(['invalid icon url', 'feed', 'icon'])
+          expect(err.data).to.deep.include(['invalid icon url', 'feed', 'mapStyle', 'icon'])
           app.iconRepo.didNotReceive().findOrImportBySourceUrl(Arg.all())
         })
 
-        it('checks permission for updating the feed', async function() {
+        it('checks permission for updating the feed', async function () {
 
           const feedMod: FeedUpdateMinimal = {
             id: feeds[0].id,
@@ -2113,14 +2136,14 @@ describe('feeds use case interactions', function() {
         })
       })
 
-      describe('deleting a feed', function() {
+      describe('deleting a feed', function () {
 
-        beforeEach(function() {
+        beforeEach(function () {
           app.permissionService.grantCreateFeed(adminPrincipal.user, services[0].service.id)
           app.permissionService.grantCreateFeed(adminPrincipal.user, services[1].service.id)
         })
 
-        it('deletes the feed id from referencing events then the feed', async function() {
+        it('deletes the feed id from referencing events then the feed', async function () {
 
           app.eventRepo.removeFeedsFromEvents(Arg.any()).mimicks(async (feed: FeedId): Promise<number> => {
             if (!app.feedRepo.db.has(feed)) {
@@ -2138,7 +2161,7 @@ describe('feeds use case interactions', function() {
           app.eventRepo.received(1).removeFeedsFromEvents(req.feed)
         })
 
-        it('checks permission for deleting a feed', async function() {
+        it('checks permission for deleting a feed', async function () {
 
           const req: DeleteFeedRequest = requestBy(bannedPrincipal, { feed: feeds[1].id })
           const res = await app.deleteFeed(req)
@@ -2154,7 +2177,7 @@ describe('feeds use case interactions', function() {
           expect(inDb).to.deep.equal(feeds[1])
         })
 
-        it('fails if the feed id is not found', async function() {
+        it('fails if the feed id is not found', async function () {
 
           const req: DeleteFeedRequest = requestBy(adminPrincipal, { feed: feeds[0].id + '-nope' })
           const res = await app.deleteFeed(req)
@@ -2170,9 +2193,9 @@ describe('feeds use case interactions', function() {
     })
 
 
-    describe('listing all feeds', function() {
+    describe('listing all feeds', function () {
 
-      it('returns all the feeds', async function() {
+      it('returns all the feeds', async function () {
 
         const feeds: Feed[] = [
           {
@@ -2206,7 +2229,7 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.deep.equal(feeds)
       })
 
-      it('checks permission for listing all feeds', async function() {
+      it('checks permission for listing all feeds', async function () {
 
         const req = requestBy(bannedPrincipal)
         let res = await app.listFeeds(req)
@@ -2226,18 +2249,18 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.deep.equal([])
       })
 
-      xit('returns all the feeds grouped under populated service', async function() {
+      xit('returns all the feeds grouped under populated service', async function () {
         expect.fail('todo: this would probably be more useful; maybe even all service types, services, feeds, and even cached topic descriptors')
       })
     })
 
-    describe('listing feeds for a service', function() {
+    describe('listing feeds for a service', function () {
 
       let targetService: FeedServiceId
       let serviceFeeds: Feed[]
       let otherFeed: Feed
 
-      beforeEach(function() {
+      beforeEach(function () {
         targetService = uniqid()
         serviceFeeds = [
           {
@@ -2283,7 +2306,7 @@ describe('feeds use case interactions', function() {
           })
       })
 
-      it('returns all the feeds that reference a service', async function() {
+      it('returns all the feeds that reference a service', async function () {
 
         const req: ListServiceFeedsRequest = requestBy(adminPrincipal, { service: targetService })
         const res = await app.listServiceFeeds(req)
@@ -2292,7 +2315,7 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.deep.equal(serviceFeeds)
       })
 
-      it('checks permission for listing service feeds', async function() {
+      it('checks permission for listing service feeds', async function () {
 
         const req: ListServiceFeedsRequest = requestBy(bannedPrincipal, { service: targetService })
         let res = await app.listServiceFeeds(req)
@@ -2311,7 +2334,7 @@ describe('feeds use case interactions', function() {
         expect(res.success).to.deep.equal(serviceFeeds)
       })
 
-      it('fails if the service does not exist', async function() {
+      it('fails if the service does not exist', async function () {
 
         const req: ListServiceFeedsRequest = requestBy(adminPrincipal, { service: uniqid() })
         const res = await app.listServiceFeeds(req)
@@ -2326,13 +2349,13 @@ describe('feeds use case interactions', function() {
     })
   })
 
-  describe('fetching feed content', function() {
+  describe('fetching feed content', function () {
 
     let serviceType: SubstituteOf<RegisteredFeedServiceType>
     let feed: Feed
     let service: FeedService
 
-    beforeEach(function() {
+    beforeEach(function () {
       serviceType = someServiceTypes[0]
       feed = {
         id: uniqid(),
@@ -2362,13 +2385,13 @@ describe('feeds use case interactions', function() {
       app.permissionService.grantFetchFeedContent(adminPrincipal.user, feed.id)
     })
 
-    it('fetches content from the feed topic', async function() {
+    it('fetches content from the feed topic', async function () {
 
       const expectedContent: FeedContent = {
         feed: feed.id,
         topic: feed.topic,
         variableParams: {
-          bbox: [ -120, 40, -119, 41 ],
+          bbox: [-120, 40, -119, 41],
           maxAgeInDays: 3
         },
         items: {
@@ -2378,7 +2401,7 @@ describe('feeds use case interactions', function() {
               type: 'Feature',
               geometry: {
                 type: 'Point',
-                coordinates: [ -119.67, 40.25 ]
+                coordinates: [-119.67, 40.25]
               },
               properties: {
                 when: Date.now() - 1000 * 60 * 60 * 13,
@@ -2388,7 +2411,7 @@ describe('feeds use case interactions', function() {
           ]
         }
       }
-      const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams )
+      const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams)
       const conn = Sub.for<FeedServiceConnection>()
       serviceType.createConnection(Arg.deepEquals(service.config)).resolves(conn)
       conn.fetchAvailableTopics().resolves([
@@ -2405,11 +2428,11 @@ describe('feeds use case interactions', function() {
       expect(res.success).to.deep.equal(expectedContent)
     })
 
-    it('validates the parameters', async function() {
+    it('validates the parameters', async function () {
       expect.fail('todo')
     })
 
-    it('checks permission to fetch feed content', async function() {
+    it('checks permission to fetch feed content', async function () {
 
       const req: FetchFeedContentRequest = requestBy(bannedPrincipal, { feed: feed.id })
       let res = await app.fetchFeedContent(req)
@@ -2429,7 +2452,7 @@ describe('feeds use case interactions', function() {
       expect(res.success).to.be.an('object')
     })
 
-    it('removes properties that the feed does not define', async function() {
+    it('removes properties that the feed does not define', async function () {
 
       const itemPropertiesSchema: JSONSchema4 = {
         type: 'object',
@@ -2453,7 +2476,7 @@ describe('feeds use case interactions', function() {
             {
               id: 100,
               type: 'Feature',
-              geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+              geometry: { type: 'Point', coordinates: [1, 2] },
               properties: {
                 prop1: 'nor',
                 prop2: 10,
@@ -2464,7 +2487,7 @@ describe('feeds use case interactions', function() {
             {
               id: 200,
               type: 'Feature',
-              geometry: { type: 'Point', coordinates: [ 10, 20 ] },
+              geometry: { type: 'Point', coordinates: [10, 20] },
               properties: {
                 prop1: 'ler',
                 prop2: 9,
@@ -2477,7 +2500,7 @@ describe('feeds use case interactions', function() {
       app.registerFeeds(definedPropertiesFeed)
       app.permissionService.grantFetchFeedContent(adminPrincipal.user, definedPropertiesFeed.id)
       const conn = Sub.for<FeedServiceConnection>()
-      conn.fetchAvailableTopics().resolves([ { id: definedPropertiesFeed.topic } as FeedTopic ])
+      conn.fetchAvailableTopics().resolves([{ id: definedPropertiesFeed.topic } as FeedTopic])
       conn.fetchTopicContent(Arg.all()).resolves(extraPropertiesContent)
       serviceType.createConnection(Arg.any()).resolves(conn)
       const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: definedPropertiesFeed.id })
@@ -2659,7 +2682,7 @@ class TestPermissionService implements FeedsPermissionService {
       [ListServiceTopics.name]: true,
       [ListAllFeeds.name]: true,
     }
-  } as { [user: string]: { [privilege: string]: boolean }}
+  } as { [user: string]: { [privilege: string]: boolean } }
   readonly serviceAcls = new Map<FeedServiceId, Map<UserId, Set<string>>>()
   readonly feedAcls = new Map<FeedId, Set<UserId>>()
 
