@@ -126,7 +126,13 @@ describe('feeds permission service', function() {
 
   describe('ensuring fetch feed content permission', function() {
     it('always denies', async function() {
-      expect.fail('todo')
+      let context = contextWithPermissions('FEEDS_FETCH_CONTENT')
+      let denied = await permissions.ensureFetchFeedContentPermissionFor(context)
+
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied?.code).to.equal(ErrPermissionDenied)
+      expect(denied?.data.permission).to.equal('FEEDS_FETCH_CONTENT')
+      expect(denied?.data.subject).to.equal(context.requestingPrincipal().username)
     })
   })
 })
