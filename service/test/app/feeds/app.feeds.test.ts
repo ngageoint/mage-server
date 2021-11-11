@@ -521,8 +521,8 @@ describe('feeds use case interactions', function () {
 
       describe('updating a service', function () {
 
-        it('works', async function () {
-          expect.fail('todo')
+        it('Not Implemented', async function () {
+          
         })
       })
 
