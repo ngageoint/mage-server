@@ -2429,7 +2429,46 @@ describe('feeds use case interactions', function () {
     })
 
     it('validates the parameters', async function () {
-      expect.fail('todo')
+      const expectedContent: FeedContent = {
+        feed: feed.id,
+        topic: feed.topic,
+        variableParams: {
+          bbox: [-120, 40, -119, 41],
+          maxAgeInDays: 3
+        },
+        items: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [-119.67, 40.25]
+              },
+              properties: {
+                when: Date.now() - 1000 * 60 * 60 * 13,
+                address: '123 Test Ave. Testington, Wadata 56789'
+              }
+            }
+          ]
+        },
+        pageCursor: {}
+      }
+      const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams)
+      const conn = Sub.for<FeedServiceConnection>()
+      serviceType.createConnection(Arg.deepEquals(service.config)).resolves(conn)
+      conn.fetchAvailableTopics().resolves([
+        { id: feed.topic } as FeedTopic
+      ])
+      conn.fetchTopicContent(feed.topic, mergedParams).resolves(expectedContent)
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, {
+        feed: feed.id,
+        variableParams: expectedContent.variableParams
+      })
+      const res = await app.fetchFeedContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(expectedContent)
     })
 
     it('checks permission to fetch feed content', async function () {
