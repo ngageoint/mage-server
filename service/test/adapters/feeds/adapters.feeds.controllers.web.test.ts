@@ -1050,7 +1050,78 @@ invalid request
     })
 
     it('tests all the input parameters', async function () {
-      expect.fail('todo')
+      const service = uniqid()
+      const topic = uniqid()
+
+      const postBody = {
+        title: 'Created Feed',
+        summary: 'The feed we created',
+        icon: { id: uniqid() },
+        constantParams: {
+          test: true
+        },
+        variableParamsSchema: <JSONSchema4>{
+          type: 'object',
+          properties: {
+            where: {
+              type: 'array', items: { type: 'number' }
+            },
+            when: {
+              type: 'number'
+            }
+          }
+        },
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        itemTemporalProperty: 'date',
+        itemPrimaryProperty: 'title',
+        itemSecondaryProperty: 'summary',
+        updateFrequencySeconds: 60,
+        mapStyle: {
+          stroke: 'abcdef',
+          strokeWidth: 2.5
+        },
+        itemPropertiesSchema: <JSONSchema4>{
+          type: 'object',
+          title: 'Properties of Items'
+        }
+      }
+
+      const feedMinimal: FeedMinimalVerbose = {
+        ...postBody,
+        service,
+        topic
+      }
+
+      const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
+
+      const feed: FeedExpanded = {
+        id: uniqid(),
+        service: {
+          id: service,
+          serviceType: 'servicetype1',
+          title: 'Service 1',
+          summary: 'Service 1 summary',
+          config: { test: true }
+        },
+        topic: {
+          id: topic,
+          title: 'Topic 1'
+        },
+        ...postBody
+      }
+
+      appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.success<FeedExpanded, unknown>(feed))
+
+      const res = await client
+        .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
+        .send(postBody)
+
+      expect(res.status).to.equal(201)
+      expect(res.header.location).to.equal(`${rootPath}/${feed.id}`)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal(feed)
     })
 
     it('returns 403 for permission denied error', async function () {
