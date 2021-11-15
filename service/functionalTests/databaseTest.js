@@ -1,6 +1,6 @@
 var expect = require("chai").expect
- , role = require('../models/role')
- , user = require('../models/user');
+ , role = require('../lib/models/role')
+ , user = require('../lib/models/user');
 
 // Connect to database and perform testing
   // Before : create a user
