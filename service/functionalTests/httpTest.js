@@ -114,6 +114,7 @@ describe("MAGE-server API JSON test", function () {
         return done(err);
       }
 
+      expect(response.statusCode).to.equal(200);
       const jsonObj = JSON.parse(body);
       const username = jsonObj.username;
       expect(username).to.equal(testUser.username);
