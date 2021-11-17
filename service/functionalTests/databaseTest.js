@@ -1,39 +1,49 @@
-var expect = require("chai").expect
- , role = require('../lib/models/role')
- , user = require('../lib/models/user');
+"use strict";
+
+const expect = require("chai").expect
+  , role = require('../lib/models/role')
+  , user = require('../lib/models/user')
+  , AuthenticationConfiguration = require('../lib/models/authenticationconfiguration');
 
 // Connect to database and perform testing
-  // Before : create a user
-  // After : delete a user
-  // query a user by name
-  // update a user
+// Before : create a user
+// After : delete a user
+// query a user by name
+// update a user
 
-describe("Direct database tests", function(){
+describe("Direct database tests", function () {
 
   // ----- Create a test user before the tests begin
-  before(function(done){
+  before(function (done) {
 
     // Get the user role
-    role.getRole("USER_ROLE",function(err, role){
-      if(err){
+    role.getRole("USER_ROLE", function (err, role) {
+      if (err) {
         throw "Error getting user role from database: " + err;
       }
 
-      // Create a user
-      var testUser = {
-        "displayName": "testUser",
-        "username": "testUser",
-        "firstname": "test",
-        "lastname": "user",
-        "email": "test@caci.com",
-        "phones": [],
-        "password": "password",
-        "active": true,
-        "roleId": role.id,
-        "avatar": null,
-        "icon": null
-      };
-      user.createUser(testUser, function(err) {
+      AuthenticationConfiguration.getConfiguration('local', 'local').then(config => {
+        // Create a user
+        const testUser = {
+          displayName: "testUser",
+          username: "testUser",
+          email: "test@caci.com",
+          active: true,
+          roleId: role.id,
+          authentication: {
+            type: "local",
+            password: "passwordPassword0987654321",
+            authenticationConfigurationId: config._id
+          }
+        };
+        user.createUser(testUser, function (err, newUser) {
+          if (err) return done(err);
+
+          expect(newUser).to.not.be.null;
+          expect(newUser._id).to.not.be.null;
+          done();
+        });
+      }).catch(err => {
         done(err);
       });
     });
@@ -41,12 +51,12 @@ describe("Direct database tests", function(){
 
 
   // ----- Clean up after the tests are done
-  after(function(done){
+  after(function (done) {
     // get the test user
-    user.getUserByUsername("testUser", function(err, existingUser){
+    user.getUserByUsername("testUser", function (err, existingUser) {
       if (err) return done(err);
 
-      user.deleteUser(existingUser, function(err){
+      user.deleteUser(existingUser, function (err) {
         done(err);
       });
     });
@@ -57,29 +67,29 @@ describe("Direct database tests", function(){
   //-------------- Begin real tests --------------
 
   // query a user from the database
-  it("Get test user from database, verify first name = test", function(done){
-    user.getUserByUsername("testUser",function(err, user){
-      expect(user.username).to.equal('testuser');
+  it("Get test user from database, verify first name = test", function (done) {
+    user.getUserByUsername("testUser", function (err, existingUser) {
+      expect(existingUser.displayName).to.equal('testUser');
       done(err);
     });
   });
 
 
   // update a User
-  it("Update a test user's information in the database", function(done){
-    var updatedEmailAddr = "updatedEmail@caci.com";
+  it("Update a test user's information in the database", function (done) {
+    const updatedEmailAddr = "updatedEmail@caci.com";
     // Get the existing User
-    user.getUserByUsername("testUser", function(err, existingUser){
-      if(err) return done(err);
+    user.getUserByUsername("testUser", function (err, existingUser) {
+      if (err) return done(err);
 
       // Update the email address
       existingUser.email = updatedEmailAddr;
-      user.updateUser(existingUser, function(err) {
-        if(err) return done(err);
+      user.updateUser(existingUser, function (err) {
+        if (err) return done(err);
 
         // Get the user one more time to verify the update worked
-        user.getUserByUsername("testUser", function(err, updatedUser){
-          if(err) return done(err);
+        user.getUserByUsername("testUser", function (err, updatedUser) {
+          if (err) return done(err);
           expect(updatedUser.email).to.equal(updatedEmailAddr);
           done();
         });
