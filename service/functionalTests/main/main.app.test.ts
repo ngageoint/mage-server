@@ -38,7 +38,7 @@ describe('bootstrapping', function () {
           expect(newUser).to.not.be.null;
           expect(newUser._id).to.not.be.null;
 
-          const requestOptions = {
+          const signinOptions = {
             url: conUrl + "/auth/local/signin",
             method: 'POST',
             form: {
@@ -46,14 +46,30 @@ describe('bootstrapping', function () {
               password: testUser.authentication.password
             }
           };
-          request(requestOptions, function (err: any, response: any, body: any) {
+          request(signinOptions, function (err: any, response: any, body: any) {
             if (err) return done(err);
 
             expect(response.statusCode).to.equal(200);
 
-            const tokenObj = JSON.parse(body);
-            token = tokenObj.token;
-            done();
+            const signinToken = JSON.parse(body);
+
+            const tokenOptions = {
+              url: conUrl + '/auth/token?createDevice=false',
+              method: 'POST',
+              form: {
+                uid: '12345'
+              },
+              headers: { 'Authorization': 'Bearer ' + signinToken.token }
+            }
+            request(tokenOptions, function (err: any, response: any, body: any) {
+              if (err) return done(err);
+
+              expect(response.statusCode).to.equal(200);
+
+              const tokenObj = JSON.parse(body);
+              token = tokenObj.token;
+              done();
+            });
           });
         });
       }).catch((err: any) => {
@@ -63,17 +79,35 @@ describe('bootstrapping', function () {
   });
 
   after(function (done) {
-    // get the test user
-    user.getUserByUsername(testUser.username, function (err: any, existingUser: any) {
-      if (err) return done(err);
+    const logoutOptions = {
+      url: conUrl + '/api/logout',
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    };
+    request(logoutOptions, function (err: any) {
+      // get the test user
+      user.getUserByUsername(testUser.username, function (err: any, existingUser: any) {
+        if (err) return done(err);
 
-      user.deleteUser(existingUser, function (err: any) {
-        done(err);
+        user.deleteUser(existingUser, function (err: any) {
+          done(err);
+        });
       });
     });
   });
 
-  it('applies authentication middleware to the web controllers', async function () {
-    expect.fail('todo')
+  it('applies authentication middleware to the web controllers', function (done) {
+    const options = {
+      url: conUrl + "/api/events/",
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer ' + token }
+    };
+
+    request(options, function (err: any, response: any, body: any) {
+      if (err) return done(err);
+
+      expect(response.statusCode).to.equal(200);
+      done();
+    });
   })
 })

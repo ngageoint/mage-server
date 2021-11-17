@@ -38,7 +38,7 @@ describe("MAGE-server API JSON test", function () {
       recorder.before();
     }
     // Make a request for a token before the tests execute
-    const tokenOptions = {
+    const signinOptions = {
       url: conUrl + "/auth/local/signin",
       method: 'POST',
       form: {
@@ -47,12 +47,29 @@ describe("MAGE-server API JSON test", function () {
         'password': testUser.password
       }
     };
-    request(tokenOptions, function (err, response, body) {
+    request(signinOptions, function (err, response, body) {
       if (err) return done(err);
 
-      const tokenObj = JSON.parse(body);
-      myToken = tokenObj.token;
-      done();
+      expect(response.statusCode).to.equal(200);
+
+      const signinToken = JSON.parse(body);
+      const tokenOptions = {
+        url: conUrl + '/auth/token?createDevice=false',
+        method: 'POST',
+        form: {
+          uid: '12345'
+        },
+        headers: { 'Authorization': 'Bearer ' + signinToken.token }
+      }
+      request(tokenOptions, function (err, response, body) {
+        if (err) return done(err);
+
+        expect(response.statusCode).to.equal(200);
+
+        const tokenObj = JSON.parse(body);
+        myToken = tokenObj.token;
+        done();
+      });
     });
   });
 
@@ -61,7 +78,14 @@ describe("MAGE-server API JSON test", function () {
     if (recordCalls) {
       recorder.after();
     }
-    done();
+    const logoutOptions = {
+      url: conUrl + '/api/logout',
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + myToken }
+    };
+    request(logoutOptions, function (err) {
+      done(err);
+    });
   });
 
 
