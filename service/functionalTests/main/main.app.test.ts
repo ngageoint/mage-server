@@ -9,18 +9,19 @@ const request = require("request")
 describe('bootstrapping', function () {
   const conUrl = config.localServer.location;
   let token: any;
-  let testUser: any;
+  let noRolesUser: any;
+  let adminUser: any;
 
   before(function (done) {
 
-    role.getRole("USER_NO_EDIT_ROLE", function (err: any, role: any) {
+    role.getRole("ADMIN_ROLE", function (err: any, role: any) {
       if (err) {
         throw "Error getting user role from database: " + err;
       }
 
       AuthenticationConfiguration.getConfiguration('local', 'local').then((config: { _id: any; }) => {
         // Create a user
-        testUser = {
+        noRolesUser = {
           displayName: "testUser",
           username: "testUser",
           email: "test@caci.com",
@@ -32,7 +33,7 @@ describe('bootstrapping', function () {
             authenticationConfigurationId: config._id
           }
         };
-        user.createUser(testUser, function (err: any, newUser: any) {
+        user.createUser(noRolesUser, function (err: any, newUser: any) {
           if (err) return done(err);
 
           expect(newUser).to.not.be.null;
@@ -42,8 +43,8 @@ describe('bootstrapping', function () {
             url: conUrl + "/auth/local/signin",
             method: 'POST',
             form: {
-              username: testUser.username,
-              password: testUser.authentication.password
+              username: noRolesUser.username,
+              password: noRolesUser.authentication.password
             }
           };
           request(signinOptions, function (err: any, response: any, body: any) {
@@ -85,8 +86,7 @@ describe('bootstrapping', function () {
       headers: { 'Authorization': 'Bearer ' + token }
     };
     request(logoutOptions, function (err: any) {
-      // get the test user
-      user.getUserByUsername(testUser.username, function (err: any, existingUser: any) {
+      user.getUserByUsername(noRolesUser.username, function (err: any, existingUser: any) {
         if (err) return done(err);
 
         user.deleteUser(existingUser, function (err: any) {
@@ -94,19 +94,34 @@ describe('bootstrapping', function () {
         });
       });
     });
-  });
+  })
 
   it('applies authentication middleware to the web controllers', function (done) {
-    const options = {
+    const getEventsOptions = {
       url: conUrl + "/api/events/",
       method: 'GET',
       headers: { 'Authorization': 'Bearer ' + token }
     };
 
-    request(options, function (err: any, response: any, body: any) {
+    request(getEventsOptions, function (err: any, response: any, body: any) {
       if (err) return done(err);
 
       expect(response.statusCode).to.equal(200);
+
+      const events = JSON.parse(body);
+      expect(Array.isArray(events)).to.be.true;
+
+      /*const updateEventOptions = {
+        url: conUrl + "/api/events/",
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token }
+      };
+      request(updateEventOptions, function (err: any, response: any, body: any) {
+        if (err) return done(err);
+ 
+        expect(response.statusCode).to.equal(401);
+        done();
+      });*/
       done();
     });
   })
