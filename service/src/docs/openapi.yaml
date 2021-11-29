@@ -20,6 +20,7 @@ tags:
   - name: Device
   - name: Event
   - name: Export
+  - name: Feed
   - name: Layer
   - name: Location
   - name: Observation
@@ -1873,6 +1874,25 @@ paths:
       responses:
         204:
           description: Success - the attachment was deleted.
+  
+  /api/events/{eventId}/feeds:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedsForEvent
+      description: >
+        Get a list of feeds associated with an event.
+      responses:
+        200:
+          description: Success - return an array of feed documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
+
   /api/layers:
     get:
       tags: [ Layer ]
@@ -3369,6 +3389,48 @@ components:
         enabled:
           type: boolean
         settings:
+          type: object
+    Feed:
+      required:
+        - id
+        - service
+        - topic
+        - title
+        - itemsHaveIdentity
+        - itemsHaveSpatialDimension
+      type: object
+      properties:
+        id:
+          type: string
+        service:
+          type: string
+        topic:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        icon:
+          type: object
+        constantParams:
+          type: object
+        variableParamsSchema:
+          type: object
+        updateFrequencySeconds:
+          type: integer
+        itemsHaveIdentity:
+          type: boolean
+        itemsHaveSpatialDimension:
+          type: boolean
+        itemTemporalProperty:
+          type: string
+        itemPrimaryProperty:
+          type: string
+        itemSecondaryProperty:
+          type: string
+        mapStyle:
+          type: object
+        itemPropertiesSchema:
           type: object
 
   parameters:
