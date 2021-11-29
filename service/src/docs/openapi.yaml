@@ -1880,7 +1880,7 @@ paths:
       - $ref: '#/components/parameters/eventIdInPath'
     get:
       tags: [ Feed ]
-      operationId: getFeedsForEvent
+      operationId: listEventFeeds
       description: >
         Get a list of feeds associated with an event.
       responses:
@@ -1892,6 +1892,22 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+    post:
+      tags: [ Feed ]
+      operationId: addFeedToEvent
+      description: >
+        Add a feed to an event.
+      requestBody:
+        description: >
+          Event id and feed id to connect.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedAddToEvent'
+        required: true
+      responses:
+        200:
+          description: Success
 
   /api/layers:
     get:
@@ -3390,6 +3406,15 @@ components:
           type: boolean
         settings:
           type: object
+    EventRef:
+      description: >
+        `EventRef` is an object that references an existing event document with
+        the required `id` property.  MAGE ignores any properties other than
+        `id`.
+      type: object
+      allOf:
+        - { $ref: '#/components/schemas/EventRef' }
+        - { type: object, required: [ id ] }
     Feed:
       required:
         - id
@@ -3432,6 +3457,13 @@ components:
           type: object
         itemPropertiesSchema:
           type: object
+    FeedAddToEvent:
+      required:
+        - feedId
+      type: object
+      properties:
+        feedId:
+          type: string
 
   parameters:
     userIdInPath:
