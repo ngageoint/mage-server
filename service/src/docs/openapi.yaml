@@ -1891,6 +1891,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Event not found
           content:
@@ -1917,14 +1923,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MageEvent'
-        404:
-          description: Event not found
+        400:
+          description: Missing feed id
           content:
             application/json:
               schema:
                 type: string
-        400:
-          description: Missing feed id
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
           content:
             application/json:
               schema:
@@ -1943,6 +1955,18 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Feed' }
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
   /api/events/{eventId}/feeds/{feedId}/content:
     parameters:
        - $ref: '#/components/parameters/eventIdInPath'
@@ -1960,6 +1984,22 @@ paths:
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedContent'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
 
   /api/layers:
     get:
@@ -3568,6 +3608,24 @@ components:
           type: object
         acl:
           $ref: '#/components/schemas/ACL'
+    FeedContent:
+      required:
+        - feed
+        - topic
+        - items
+      properties:
+        feed:
+          type: string
+        variableParams:
+          type: object
+        topic:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+        pageCursor:
+          type: object
 
   parameters:
     userIdInPath:
