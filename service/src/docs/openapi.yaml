@@ -1891,6 +1891,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
     post:
       tags: [ Feed ]
       operationId: addFeedToEvent
@@ -1907,6 +1913,22 @@ paths:
       responses:
         200:
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MageEvent'
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: Missing feed id
+          content:
+            application/json:
+              schema:
+                type: string
   /api/events/{eventId}/feeds/{feedId}:
     parameters:
        - $ref: '#/components/parameters/eventIdInPath'
@@ -3503,6 +3525,49 @@ components:
           type: string
         value:
           type: object
+    MageEvent:
+      required:
+        - id
+        - name
+        - layerIds
+        - feedIds
+        - forms
+        - style
+        - acl
+      type: object
+      properties:
+        id:
+          type: string
+        name: 
+          type: string
+        description:
+          type: string 
+        complete: 
+          type: boolean
+        teamIds:
+          type: array
+          items:
+            type: string
+        teams:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Team'
+        layerIds:
+          type: array
+          items:
+            type: string
+        feedIds:
+          type: array
+          items:
+            type: string
+        forms:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Form'
+        style:
+          type: object
+        acl:
+          $ref: '#/components/schemas/ACL'
 
   parameters:
     userIdInPath:
