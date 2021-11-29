@@ -1908,6 +1908,21 @@ paths:
       responses:
         200:
           description: Success
+  /api/events/{eventId}/feeds/{feedId}:
+    parameters:
+       - $ref: '#/components/parameters/eventIdInPath'
+       - $ref: '#/components/parameters/feedIdInPath'
+    delete:
+      tags: [ Feed ]
+      operationId: removeFeedFromEvent
+      description: >
+        Remove a feed from an event.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Feed' }
 
   /api/layers:
     get:
@@ -3634,6 +3649,13 @@ components:
       required: false
       schema:
         type: boolean
+    feedIdInPath:
+      in: path
+      name: feedId
+      description: The ID of the target feed document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/Feed/properties/id' }
 
   responses:
     FormIconInfo:
