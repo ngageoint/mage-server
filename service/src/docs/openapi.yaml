@@ -1881,8 +1881,7 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listEventFeeds
-      description: >
-        Get a list of feeds associated with an event.
+      description: Get a list of feeds associated with an event.
       responses:
         200:
           description: Success - return an array of feed documents.
@@ -1915,14 +1914,30 @@ paths:
     delete:
       tags: [ Feed ]
       operationId: removeFeedFromEvent
-      description: >
-        Remove a feed from an event.
+      description: Remove a feed from an event.
       responses:
         200:
           description: Success
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Feed' }
+  /api/events/{eventId}/feeds/{feedId}/content:
+    parameters:
+       - $ref: '#/components/parameters/eventIdInPath'
+       - $ref: '#/components/parameters/feedIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: fetchFeedContent
+      description: Fetch feed content.
+      requestBody:
+        description: Variable params.  
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      responses:
+        200:
+          description: Success
 
   /api/layers:
     get:
@@ -3479,6 +3494,15 @@ components:
       properties:
         feedId:
           type: string
+    JsonObject:
+      required:
+        - prop
+      type: object
+      properties:
+        prop:
+          type: string
+        value:
+          type: object
 
   parameters:
     userIdInPath:
