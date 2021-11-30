@@ -2150,6 +2150,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feed'
+        404:
+          description: Entity not found
+  /api/feeds/{feedServiceId}/feeds:
+    parameters:
+       - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: listServiceFeeds
+      description: List service feeds.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
+        404:
+          description: Feed service not found
+  /api/feeds/services/{feedServiceId}:
+    parameters:
+       - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedService
+      description: Get a feed service.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/FeedService'
+        404:
+          description: Feed service not found
+    delete:
+      tags: [ Feed ]
+      operation: deleteFeedService
+      description: Delete a feed service.
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+        404:
+          description: Feed service not found.
 
   /api/layers:
     get:
