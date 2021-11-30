@@ -369,6 +369,35 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Count' }
+  /api/users/search:
+    get:
+      tags: [ User ]
+      description: Search for users. The client must have `READ_USER` permission.
+      summary: User search.
+      operationId: userSearch
+      parameters:
+        - in: query
+          name: term
+          schema:
+            type: string
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: total
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: Users matching the search
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PageOfUsers' }
   /api/users/myself:
     get:
       tags: [ User ]
@@ -3656,6 +3685,39 @@ components:
             type: object
         pageCursor:
           type: object
+    UserSearchResult:
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        active:
+          type: boolean
+        enabled:
+          type: boolean
+        allPhones:
+          type: string
+    PageOfUsers:
+      required:
+        - totalCount
+        - pageSize
+        - pageIndex 
+        - items
+      properties:
+        totalCount:
+          type: integer
+        pageSize:
+          type: integer
+        pageIndex:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#components/schemas/UserSearchResult'
 
   parameters:
     userIdInPath:
