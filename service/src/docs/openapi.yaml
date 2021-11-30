@@ -2042,13 +2042,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedServiceTypeDescriptor'
-  /api/feeds/service_types/{serviceTypeId}/topic_preview:
+  /api/feeds/service_types/{feedServiceTypeId}/topic_preview:
     parameters:
-      - $ref: '#/components/parameters/serviceTypeIdInPath'
+      - $ref: '#/components/parameters/feedServiceTypeIdInPath'
     post:
       tags: [ Feed ]
-      operationId: previewTopics
-      description: Preview Topics.
+      operationId: previewFeedTopics
+      description: Preview feed topics.
       requestBody:
         description: Service config.
         content:
@@ -2094,6 +2094,22 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedService'
+  /api/feeds/services/{feedServiceId}/topics:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServiceTopics
+      description: List feed service topics
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedTopic'
 
   /api/layers:
     get:
@@ -4033,14 +4049,21 @@ components:
       required: true
       example: 1234
       schema: { $ref: '#/components/schemas/Feed/properties/id' }
-    serviceTypeIdInPath:
+    feedServiceTypeIdInPath:
       in: path
-      name: serviceTypeId
-      description: The ID of the service type
+      name: feedServiceTypeId
+      description: The ID of the feed service type
       required: true
       example: 1234
       schema: 
         type: string
+    feedServiceIdInPath:
+      in: path
+      name: feedServiceId
+      description: The ID of the target feed service document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/FeedService/properties/id' }
 
   responses:
     FormIconInfo:
