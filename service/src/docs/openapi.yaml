@@ -2067,8 +2067,8 @@ paths:
   /api/feeds/services:
     post:
       tags: [ Feed ]
-      operationId: createService
-      description: Create a service
+      operationId: createFeedService
+      description: Create a feed service
       requestBody:
         content:
           application/json:
@@ -2081,6 +2081,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedService'
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServices
+      description: List all feed services
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedService'
 
   /api/layers:
     get:
