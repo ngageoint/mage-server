@@ -2118,6 +2118,11 @@ paths:
       tags: [ Feed ]
       operationId: previewFeedServiceTopic
       description: Preview feed service topic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewFeedRequest'
       responses:
         200:
           description: Success
@@ -3895,6 +3900,12 @@ components:
           $ref: '#/components/schemas/Feed'
         content:
           $ref: '#/components/schemas/FeedContent'
+    PreviewFeedRequest:
+      properties:
+        skipContentFetch:
+          type: boolean
+        variableParams:
+          $ref: '#/components/schemas/JsonObject'
 
   parameters:
     userIdInPath:
@@ -4145,5 +4156,3 @@ components:
               role:
                 $ref: '#/components/schemas/ACLRole'
             required: [ role ]
-
-
