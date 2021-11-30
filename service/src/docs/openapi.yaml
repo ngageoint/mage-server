@@ -3736,6 +3736,7 @@ components:
       properties:
         sourceUrl:
           type: string
+          format: uri
     MapStyle:
       properties:
         stroke:
