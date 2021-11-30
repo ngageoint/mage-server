@@ -2054,7 +2054,16 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/ServiceConfig'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/FeedTopic'
 
   /api/layers:
     get:
@@ -3753,6 +3762,41 @@ components:
         title:
           type: string
         summary:
+          type: string
+    ServiceConfig:
+      properties:
+        serviceConfig:
+          type: object
+    FeedTopic:
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        icon:
+          $ref: '#/components/schemas/SourceUrlStaticIconReference'
+        paramsSchema:
+          type: object
+        updateFrequencySeconds:
+          type: integer
+        itemsHaveIdentity:
+          type: boolean
+        itemsHaveSpatialDimension:
+          type: boolean
+        itemTemporalProperty:
+          type: string
+        itemPrimaryProperty:
+          type: string
+        itemSecondaryProperty:
+          type: string
+        mapStyle:
+          $ref: '#/components/schemas/MapStyle'
+        itemPropertiesSchema:
           type: string
 
   parameters:
