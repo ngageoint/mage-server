@@ -2110,6 +2110,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedTopic'
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feed_preview:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: previewFeedServiceTopic
+      description: Preview feed service topic
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedPreview'
 
   /api/layers:
     get:
@@ -3872,6 +3887,14 @@ components:
           type: string
         config:
           type: object
+    FeedPreview:
+      required:
+        - feed
+      properties:
+        feed:
+          $ref: '#/components/schemas/Feed'
+        content:
+          $ref: '#/components/schemas/FeedContent'
 
   parameters:
     userIdInPath:
@@ -4064,6 +4087,13 @@ components:
       required: true
       example: 1234
       schema: { $ref: '#/components/schemas/FeedService/properties/id' }
+    feedTopicIdInPath:
+      in: path
+      name: feedTopicId
+      description: The ID of the target feed topic document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/FeedTopic/properties/id' }
 
   responses:
     FormIconInfo:
