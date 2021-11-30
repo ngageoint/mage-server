@@ -2042,7 +2042,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedServiceTypeDescriptor'
-
+  /api/feeds/service_types/{serviceTypeId}/topic_preview:
+    parameters:
+      - $ref: '#/components/parameters/serviceTypeIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: previewTopics
+      description: Preview Topics.
+      requestBody:
+        description: Service config.
+        content:
+          application/json:
+            schema:
+              type: object
 
   /api/layers:
     get:
@@ -3919,6 +3931,14 @@ components:
       required: true
       example: 1234
       schema: { $ref: '#/components/schemas/Feed/properties/id' }
+    serviceTypeIdInPath:
+      in: path
+      name: serviceTypeId
+      description: The ID of the service type
+      required: true
+      example: 1234
+      schema: 
+        type: string
 
   responses:
     FormIconInfo:
