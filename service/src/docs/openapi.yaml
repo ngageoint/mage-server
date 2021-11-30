@@ -2029,6 +2029,20 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/feeds/service_types:
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServiceTypes
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+
 
   /api/layers:
     get:
@@ -3718,6 +3732,16 @@ components:
           type: array
           items:
             $ref: '#components/schemas/UserSearchResult'
+    FeedServiceTypeDescriptor:
+      properties:
+        id:
+          type: string
+        pluginServiceTypeId:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
 
   parameters:
     userIdInPath:
