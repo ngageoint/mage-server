@@ -2199,6 +2199,20 @@ paths:
                 type: string
         404:
           description: Feed service not found.
+  /api/feeds:
+    get:
+      tags: [ Feed ]
+      operationId: listAllFeeds
+      description: List all feeds.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
 
   /api/layers:
     get:
