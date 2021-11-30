@@ -2130,6 +2130,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedPreview'
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feeds:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: createFeed
+      description: Create feed.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feed'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
 
   /api/layers:
     get:
