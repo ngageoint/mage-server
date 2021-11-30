@@ -3507,6 +3507,36 @@ components:
       allOf:
         - { $ref: '#/components/schemas/EventRef' }
         - { type: object, required: [ id ] }
+    Style:
+      properties:
+        fill:
+          type: string
+        stroke:
+          type: string
+        fillOpacity:
+          type: string
+        strokeOpacity:
+          type: string
+        strokeWidth:
+          type: string
+    SourceUrlStaticIconReference:
+      properties:
+        sourceUrl:
+          type: string
+    MapStyle:
+      properties:
+        stroke:
+          type: string
+        strokeOpacity:
+          type: integer
+        strokeWidth:
+          type: integer
+        fill:
+          type: string
+        fillOpacity:
+          type: string
+        icon:
+          $ref: '#/components/schemas/SourceUrlStaticIconReference'
     Feed:
       required:
         - id
@@ -3528,7 +3558,7 @@ components:
         summary:
           type: string
         icon:
-          type: object
+          $ref: '#/components/schemas/SourceUrlStaticIconReference'
         constantParams:
           type: object
         variableParamsSchema:
@@ -3546,7 +3576,7 @@ components:
         itemSecondaryProperty:
           type: string
         mapStyle:
-          type: object
+          $ref: '#/components/schemas/MapStyle'
         itemPropertiesSchema:
           type: object
     FeedAddToEvent:
@@ -3605,7 +3635,7 @@ components:
           items: 
             $ref: '#/components/schemas/Form'
         style:
-          type: object
+          $ref: '#/components/schemas/Style'
         acl:
           $ref: '#/components/schemas/ACL'
     FeedContent:
@@ -3617,7 +3647,7 @@ components:
         feed:
           type: string
         variableParams:
-          type: object
+          $ref: '#/components/schemas/JsonObject'
         topic:
           type: string
         items:
