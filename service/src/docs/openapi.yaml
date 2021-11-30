@@ -2064,6 +2064,23 @@ paths:
                 type: array
                 items: 
                   $ref: '#/components/schemas/FeedTopic'
+  /api/feeds/services:
+    post:
+      tags: [ Feed ]
+      operationId: createService
+      description: Create a service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeedService'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedService'
 
   /api/layers:
     get:
@@ -3798,6 +3815,34 @@ components:
           $ref: '#/components/schemas/MapStyle'
         itemPropertiesSchema:
           type: string
+    CreateFeedService:
+      properties:
+        serviceType:
+          type: string
+        config:
+          type: object
+        title:
+          type: string
+        summary:
+          type: string
+    FeedService:
+      required:
+        - id
+        - serviceType
+        - title
+        - summary
+        - config
+      properties:
+        id:
+          type: string
+        serviceType:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        config:
+          type: object
 
   parameters:
     userIdInPath:
