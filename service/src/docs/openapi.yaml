@@ -1911,6 +1911,7 @@ paths:
       tags: [ Feed ]
       operationId: listEventFeeds
       description: Get a list of feeds associated with an event.
+      summary: Get feeds by event.
       responses:
         200:
           description: Success - return an array of feed documents.
@@ -1935,8 +1936,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: addFeedToEvent
-      description: >
-        Add a feed to an event.
+      description: Add a feed to an event.
+      summary: Add a feed to an event.
       requestBody:
         description: >
           Event id and feed id to connect.
@@ -1978,6 +1979,7 @@ paths:
       tags: [ Feed ]
       operationId: removeFeedFromEvent
       description: Remove a feed from an event.
+      summary: Remove a feed from an event.
       responses:
         200:
           description: Success
@@ -2004,6 +2006,7 @@ paths:
       tags: [ Feed ]
       operationId: fetchFeedContent
       description: Fetch feed content.
+      summary: Get a feeds content.
       requestBody:
         description: Variable params.  
         content:
@@ -2033,6 +2036,7 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listFeedServiceTypes
+      summary: Get a list of feed service types.
       responses:
         200:
           description: Success
@@ -2049,6 +2053,7 @@ paths:
       tags: [ Feed ]
       operationId: previewFeedTopics
       description: Preview feed topics.
+      summary: Preview a feeds topic.
       requestBody:
         description: Service config.
         content:
@@ -2068,7 +2073,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: createFeedService
-      description: Create a feed service
+      description: Create a feed service.
+      summary: Create a feed service.
       requestBody:
         content:
           application/json:
@@ -2084,7 +2090,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listFeedServices
-      description: List all feed services
+      description: List all feed services.
+      summary: Get a list of feed services.
       responses:
         200:
           description: Success
@@ -2100,7 +2107,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listFeedServiceTopics
-      description: List feed service topics
+      description: List feed service topics.
+      summary: Get a list of feed service topics.
       responses:
         200:
           description: Success
@@ -2117,7 +2125,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: previewFeedServiceTopic
-      description: Preview feed service topic
+      description: Preview feed service topic.
+      summary: Get a preview of a feed service topic.
       requestBody:
         content:
           application/json:
@@ -2138,6 +2147,7 @@ paths:
       tags: [ Feed ]
       operationId: createFeed
       description: Create feed.
+      summary: Create a new feed.
       requestBody:
         content:
           application/json:
@@ -2159,6 +2169,7 @@ paths:
       tags: [ Feed ]
       operationId: listServiceFeeds
       description: List service feeds.
+      summary: Get a list of service feeds.
       responses:
         200:
           description: Success
@@ -2177,6 +2188,7 @@ paths:
       tags: [ Feed ]
       operationId: getFeedService
       description: Get a feed service.
+      summary: Get a feed service.
       responses:
         200:
           description: Success
@@ -2190,6 +2202,7 @@ paths:
       tags: [ Feed ]
       operation: deleteFeedService
       description: Delete a feed service.
+      summary: Delete a feed service.
       responses:
         200:
           description: Success
@@ -2204,6 +2217,7 @@ paths:
       tags: [ Feed ]
       operationId: listAllFeeds
       description: List all feeds.
+      summary: Get a list of feeds.
       responses:
         200:
           description: Success
@@ -2220,6 +2234,7 @@ paths:
       tags: [ Feed ]
       operationId: getServiceType
       description: Get a service type by id.
+      summary: Get a service type by id.
       responses:
         200:
           description: Success
@@ -2237,6 +2252,7 @@ paths:
       tags: [ Feed ]
       operationId: getFeedTopic
       description: Get a feed topic by id.
+      summary: Get a feed topic.
       responses:
         200:
           description: Success
@@ -2253,6 +2269,7 @@ paths:
       tags: [ Feed ]
       operationId: getFeedById
       description: Get a feed by id.
+      summary: Get a feed.
       responses:
         200:
           description: Success
@@ -2266,6 +2283,7 @@ paths:
       tags: [ Feed ]
       operationId: updateFeed
       description: Update a feed.
+      summary: Update a feed.
       requestBody:
         content:
           application/json:
@@ -2282,6 +2300,7 @@ paths:
       tags: [ Feed ]
       operationId: deleteFeed
       description: Delete a feed by id.
+      summary: Delete a feed.
       responses:
         200:
           description: Success
