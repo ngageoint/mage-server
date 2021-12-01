@@ -2229,6 +2229,23 @@ paths:
                 $ref: '#/components/schemas/FeedServiceTypeDescriptor'
         404:
           description: Feed service type not found.
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedTopic
+      description: Get a feed topic by id.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedTopic'
+        404:
+          description: Feed topic not found.
 
   /api/layers:
     get:
