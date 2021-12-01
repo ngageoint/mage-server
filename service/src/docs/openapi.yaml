@@ -369,7 +369,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Count' }
-  /api/users/search:
+  /api/next-users/search:
     get:
       tags: [ User ]
       description: Search for users. The client must have `READ_USER` permission.
@@ -2270,14 +2270,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/parameters/Feed'
+              $ref: '#/components/schemas/Feed'
       responses:
         200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/parameters/Feed'
+                $ref: '#/components/schemas/Feed'
     delete:
       tags: [ Feed ]
       operationId: deleteFeed
