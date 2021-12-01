@@ -2246,6 +2246,49 @@ paths:
                 $ref: '#/components/schemas/FeedTopic'
         404:
           description: Feed topic not found.
+  /api/feeds/{feedId}:
+    parameters:
+       - $ref: '#/components/parameters/feedIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedById
+      description: Get a feed by id.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
+        404:
+          description: Feed not found
+    put:
+      tags: [ Feed ]
+      operationId: updateFeed
+      description: Update a feed.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/parameters/Feed'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/parameters/Feed'
+    delete:
+      tags: [ Feed ]
+      operationId: deleteFeed
+      description: Delete a feed by id.
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
 
   /api/layers:
     get:
