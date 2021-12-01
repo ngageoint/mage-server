@@ -15,6 +15,9 @@ const util = require('util')
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
+const pathToGeoPackageModule = path.resolve(path.dirname(require.resolve('@ngageoint/geopackage/package.json')))
+GeoPackageAPI.setCanvasKitWasmLocateFile(file => `${pathToGeoPackageModule}/dist/canvaskit/${file}`);
+
 function GeoPackage(options) {
   GeoPackage.super_.call(this, options);
   this.iconMap = {}
@@ -315,7 +318,7 @@ GeoPackage.prototype.createFormAttributeTables = async function (geopackage) {
         dataType: this.fieldTypeToGeoPackageType(field.type)
       });
     }
-    await geopackage.createAttributeTable('Form_' + formId, columns);
+    await geopackage.createAttributesTableFromProperties('Form_' + formId, columns);
   }
   return geopackage;
 }
@@ -388,7 +391,7 @@ GeoPackage.prototype.addFormDataToGeoPackage = async function (geopackage) {
     dataType: 'TEXT'
   });
 
-  await geopackage.createAttributeTable('Forms', columns)
+  await geopackage.createAttributesTableFromProperties('Forms', columns)
   for (const formId in this._event.formMap) {
     const form = this._event.formMap[formId];
     const row = {
