@@ -2213,6 +2213,22 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+  /api/feeds/service_types/{feedServiceTypeId}:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceTypeIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getServiceType
+      description: Get a service type by id.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+        404:
+          description: Feed service type not found.
 
   /api/layers:
     get:
