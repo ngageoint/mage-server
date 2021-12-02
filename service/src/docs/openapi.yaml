@@ -1910,7 +1910,9 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listEventFeeds
-      description: Get a list of feeds associated with an event.
+      description: >
+        Get a list of feeds associated with an event. Requires the 
+        `FEEDS_LIST_SERVICE_TYPES` permission.
       summary: Get feeds by event.
       responses:
         200:
@@ -1936,7 +1938,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: addFeedToEvent
-      description: Add a feed to an event.
+      description: >
+        Add a feed to an event. Requires the `UPDATE_EVENT` permission.
       summary: Add a feed to an event.
       requestBody:
         description: >
@@ -1978,7 +1981,8 @@ paths:
     delete:
       tags: [ Feed ]
       operationId: removeFeedFromEvent
-      description: Remove a feed from an event.
+      description: >
+        Remove a feed from an event. Requires the `UPDATE_EVENT` permission.
       summary: Remove a feed from an event.
       responses:
         200:
@@ -2005,7 +2009,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: fetchFeedContent
-      description: Fetch feed content.
+      description: > 
+        Fetch feed content. Requires the `READ_EVENT_USER` permission.
       summary: Get a feeds content.
       requestBody:
         description: Variable params.  
@@ -2036,6 +2041,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listFeedServiceTypes
+      description: >
+        Get a list of feed service types.  Requires the `FEEDS_LIST_SERVICE_TYPES` permission.
       summary: Get a list of feed service types.
       responses:
         200:
@@ -2046,13 +2053,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/service_types/{feedServiceTypeId}/topic_preview:
     parameters:
       - $ref: '#/components/parameters/feedServiceTypeIdInPath'
     post:
       tags: [ Feed ]
       operationId: previewFeedTopics
-      description: Preview feed topics.
+      description: >
+        Preview feed topics.  Requires the `FEEDS_CREATE_SERVICE` permission.
       summary: Preview a feeds topic.
       requestBody:
         description: Service config.
@@ -2069,11 +2083,24 @@ paths:
                 type: array
                 items: 
                   $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service type not found
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/services:
     post:
       tags: [ Feed ]
       operationId: createFeedService
-      description: Create a feed service.
+      description: >
+        Create a feed service.  Requires the `FEEDS_CREATE_SERVICE` permission.
       summary: Create a feed service.
       requestBody:
         content:
@@ -2081,16 +2108,23 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateFeedService'
       responses:
-        200:
+        201:
           description: Success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
     get:
       tags: [ Feed ]
       operationId: listFeedServices
-      description: List all feed services.
+      description: >
+        List all feed services.  Requires the `FEEDS_LIST_SERVICES` permission.
       summary: Get a list of feed services.
       responses:
         200:
@@ -2101,6 +2135,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/services/{feedServiceId}/topics:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
