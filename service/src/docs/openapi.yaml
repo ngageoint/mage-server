@@ -21,7 +21,9 @@ tags:
   - name: Event
   - name: Export
   - name: Feed
-    description: Feeds are supplemental data sets that participants can add to their active event context.
+    description: > 
+      Feeds are supplemental data sets that participants can add to their active event context. 
+      Feed content could have any combination of spatial, temporal, or informational dimensions.
   - name: Layer
   - name: Location
   - name: Observation
