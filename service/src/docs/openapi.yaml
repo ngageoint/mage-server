@@ -1912,7 +1912,7 @@ paths:
       operationId: listEventFeeds
       description: >
         Get a list of feeds associated with an event. Requires the 
-        `FEEDS_LIST_SERVICE_TYPES` permission.
+        `READ_EVENT_USER` permission.
       summary: Get feeds by event.
       responses:
         200:
@@ -2147,7 +2147,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listFeedServiceTopics
-      description: List feed service topics.
+      description: >
+        List feed service topics.  Requires `FEEDS_LIST_TOPICS` permission.
       summary: Get a list of feed service topics.
       responses:
         200:
@@ -2158,6 +2159,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service not found
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feed_preview:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
@@ -2165,7 +2178,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: previewFeedServiceTopic
-      description: Preview feed service topic.
+      description: >
+         Preview feed service topic.  Requires `FEEDS_CREATE_FEED` permission.
       summary: Get a preview of a feed service topic.
       requestBody:
         content:
@@ -2179,6 +2193,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedPreview'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service or feed topic not found
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feeds:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
@@ -2186,7 +2212,8 @@ paths:
     post:
       tags: [ Feed ]
       operationId: createFeed
-      description: Create feed.
+      description: >
+        Create feed.  Requires the `FEEDS_CREATE_FEED` permission.
       summary: Create a new feed.
       requestBody:
         content:
@@ -2200,6 +2227,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Entity not found
   /api/feeds/{feedServiceId}/feeds:
@@ -2208,7 +2241,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: listServiceFeeds
-      description: List service feeds.
+      description: >
+        List service feeds.  Requires the `FEEDS_LIST_ALL` permission.
       summary: Get a list of service feeds.
       responses:
         200:
@@ -2219,6 +2253,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Feed service not found
   /api/feeds/services/{feedServiceId}:
@@ -2227,7 +2267,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: getFeedService
-      description: Get a feed service.
+      description: >
+        Get a feed service. Requires `FEEDS_LIST_SERVICES` permission.
       summary: Get a feed service.
       responses:
         200:
@@ -2236,12 +2277,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schema/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Feed service not found
     delete:
       tags: [ Feed ]
       operation: deleteFeedService
-      description: Delete a feed service.
+      description: >
+        Delete a feed service.  Requires the `FEEDS_CREATE_SERVICE` permission.
       summary: Delete a feed service.
       responses:
         200:
@@ -2250,13 +2298,20 @@ paths:
             text/plain:
               schema:
                 type: string
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Feed service not found.
   /api/feeds:
     get:
       tags: [ Feed ]
       operationId: listAllFeeds
-      description: List all feeds.
+      description: >
+        List all feeds.  Requires `FEEDS_LIST_ALL` permission.
       summary: Get a list of feeds.
       responses:
         200:
@@ -2267,13 +2322,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
   /api/feeds/service_types/{feedServiceTypeId}:
     parameters:
       - $ref: '#/components/parameters/feedServiceTypeIdInPath'
     get:
       tags: [ Feed ]
       operationId: getServiceType
-      description: Get a service type by id.
+      description: >
+        Get a service type by id.  Requires `FEEDS_LIST_SERVICE_TYPES` permission.
       summary: Get a service type by id.
       responses:
         200:
@@ -2282,6 +2344,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Feed service type not found.
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}:
@@ -2291,7 +2359,8 @@ paths:
     get:
       tags: [ Feed ]
       operationId: getFeedTopic
-      description: Get a feed topic by id.
+      description: >
+        Get a feed topic by id.  Requires `FEEDS_LIST_TOPICS` permission.
       summary: Get a feed topic.
       responses:
         200:
@@ -2300,15 +2369,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
-          description: Feed topic not found.
+          description: Feed service or feed  topic not found.
   /api/feeds/{feedId}:
     parameters:
        - $ref: '#/components/parameters/feedIdInPath'
     get:
       tags: [ Feed ]
       operationId: getFeedById
-      description: Get a feed by id.
+      description: >
+        Get a feed by id.  Requires `FEEDS_LIST_ALL` permission.
       summary: Get a feed.
       responses:
         200:
@@ -2317,12 +2393,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
         404:
           description: Feed not found
     put:
       tags: [ Feed ]
       operationId: updateFeed
-      description: Update a feed.
+      description: >
+         Update a feed.  Requires the `FEEDS_CREATE_FEED` permssion.
       summary: Update a feed.
       requestBody:
         content:
@@ -2336,10 +2419,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
     delete:
       tags: [ Feed ]
       operationId: deleteFeed
-      description: Delete a feed by id.
+      description: >
+        Delete a feed by id.  Requires the `FEEDS_CREATE_FEED` permssion.
       summary: Delete a feed.
       responses:
         200:
