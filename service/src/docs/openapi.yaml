@@ -119,11 +119,11 @@ paths:
       parameters:
         - name: authenticationStrategy
           in: path
-          description: Authentication strategy.  Given authentication strategy must be enabled in config.js
+          description: Authentication strategy.
           required: true
           schema:
             type: string
-            enum: [ local, ldap, saml, geoaxis, openidconnect ]
+            enum: [ local, ldap, saml, oauth, openidconnect ]
       requestBody:
         required: true
         content:
