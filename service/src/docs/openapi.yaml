@@ -3951,32 +3951,48 @@ components:
     Style:
       properties:
         fill:
-          type: string
+          $ref: '#/components/schemas/ColorHex'
         stroke:
-          type: string
+          $ref: '#/components/schemas/ColorHex'
         fillOpacity:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 1
         strokeOpacity:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 1
         strokeWidth:
-          type: string
+          type: integer
     SourceUrlStaticIconReference:
+      required:
+        - sourceUrl
       properties:
         sourceUrl:
           type: string
           format: uri
+    RegisteredStaticIconReference:
+      required:
+        - id
+      properties:
+        id:
+          type: string
     MapStyle:
       properties:
         stroke:
-          type: string
+          $ref: '#/components/schemas/ColorHex'
         strokeOpacity:
           type: integer
+          minimum: 0
+          maximum: 1
         strokeWidth:
           type: integer
         fill:
-          type: string
+          $ref: '#/components/schemas/ColorHex'
         fillOpacity:
-          type: string
+          type: integer
+          minimum: 0
+          maximum: 1
         icon:
           $ref: '#/components/schemas/SourceUrlStaticIconReference'
     Feed:
@@ -4000,7 +4016,7 @@ components:
         summary:
           type: string
         icon:
-          $ref: '#/components/schemas/SourceUrlStaticIconReference'
+          $ref: '#/components/schemas/RegisteredStaticIconReference'
         constantParams:
           type: object
         variableParamsSchema:
@@ -4191,7 +4207,6 @@ components:
         - id
         - serviceType
         - title
-        - summary
         - config
       properties:
         id:
