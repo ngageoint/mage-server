@@ -100,8 +100,8 @@ describe("csv export tests", function () {
       .yields(null, [{ name: 'Team 1' }]);
 
     const writable = new TestWritableStream();
-    writable.on('finish', () => {
-      const zip = new JSZip(writable.byteArray);
+    writable.on('finish', async () => {
+      const zip = await JSZip.loadAsync(writable.byteArray);
       const observations = zip.files['observations.csv'];
       expect(observations).to.be.undefined;
 
@@ -169,18 +169,16 @@ describe("csv export tests", function () {
       .yields(null, [mockObservation]);
 
     const writable = new TestWritableStream();
-    writable.on('finish', () => {
-      const zip = new JSZip(writable.byteArray);
+    writable.on('finish', async () => {
+      const zip = await JSZip.loadAsync(writable.byteArray);
       const locations = zip.files['locations.csv'];
       expect(locations).to.be.undefined;
 
       const observations = zip.files['observations.csv'];
       expect(observations).to.not.be.null;
-      expect(observations._data).to.not.be.null;
 
-      const obsBufferContent = observations._data.getContent();
-      expect(obsBufferContent).to.not.be.null;
-      const obsCsvData = parseCSV(obsBufferContent);
+      const obsContent = await observations.async('nodebuffer');
+      const obsCsvData = parseCSV(obsContent);
       expect(obsCsvData.length).to.equal(2);
 
       expect(obsCsvData[0][3]).to.equal('"Shape Type"');
@@ -236,14 +234,12 @@ describe("csv export tests", function () {
       .returns(new TestCursor());
 
     const writable = new TestWritableStream();
-    writable.on('finish', () => {
-      const zip = new JSZip(writable.byteArray);
+    writable.on('finish', async () => {
+      const zip = await JSZip.loadAsync(writable.byteArray);
       const locations = zip.files['locations.csv'];
       expect(locations).to.not.be.null;
-      expect(locations._data).to.not.be.null;
 
-      const locBufferContent = locations._data.getContent();
-      expect(locBufferContent).to.not.be.null;
+      const locBufferContent = await locations.async('nodebuffer');
       const locCsvData = parseCSV(locBufferContent);
       expect(locCsvData.length).to.equal(2);
 
