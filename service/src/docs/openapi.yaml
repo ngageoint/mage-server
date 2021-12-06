@@ -2475,6 +2475,35 @@ paths:
                 $ref: '#/components/schemas/StaticIcon'
         404:
           description: Icon not found
+  /api/icons:
+    get:
+      tags: [ Icon ]
+      operationId: getIcons
+      summary: Get all icons
+      parameters:
+        - in: query
+          name: source_url
+          schema:
+            type: string
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOfStaticIcons'
 
   /api/layers:
     get:
@@ -4325,6 +4354,23 @@ components:
           $ref: '#/components/schemas/StaticIcon'
         iconContent:
           type: object
+    PageOfStaticIcons:
+      required:
+        - totalCount
+        - pageSize
+        - pageIndex 
+        - items
+      properties:
+        totalCount:
+          type: integer
+        pageSize:
+          type: integer
+        pageIndex:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#components/schemas/StaticIcon'
         
   parameters:
     userIdInPath:
