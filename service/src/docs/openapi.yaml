@@ -2457,6 +2457,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StaticIconWithContent'
+        404:
+          description: Icon not found
+  /api/icons/{iconId}:
+    parameters:
+      - $ref: '#/components/parameters/iconIdInPath'
+    get:
+      tags: [ Icon ]
+      operationId: getIconById
+      summary: Get an icon.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticIcon'
+        404:
+          description: Icon not found
 
   /api/layers:
     get:
