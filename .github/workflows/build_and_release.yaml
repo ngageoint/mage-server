@@ -162,7 +162,7 @@ jobs:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test web-app
         if: ${{ needs.config.outputs.tests_enabled }}
-        run: npm run --prefix web-app test-headless
+        run: npm run --prefix web-app ci:test
       - name: pack web-app
         run: npm pack ./web-app/dist/app
       - name: upload packages
