@@ -86,7 +86,7 @@ export function EventFeedsRoutes(eventFeeds: EventFeedsApp, createAppRequest: We
     }
     const mageErr = err as MageError<symbol, any>
     if (mageErr.code === ErrPermissionDenied) {
-      return res.status(403)
+      return res.status(403).json(mageErr);
     }
     if (mageErr.code === ErrEntityNotFound) {
       const enf = mageErr as EntityNotFoundError

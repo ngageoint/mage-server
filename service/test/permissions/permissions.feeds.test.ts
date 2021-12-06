@@ -94,10 +94,6 @@ describe('feeds permission service', function() {
       expect(denied?.data.permission).to.equal('FEEDS_LIST_TOPICS')
       expect(denied?.data.subject).to.equal(context.requestingPrincipal().username)
     })
-
-    it('ensures permission on a pre-fetched service', async function() {
-      expect.fail('todo')
-    })
   })
 
   describe('ensuring create feed permission', function() {
@@ -118,15 +114,17 @@ describe('feeds permission service', function() {
       expect(denied?.data.permission).to.equal('FEEDS_CREATE_FEED')
       expect(denied?.data.subject).to.equal(context.requestingPrincipal().username)
     })
-
-    it('ensures permission with a pre-fetched service', async function() {
-      expect.fail('todo')
-    })
   })
 
   describe('ensuring fetch feed content permission', function() {
     it('always denies', async function() {
-      expect.fail('todo')
+      let context = contextWithPermissions('FEEDS_FETCH_CONTENT')
+      let denied = await permissions.ensureFetchFeedContentPermissionFor(context)
+
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied?.code).to.equal(ErrPermissionDenied)
+      expect(denied?.data.permission).to.equal('FEEDS_FETCH_CONTENT')
+      expect(denied?.data.subject).to.equal(context.requestingPrincipal().username)
     })
   })
 })

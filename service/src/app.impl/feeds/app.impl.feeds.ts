@@ -304,13 +304,19 @@ async function resolveFeedCreate(topic: FeedTopic, feedMinimal: api.FeedCreateMi
   const icons = await Promise.all(unresolved.unresolvedIcons.map(iconUrl => {
     return iconRepo.findOrImportBySourceUrl(iconUrl, iconFetch).then(icon => {
       if (icon instanceof UrlResolutionError) {
-        return errors.push([ `error resolving icon url: ${iconUrl}`, ...keyPathOfIconUrl(iconUrl, feedMinimal) ])
+         errors.push([ `error resolving icon url: ${iconUrl}`, ...keyPathOfIconUrl(iconUrl, feedMinimal) ])
+         return errors;
       }
       else {
         return ({ [String(iconUrl)]: icon.id })
       }
     })
   }))
+
+  if(errors.length > 0) {
+     return errors;
+  }
+
   const iconsMerged = Object.assign({}, ...icons)
   const resolved = FeedCreateAttrs(unresolved, iconsMerged)
   return resolved

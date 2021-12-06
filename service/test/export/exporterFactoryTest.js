@@ -5,12 +5,6 @@ require('chai').should();
 
 describe("exporter factory", function () {
 
-    it("should create shapefile exporter", function () {
-        const exporter = ExporterFactory.createExporter('shapefile', {});
-        expect(exporter).to.not.be.undefined;
-        expect(exporter).to.not.be.null;
-    });
-
     it("should create kml exporter", function () {
         const exporter = ExporterFactory.createExporter('kml', {});
         expect(exporter).to.not.be.undefined;

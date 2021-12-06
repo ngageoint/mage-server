@@ -83,12 +83,6 @@ describe('event permissions service', function() {
       expect(denied?.code).to.equal(ErrPermissionDenied)
     })
   })
-
-  describe('legacy event permissions logic', function() {
-    it('has tests', async function() {
-      expect.fail('todo')
-    })
-  })
 })
 
 describe('event feeds permission service', function() {

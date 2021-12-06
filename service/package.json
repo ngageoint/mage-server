@@ -120,6 +120,7 @@
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
     "iconv-lite": "^0.5.1",
+    "jszip": "2.3.0",
     "mocha": "^7.1.1",
     "mock-fs": "4.13.0",
     "mongodb-memory-server": "^6.3.1",
@@ -158,6 +159,13 @@
     "test:run": "mocha --config .mocharc.js",
     "test:build": "npm-run-all build test:compile test:copy_resources test:copy_node_modules",
     "test": "npm-run-all test:build test:run",
+    "functionalTests:compile": "tsc -b functionalTests",
+    "functionalTests:copy_certs": "cpy --cwd=functionalTests --parents \"certs/*.pem\" ../functionalTests-lib/",
+    "functionalTests:copy_configs": "cpy --cwd=functionalTests --parents \"config/*.json\" ../functionalTests-lib/",
+    "functionalTests:copy_node_modules": "cpy --cwd=functionalTests --parents \"node_modules/**/*\" ../functionalTests-lib/",
+    "functionalTests:run": "mocha --config .mocharc.functionalTests.js",
+    "functionalTests:build": "npm-run-all build functionalTests:compile functionalTests:copy_certs functionalTests:copy_configs functionalTests:copy_node_modules",
+    "functionalTests": "npm-run-all functionalTests:build functionalTests:run",
     "report": "nyc report",
     "coverage": "nyc mocha",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
@@ -167,7 +175,7 @@
     "migration:run": "node bin/migration.js run",
     "start": "node lib/app.js",
     "debug": "node --inspect-brk=9229 lib/app.js",
-    "clean": "rm -rf lib test-lib"
+    "clean": "rm -rf lib test-lib functionalTests-lib"
   },
   "config": {
     "mongodbMemoryServer": {

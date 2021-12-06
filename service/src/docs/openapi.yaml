@@ -8,7 +8,7 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
-  version: 5.5.2
+  version: 6.0.1
 servers: []
 security:
   - mageToken: []
@@ -20,6 +20,11 @@ tags:
   - name: Device
   - name: Event
   - name: Export
+  - name: Feed
+    description: > 
+      Feeds are supplemental data sets that participants can add to their active event context. 
+      Feed content could have any combination of spatial, temporal, or informational dimensions.
+  - name: Icon
   - name: Layer
   - name: Location
   - name: Observation
@@ -115,11 +120,11 @@ paths:
       parameters:
         - name: authenticationStrategy
           in: path
-          description: Authentication strategy.  Given authentication strategy must be enabled in config.js
+          description: Authentication strategy.
           required: true
           schema:
             type: string
-            enum: [ local, ldap, saml, geoaxis, openidconnect ]
+            enum: [ local, ldap, saml, oauth, openidconnect ]
       requestBody:
         required: true
         content:
@@ -368,6 +373,35 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Count' }
+  /api/next-users/search:
+    get:
+      tags: [ User ]
+      description: Search for users. The client must have `READ_USER` permission.
+      summary: User search.
+      operationId: userSearch
+      parameters:
+        - in: query
+          name: term
+          schema:
+            type: string
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: total
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: Users matching the search
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PageOfUsers' }
   /api/users/myself:
     get:
       tags: [ User ]
@@ -1873,6 +1907,604 @@ paths:
       responses:
         204:
           description: Success - the attachment was deleted.
+  
+  /api/events/{eventId}/feeds:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: listEventFeeds
+      description: >
+        Get a list of feeds associated with an event. Requires the 
+        `READ_EVENT_USER` permission.
+      summary: Get feeds by event.
+      responses:
+        200:
+          description: Success - return an array of feed documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
+    post:
+      tags: [ Feed ]
+      operationId: addFeedToEvent
+      description: >
+        Add a feed to an event. Requires the `UPDATE_EVENT` permission.
+      summary: Add a feed to an event.
+      requestBody:
+        description: >
+          Event id and feed id to connect.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedAddToEvent'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MageEvent'
+        400:
+          description: Missing feed id
+          content:
+            application/json:
+              schema:
+                type: string
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
+  /api/events/{eventId}/feeds/{feedId}:
+    parameters:
+       - $ref: '#/components/parameters/eventIdInPath'
+       - $ref: '#/components/parameters/feedIdInPath'
+    delete:
+      tags: [ Feed ]
+      operationId: removeFeedFromEvent
+      description: >
+        Remove a feed from an event. Requires the `UPDATE_EVENT` permission.
+      summary: Remove a feed from an event.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Feed' }
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
+  /api/events/{eventId}/feeds/{feedId}/content:
+    parameters:
+       - $ref: '#/components/parameters/eventIdInPath'
+       - $ref: '#/components/parameters/feedIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: fetchFeedContent
+      description: > 
+        Fetch feed content. Requires the `READ_EVENT_USER` permission.
+      summary: Get a feeds content.
+      requestBody:
+        description: Variable params.  
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonObject'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedContent'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: string
+  /api/feeds/service_types:
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServiceTypes
+      description: >
+        Get a list of feed service types.  Requires the `FEEDS_LIST_SERVICE_TYPES` permission.
+      summary: Get a list of feed service types.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/service_types/{feedServiceTypeId}/topic_preview:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceTypeIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: previewFeedTopics
+      description: >
+        Preview feed topics.  Requires the `FEEDS_CREATE_SERVICE` permission.
+      summary: Preview a feeds topic.
+      requestBody:
+        description: Service config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceConfig'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service type not found
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/services:
+    post:
+      tags: [ Feed ]
+      operationId: createFeedService
+      description: >
+        Create a feed service.  Requires the `FEEDS_CREATE_SERVICE` permission.
+      summary: Create a feed service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeedService'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServices
+      description: >
+        List all feed services.  Requires the `FEEDS_LIST_SERVICES` permission.
+      summary: Get a list of feed services.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/services/{feedServiceId}/topics:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: listFeedServiceTopics
+      description: >
+        List feed service topics.  Requires `FEEDS_LIST_TOPICS` permission.
+      summary: Get a list of feed service topics.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service not found
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feed_preview:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: previewFeedServiceTopic
+      description: >
+         Preview feed service topic.  Requires `FEEDS_CREATE_FEED` permission.
+      summary: Get a preview of a feed service topic.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewFeedRequest'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedPreview'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service or feed topic not found
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feeds:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    post:
+      tags: [ Feed ]
+      operationId: createFeed
+      description: >
+        Create feed.  Requires the `FEEDS_CREATE_FEED` permission.
+      summary: Create a new feed.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feed'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Entity not found
+  /api/feeds/{feedServiceId}/feeds:
+    parameters:
+       - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: listServiceFeeds
+      description: >
+        List service feeds.  Requires the `FEEDS_LIST_ALL` permission.
+      summary: Get a list of service feeds.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service not found
+  /api/feeds/services/{feedServiceId}:
+    parameters:
+       - $ref: '#/components/parameters/feedServiceIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedService
+      description: >
+        Get a feed service. Requires `FEEDS_LIST_SERVICES` permission.
+      summary: Get a feed service.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schema/FeedService'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service not found
+    delete:
+      tags: [ Feed ]
+      operation: deleteFeedService
+      description: >
+        Delete a feed service.  Requires the `FEEDS_CREATE_SERVICE` permission.
+      summary: Delete a feed service.
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service not found.
+  /api/feeds:
+    get:
+      tags: [ Feed ]
+      operationId: listAllFeeds
+      description: >
+        List all feeds.  Requires `FEEDS_LIST_ALL` permission.
+      summary: Get a list of feeds.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/feeds/service_types/{feedServiceTypeId}:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceTypeIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getServiceType
+      description: >
+        Get a service type by id.  Requires `FEEDS_LIST_SERVICE_TYPES` permission.
+      summary: Get a service type by id.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedServiceTypeDescriptor'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service type not found.
+  /api/feeds/services/{feedServiceId}/topics/{feedTopicId}:
+    parameters:
+      - $ref: '#/components/parameters/feedServiceIdInPath'
+      - $ref: '#components/parameters/feedTopicIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedTopic
+      description: >
+        Get a feed topic by id.  Requires `FEEDS_LIST_TOPICS` permission.
+      summary: Get a feed topic.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedTopic'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed service or feed  topic not found.
+  /api/feeds/{feedId}:
+    parameters:
+       - $ref: '#/components/parameters/feedIdInPath'
+    get:
+      tags: [ Feed ]
+      operationId: getFeedById
+      description: >
+        Get a feed by id.  Requires `FEEDS_LIST_ALL` permission.
+      summary: Get a feed.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Feed not found
+    put:
+      tags: [ Feed ]
+      operationId: updateFeed
+      description: >
+         Update a feed.  Requires the `FEEDS_CREATE_FEED` permssion.
+      summary: Update a feed.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feed'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
+        403:
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                type: object
+    delete:
+      tags: [ Feed ]
+      operationId: deleteFeed
+      description: >
+        Delete a feed by id.  Requires the `FEEDS_CREATE_FEED` permssion.
+      summary: Delete a feed.
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/icons/{iconId}/content:
+    parameters:
+      - $ref: '#/components/parameters/iconIdInPath'
+    get:
+      tags: [ Icon ]
+      operationId: getIconContent
+      summary: Get an icons content.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticIconWithContent'
+        404:
+          description: Icon not found
+  /api/icons/{iconId}:
+    parameters:
+      - $ref: '#/components/parameters/iconIdInPath'
+    get:
+      tags: [ Icon ]
+      operationId: getIconById
+      summary: Get an icon.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticIcon'
+        404:
+          description: Icon not found
+  /api/icons:
+    get:
+      tags: [ Icon ]
+      operationId: getIcons
+      summary: Get all icons
+      parameters:
+        - in: query
+          name: source_url
+          schema:
+            type: string
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOfStaticIcons'
+
   /api/layers:
     get:
       tags: [ Layer ]
@@ -3370,7 +4002,376 @@ components:
           type: boolean
         settings:
           type: object
-
+    EventRef:
+      description: >
+        `EventRef` is an object that references an existing event document with
+        the required `id` property.  MAGE ignores any properties other than
+        `id`.
+      type: object
+      allOf:
+        - { $ref: '#/components/schemas/EventRef' }
+        - { type: object, required: [ id ] }
+    Style:
+      properties:
+        fill:
+          $ref: '#/components/schemas/ColorHex'
+        stroke:
+          $ref: '#/components/schemas/ColorHex'
+        fillOpacity:
+          type: integer
+          minimum: 0
+          maximum: 1
+        strokeOpacity:
+          type: integer
+          minimum: 0
+          maximum: 1
+        strokeWidth:
+          type: integer
+    SourceUrlStaticIconReference:
+      required:
+        - sourceUrl
+      properties:
+        sourceUrl:
+          type: string
+          format: uri
+    RegisteredStaticIconReference:
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    MapStyle:
+      properties:
+        stroke:
+          $ref: '#/components/schemas/ColorHex'
+        strokeOpacity:
+          type: integer
+          minimum: 0
+          maximum: 1
+        strokeWidth:
+          type: integer
+        fill:
+          $ref: '#/components/schemas/ColorHex'
+        fillOpacity:
+          type: integer
+          minimum: 0
+          maximum: 1
+        icon:
+          $ref: '#/components/schemas/SourceUrlStaticIconReference'
+    Feed:
+      required:
+        - id
+        - service
+        - topic
+        - title
+        - itemsHaveIdentity
+        - itemsHaveSpatialDimension
+      type: object
+      properties:
+        id:
+          type: string
+        service:
+          type: string
+        topic:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        icon:
+          $ref: '#/components/schemas/RegisteredStaticIconReference'
+        constantParams:
+          type: object
+        variableParamsSchema:
+          type: object
+        updateFrequencySeconds:
+          type: integer
+        itemsHaveIdentity:
+          type: boolean
+        itemsHaveSpatialDimension:
+          type: boolean
+        itemTemporalProperty:
+          type: string
+        itemPrimaryProperty:
+          type: string
+        itemSecondaryProperty:
+          type: string
+        mapStyle:
+          $ref: '#/components/schemas/MapStyle'
+        itemPropertiesSchema:
+          type: object
+    FeedAddToEvent:
+      required:
+        - feedId
+      type: object
+      properties:
+        feedId:
+          type: string
+    JsonObject:
+      required:
+        - prop
+      type: object
+      properties:
+        prop:
+          type: string
+        value:
+          type: object
+    MageEvent:
+      required:
+        - id
+        - name
+        - layerIds
+        - feedIds
+        - forms
+        - style
+        - acl
+      type: object
+      properties:
+        id:
+          type: string
+        name: 
+          type: string
+        description:
+          type: string 
+        complete: 
+          type: boolean
+        teamIds:
+          type: array
+          items:
+            type: string
+        teams:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Team'
+        layerIds:
+          type: array
+          items:
+            type: string
+        feedIds:
+          type: array
+          items:
+            type: string
+        forms:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Form'
+        style:
+          $ref: '#/components/schemas/Style'
+        acl:
+          $ref: '#/components/schemas/ACL'
+    FeedContent:
+      required:
+        - feed
+        - topic
+        - items
+      properties:
+        feed:
+          type: string
+        variableParams:
+          $ref: '#/components/schemas/JsonObject'
+        topic:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+        pageCursor:
+          type: object
+    UserSearchResult:
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        active:
+          type: boolean
+        enabled:
+          type: boolean
+        allPhones:
+          type: string
+    PageOfUsers:
+      required:
+        - totalCount
+        - pageSize
+        - pageIndex 
+        - items
+      properties:
+        totalCount:
+          type: integer
+        pageSize:
+          type: integer
+        pageIndex:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#components/schemas/UserSearchResult'
+    FeedServiceTypeDescriptor:
+      properties:
+        id:
+          type: string
+        pluginServiceTypeId:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+    ServiceConfig:
+      properties:
+        serviceConfig:
+          type: object
+    FeedTopic:
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        icon:
+          $ref: '#/components/schemas/SourceUrlStaticIconReference'
+        paramsSchema:
+          type: object
+        updateFrequencySeconds:
+          type: integer
+        itemsHaveIdentity:
+          type: boolean
+        itemsHaveSpatialDimension:
+          type: boolean
+        itemTemporalProperty:
+          type: string
+        itemPrimaryProperty:
+          type: string
+        itemSecondaryProperty:
+          type: string
+        mapStyle:
+          $ref: '#/components/schemas/MapStyle'
+        itemPropertiesSchema:
+          type: string
+    CreateFeedService:
+      properties:
+        serviceType:
+          type: string
+        config:
+          type: object
+        title:
+          type: string
+        summary:
+          type: string
+    FeedService:
+      required:
+        - id
+        - serviceType
+        - title
+        - config
+      properties:
+        id:
+          type: string
+        serviceType:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        config:
+          type: object
+    FeedPreview:
+      required:
+        - feed
+      properties:
+        feed:
+          $ref: '#/components/schemas/Feed'
+        content:
+          $ref: '#/components/schemas/FeedContent'
+    PreviewFeedRequest:
+      properties:
+        skipContentFetch:
+          type: boolean
+        variableParams:
+          $ref: '#/components/schemas/JsonObject'
+    ImageSize:
+      required:
+        - width
+        - height
+      properties:
+        width:
+          type: number
+        height:
+          type: number
+    StaticIcon:
+      required:
+        - sourceUrl
+        - id
+        - registeredTimestamp
+      properties:
+        sourceUrl:
+          type: string
+          format: uri
+        id:
+          type: string
+        registeredTimestamp:
+          type: number
+        resolvedTimestamp:
+          type: number
+        imageType:
+          type: string
+          enum:
+            - raster
+            - vector
+        mediaType:
+          type: string
+        sizePixels:
+          $ref: '#/components/schemas/ImageSize'
+        sizeBytes:
+          type: number
+        contentHash:
+          type: string
+        contentTimestamp:
+          type: number
+        title:
+          type: string
+        summary:
+          type: string
+        fileName:
+          type: string
+        tags:
+          type: array
+          items: 
+            type: string
+    StaticIconWithContent:
+      required:
+        - iconInfo
+        - iconContent
+      properties:
+        iconInfo:
+          $ref: '#/components/schemas/StaticIcon'
+        iconContent:
+          type: object
+    PageOfStaticIcons:
+      required:
+        - totalCount
+        - pageSize
+        - pageIndex 
+        - items
+      properties:
+        totalCount:
+          type: integer
+        pageSize:
+          type: integer
+        pageIndex:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#components/schemas/StaticIcon'
+        
   parameters:
     userIdInPath:
       in: path
@@ -3540,6 +4541,42 @@ components:
       required: false
       schema:
         type: boolean
+    feedIdInPath:
+      in: path
+      name: feedId
+      description: The ID of the target feed document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/Feed/properties/id' }
+    feedServiceTypeIdInPath:
+      in: path
+      name: feedServiceTypeId
+      description: The ID of the feed service type
+      required: true
+      example: 1234
+      schema: 
+        type: string
+    feedServiceIdInPath:
+      in: path
+      name: feedServiceId
+      description: The ID of the target feed service document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/FeedService/properties/id' }
+    feedTopicIdInPath:
+      in: path
+      name: feedTopicId
+      description: The ID of the target feed topic document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/FeedTopic/properties/id' }
+    iconIdInPath:
+      in: path
+      name: iconId
+      description: The ID of the target icon document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/StaticIcon/properties/id' }
 
   responses:
     FormIconInfo:
@@ -3591,5 +4628,3 @@ components:
               role:
                 $ref: '#/components/schemas/ACLRole'
             required: [ role ]
-
-
