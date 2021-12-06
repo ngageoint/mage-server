@@ -59,7 +59,7 @@ describe('icons use case interactions', function() {
       iconRepo.didNotReceive().createLocal(Arg.all())
     })
 
-    it('saves the icon info and content', async function() {
+    xit('saves the icon info and content', async function() {
 
       permissions.ensureCreateStaticIconPermission(Arg.all()).resolves(null)
       const iconInfo: LocalStaticIconStub = {
@@ -87,7 +87,7 @@ describe('icons use case interactions', function() {
     })
   })
 
-  describe('registering a remote icon', async function() {
+  xdescribe('registering a remote icon', async function() {
 
     describe('fetch behavior', function() {
 
@@ -270,7 +270,7 @@ describe('icons use case interactions', function() {
       expect(err.data.entityType).to.equal('StaticIcon')
     })
 
-    it('does not fetch and load content when client cache parameters are valid', async function() {
+    xit('does not fetch and load content when client cache parameters are valid', async function() {
       expect.fail('todo')
     })
   })

@@ -8,7 +8,7 @@ import supertest from 'supertest'
 import uniqid from 'uniqid'
 import express from 'express'
 import { StaticIcon } from '../../../lib/entities/icons/entities.icons'
-import { ErrIconSourceUrlFetch, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIconsRequest, StaticIconWithContent } from '../../../lib/app.api/icons/app.api.icons'
+import { GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIconsRequest, StaticIconWithContent } from '../../../lib/app.api/icons/app.api.icons'
 import _ from 'lodash'
 import { entityNotFound, EntityNotFoundError } from '../../../lib/app.api/app.api.errors'
 import { PageOf } from '../../../lib/entities/entities.global'
@@ -148,7 +148,12 @@ describe('icons web controller', function() {
       expect(res.type).to.equal('image/test-type')
     })
 
-    it('sets the response content length to the size of the content stream', async function() {
+    xit('sets the response content length to the size of the content stream', async function() {
+
+      /*
+      this might be unnecessary for GET, but for HEAD should return the size
+      in bytes from the icon db record
+      */
 
       const icon: StaticIcon = {
         id: uniqid(),
@@ -167,7 +172,7 @@ describe('icons web controller', function() {
       expect(res.header['content-length']).to.equal(iconBytes.readableLength)
     })
 
-    describe('caching behavior', function() {
+    xdescribe('caching behavior', function() {
 
       it('sets cache control header with max age', async function() {
 
@@ -488,7 +493,7 @@ describe('icons web controller', function() {
     })
   })
 
-  describe('POST /', function() {
+  xdescribe('POST /', function() {
 
     it('should register an icon', async function() {
       expect.fail('todo')
