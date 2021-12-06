@@ -24,6 +24,7 @@ tags:
     description: > 
       Feeds are supplemental data sets that participants can add to their active event context. 
       Feed content could have any combination of spatial, temporal, or informational dimensions.
+  - name: Icon
   - name: Layer
   - name: Location
   - name: Observation
@@ -2442,6 +2443,21 @@ paths:
               schema:
                 type: string
 
+  /api/icons/{iconId}/content:
+    parameters:
+      - $ref: '#/components/parameters/iconIdInPath'
+    get:
+      tags: [ Icon ]
+      operationId: getIconContent
+      summary: Get an icons content.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaticIconWithContent'
+
   /api/layers:
     get:
       tags: [ Layer ]
@@ -4233,7 +4249,65 @@ components:
           type: boolean
         variableParams:
           $ref: '#/components/schemas/JsonObject'
-
+    ImageSize:
+      required:
+        - width
+        - height
+      properties:
+        width:
+          type: number
+        height:
+          type: number
+    StaticIcon:
+      required:
+        - sourceUrl
+        - id
+        - registeredTimestamp
+      properties:
+        sourceUrl:
+          type: string
+          format: uri
+        id:
+          type: string
+        registeredTimestamp:
+          type: number
+        resolvedTimestamp:
+          type: number
+        imageType:
+          type: string
+          enum:
+            - raster
+            - vector
+        mediaType:
+          type: string
+        sizePixels:
+          $ref: '#/components/schemas/ImageSize'
+        sizeBytes:
+          type: number
+        contentHash:
+          type: string
+        contentTimestamp:
+          type: number
+        title:
+          type: string
+        summary:
+          type: string
+        fileName:
+          type: string
+        tags:
+          type: array
+          items: 
+            type: string
+    StaticIconWithContent:
+      required:
+        - iconInfo
+        - iconContent
+      properties:
+        iconInfo:
+          $ref: '#/components/schemas/StaticIcon'
+        iconContent:
+          type: object
+        
   parameters:
     userIdInPath:
       in: path
@@ -4432,6 +4506,13 @@ components:
       required: true
       example: 1234
       schema: { $ref: '#/components/schemas/FeedTopic/properties/id' }
+    iconIdInPath:
+      in: path
+      name: iconId
+      description: The ID of the target icon document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/StaticIcon/properties/id' }
 
   responses:
     FormIconInfo:
