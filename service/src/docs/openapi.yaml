@@ -21,8 +21,8 @@ tags:
   - name: Event
   - name: Export
   - name: Feed
-    description: > 
-      Feeds are supplemental data sets that participants can add to their active event context. 
+    description: >
+      Feeds are supplemental data sets that participants can add to their active event context.
       Feed content could have any combination of spatial, temporal, or informational dimensions.
   - name: Icon
   - name: Layer
@@ -1907,7 +1907,7 @@ paths:
       responses:
         204:
           description: Success - the attachment was deleted.
-  
+
   /api/events/{eventId}/feeds:
     parameters:
       - $ref: '#/components/parameters/eventIdInPath'
@@ -1915,7 +1915,7 @@ paths:
       tags: [ Feed ]
       operationId: listEventFeeds
       description: >
-        Get a list of feeds associated with an event. Requires the 
+        Get a list of feeds associated with an event. Requires the
         `READ_EVENT_USER` permission.
       summary: Get feeds by event.
       responses:
@@ -2013,11 +2013,11 @@ paths:
     post:
       tags: [ Feed ]
       operationId: fetchFeedContent
-      description: > 
+      description: >
         Fetch feed content. Requires the `READ_EVENT_USER` permission.
       summary: Get a feeds content.
       requestBody:
-        description: Variable params.  
+        description: Variable params.
         content:
           application/json:
             schema:
@@ -2085,7 +2085,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   $ref: '#/components/schemas/FeedTopic'
         403:
           description: Permission denied
@@ -2280,7 +2280,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schema/FeedService'
+                $ref: '#/components/schemas/FeedService'
         403:
           description: Permission denied
           content:
@@ -2291,7 +2291,7 @@ paths:
           description: Feed service not found
     delete:
       tags: [ Feed ]
-      operation: deleteFeedService
+      operationId: deleteFeedService
       description: >
         Delete a feed service.  Requires the `FEEDS_CREATE_SERVICE` permission.
       summary: Delete a feed service.
@@ -4129,11 +4129,11 @@ components:
       properties:
         id:
           type: string
-        name: 
+        name:
           type: string
         description:
-          type: string 
-        complete: 
+          type: string
+        complete:
           type: boolean
         teamIds:
           type: array
@@ -4141,7 +4141,7 @@ components:
             type: string
         teams:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Team'
         layerIds:
           type: array
@@ -4153,7 +4153,7 @@ components:
             type: string
         forms:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Form'
         style:
           $ref: '#/components/schemas/Style'
@@ -4197,7 +4197,7 @@ components:
       required:
         - totalCount
         - pageSize
-        - pageIndex 
+        - pageIndex
         - items
       properties:
         totalCount:
@@ -4343,7 +4343,7 @@ components:
           type: string
         tags:
           type: array
-          items: 
+          items:
             type: string
     StaticIconWithContent:
       required:
@@ -4358,7 +4358,7 @@ components:
       required:
         - totalCount
         - pageSize
-        - pageIndex 
+        - pageIndex
         - items
       properties:
         totalCount:
@@ -4371,7 +4371,7 @@ components:
           type: array
           items:
             $ref: '#components/schemas/StaticIcon'
-        
+
   parameters:
     userIdInPath:
       in: path
@@ -4554,7 +4554,7 @@ components:
       description: The ID of the feed service type
       required: true
       example: 1234
-      schema: 
+      schema:
         type: string
     feedServiceIdInPath:
       in: path
