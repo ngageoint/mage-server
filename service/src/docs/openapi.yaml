@@ -2178,7 +2178,7 @@ paths:
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feed_preview:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
-      - $ref: '#components/parameters/feedTopicIdInPath'
+      - $ref: '#/components/parameters/feedTopicIdInPath'
     post:
       tags: [ Feed ]
       operationId: previewFeedServiceTopic
@@ -2212,7 +2212,7 @@ paths:
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}/feeds:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
-      - $ref: '#components/parameters/feedTopicIdInPath'
+      - $ref: '#/components/parameters/feedTopicIdInPath'
     post:
       tags: [ Feed ]
       operationId: createFeed
@@ -2359,7 +2359,7 @@ paths:
   /api/feeds/services/{feedServiceId}/topics/{feedTopicId}:
     parameters:
       - $ref: '#/components/parameters/feedServiceIdInPath'
-      - $ref: '#components/parameters/feedTopicIdInPath'
+      - $ref: '#/components/parameters/feedTopicIdInPath'
     get:
       tags: [ Feed ]
       operationId: getFeedTopic
@@ -4002,15 +4002,6 @@ components:
           type: boolean
         settings:
           type: object
-    EventRef:
-      description: >
-        `EventRef` is an object that references an existing event document with
-        the required `id` property.  MAGE ignores any properties other than
-        `id`.
-      type: object
-      allOf:
-        - { $ref: '#/components/schemas/EventRef' }
-        - { type: object, required: [ id ] }
     Style:
       properties:
         fill:
@@ -4209,7 +4200,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#components/schemas/UserSearchResult'
+            $ref: '#/components/schemas/UserSearchResult'
     FeedServiceTypeDescriptor:
       properties:
         id:
@@ -4370,7 +4361,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#components/schemas/StaticIcon'
+            $ref: '#/components/schemas/StaticIcon'
 
   parameters:
     userIdInPath:
@@ -4546,14 +4537,14 @@ components:
       name: feedId
       description: The ID of the target feed document
       required: true
-      example: 1234
+      example: abc1234
       schema: { $ref: '#/components/schemas/Feed/properties/id' }
     feedServiceTypeIdInPath:
       in: path
       name: feedServiceTypeId
       description: The ID of the feed service type
       required: true
-      example: 1234
+      example: abc1234
       schema:
         type: string
     feedServiceIdInPath:
@@ -4561,21 +4552,21 @@ components:
       name: feedServiceId
       description: The ID of the target feed service document
       required: true
-      example: 1234
+      example: abc1234
       schema: { $ref: '#/components/schemas/FeedService/properties/id' }
     feedTopicIdInPath:
       in: path
       name: feedTopicId
       description: The ID of the target feed topic document
       required: true
-      example: 1234
+      example: abc1234
       schema: { $ref: '#/components/schemas/FeedTopic/properties/id' }
     iconIdInPath:
       in: path
       name: iconId
       description: The ID of the target icon document
       required: true
-      example: 1234
+      example: abc1234
       schema: { $ref: '#/components/schemas/StaticIcon/properties/id' }
 
   responses:
