@@ -1,7 +1,7 @@
 {
-  "name": "@ngageoint/mage.instance",
-  "version": "6.0.0",
-  "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool the dependencies point to relative directories instead of production packages.  This can however serve a starting point to build a production MAGE instance package.json.",
+  "name": "@ngageoint/mage.dev-instance",
+  "version": "6.0.1",
+  "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool because the dependencies point to relative directories instead of production packages.  This can however serve as a starting point to create a production MAGE instance package.json.",
   "scripts": {
     "start": "npm run start:dev-env",
     "start:dev": "NODE_PATH=./node_modules node ./node_modules/.bin/mage.service -C config.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ngageoint/mage-server.git"
+    "url": "https://github.com/ngageoint/mage-server.git"
   },
   "keywords": [
     "nga",
@@ -23,7 +23,7 @@
   "bugs": {
     "url": "https://github.com/ngageoint/mage-server/issues"
   },
-  "homepage": "https://github.com/ngageoint/mage-server#readme",
+  "homepage": "https://github.com/ngageoint/mage-server",
   "dependencies": {
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist/app",

@@ -25,8 +25,8 @@ describe('mongoose plugin state repository', function() {
   let pluginId: string
 
   before(async function() {
-    mongo = new MongoMemoryServer()
-    uri = await mongo.getUri()
+    mongo = await MongoMemoryServer.create()
+    uri = mongo.getUri()
   })
 
   beforeEach(async function() {

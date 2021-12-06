@@ -31,7 +31,7 @@ const optPluginsDesc =
 `;
 
 const options = [
-  new Option('-C, --config <string>', optConfigDesc).env('MAGE_CONFIG').argParser(parseConfigJsonFromStringOrFile),
+  new Option('-C --config <string>', optConfigDesc).env('MAGE_CONFIG').argParser(parseConfigJsonFromStringOrFile),
   new Option('-a --address <string>', 'The address on which the web server listens for HTTP requests').env('MAGE_ADDRESS').default('0.0.0.0'),
   new Option('-p --port <number>', 'The port on which which the web server listens for HTTP requests').env('MAGE_PORT').default(4242).argParser(x => parseInt(x)),
   new Option('--attachment-dir <string>').env('MAGE_ATTACHMENT_DIR').default('/var/lib/mage/attachments'),
@@ -70,7 +70,6 @@ mageCmd.parseAsync().then(
     const opts = mageCmd.opts();
     const merged = mergeOptsToConfig(opts);
     tempEnvHack(merged);
-    console.info(`starting mage with config\n${JSON.stringify(merged, null, 2)}`);
     const { boot } = require('../lib/app');
     const service = await boot(merged);
     service.open();

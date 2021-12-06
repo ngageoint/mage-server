@@ -1,0 +1,262 @@
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'releases/*'
+      - 'prereleases/*'
+
+name: Build MAGE Server and Optionally Release
+
+env:
+  MAGE_NODE_VERSIONS: 12 14
+
+jobs:
+
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      # '' to disable tests, 'true' to enable
+      tests_enabled: 'true'
+      node_versions-all: ${{ steps.node_versions.outputs.all }}
+      node_versions-all-json: ${{ steps.node_versions.outputs.all-json }}
+      node_versions-latest: ${{ steps.node_versions.outputs.latest }}
+      node_versions-pre_latest: ${{ steps.node_versions.outputs.pre_latest }}
+      node_versions-pre_latest-json: ${{ steps.node_versions.outputs.pre_latest-json }}
+      release-is_release: ${{ steps.release_info.outputs.is_release }}
+      release-is_prerelease: ${{ steps.release_info.outputs.is_prerelease }}
+      release-version: ${{ steps.release_info.outputs.version }}
+
+    steps:
+      - id: sort_node_versions
+        name: sort versions
+        run: |
+          echo 'node_versions_lines<<EOF' >> $GITHUB_ENV
+          echo ${MAGE_NODE_VERSIONS} | tr ' ' '\n' | sort -V >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - id: node_versions
+        name: main
+        run: |
+          node_versions_arr=($(echo "${node_versions_lines}"))
+          node_versions_latest=${node_versions_arr[-1]}
+          node_versions_pre_latest=${node_versions_arr[@]:0:${#node_versions_arr[@]}-1}
+          node_versions_pre_latest=(${node_versions_arr[@]:0:-1})
+          node_versions_json=$(printf '"%s",' ${node_versions_arr[@]})
+          node_versions_json="[ ${node_versions_json:0:-1} ]"
+          node_versions_pre_latest_json=$(printf '"%s",' ${node_versions_pre_latest[@]})
+          node_versions_pre_latest_json="[ ${node_versions_pre_latest_json:0:-1} ]"
+          echo "node versions arr: ${node_versions_arr[@]}"
+          echo "node versions json: ${node_versions_json}"
+          echo "node versions latest: ${node_versions_latest}"
+          echo "node versions pre_latest: ${node_versions_pre_latest}"
+          echo "node versions pre_latest json: ${node_versions_pre_latest_json}"
+          echo ::set-output name=all::${node_versions_arr}
+          echo ::set-output name=all-json::${node_versions_json}
+          echo ::set-output name=latest::${node_versions_latest}
+          echo ::set-output name=pre_latest::${node_versions_pre_latest}
+          echo ::set-output name=pre_latest-json::${node_versions_pre_latest_json}
+      - id: release_info
+        name: get release info
+        run: |
+          mage_version=$(echo ${GITHUB_REF_NAME} | sed -E 's/^(pre)?releases\///i')
+          [[ -z ${mage_version} ]] && mage_version=${GITHUB_REF}
+          echo ::set-output name=is_release::${{ (github.ref_type == 'tag' && contains(github.ref_name, 'releases/')) || '' }}
+          echo ::set-output name=is_prerelease::${{ startsWith(github.ref_name, 'prereleases/') || '' }}
+          echo ::set-output name=version::${mage_version}
+
+  build_service:
+    name: build mage service
+    needs: config
+    runs-on: ubuntu-latest
+    steps:
+      - name: install native dev libs
+        run: |
+          sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          cache: npm
+          cache-dependency-path: |
+            service/package-lock.json
+            plugins/nga-msi/package-lock.json
+      - name: build service
+        run: |
+          cd service
+          npm ci
+          npm run build
+      - name: pack service
+        run: npm pack ./service
+      - name: build plugin nga-msi
+        run: |
+          cd plugins/nga-msi
+          npm ci
+          npm run build
+      - name: pack nga-msi
+        run: npm pack ./plugins/nga-msi
+      - name: upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: mage_service_packages
+          path: |
+            ngageoint-mage.*.tgz
+
+  test_service:
+    name: test mage service
+    needs: [ config, build_service ]
+    if: ${{ needs.config.outputs.tests_enabled }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            service/package-lock.json
+            plugins/nga-msi/package-lock.json
+      - name: install service dependencies
+        run: |
+          npm ci --prefix service
+      - name: download service package
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: extract service lib
+        run: |
+          tar xzf $(ls -1 ngageoint-mage.service-*.tgz) package/lib
+          mv package/lib ./service
+          rmdir package
+      - name: test service with node ${{ matrix.node }}
+        run: |
+          cd service
+          npm run ci:test
+      # TODO: restore coveralls test coverage report - see buildAndTest.yml
+
+  build_web-app:
+    name: build mage web app
+    needs: config
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup  node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          cache: npm
+          cache-dependency-path: web-app/package-lock.json
+      - name: build web-app
+        run: |
+          cd web-app
+          npm ci
+          npm run build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: test web-app
+        if: ${{ needs.config.outputs.tests_enabled }}
+        run: npm run --prefix web-app test-headless
+      - name: pack web-app
+        run: npm pack ./web-app/dist/app
+      - name: upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: mage_web-app_packages
+          path: |
+            ngageoint-mage.*.tgz
+
+  create_release_stub:
+    # so the matrix job does not race to create the release
+    name: release - create empty release
+    needs: [ config, build_service, build_web-app ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: main
+        if: ${{ needs.config.outputs.release-is_release }}
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.config.outputs.release-version }}
+          prerelease: ${{ needs.config.outputs.release-is_prerelease }}
+
+  release_packages:
+    name:  release - add npm package tarballs
+    needs: [ config, create_release_stub ]
+    if: ${{ needs.config.outputs.release-is_release }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+      - name: download service packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: download web-app packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_web-app_packages
+      - name: add package tarballs to release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.config.outputs.release-version }}
+          files: |
+            package.json
+            ngageoint-mage.*.tgz
+
+  release_prebuilt_platform_instance:
+    name:  release - add pre-built mage instance tarballs
+    needs: [ config, create_release_stub ]
+    if: ${{ needs.config.outputs.release-is_release && !needs.config.outputs.release-is_prerelease }}
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install json utility
+        run: npm i json
+      - name: download service packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: download web-app packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_web-app_packages
+      - name: list artifacts
+        run: ls -R
+      - name: create platform instance package.json
+        run: |
+          mage_platform_package=$(printf 'mage.instance-%s-node-%s' ${{ runner.os }} ${{ matrix.node }} | tr '[:upper:]' '[:lower:]')
+          printf 'mage_platform_package=%s\n' ${mage_platform_package} >> ${GITHUB_ENV}
+          (
+          printf '{ "name": "%s", "version": "%s" }\n' ${mage_platform_package} ${{ needs.config.outputs.release-version }} &&
+          printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi" }}\n' &&
+          printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/nga-msi": "./%s" }}\n' $(ls -1 *mage.nga-msi*.tgz)
+          ) | npx json --deep-merge > package.json
+          echo "created instance platform package.json"
+          cat package.json
+      - name: build platform instance
+        if: ${{ needs.config.outputs.release-is_release }}
+        run: |
+          npm i --production
+          tar czf ${mage_platform_package}-${{ needs.config.outputs.release-version }}.tgz ngageoint-*.tgz package*.json node_modules
+      - name: release platform instance asset
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.config.outputs.release-version }}
+          files: |
+            ${{ env.mage_platform_package }}-${{ needs.config.outputs.release-version }}.tgz

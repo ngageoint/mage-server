@@ -2,14 +2,18 @@
   "private": true,
   "name": "@ngageoint/mage.service",
   "version": "6.0.1",
-  "displayName": "MAGE Server",
-  "description": "MAGE is a geospatial situational awareness and data collection application.",
+  "displayName": "MAGE Service",
+  "description": "MAGE is a geospatial situational awareness and data collection platform.  The MAGE Service is the ReST service API that the MAGE client apps use to interact with MAGE data.",
   "keywords": [
     "NGA",
     "MAGE",
     "situational awareness",
     "geospatial"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ngageoint/mage-server.git"
+  },
   "author": {
     "name": "NGA"
   },
@@ -120,11 +124,10 @@
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-prettier": "^3.1.2",
     "iconv-lite": "^0.5.1",
-    "jszip": "2.3.0",
+    "jszip": "^3.7.1",
     "mocha": "^7.1.1",
     "mock-fs": "4.13.0",
-    "mongodb-memory-server": "^6.3.1",
-    "mongodb-memory-server-global": "^6.3.2",
+    "mongodb-memory-server": "^8.0.0",
     "nock": "^11.7.2",
     "npm-run-all": "^4.1.5",
     "nyc": "^14.1.1",
@@ -175,14 +178,15 @@
     "migration:run": "node bin/migration.js run",
     "start": "node lib/app.js",
     "debug": "node --inspect-brk=9229 lib/app.js",
-    "clean": "rm -rf lib test-lib functionalTests-lib"
+    "clean": "rm -rf lib test-lib functionalTests-lib",
+    "ci:test": "npm-run-all test:compile test:copy_resources test:copy_node_modules test:run"
   },
   "config": {
     "mongodbMemoryServer": {
-      "version": "4.0.0"
+      "version": "4.0.27"
     }
   },
-  "main": "lib/app.js",
+  "main": "bin/mage.service.js",
   "files": [
     "lib",
     "bin"
