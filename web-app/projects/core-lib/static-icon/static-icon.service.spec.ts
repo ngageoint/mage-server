@@ -55,8 +55,31 @@ describe('StaticIconService', () => {
 
     it('emits an error when the icon does not exist', () => {
 
+      // TODO: might be better just to emit null or typed app layer error
+      // instead of http layer error
 
-      fail('todo')
+      const icon: StaticIcon = {
+        id: 'icon1',
+        sourceUrl: 'test://source/1.png',
+        contentPath: '/api/icons/icon1',
+      }
+      service.fetchIconById(icon.id).subscribe(
+        x => {
+          fail(`unexpected response ${x}`)
+        },
+        (err: HttpErrorResponse) => {
+          expect(err.status).toEqual(404)
+          expect(err.error).toEqual('icon not found')
+        }
+      )
+
+      const req = httpTest.expectOne('/api/icons/icon1')
+      req.flush('icon not found', {
+        status: 404,
+        statusText: '',
+        headers: { 'content-type': 'application/json' }
+      })
+      httpTest.verify()
     })
   })
 

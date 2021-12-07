@@ -48,12 +48,14 @@ export class StaticIconService {
     return results
   }
 
-  fetchIconById(id: string): Observable<StaticIcon> {
+  fetchIconById(id: string): Observable<StaticIcon | null> {
     return this.http.get<StaticIcon>(`/api/icons/${id}`).pipe(
       catchError((err, caught) => {
+        // TODO: this is probably better practice to insulate app layer from
+        // http errors
         // if (err instanceof HttpErrorResponse) {
         //   if (err.status === 404) {
-        //     return of(null)
+        //     return null
         //   }
         // }
         return throwError(err)
