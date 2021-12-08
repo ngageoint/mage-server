@@ -19,17 +19,11 @@
   height: 100%;
 }
 
-.export-panel-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
 .export-filter {
   width: 100%;
 }
 
-.mat-dialog-content, .export-content {
+.mat-dialog-content {
   flex: 1 1 auto;
   max-height: unset;
 }
