@@ -40,7 +40,7 @@ class MockExportService {
           name: 'Test Event'
         }
       }
-    },{
+    }, {
       id: 2,
       userId: 1,
       physicalPath: '/tmp/test.csv',
@@ -53,7 +53,7 @@ class MockExportService {
           name: 'Test Event'
         }
       }
-    },{
+    }, {
       id: 3,
       userId: 1,
       physicalPath: '/tmp/test.json',
@@ -74,11 +74,11 @@ class MockExportService {
   }
 
   retryExport(retry: Export): Observable<ExportResponse> {
-    return of({id: retry.id})
+    return of({ id: retry.id })
   }
 
-  deleteExport(id: string): Observable<{id: string}> {
-    return of({id})
+  deleteExport(id: string): Observable<{ id: string }> {
+    return of({ id })
   }
 }
 
@@ -202,7 +202,7 @@ describe('ExportDialogComponent', () => {
       status: 'Completed'
     }]
 
-    const exp  = component.dataSource.data[0];
+    const exp = component.dataSource.data[0];
     component.scheduleDeleteExport(exp);
     expect(component.dataSource.data.length).toEqual(0);
   });
@@ -253,55 +253,4 @@ describe('ExportDialogComponent', () => {
     expect(deleteSpy).toHaveBeenCalledTimes(0)
     expect(component.dataSource.data.length).toBe(1)
   }));
-
-  it('should set start date', () => {
-    const date = new Date();
-    component.onStartDate(date);
-    expect(component.startDate).toEqual(date);
-  });
-
-  it('should set end date', () => {
-    const date = new Date();
-    component.onEndDate(date);
-    expect(component.endDate).toEqual(date);
-  });
-
-  it('should export', () => {
-    const exportService: ExportService = fixture.debugElement.injector.get(ExportService)
-    const exportSpy = spyOn(exportService, 'export').and.callThrough()
-
-    const start = '2021-05-04T00:00:00.000Z'
-    component.onStartDate(new Date(Date.parse(start)))
-
-    const end = '2021-05-05T00:00:00.000Z'
-    component.onEndDate(new Date(Date.parse(end)))
-
-    component.exportTime = 'custom'
-
-    component.changeFormat('KML');
-
-    component.exportData();
-    expect(exportSpy).toHaveBeenCalledWith({
-      exportType: 'KML',
-      eventId: 1,
-      observations: true,
-      locations: true,
-      startDate: start,
-      endDate: end,
-      attachments: undefined,
-      favorites: undefined,
-      important: undefined
-    })
-  })
-
-  it('should change export format', () => {
-    const badFormat = "test";
-    expect(function () {
-      component.changeFormat(badFormat);
-    }).toThrowError(Error);
-
-    const goodFormat = component.exportFormats[0];
-    component.changeFormat(goodFormat);
-    expect(component.exportFormat).toEqual(goodFormat);
-  });
 });
