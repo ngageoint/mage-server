@@ -15,11 +15,11 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatRadioModule } from "@angular/material/radio";
 import { MatSelectModule } from "@angular/material/select";
-import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatSnackBar, MatSnackBarDismiss, MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatSortModule } from "@angular/material/sort";
 import { MatTableModule } from "@angular/material/table";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { Observable, of } from "rxjs";
+import { Observable, of, Subject } from "rxjs";
 import { FilterService } from "src/app/upgrade/ajs-upgraded-providers";
 import { ExportDialogComponent } from "../export-dialog.component";
 import { ExportRequest, ExportResponse, Export, ExportService } from "../export.service";
@@ -82,6 +82,36 @@ class MockExportService {
     }
 }
 
+class MockSnackbarRef {
+    private readonly _afterDismissed = new Subject<MatSnackBarDismiss>()
+  
+    afterDismissed(): Observable<MatSnackBarDismiss> {
+      return this._afterDismissed
+    }
+  
+    dismiss(): void {
+      this._afterDismissed.next({ dismissedByAction: false })
+      this._afterDismissed.complete()
+    }
+  
+    dismissWithAction(): void {
+      this._afterDismissed.next({ dismissedByAction: true })
+      this._afterDismissed.complete()
+    }
+  }
+  
+class MockSnackbar {
+    private snackbarRef = new MockSnackbarRef()
+  
+    get _openedSnackBarRef(): any {
+      return this.snackbarRef
+    }
+  
+    open(): any {
+      return this.snackbarRef
+    }
+  }
+
 describe('ExportDataComponent', () => {
     let component: ExportDataComponent;
     let fixture: ComponentFixture<ExportDataComponent>;
@@ -96,7 +126,8 @@ describe('ExportDataComponent', () => {
                 MatSelectModule, MatOptionModule, MatDatepickerModule, MatNativeDateModule, FormsModule, MatChipsModule],
             providers: [
                 { provide: ExportService, useClass: MockExportService },
-                { provide: FilterService, useValue: mockFilterService }
+                { provide: FilterService, useValue: mockFilterService },
+                { provide: MatSnackBar, useClass: MockSnackbar }
             ],
             declarations: [ExportDialogComponent]
         }).compileComponents();
