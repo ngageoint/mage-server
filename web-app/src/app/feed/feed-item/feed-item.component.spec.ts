@@ -67,6 +67,12 @@ describe('FeedItemComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(FeedItemComponent);
     component = fixture.componentInstance;
+    component.feed = {
+      id: 'feed1',
+      service: 'service1',
+      topic: 'topic1',
+      title: 'Feed 1'
+    }
     fixture.detectChanges();
   });
 
