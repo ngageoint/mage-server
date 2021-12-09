@@ -143,14 +143,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	}
 
 	showExport(): boolean {
-		if (this.isExportOpen) {
-			return true;
-		} else {
-			if (this.isLoadingResults) {
-				return false;
-			}
-		}
-		return this.dataSource.data == null || this.dataSource.data.length === 0;
+		return this.isExportOpen;
 	}
 
 	onExportDataClosed(): void {
@@ -158,10 +151,18 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	}
 
 	showEmptyState(): boolean {
-		return this.isEmptyStateDisplayed;
+		if (this.isLoadingResults) {
+			return false;
+		}
+		if (!this.isEmptyStateDisplayed) {
+			return false;
+		}
+
+		return this.dataSource.data == null || this.dataSource.data.length === 0;
 	}
 
 	onEmptyStateClosed(): void {
 		this.isEmptyStateDisplayed = false;
+		this.openExport();
 	}
 }
