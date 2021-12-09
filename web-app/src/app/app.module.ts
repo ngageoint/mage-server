@@ -171,6 +171,7 @@ import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authe
 import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { ExportDataComponent } from './export/export-data/export-data.component';
+import { NoExportsComponent } from './export/empty-state/no-exports.component';
 
 @NgModule({
   declarations: [
@@ -246,6 +247,7 @@ import { ExportDataComponent } from './export/export-data/export-data.component'
     ExportComponent,
     ExportDialogComponent,
     ExportDataComponent,
+    NoExportsComponent,
     ObservationEditDiscardComponent,
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,

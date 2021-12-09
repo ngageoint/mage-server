@@ -155,4 +155,12 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	onExportDataClosed(): void {
 		this.dialogRef.close();
 	}
+
+	showEmptyState(): boolean {
+		return true;
+	}
+
+	onNoExportsViewClosed(): void {
+
+	}
 }

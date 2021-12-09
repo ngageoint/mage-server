@@ -1,0 +1,32 @@
+.export {
+  height: 480px;
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+}
+  
+.export-panel {
+  height: 100%;
+}
+
+.export-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mat-dialog-content, .export-content {
+  flex: 1 1 auto;
+  max-height: unset;
+}
+
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-bottom: -16px;
+}
+
+.actions-divider {
+  margin: 0 -24px;
+}
