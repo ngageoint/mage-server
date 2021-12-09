@@ -396,6 +396,9 @@ class LeafletController {
             });
           }
         }
+        if (layerInfo.options.onLayer) {
+          layerInfo.options.onLayer(layer, feature);
+        }
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: (feature, latlng) => {
@@ -421,10 +424,6 @@ class LeafletController {
           }
           options.tooltip = editMode;
           marker = L.observationMarker(latlng, options);
-        }
-
-        if (layerInfo.options.onLayer) {
-          layerInfo.options.onLayer(marker, feature);
         }
 
         return marker
