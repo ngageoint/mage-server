@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, EventEmitter, Output } from "@angular/core";
 
 @Component({
 	selector: 'no-exports',
@@ -7,8 +7,9 @@ import { Component } from "@angular/core";
 })
 export class NoExportsComponent {
 
+	@Output() close = new EventEmitter<void>();
+
 	openExport(): void {
-		//TODO
-		//this.isExportOpen = true;
+		this.close.emit();
 	}
 }

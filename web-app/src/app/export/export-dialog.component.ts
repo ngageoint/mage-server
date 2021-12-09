@@ -50,6 +50,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	isLoadingResults = true;
 	token: any;
 	isExportOpen = false;
+	isEmptyStateDisplayed = true;
 
 	refreshTimer: Observable<number> = timer(0, 5000)
 	private refreshSubscription: Subscription;
@@ -157,10 +158,10 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	}
 
 	showEmptyState(): boolean {
-		return true;
+		return this.isEmptyStateDisplayed;
 	}
 
-	onNoExportsViewClosed(): void {
-
+	onEmptyStateClosed(): void {
+		this.isEmptyStateDisplayed = false;
 	}
 }
