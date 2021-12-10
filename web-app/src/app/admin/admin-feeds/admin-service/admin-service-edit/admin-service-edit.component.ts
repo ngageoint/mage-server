@@ -56,15 +56,17 @@ export class AdminServiceEditComponent implements OnInit, OnChanges {
 
   serviceTypeSelected(): void {
     this.serviceTitleSummarySchema = {
-      title: {
-        type: 'string',
-        title: 'Service Title',
-        default: this.selectedServiceType.title
-      },
-      summary: {
-        type: 'string',
-        title: 'Summary',
-        default: this.selectedServiceType.summary
+      properties: {
+        title: {
+          type: 'string',
+          title: 'Service Title',
+          default: this.selectedServiceType.title
+        },
+        summary: {
+          type: 'string',
+          title: 'Summary',
+          default: this.selectedServiceType.summary
+        }
       }
     };
     this.serviceFormReady = true;
