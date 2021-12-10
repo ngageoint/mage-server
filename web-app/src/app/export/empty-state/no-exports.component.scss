@@ -15,9 +15,13 @@
   height: 100%;
 }
 
-.mat-dialog-content, .export-content {
+.export-content {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   max-height: unset;
+  justify-content: center;
+  align-items: center;
 }
 
 .export-actions {
