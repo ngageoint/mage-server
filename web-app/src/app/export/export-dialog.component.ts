@@ -50,6 +50,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	isLoadingResults = true;
 	token: any;
 	isExportOpen = false;
+	isEmptyStateDisplayed = true;
 
 	refreshTimer: Observable<number> = timer(0, 5000)
 	private refreshSubscription: Subscription;
@@ -142,17 +143,26 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 	}
 
 	showExport(): boolean {
-		if (this.isExportOpen) {
-			return true;
-		} else {
-			if (this.isLoadingResults) {
-				return false;
-			}
-		}
-		return this.dataSource.data == null || this.dataSource.data.length === 0;
+		return this.isExportOpen;
 	}
 
 	onExportDataClosed(): void {
 		this.dialogRef.close();
+	}
+
+	showEmptyState(): boolean {
+		if (this.isLoadingResults) {
+			return false;
+		}
+		if (!this.isEmptyStateDisplayed) {
+			return false;
+		}
+
+		return this.dataSource.data == null || this.dataSource.data.length === 0;
+	}
+
+	onEmptyStateClosed(): void {
+		this.isEmptyStateDisplayed = false;
+		this.openExport();
 	}
 }
