@@ -33,31 +33,26 @@ GeoPackage.prototype.export = async function (streamable) {
   const archive = archiver('zip');
   archive.pipe(streamable);
 
-  try {
-    const filePath = await this.createGeoPackageFile();
-    const gp = await GeoPackageAPI.GeoPackageAPI.create(filePath);
-    await this.createUserTable(gp);
-    await this.addFormDataToGeoPackage(gp);
-    await this.createFormAttributeTables(gp);
-    await this.createObservationTable(gp);
-    await this.createObservationFeatureTableStyles(gp);
-    await this.createUserFeatureTableStyles(gp);
-    await this.addObservationsToGeoPackage(gp);
-    await this.addLocationsToGeoPackage(gp);
-    await this.addUsersToUsersTable(gp);
+  const filePath = await this.createGeoPackageFile();
+  const gp = await GeoPackageAPI.GeoPackageAPI.create(filePath);
+  await this.createUserTable(gp);
+  await this.addFormDataToGeoPackage(gp);
+  await this.createFormAttributeTables(gp);
+  await this.createObservationTable(gp);
+  await this.createObservationFeatureTableStyles(gp);
+  await this.createUserFeatureTableStyles(gp);
+  await this.addObservationsToGeoPackage(gp);
+  await this.addLocationsToGeoPackage(gp);
+  await this.addUsersToUsersTable(gp);
 
-    log.info('GeoPackage created');
-    archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
-    archive.on('end', function () {
-      log.info('Removing temporary GeoPackage file: %s', filePath);
-      fs.unlink(filePath, function () {
-      });
+  log.info('GeoPackage created');
+  archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
+  archive.on('end', function () {
+    log.info('Removing temporary GeoPackage file: %s', filePath);
+    fs.unlink(filePath, function () {
     });
-    archive.finalize();
-  } catch (e) {
-    log.info('Error exporting GeoPackage', e)
-    throw e;
-  }
+  });
+  archive.finalize();
 };
 
 GeoPackage.prototype.createGeoPackageFile = function () {
@@ -163,35 +158,35 @@ GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
       continue;
     }
     const user = this._users[userId];
-      const geoJson = {
-        type: 'Feature',
-        geometry: usersLastLocation[userId].geometry,
-        properties: {
-          timestamp: usersLastLocation[userId].properties.timestamp,
-          username: user.username,
-          displayName: user.displayName,
-          email: user.email,
-          phones: user.phones.join(', '),
-          userId: userId
-        }
-      };
-      const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
-      await new Promise(function (resolve, reject) {
-        fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function (err, iconBuffer) {
-          if (err) return reject(err);
-          const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
-          const iconRow = featureTableStyles.getIconDao().newRow();
-          iconRow.data = iconBuffer;
-          iconRow.contentType = 'image/png';
-          iconRow.name = user.username;
-          iconRow.description = `Icon for user ${user.username}`;
-          iconRow.width = 20;
-          iconRow.anchorU = 0.5;
-          iconRow.anchorV = 1.0;
+    const geoJson = {
+      type: 'Feature',
+      geometry: usersLastLocation[userId].geometry,
+      properties: {
+        timestamp: usersLastLocation[userId].properties.timestamp,
+        username: user.username,
+        displayName: user.displayName,
+        email: user.email,
+        phones: user.phones.join(', '),
+        userId: userId
+      }
+    };
+    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
+    await new Promise(function (resolve, reject) {
+      fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function (err, iconBuffer) {
+        if (err) return reject(err);
+        const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
+        const iconRow = featureTableStyles.getIconDao().newRow();
+        iconRow.data = iconBuffer;
+        iconRow.contentType = 'image/png';
+        iconRow.name = user.username;
+        iconRow.description = `Icon for user ${user.username}`;
+        iconRow.width = 20;
+        iconRow.anchorU = 0.5;
+        iconRow.anchorV = 1.0;
 
-          resolve(featureTableStyles.setIconDefault(userRowId, iconRow))
-        })
+        resolve(featureTableStyles.setIconDefault(userRowId, iconRow))
       })
+    })
   }
   const featureDao = geopackage.getFeatureDao('Users');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
@@ -323,7 +318,7 @@ GeoPackage.prototype.createFormAttributeTables = async function (geopackage) {
   return geopackage;
 }
 
-GeoPackage.prototype.fieldTypeToGeoPackageType = function(fieldType) {
+GeoPackage.prototype.fieldTypeToGeoPackageType = function (fieldType) {
   switch (fieldType) {
     case 'numberfield':
       return 'INTEGER'
@@ -538,7 +533,7 @@ GeoPackage.prototype.addAttachments = async function (geopackage, attachments, o
   }
 }
 
-GeoPackage.prototype.createObservationFeatureTableStyles = async function(geopackage) {
+GeoPackage.prototype.createObservationFeatureTableStyles = async function (geopackage) {
   const featureTableName = 'Observations';
   const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
   await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
@@ -549,7 +544,7 @@ GeoPackage.prototype.createObservationFeatureTableStyles = async function(geopac
   return geopackage;
 }
 
-GeoPackage.prototype.createUserFeatureTableStyles = async function(geopackage) {
+GeoPackage.prototype.createUserFeatureTableStyles = async function (geopackage) {
   const featureTableName = 'Users';
   const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
   await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
@@ -567,7 +562,7 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
     const formDir = formDirs[i];
     this.iconMap[formDir] = this.iconMap[formDir] || {};
     if (formDir === 'icon.png') {
-      await new Promise( (resolve, reject) => {
+      await new Promise((resolve, reject) => {
         fs.readFile(path.join(rootDir, formDir), async (err, iconBuffer) => {
           if (err) return reject(err);
           const iconRow = featureTableStyles.getIconDao().newRow();
@@ -588,7 +583,7 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
       for (let p = 0; p < primaryDirs.length; p++) {
         const primaryDir = primaryDirs[p];
         if (primaryDir === 'icon.png') {
-          await new Promise( (resolve, reject) => {
+          await new Promise((resolve, reject) => {
             fs.readFile(path.join(rootDir, formDir, primaryDir), (err, iconBuffer) => {
               if (err) return reject(err);
               const iconRow = featureTableStyles.getIconDao().newRow();
@@ -609,7 +604,7 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
           for (let v = 0; v < variantDirs.length; v++) {
             const variantDir = variantDirs[v];
             if (variantDir === 'icon.png') {
-              await new Promise( (resolve, reject) => {
+              await new Promise((resolve, reject) => {
                 fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir), (err, iconBuffer) => {
                   if (err) return reject(err);
                   const iconRow = featureTableStyles.getIconDao().newRow();

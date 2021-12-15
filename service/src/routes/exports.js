@@ -66,10 +66,7 @@ module.exports = function (app, security) {
         res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
 
         //TODO figure out event, users and devices
-        exportData(result._id, req.event, req.users, req.devices).catch(err => {
-          log.error(`Error exporting ${result._id}`, err);
-          Export.updateExport(result._id, {status: Export.ExportStatus.Failed});
-        });
+        exportData(result._id, req.event, req.users, req.devices);
       }).catch(err => next(err));
     }
   );
@@ -147,9 +144,7 @@ module.exports = function (app, security) {
     function (req, res) {
       res.json({ id: req.params.exportId });
 
-      exportData(req.param('exportId'), req.event, req.users, req.devices).catch(err => {
-        log.error(err);
-      });
+      exportData(req.param('exportId'), req.event, req.users, req.devices);
     });
 };
 
@@ -287,5 +282,13 @@ async function exportData(exportId, event, users, devices) {
   };
   log.info('Export ' + exportId + ' (' + exportDocument.exportType + ')');
   const exporter = exporterFactory.createExporter(exportDocument.exportType.toLowerCase(), options);
-  exporter.export(stream);
+  try {
+    await exporter.export(stream);
+  } catch (e) {
+    log.error(`Error exporting ${exportId}`, e);
+    Export.updateExport(exportId, { status: Export.ExportStatus.Failed }).catch(err => {
+      log.warn(`Failed to update export ${exportId} to failed state`, err);
+    });
+  }
+
 }
