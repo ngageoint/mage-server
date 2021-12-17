@@ -408,7 +408,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
   const observations = await this.getObservations()
   this.createAttachmentTable(geopackage);
 
-  let observationsEnvelope;
+  const geometries = [];
 
   for (let i = 0; i < observations.length; i++) {
     const observation = observations[i];
@@ -437,25 +437,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
       properties: properties
     };
 
-    const wkxGeometry = wkx.Geometry.parseGeoJSON(observation.geometry);
-    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
-
-    if (!observationsEnvelope) {
-      observationsEnvelope = envelope;
-    } else {
-      if (observationsEnvelope.maxX > envelope.maxX) {
-        observationsEnvelope.maxX = envelope.maxX;
-      }
-      if (observationsEnvelope.maxY > envelope.maxY) {
-        observationsEnvelope.maxY = envelope.maxY;
-      }
-      if (observationsEnvelope.minX < envelope.minX) {
-        observationsEnvelope.minX = envelope.minX;
-      }
-      if (observationsEnvelope.minY < envelope.minY) {
-        observationsEnvelope.minY = envelope.minY;
-      }
-    }
+    geometries.push(observation.geometry);
 
     const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
@@ -533,16 +515,44 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
 
-  await this.updateBounds(geopackage, observationsEnvelope, featureDao.getContents());
+  await this.updateBounds(geopackage, geometries, featureDao.getContents());
 
   return geopackage;
 }
 
-GeoPackage.prototype.updateBounds = async function (geopackage, envelope, contents) {
-  contents.max_x = envelope.maxX;
-  contents.max_y = envelope.maxY;
-  contents.min_x = envelope.minX;
-  contents.min_y = envelope.minY;
+GeoPackage.prototype.updateBounds = async function (geopackage, geometries, contents) {
+
+  let fullEnvelope;
+
+  for (let i = 0; i < geometries.length; i++) {
+
+    const geometry = geometries[i];
+
+    const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
+    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
+
+    if (!fullEnvelope) {
+      fullEnvelope = envelope;
+    } else {
+      if (fullEnvelope.maxX > envelope.maxX) {
+        fullEnvelope.maxX = envelope.maxX;
+      }
+      if (fullEnvelope.maxY > envelope.maxY) {
+        fullEnvelope.maxY = envelope.maxY;
+      }
+      if (fullEnvelope.minX < envelope.minX) {
+        fullEnvelope.minX = envelope.minX;
+      }
+      if (fullEnvelope.minY < envelope.minY) {
+        fullEnvelope.minY = envelope.minY;
+      }
+    }
+  }
+
+  contents.max_x = fullEnvelope.maxX;
+  contents.max_y = fullEnvelope.maxY;
+  contents.min_x = fullEnvelope.minX;
+  contents.min_y = fullEnvelope.minY;
 
   const contentsDao = geopackage.contentsDao;
   contentsDao.update(contents);
