@@ -1,5 +1,5 @@
 const { RelationType } = require('@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType');
-const e = require('express');
+const { EnvelopeBuilder } = require('@ngageoint/geopackage/dist/lib/geom/envelopebuilder');
 const util = require('util')
   , fs = require('fs')
   , api = require('../api')
@@ -50,6 +50,7 @@ GeoPackage.prototype.export = async function (streamable) {
   archive.on('end', function () {
     log.info('Removing temporary GeoPackage file: %s', filePath);
     fs.unlink(filePath, function () {
+      gp.close();
     });
   });
   archive.finalize();
@@ -190,7 +191,7 @@ GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
   }
   const featureDao = geopackage.getFeatureDao('Users');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
-  await rtreeIndex.create()
+  await rtreeIndex.create();
 }
 
 GeoPackage.prototype.createLocationTableForUser = function (geopackage, userId) {
@@ -407,6 +408,8 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
   const observations = await this.getObservations()
   this.createAttachmentTable(geopackage);
 
+  let observationsEnvelope;
+
   for (let i = 0; i < observations.length; i++) {
     const observation = observations[i];
     let primary;
@@ -433,6 +436,26 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
       geometry: observation.geometry,
       properties: properties
     };
+
+    const wkxGeometry = wkx.Geometry.parseGeoJSON(observation.geometry);
+    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
+
+    if (!observationsEnvelope) {
+      observationsEnvelope = envelope;
+    } else {
+      if (observationsEnvelope.maxX > envelope.maxX) {
+        observationsEnvelope.maxX = envelope.maxX;
+      }
+      if (observationsEnvelope.maxY > envelope.maxY) {
+        observationsEnvelope.maxY = envelope.maxY;
+      }
+      if (observationsEnvelope.minX < envelope.minX) {
+        observationsEnvelope.minX = envelope.minX;
+      }
+      if (observationsEnvelope.minY < envelope.minY) {
+        observationsEnvelope.minY = envelope.minY;
+      }
+    }
 
     const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
@@ -508,8 +531,21 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
   }
   const featureDao = geopackage.getFeatureDao('Observations');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
-  await rtreeIndex.create()
+  rtreeIndex.create();
+
+  await this.updateBounds(geopackage, observationsEnvelope, featureDao.getContents());
+
   return geopackage;
+}
+
+GeoPackage.prototype.updateBounds = async function (geopackage, envelope, contents) {
+  contents.max_x = envelope.maxX;
+  contents.max_y = envelope.maxY;
+  contents.min_x = envelope.minX;
+  contents.min_y = envelope.minY;
+
+  const contentsDao = geopackage.contentsDao;
+  contentsDao.update(contents);
 }
 
 GeoPackage.prototype.addAttachments = async function (geopackage, attachments, observationId, formTable, formRowId) {
