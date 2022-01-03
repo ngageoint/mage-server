@@ -252,6 +252,7 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
     }
   }
 
+  const geometriesByUser = {};
   for (let i = 0; i < locations.length; i++) {
     const location = locations[i];
 
@@ -261,6 +262,10 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
     }
 
     usersLastLocation[location.userId.toString()] = location;
+    if(!geometriesByUser[location.userId.toString()]) {
+      geometriesByUser[location.userId.toString()] = [];
+    }
+    geometriesByUser[location.userId.toString()].push(location.geometry);
     const geojson = {
       type: 'Feature',
       geometry: location.geometry,
@@ -275,11 +280,14 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
       delete geojson.properties.id;
     }
 
-    try {
-      await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations_' + location.userId.toString());
-    } catch (err) {
-      throw err;
-    }
+    await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations_' + location.userId.toString());
+  }
+  if (locations.length > 0) {
+    Object.keys(geometriesByUser).forEach(userId => {
+      const featureDao = geopackage.getFeatureDao('Locations_' + userId.toString());
+      const geometries = geometriesByUser[userId];
+      this.updateBounds(geopackage, geometries, featureDao.getContents());
+    });
   }
   // go get the next batch and add them
   await this.addLocationsToGeoPackage(geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated);
