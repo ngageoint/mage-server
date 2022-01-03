@@ -151,6 +151,7 @@ GeoPackage.prototype.createAttachmentTable = function (geopackage) {
 const usersLastLocation = {};
 
 GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
+  log.info('Add Users');
   const userIds = Object.keys(this._users);
 
   const geometries = [];
@@ -175,31 +176,30 @@ GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
     };
     geometries.push(geoJson.geometry);
     const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
-    await new Promise(function (resolve, reject) {
-      fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function (err, iconBuffer) {
-        if (err) return reject(err);
-        const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
-        const iconRow = featureTableStyles.getIconDao().newRow();
-        iconRow.data = iconBuffer;
-        iconRow.contentType = 'image/png';
-        iconRow.name = user.username;
-        iconRow.description = `Icon for user ${user.username}`;
-        iconRow.width = 20;
-        iconRow.anchorU = 0.5;
-        iconRow.anchorV = 1.0;
+    if (fs.existsSync(path.join(environment.userBaseDirectory, userId, 'icon'))) {
+      const iconBuffer = fs.readFileSync(path.join(environment.userBaseDirectory, userId, 'icon'));
 
-        resolve(featureTableStyles.setIconDefault(userRowId, iconRow))
-      })
-    })
+      const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
+      const iconRow = featureTableStyles.getIconDao().newRow();
+      iconRow.data = iconBuffer;
+      iconRow.contentType = 'image/png';
+      iconRow.name = user.username;
+      iconRow.description = `Icon for user ${user.username}`;
+      iconRow.width = 20;
+      iconRow.anchorU = 0.5;
+      iconRow.anchorV = 1.0;
+
+      featureTableStyles.setIconDefault(userRowId, iconRow);
+    }
   }
   const featureDao = geopackage.getFeatureDao('Users');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
 
-  if(geometries.length > 0){
+  if (geometries.length > 0) {
     await this.updateBounds(geopackage, geometries, featureDao.getContents());
   }
-  
+
 }
 
 GeoPackage.prototype.createLocationTableForUser = async function (geopackage, userId) {
@@ -233,10 +233,13 @@ GeoPackage.prototype.createLocationTableForUser = async function (geopackage, us
 GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, lastLocationId, startDate, endDate, locationTablesCreated = {}) {
   log.info('Add Locations');
 
-  startDate = startDate || this._filter.startDate ? moment(this._filter.startDate) : null;
-  endDate = endDate || this._filter.endDate ? moment(this._filter.endDate) : null;
+  if (!startDate) {
+    startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  }
+  if (!endDate) {
+    endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
+  }
 
-  //TODO this results in infinite recursion (may just be an issue with a single location)
   const locations = await this.getLocations(lastLocationId, startDate, endDate);
   if (!locations || locations.length === 0) {
     return geopackage;
@@ -524,7 +527,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
 
-  if(geometries.length > 0) {
+  if (geometries.length > 0) {
     await this.updateBounds(geopackage, geometries, featureDao.getContents());
   }
 
