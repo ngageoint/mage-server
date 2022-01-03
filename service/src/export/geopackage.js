@@ -42,8 +42,9 @@ GeoPackage.prototype.export = async function (streamable) {
   await this.createObservationFeatureTableStyles(gp);
   await this.createUserFeatureTableStyles(gp);
   await this.addObservationsToGeoPackage(gp);
-  await this.addLocationsToGeoPackage(gp);
-  await this.addUsersToUsersTable(gp);
+  const usersLastLocation = {};
+  await this.addLocationsToGeoPackage(gp, usersLastLocation);
+  await this.addUsersToUsersTable(gp, usersLastLocation);
 
   log.info('GeoPackage created');
   archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
@@ -148,9 +149,7 @@ GeoPackage.prototype.createAttachmentTable = function (geopackage) {
   return geopackage.createMediaTable('Attachments', columns);
 }
 
-const usersLastLocation = {};
-
-GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
+GeoPackage.prototype.addUsersToUsersTable = async function (geopackage, usersLastLocation) {
   log.info('Add Users');
   const userIds = Object.keys(this._users);
 
@@ -199,7 +198,6 @@ GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
   if (geometries.length > 0) {
     await this.updateBounds(geopackage, geometries, featureDao.getContents());
   }
-
 }
 
 GeoPackage.prototype.createLocationTableForUser = async function (geopackage, userId) {
@@ -230,7 +228,7 @@ GeoPackage.prototype.createLocationTableForUser = async function (geopackage, us
   return geopackage;
 }
 
-GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, lastLocationId, startDate, endDate, locationTablesCreated = {}) {
+GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated = {}) {
   log.info('Add Locations');
 
   if (!startDate) {
@@ -284,8 +282,8 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, last
     }
   }
   // go get the next batch and add them
-  await this.addLocationsToGeoPackage(geopackage, lastLocationId, startDate, endDate, locationTablesCreated);
-  return geopackage
+  await this.addLocationsToGeoPackage(geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated);
+  return geopackage;
 }
 
 GeoPackage.prototype.createFormAttributeTables = async function (geopackage) {
@@ -599,7 +597,7 @@ GeoPackage.prototype.createObservationFeatureTableStyles = async function (geopa
   await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
   await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension()
   await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension()
-  await featureTableStyles.createRelationships()
+  featureTableStyles.createRelationships()
   await this.addObservationIcons(geopackage, featureTableStyles);
   return geopackage;
 }
