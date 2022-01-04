@@ -554,16 +554,16 @@ GeoPackage.prototype.updateBounds = async function (geopackage, geometries, cont
     if (!fullEnvelope) {
       fullEnvelope = envelope;
     } else {
-      if (fullEnvelope.maxX > envelope.maxX) {
+      if (fullEnvelope.maxX < envelope.maxX) {
         fullEnvelope.maxX = envelope.maxX;
       }
-      if (fullEnvelope.maxY > envelope.maxY) {
+      if (fullEnvelope.maxY < envelope.maxY) {
         fullEnvelope.maxY = envelope.maxY;
       }
-      if (fullEnvelope.minX < envelope.minX) {
+      if (fullEnvelope.minX > envelope.minX) {
         fullEnvelope.minX = envelope.minX;
       }
-      if (fullEnvelope.minY < envelope.minY) {
+      if (fullEnvelope.minY > envelope.minY) {
         fullEnvelope.minY = envelope.minY;
       }
     }
