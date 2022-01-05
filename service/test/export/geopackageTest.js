@@ -107,14 +107,14 @@ describe("geopackage export tests", function () {
 
 class TestWritableStream {
     constructor() {
-      stream.Writable.call(this);
-      this.byteArray = [];
+        stream.Writable.call(this);
+        this.byteArray = [];
     }
     _write(chunk, encoding, done) {
-      for (let i = 0; i < chunk.length; i++) {
-        this.byteArray.push(chunk[i]);
-      }
-      done();
+        for (let i = 0; i < chunk.length; i++) {
+            this.byteArray.push(chunk[i]);
+        }
+        done();
     }
-  };
-  util.inherits(TestWritableStream, stream.Writable);
+};
+util.inherits(TestWritableStream, stream.Writable);
