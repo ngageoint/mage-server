@@ -264,7 +264,7 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
     }
 
     usersLastLocation[location.userId.toString()] = location;
-    if(!geometriesByUser[location.userId.toString()]) {
+    if (!geometriesByUser[location.userId.toString()]) {
       geometriesByUser[location.userId.toString()] = [];
     }
     geometriesByUser[location.userId.toString()].push(location.geometry);
@@ -625,10 +625,17 @@ GeoPackage.prototype.createUserFeatureTableStyles = async function (geopackage) 
 GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTableStyles) {
   const rootDir = path.join(new api.Icon(this._event._id).getBasePath());
 
+  if (!fs.existsSync(path.join(rootDir))) {
+    return geopackage;
+  }
+
   const formDirs = fs.readdirSync(path.join(rootDir));
   for (let i = 0; i < formDirs.length; i++) {
     const formDir = formDirs[i];
     this.iconMap[formDir] = this.iconMap[formDir] || {};
+    if (!fs.existsSync(path.join(rootDir, formDir))) {
+      continue;
+    }
     if (formDir === 'icon.png') {
       await new Promise((resolve, reject) => {
         fs.readFile(path.join(rootDir, formDir), async (err, iconBuffer) => {
@@ -650,6 +657,9 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
       const primaryDirs = fs.readdirSync(path.join(rootDir, formDir));
       for (let p = 0; p < primaryDirs.length; p++) {
         const primaryDir = primaryDirs[p];
+        if (!fs.existsSync(path.join(rootDir, formDir, primaryDir))) {
+          continue;
+        }
         if (primaryDir === 'icon.png') {
           await new Promise((resolve, reject) => {
             fs.readFile(path.join(rootDir, formDir, primaryDir), (err, iconBuffer) => {
@@ -671,6 +681,9 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
           const variantDirs = fs.readdirSync(path.join(rootDir, formDir, primaryDir));
           for (let v = 0; v < variantDirs.length; v++) {
             const variantDir = variantDirs[v];
+            if (!fs.existsSync(path.join(rootDir, formDir, primaryDir, variantDir))) {
+              continue;
+            }
             if (variantDir === 'icon.png') {
               await new Promise((resolve, reject) => {
                 fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir), (err, iconBuffer) => {
@@ -689,6 +702,9 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
               });
             } else {
               this.iconMap[formDir][primaryDir][variantDir] = this.iconMap[formDir][primaryDir][variantDir] || {};
+              if (!fs.existsSync(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'))) {
+                continue;
+              }
               await new Promise((resolve, reject) => {
                 fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'), (err, iconBuffer) => {
                   if (err) return reject(err);
