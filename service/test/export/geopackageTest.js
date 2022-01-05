@@ -8,7 +8,8 @@ const sinon = require('sinon')
     , JSZip = require('jszip')
     , GeopackageExporter = require('../../lib/export/geopackage')
     , MockToken = require('../mockToken')
-    , TokenModel = mongoose.model('Token');
+    , TokenModel = mongoose.model('Token')
+    , GeoPackageAPI = require('@ngageoint/geopackage');
 
 require('chai').should();
 require('sinon-mongoose');
@@ -89,9 +90,13 @@ describe("geopackage export tests", function () {
         const writable = new TestWritableStream();
         writable.on('finish', async () => {
             const zip = await JSZip.loadAsync(writable.byteArray);
-            const gpkg = zip.files['mage-' + event.name + '.gpkg'];
-            expect(gpkg).to.be.not.undefined;
+            const jsobj = zip.files['mage-' + event.name + '.gpkg'];
+            expect(jsobj).to.be.not.undefined;
 
+            const gpkg = await jsobj.async('nodebuffer');
+            const gp = await GeoPackageAPI.GeoPackageAPI.open(gpkg);
+            expect(gp).to.not.be.undefined;
+            gp.close();
             done();
         });
 
