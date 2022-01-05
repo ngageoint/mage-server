@@ -1,7 +1,7 @@
 'use strict';
 
 const { RelationType } = require('@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType');
-const { EnvelopeBuilder } = require('@ngageoint/geopackage/dist/lib/geom/envelopebuilder');
+const { EnvelopeBuilder } = require('@ngageoint/geopackage/dist/lib/geom/envelopeBuilder');
 const util = require('util')
   , fs = require('fs')
   , api = require('../api')
