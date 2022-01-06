@@ -443,19 +443,13 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
 
     const properties = {
       lastModified: observation.lastModified,
+      timestamp: observation.properties.timestamp,
       mageId: observation._id.toString(),
+      userId: observation.userId.toString(),
+      deviceId: observation.deviceId.toString(),
       createdAt: observation.createdAt,
       primaryField: primary,
       variantField: variant
-    }
-    if(observation.properties && observation.properties.timestamp) {
-      properties.timestamp = observation.properties.timestamp;
-    }
-    if (observation.userId) {
-      properties.userId = observation.userId;
-    }
-    if (observation.deviceId) {
-      properties.deviceId = observation.deviceId;
     }
     const geojson = {
       type: 'Feature',
