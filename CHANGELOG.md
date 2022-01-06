@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Minor UI fixes for the export dialog.
+* Exports of geopackage now have bounds set correctly so that zoom to features work.
 
 ## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
 
