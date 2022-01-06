@@ -103,6 +103,80 @@ describe("geopackage export tests", function () {
         const exporter = new GeopackageExporter(options);
         exporter.export(writable);
     });
+
+    it("should populate observations", function (done) {
+        mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+        const user0 = {
+            id: userId,
+            username: 'test_user_0'
+        };
+        const users = new Map();
+        users[user0.id] = user0;
+
+        const device0 = {
+            id: '0',
+            uid: '12345'
+        };
+        const devices = new Map();
+        devices[device0.id] = device0;
+
+        const options = {
+            event: event,
+            users: users,
+            devices: devices,
+            filter: {
+                exportObservations: true,
+                exportLocations: false
+            }
+        };
+
+        sinon.mock(TeamModel)
+            .expects('find')
+            .yields(null, [{ name: 'Team 1' }]);
+
+        const ObservationModel = observationModel({
+            _id: 1,
+            name: 'Event 1',
+            collectionName: 'observations1'
+        });
+        const mockObservation = new ObservationModel({
+            _id: mongoose.Types.ObjectId(),
+            type: 'Feature',
+            createdAt: Date.now(),
+            lastModified: Date.now(),
+            geometry: {
+                type: "Point",
+                coordinates: [0, 0]
+            },
+            properties: {
+                forms: []
+            }
+        });
+        sinon.mock(ObservationModel)
+            .expects('find')
+            .chain('exec')
+            .yields(null, [mockObservation]);
+
+        const writable = new TestWritableStream();
+        writable.on('finish', async () => {
+            const zip = await JSZip.loadAsync(writable.byteArray);
+            const jsobj = zip.files['mage-' + event.name + '.gpkg'];
+            expect(jsobj).to.be.not.undefined;
+
+            const gpkg = await jsobj.async('nodebuffer');
+            const gp = await GeoPackageAPI.GeoPackageAPI.open(gpkg);
+            expect(gp).to.not.be.undefined;
+
+            const featureDao = gp.getFeatureDao('Observations');
+            expect(featureDao.count()).to.be.greaterThan(0);
+            gp.close();
+            done();
+        });
+
+        const exporter = new GeopackageExporter(options);
+        exporter.export(writable);
+    });
 });
 
 class TestWritableStream {
