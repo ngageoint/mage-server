@@ -1,5 +1,5 @@
+const { default: kinks } = require('@turf/kinks');
 const util = require('util')
-  , turfKinks= require('@turf/kinks')
   , geoJsonValidator = require('geojson-validation')
   , Field = require('./field');
 
@@ -32,8 +32,8 @@ GeometryField.prototype.validate = function() {
   }
 
   if (this.value.type === 'Polygon') {
-    const kinks = turfKinks(this.value);
-    if (kinks.features.length > 0) {
+    const foundKinks = kinks(this.value);
+    if (foundKinks.features.length > 0) {
       return { error: 'value', message: `${this.definition.title} must not be a polygon that intersects itself` }
     }
   }
