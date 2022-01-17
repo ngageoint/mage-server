@@ -44,13 +44,13 @@ GeoJson.prototype.export = function (streamable) {
       });
     }
   ],
-  err => {
-    if (err) log.info(err);
-    archive.finalize();
-  });
+    err => {
+      if (err) log.warn(err);
+      archive.finalize();
+    });
 };
 
-GeoJson.prototype.mapObservationProperties = function(observation, archive) {
+GeoJson.prototype.mapObservationProperties = function (observation, archive) {
   observation.properties = observation.properties || {};
   observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
 
@@ -93,9 +93,9 @@ GeoJson.prototype.mapObservationProperties = function(observation, archive) {
             return attachment.fieldName === field.name &&
               attachment.observationFormId.toString() === observationForm._id.toString();
           })
-          .map(attachment => {
-            return attachment.relativePath
-          });
+            .map(attachment => {
+              return attachment.relativePath
+            });
 
           value.forEach(attachmentPath => {
             archive.file(path.join(attachmentBase, attachmentPath), { name: attachmentPath });
@@ -116,29 +116,33 @@ GeoJson.prototype.mapObservationProperties = function(observation, archive) {
 
 GeoJson.prototype.streamObservations = function (stream, archive, done) {
   this.requestObservations(this._filter, (err, observations) => {
-    if (err) return err;
+    if (err) return done(err);
 
-    observations = observations.map(observation => {
-      this.mapObservationProperties(observation, archive);
+    try {
+      observations = observations.map(observation => {
+        this.mapObservationProperties(observation, archive);
 
-      if (this._users[observation.userId]) observation.properties.user = this._users[observation.userId].username;
-      if (this._devices[observation.deviceId]) observation.properties.device = this._devices[observation.deviceId].uid;
+        if (this._users[observation.userId]) observation.properties.user = this._users[observation.userId].username;
+        if (this._devices[observation.deviceId]) observation.properties.device = this._devices[observation.deviceId].uid;
 
-      return {
-        geometry: observation.geometry,
-        properties: observation.properties
-      };
-    });
+        return {
+          geometry: observation.geometry,
+          properties: observation.properties
+        };
+      });
 
-    stream.write(JSON.stringify({
-      type: 'FeatureCollection',
-      features: observations
-    }));
+      stream.write(JSON.stringify({
+        type: 'FeatureCollection',
+        features: observations
+      }));
 
-    // throw in icons
-    archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
+      // throw in icons
+      archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
 
-    done();
+      done();
+    } catch (err) {
+      done(err);
+    }
   });
 };
 
