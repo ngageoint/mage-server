@@ -17,7 +17,8 @@ Exporter.prototype.requestObservations = function (filter, done) {
       favorites: filter.favorites,
       important: filter.important,
       attachments: filter.attachments
-    }
+    },
+    lean: true
   }
 
   new api.Observation(this._event).getAll(options, done);
@@ -33,7 +34,7 @@ Exporter.prototype.requestLocations = function (options, done) {
   if (options.startDate) filter.startDate = options.startDate.toDate();
   if (options.endDate) filter.endDate = options.endDate.toDate();
 
-  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream }, done);
+  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream, lean: true }, done);
 };
 
 module.exports = Exporter;

@@ -115,6 +115,10 @@ exports.getDevices = function (options = {}) {
 
   let query = Device.find(conditions);
 
+  if(options.lean) {
+    query = query.lean();
+  }
+
   let isUserQuery = false;
   if (expand.user) {
     if (filter.user) {

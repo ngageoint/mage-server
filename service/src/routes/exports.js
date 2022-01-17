@@ -230,7 +230,7 @@ function getEvent(req, res, next) {
 
 function mapUsers(req, res, next) {
   //get users for lookup
-  User.getUsers(function (err, users) {
+  User.getUsers({lean: true}, function (err, users) {
     if (err) return next(err);
 
     const map = {};
@@ -245,7 +245,7 @@ function mapUsers(req, res, next) {
 
 function mapDevices(req, res, next) {
   //get users for lookup
-  Device.getDevices()
+  Device.getDevices({lean: true})
     .then(devices => {
       const map = {};
       devices.forEach(function (device) {
