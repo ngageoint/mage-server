@@ -175,6 +175,10 @@ GeoJson.prototype.streamLocations = function (stream, done) {
 
   stream.write('{"type": "FeatureCollection", "features": [');
   cursor.eachAsync(location => {
+    if(numLocations > 0) {
+      stream.write(',');
+    }
+
     const centroid = turfCentroid(location);
     location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
@@ -184,9 +188,7 @@ GeoJson.prototype.streamLocations = function (stream, done) {
   }).then(() => {
     if (cursor) cursor.close;
 
-    if (numLocations === 0) {
-      stream.write(']}');
-    }
+    stream.write(']}');
 
     log.info('Successfully wrote ' + numLocations + ' locations to GeoJSON');
 
