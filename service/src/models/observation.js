@@ -288,6 +288,10 @@ exports.getObservations = function(event, o, callback) {
 
   let query = observationModel(event).find(conditions, fields, options);
 
+  if(o.lean) {
+     query = query.lean();
+  }
+
   if (o.populate) {
     query = query
       .populate({

@@ -64,7 +64,14 @@ exports.getLocations = function (options, callback) {
     if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  let queryOptions = { sort: { "properties.timestamp": 1, _id: 1 } };
+  let queryOptions = { };
+
+  if(options.sort) {
+    queryOptions.sort = options.sort;
+  } else {
+    queryOptions.sort = { sort: { "properties.timestamp": 1, _id: 1 } };
+  }
+
   if (options.lean) {
     queryOptions.lean = options.lean;
   }
@@ -77,9 +84,10 @@ exports.getLocations = function (options, callback) {
     return Location.find(conditions, {}, queryOptions).cursor();
   } else {
     // If we are not streaming limit number of locations to 2000
-    let limit = 2000;
     if (options.limit && options.limit < 2000) {
       queryOptions.limit = options.limit;
+    } else {
+      queryOptions.limit = 2000;
     }
 
     Location.find(conditions, {}, queryOptions, function (err, locations) {

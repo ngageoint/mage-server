@@ -1,3 +1,5 @@
+'use strict';
+
 const util = require('util')
   , async = require('async')
   , archiver = require('archiver')
@@ -10,7 +12,9 @@ const util = require('util')
   , Exporter = require('./exporter')
   , { default: turfCentroid } = require('@turf/centroid')
   , wkx = require('wkx')
-  , attachmentBase = require('../environment/env').attachmentBaseDirectory;
+  , attachmentBase = require('../environment/env').attachmentBaseDirectory
+  , User = require('../models/user')
+  , Device = require('../models/device');
 
 function Csv(options) {
   Csv.super_.call(this, options);
@@ -128,21 +132,25 @@ Csv.prototype.export = function (streamable) {
       });
     }
   ],
-  err => {
-    if (err) {
-      log.info(err);
-    }
+    err => {
+      if (err) {
+        log.info(err);
+      }
 
-    console.log('done writing csv, finalize archive');
-    archive.finalize();
-  });
+      console.log('done writing csv, finalize archive');
+      archive.finalize();
+    });
 };
 
-Csv.prototype.streamObservations = function (stream, archive, fields, done) {
-  this.requestObservations(this._filter, (err, observations) => {
-    const json = this.flattenObservations(observations, archive);
+Csv.prototype.streamObservations = async function (stream, archive, fields, done) {
+  log.info("Retrieving observations from DB");
+  this.requestObservations(this._filter, async (err, observations) => {
+    if (err) return done(err);
 
+    log.info("Retrieved " + observations.length + " observations");
     try {
+      const json = await this.flattenObservations(observations, archive);
+
       const csv = json2csv.parse(json, { fields });
       stream.write(csv);
       done();
@@ -152,21 +160,27 @@ Csv.prototype.streamObservations = function (stream, archive, fields, done) {
   });
 };
 
-Csv.prototype.flattenObservations = function (observations, archive) {
-  const event = this._event;
-  const users = this._users;
-  const devices = this._devices;
-
+Csv.prototype.flattenObservations = async function (observations, archive) {
   const rows = [];
+
+  let user = null;
+  let device = null;
 
   observations
     .map(observation => observation.toObject())
-    .forEach(observation => {
+    .forEach(async observation => {
       const { forms: observationForms = [], ...observationRow } = observation.properties;
       observationRow.id = observation.id;
 
-      if (users[observation.userId]) observationRow.user = users[observation.userId].username;
-      if (devices[observation.deviceId]) observationRow.device = devices[observation.deviceId].uid;
+      if (!user || user._id.str !== observation.userId.str) {
+        user = await User.getUserById(observation.userId);
+      }
+      if (!device || device._id.str !== observation.deviceId.str) {
+        device = await Device.getDeviceById(observation.deviceId);
+      }
+
+      if (user) observationRow.user = user.username;
+      if (device) observationRow.device = device.uid;
 
       const centroid = turfCentroid(observation);
       observationRow.mgrs = mgrs.forward(centroid.geometry.coordinates);
@@ -187,8 +201,8 @@ Csv.prototype.flattenObservations = function (observations, archive) {
 
       observationForms.forEach(observationForm => {
         const formRow = { id: observation.id }
-        const form = event.formMap[observationForm.formId];
-        const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
+        const form = this._event.formMap[observationForm.formId];
+        const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
         for (const name in observationForm) {
           const field = form.fieldNameToField[name];
           if (field) {
@@ -215,40 +229,50 @@ Csv.prototype.flattenObservations = function (observations, archive) {
   return rows;
 };
 
-Csv.prototype.streamLocations = function (stream, done) {
+Csv.prototype.streamLocations = async function (stream, done) {
   const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
+
+  log.info("Retrieving locations from DB");
   const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const locations = [];
+  let cache = {
+    user: null,
+    device: null
+  }
+
+  let numLocations = 0;
   cursor.eachAsync(async location => {
-    locations.push(location);
+    const properties = await this.flattenLocation(location, cache);
+    stream.push(properties);
+    numLocations++;
   }).then(() => {
     if (cursor) cursor.close;
-    this.flattenLocations(locations).forEach(location => {
-      stream.push(location);
-    });
 
-    log.info('Successfully wrote ' + locations.length + ' locations to CSV');
+    log.info('Successfully wrote ' + numLocations + ' locations to CSV');
     log.info('done writing locations');
     stream.push(null);
     done();
   }).catch(err => done(err));
 };
 
-Csv.prototype.flattenLocations = function (locations) {
-  const users = this._users;
-  const devices = this._devices;
+Csv.prototype.flattenLocation = async function (location, cache) {
+  log.debug('Flattening location ' + location._id.toString());
+  const properties = location.properties;
 
-  return locations.map(location => {
-    const properties = location.properties;
-    if (users[location.userId]) properties.user = users[location.userId].username;
-    if (devices[properties.deviceId]) properties.device = devices[properties.deviceId].uid;
+  if (!cache.user || cache.user._id.toString() !== location.userId.toString()) {
+    cache.user = await User.getUserById(location.userId);
+  }
+  if (!cache.device || cache.device._id.toString() !== properties.deviceId.toString()) {
+    cache.device = await Device.getDeviceById(properties.deviceId);
+  }
 
-    properties.longitude = location.geometry.coordinates[0];
-    properties.latitude = location.geometry.coordinates[1];
-    properties.mgrs = mgrs.forward(location.geometry.coordinates);
+  if (cache.user) properties.user = cache.user.username;
+  if (cache.device) properties.device = cache.device.uid;
 
-    return properties;
-  });
+  properties.longitude = location.geometry.coordinates[0];
+  properties.latitude = location.geometry.coordinates[1];
+  properties.mgrs = mgrs.forward(location.geometry.coordinates);
+
+  return properties;
 };

@@ -3,8 +3,6 @@ const api = require('../api')
 
 function Exporter(options) {
   this._event = options.event;
-  this._users = options.users;
-  this._devices = options.devices;
   this._filter = options.filter;
 }
 
@@ -18,7 +16,8 @@ Exporter.prototype.requestObservations = function (filter, done) {
       important: filter.important,
       attachments: filter.attachments
     },
-    lean: true
+    lean: true,
+    sort: { userId: 1 }
   }
 
   new api.Observation(this._event).getAll(options, done);
@@ -34,7 +33,9 @@ Exporter.prototype.requestLocations = function (options, done) {
   if (options.startDate) filter.startDate = options.startDate.toDate();
   if (options.endDate) filter.endDate = options.endDate.toDate();
 
-  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream, lean: true }, done);
+  const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
+
+  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream, lean: true, sort: sort }, done);
 };
 
 module.exports = Exporter;
