@@ -118,7 +118,7 @@ GeoJson.prototype.mapObservationProperties = function (observation, archive) {
 
 GeoJson.prototype.streamObservations = async function (stream, archive, done) {
   log.info("Requesting observations from DB");
-  this.requestObservations(this._filter, (err, observations) => {
+  this.requestObservations(this._filter, async (err, observations) => {
     if (err) return done(err);
 
     log.info("Retrieved " + observations.length + " observations");
@@ -127,7 +127,9 @@ GeoJson.prototype.streamObservations = async function (stream, archive, done) {
     let device = null;
 
     try {
-      observations = observations.map(async observation => {
+      const remappedObservations = [];
+      for (let i = 0; i < observations.length; i++) {
+        const observation = observations[i];
         this.mapObservationProperties(observation, archive);
 
         if (!user || user._id.toString() !== observation.userId.toString()) {
@@ -140,15 +142,15 @@ GeoJson.prototype.streamObservations = async function (stream, archive, done) {
         if (user) observation.properties.user = user.username;
         if (device) observation.properties.device = device.uid;
 
-        return {
+        remappedObservations.push({
           geometry: observation.geometry,
           properties: observation.properties
-        };
-      });
+        });
+      };
 
       stream.write(JSON.stringify({
         type: 'FeatureCollection',
-        features: observations
+        features: remappedObservations
       }));
 
       // throw in icons
