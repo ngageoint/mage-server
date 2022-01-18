@@ -4,7 +4,7 @@ const moment = require('moment')
   , { default: turfCentroid } = require('@turf/centroid')
   , { fragment } = require('xmlbuilder2');
 
-function KmlWriter() {}
+function KmlWriter() { }
 module.exports = new KmlWriter();
 
 function hexToParts(hex) {
@@ -36,23 +36,22 @@ KmlWriter.prototype.generateKMLFolderStart = function (name) {
   return `<Folder><name>${name}</name>`;
 };
 
-KmlWriter.prototype.generateUserStyles = function (users) {
-  const userStyles = Object.values(users)
-    .filter(user => user.icon && user.icon.relativePath)
-    .map(user => {
-      return fragment({
-        Style: {
-          '@id': `user-${user._id.toString()}`,
-          IconStyle: {
-            Icon: {
-              href: path.join('icons/users', user._id.toString())
-            }
+KmlWriter.prototype.generateUserStyle = function (user) {
+  let userStyle = '';
+  if (user.icon && user.icon.relativePath) {
+    userStyle = fragment({
+      Style: {
+        '@id': `user-${user._id.toString()}`,
+        IconStyle: {
+          Icon: {
+            href: path.join('icons/users', user._id.toString())
           }
         }
-      }).end()
-    });
+      }
+    }).end();
+  }
 
-  return userStyles.join("");
+  return userStyle;
 };
 
 KmlWriter.prototype.generateEventStyle = function (event, icons) {
@@ -204,7 +203,7 @@ KmlWriter.prototype.generateFormStyles = function (event, form, icons) {
   return styles;
 }
 
-KmlWriter.prototype.generateObservationStyles = function(event, icons) {
+KmlWriter.prototype.generateObservationStyles = function (event, icons) {
   const formStyles = event.forms.map(form => {
     return this.generateFormStyles(event, form, icons.filter(icon => icon.formId === form._id));
   });
@@ -212,7 +211,7 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   return [this.generateEventStyle(event, icons), ...formStyles].join("");
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(observation, event) {
+KmlWriter.prototype.generateObservationPlacemark = function (observation, event) {
   const forms = event.formMap;
 
   const names = [];
@@ -279,7 +278,7 @@ KmlWriter.prototype.generateObservationPlacemark = function(observation, event) 
   });
 
   const gpsProperties = [];
-  const {provider, accuracy} = observation.properties;
+  const { provider, accuracy } = observation.properties;
   if (provider) gpsProperties.push({ key: 'Location Provider', value: provider });
   if (accuracy) gpsProperties.push({ key: 'Location Accuracy +/- (meters)', value: accuracy });
   if (gpsProperties.length) {
@@ -311,11 +310,11 @@ KmlWriter.prototype.generateObservationPlacemark = function(observation, event) 
   };
 
   return fragment({
-    Placemark: {...placemark, ...coordinates, ...description}
+    Placemark: { ...placemark, ...coordinates, ...description }
   }).end();
 };
 
-KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
+KmlWriter.prototype.generateLocationPlacemark = function (user, location) {
   const properties = Object.entries(location.properties).map(([key, value]) => {
     return {
       key,
@@ -343,28 +342,28 @@ KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
   }).end();
 };
 
-KmlWriter.prototype.generateKMLDocumentClose = function() {
+KmlWriter.prototype.generateKMLDocumentClose = function () {
   return "</Document>";
 };
 
-KmlWriter.prototype.generateKMLFolderClose = function() {
+KmlWriter.prototype.generateKMLFolderClose = function () {
   return "</Folder>";
 };
 
-KmlWriter.prototype.generateKMLClose = function() {
+KmlWriter.prototype.generateKMLClose = function () {
   return "</kml>";
 };
 
-KmlWriter.prototype.generateDescription = function(geojson, sections) {
+KmlWriter.prototype.generateDescription = function (geojson, sections) {
   const centroid = turfCentroid(geojson);
   const header = [{
     section: [{
       span: [{ label: 'Timestamp' }, moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z']
-    },{
+    }, {
       span: [{ label: 'Latitude' }, centroid.geometry.coordinates[1]]
-    },{
+    }, {
       span: [{ label: 'Longitude' }, centroid.geometry.coordinates[0]]
-    },{
+    }, {
       span: [{ label: 'MGRS' }, mgrs.forward(centroid.geometry.coordinates)]
     }]
   }];
@@ -435,7 +434,7 @@ KmlWriter.prototype.generateDescription = function(geojson, sections) {
   }
 }
 
-KmlWriter.prototype.generatePlacemarkCoordinates = function(geojson) {
+KmlWriter.prototype.generatePlacemarkCoordinates = function (geojson) {
   if (geojson.geometry.type === 'Point') {
     return {
       Point: {
@@ -475,6 +474,6 @@ KmlWriter.prototype.generatePlacemarkCoordinates = function(geojson) {
   return coordinates;
 }
 
-KmlWriter.prototype.getFieldByName = function(form, name) {
+KmlWriter.prototype.getFieldByName = function (form, name) {
   return form.fields.find(field => field.name === name);
 }

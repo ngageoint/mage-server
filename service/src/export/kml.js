@@ -115,7 +115,7 @@ Kml.prototype.streamLocations = async function (stream, archive, done) {
       locationString = '';
 
       user = await User.getUserById(location.userId);
-      userStyles += writer.generateUserStyles([user]);
+      userStyles += writer.generateUserStyle(user);
       stream.write(writer.generateKMLFolderStart(user.displayName, false));
     }
 
