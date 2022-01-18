@@ -172,10 +172,10 @@ Csv.prototype.flattenObservations = async function (observations, archive) {
       const { forms: observationForms = [], ...observationRow } = observation.properties;
       observationRow.id = observation.id;
 
-      if (!user || user._id.str !== observation.userId.str) {
+      if (!user || user._id.toString() !== observation.userId.toString()) {
         user = await User.getUserById(observation.userId);
       }
-      if (!device || device._id.str !== observation.deviceId.str) {
+      if (!device || device._id.toString() !== observation.deviceId.toString()) {
         device = await Device.getDeviceById(observation.deviceId);
       }
 

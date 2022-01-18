@@ -8,8 +8,10 @@ const util = require('util')
   , stream = require('stream')
   , path = require('path')
   , Exporter = require('./exporter')
-  , turfCentroid = require('@turf/centroid')
-  , attachmentBase = require('../environment/env').attachmentBaseDirectory;
+  , attachmentBase = require('../environment/env').attachmentBaseDirectory
+  , User = require('../models/user')
+  , Device = require('../models/device')
+  , { default: turfCentroid } = require('@turf/centroid')
 
 function GeoJson(options) {
   GeoJson.super_.call(this, options);
@@ -114,16 +116,29 @@ GeoJson.prototype.mapObservationProperties = function (observation, archive) {
   observation.properties.id = observation._id;
 }
 
-GeoJson.prototype.streamObservations = function (stream, archive, done) {
+GeoJson.prototype.streamObservations = async function (stream, archive, done) {
+  log.info("Requesting observations from DB");
   this.requestObservations(this._filter, (err, observations) => {
     if (err) return done(err);
 
+    log.info("Retrieved " + observations.length + " observations");
+
+    let user = null;
+    let device = null;
+
     try {
-      observations = observations.map(observation => {
+      observations = observations.map(async observation => {
         this.mapObservationProperties(observation, archive);
 
-        if (this._users[observation.userId]) observation.properties.user = this._users[observation.userId].username;
-        if (this._devices[observation.deviceId]) observation.properties.device = this._devices[observation.deviceId].uid;
+        if (!user || user._id.toString() !== observation.userId.toString()) {
+          user = await User.getUserById(observation.userId);
+        }
+        if (!device || device._id.toString() !== observation.deviceId.toString()) {
+          device = await Device.getDeviceById(observation.deviceId);
+        }
+
+        if (user) observation.properties.user = user.username;
+        if (device) observation.properties.device = device.uid;
 
         return {
           geometry: observation.geometry,
@@ -147,31 +162,31 @@ GeoJson.prototype.streamObservations = function (stream, archive, done) {
 };
 
 GeoJson.prototype.streamLocations = function (stream, done) {
-  log.info('writing locations...');
+  log.info('Requesting locations from DB');
 
   const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
   const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const locations = [];
+  let numLocations = 0;
 
   stream.write('{"type": "FeatureCollection", "features": [');
-  cursor.eachAsync(async location => {
+  cursor.eachAsync(location => {
     const centroid = turfCentroid(location);
     location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
-    locations.push(location);
+
+    const data = JSON.stringify(location);
+    stream.write(data);
+    numLocations++;
   }).then(() => {
     if (cursor) cursor.close;
 
-    if (locations.length > 0) {
-      const data = JSON.stringify(locations);
-      stream.write(data.substr(1, data.length - 2));
-    } else {
+    if (numLocations === 0) {
       stream.write(']}');
     }
 
-    log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+    log.info('Successfully wrote ' + numLocations + ' locations to GeoJSON');
 
     done();
   }).catch(err => done(err));
