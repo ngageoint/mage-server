@@ -11,7 +11,7 @@ const util = require('util')
   , attachmentBase = require('../environment/env').attachmentBaseDirectory
   , User = require('../models/user')
   , Device = require('../models/device')
-  , { default: turfCentroid } = require('@turf/centroid')
+  , { default: turfCentroid } = require('@turf/centroid');
 
 function GeoJson(options) {
   GeoJson.super_.call(this, options);

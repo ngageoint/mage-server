@@ -9,7 +9,8 @@ const util = require('util')
   , Icon = require('../models/icon')
   , Exporter = require('./exporter')
   , writer = require('./kmlWriter')
-  , environment = require('../environment/env');
+  , environment = require('../environment/env')
+  , User = require('../models/user');
 
 const userBase = environment.userBaseDirectory;
 const attachmentBase = environment.attachmentBaseDirectory;
@@ -34,34 +35,39 @@ Kml.prototype.export = function (streamable) {
   async.series([
     done => {
       if (!this._filter.exportObservations) return done();
+
       this.streamObservations(kmlStream, archive, done);
     },
     done => {
       if (!this._filter.exportLocations) return done();
 
-      kmlStream.write(writer.generateUserStyles(this._users));
-
-      async.eachSeries(Object.keys(this._users), (userId, callback) => {
-        this.streamUserLocations(kmlStream, archive, this._users[userId], callback);
-      }, done);
+      this.streamLocations(kmlStream, archive, done);
     }
   ],
-  err => {
-    if (err) log.info(err);
+    err => {
+      if (err) log.warn(err);
 
-    kmlStream.write(writer.generateKMLDocumentClose());
-    kmlStream.write(writer.generateKMLClose());
-    kmlStream.end();
+      kmlStream.write(writer.generateKMLDocumentClose());
+      kmlStream.write(writer.generateKMLClose());
+      kmlStream.end();
 
-    archive.finalize();
-  });
+      archive.finalize();
+    });
 };
 
 Kml.prototype.streamObservations = function (stream, archive, done) {
-  if (!this._filter.exportObservations) return done();
-
+  log.info("Retrieving observations from DB");
   this.requestObservations(this._filter, (err, observations) => {
+    if (err) return done(err);
+
+    log.info("Retrieved " + observations.length + " observations");
+
+    log.info("Retrieving icons from DB for the event " + this._event.name);
     Icon.getAll({ eventId: this._event._id }, (err, icons) => {
+      if (err) return done(err);
+
+      log.info("Retrieved " + icons.length + " icons");
+
       stream.write(writer.generateObservationStyles(this._event, icons));
       stream.write(writer.generateKMLFolderStart(this._event.name, false));
 
@@ -73,6 +79,7 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
         });
       });
 
+      log.info('Successfully wrote ' + observations.length + ' observations to KML');
       stream.write(writer.generateKMLFolderClose());
 
       // throw in icons
@@ -83,41 +90,63 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
   });
 };
 
-Kml.prototype.streamUserLocations = function (stream, archive, user, done) {
-  log.info('writing locations for user ' + user.username);
+Kml.prototype.streamLocations = async function (stream, archive, done) {
+  log.info('Retrieving locations from DB');
 
   const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const cursor = this.requestLocations({ userId: user._id, startDate: startDate, endDate: endDate, stream: true });
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const locations = [];
-  let locationString = "";
+  let user = null;
+
+  let userStyles = "";
+  let numLocations = 0;
+  let locationString = '';
   cursor.eachAsync(async location => {
+
+    if (!user || user._id.toString() !== location.userId.toString()) {
+
+      if (user) {
+        //complete the prrevious user
+        this.completeUserFolder(stream, archive, user, locationString);
+      }
+
+      locationString = '';
+
+      user = await User.getUserById(location.userId);
+      userStyles += writer.generateUserStyles([user]);
+      stream.write(writer.generateKMLFolderStart(user.displayName, false));
+    }
+
     locationString += writer.generateLocationPlacemark(user, location);
-    locations.push(location);
+    numLocations++;
   }).then(() => {
     if (cursor) cursor.close;
 
-    if (locations.length > 0) {
-      stream.write(writer.generateKMLFolderStart(user.displayName, false));
-      stream.write(locationString);
+    if (user) {
+      //complete the last user
+      this.completeUserFolder(stream, archive, user, locationString);
     }
 
-    // throw in user map icon
-    if (user.icon && user.icon.relativePath) {
-      archive.file(path.join(userBase, user.icon.relativePath), {
-        name: 'icons/users/' + user._id.toString(),
-        date: new Date()
-      });
-    }
+    stream.write(userStyles);
 
-    if (locations.length > 0) {
-      stream.write(writer.generateKMLFolderClose());
-    }
-
+    log.info('Successfully wrote ' + numLocations + ' locations to KML');
     log.info('done writing all locations for ' + user.username);
 
     done();
   }).catch(err => done(err));
 };
+
+Kml.prototype.completeUserFolder = async function (stream, archive, user, locationString) {
+ 
+  stream.write(locationString);
+  // throw in user map icon
+  if (user.icon && user.icon.relativePath) {
+    archive.file(path.join(userBase, user.icon.relativePath), {
+      name: 'icons/users/' + user._id.toString(),
+      date: new Date()
+    });
+  }
+  stream.write(writer.generateKMLFolderClose());
+}

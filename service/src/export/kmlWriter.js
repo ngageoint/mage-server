@@ -1,7 +1,7 @@
 const moment = require('moment')
   , path = require('path')
   , mgrs = require('mgrs')
-  , turfCentroid = require('@turf/centroid').default
+  , { default: turfCentroid } = require('@turf/centroid')
   , { fragment } = require('xmlbuilder2');
 
 function KmlWriter() {}
