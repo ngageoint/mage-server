@@ -166,65 +166,64 @@ Csv.prototype.flattenObservations = async function (observations, archive) {
   let user = null;
   let device = null;
 
-  observations
-    .map(observation => observation.toObject())
-    .forEach(async observation => {
-      const { forms: observationForms = [], ...observationRow } = observation.properties;
-      observationRow.id = observation.id;
+  for (let i = 0; i < observations.length; i++) {
+    const observation = observations[i];
+    const { forms: observationForms = [], ...observationRow } = observation.properties;
+    observationRow.id = observation.id;
 
-      if (!user || user._id.toString() !== observation.userId.toString()) {
-        user = await User.getUserById(observation.userId);
-      }
-      if (!device || device._id.toString() !== observation.deviceId.toString()) {
-        device = await Device.getDeviceById(observation.deviceId);
-      }
+    if (!user || user._id.toString() !== observation.userId.toString()) {
+      user = await User.getUserById(observation.userId);
+    }
+    if (!device || device._id.toString() !== observation.deviceId.toString()) {
+      device = await Device.getDeviceById(observation.deviceId);
+    }
 
-      if (user) observationRow.user = user.username;
-      if (device) observationRow.device = device.uid;
+    if (user) observationRow.user = user.username;
+    if (device) observationRow.device = device.uid;
 
-      const centroid = turfCentroid(observation);
-      observationRow.mgrs = mgrs.forward(centroid.geometry.coordinates);
+    const centroid = turfCentroid(observation);
+    observationRow.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
-      observationRow.shapeType = observation.geometry.type;
-      if (observation.geometry.type === 'Point') {
-        observationRow.longitude = observation.geometry.coordinates[0];
-        observationRow.latitude = observation.geometry.coordinates[1];
-      } else {
-        observationRow.longitude = centroid.geometry.coordinates[0];
-        observationRow.latitude = centroid.geometry.coordinates[1];
-      }
-      observationRow.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
+    observationRow.shapeType = observation.geometry.type;
+    if (observation.geometry.type === 'Point') {
+      observationRow.longitude = observation.geometry.coordinates[0];
+      observationRow.latitude = observation.geometry.coordinates[1];
+    } else {
+      observationRow.longitude = centroid.geometry.coordinates[0];
+      observationRow.latitude = centroid.geometry.coordinates[1];
+    }
+    observationRow.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
 
-      observationRow.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
+    observationRow.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
 
-      rows.push(observationRow);
+    rows.push(observationRow);
 
-      observationForms.forEach(observationForm => {
-        const formRow = { id: observation.id }
-        const form = this._event.formMap[observationForm.formId];
-        const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
-        for (const name in observationForm) {
-          const field = form.fieldNameToField[name];
-          if (field) {
-            formRow[formPrefix + field.name] = observationForm[name];
-            delete observationForm[name];
-          }
+    observationForms.forEach(observationForm => {
+      const formRow = { id: observation.id }
+      const form = this._event.formMap[observationForm.formId];
+      const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
+      for (const name in observationForm) {
+        const field = form.fieldNameToField[name];
+        if (field) {
+          formRow[formPrefix + field.name] = observationForm[name];
+          delete observationForm[name];
         }
+      }
 
-        rows.push(formRow);
-      });
-
-      observation.attachments.forEach((attachment, index) => {
-        const name = path.basename(attachment.relativePath);
-        rows.push({
-          id: observation.id,
-          attachment: attachment.name,
-          attachmentExcelLink: excelLink(name, index)
-        });
-
-        archive.file(path.join(attachmentBase, attachment.relativePath), { name });
-      });
+      rows.push(formRow);
     });
+
+    observation.attachments.forEach((attachment, index) => {
+      const name = path.basename(attachment.relativePath);
+      rows.push({
+        id: observation.id,
+        attachment: attachment.name,
+        attachmentExcelLink: excelLink(name, index)
+      });
+
+      archive.file(path.join(attachmentBase, attachment.relativePath), { name });
+    });
+  }
 
   return rows;
 };
