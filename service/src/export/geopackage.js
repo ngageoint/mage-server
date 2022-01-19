@@ -13,7 +13,8 @@ const util = require('util')
   , GeoPackageAPI = require('@ngageoint/geopackage')
   , environment = require('../environment/env')
   , os = require('os')
-  , wkx = require('wkx');
+  , wkx = require('wkx')
+  , User = require('../models/user');
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
@@ -44,9 +45,7 @@ GeoPackage.prototype.export = async function (streamable) {
   await this.createObservationFeatureTableStyles(gp);
   await this.createUserFeatureTableStyles(gp);
   await this.addObservationsToGeoPackage(gp);
-  const usersLastLocation = {};
-  await this.addLocationsToGeoPackage(gp, usersLastLocation);
-  await this.addUsersToUsersTable(gp, usersLastLocation);
+  await this.addLocationsToGeoPackage(gp);
 
   log.info('GeoPackage created');
   archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
@@ -82,17 +81,6 @@ GeoPackage.prototype.getObservations = function () {
     new api.Observation(this._event).getAll({ filter: this._filter }, (err, observations) => {
       if (err) return reject(err);
       resolve(observations);
-    });
-  });
-}
-
-GeoPackage.prototype.getLocations = function (lastLocationId, startDate, endDate) {
-  const limit = 2000;
-
-  return new Promise((resolve, reject) => {
-    this.requestLocations({ startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit }, (err, requestedLocations) => {
-      if (err) return reject(err);
-      resolve(requestedLocations);
     });
   });
 }
@@ -151,48 +139,38 @@ GeoPackage.prototype.createAttachmentTable = function (geopackage) {
   return geopackage.createMediaTable('Attachments', columns);
 }
 
-GeoPackage.prototype.addUsersToUsersTable = async function (geopackage, usersLastLocation) {
-  log.info('Add Users');
-  const userIds = Object.keys(this._users);
+GeoPackage.prototype.addUserToUsersTable = async function (geopackage, user, usersLastLocation, geometries) {
+  log.info('Add user ' + user.username + " to users table");
 
-  const geometries = [];
-
-  for (let i = 0; i < userIds.length; i++) {
-    const userId = userIds[i];
-    if (!usersLastLocation[userId]) {
-      continue;
+  const geoJson = {
+    type: 'Feature',
+    geometry: usersLastLocation.geometry,
+    properties: {
+      timestamp: usersLastLocation.properties.timestamp,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      phones: user.phones.join(', '),
+      userId: user._id.toString()
     }
-    const user = this._users[userId];
-    const geoJson = {
-      type: 'Feature',
-      geometry: usersLastLocation[userId].geometry,
-      properties: {
-        timestamp: usersLastLocation[userId].properties.timestamp,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        phones: user.phones.join(', '),
-        userId: userId
-      }
-    };
-    geometries.push(geoJson.geometry);
-    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
-    if (fs.existsSync(path.join(environment.userBaseDirectory, userId, 'icon'))) {
-      const iconBuffer = fs.readFileSync(path.join(environment.userBaseDirectory, userId, 'icon'));
+  };
+  const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
+  if (fs.existsSync(path.join(environment.userBaseDirectory, user._id.toString(), 'icon'))) {
+    const iconBuffer = fs.readFileSync(path.join(environment.userBaseDirectory, user._id.toString(), 'icon'));
 
-      const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
-      const iconRow = featureTableStyles.getIconDao().newRow();
-      iconRow.data = iconBuffer;
-      iconRow.contentType = 'image/png';
-      iconRow.name = user.username;
-      iconRow.description = `Icon for user ${user.username}`;
-      iconRow.width = 20;
-      iconRow.anchorU = 0.5;
-      iconRow.anchorV = 1.0;
+    const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
+    const iconRow = featureTableStyles.getIconDao().newRow();
+    iconRow.data = iconBuffer;
+    iconRow.contentType = 'image/png';
+    iconRow.name = user.username;
+    iconRow.description = `Icon for user ${user.username}`;
+    iconRow.width = 20;
+    iconRow.anchorU = 0.5;
+    iconRow.anchorV = 1.0;
 
-      featureTableStyles.setIconDefault(userRowId, iconRow);
-    }
+    featureTableStyles.setIconDefault(userRowId, iconRow);
   }
+
   const featureDao = geopackage.getFeatureDao('Users');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
@@ -230,44 +208,34 @@ GeoPackage.prototype.createLocationTableForUser = async function (geopackage, us
   return geopackage;
 }
 
-GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated = {}) {
-  log.info('Add Locations');
+GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage) {
+  log.info('Requesting locations from DB');
 
-  if (!startDate) {
-    startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
-  }
-  if (!endDate) {
-    endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
-  }
+  const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const locations = await this.getLocations(lastLocationId, startDate, endDate);
-  if (!locations || locations.length === 0) {
-    return geopackage;
-  }
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const last = locations.slice(-1).pop();
-  if (last) {
-    const locationTime = moment(last.properties.timestamp);
-    lastLocationId = last._id;
-    if (!startDate || startDate.isBefore(locationTime)) {
-      startDate = locationTime;
-    }
-  }
+  let numLocations = 0;
+  let user = null;
+  let geometries = [];
+  let userLastLocation = null;
+  return cursor.eachAsync(async location => {
 
-  const geometriesByUser = {};
-  for (let i = 0; i < locations.length; i++) {
-    const location = locations[i];
-
-    if (!locationTablesCreated[location.userId.toString()]) {
+    if (!user || user._id.toString() !== location.userId.toString()) {
+      if (geometries.length > 0) {
+        const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
+        this.updateBounds(geopackage, geometries, featureDao.getContents());
+        await this.addUserToUsersTable(geopackage, user, userLastLocation, geometries);
+      }
+      geometries = [];
+      user = await User.getUserById(location.userId);
       await this.createLocationTableForUser(geopackage, location.userId.toString());
-      locationTablesCreated[location.userId.toString()] = true;
     }
 
-    usersLastLocation[location.userId.toString()] = location;
-    if (!geometriesByUser[location.userId.toString()]) {
-      geometriesByUser[location.userId.toString()] = [];
-    }
-    geometriesByUser[location.userId.toString()].push(location.geometry);
+    geometries.push(location.geometry);
+    userLastLocation = location;
+
     const geojson = {
       type: 'Feature',
       geometry: location.geometry,
@@ -283,17 +251,21 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
     }
 
     await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations_' + location.userId.toString());
-  }
-  if (locations.length > 0) {
-    Object.keys(geometriesByUser).forEach(userId => {
-      const featureDao = geopackage.getFeatureDao('Locations_' + userId.toString());
-      const geometries = geometriesByUser[userId];
+
+    numLocations++;
+  }).then(async () => {
+    if (cursor) cursor.close;
+
+    if (geometries.length > 0 && user) {
+      const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
       this.updateBounds(geopackage, geometries, featureDao.getContents());
-    });
-  }
-  // go get the next batch and add them
-  await this.addLocationsToGeoPackage(geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated);
-  return geopackage;
+      await this.addUserToUsersTable(geopackage, user, userLastLocation, geometries);
+    }
+
+    log.info('Successfully wrote ' + numLocations + ' locations to Geopackage');
+
+    return geopackage;;
+  }).catch(err => { log.warn(err) });
 }
 
 GeoPackage.prototype.createFormAttributeTables = async function (geopackage) {
