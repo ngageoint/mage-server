@@ -23,8 +23,17 @@ const observationModel = Observation.observationModel;
 require('../../lib/models/location');
 const LocationModel = mongoose.model('Location');
 
+const User = require('../../lib/models/user');
+const UserModel = mongoose.model('User');
+
+const Device = require('../../lib/models/device');
+const DeviceModel = mongoose.model('Device');
+
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
+
+const userId = mongoose.Types.ObjectId();
+const deviceId = mongoose.Types.ObjectId();
 
 describe("csv export tests", function () {
 
@@ -35,13 +44,33 @@ describe("csv export tests", function () {
     forms: [],
     acl: {}
   };
-  const userId = mongoose.Types.ObjectId();
+
+  const user = {
+    _id: userId,
+    username: 'csv.export.test',
+    displayName: 'CSV Export Test'
+  }
+
+  const device = {
+    _id: deviceId,
+    uid: '123456'
+  }
 
   beforeEach(function () {
     const mockEvent = new EventModel(event);
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const mockUser = new UserModel(user);
+    sinon.mock(User)
+      .expects('getUserById')
+      .resolves(mockUser);
+
+    const mockDevice = new DeviceModel(device);
+    sinon.mock(Device)
+      .expects('getDeviceById')
+      .resolves(mockDevice);
   });
 
   afterEach(function () {
@@ -200,24 +229,8 @@ describe("csv export tests", function () {
   it("should populate locations", function (done) {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
-    const user0 = {
-      id: userId,
-      username: 'test_user_0'
-    };
-    const users = new Map();
-    users[user0.id] = user0;
-
-    const device0 = {
-      id: '0',
-      uid: '12345'
-    };
-    const devices = new Map();
-    devices[device0.id] = device0;
-
     const options = {
       event: event,
-      users: users,
-      devices: devices,
       filter: {
         exportObservations: false,
         exportLocations: true
@@ -279,6 +292,7 @@ class TestCursor {
   constructor() {
     this.i = 0;
     this.locations = [{
+      _id: mongoose.Types.ObjectId(),
       "eventId": 1,
       "geometry": {
         "type": "Point",
@@ -286,8 +300,10 @@ class TestCursor {
       },
       "properties": {
         "timestamp": Date.now(),
-        "accuracy": 39
-      }
+        "accuracy": 39,
+        deviceId: deviceId
+      },
+      userId: userId
     }];
   }
   eachAsync(fn, opts, callback) {
