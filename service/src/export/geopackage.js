@@ -406,7 +406,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
     const observation = observations[i];
     let primary;
     let variant;
-    if (observation.properties.forms.length > 0) {
+    if (observation.properties.forms && observation.properties.forms.length > 0) {
       const observationFirstForm = observation.properties.forms[0];
       const form = this._event.formMap[observationFirstForm.formId];
       primary = observationFirstForm[form.primaryField];
@@ -433,7 +433,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
 
     const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
-    if (observation.properties.forms[0]) {
+    if (observation.properties.forms && observation.properties.forms[0]) {
       // insert the icon link
       let iconId = this.iconMap[observation.properties.forms[0].formId]['icon.png'];
 
@@ -444,63 +444,66 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
         iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
       }
       const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Observations');
-      await featureTableStyles.setIconDefault(featureId, iconId)
+      featureTableStyles.setIconDefault(featureId, iconId)
     }
 
-    for (let f = 0; f < observation.properties.forms.length; f++) {
-      const observationForm = observation.properties.forms[f];
-      const formDefinition = this._event.formMap[observationForm.formId];
-      primary = observationForm[formDefinition.primaryField];
-      variant = observationForm[formDefinition.variantField];
-      const formToSave = {
-        primaryField: primary,
-        variantField: variant,
-        formId: observationForm.formId
-      };
-      const attachments = [];
-      if (observation.attachments) {
-        observation.attachments.forEach((attachment) => {
-          if (attachment.observationFormId.toString() == observationForm._id) {
-            attachments.push(attachment);
-            observationForm[attachment.fieldName] = observationForm[attachment.fieldName] || []
-            observationForm[attachment.fieldName].push(attachment._id.toString());
+    if (observation.properties.forms) {
+      for (let f = 0; f < observation.properties.forms.length; f++) {
+        const observationForm = observation.properties.forms[f];
+        const formDefinition = this._event.formMap[observationForm.formId];
+        primary = observationForm[formDefinition.primaryField];
+        variant = observationForm[formDefinition.variantField];
+        const formToSave = {
+          primaryField: primary,
+          variantField: variant,
+          formId: observationForm.formId
+        };
+        const attachments = [];
+        if (observation.attachments) {
+          observation.attachments.forEach((attachment) => {
+            if (attachment.observationFormId.toString() == observationForm._id) {
+              attachments.push(attachment);
+              observationForm[attachment.fieldName] = observationForm[attachment.fieldName] || []
+              observationForm[attachment.fieldName].push(attachment._id.toString());
+            }
+          })
+        }
+        Object.keys(observationForm).forEach(key => {
+
+          if (observationForm[key] == null) return;
+
+          const fieldDefinition = formDefinition.fields.find(field => field.name === key);
+          if (!fieldDefinition) return;
+          if (fieldDefinition.type === 'multiselectdropdown') {
+            formToSave[key] = observationForm[key].join(', ');
+          } else if (fieldDefinition.type === 'date') {
+            formToSave[key] = moment(observationForm[key]).toISOString();
+          } else if (fieldDefinition.type === 'checkbox') {
+            formToSave[key] = observationForm[key].toString();
+          } else if (fieldDefinition.type === 'geometry') {
+            formToSave[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
+          } else if (fieldDefinition.type === 'attachment') {
+            formToSave[key] = observationForm[key].join(', ');
+          } else {
+            formToSave[key] = observationForm[key]
           }
         })
-      }
-      Object.keys(observationForm).forEach(key => {
 
-        if (observationForm[key] == null) return;
+        try {
+          const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
 
-        const fieldDefinition = formDefinition.fields.find(field => field.name === key);
-        if (!fieldDefinition) return;
-        if (fieldDefinition.type === 'multiselectdropdown') {
-          formToSave[key] = observationForm[key].join(', ');
-        } else if (fieldDefinition.type === 'date') {
-          formToSave[key] = moment(observationForm[key]).toISOString();
-        } else if (fieldDefinition.type === 'checkbox') {
-          formToSave[key] = observationForm[key].toString();
-        } else if (fieldDefinition.type === 'geometry') {
-          formToSave[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
-        } else if (fieldDefinition.type === 'attachment') {
-          formToSave[key] = observationForm[key].join(', ');
-        } else {
-          formToSave[key] = observationForm[key]
+          if (attachments.length) {
+            await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+          }
+
+          await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES)
         }
-      })
-
-      try {
-        const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
-
-        if (attachments.length) {
-          await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+        catch (e) {
+          console.error('error is ', e);
         }
-
-        await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES)
-      }
-      catch (e) {
-        console.error('error is ', e);
       }
     }
+
   }
   const featureDao = geopackage.getFeatureDao('Observations');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);

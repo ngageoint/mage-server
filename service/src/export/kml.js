@@ -74,9 +74,11 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
       observations.forEach(observation => {
         stream.write(writer.generateObservationPlacemark(observation, this._event));
 
-        observation.attachments.forEach(attachment => {
-          archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-        });
+        if (observation.attachments) {
+          observation.attachments.forEach(attachment => {
+            archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
+          });
+        }
       });
 
       log.info('Successfully wrote ' + observations.length + ' observations to KML');
@@ -139,7 +141,7 @@ Kml.prototype.streamLocations = async function (stream, archive, done) {
 };
 
 Kml.prototype.completeUserFolder = async function (stream, archive, user, locationString) {
- 
+
   stream.write(locationString);
   // throw in user map icon
   if (user.icon && user.icon.relativePath) {

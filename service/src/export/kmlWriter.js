@@ -215,7 +215,7 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
   const forms = event.formMap;
 
   const names = [];
-  const firstForm = observation.properties.forms.length ? observation.properties.forms[0] : null;
+  const firstForm = (observation.properties.forms && observation.properties.forms.length) ? observation.properties.forms[0] : null;
   if (firstForm) {
     const form = event.formMap[firstForm.formId];
     if (firstForm[form.primaryFeedField]) {
@@ -227,55 +227,58 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
     }
   }
 
-  const sections = observation.properties.forms.map(observationForm => {
-    const form = forms[observationForm.formId]
+  let sections = [];
+  if (observation.properties.forms) {
+    sections = observation.properties.forms.map(observationForm => {
+      const form = forms[observationForm.formId]
 
-    const properties = form.fields
-      .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
-      .filter(field => {
-        let hasValue = false;
-        switch (field.type) {
-          case 'attachment': {
-            hasValue = observation.attachments.some(attachment => {
+      const properties = form.fields
+        .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
+        .filter(field => {
+          let hasValue = false;
+          switch (field.type) {
+            case 'attachment': {
+              hasValue = observation.attachments.some(attachment => {
+                return attachment.fieldName === field.name &&
+                  attachment.observationFormId.toString() === observationForm._id.toString();
+              });
+
+              break;
+            }
+            case 'checkbox': {
+              hasValue = field.value != null
+            }
+            default: {
+              hasValue = observationForm[field.name]
+            }
+          }
+
+          return hasValue;
+        })
+        .sort((a, b) => a.id - b.id)
+        .map(field => {
+          let value = observationForm[field.name];
+          if (field.type === 'attachment') {
+            value = observation.attachments.filter(attachment => {
               return attachment.fieldName === field.name &&
                 attachment.observationFormId.toString() === observationForm._id.toString();
             });
-
-            break;
           }
-          case 'checkbox': {
-            hasValue = field.value != null
-          }
-          default: {
-            hasValue = observationForm[field.name]
-          }
-        }
 
-        return hasValue;
-      })
-      .sort((a, b) => a.id - b.id)
-      .map(field => {
-        let value = observationForm[field.name];
-        if (field.type === 'attachment') {
-          value = observation.attachments.filter(attachment => {
-            return attachment.fieldName === field.name &&
-              attachment.observationFormId.toString() === observationForm._id.toString();
-          });
-        }
-
-        return {
-          key: field.title,
-          type: field.type,
-          value: value
-        };
-      });
+          return {
+            key: field.title,
+            type: field.type,
+            value: value
+          };
+        });
 
 
-    return {
-      title: form.name,
-      properties: properties
-    };
-  });
+      return {
+        title: form.name,
+        properties: properties
+      };
+    });
+  }
 
   const gpsProperties = [];
   const { provider, accuracy } = observation.properties;
@@ -284,7 +287,6 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
   if (gpsProperties.length) {
     sections.push({ title: 'GPS', properties: gpsProperties })
   }
-
 
   const styles = [event._id.toString()];
   if (firstForm) {

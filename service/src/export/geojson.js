@@ -59,57 +59,59 @@ GeoJson.prototype.mapObservationProperties = function (observation, archive) {
   const centroid = turfCentroid(observation);
   observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
-  observation.properties.forms.forEach(observationForm => {
-    if (Object.keys(observationForm).length === 0) return;
+  if (observation.properties.forms) {
+    observation.properties.forms.forEach(observationForm => {
+      if (Object.keys(observationForm).length === 0) return;
 
-    const form = this._event.formMap[observationForm.formId];
-    const formProperties = observation.properties[form.name] || [];
-    const properties = Object.fromEntries(form.fields
-      .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
-      .filter(field => {
-        let hasValue = false;
-        switch (field.type) {
-          case 'attachment': {
-            hasValue = observation.attachments.some(attachment => {
+      const form = this._event.formMap[observationForm.formId];
+      const formProperties = observation.properties[form.name] || [];
+      const properties = Object.fromEntries(form.fields
+        .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
+        .filter(field => {
+          let hasValue = false;
+          switch (field.type) {
+            case 'attachment': {
+              hasValue = observation.attachments.some(attachment => {
+                return attachment.fieldName === field.name &&
+                  attachment.observationFormId.toString() === observationForm._id.toString();
+              });
+
+              break;
+            }
+            case 'checkbox': {
+              hasValue = field.value != null
+            }
+            default: {
+              hasValue = observationForm[field.name]
+            }
+          }
+
+          return hasValue;
+        })
+        .sort((a, b) => a.id - b.id)
+        .map(field => {
+          let value = observationForm[field.name];
+          if (field.type === 'attachment') {
+            value = observation.attachments.filter(attachment => {
               return attachment.fieldName === field.name &&
                 attachment.observationFormId.toString() === observationForm._id.toString();
+            })
+              .map(attachment => {
+                return attachment.relativePath
+              });
+
+            value.forEach(attachmentPath => {
+              archive.file(path.join(attachmentBase, attachmentPath), { name: attachmentPath });
             });
-
-            break;
           }
-          case 'checkbox': {
-            hasValue = field.value != null
-          }
-          default: {
-            hasValue = observationForm[field.name]
-          }
-        }
 
-        return hasValue;
-      })
-      .sort((a, b) => a.id - b.id)
-      .map(field => {
-        let value = observationForm[field.name];
-        if (field.type === 'attachment') {
-          value = observation.attachments.filter(attachment => {
-            return attachment.fieldName === field.name &&
-              attachment.observationFormId.toString() === observationForm._id.toString();
-          })
-            .map(attachment => {
-              return attachment.relativePath
-            });
+          return [field.title, value];
+        }));
 
-          value.forEach(attachmentPath => {
-            archive.file(path.join(attachmentBase, attachmentPath), { name: attachmentPath });
-          });
-        }
-
-        return [field.title, value];
-      }));
-
-    formProperties.push(properties);
-    observation.properties[form.name] = formProperties;
-  });
+      formProperties.push(properties);
+      observation.properties[form.name] = formProperties;
+    });
+  }
 
   delete observation.properties.forms;
 
@@ -175,7 +177,7 @@ GeoJson.prototype.streamLocations = function (stream, done) {
 
   stream.write('{"type": "FeatureCollection", "features": [');
   cursor.eachAsync(location => {
-    if(numLocations > 0) {
+    if (numLocations > 0) {
       stream.write(',');
     }
 
