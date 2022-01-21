@@ -6,7 +6,6 @@ const util = require('util')
   , mgrs = require('mgrs')
   , moment = require('moment')
   , log = require('winston')
-  , stream = require('stream')
   , path = require('path')
   , json2csv = require('json2csv')
   , Exporter = require('./exporter')
@@ -115,10 +114,9 @@ Csv.prototype.export = function (streamable) {
     done => {
       if (!this._filter.exportObservations) return done();
 
-      const observationStream = new stream.PassThrough();
-      archive.append(observationStream, { name: 'observations.csv' });
-      this.streamObservations(observationStream, archive, observationFields, err => {
-        observationStream.end();
+      const asyncParser = new json2csv.AsyncParser({ fields: observationFields }, { readableObjectMode: true, writableObjectMode: true });
+      archive.append(asyncParser.processor, { name: 'observations.csv' });
+      this.streamObservations(asyncParser.input, archive, err => {
         done(err);
       });
     },
@@ -134,98 +132,92 @@ Csv.prototype.export = function (streamable) {
   ],
     err => {
       if (err) {
-        log.info(err);
+        log.warn(err);
       }
 
-      console.log('done writing csv, finalize archive');
+      log.info('done writing csv, finalize archive');
       archive.finalize();
     });
 };
 
-Csv.prototype.streamObservations = async function (stream, archive, fields, done) {
+Csv.prototype.streamObservations = async function (stream, archive, done) {
   log.info("Retrieving observations from DB");
-  this.requestObservations(this._filter, async (err, observations) => {
-    if (err) return done(err);
+  const cursor = this.requestObservations(this._filter);
 
-    log.info("Retrieved " + observations.length + " observations");
-    try {
-      const json = await this.flattenObservations(observations, archive);
+  let cache = {
+    user: null,
+    device: null
+  }
 
-      const csv = json2csv.parse(json, { fields });
-      stream.write(csv);
-      done();
-    } catch (err) {
-      done(err);
-    }
-  });
+  let numObservations = 0;
+  cursor.eachAsync(async observation => {
+    const properties = await this.flattenObservation(observation, cache, archive);
+    stream.push(properties);
+    numObservations++;
+  }).then(() => {
+    if (cursor) cursor.close;
+
+    log.info('Successfully wrote ' + numObservations + ' observations to CSV');
+    log.info('done writing observations');
+    stream.push(null);
+    done();
+  }).catch(err => done(err));
 };
 
-Csv.prototype.flattenObservations = async function (observations, archive) {
-  const rows = [];
+Csv.prototype.flattenObservation = async function (observation, cache, archive) {
+  const properties = observation.properties;
+  properties.id = observation.id;
 
-  let user = null;
-  let device = null;
+  if (!cache.user || cache.user._id.toString() !== observation.userId.toString()) {
+    cache.user = await User.getUserById(observation.userId);
+  }
+  if (!cache.device || cache.device._id.toString() !== observation.deviceId.toString()) {
+    cache.device = await Device.getDeviceById(observation.deviceId);
+  }
 
-  for (let i = 0; i < observations.length; i++) {
-    const observation = observations[i];
-    const { forms: observationForms = [], ...observationRow } = observation.properties;
-    observationRow.id = observation.id;
+  if (cache.user) properties.user = cache.user.username;
+  if (cache.device) properties.device = cache.device.uid;
 
-    if (!user || user._id.toString() !== observation.userId.toString()) {
-      user = await User.getUserById(observation.userId);
-    }
-    if (!device || device._id.toString() !== observation.deviceId.toString()) {
-      device = await Device.getDeviceById(observation.deviceId);
-    }
+  const centroid = turfCentroid(observation);
+  properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
-    if (user) observationRow.user = user.username;
-    if (device) observationRow.device = device.uid;
+  properties.shapeType = observation.geometry.type;
+  if (observation.geometry.type === 'Point') {
+    properties.longitude = observation.geometry.coordinates[0];
+    properties.latitude = observation.geometry.coordinates[1];
+  } else {
+    properties.longitude = centroid.geometry.coordinates[0];
+    properties.latitude = centroid.geometry.coordinates[1];
+  }
+  properties.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
 
-    const centroid = turfCentroid(observation);
-    observationRow.mgrs = mgrs.forward(centroid.geometry.coordinates);
+  properties.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
 
-    observationRow.shapeType = observation.geometry.type;
-    if (observation.geometry.type === 'Point') {
-      observationRow.longitude = observation.geometry.coordinates[0];
-      observationRow.latitude = observation.geometry.coordinates[1];
-    } else {
-      observationRow.longitude = centroid.geometry.coordinates[0];
-      observationRow.latitude = centroid.geometry.coordinates[1];
-    }
-    observationRow.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
-
-    observationRow.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
-
-    rows.push(observationRow);
-
-    observationForms.forEach(observationForm => {
-      const formRow = { id: observation.id }
+  if (observation.properties && observation.properties.forms) {
+    observation.properties.forms.forEach(observationForm => {
       const form = this._event.formMap[observationForm.formId];
       const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
       for (const name in observationForm) {
         const field = form.fieldNameToField[name];
         if (field) {
-          formRow[formPrefix + field.name] = observationForm[name];
+          properties[formPrefix + field.name] = observationForm[name];
           delete observationForm[name];
         }
       }
-
-      rows.push(formRow);
     });
+  }
 
+  if (observation.attachments) {
     observation.attachments.forEach((attachment, index) => {
       const name = path.basename(attachment.relativePath);
-      rows.push({
-        id: observation.id,
-        attachment: attachment.name,
-        attachmentExcelLink: excelLink(name, index)
-      });
+      properties.attachment = attachment.name;
+      properties.attachmentExcelLink = excelLink(name, index);
 
       archive.file(path.join(attachmentBase, attachment.relativePath), { name });
     });
   }
 
-  return rows;
+  return properties;
 };
 
 Csv.prototype.streamLocations = async function (stream, done) {

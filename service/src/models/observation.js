@@ -303,7 +303,11 @@ exports.getObservations = function(event, o, callback) {
       });
   }
 
-  query.exec(callback);
+  if(o.stream) {
+    return query.cursor();
+  } else {
+    query.exec(callback);
+  }
 };
 
 exports.createObservationId = function(callback) {

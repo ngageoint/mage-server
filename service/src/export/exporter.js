@@ -1,4 +1,4 @@
-const api = require('../api')
+const Observation = require('../models/observation')
   , Location = require('../models/location');
 
 function Exporter(options) {
@@ -16,11 +16,11 @@ Exporter.prototype.requestObservations = function (filter, done) {
       important: filter.important,
       attachments: filter.attachments
     },
-    lean: true,
-    sort: { userId: 1 }
+    sort: { userId: 1 },
+    stream: true
   }
 
-  new api.Observation(this._event).getAll(options, done);
+  return Observation.getObservations(this._event, options, done);
 };
 
 Exporter.prototype.requestLocations = function (options, done) {
@@ -35,7 +35,7 @@ Exporter.prototype.requestLocations = function (options, done) {
 
   const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
 
-  return Location.getLocations({ filter: filter, limit: options.limit, stream: options.stream, lean: true, sort: sort }, done);
+  return Location.getLocations({ filter: filter, limit: options.limit, stream: true, sort: sort }, done);
 };
 
 module.exports = Exporter;
