@@ -74,17 +74,6 @@ GeoPackage.prototype.createGeoPackageFile = function () {
   });
 }
 
-GeoPackage.prototype.getObservations = function () {
-  this._filter.states = ['active'];
-
-  return new Promise((resolve, reject) => {
-    new api.Observation(this._event).getAll({ filter: this._filter }, (err, observations) => {
-      if (err) return reject(err);
-      resolve(observations);
-    });
-  });
-}
-
 GeoPackage.prototype.createObservationTable = async function (geopackage) {
   log.info('Create Observation Table');
   const columns = [];
@@ -396,14 +385,16 @@ GeoPackage.prototype.addFormDataToGeoPackage = async function (geopackage) {
 }
 
 GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
-  log.info('Add Observations');
-  const observations = await this.getObservations()
+  log.info('Requesting locations from DB');
+
   this.createAttachmentTable(geopackage);
 
-  const geometries = [];
+  const cursor = this.requestObservations(this._filter);
 
-  for (let i = 0; i < observations.length; i++) {
-    const observation = observations[i];
+  let geometries = [];
+  let numObservations = 0;
+  return cursor.eachAsync(async observation => {
+
     let primary;
     let variant;
     if (observation.properties.forms && observation.properties.forms.length > 0) {
@@ -496,24 +487,28 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
             await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
           }
 
-          await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES)
+          await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
         }
         catch (e) {
           console.error('error is ', e);
         }
       }
     }
+  }).then(async () => {
+    if (cursor) cursor.close;
 
-  }
-  const featureDao = geopackage.getFeatureDao('Observations');
-  const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
-  rtreeIndex.create();
+    const featureDao = geopackage.getFeatureDao('Observations');
+    const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
+    rtreeIndex.create();
+  
+    if (geometries.length > 0) {
+      await this.updateBounds(geopackage, geometries, featureDao.getContents());
+    }
 
-  if (geometries.length > 0) {
-    await this.updateBounds(geopackage, geometries, featureDao.getContents());
-  }
+    log.info('Successfully wrote ' + numObservations + ' observations to Geopackage');
 
-  return geopackage;
+    return geopackage;;
+  }).catch(err => { log.warn(err) });
 }
 
 GeoPackage.prototype.updateBounds = async function (geopackage, geometries, contents) {
