@@ -225,7 +225,7 @@ Csv.prototype.streamLocations = async function (stream, done) {
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
   log.info("Retrieving locations from DB");
-  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate });
 
   let cache = {
     user: null,

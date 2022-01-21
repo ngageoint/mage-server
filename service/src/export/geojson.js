@@ -1,3 +1,5 @@
+'use strict';
+
 const util = require('util')
   , api = require('../api')
   , async = require('async')
@@ -120,49 +122,50 @@ GeoJson.prototype.mapObservationProperties = function (observation, archive) {
 
 GeoJson.prototype.streamObservations = async function (stream, archive, done) {
   log.info("Requesting observations from DB");
-  this.requestObservations(this._filter, async (err, observations) => {
-    if (err) return done(err);
 
-    log.info("Retrieved " + observations.length + " observations");
+  const cursor = this.requestObservations(this._filter);
 
-    let user = null;
-    let device = null;
+  let user = null;
+  let device = null;
 
-    try {
-      const remappedObservations = [];
-      for (let i = 0; i < observations.length; i++) {
-        const observation = observations[i];
-        this.mapObservationProperties(observation, archive);
+  let numObservations = 0;
 
-        if (!user || user._id.toString() !== observation.userId.toString()) {
-          user = await User.getUserById(observation.userId);
-        }
-        if (!device || device._id.toString() !== observation.deviceId.toString()) {
-          device = await Device.getDeviceById(observation.deviceId);
-        }
-
-        if (user) observation.properties.user = user.username;
-        if (device) observation.properties.device = device.uid;
-
-        remappedObservations.push({
-          geometry: observation.geometry,
-          properties: observation.properties
-        });
-      };
-
-      stream.write(JSON.stringify({
-        type: 'FeatureCollection',
-        features: remappedObservations
-      }));
-
-      // throw in icons
-      archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
-
-      done();
-    } catch (err) {
-      done(err);
+  stream.write('{"type": "FeatureCollection", "features": [');
+  cursor.eachAsync(async observation => {
+    if (numObservations > 0) {
+      stream.write(',');
     }
-  });
+
+    this.mapObservationProperties(observation, archive);
+
+    if (!user || user._id.toString() !== observation.userId.toString()) {
+      user = await User.getUserById(observation.userId);
+    }
+    if (!device || device._id.toString() !== observation.deviceId.toString()) {
+      device = await Device.getDeviceById(observation.deviceId);
+    }
+
+    if (user) observation.properties.user = user.username;
+    if (device) observation.properties.device = device.uid;
+
+    const data = JSON.stringify({
+      geometry: observation.geometry,
+      properties: observation.properties
+    });
+    stream.write(data);
+    numObservations++;
+  }).then(() => {
+    if (cursor) cursor.close;
+
+    stream.write(']}');
+
+    // throw in icons
+    archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
+
+    log.info('Successfully wrote ' + numObservations + ' observations to GeoJSON');
+
+    done();
+  }).catch(err => done(err));
 };
 
 GeoJson.prototype.streamLocations = function (stream, done) {
@@ -171,7 +174,7 @@ GeoJson.prototype.streamLocations = function (stream, done) {
   const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate });
 
   let numLocations = 0;
 
