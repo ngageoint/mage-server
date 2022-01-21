@@ -56,11 +56,12 @@ Kml.prototype.export = function (streamable) {
 };
 
 Kml.prototype.streamObservations = function (stream, archive, done) {
-  log.info("Retrieving observations from DB");
-  this.requestObservations(this._filter, (err, observations) => {
-    if (err) return done(err);
+  log.info('Retrieving observations from DB');
 
-    log.info("Retrieved " + observations.length + " observations");
+  const cursor = this.requestObservations(this._filter);
+
+  let numObservations = 0;
+  cursor.eachAsync(async observation => {
 
     log.info("Retrieving icons from DB for the event " + this._event.name);
     Icon.getAll({ eventId: this._event._id }, (err, icons) => {
@@ -70,26 +71,27 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
 
       stream.write(writer.generateObservationStyles(this._event, icons));
       stream.write(writer.generateKMLFolderStart(this._event.name, false));
+      stream.write(writer.generateObservationPlacemark(observation, this._event));
 
-      observations.forEach(observation => {
-        stream.write(writer.generateObservationPlacemark(observation, this._event));
-
-        if (observation.attachments) {
-          observation.attachments.forEach(attachment => {
-            archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-          });
-        }
-      });
-
-      log.info('Successfully wrote ' + observations.length + ' observations to KML');
-      stream.write(writer.generateKMLFolderClose());
-
-      // throw in icons
-      archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
-
-      done();
+      if (observation.attachments) {
+        observation.attachments.forEach(attachment => {
+          archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
+        });
+      }
     });
-  });
+
+    numObservations++;
+  }).then(() => {
+    if (cursor) cursor.close;
+
+    log.info('Successfully wrote ' + numObservations + ' observations to KML');
+    stream.write(writer.generateKMLFolderClose());
+
+    // throw in icons
+    archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
+
+    done();
+  }).catch(err => done(err));
 };
 
 Kml.prototype.streamLocations = async function (stream, archive, done) {
@@ -98,7 +100,7 @@ Kml.prototype.streamLocations = async function (stream, archive, done) {
   const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
   const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate });
 
   let user = null;
 
