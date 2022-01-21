@@ -18,7 +18,6 @@ require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
 const Observation = require('../../lib/models/observation');
-const observationModel = Observation.observationModel;
 
 require('../../lib/models/location');
 const LocationModel = mongoose.model('Location');
@@ -27,6 +26,7 @@ const User = require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
 const Device = require('../../lib/models/device');
+const exp = require('constants');
 const DeviceModel = mongoose.model('Device');
 
 stream.Writable.prototype.type = function () { };
@@ -147,24 +147,8 @@ describe("csv export tests", function () {
   it("should populate observations", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    const user0 = {
-      id: userId,
-      username: 'test_user_0'
-    };
-    const users = new Map();
-    users[user0.id] = user0;
-
-    const device0 = {
-      id: '0',
-      uid: '12345'
-    };
-    const devices = new Map();
-    devices[device0.id] = device0;
-
     const options = {
       event: event,
-      users: users,
-      devices: devices,
       filter: {
         exportObservations: true,
         exportLocations: false
@@ -175,27 +159,14 @@ describe("csv export tests", function () {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    const mockObservation = new ObservationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now(),
-        forms: []
-      }
-    });
-    sinon.mock(ObservationModel)
+    sinon.mock(LocationModel)
       .expects('find')
-      .chain('exec')
-      .yields(null, [mockObservation]);
+      .chain('cursor')
+      .returns(new TestLocationCursor());
+
+    sinon.mock(Observation)
+      .expects('getObservations')
+      .returns(new TestObservationCursor());
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
@@ -244,7 +215,11 @@ describe("csv export tests", function () {
     sinon.mock(LocationModel)
       .expects('find')
       .chain('cursor')
-      .returns(new TestCursor());
+      .returns(new TestLocationCursor());
+
+    sinon.mock(Observation)
+      .expects('getObservations')
+      .returns(new TestObservationCursor());
 
     const writable = new TestWritableStream();
     writable.on('finish', async () => {
@@ -288,7 +263,7 @@ class TestWritableStream {
 util.inherits(TestWritableStream, stream.Writable);
 
 
-class TestCursor {
+class TestLocationCursor {
   constructor() {
     this.i = 0;
     this.locations = [{
@@ -316,6 +291,43 @@ class TestCursor {
     if (this.i == 0) {
       this.t++;
       return fn(this.locations[this.i], this.i);
+    } else {
+      return Promise.resolve(this.i);
+    }
+  }
+}
+
+class TestObservationCursor {
+  constructor() {
+    this.i = 0;
+
+    const mockObservation = {
+      _id: 1,
+      userId: userId,
+      deviceId: deviceId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now(),
+        forms: []
+      }
+    };
+
+    this.observations = [mockObservation];
+  }
+  eachAsync(fn, opts, callback) {
+    if (typeof opts === 'function') {
+      callback = opts;
+      opts = {};
+    }
+    opts = opts || {};
+
+    if (this.i == 0) {
+      this.t++;
+      return fn(this.observations[this.i], this.i);
     } else {
       return Promise.resolve(this.i);
     }
