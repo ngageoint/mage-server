@@ -62,14 +62,14 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
     if (err) return done(err);
 
     log.info("Retrieved " + icons.length + " icons");
+    stream.write(writer.generateObservationStyles(this._event, icons));
+    stream.write(writer.generateKMLFolderStart(this._event.name));
 
     log.info('Retrieving observations from DB');
     const cursor = this.requestObservations(this._filter);
 
     let numObservations = 0;
     cursor.eachAsync(async observation => {
-      stream.write(writer.generateObservationStyles(this._event, icons));
-      stream.write(writer.generateKMLFolderStart(this._event.name, false));
       stream.write(writer.generateObservationPlacemark(observation, this._event));
 
       if (observation.attachments) {
@@ -77,13 +77,13 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
           archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
         });
       }
-      stream.write(writer.generateKMLFolderClose());
 
       numObservations++;
     }).then(() => {
       if (cursor) cursor.close;
 
       log.info('Successfully wrote ' + numObservations + ' observations to KML');
+      stream.write(writer.generateKMLFolderClose());
 
       // throw in icons
       archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
