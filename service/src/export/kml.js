@@ -56,19 +56,18 @@ Kml.prototype.export = function (streamable) {
 };
 
 Kml.prototype.streamObservations = function (stream, archive, done) {
-  log.info('Retrieving observations from DB');
 
-  const cursor = this.requestObservations(this._filter);
+  log.info("Retrieving icons from DB for the event " + this._event.name);
+  Icon.getAll({ eventId: this._event._id }, (err, icons) => {
+    if (err) return done(err);
 
-  let numObservations = 0;
-  cursor.eachAsync(async observation => {
+    log.info("Retrieved " + icons.length + " icons");
 
-    log.info("Retrieving icons from DB for the event " + this._event.name);
-    Icon.getAll({ eventId: this._event._id }, (err, icons) => {
-      if (err) return done(err);
+    log.info('Retrieving observations from DB');
+    const cursor = this.requestObservations(this._filter);
 
-      log.info("Retrieved " + icons.length + " icons");
-
+    let numObservations = 0;
+    cursor.eachAsync(async observation => {
       stream.write(writer.generateObservationStyles(this._event, icons));
       stream.write(writer.generateKMLFolderStart(this._event.name, false));
       stream.write(writer.generateObservationPlacemark(observation, this._event));
@@ -79,19 +78,19 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
         });
       }
       stream.write(writer.generateKMLFolderClose());
-    });
 
-    numObservations++;
-  }).then(() => {
-    if (cursor) cursor.close;
+      numObservations++;
+    }).then(() => {
+      if (cursor) cursor.close;
 
-    log.info('Successfully wrote ' + numObservations + ' observations to KML');
+      log.info('Successfully wrote ' + numObservations + ' observations to KML');
 
-    // throw in icons
-    archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
+      // throw in icons
+      archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
 
-    done();
-  }).catch(err => done(err));
+      done();
+    }).catch(err => done(err));
+  });
 };
 
 Kml.prototype.streamLocations = async function (stream, archive, done) {
