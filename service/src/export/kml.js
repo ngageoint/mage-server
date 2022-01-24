@@ -78,6 +78,7 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
           archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
         });
       }
+      stream.write(writer.generateKMLFolderClose());
     });
 
     numObservations++;
@@ -85,7 +86,6 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
     if (cursor) cursor.close;
 
     log.info('Successfully wrote ' + numObservations + ' observations to KML');
-    stream.write(writer.generateKMLFolderClose());
 
     // throw in icons
     archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
