@@ -1,3 +1,5 @@
+'use strict';
+
 const sinon = require('sinon')
   , expect = require('chai').expect
   , mongoose = require('mongoose')
@@ -26,7 +28,6 @@ const User = require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
 const Device = require('../../lib/models/device');
-const exp = require('constants');
 const DeviceModel = mongoose.model('Device');
 
 stream.Writable.prototype.type = function () { };
