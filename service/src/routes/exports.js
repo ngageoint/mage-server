@@ -220,7 +220,7 @@ function getEvent(req, res, next) {
   });
 }
 
-async function exportData(exportId, event, users, devices) {
+async function exportData(exportId, event) {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
 
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
