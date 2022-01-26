@@ -128,7 +128,7 @@ GeoPackage.prototype.createAttachmentTable = function (geopackage) {
   return geopackage.createMediaTable('Attachments', columns);
 }
 
-GeoPackage.prototype.addUserToUsersTable = async function (geopackage, user, usersLastLocation, geometries) {
+GeoPackage.prototype.addUserToUsersTable = async function (geopackage, user, usersLastLocation, zoomToEnvelope) {
   log.info('Add user ' + user.username + " to users table");
 
   const geoJson = {
@@ -164,8 +164,8 @@ GeoPackage.prototype.addUserToUsersTable = async function (geopackage, user, use
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
 
-  if (geometries.length > 0) {
-    await this.updateBounds(geopackage, geometries, featureDao.getContents());
+  if (zoomToEnvelope) {
+    this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
   }
 }
 
@@ -207,22 +207,25 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage) {
 
   let numLocations = 0;
   let user = null;
-  let geometries = [];
   let userLastLocation = null;
+  let zoomToEnvelope;
   return cursor.eachAsync(async location => {
 
     if (!user || user._id.toString() !== location.userId.toString()) {
-      if (geometries.length > 0) {
+      if (zoomToEnvelope) {
+        //Switching user, so update location
         const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
-        this.updateBounds(geopackage, geometries, featureDao.getContents());
-        await this.addUserToUsersTable(geopackage, user, userLastLocation, geometries);
+
+        this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+
+        await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
       }
-      geometries = [];
+      zoomToEnvelope = null;
       user = await User.getUserById(location.userId);
       await this.createLocationTableForUser(geopackage, location.userId.toString());
     }
 
-    geometries.push(location.geometry);
+    zoomToEnvelope = this.calculateBounds(location.geometry, zoomToEnvelope);
     userLastLocation = location;
 
     const geojson = {
@@ -245,10 +248,11 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage) {
   }).then(async () => {
     if (cursor) cursor.close;
 
-    if (geometries.length > 0 && user) {
+    if (zoomToEnvelope && user) {
+      //Process the last user, since it was missed in the loop above
       const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
-      this.updateBounds(geopackage, geometries, featureDao.getContents());
-      await this.addUserToUsersTable(geopackage, user, userLastLocation, geometries);
+      this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+      await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
     }
 
     log.info('Successfully wrote ' + numLocations + ' locations to Geopackage');
@@ -391,9 +395,11 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
 
   const cursor = this.requestObservations(this._filter);
 
-  let geometries = [];
   let numObservations = 0;
+  let zoomToEnvelope;
   return cursor.eachAsync(async observation => {
+
+    numObservations++;
 
     let primary;
     let variant;
@@ -420,7 +426,7 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
       properties: properties
     };
 
-    geometries.push(geojson.geometry);
+    zoomToEnvelope = this.calculateBounds(geojson.geometry, zoomToEnvelope);
 
     const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
@@ -500,53 +506,40 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
     const featureDao = geopackage.getFeatureDao('Observations');
     const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
     rtreeIndex.create();
-  
-    if (geometries.length > 0) {
-      await this.updateBounds(geopackage, geometries, featureDao.getContents());
+
+    if (zoomToEnvelope) {
+      this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
     }
 
     log.info('Successfully wrote ' + numObservations + ' observations to Geopackage');
 
-    return geopackage;;
+    return geopackage;
   }).catch(err => { log.warn(err) });
 }
 
-GeoPackage.prototype.updateBounds = async function (geopackage, geometries, contents) {
+GeoPackage.prototype.calculateBounds = function (geometry, zoomToEnvelope) {
 
-  let fullEnvelope;
+  const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
+  const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
 
-  for (let i = 0; i < geometries.length; i++) {
-
-    const geometry = geometries[i];
-
-    const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
-    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
-
-    if (!fullEnvelope) {
-      fullEnvelope = envelope;
-    } else {
-      if (fullEnvelope.maxX < envelope.maxX) {
-        fullEnvelope.maxX = envelope.maxX;
-      }
-      if (fullEnvelope.maxY < envelope.maxY) {
-        fullEnvelope.maxY = envelope.maxY;
-      }
-      if (fullEnvelope.minX > envelope.minX) {
-        fullEnvelope.minX = envelope.minX;
-      }
-      if (fullEnvelope.minY > envelope.minY) {
-        fullEnvelope.minY = envelope.minY;
-      }
+  if (!zoomToEnvelope) {
+    zoomToEnvelope = envelope;
+  } else {
+    if (zoomToEnvelope.maxX < envelope.maxX) {
+      zoomToEnvelope.maxX = envelope.maxX;
+    }
+    if (zoomToEnvelope.maxY < envelope.maxY) {
+      zoomToEnvelope.maxY = envelope.maxY;
+    }
+    if (zoomToEnvelope.minX > envelope.minX) {
+      zoomToEnvelope.minX = envelope.minX;
+    }
+    if (zoomToEnvelope.minY > envelope.minY) {
+      zoomToEnvelope.minY = envelope.minY;
     }
   }
 
-  contents.max_x = fullEnvelope.maxX;
-  contents.max_y = fullEnvelope.maxY;
-  contents.min_x = fullEnvelope.minX;
-  contents.min_y = fullEnvelope.minY;
-
-  const contentsDao = geopackage.contentsDao;
-  contentsDao.update(contents);
+  return zoomToEnvelope;
 }
 
 GeoPackage.prototype.addAttachments = async function (geopackage, attachments, observationId, formTable, formRowId) {
@@ -696,4 +689,15 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
     }
   }
   return geopackage;
+}
+
+GeoPackage.prototype.setContentBounds = function (geopackage, featureDao, zoomToEnvelope) {
+  const contents = featureDao.getContents();
+  contents.max_x = zoomToEnvelope.maxX;
+  contents.max_y = zoomToEnvelope.maxY;
+  contents.min_x = zoomToEnvelope.minX;
+  contents.min_y = zoomToEnvelope.minY;
+
+  const contentsDao = geopackage.contentsDao;
+  contentsDao.update(contents);
 }
