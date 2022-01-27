@@ -38,6 +38,8 @@ KmlWriter.prototype.generateKMLFolderStart = function (name) {
 
 KmlWriter.prototype.generateUserStyle = function (user) {
   let userStyle = '';
+
+  //TODO the icons relative path is removed by the model...should this be the avatar?
   if (user.icon && user.icon.relativePath) {
     userStyle = fragment({
       Style: {
