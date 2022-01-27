@@ -7,8 +7,6 @@ const sinon = require('sinon')
     , util = require('util')
     , JSZip = require('jszip')
     , GeopackageExporter = require('../../lib/export/geopackage')
-    , MockToken = require('../mockToken')
-    , TokenModel = mongoose.model('Token')
     , GeoPackageAPI = require('@ngageoint/geopackage');
 
 require('chai').should();
@@ -19,12 +17,6 @@ const TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
-
-const Observation = require('../../lib/models/observation');
-const observationModel = Observation.observationModel;
-
-require('../../lib/models/location');
-const LocationModel = mongoose.model('Location');
 
 describe("geopackage export tests", function () {
 
@@ -48,15 +40,6 @@ describe("geopackage export tests", function () {
     afterEach(function () {
         sinon.restore();
     });
-
-    function mockTokenWithPermission(permission) {
-        sinon.mock(TokenModel)
-            .expects('findOne')
-            .withArgs({ token: "12345" })
-            .chain('populate', 'userId')
-            .chain('exec')
-            .yields(null, MockToken(userId, [permission]));
-    }
 
     it("should populate nothing", function (done) {
         const user0 = {
