@@ -1,3 +1,5 @@
+'use strict';
+
 const util = require('util')
   , api = require('../api')
   , async = require('async')
@@ -135,7 +137,6 @@ Kml.prototype.streamLocations = async function (stream, archive, done) {
     stream.write(userStyles);
 
     log.info('Successfully wrote ' + numLocations + ' locations to KML');
-    log.info('done writing all locations for ' + user.username);
 
     done();
   }).catch(err => done(err));
