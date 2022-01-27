@@ -41,11 +41,15 @@ GeoPackage.prototype.export = async function (streamable) {
   await this.createUserTable(gp);
   await this.addFormDataToGeoPackage(gp);
   await this.createFormAttributeTables(gp);
-  await this.createObservationTable(gp);
-  await this.createObservationFeatureTableStyles(gp);
   await this.createUserFeatureTableStyles(gp);
-  await this.addObservationsToGeoPackage(gp);
-  await this.addLocationsToGeoPackage(gp);
+  if (this._filter.exportObservations) {
+    await this.createObservationTable(gp);
+    await this.createObservationFeatureTableStyles(gp);
+    await this.addObservationsToGeoPackage(gp);
+  }
+  if (this._filter.exportLocations) {
+    await this.addLocationsToGeoPackage(gp);
+  }
 
   log.info('GeoPackage created');
   archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
