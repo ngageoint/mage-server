@@ -288,6 +288,10 @@ exports.getObservations = function(event, o, callback) {
 
   let query = observationModel(event).find(conditions, fields, options);
 
+  if(o.lean) {
+     query = query.lean();
+  }
+
   if (o.populate) {
     query = query
       .populate({
@@ -299,7 +303,11 @@ exports.getObservations = function(event, o, callback) {
       });
   }
 
-  query.exec(callback);
+  if(o.stream) {
+    return query.cursor();
+  } else {
+    query.exec(callback);
+  }
 };
 
 exports.createObservationId = function(callback) {

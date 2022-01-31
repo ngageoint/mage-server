@@ -2964,59 +2964,12 @@ paths:
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` or an ACL entry in the
         event with `read`.
       summary: Export MAGE data using a background task.
-      parameters:
-      - name: exportType
-        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
         required: true
-        schema:
-          type: string
-          enum:
-          - geojson
-          - kml
-          - geopackage
-          - csv
-      - name: eventId
-        in: query
-        required: true
-        schema:
-          type: number
-      - name: startDate
-        in: query
-        schema:
-          type: string
-          format: date-time
-      - name: endDate
-        in: query
-        schema:
-          type: string
-          format: date-time
-      - name: observations
-        in: query
-        required: true
-        description: Boolean flag indicating whether or not to export observations
-        schema:
-          type: boolean
-      - name: locations
-        in: query
-        required: true
-        description: Boolean flag indicating whether or not to export user locations
-        schema:
-          type: boolean
-      - name: attachments
-        in: query
-        description: Boolean flag indicating whether or not to `exclude` observation attachments (if any).  Attachments are included by default.
-        schema:
-          type: boolean
-      - name: favorites
-        in: query
-        description: Boolean flag indicating whether or not to export only favorite observations
-        schema:
-          type: boolean
-      - name: important
-        in: query
-        description: Boolean flag indicating whether or not to export only observations flagged important
-        schema:
-          type: boolean
       responses:
         201:
           description: export id
@@ -4362,7 +4315,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StaticIcon'
-
+    ExportRequest:
+      required:
+        - exportType
+        - eventId
+        - observations
+        - locations
+      properties:
+        exportType:
+          $ref: '#/components/schemas/Export/properties/exportType'
+        eventId:
+          $ref: '#/components/schemas/Event/properties/id'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        observations:
+          type: boolean
+        locations:
+          type: boolean
+        attachments:
+          type: boolean
+        favorites:
+          type: boolean
+        important:
+          type: boolean
+          
   parameters:
     userIdInPath:
       in: path

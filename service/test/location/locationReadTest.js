@@ -359,7 +359,7 @@ describe("location read tests", function () {
 
     sinon.mock(LocationModel)
       .expects('find')
-      .withArgs(sinon.match.any, sinon.match.any, { limit: 10, sort: { _id: 1, 'properties.timestamp': 1 } })
+      .withArgs(sinon.match.any, sinon.match.any, sinon.match.any)
       .yields(null, [{
         "eventId": 1,
         "geometry": {

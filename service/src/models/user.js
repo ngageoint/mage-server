@@ -260,6 +260,10 @@ exports.getUsers = function (options, callback) {
 
   let query = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
 
+  if(options.lean) {
+    query = query.lean();
+  }
+
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     query = query.populate('roleId');
   }

@@ -4,12 +4,9 @@ const moment = require('moment')
   , fs = require('fs')
   , exportDirectory = require('../environment/env').exportDirectory
   , Event = require('../models/event')
-  , User = require('../models/user')
-  , Device = require('../models/device')
   , access = require('../access')
   , exportXform = require('../transformers/export')
   , exporterFactory = require('../export/exporterFactory')
-  , { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events')
   , Export = require('../models/export');
 
 module.exports = function (app, security) {
@@ -49,8 +46,6 @@ module.exports = function (app, security) {
     parseQueryParams,
     getEvent,
     authorizeEventAccess,
-    mapUsers,
-    mapDevices,
     function (req, res, next) {
       const document = {
         userId: req.user._id,
@@ -65,8 +60,7 @@ module.exports = function (app, security) {
         const response = exportXform.transform(result, { path: req.getPath() });
         res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
 
-        //TODO figure out event, users and devices
-        exportData(result._id, req.event, req.users, req.devices);
+        exportData(result._id, req.event);
       }).catch(err => next(err));
     }
   );
@@ -139,12 +133,10 @@ module.exports = function (app, security) {
     getExport,
     getEvent,
     authorizeEventAccess,
-    mapUsers,
-    mapDevices,
     function (req, res) {
       res.json({ id: req.params.exportId });
 
-      exportData(req.param('exportId'), req.event, req.users, req.devices);
+      exportData(req.param('exportId'), req.event);
     });
 };
 
@@ -228,36 +220,7 @@ function getEvent(req, res, next) {
   });
 }
 
-function mapUsers(req, res, next) {
-  //get users for lookup
-  User.getUsers(function (err, users) {
-    if (err) return next(err);
-
-    const map = {};
-    users.forEach(function (user) {
-      map[user._id] = user;
-    });
-    req.users = map;
-
-    next();
-  });
-}
-
-function mapDevices(req, res, next) {
-  //get users for lookup
-  Device.getDevices()
-    .then(devices => {
-      const map = {};
-      devices.forEach(function (device) {
-        map[device._id] = device;
-      });
-      req.devices = map;
-      next();
-    })
-    .catch(err => next(err));
-}
-
-async function exportData(exportId, event, users, devices) {
+async function exportData(exportId, event) {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
 
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
@@ -276,8 +239,6 @@ async function exportData(exportId, event, users, devices) {
 
   const options = {
     event: event,
-    users: users,
-    devices: devices,
     filter: exportDocument.options.filter
   };
   log.info('Export ' + exportId + ' (' + exportDocument.exportType + ')');

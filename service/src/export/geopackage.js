@@ -13,7 +13,8 @@ const util = require('util')
   , GeoPackageAPI = require('@ngageoint/geopackage')
   , environment = require('../environment/env')
   , os = require('os')
-  , wkx = require('wkx');
+  , wkx = require('wkx')
+  , User = require('../models/user');
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
@@ -40,13 +41,15 @@ GeoPackage.prototype.export = async function (streamable) {
   await this.createUserTable(gp);
   await this.addFormDataToGeoPackage(gp);
   await this.createFormAttributeTables(gp);
-  await this.createObservationTable(gp);
-  await this.createObservationFeatureTableStyles(gp);
   await this.createUserFeatureTableStyles(gp);
-  await this.addObservationsToGeoPackage(gp);
-  const usersLastLocation = {};
-  await this.addLocationsToGeoPackage(gp, usersLastLocation);
-  await this.addUsersToUsersTable(gp, usersLastLocation);
+  if (this._filter.exportObservations) {
+    await this.createObservationTable(gp);
+    await this.createObservationFeatureTableStyles(gp);
+    await this.addObservationsToGeoPackage(gp);
+  }
+  if (this._filter.exportLocations) {
+    await this.addLocationsToGeoPackage(gp);
+  }
 
   log.info('GeoPackage created');
   archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
@@ -71,28 +74,6 @@ GeoPackage.prototype.createGeoPackageFile = function () {
           resolve(filePath);
         });
       });
-    });
-  });
-}
-
-GeoPackage.prototype.getObservations = function () {
-  this._filter.states = ['active'];
-
-  return new Promise((resolve, reject) => {
-    new api.Observation(this._event).getAll({ filter: this._filter }, (err, observations) => {
-      if (err) return reject(err);
-      resolve(observations);
-    });
-  });
-}
-
-GeoPackage.prototype.getLocations = function (lastLocationId, startDate, endDate) {
-  const limit = 2000;
-
-  return new Promise((resolve, reject) => {
-    this.requestLocations({ startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit }, (err, requestedLocations) => {
-      if (err) return reject(err);
-      resolve(requestedLocations);
     });
   });
 }
@@ -151,54 +132,44 @@ GeoPackage.prototype.createAttachmentTable = function (geopackage) {
   return geopackage.createMediaTable('Attachments', columns);
 }
 
-GeoPackage.prototype.addUsersToUsersTable = async function (geopackage, usersLastLocation) {
-  log.info('Add Users');
-  const userIds = Object.keys(this._users);
+GeoPackage.prototype.addUserToUsersTable = async function (geopackage, user, usersLastLocation, zoomToEnvelope) {
+  log.info('Add user ' + user.username + " to users table");
 
-  const geometries = [];
-
-  for (let i = 0; i < userIds.length; i++) {
-    const userId = userIds[i];
-    if (!usersLastLocation[userId]) {
-      continue;
+  const geoJson = {
+    type: 'Feature',
+    geometry: usersLastLocation.geometry,
+    properties: {
+      timestamp: usersLastLocation.properties.timestamp,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      phones: user.phones.join(', '),
+      userId: user._id.toString()
     }
-    const user = this._users[userId];
-    const geoJson = {
-      type: 'Feature',
-      geometry: usersLastLocation[userId].geometry,
-      properties: {
-        timestamp: usersLastLocation[userId].properties.timestamp,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        phones: user.phones.join(', '),
-        userId: userId
-      }
-    };
-    geometries.push(geoJson.geometry);
-    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
-    if (fs.existsSync(path.join(environment.userBaseDirectory, userId, 'icon'))) {
-      const iconBuffer = fs.readFileSync(path.join(environment.userBaseDirectory, userId, 'icon'));
+  };
+  const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
+  if (fs.existsSync(path.join(environment.userBaseDirectory, user._id.toString(), 'icon'))) {
+    const iconBuffer = fs.readFileSync(path.join(environment.userBaseDirectory, user._id.toString(), 'icon'));
 
-      const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
-      const iconRow = featureTableStyles.getIconDao().newRow();
-      iconRow.data = iconBuffer;
-      iconRow.contentType = 'image/png';
-      iconRow.name = user.username;
-      iconRow.description = `Icon for user ${user.username}`;
-      iconRow.width = 20;
-      iconRow.anchorU = 0.5;
-      iconRow.anchorV = 1.0;
+    const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
+    const iconRow = featureTableStyles.getIconDao().newRow();
+    iconRow.data = iconBuffer;
+    iconRow.contentType = 'image/png';
+    iconRow.name = user.username;
+    iconRow.description = `Icon for user ${user.username}`;
+    iconRow.width = 20;
+    iconRow.anchorU = 0.5;
+    iconRow.anchorV = 1.0;
 
-      featureTableStyles.setIconDefault(userRowId, iconRow);
-    }
+    featureTableStyles.setIconDefault(userRowId, iconRow);
   }
+
   const featureDao = geopackage.getFeatureDao('Users');
   const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
   rtreeIndex.create();
 
-  if (geometries.length > 0) {
-    await this.updateBounds(geopackage, geometries, featureDao.getContents());
+  if (zoomToEnvelope) {
+    this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
   }
 }
 
@@ -230,44 +201,37 @@ GeoPackage.prototype.createLocationTableForUser = async function (geopackage, us
   return geopackage;
 }
 
-GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated = {}) {
-  log.info('Add Locations');
+GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage) {
+  log.info('Requesting locations from DB');
 
-  if (!startDate) {
-    startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
-  }
-  if (!endDate) {
-    endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
-  }
+  const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
 
-  const locations = await this.getLocations(lastLocationId, startDate, endDate);
-  if (!locations || locations.length === 0) {
-    return geopackage;
-  }
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  const last = locations.slice(-1).pop();
-  if (last) {
-    const locationTime = moment(last.properties.timestamp);
-    lastLocationId = last._id;
-    if (!startDate || startDate.isBefore(locationTime)) {
-      startDate = locationTime;
-    }
-  }
+  let numLocations = 0;
+  let user = null;
+  let userLastLocation = null;
+  let zoomToEnvelope;
+  return cursor.eachAsync(async location => {
 
-  const geometriesByUser = {};
-  for (let i = 0; i < locations.length; i++) {
-    const location = locations[i];
+    if (!user || user._id.toString() !== location.userId.toString()) {
+      if (zoomToEnvelope) {
+        //Switching user, so update location
+        const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
 
-    if (!locationTablesCreated[location.userId.toString()]) {
+        this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+
+        await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
+      }
+      zoomToEnvelope = null;
+      user = await User.getUserById(location.userId);
       await this.createLocationTableForUser(geopackage, location.userId.toString());
-      locationTablesCreated[location.userId.toString()] = true;
     }
 
-    usersLastLocation[location.userId.toString()] = location;
-    if (!geometriesByUser[location.userId.toString()]) {
-      geometriesByUser[location.userId.toString()] = [];
-    }
-    geometriesByUser[location.userId.toString()].push(location.geometry);
+    zoomToEnvelope = this.calculateBounds(location.geometry, zoomToEnvelope);
+    userLastLocation = location;
+
     const geojson = {
       type: 'Feature',
       geometry: location.geometry,
@@ -283,17 +247,22 @@ GeoPackage.prototype.addLocationsToGeoPackage = async function (geopackage, user
     }
 
     await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations_' + location.userId.toString());
-  }
-  if (locations.length > 0) {
-    Object.keys(geometriesByUser).forEach(userId => {
-      const featureDao = geopackage.getFeatureDao('Locations_' + userId.toString());
-      const geometries = geometriesByUser[userId];
-      this.updateBounds(geopackage, geometries, featureDao.getContents());
-    });
-  }
-  // go get the next batch and add them
-  await this.addLocationsToGeoPackage(geopackage, usersLastLocation, lastLocationId, startDate, endDate, locationTablesCreated);
-  return geopackage;
+
+    numLocations++;
+  }).then(async () => {
+    if (cursor) cursor.close;
+
+    if (zoomToEnvelope && user) {
+      //Process the last user, since it was missed in the loop above
+      const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
+      this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+      await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
+    }
+
+    log.info('Successfully wrote ' + numLocations + ' locations to Geopackage');
+
+    return geopackage;;
+  }).catch(err => { log.warn(err) });
 }
 
 GeoPackage.prototype.createFormAttributeTables = async function (geopackage) {
@@ -424,17 +393,21 @@ GeoPackage.prototype.addFormDataToGeoPackage = async function (geopackage) {
 }
 
 GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
-  log.info('Add Observations');
-  const observations = await this.getObservations()
+  log.info('Requesting locations from DB');
+
   this.createAttachmentTable(geopackage);
 
-  const geometries = [];
+  const cursor = this.requestObservations(this._filter);
 
-  for (let i = 0; i < observations.length; i++) {
-    const observation = observations[i];
+  let numObservations = 0;
+  let zoomToEnvelope;
+  return cursor.eachAsync(async observation => {
+
+    numObservations++;
+
     let primary;
     let variant;
-    if (observation.properties.forms.length > 0) {
+    if (observation.properties.forms && observation.properties.forms.length > 0) {
       const observationFirstForm = observation.properties.forms[0];
       const form = this._event.formMap[observationFirstForm.formId];
       primary = observationFirstForm[form.primaryField];
@@ -457,11 +430,11 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
       properties: properties
     };
 
-    geometries.push(geojson.geometry);
+    zoomToEnvelope = this.calculateBounds(geojson.geometry, zoomToEnvelope);
 
     const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
 
-    if (observation.properties.forms[0]) {
+    if (observation.properties.forms && observation.properties.forms[0]) {
       // insert the icon link
       let iconId = this.iconMap[observation.properties.forms[0].formId]['icon.png'];
 
@@ -472,111 +445,105 @@ GeoPackage.prototype.addObservationsToGeoPackage = async function (geopackage) {
         iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
       }
       const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Observations');
-      await featureTableStyles.setIconDefault(featureId, iconId)
+      featureTableStyles.setIconDefault(featureId, iconId)
     }
 
-    for (let f = 0; f < observation.properties.forms.length; f++) {
-      const observationForm = observation.properties.forms[f];
-      const formDefinition = this._event.formMap[observationForm.formId];
-      primary = observationForm[formDefinition.primaryField];
-      variant = observationForm[formDefinition.variantField];
-      const formToSave = {
-        primaryField: primary,
-        variantField: variant,
-        formId: observationForm.formId
-      };
-      const attachments = [];
-      if (observation.attachments) {
-        observation.attachments.forEach((attachment) => {
-          if (attachment.observationFormId.toString() == observationForm._id) {
-            attachments.push(attachment);
-            observationForm[attachment.fieldName] = observationForm[attachment.fieldName] || []
-            observationForm[attachment.fieldName].push(attachment._id.toString());
+    if (observation.properties.forms) {
+      for (let f = 0; f < observation.properties.forms.length; f++) {
+        const observationForm = observation.properties.forms[f];
+        const formDefinition = this._event.formMap[observationForm.formId];
+        primary = observationForm[formDefinition.primaryField];
+        variant = observationForm[formDefinition.variantField];
+        const formToSave = {
+          primaryField: primary,
+          variantField: variant,
+          formId: observationForm.formId
+        };
+        const attachments = [];
+        if (observation.attachments) {
+          observation.attachments.forEach((attachment) => {
+            if (attachment.observationFormId.toString() == observationForm._id) {
+              attachments.push(attachment);
+              observationForm[attachment.fieldName] = observationForm[attachment.fieldName] || []
+              observationForm[attachment.fieldName].push(attachment._id.toString());
+            }
+          })
+        }
+        Object.keys(observationForm).forEach(key => {
+
+          if (observationForm[key] == null) return;
+
+          const fieldDefinition = formDefinition.fields.find(field => field.name === key);
+          if (!fieldDefinition) return;
+          if (fieldDefinition.type === 'multiselectdropdown') {
+            formToSave[key] = observationForm[key].join(', ');
+          } else if (fieldDefinition.type === 'date') {
+            formToSave[key] = moment(observationForm[key]).toISOString();
+          } else if (fieldDefinition.type === 'checkbox') {
+            formToSave[key] = observationForm[key].toString();
+          } else if (fieldDefinition.type === 'geometry') {
+            formToSave[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
+          } else if (fieldDefinition.type === 'attachment') {
+            formToSave[key] = observationForm[key].join(', ');
+          } else {
+            formToSave[key] = observationForm[key]
           }
         })
-      }
-      Object.keys(observationForm).forEach(key => {
 
-        if (observationForm[key] == null) return;
+        try {
+          const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
 
-        const fieldDefinition = formDefinition.fields.find(field => field.name === key);
-        if (!fieldDefinition) return;
-        if (fieldDefinition.type === 'multiselectdropdown') {
-          formToSave[key] = observationForm[key].join(', ');
-        } else if (fieldDefinition.type === 'date') {
-          formToSave[key] = moment(observationForm[key]).toISOString();
-        } else if (fieldDefinition.type === 'checkbox') {
-          formToSave[key] = observationForm[key].toString();
-        } else if (fieldDefinition.type === 'geometry') {
-          formToSave[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
-        } else if (fieldDefinition.type === 'attachment') {
-          formToSave[key] = observationForm[key].join(', ');
-        } else {
-          formToSave[key] = observationForm[key]
+          if (attachments.length) {
+            await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+          }
+
+          await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
         }
-      })
-
-      try {
-        const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
-
-        if (attachments.length) {
-          await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+        catch (e) {
+          console.error('error is ', e);
         }
-
-        await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES)
-      }
-      catch (e) {
-        console.error('error is ', e);
       }
     }
-  }
-  const featureDao = geopackage.getFeatureDao('Observations');
-  const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
-  rtreeIndex.create();
+  }).then(async () => {
+    if (cursor) cursor.close;
 
-  if (geometries.length > 0) {
-    await this.updateBounds(geopackage, geometries, featureDao.getContents());
-  }
+    const featureDao = geopackage.getFeatureDao('Observations');
+    const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
+    rtreeIndex.create();
 
-  return geopackage;
+    if (zoomToEnvelope) {
+      this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+    }
+
+    log.info('Successfully wrote ' + numObservations + ' observations to Geopackage');
+
+    return geopackage;
+  }).catch(err => { log.warn(err) });
 }
 
-GeoPackage.prototype.updateBounds = async function (geopackage, geometries, contents) {
+GeoPackage.prototype.calculateBounds = function (geometry, zoomToEnvelope) {
 
-  let fullEnvelope;
+  const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
+  const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
 
-  for (let i = 0; i < geometries.length; i++) {
-
-    const geometry = geometries[i];
-
-    const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
-    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
-
-    if (!fullEnvelope) {
-      fullEnvelope = envelope;
-    } else {
-      if (fullEnvelope.maxX < envelope.maxX) {
-        fullEnvelope.maxX = envelope.maxX;
-      }
-      if (fullEnvelope.maxY < envelope.maxY) {
-        fullEnvelope.maxY = envelope.maxY;
-      }
-      if (fullEnvelope.minX > envelope.minX) {
-        fullEnvelope.minX = envelope.minX;
-      }
-      if (fullEnvelope.minY > envelope.minY) {
-        fullEnvelope.minY = envelope.minY;
-      }
+  if (!zoomToEnvelope) {
+    zoomToEnvelope = envelope;
+  } else {
+    if (zoomToEnvelope.maxX < envelope.maxX) {
+      zoomToEnvelope.maxX = envelope.maxX;
+    }
+    if (zoomToEnvelope.maxY < envelope.maxY) {
+      zoomToEnvelope.maxY = envelope.maxY;
+    }
+    if (zoomToEnvelope.minX > envelope.minX) {
+      zoomToEnvelope.minX = envelope.minX;
+    }
+    if (zoomToEnvelope.minY > envelope.minY) {
+      zoomToEnvelope.minY = envelope.minY;
     }
   }
 
-  contents.max_x = fullEnvelope.maxX;
-  contents.max_y = fullEnvelope.maxY;
-  contents.min_x = fullEnvelope.minX;
-  contents.min_y = fullEnvelope.minY;
-
-  const contentsDao = geopackage.contentsDao;
-  contentsDao.update(contents);
+  return zoomToEnvelope;
 }
 
 GeoPackage.prototype.addAttachments = async function (geopackage, attachments, observationId, formTable, formRowId) {
@@ -726,4 +693,15 @@ GeoPackage.prototype.addObservationIcons = async function (geopackage, featureTa
     }
   }
   return geopackage;
+}
+
+GeoPackage.prototype.setContentBounds = function (geopackage, featureDao, zoomToEnvelope) {
+  const contents = featureDao.getContents();
+  contents.max_x = zoomToEnvelope.maxX;
+  contents.max_y = zoomToEnvelope.maxY;
+  contents.min_x = zoomToEnvelope.minX;
+  contents.min_y = zoomToEnvelope.minY;
+
+  const contentsDao = geopackage.contentsDao;
+  contentsDao.update(contents);
 }
