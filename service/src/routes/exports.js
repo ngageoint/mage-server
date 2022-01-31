@@ -72,7 +72,7 @@ module.exports = function (app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_EXPORT'),
     function (req, res, next) {
-      Export.getAllExports().then(results => {
+      Export.getExports().then(results => {
         const response = exportXform.transform(results, { path: req.getPath() });
         res.json(response);
       }).catch(err => next(err));
