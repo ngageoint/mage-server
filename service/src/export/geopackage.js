@@ -560,7 +560,6 @@ GeoPackage.prototype.addAttachments = async function (geopackage, attachments, o
           size: attachment.size
         });
 
-        await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
         resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
       });
     });
