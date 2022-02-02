@@ -116,7 +116,6 @@
     "@angular/cli": "^9.1.15",
     "@angular/compiler-cli": "~9.1.13",
     "@angular/language-service": "~9.1.13",
-    "@ngageoint/mage.service": "../service",
     "@types/angular": "^1.8.1",
     "@types/geojson": "7946.0.7",
     "@types/hammerjs": "^2.0.36",
