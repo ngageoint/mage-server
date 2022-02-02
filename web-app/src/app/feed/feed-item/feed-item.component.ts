@@ -54,8 +54,9 @@ export class FeedItemComponent implements OnChanges {
 
     if (this.item.properties) {
       this.properties = Object.keys(this.item.properties).map(key => {
+        const schemaProperties = this.feed?.itemPropertiesSchema?.properties
         return {
-          key: key,
+          key: schemaProperties[key]?.title || key,
           value: this.item.properties[key]
         }
       });
