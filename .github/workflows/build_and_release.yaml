@@ -214,7 +214,7 @@ jobs:
   release_prebuilt_platform_instance:
     name:  release - add pre-built mage instance tarballs
     needs: [ config, create_release_stub ]
-    if: ${{ needs.config.outputs.release-is_release && !needs.config.outputs.release-is_prerelease }}
+    if: ${{ needs.config.outputs.release-is_release }}
     strategy:
       matrix:
         node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
