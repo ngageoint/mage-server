@@ -182,10 +182,15 @@ function parseJsonFromStringOrModule(jsonOrModulePath) {
 }
 
 /**
-TODO: this will go away when we remove all direct env references
-from downstream code, let commander handle the env vars, and pass
-the configuration object to the mage app
-*/
+ * Populate `process.env` with key-value pairs using the environment variable
+ * names associated with the keys in the given configuration object.  This
+ * supports legacy code that accesses `process.env` directly, or through
+ * MAGE's `environment/env` module and maintains the behavior of overriding
+ * environment variables with command line parameters.
+ * TODO: this will go away when we remove all direct env references
+ * from downstream code, let commander handle the env vars, and pass
+ * the configuration object to the mage app
+ */
 function tempEnvHack(config) {
   options.forEach(option => {
     const optKey = option.attributeName();
