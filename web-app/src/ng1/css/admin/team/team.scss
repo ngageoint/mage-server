@@ -1,0 +1,11 @@
+.#{admin-teams-} {
+  &user {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  &user-detail {
+    flex: 1;
+  }
+}
