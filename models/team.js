@@ -149,29 +149,29 @@ exports.getTeamById = function(id, options, callback) {
 };
 
 exports.getMembers = async function (teamId, options) {
-  // TODO do I need to check access?
-  // if (options.access) {
-  //   const accesses = [{
-  //     userIds: {
-  //       '$in': [options.access.user._id]
-  //     }
-  //   }];
+  const query = { _id: teamId };
+  if (options.access) {
+    const accesses = [{
+      userIds: {
+        '$in': [options.access.user._id]
+      }
+    }];
 
-  //   rolesWithPermission(options.access.permission).forEach(function (role) {
-  //     const access = {};
-  //     access['acl.' + options.access.user._id.toString()] = role;
-  //     accesses.push(access);
-  //   });
+    rolesWithPermission(options.access.permission).forEach(function (role) {
+      const access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
+    });
 
-  //   conditions['$or'] = accesses;
-  // }
-
-  const team = await Team.findById(teamId)
+    query['$or'] = accesses;
+  }
+  const team = await Team.findOne(query)
+  
   if (team) {
     const { searchTerm, active, enabled } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
     const params = searchTerm ? {
-      $or: [
+      '$or': [
         { username: searchRegex },
         { displayName: searchRegex },
         { email: searchRegex },
@@ -179,9 +179,7 @@ exports.getMembers = async function (teamId, options) {
       ]
     } : {}
 
-    params._id = {
-      $in: team.userIds.toObject()
-    }
+    params._id = { '$in': team.userIds.toObject() }
 
     if (typeof active === 'boolean') {
       params.active = options.active
@@ -209,6 +207,8 @@ exports.getMembers = async function (teamId, options) {
       page.totalCount = await User.Model.count(params);
     }
 
+    await new Promise(res => setTimeout(res, 1000));
+
     return page;
   } else {
     return null;
@@ -216,29 +216,29 @@ exports.getMembers = async function (teamId, options) {
 };
 
 exports.getNonMembers = async function (teamId, options) {
-  // TODO do I need to check access?
-  // if (options.access) {
-  //   const accesses = [{
-  //     userIds: {
-  //       '$in': [options.access.user._id]
-  //     }
-  //   }];
+  const query = { _id: teamId };
+  if (options.access) {
+    const accesses = [{
+      userIds: {
+        '$in': [options.access.user._id]
+      }
+    }];
 
-  //   rolesWithPermission(options.access.permission).forEach(function (role) {
-  //     const access = {};
-  //     access['acl.' + options.access.user._id.toString()] = role;
-  //     accesses.push(access);
-  //   });
+    rolesWithPermission(options.access.permission).forEach(function (role) {
+      const access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
+    });
 
-  //   conditions['$or'] = accesses;
-  // }
+    query['$or'] = accesses;
+  }
+  const team = await Team.findOne(query)
 
-  const team = await Team.findById(teamId)
   if (team) {
     const { searchTerm, active, enabled } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
     const params = searchTerm ? {
-      $or: [
+      '$or': [
         { username: searchRegex },
         { displayName: searchRegex },
         { email: searchRegex },
@@ -246,9 +246,7 @@ exports.getNonMembers = async function (teamId, options) {
       ]
     } : {}
 
-    params._id = {
-      $nin: team.userIds
-    }
+    params._id = { '$nin': team.userIds.toObject() }
 
     if (typeof active === 'boolean') {
       params.active = options.active

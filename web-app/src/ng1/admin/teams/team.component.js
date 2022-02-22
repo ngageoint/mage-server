@@ -15,15 +15,17 @@ class AdminTeamController {
     this.permissions = [];
     this.edit = false;
 
+    this.loadingMembers = false;
     this.membersPageIndex = 0;
-    this.membersPageSize = 2;
+    this.membersPageSize = 5;
     this.membersPage = {
       items: [],
       totalCount: 0,
     }
 
+    this.loadingNonMembers = false;
     this.nonMembersPageIndex = 0;
-    this.nonMembersPageSize = 2;
+    this.nonMembersPageSize = 5;
     this.nonMembersPage = {
       items: [],
       totalCount: 0,
@@ -31,8 +33,9 @@ class AdminTeamController {
 
     this.teamEvents = [];
     this.nonTeamEvents = [];
-    this.eventsPage = 0;
-    this.eventsPerPage = 10;
+    this.teamEventsPage = 0;
+    this.nonTeamEventsPage = 0;
+    this.eventsPerPage = 2;
 
     this.team = {
       users: []
@@ -40,6 +43,7 @@ class AdminTeamController {
 
     // For some reason angular is not calling into filter function with correct context
     this.filterEvents = this._filterEvents.bind(this);
+    this.filterTeamEvents = this._filterTeamEvents.bind(this);
   }
 
   $onInit() {
@@ -73,6 +77,7 @@ class AdminTeamController {
   }
 
   getMembersPage() {
+    this.loadingMembers = true;
     this.Team.getMembers({
       id: this.$stateParams.teamId,
       page: this.membersPageIndex,
@@ -80,11 +85,13 @@ class AdminTeamController {
       total: true,
       term: this.memberSearchTerm
     }, page => {
+      this.loadingMembers = false;
       this.membersPage = page;
     });
   }
 
   getNonMembersPage() {
+    this.loadingNonMembers = true;
     this.Team.getNonMembers({
       id: this.$stateParams.teamId,
       page: this.nonMembersPageIndex,
@@ -92,12 +99,13 @@ class AdminTeamController {
       total: true,
       term: this.nonMemberSearchTerm
     }, page => {
+      this.loadingNonMembers = false;
       this.nonMembersPage = page;
     });
   }
 
   hasNextMember() {
-    return (this.membersPageIndex + 1) * this.membersPageSize < this.membersPage.totalCount
+    return (this.membersPageIndex + 1) * this.membersPageSize < this.membersPage.totalCount;
   }
 
   hasPreviousMember() {
@@ -118,7 +126,7 @@ class AdminTeamController {
     }
   }
 
-  search() {
+  searchMembers() {
     this.membersPageIndex = 0;
     this.getMembersPage()
   }
@@ -174,6 +182,11 @@ class AdminTeamController {
     return filteredEvents && filteredEvents.length;
   }
 
+  _filterTeamEvents(event) {
+    const filteredTeamEvents = this.$filter('filter')([event], this.teamEventSearch);
+    return filteredTeamEvents && filteredTeamEvents.length;
+  }
+
   saveTeam() {
     this.team.$save(null, team => {
       this.team = team;
@@ -198,7 +211,9 @@ class AdminTeamController {
     this.$state.go('admin.user', { userId: user.id });
   }
 
-  addEventToTeam(event) {
+  addEventToTeam($event, event) {
+    $event.stopPropagation();
+
     this.Event.addTeam({ id: event.id }, this.team, event => {
       this.teamEvents.push(event);
       this.nonTeamEvents = _.reject(this.nonTeamEvents, e => { return e.id === event.id; });

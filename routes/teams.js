@@ -177,9 +177,10 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/teams/:id/members',
-    access.authorize('READ_TEAM'),
+    determineReadAccess,
     function (req, res, next) {
       const options = {
+        access: req.access,
         searchTerm: req.query.term,
         pageSize: parseInt(String(req.query.page_size)) || 2,
         pageIndex: parseInt(String(req.query.page)) || 0,
@@ -187,6 +188,8 @@ module.exports = function(app, security) {
       }
 
       Team.getMembers(req.params.id, options).then(page => {
+        if (!page) return res.status(404).send('Team not found');
+        
         res.json(page);
       }).catch(err => next(err));
     }
@@ -194,9 +197,10 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/teams/:id/nonMembers',
-    access.authorize('READ_TEAM'),
+    determineReadAccess,
     async function (req, res, next) {
       const options = {
+        access: req.access,
         searchTerm: req.query.term,
         pageSize: parseInt(String(req.query.page_size)) || 2,
         pageIndex: parseInt(String(req.query.page)) || 0,
