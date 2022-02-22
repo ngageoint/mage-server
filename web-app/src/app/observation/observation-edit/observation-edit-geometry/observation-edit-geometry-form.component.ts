@@ -1,8 +1,8 @@
 import { Component, Directive, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
-import mgrs from 'mgrs';
 import { AbstractControl, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import mgrs from 'mgrs';
+import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -48,6 +48,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   latitude: number
   longitude: number
   mgrs: string
+  latitudeDms: string
+  longitudeDms: string
 
   selectedVertexIndex: number
 
@@ -114,7 +116,13 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     this.coordinateSystem = coordinateSystem;
     if (coordinateSystem === 'mgrs') {
       this.mgrs = this.toMgrs(this.feature);
+    } else if (coordinateSystem === 'dms') {
+      const dms = this.toDms(this.feature);
     }
+  }
+
+  toDms(feature): string {
+    
   }
 
   toMgrs(feature): string {

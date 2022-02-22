@@ -17,7 +17,7 @@
     </mat-chip-list>
   </div>
 
-  <div [hidden]="coordinateSystem === 'mgrs'">
+  <div [hidden]="coordinateSystem !== 'wgs84'">
     <div class="coordinates">
       <div class="coordinate">
         <mat-form-field appearance="standard">
@@ -34,13 +34,30 @@
     </div>
   </div>
 
-  <div [hidden]="coordinateSystem === 'wgs84'">
+  <div [hidden]="coordinateSystem !== 'mgrs'">
     <div class="coordinates">
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>MGRS</mat-label>
           <input matInput type="text" [(ngModel)]="mgrs" (ngModelChange)="onMgrsChange()" [disabled]="!feature?.geometry?.coordinates" #mgrsModel="ngModel" mgrs>
           <mat-error>Invalid MGRS</mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div [hidden]="coordinateSystem !== 'dms'">
+    <div class="coordinates">
+      <div class="coordinate">
+        <mat-form-field appearance="standard">
+          <mat-label>Latitude DMS</mat-label>
+          <input matInput type="number" step="any" min="-90" max="90" [(ngModel)]="latitudedms" (ngModelChange)="onLatLngDmsChange()" [disabled]="!feature?.geometry?.coordinates">
+        </mat-form-field>
+      </div>
+      <div class="coordinate">
+        <mat-form-field appearance="standard">
+          <mat-label>Longitude DMS</mat-label>
+          <input matInput type="number" step="any" min="-180" max="180" [(ngModel)]="longitudedms" (ngModelChange)="onLatLngDmsChange()" [disabled]="!feature?.geometry?.coordinates">
         </mat-form-field>
       </div>
     </div>
