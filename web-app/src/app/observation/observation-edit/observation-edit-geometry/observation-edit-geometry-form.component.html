@@ -14,6 +14,7 @@
     <mat-chip-list selectable="true">
       <mat-chip color="primary" [selected]="coordinateSystem === 'wgs84'" (click)="coordinateSystemChange('wgs84')">Lat/Lng</mat-chip>
       <mat-chip color="primary" [selected]="coordinateSystem === 'mgrs'" (click)="coordinateSystemChange('mgrs')">MGRS</mat-chip>
+      <mat-chip color="primary" [selected]="coordinateSystem === 'dms'" (click)="coordinateSystemChange('dms')">DMS</mat-chip>
     </mat-chip-list>
   </div>
 
@@ -51,13 +52,15 @@
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>Latitude DMS</mat-label>
-          <input matInput type="number" step="any" min="-90" max="90" [(ngModel)]="latitudedms" (ngModelChange)="onLatLngDmsChange()" [disabled]="!feature?.geometry?.coordinates">
+          <input matInput type="text" dmsValue="latitude" [(ngModel)]="latitudeDms" (ngModelChange)="onLatLngDmsChange(true)" [disabled]="!feature?.geometry?.coordinates">
+          <mat-error>Invalid DMS</mat-error>
         </mat-form-field>
       </div>
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>Longitude DMS</mat-label>
-          <input matInput type="number" step="any" min="-180" max="180" [(ngModel)]="longitudedms" (ngModelChange)="onLatLngDmsChange()" [disabled]="!feature?.geometry?.coordinates">
+          <input matInput type="text" dmsValue="longitude" [(ngModel)]="longitudeDms" (ngModelChange)="onLatLngDmsChange(false)" [disabled]="!feature?.geometry?.coordinates">
+          <mat-error>Invalid DMS Value</mat-error>
         </mat-form-field>
       </div>
     </div>

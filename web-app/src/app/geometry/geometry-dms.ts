@@ -1,35 +1,13 @@
 import { LatLng } from "leaflet";
 
 export class DMSCoordinate {
-    degrees: number;
-    minutes: number;
-    seconds: number;
-    direction: string;
+    degrees?: number;
+    minutes?: number;
+    seconds?: number;
+    direction?: string;
 }
 
 export class DMS {
-
-  static parseToLatLng(coordinates: string): LatLng {
-    const location = new LatLng(NaN, NaN)
-
-    const split = DMS.splitCoordinates(coordinates)
-    if (split.length === 2) {
-      const latitude = DMS.parse(split[0], true)
-      if (!isNaN(latitude)) {
-        location.lat = latitude
-      }
-      const longitude = DMS.parse(split[1], false)
-      if (!isNaN(longitude)) {
-        location.lng = longitude
-      }
-    } else if (split.length == 1) {
-      const coordinate = DMS.parse(split[0], false)
-      if (!isNaN(coordinate)) {
-        location.lng = coordinate
-      }
-    }
-    return location
-  }
 
   // takes one coordinate and translates it into a CLLocationDegrees
   // returns NaN if nothing can be parsed
@@ -45,7 +23,7 @@ export class DMS {
     if (!isNaN(decimalDegrees)) {
       // if either of these are true, parse it as a regular latitude longitude
       if ((!enforceLatitude && decimalDegrees >= -180.0 && decimalDegrees <= 180.0)
-        || (enforceLatitude && decimalDegrees >= 90.0 && decimalDegrees <= 90.0)) {
+        || (enforceLatitude && decimalDegrees >= -90.0 && decimalDegrees <= 90.0)) {
           return decimalDegrees
       }
     }
@@ -73,31 +51,19 @@ export class DMS {
   }
 
   static firstDirectionIndex(coordinateString): number {
-    let firstDirectionIndex = coordinateString.indexOf('N')
-    if (firstDirectionIndex == -1) {
-      firstDirectionIndex = coordinateString.indexOf('S')
-    }
-    if (firstDirectionIndex == -1) {
-      firstDirectionIndex = coordinateString.indexOf('E')
-    }
-    if (firstDirectionIndex == -1) {
-      firstDirectionIndex = coordinateString.indexOf('W')
-    }
-    return firstDirectionIndex
+    const northDirectionIndex = coordinateString.indexOf('N')
+    const southDirectionIndex = coordinateString.indexOf('S')
+    const eastDirectionIndex = coordinateString.indexOf('E')
+    const westDirectionIndex = coordinateString.indexOf('W')
+    const directionIndex = Math.min(northDirectionIndex == -1 ? Number.MAX_VALUE : northDirectionIndex,
+       southDirectionIndex == -1 ? Number.MAX_VALUE : southDirectionIndex,
+       eastDirectionIndex == -1 ? Number.MAX_VALUE : eastDirectionIndex,
+       westDirectionIndex == -1 ? Number.MAX_VALUE : westDirectionIndex)
+    return directionIndex == Number.MAX_VALUE ? -1 : directionIndex
   }
 
   static lastDirectionIndex(coordinateString): number {
-    let lastDirectionIndex = coordinateString.lastIndexOf('N')
-    if (lastDirectionIndex == -1) {
-      lastDirectionIndex = coordinateString.lastIndexOf('S')
-    }
-    if (lastDirectionIndex == -1) {
-      lastDirectionIndex = coordinateString.lastIndexOf('E')
-    }
-    if (lastDirectionIndex == -1) {
-      lastDirectionIndex = coordinateString.lastIndexOf('W')
-    }
-    return lastDirectionIndex
+    return Math.max(coordinateString.lastIndexOf('N'), coordinateString.lastIndexOf('S'), coordinateString.lastIndexOf('E'), coordinateString.lastIndexOf('W'))
   }
 
   // splits the string into possibly two coordinates with all spaces removed
@@ -145,8 +111,8 @@ export class DMS {
           // only one coordinate
           split.push(coordinatesToParse)
         } else {
-          split.push(coordinatesToParse.substring(0, firstDirectionIndex))
-          split.push(coordinatesToParse.substring(firstDirectionIndex))
+          split.push(coordinatesToParse.substring(0, firstDirectionIndex+1))
+          split.push(coordinatesToParse.substring(firstDirectionIndex+1))
         }
       }
     }
@@ -181,15 +147,22 @@ export class DMS {
 
     // strip out any non numerics except direction
     coordinateToParse = coordinateToParse.replace(/[^\d.NSEWnsew]/g, '')
+    if (coordinateToParse.length == 0) {
+      return dmsCoordinate
+    }
 
     const lastCharacter = coordinateToParse[coordinateToParse.length - 1]
-    if (!isNaN(Number(lastCharacter))) {
+    if (lastCharacter && isNaN(Number(lastCharacter))) {
       // the last character might be a direction not a number
       dmsCoordinate.direction = lastCharacter.toUpperCase()
       coordinateToParse = coordinateToParse.slice(0, -1)
     }
+    if (coordinateToParse.length == 0) {
+      return dmsCoordinate
+    }
+
     const firstCharacter = coordinateToParse[0]
-    if (!isNaN(Number(firstCharacter))) {
+    if (firstCharacter && isNaN(Number(firstCharacter))) {
       // the first character might be a direction not a number
       dmsCoordinate.direction = firstCharacter.toUpperCase()
       coordinateToParse = coordinateToParse.substring(1)
@@ -207,11 +180,18 @@ export class DMS {
     coordinateToParse = split[0]
     const decimalSeconds = split.length == 2 ? Number(split[1]) : null
 
-    dmsCoordinate.seconds = Number(coordinateToParse.slice(-2))
-    coordinateToParse = coordinateToParse.slice(0, -2)
+    if (coordinateToParse.length != 0) {
+      dmsCoordinate.seconds = Number(coordinateToParse.slice(-2))
+      coordinateToParse = coordinateToParse.slice(0, -2)
+    }
 
-    dmsCoordinate.minutes = Number(coordinateToParse.slice(-2))
-    dmsCoordinate.degrees = Number(coordinateToParse.slice(0, -2))
+    if (coordinateToParse.length != 0) {
+      dmsCoordinate.minutes = Number(coordinateToParse.slice(-2))
+      coordinateToParse = coordinateToParse.slice(0, -2)
+    }
+    if (coordinateToParse.length != 0) {
+      dmsCoordinate.degrees = Number(coordinateToParse)
+    }
 
     if (isNaN(dmsCoordinate.degrees)) {
       if (isNaN(dmsCoordinate.minutes)) {
@@ -232,10 +212,10 @@ export class DMS {
       }
       dmsCoordinate.minutes = Math.floor(Math.abs(decimal * 60.0))
       // have to do this because 2.3 % 1 == .299999999998 in javascript and not .3
-      const decimalRemainderOfMinutes = Number(((decimal * 60.0)+"").split(".")[1])
-      const seconds = Math.abs(decimalRemainderOfMinutes)
+      const decimalRemainderOfMinutes = DMS.decimalPart(decimal * 60.0)// Number(((decimal * 60.0)+"").split(".")[1])
+      const seconds = Math.abs(decimalRemainderOfMinutes * 60.0)
       dmsCoordinate.seconds = Math.round(seconds)
-    } else if (decimalSeconds !== null && isNaN(decimalSeconds)) {
+    } else if (decimalSeconds !== null && !isNaN(decimalSeconds)) {
       // add the decimal seconds to seconds and round
       dmsCoordinate.seconds = Math.round(Number(dmsCoordinate.seconds + '.' + decimalSeconds))
     }
@@ -264,7 +244,6 @@ export class DMS {
     if (!coordinate) {
       return false
     }
-
     const letters = /^[0-9NSEWnsew. °\'\"]+$/;
     if (!letters.test(coordinate)) {
       return false
@@ -274,17 +253,16 @@ export class DMS {
 
     // There must be a direction as the last character
     const direction = coordinateToParse[coordinateToParse.length - 1]
-    if (isNaN(Number(direction))) {
+    if (!isNaN(Number(direction))) {
       return false
     } else {
-      // i don't think this is right
       if (latitude && direction.toUpperCase() !== 'N' && direction.toUpperCase() !== 'S') {
         return false
       }
       if (!latitude && direction.toUpperCase() !== 'E' && direction.toUpperCase() !== 'W') {
         return false
       }
-      coordinateToParse = coordinateToParse.slice(-1)
+      coordinateToParse = coordinateToParse.slice(0, -1)
     }
 
     // split the numbers before the decimal seconds
@@ -303,7 +281,6 @@ export class DMS {
     if (!latitude && (coordinateToParse.length < 5 || coordinateToParse.length > 7)) {
         return false
     }
-
     let decimalSeconds = 0
 
     if (split.length === 2) {
@@ -317,7 +294,7 @@ export class DMS {
     const seconds = Number(coordinateToParse.slice(-2))
     coordinateToParse = coordinateToParse.slice(0, -2)
 
-    const minutes = Number(coordinateToParse.slice(2))
+    const minutes = Number(coordinateToParse.slice(-2))
     const degrees = Number(coordinateToParse.slice(0, -2))
 
     if (!isNaN(degrees)) {
@@ -352,7 +329,7 @@ export class DMS {
 
   static parseToDMSString(string: string, addDirection= false, latitude = false): string {
     if (!string) {
-      return null
+      return ''
     }
 
     if (string.length === 0) {
@@ -363,9 +340,9 @@ export class DMS {
 
     const direction = parsed.direction ? parsed.direction : ''
 
-    let seconds = parsed.seconds ? DMS.zeroPad(parsed.seconds) : ''
-    let minutes = parsed.minutes ? DMS.zeroPad(parsed.minutes) : ''
-    let degrees = parsed.degrees ? '' + parsed.degrees : ''
+    let seconds = parsed.seconds !== null && !isNaN(parsed.seconds) ? DMS.zeroPad(parsed.seconds) : ''
+    let minutes = parsed.minutes !== null && !isNaN(parsed.minutes) ? DMS.zeroPad(parsed.minutes) : ''
+    let degrees = parsed.degrees !== null && !isNaN(parsed.degrees) ? '' + parsed.degrees : ''
 
     if (degrees.length !== 0) {
       degrees = degrees + '° '
@@ -385,18 +362,14 @@ export class DMS {
   }
 
   static decimalPart(number: number): number {
-    return Number("."+(number+"").split(".")[1])
+    const split = (number+"").split(".")
+    const splitNumber = split.length == 2 ? split[1] : "0"
+    return Number("."+splitNumber)
   }
 
   static latitudeDMSString(coordinate: number): string {
-    console.log('coordinate', coordinate)
-    console.log('decimal part', DMS.decimalPart(coordinate))
-    let latDegrees = Math.floor(coordinate)
+    let latDegrees = Math.trunc(coordinate)
     let latMinutes = Math.floor(Math.abs(DMS.decimalPart(coordinate) * 60.0))
-    console.log('lat minutes', latMinutes)
-    console.log('firstdecimal part ' + DMS.decimalPart(coordinate))
-    console.log('(should be lat minutes) times 60', DMS.decimalPart(coordinate) * 60.0)
-    console.log("" + DMS.decimalPart(DMS.decimalPart(coordinate) * 60.0) * 60.0)
     let latSeconds = Math.round(Math.abs(DMS.decimalPart(DMS.decimalPart(coordinate) * 60.0)) * 60.0)
     if (latSeconds == 60) {
       latSeconds = 0
@@ -411,7 +384,7 @@ export class DMS {
   }
 
   static longitudeDMSString(coordinate: number): string {
-    let latDegrees = Math.floor(coordinate)
+    let latDegrees = Math.trunc(coordinate)
     let latMinutes = Math.floor(Math.abs(DMS.decimalPart(coordinate) * 60.0))
     let latSeconds = Math.round(Math.abs(DMS.decimalPart(DMS.decimalPart(coordinate) * 60.0)) * 60.0)
     if (latSeconds == 60) {

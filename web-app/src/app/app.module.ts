@@ -111,6 +111,7 @@ import {
 } from './observation/observation-view/observation-view';
 
 import {
+  DMSValidatorDirective,
   MGRSValidatorDirective,
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -172,6 +173,7 @@ import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-sett
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
+    DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedPanelComponent,
     ObservationListItemComponent,
