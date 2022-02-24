@@ -160,8 +160,22 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   onLatLngDmsChange(latitudeField: boolean): void {
     let coordinates = { ...this.feature.geometry.coordinates }
 
+    let split = latitudeField ? DMS.splitCoordinates(this.latitudeDms) : DMS.splitCoordinates(this.longitudeDms)
+    if (split.length > 1) {
+      if (latitudeField) {
+        this.latitudeDms = split[0]
+        if (this.longitudeDms.length === 0) {
+          this.longitudeDms = split[1]
+        }
+      } else {
+        this.longitudeDms = split[1]
+        if (this.latitudeDms.length === 0) {
+          this.latitudeDms = split[0]
+        }
+      }
+    }
+
     const parsedDMS = latitudeField ? DMS.parseToDMSString(this.latitudeDms, false, latitudeField) : DMS.parseToDMSString(this.longitudeDms, false, latitudeField)
-    
     if (latitudeField) {
       this.latitudeDms = parsedDMS
     } else {
@@ -292,10 +306,10 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         this.feature.geometry.type = 'Polygon'
         break;
       default:
-        this.latitude = null;
-        this.longitude = null;
-        this.mgrs = null;
-        this.latitudeDms = null;
+        this.latitude = null
+        this.longitude = null
+        this.mgrs = null
+        this.latitudeDms = null
         this.longitudeDms = null
         delete this.feature.geometry.type
         this.featureEdit.cancel()
