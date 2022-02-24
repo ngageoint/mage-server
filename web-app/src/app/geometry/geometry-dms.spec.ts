@@ -185,6 +185,9 @@ describe('DMS', () => {
 
     coordinates = "-15.6827"
     expect(DMS.parse(coordinates)).toEqual(-15.6827)
+
+    coordinates = "0° 30' 00\" S"
+    expect(DMS.parse(coordinates)).toEqual(-0.5)
   });
 
   it("should parse to DMS", () => {

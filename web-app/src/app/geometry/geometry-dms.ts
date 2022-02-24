@@ -30,7 +30,7 @@ export class DMS {
 
     // try to just parse it as DMS
     const dms = DMS.parseDMS(normalized)
-    if (dms.degrees) {
+    if (dms.degrees || dms.degrees === 0) {
       let coordinateDegrees = dms.degrees
       if (dms.minutes) {
         coordinateDegrees += dms.minutes / 60.0
