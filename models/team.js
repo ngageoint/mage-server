@@ -168,7 +168,7 @@ exports.getMembers = async function (teamId, options) {
   const team = await Team.findOne(query)
   
   if (team) {
-    const { searchTerm, active, enabled } = options || {}
+    const { searchTerm } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
     const params = searchTerm ? {
       '$or': [
@@ -180,14 +180,6 @@ exports.getMembers = async function (teamId, options) {
     } : {}
 
     params._id = { '$in': team.userIds.toObject() }
-
-    if (typeof active === 'boolean') {
-      params.active = options.active
-    }
-
-    if (typeof enabled === 'boolean') {
-      params.enabled = options.enabled
-    }
 
     // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
     // add _id to sort to ensure consistent ordering
@@ -206,8 +198,6 @@ exports.getMembers = async function (teamId, options) {
     if (includeTotalCount) {
       page.totalCount = await User.Model.count(params);
     }
-
-    await new Promise(res => setTimeout(res, 1000));
 
     return page;
   } else {
@@ -235,7 +225,7 @@ exports.getNonMembers = async function (teamId, options) {
   const team = await Team.findOne(query)
 
   if (team) {
-    const { searchTerm, active, enabled } = options || {}
+    const { searchTerm } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')
     const params = searchTerm ? {
       '$or': [
@@ -247,14 +237,6 @@ exports.getNonMembers = async function (teamId, options) {
     } : {}
 
     params._id = { '$nin': team.userIds.toObject() }
-
-    if (typeof active === 'boolean') {
-      params.active = options.active
-    }
-
-    if (typeof enabled === 'boolean') {
-      params.enabled = options.enabled
-    }
 
     // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
     // add _id to sort to ensure consistent ordering
@@ -422,12 +404,8 @@ exports.createTeamForEvent = function(event, user, callback) {
   });
 };
 
-exports.getTeamForEvent = function (event, callback) {
-  const conditions = {
-    teamEventId: event._id
-  };
-
-  Team.findOne(conditions, callback);
+exports.getTeamForEvent = function (event) {
+ return Team.findOne({ teamEventId: event._id });
 };
 
 // TODO: should this do something with ACL?

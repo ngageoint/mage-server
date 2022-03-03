@@ -247,13 +247,6 @@
                 </div>
               </div>
             </div>
-          
-            <div class="admin-teams-table-status" ng-if="$ctrl.loadingEvents">
-              <div class="admin-teams-table-status-text">Loading</div>
-              <div>
-                <i class="fa fa-spinner fa-spin admin-teams-table-status-spinner"></i>
-              </div>
-            </div>
           </div>
 
           <div class="row top-gap-l">
@@ -313,52 +306,7 @@
                 </div>
               </div>
             </div>
-          
-            <div class="admin-teams-table-status" ng-if="$ctrl.loadingEvents">
-              <div class="admin-teams-table-status-text">Loading</div>
-              <div>
-                <i class="fa fa-spinner fa-spin admin-teams-table-status-spinner"></i>
-              </div>
-            </div>
           </div>
-
-          <!-- <div class="row">
-            <div class="col-sm-12">
-              <div class="admin-table">
-                <div class="well-item"
-                  ng-repeat="e in ($ctrl.filteredEvents = ($ctrl.teamEvents | filter:$ctrl.filterEvents)) | orderBy:'name' | offset: $ctrl.eventsPage*$ctrl.eventsPerPage | limitTo:$ctrl.eventsPerPage">
-                  <div class="row pointer" ng-click="$ctrl.gotoEvent(e)">
-                    <div class="col-md-12">
-                      <span class="pull-right" ng-show="$ctrl.editEvent">
-                        <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeEventFromTeam($event, e)"><i
-                            class="fa fa-minus"></i></a>
-                      </span>
-
-                      <div class="right-gap pull-left">
-                        <i class="fa fa-calendar admin-layer-icon"></i>
-                      </div>
-                      <div class="strong">{{e.name}}</div>
-                      <div class="muted">{{e.description}}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.eventsPage == 0}">
-                  <a href="javascript:void(0);"
-                    ng-click="$ctrl.eventsPage == 0 || ($ctrl.eventsPage=$ctrl.eventsPage-1)">&larr; Previous</a>
-                </li>
-                <li ng-class="{'disabled': $ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1}">
-                  <a href="javascript:void(0);"
-                    ng-click="$ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1 || ($ctrl.eventsPage=$ctrl.eventsPage+1)">Next&rarr;</a>
-                </li>
-              </ul>
-            </div>
-          </div> -->
         </div>
       </div>
     </div>

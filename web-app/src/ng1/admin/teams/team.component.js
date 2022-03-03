@@ -35,7 +35,7 @@ class AdminTeamController {
     this.nonTeamEvents = [];
     this.teamEventsPage = 0;
     this.nonTeamEventsPage = 0;
-    this.eventsPerPage = 2;
+    this.eventsPerPage = 5;
 
     this.team = {
       users: []
