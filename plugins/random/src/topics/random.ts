@@ -46,7 +46,7 @@ export const topicDescriptor: FeedTopic = {
       },
       timestamp: {
         title: "Date",
-        type: "number",
+        type: "string",
         format: "date"
       }
     }
