@@ -6,7 +6,7 @@
         <mat-icon class="form-header-title__icon" [style.color]="form.color">description</mat-icon>
         <div class="form-header-title__text">{{form?.name}}</div>
       </div>
-      <div *ngIf="primaryField.value" class="form-header-summary__primary">
+      <div *ngIf="primaryField?.value" class="form-header-summary__primary">
         <span [ngSwitch]="primaryField?.type">
           <span *ngSwitchCase="'geometry'">
             {{primaryField?.value | geometry:5}}
@@ -16,7 +16,7 @@
           </span>
         </span>
       </div>
-      <div *ngIf="secondaryField.value" class="form-header-summary__secondary">
+      <div *ngIf="secondaryField?.value" class="form-header-summary__secondary">
         <span [ngSwitch]="secondaryField?.type">
           <span *ngSwitchCase="'geometry'">
             {{secondaryField?.value | geometry:5}}
