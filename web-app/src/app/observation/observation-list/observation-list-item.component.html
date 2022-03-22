@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div *ngIf="observation.attachments[0]?.url" class="item-media" matCardImage>
+    <div *ngIf="observation.attachments?.length && observation.attachments[0]?.url" class="item-media" matCardImage>
       <observation-attachment [attachment]="observation.attachments[0]" [label]="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></observation-attachment>
     </div>
   </div>

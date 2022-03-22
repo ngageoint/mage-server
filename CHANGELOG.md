@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Fix observation view error on invalid primary/secondary feed field.
 * Preserve primary and secondary feed fields on form import.
+* Fix feed item preview, account for feed item without attachments.
 
 ## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
 
