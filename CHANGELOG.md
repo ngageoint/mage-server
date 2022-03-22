@@ -8,7 +8,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
-* Fix observation view error on invalid primary/secondary feed field
+* Fix observation view error on invalid primary/secondary feed field.
+* Preserve primary and secondary feed fields on form import.
 
 ## [6.0.1](https://github.com/ngageoint/mage-server/releases/tag/6.0.1)
 
