@@ -365,15 +365,11 @@ class AdminEventController {
 
   preview($event, form) {
     $event.stopPropagation();
+    this.previewForm = form;
+  }
 
-    this.$uibModal.open({
-      resolve: {
-        form: () => {
-          return form;
-        }
-      },
-      component: "adminEventFormPreview"
-    });
+  closePreview() {
+    this.previewForm = null;
   }
 
   deleteEvent() {

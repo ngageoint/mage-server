@@ -29,7 +29,8 @@ export class ObservationEditFormComponent {
   @Input() geometryStyle: any
   @Input() attachmentUrl: string
   @Input() observation: any
-  @Input() options: { expand: boolean }
+  @Input() deletable = true
+  @Input() options: { expand: boolean, deletable: boolean }
 
   @Output() remove = new EventEmitter<FormGroup>()
   @Output() featureEdit = new EventEmitter<any>()
