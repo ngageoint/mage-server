@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { AdminEventFormPreviewComponent } from './admin-event-form-preview.component';
 
@@ -8,6 +9,7 @@ describe('AdminEventFormPreviewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [MatDialogModule],
       declarations: [ AdminEventFormPreviewComponent ]
     })
     .compileComponents();

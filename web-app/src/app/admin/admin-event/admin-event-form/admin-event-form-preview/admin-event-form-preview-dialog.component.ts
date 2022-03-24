@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-admin-event-form-preview-dialog',
+  selector: 'admin-event-form-preview-dialog',
   templateUrl: './admin-event-form-preview-dialog.component.html',
   styleUrls: ['./admin-event-form-preview-dialog.component.scss']
 })
