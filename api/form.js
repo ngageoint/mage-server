@@ -218,7 +218,7 @@ function cleanForm(form) {
     return field.name === form.primaryField;
   });
 
-  if (primaryMapField !== null) {
+  if (primaryMapField) {
     form.primaryField = fieldName(primaryMapField.id);
   }
 
@@ -226,7 +226,7 @@ function cleanForm(form) {
     return field.name === form.variantField;
   });
 
-  if (secondaryMapField !== null) {
+  if (secondaryMapField) {
     form.variantField = fieldName(secondaryMapField.id);
   }
 
@@ -234,7 +234,7 @@ function cleanForm(form) {
     return field.name === form.primaryFeedField;
   });
 
-  if (primaryFeedField !== null) {
+  if (primaryFeedField) {
     form.primaryFeedField = fieldName(primaryFeedField.id);
   }
 
@@ -242,7 +242,7 @@ function cleanForm(form) {
     return field.name === form.secondaryFeedField;
   });
 
-  if (secondaryFeedField !== null) {
+  if (secondaryFeedField) {
     form.secondaryFeedField = fieldName(secondaryFeedField.id);
   }
 
