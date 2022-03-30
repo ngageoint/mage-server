@@ -18,9 +18,7 @@ function configure(strategy) {
     userInfoURL: strategy.settings.profileURL,
     callbackURL: `/auth/${strategy.name}/callback`,
     scope: strategy.settings.scope
-  }, function (issuer, sub, profileResponse, done) {
-    const profile = profileResponse._json;
-
+  }, function (issuer, profile, done) {
     if (!profile[strategy.settings.profile.id]) {
       log.warn(JSON.stringify(profile));
       return done(`OIDC user profile does not contain id property ${strategy.settings.profile.id}`);
@@ -88,6 +86,9 @@ function configure(strategy) {
     passport.authenticate(strategy.name, function (err, user, info = {}) {
       if (err) return next(err);
 
+      // TODO, this is a workaround for openidconnect library killing the app state
+      req.query.state = info.state
+
       req.user = user;
 
       // For inactive or disabled accounts don't generate an authorization token
@@ -129,11 +130,7 @@ function configure(strategy) {
           uri = `mage://app/authentication?token=${req.token}`
         }
 
-        if (strategy.redirect) {
-          res.redirect(uri);
-        } else {
-          res.render(strategy.name, { uri: uri });
-        }
+        res.redirect(uri);
       } else {
         res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
       }
