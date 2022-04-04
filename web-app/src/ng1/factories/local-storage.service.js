@@ -95,7 +95,6 @@ function LocalStorageService() {
   }
 
   function getMapPosition() {
-    let foo = JSON.parse(getLocalItem(mapPositionKey));
     return JSON.parse(getLocalItem(mapPositionKey));
   }
 
