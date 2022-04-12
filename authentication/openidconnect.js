@@ -18,13 +18,13 @@ function configure(strategy) {
     userInfoURL: strategy.settings.profileURL,
     callbackURL: `/auth/${strategy.name}/callback`,
     scope: strategy.settings.scope
-  }, function (issuer, profile, done) {
-    if (!profile[strategy.settings.profile.id]) {
-      log.warn(JSON.stringify(profile));
+  }, function (issuer, uiProfile, profile, context, idToken, accessToken, refreshToken, params, done) {
+    const jsonProfile = uiProfile._json
+    const profileId = jsonProfile[strategy.settings.profile.id];
+    if (!profileId) {
+      log.warn(JSON.stringify(jsonProfile));
       return done(`OIDC user profile does not contain id property ${strategy.settings.profile.id}`);
     }
-
-    const profileId = profile[strategy.settings.profile.id];
 
     User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
       if (err) return done(err);
@@ -34,24 +34,10 @@ function configure(strategy) {
         Role.getRole('USER_ROLE', function (err, role) {
           if (err) return done(err);
 
-          let email = null;
-          if (profile[strategy.settings.profile.email]) {
-            if (Array.isArray(profile[strategy.settings.profile.email])) {
-              email = profile[strategy.settings.profile.email].find(email => {
-                email.verified === true
-              });
-            } else {
-              email = profile[strategy.settings.profile.email];
-            }
-          } else {
-            log.warn(`OIDC user profile does not contain email property named ${strategy.settings.profile.email}`);
-            log.debug(JSON.stringify(profile));
-          }
-
           const user = {
             username: profileId,
-            displayName: profile[strategy.settings.profile.displayName] || profileId,
-            email: email,
+            displayName: jsonProfile[strategy.settings.profile.displayName] || profileId,
+            email: jsonProfile[strategy.settings.profile.email],
             active: false,
             roleId: role._id,
             authentication: {
@@ -152,13 +138,13 @@ function setDefaults(strategy) {
     strategy.settings.profile = {};
   }
   if (!strategy.settings.profile.displayName) {
-    strategy.settings.profile.displayName = 'displayName';
+    strategy.settings.profile.displayName = 'name';
   }
   if (!strategy.settings.profile.email) {
     strategy.settings.profile.email = 'email';
   }
   if (!strategy.settings.profile.id) {
-    strategy.settings.profile.id = 'id';
+    strategy.settings.profile.id = 'sub';
   }
 }
 
