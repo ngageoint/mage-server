@@ -2,6 +2,7 @@ import { PageOf, PagingParameters, UrlResolutionError } from '../../entities/ent
 import { LocalStaticIconStub, StaticIcon, StaticIconId, StaticIconReference } from '../../entities/icons/entities.icons'
 import { EntityNotFoundError, InvalidInputError, MageError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
+import { URL } from 'url'
 
 export interface CreateLocalStaticIconRequest extends AppRequest {
   iconInfo: LocalStaticIconStub
