@@ -116,7 +116,7 @@ class ExpiringGeoPackageConnection {
     this.startExpiry()
   }
 }
-  
+
 export class GeoPackageUtility {
   static readonly tileSize: number = 256;
   private static instance : GeoPackageUtility;
@@ -160,7 +160,7 @@ export class GeoPackageUtility {
     } catch (e) {
       return {
         validationErrors: [{
-          error: e.toString(),
+          error: String(e),
           fatal: true
         }]
       }
@@ -180,7 +180,7 @@ export class GeoPackageUtility {
 
     console.log("opening the geopackage")
     const geoPackage: GeoPackage = await connection.accessConnection();
-    
+
     const tables = geoPackage.contentsDao.getContentsForTableType('features').map(tableInfo => {
       return {
         name: tableInfo.table_name,
@@ -251,7 +251,7 @@ export class GeoPackageUtility {
           ft.polygonStrokeWidth = lineWidth;
           ft.lineStrokeWidth = lineWidth;
         }
-        
+
         ft.maxFeaturesPerTile = 10000;
 
         const shadedFeaturesTile = new ShadedFeaturesTile();
@@ -259,7 +259,7 @@ export class GeoPackageUtility {
         tile = await ft.drawTile(x, y, z);
         break;
     }
-    
+
     connection.finished();
     return tile;
   }
@@ -270,7 +270,7 @@ export class GeoPackageUtility {
 
     const geopackage = await connection.accessConnection()
     if (!geopackage) throw new Error('Cannot open geopackage');
-    
+
     const table = layer.tables.find((table : any) => table.name === tableName);
     if (!table) throw new Error(`Table ${tableName} does not exist in the GeoPackage`);
     const features = await geopackage.getGeoJSONFeaturesInTile(table.name, x, y, z);
@@ -302,7 +302,7 @@ export class GeoPackageUtility {
 
       const geopackage = await connection.accessConnection()
       if (!geopackage) throw new Error('Cannot open geopackage');
-    
+
       const table = layer.tables.find((table : any) => table.name === tableName);
       if (!table) throw new Error(`Table ${tableName} does not exist in the GeoPackage`);
 

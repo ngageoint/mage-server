@@ -1,14 +1,16 @@
-const async = require("async")
-  , api = require('../api')
-  , EventEvents = require('./events/event.js')
-  , EventModel = require('../models/event');
+const util = require('util');
+const async = require('async');
+const EventModel = require('../models/event');
+const User = require('../models/user');
+const api = {
+  Form: require('./form'),
+  Icon: require('./icon'),
+  Attachment: require('./attachment')
+};
 
 function Event(event) {
   this._event = event;
 }
-
-const EventEmitter = new EventEvents();
-Event.on = EventEmitter;
 
 Event.prototype.validate = function (event) {
   const errors = {};
@@ -98,10 +100,6 @@ Event.prototype.createEvent = function(event, user, callback) {
 
     // copy default icon into new event directory
     new api.Icon(event._id).saveDefaultIconToEventForm(function(err) {
-      if (!err) {
-        EventEmitter.emit(EventEvents.events.add, newEvent);
-      }
-
       callback(err, newEvent);
     });
   });
@@ -115,81 +113,81 @@ Event.prototype.updateEvent = function(event, options, callback) {
     if (err) return callback(err);
 
     new api.Form(updatedEvent).populateUserFields(function(err) {
-      if (!err) {
-        EventEmitter.emit(EventEvents.events.update, updatedEvent);
-      }
-
       callback(err, updatedEvent);
     });
   });
 };
 
-Event.prototype.deleteEvent = function(callback) {
-  EventModel.remove(this._event, err => {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.remove, this._event);
-    }
-
-    callback(err);
-  });
+Event.prototype.deleteEvent = async function(callback) {
+  const event = this._event
+  console.info(`deleting event ${event.name} (id ${event._id}) ...`)
+  const parallelPromise = util.promisify(async.parallel)
+  try {
+    await parallelPromise({
+      icons: function(done) {
+        new api.Icon(event._id).delete(function(err) {
+          done(err);
+        });
+      },
+      recentEventIds: function(done) {
+        User.removeRecentEventForUsers(event, function(err) {
+          done(err);
+        });
+      },
+      attachments: function(done) {
+        new api.Attachment(event).deleteAllForEvent(function(err) {
+          console.info(`finished deleting attachments for event ${event.name} (id ${event._id})`);
+          done(err);
+        });
+      }
+    })
+  }
+  catch (err) {
+    console.error(`error deleting referenced resources of event ${event.name} (id ${event._id})`, err);
+    return void(callback(err));
+  }
+  try {
+    await event.remove();
+  }
+  catch (err) {
+    console.error(`error deleting event ${event.name} (id ${event._id})`, err);
+    return void(callback(err));
+  }
+  callback()
 };
 
 Event.prototype.addForm = function(form, callback) {
   EventModel.addForm(this._event._id, form, function(err, event, form) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, form);
   });
 };
 
 Event.prototype.updateForm = function(form, callback) {
   EventModel.updateForm(this._event._id, form, function(err, event, form) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, form);
   });
 };
 
 Event.prototype.addTeam = function(team, callback) {
   EventModel.addTeam(this._event, team, function(err, event) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, event);
   });
 };
 
 Event.prototype.removeTeam = function(team, callback) {
   EventModel.removeTeam(this._event, team, function(err, event) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, event);
   });
 };
 
 Event.prototype.addLayer = function(layer, callback) {
   EventModel.addLayer(this._event, layer, function(err, event) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, event);
   });
 };
 
 Event.prototype.removeLayer = function(layer, callback) {
   EventModel.removeLayer(this._event, layer, function(err, event) {
-    if (!err) {
-      EventEmitter.emit(EventEvents.events.update, event);
-    }
-
     callback(err, event);
   });
 };

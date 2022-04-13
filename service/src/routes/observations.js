@@ -1,3 +1,5 @@
+const { attachmentTypeIsValidForField } = require('../entities/events/entities.events.forms');
+
 module.exports = function(app, security) {
 
   const async = require('async')
@@ -15,7 +17,6 @@ module.exports = function(app, security) {
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , { defaultHandler: upload } = require('../upload')
-    , Media = require('../validation/media')
     , FileType = require('file-type')
     , passport = security.authentication.passport
     , { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
@@ -89,22 +90,21 @@ module.exports = function(app, security) {
 
   function validateAttachmentFile(req, res, next) {
     FileType.fromFile(req.file.path).then(fileType => {
-      const media = new Media(fileType.mime);
       const attachment = req.observation.attachments.find(attachment => attachment._id.toString() === req.params.attachmentId);
       const observationForm = req.observation.properties.forms.find(observationForm => {
         return observationForm._id.toString() === attachment.observationFormId.toString()
       });
-
-      if (!observationForm) return res.status(400).send('Attachment form not found');
+      if (!observationForm) {
+        return res.status(400).send('Attachment form not found');
+      }
       const formDefinition = req.event.forms.find(form => form._id === observationForm.formId);
-
       const fieldDefinition = formDefinition.fields.find(field => field.name === attachment.fieldName);
-      if (!fieldDefinition) return res.status(400).send('Attachment field not found');
-
-      if (!media.validate(fieldDefinition.allowedAttachmentTypes)) {
+      if (!fieldDefinition) {
+        return res.status(400).send('Attachment field not found');
+      }
+      if (!attachmentTypeIsValidForField(fieldDefinition, fileType.mime)) {
         return res.status(400).send(`Invalid attachment '${attachment.name}', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(' or ')}`);
       }
-
       next();
     });
   }
@@ -326,18 +326,18 @@ module.exports = function(app, security) {
     populateUserFields,
     function (req, res, next) {
       const existingObservation = req.existingObservation;
-      const {forms = []} = req.observation.properties || {}
-      forms.map(observationForm => {
+      const { forms: reqForms = [] } = req.observation.properties || {}
+      // TODO: why is this a map() that returns nothing?
+      reqForms.map(reqForm => {
         if (existingObservation) {
-          const { forms: exisitingForms = [] } = existingObservation.properties || {}
-          const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === observationForm.id);
+          const { forms: exisitingForms = [] } = existingObservation.properties || {};
+          const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === reqForm.id);
           if (exisitingForm) {
-            observationForm._id = exisitingForm._id;
-            delete observationForm.id;
+            reqForm._id = exisitingForm._id;
+            delete reqForm.id;
           }
         }
-
-        return observationForm;
+        return reqForm;
       });
 
       new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {

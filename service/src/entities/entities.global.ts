@@ -1,7 +1,7 @@
 import { URL } from 'url'
 
-export interface EntityIdFactory {
-  nextId(): Promise<string>
+export interface EntityIdFactory<T = string> {
+  nextId(): Promise<T>
 }
 
 /**
@@ -114,4 +114,29 @@ export class UrlResolutionError extends Error {
   constructor(public readonly sourceUrl: URL, message?: string) {
     super(`error loading url ${sourceUrl}: ${message}`)
   }
+}
+
+/**
+ * The `LineStye` keys define the visual attributes of drawing line and
+ * polygon geometries on a map.
+ */
+ export interface LineStyle {
+  /**
+   * Hex RGB string beginning with '#'
+   */
+  fill?: string,
+  /**
+   * Hex RGB string beginning with '#'
+   */
+  stroke?: string,
+  /**
+   * Number between 0 and 1
+   */
+  fillOpacity?: number,
+  strokeOpacity?: number,
+  strokeWidth?: number,
+}
+
+export function copyLineStyleAttrs(x: LineStyle): LineStyle {
+  return { ...x }
 }

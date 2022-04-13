@@ -1,7 +1,8 @@
 import mongoose, { DocumentToObjectOptions } from 'mongoose'
 import { UserDocument } from './user'
-import { MageEventId, MageEvent, MageEventCreateAttrs, EventPermission, Form, FormFieldChoice, FormField, EventRole } from '../entities/events/entities.events'
+import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventPermission, EventRole } from '../entities/events/entities.events'
 import { Team, TeamMemberRole } from '../entities/teams/entities.teams'
+import { Form, FormField, FormFieldChoice } from '../entities/events/entities.events.forms'
 
 export interface MageEventDocumentToObjectOptions extends DocumentToObjectOptions {
   access: { user: UserDocument, permission: EventPermission }
@@ -19,7 +20,7 @@ export type TeamDocument = Omit<Team, 'acl' | 'userIds'> & mongoose.Document & {
   }
 }
 
-export type MageEventDocument = Omit<MageEvent, 'teamIds' | 'layerIds' | 'acl'> & mongoose.Document & {
+export type MageEventDocument = mongoose.Document & Omit<MageEventAttrs, 'teamIds' | 'layerIds' | 'acl'> & {
   /**
    * The event's collection name is the name of the MongoDB collection that
    * stores observations for the event.
@@ -29,11 +30,13 @@ export type MageEventDocument = Omit<MageEvent, 'teamIds' | 'layerIds' | 'acl'> 
   layerIds: mongoose.Types.ObjectId[]
   acl: MageEventDocumentAcl
   toObject(options?: MageEventDocumentToObjectOptions): any
-  toJSON(options: DocumentToObjectOptions): MageEvent
+  toJSON(options: DocumentToObjectOptions): MageEventAttrs
 }
+
 export interface MageEventDocumentAcl {
   [userId: string]: EventRole
 }
+
 export type FormDocument = Form & mongoose.Document & {
   _id: number
 }

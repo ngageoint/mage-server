@@ -1,11 +1,8 @@
 import { Feature, Point } from 'geojson'
 import { InjectionToken } from '.'
-import { MageEvent, MageEventRepository } from '../entities/events/entities.events'
+import { MageEventAttrs, MageEventRepository } from '../entities/events/entities.events'
 import { User } from '../entities/users/entities.users'
 
-export interface Observation {
-
-}
 
 export interface UserLocation extends Feature<Point> {
   properties: Feature['properties'] & {
@@ -25,7 +22,7 @@ export interface MageEventsPluginHooks {
      * placement intially is that user locations and observations only exist in
      * the context of an event.
      */
-    onUserLocations?: (locations: UserLocation[], user: User, event: MageEvent) => any
+    onUserLocations?: (locations: UserLocation[], user: User, event: MageEventAttrs) => any
     /**
      * MAGE calls this hook after persisting a valid observation, new or
      * updated.

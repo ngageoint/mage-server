@@ -6,7 +6,9 @@ import { FeedServiceId, FeedId } from '../../lib/entities/feeds/entities.feeds'
 import { ErrPermissionDenied, permissionDenied } from '../../lib/app.api/app.api.errors'
 import { EventFeedsPermissionService, EventRequestContext, EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
-import { MageEventRepository, MageEvent } from '../../lib/entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs } from '../../lib/entities/events/entities.events'
+// for some reason vs code marks an error if using @lib/models/user, even though tsc builds fine
+// nobody seems to care though - https://github.com/microsoft/TypeScript/issues/39709
 import { UserDocument } from '../../src/models/user'
 import { MongooseMageEventRepository } from '../../lib/adapters/events/adapters.events.db.mongoose'
 
@@ -17,7 +19,7 @@ describe('event permissions service', function() {
   let mockEventPermissions: SubstituteOf<EventPermissionServiceImpl>
   let eventPermissions: EventPermissionServiceImpl
   let user: SubstituteOf<UserDocument>
-  let event: SubstituteOf<MageEvent>
+  let event: SubstituteOf<MageEventAttrs>
   let context: EventRequestContext
 
   beforeEach(function() {
@@ -25,7 +27,7 @@ describe('event permissions service', function() {
     mockEventPermissions = Sub.for<EventPermissionServiceImpl>()
     eventPermissions = new EventPermissionServiceImpl(eventRepo)
     user = Sub.for<UserDocument>()
-    event = Sub.for<MageEvent>()
+    event = Sub.for<MageEventAttrs>()
     context = {
       requestToken: Symbol(),
       requestingPrincipal() {
@@ -104,7 +106,7 @@ describe('event feeds permission service', function() {
     const feedIds: FeedId[] = [ uniqid(), uniqid() ]
     const user = Sub.for<UserDocument>()
     user.username.returns!('participant')
-    const event = Sub.for<MageEvent>()
+    const event = Sub.for<MageEventAttrs>()
     event.id.returns!(3579)
     event.feedIds.returns!(feedIds)
     let context: EventRequestContext = {

@@ -748,7 +748,7 @@ describe('static icon mongoose repository', function() {
       try {
         await repo.loadContent(iconId) as UrlResolutionError
       }
-      catch (err) {
+      catch (err: any) {
         expect(err).to.be.instanceOf(Error)
         expect(err.message).to.contain('Invalid URL')
         return

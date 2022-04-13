@@ -5,8 +5,6 @@ import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceT
 import { FeedServiceTypeRepository, FeedServiceRepository } from '../../entities/feeds/entities.feeds'
 import { FeedServiceDescriptor } from '../../app.api/feeds/app.api.feeds'
 import { EntityIdFactory } from '../../entities/entities.global'
-import { StaticIconId } from '../../entities/icons/entities.icons'
-
 
 
 export const FeedsModels = {

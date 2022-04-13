@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
-  , User = require('./user')
   , Team = require('./team')
   , api = require('../api')
   , whitelist = require('../utilities/whitelist')
@@ -140,32 +139,7 @@ EventSchema.pre('init', function(next, event) {
 });
 
 EventSchema.pre('remove', function(next) {
-  let event = this;
-
-  async.parallel({
-    collection: function(done) {
-      dropObservationCollection(event, done);
-    },
-    icons: function(done) {
-      new api.Icon(event._id).delete(function(err) {
-        done(err);
-      });
-    },
-    recentEventIds: function(done) {
-      User.removeRecentEventForUsers(event, function(err) {
-        done(err);
-      });
-    },
-    attachments: function(done) {
-      new api.Attachment(event).deleteAllForEvent(function(err) {
-        log.info('done deleting attachments for event');
-        done(err);
-      });
-    }
-  },
-  function(err) {
-    next(err);
-  });
+  dropObservationCollection(this, next)
 });
 
 EventSchema.post('remove', function(event) {
@@ -446,7 +420,6 @@ function dropObservationCollection(event, callback) {
     if (!err) {
       log.info('Dropped observation collection ' + event.collectionName);
     }
-
     callback(err);
   });
 }

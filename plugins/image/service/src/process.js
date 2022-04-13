@@ -9,13 +9,14 @@ const config = require('./config.json')
   , Observation = require('../../models/observation')
   , gm = require('gm');
 
+
 const attachmentBase = environment.attachmentBaseDirectory;
 const thumbSizes = config.image.thumbSizes;
 
 const timeout = config.image.interval * 1000;
 
-const observationTimes = {};
-const lastObservationTimes = {orient: {}, thumbnail: {}};
+const eventLatestObservationTimes = {};
+const eventLastProcessTimestamps = {orient: {}, thumbnail: {}};
 
 const mongo = environment.mongo;
 mongoose.connect(mongo.uri, mongo.options, function(err) {
@@ -120,7 +121,7 @@ function thumbnail(event, observationId, attachment, callback) {
           log.info('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
 
           const stat = fs.statSync(thumbPath);
-          
+
           Observation.addAttachmentThumbnail(event, observationId, attachment._id, {
             size: stat.size,
             name: path.basename(attachment.relativePath, path.extname(attachment.relativePath)) + "_" + thumbSize + path.extname(attachment.relativePath),
@@ -149,18 +150,28 @@ function thumbnail(event, observationId, attachment, callback) {
   });
 }
 
+/**
+ * get all events
+ * set latest observation time for each event
+ *
+ */
+
 const processAttachments = function() {
-  log.info('processing attachments, starting from', lastObservationTimes);
+  log.info('processing attachments, starting from', eventLastProcessTimestamps);
 
   async.waterfall([
     function(done) {
-      //get events
+      // get all events
       Event.getEvents(function(err, events) {
         async.each(events, function(event, done) {
+          // set the latest
           Observation.getLatestObservation(event, function(err, observation) {
-            if (err) return done(err);
-
-            if (observation) observationTimes[event.collectionName] = observation.lastModified;
+            if (err) {
+              return done(err);
+            }
+            if (observation) {
+              eventLatestObservationTimes[event.collectionName] = observation.lastModified;
+            }
             done();
           });
         },
@@ -179,7 +190,7 @@ const processAttachments = function() {
           'attachments.oriented': false
         };
 
-        const lastTime = lastObservationTimes.orient[event.collectionName];
+        const lastTime = eventLastProcessTimestamps.orient[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
@@ -200,7 +211,7 @@ const processAttachments = function() {
       async.eachSeries(results, function(result, done) {
         processEvent(result, function(err) {
           // Update time
-          lastObservationTimes.orient[result.event.collectionName] = observationTimes[result.event.collectionName];
+          eventLastProcessTimestamps.orient[result.event.collectionName] = eventLatestObservationTimes[result.event.collectionName];
           done(err);
         });
       },
@@ -210,7 +221,7 @@ const processAttachments = function() {
     },
     function(events, done) {
       // aggregate results into array of attachments that have been oriented
-      // but do no have all the nessecary thumbnails
+      // but do not have all the nessecary thumbnails
       const results = [];
       async.eachSeries(events, function(event, done) {
         const match =  {
@@ -219,7 +230,7 @@ const processAttachments = function() {
           "attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } }
         };
 
-        const lastTime = lastObservationTimes.thumbnail[event.collectionName];
+        const lastTime = eventLastProcessTimestamps.thumbnail[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
@@ -242,7 +253,7 @@ const processAttachments = function() {
           if (err) return done(err);
 
           // Update time
-          lastObservationTimes.thumbnail[result.event.collectionName] = observationTimes[result.event.collectionName];
+          eventLastProcessTimestamps.thumbnail[result.event.collectionName] = eventLatestObservationTimes[result.event.collectionName];
           done();
         });
       },

@@ -4,22 +4,23 @@ const  api = require('../api')
   , fileType = require('file-type')
   , userTransformer = require('../transformers/user');
 
-import EventModel, { MageEventDocument, FormDocument } from '../models/event'
+import EventModel, { FormDocument, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
 import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
-import { EventPermission, Style, MageEvent } from '../entities/events/entities.events'
+import { EventPermission, MageEventAttrs } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
 import { EventPermissionServiceImpl } from '../permissions/permissions.events'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
+import { LineStyle } from '../entities/entities.global'
 
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventDocument
-    eventEntity?: MageEvent
+    eventEntity?: MageEventAttrs
     access?: { user: express.Request['user'], permission: EventPermission }
     parameters?: EventQueryParams
     form?: FormJson
@@ -60,7 +61,7 @@ interface FormFieldJson {
   choices: FormFieldChoiceJson[]
 }
 
-interface FieldChoiceStyles extends Style {
+interface FieldChoiceStyles extends LineStyle {
   [fieldTitle: string]: FieldChoiceStyles | string | number | undefined
 }
 
@@ -154,13 +155,13 @@ const parseForm: express.RequestHandler = function parseRequestBodyAsForm(req, r
 }
 
 /**
- * Return a new object with only the basic top level style keys from the given
- * that have values.
+ * Return a new style object that has only the keys defined in {@link LineStyle}
+ * whose values are not `undefined` in the given source object.
  * @param style an object that could have style keys
  */
-function reduceStyle(style: any): Style {
-  const styleKeys: (string & keyof Style)[] = ['fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth']
-  return styleKeys.reduce<Style>(function(result, styleKey): Style {
+function reduceStyle(style: any): LineStyle {
+  const styleKeys: (keyof LineStyle)[] = [ 'fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth' ]
+  return styleKeys.reduce<LineStyle>(function(result, styleKey): LineStyle {
     if (style[styleKey] !== undefined) {
       result[styleKey] = style[styleKey]
     }

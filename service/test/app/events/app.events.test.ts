@@ -2,7 +2,7 @@ import _ from 'lodash'
 import uniqid from 'uniqid'
 import { expect } from 'chai'
 import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
-import { MageEvent, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { MageEventAttrs, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { AddFeedToEvent, ListEventFeeds, RemoveFeedFromEvent } from '../../../lib/app.impl/events/app.impl.events'
 import { MageError, ErrEntityNotFound, permissionDenied, ErrPermissionDenied, EntityNotFoundError, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
@@ -27,7 +27,7 @@ function requestBy<P extends object>(user: string, params: P): AppRequest<Substi
 describe('event feeds use case interactions', function() {
 
   let app: EventsUseCaseInteractions
-  let event: MageEvent
+  let event: MageEventAttrs
 
   beforeEach(function() {
     app = new EventsUseCaseInteractions()
@@ -109,7 +109,7 @@ describe('event feeds use case interactions', function() {
   describe('listing event feeds', function() {
 
     let eventId: MageEventId
-    let event: MageEvent
+    let event: MageEventAttrs
 
     beforeEach(async function() {
       eventId = new Date().getMilliseconds()

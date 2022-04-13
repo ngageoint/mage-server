@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
+import { PagingParameters } from '../../entities/entities.global'
 
 type EntityReference = { id: string | number }
 
@@ -18,6 +18,14 @@ export async function waitForMongooseConnection(): Promise<mongoose.Connection> 
   throw new Error('unimplemented')
 }
 
+/**
+ * * Type parameter `D` is a subtype of `mongoose.Document`
+ * * Type parameter `M` is a subtpye of `mongoose.Model<D>` that creates
+ *   instances of type `D`.
+ * * Type parameter `E` is the entity type, which is typically a plain object
+ *   interface, and is the type that repository queries return using
+ *   `entityForDocuent`
+ */
 export class BaseMongooseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, E extends object> {
 
   readonly model: M

@@ -99,7 +99,7 @@ describe('feeds admin permissions migration', function() {
 
       expect(insert.insertedCount).to.equal(1)
 
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const done = function(err?: any) {
           if (err) {
             reject(err)

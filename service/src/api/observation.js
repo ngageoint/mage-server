@@ -87,21 +87,21 @@ Observation.prototype.validate = function(observation) {
     message += `\u2022 ${geometryError.message}\n`;
   }
 
-  const forms = properties.forms || [];
-  const formCount = forms.reduce((count, form) => {
+  const formEntries = properties.forms || [];
+  const formCount = formEntries.reduce((count, form) => {
     count[form.formId] = (count[form.formId] || 0) + 1;
     return count;
   }, {})
-  
+
   const formDefinitions = {};
 
   // Validate total number of forms
-  if (this._event.minObservationForms != null && forms.length < this._event.minObservationForms) {
+  if (this._event.minObservationForms != null && formEntries.length < this._event.minObservationForms) {
     errors.minObservationForms = new Error("Insufficient number of forms");
     message += `\u2022 Total number of forms in observation must be at least ${this._event.minObservationForms}\n`;
   }
 
-  if (this._event.maxObservationForms != null && forms.length > this._event.maxObservationForms) {
+  if (this._event.maxObservationForms != null && formEntries.length > this._event.maxObservationForms) {
     errors.maxObservationForms = new Error("Exceeded maximum number of forms");
     message += `\u2022 Total number of forms in observation cannot be more than ${this._event.maxObservationForms}\n`;
   }
@@ -140,14 +140,14 @@ Observation.prototype.validate = function(observation) {
   // Validate form fields
   const formErrors = [];
 
-  forms.forEach(observationForm => {
+  formEntries.forEach(formEntry => {
     let fieldsMessage = '';
     const fieldsError = {};
 
-    formDefinitions[observationForm.formId].fields
+    formDefinitions[formEntry.formId].fields
       .filter(fieldDefinition => !fieldDefinition.archived)
       .forEach(fieldDefinition => {
-        const field = fieldFactory.createField(fieldDefinition, observationForm, observation);
+        const field = fieldFactory.createField(fieldDefinition, formEntry, observation);
         const fieldError = field.validate();
 
         if (fieldError) {
@@ -158,7 +158,7 @@ Observation.prototype.validate = function(observation) {
 
     if (Object.keys(fieldsError).length) {
       formErrors.push(fieldsError);
-      message += `${formDefinitions[observationForm.formId].name} form is invalid\n`;
+      message += `${formDefinitions[formEntry.formId].name} form is invalid\n`;
       message += fieldsMessage;
     }
   });
@@ -207,13 +207,13 @@ Observation.prototype.update = function(observationId, observation, callback) {
       EventEmitter.emit(ObservationEvents.events.update, updatedObservation.toObject({event: this._event}), this._event, this._user);
 
       // Remove any deleted attachments from file system
-      const {forms: observationForms = []}  = observation.properties || {};
-      observationForms.forEach(observationForm => {
-        const formDefinition = this._event.forms.find(form => form._id === observationForm.formId);
-        Object.keys(observationForm).forEach(fieldName => {
+      const {forms: formEntries = []}  = observation.properties || {};
+      formEntries.forEach(formEntry => {
+        const formDefinition = this._event.forms.find(form => form._id === formEntry.formId);
+        Object.keys(formEntry).forEach(fieldName => {
           const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
           if (fieldDefinition && fieldDefinition.type === 'attachment') {
-            const attachmentsField = observationForm[fieldName] || [];
+            const attachmentsField = formEntry[fieldName] || [];
             attachmentsField.filter(attachmentField => attachmentField.action === 'delete').forEach(attachmentField => {
               const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentField.id);
               if (attachment) {

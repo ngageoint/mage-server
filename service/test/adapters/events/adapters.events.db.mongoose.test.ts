@@ -5,10 +5,10 @@ import uniqid from 'uniqid'
 import _ from 'lodash'
 import { MongooseMageEventRepository, MageEventModel } from '../../../lib/adapters/events/adapters.events.db.mongoose'
 import * as legacy from '../../../lib/models/event'
-import { MageEventDocument } from '../../../lib/models/event'
+import { MageEventDocument } from '../../../src/models/event'
 import TeamModelModule = require('../../../lib/models/team')
 import { Team } from '../../../lib/entities/teams/entities.teams'
-import { MageEvent, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'
+import { MageEventAttrs, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'
 
 const TeamModel = TeamModelModule.TeamModel
 
@@ -17,12 +17,13 @@ describe('event mongoose repository', function() {
   let model: MageEventModel
   let repo: MongooseMageEventRepository
   let eventDoc: MageEventDocument
-  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEvent>) => Promise<MageEventDocument>
+  let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventDocument>
 
   beforeEach('initialize model', async function() {
+
     model = legacy.Model as mongoose.Model<MageEventDocument>
     repo = new MongooseMageEventRepository(model)
-    createEvent = (attrs: Partial<MageEvent>): Promise<MageEventDocument> => {
+    createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
         legacy.create(
           attrs as MageEventCreateAttrs,
@@ -34,16 +35,26 @@ describe('event mongoose repository', function() {
             resolve(event!)
           })
       })
+      .then(createdWithoutTeamId => {
+        // fetch again, because the create method does not return the event with
+        // the implicitly created team id in the teamIds list, presumably
+        // because it's done in middleware |:$
+        // TODO: fix the above
+        return model.findById(createdWithoutTeamId._id).then(withTeamId => {
+          if (withTeamId) {
+            return withTeamId
+          }
+          throw new Error(`created event ${createdWithoutTeamId._id} now does not exist!`)
+        })
+      })
     }
     eventDoc = await createEvent({
       name: 'Test Event',
       description: 'For testing'
     })
-    // fetch again, because the create method does not return the event with the
-    // implicitly created team id in the teamIds list
-    // TODO: fix the above
-    eventDoc = await model.findById(eventDoc._id) as MageEventDocument
+
     expect(eventDoc._id).to.be.a('number')
+    expect(eventDoc.teamIds.length).to.equal(1)
   })
 
   afterEach(async function() {
@@ -56,6 +67,71 @@ describe('event mongoose repository', function() {
 
       const fetched = await repo.findById(eventDoc._id)
       expect(fetched).to.deep.equal(eventDoc.toJSON())
+    })
+  })
+
+  describe('finding active events', function() {
+
+    beforeEach('clear all events', async function() {
+      await model.remove({})
+    })
+
+    it('finds events whose complete key is false', async function() {
+
+      const active1 = await createEvent({
+        name: 'Active 1',
+        complete: false
+      })
+      const active2 = await createEvent({
+        name: 'Active 2',
+        complete: false
+      })
+      const inactive = await createEvent({
+        name: 'Inactive',
+        complete: true
+      })
+      const allEvents = await repo.findAll()
+      const activeEvents = await repo.findActiveEvents()
+
+      expect(allEvents.length).to.equal(3)
+      expect(allEvents).to.deep.include.members([
+        repo.entityForDocument(active1),
+        repo.entityForDocument(active2),
+        repo.entityForDocument(inactive)
+      ])
+      expect(activeEvents.length).to.equal(2)
+      expect(activeEvents).to.deep.include.members([
+        repo.entityForDocument(active1),
+        repo.entityForDocument(active2)
+      ])
+    })
+
+    it('finds events without a complete key', async function() {
+
+      const active1 = await createEvent({
+        name: 'Active 1',
+      })
+      const active2 = await createEvent({
+        name: 'Active 2',
+      })
+      const inactive = await createEvent({
+        name: 'Inactive',
+        complete: true
+      })
+      const allEvents = await repo.findAll()
+      const activeEvents = await repo.findActiveEvents()
+
+      expect(allEvents.length).to.equal(3)
+      expect(allEvents).to.deep.include.members([
+        repo.entityForDocument(active1),
+        repo.entityForDocument(active2),
+        repo.entityForDocument(inactive)
+      ])
+      expect(activeEvents.length).to.equal(2)
+      expect(activeEvents).to.deep.include.members([
+        repo.entityForDocument(active1),
+        repo.entityForDocument(active2)
+      ])
     })
   })
 
@@ -248,7 +324,7 @@ describe('event mongoose repository', function() {
       const updatedEventDocs = await model.find({ _id: { $in: eventDocs.map(x => x._id) }})
       expect(updateCount).to.equal(2)
       expect(updatedEventDocs).to.have.length(3)
-      const byId = _.keyBy(updatedEventDocs.map(x => x.toJSON() as MageEvent), 'id')
+      const byId = _.keyBy(updatedEventDocs.map(x => x.toJSON() as MageEventAttrs), 'id')
       expect(byId[eventDocs[0].id]).to.deep.include(
         {
           id: eventDocs[0]._id,
@@ -315,13 +391,13 @@ describe('event mongoose repository', function() {
       ]) as MageEventDocument[]
       // re-fetch to get teamIds array populated
       const idsFilter = { _id: { $in: created.map(x => x._id) }}
-      const fetched = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEvent), 'name')
+      const fetched = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEventAttrs), 'name')
       expect(Object.keys(fetched)).to.have.length(4)
 
       const updateCount = await repo.removeFeedsFromEvents(...feedIds)
       expect(updateCount).to.equal(3)
 
-      const updated = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEvent), 'name')
+      const updated = _.keyBy((await model.find(idsFilter)).map(x => x.toJSON() as MageEventAttrs), 'name')
       for (const nameNum of [ 1, 2, 3, 4 ]) {
         const name = `Remove Feeds ${nameNum}`
         const createdEvent = fetched[name]

@@ -1,5 +1,4 @@
 const ObservationModel = require('../models/observation')
-  , AttachmentEvents = require('./events/attachment.js')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
@@ -21,9 +20,6 @@ function Attachment(event, observation) {
   this._event = event;
   this._observation = observation;
 }
-
-const EventEmitter = new AttachmentEvents();
-Attachment.on = EventEmitter;
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   const size = options.size ? Number(options.size) : null;
@@ -62,10 +58,10 @@ Attachment.prototype.update = function(attachmentId, attachment, callback) {
       if (err) return callback(err);
 
       ObservationModel.addAttachment(this._event, this._observation._id, attachmentId, attachment, (err, newAttachment) => {
-        if (!err && newAttachment) {
-          EventEmitter.emit(AttachmentEvents.events.add, newAttachment.toObject(), this._observation, this._event);
-        }
-
+        // TODO: now defunct after removing legacy attachment events module
+        // if (!err && newAttachment) {
+        //   EventEmitter.emit(AttachmentEvents.events.add, newAttachment.toObject(), this._observation, this._event);
+        // }
         callback(err, newAttachment);
       });
     });

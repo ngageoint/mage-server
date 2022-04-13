@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from 'mongoose'
+import { EntityIdFactory } from '../entities/entities.global'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const log = require('winston')
 
@@ -53,4 +54,10 @@ export const waitForDefaultMongooseConnection = (mongoose: any, uri: string, ret
     const retries = new RetryConnection(mongoose, uri, retryTotalTime, retryInterval, options, resolve, reject)
     retries.attemptConnection()
   })
-};
+}
+
+export const MongoDbObjectIdFactory: EntityIdFactory = {
+  async nextId(): Promise<string> {
+    return mongoose.Types.ObjectId().toHexString()
+  }
+}

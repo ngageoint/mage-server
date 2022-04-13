@@ -7,7 +7,7 @@ import uniqid from 'uniqid'
 import _ from 'lodash'
 import { AppResponse, AppRequest } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { MageEvent, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { AddFeedToEventRequest, ListEventFeedsRequest, UserFeed, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { FeedId, FeedContent } from '../../../lib/entities/feeds/entities.feeds'
 import { FetchFeedContentRequest } from '../../../lib/app.api/feeds/app.api.feeds'
@@ -36,7 +36,7 @@ describe('event feeds web controller', function () {
   let eventRepo: SubstituteOf<MageEventRepository>
   let eventFeedsApp: SubstituteOf<EventFeedsApp>
   let client: supertest.SuperTest<supertest.Test>
-  let event: MageEvent
+  let event: MageEventAttrs
 
   beforeEach(function () {
     const eventId = Math.floor(Math.random() * 1000);
@@ -78,7 +78,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
-        .resolves(AppResponse.success<MageEvent, unknown>(event))
+        .resolves(AppResponse.success<MageEventAttrs, unknown>(event))
       const res = await client
         .post(`${rootPath}/${event.id}/feeds`)
         .type('json')
@@ -121,7 +121,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
-        .resolves(AppResponse.error<MageEvent, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', testUser)))
+        .resolves(AppResponse.error<MageEventAttrs, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', testUser)))
 
       const res = await client
         .post(`${rootPath}/${event.id}/feeds`)
@@ -221,7 +221,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.success<MageEvent, unknown>(event))
+        .resolves(AppResponse.success<MageEventAttrs, unknown>(event))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
       expect(res.status).to.equal(200)
@@ -237,7 +237,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.error<MageEvent, EntityNotFoundError>(entityNotFound(event, 'MageEvent')))
+        .resolves(AppResponse.error<MageEventAttrs, EntityNotFoundError>(entityNotFound(event, 'MageEvent')))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
       expect(res.status).to.equal(400)
@@ -262,7 +262,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.error<MageEvent, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', String(testUser))))
+        .resolves(AppResponse.error<MageEventAttrs, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', String(testUser))))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
       expect(res.status).to.equal(403)

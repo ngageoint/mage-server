@@ -1,5 +1,5 @@
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
-import { MageEventRepository, MageEvent, MageEventId } from '../../entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs, MageEventId } from '../../entities/events/entities.events'
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
@@ -12,17 +12,22 @@ export type MageEventDocument = legacy.MageEventDocument
 export type MageEventModel = mongoose.Model<legacy.MageEventDocument>
 export const MageEventSchema = legacy.Model.schema
 
-export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEvent> implements MageEventRepository {
+export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs> implements MageEventRepository {
 
-  async create(): Promise<MageEvent> {
+  async create(): Promise<MageEventAttrs> {
     throw new Error('method not allowed')
   }
 
-  async update(attrs: Partial<MageEvent> & { id: MageEventId }): Promise<MageEvent | null> {
+  async update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEventAttrs | null> {
     throw new Error('method not allowed')
   }
 
-  async addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null> {
+  async findActiveEvents(): Promise<MageEventAttrs[]> {
+    const docs = await this.model.find({ complete: { $in: [ null, false ] }})
+    return docs.map(this.entityForDocument)
+  }
+
+  async addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null> {
     const updated = await this.model.findByIdAndUpdate(
       event,
       {
@@ -34,7 +39,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return updated?.toJSON() || null
   }
 
-  async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null> {
+  async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null> {
     const updated = await this.model.findByIdAndUpdate(
       event,
       {
@@ -51,6 +56,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return updated.nModified
   }
 
+  // TODO: this might be misplaced; team repository?
   async findTeamsInEvent(event: MageEventId): Promise<Team[] | null> {
     const eventDoc = await this.model.findById(event).populate('teamIds')
     if (!eventDoc) {
@@ -64,8 +70,4 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
       return team
     })
   }
-}
-
-function filterEventsWithFeeds(...feeds: FeedId[]): any {
-  return { feedIds: { $elemMatch: { $in: feeds }}}
 }

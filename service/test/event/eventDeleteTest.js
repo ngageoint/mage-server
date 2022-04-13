@@ -1,9 +1,10 @@
-var request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , mockfs = require('mock-fs')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+const request = require('supertest');
+const sinon = require('sinon');
+const mongoose = require('mongoose');
+const mockfs = require('mock-fs');
+const { expect } = require('chai');
+const MockToken = require('../mockToken');
+const TokenModel = mongoose.model('Token');
 
 require('chai').should();
 require('sinon-mongoose');
@@ -23,7 +24,7 @@ var UserModel = mongoose.model('User');
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-describe("event delete tests", function() {
+describe('deleting events', function() {
 
   let app;
 
@@ -60,7 +61,8 @@ describe("event delete tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should delete event", function(done) {
+  it('deletes the event and all related resources', function(done) {
+
     mockTokenWithPermission('DELETE_EVENT');
 
     var eventId = 1;
@@ -68,7 +70,9 @@ describe("event delete tests", function() {
       _id: eventId,
       name: 'Mock Event',
       collectionName: 'observations1'
-    });
+    })
+    const eventRemoveSpy = sinon.spy(mockEvent, 'remove')
+
     sinon.mock(EventModel)
       .expects('findById')
       .twice()
@@ -77,11 +81,7 @@ describe("event delete tests", function() {
       .onSecondCall()
       .yields(null, null);
 
-    sinon.mock(EventModel.collection)
-      .expects('remove')
-      .yields(null);
-
-    sinon.mock(mongoose.connection.db)
+    const droppedObservationCollection = sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
       .yields(null);
 
@@ -97,7 +97,7 @@ describe("event delete tests", function() {
     var mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
-      teamEventId: 1
+      teamEventId: eventId
     });
 
     var removeEventsFromUserExpectation = sinon.mock(UserModel)
@@ -115,12 +115,7 @@ describe("event delete tests", function() {
       .chain('exec')
       .yields(null, [mockTeam]);
 
-    var removeTeamsFromEventExpectation = sinon.mock(EventModel)
-      .expects('update')
-      .withArgs({}, { $pull: { teamIds: teamId } })
-      .yields(null, [mockTeam]);
-
-    var removeTeamExpectation = sinon.mock(TeamModel.collection)
+    var removedEventTeam = sinon.mock(mockTeam)
       .expects('remove')
       .yields(null);
 
@@ -130,10 +125,10 @@ describe("event delete tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(204)
       .end(function(err) {
-        removeTeamExpectation.verify();
+        droppedObservationCollection.verify();
+        removedEventTeam.verify();
         removeEventsFromUserExpectation.verify();
-        removeTeamsFromEventExpectation.verify();
-
+        expect(eventRemoveSpy.callCount).to.equal(1);
         mockfs.restore();
         done(err);
       });

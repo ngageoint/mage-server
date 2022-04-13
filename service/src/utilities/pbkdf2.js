@@ -38,7 +38,7 @@ module.exports = function(options) {
    * Description here: http://en.wikipedia.org/wiki/PBKDF2
    * Number of iterations are saved in case we change the setting in the future
    * @param {String} password
-   * @param {Funtion} callback Signature: err, hashedPassword
+   * @param {Function} callback Signature: err, hashedPassword
    */
   function hashPassword(password, callback) {
     const salt = crypto.randomBytes(saltLength).toString('base64');

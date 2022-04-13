@@ -1,6 +1,6 @@
 import { AppRequest, AppResponse } from '../app.api.global'
 import { FeedId, Feed, FeedContent } from '../../entities/feeds/entities.feeds'
-import { MageEventId, MageEvent } from '../../entities/events/entities.events'
+import { MageEventId, MageEventAttrs } from '../../entities/events/entities.events'
 import { EntityNotFoundError, PermissionDeniedError } from '../app.api.errors'
 
 export interface AddFeedToEventRequest extends AppRequest {
@@ -9,7 +9,7 @@ export interface AddFeedToEventRequest extends AppRequest {
 }
 
 export interface AddFeedToEvent {
-  (req: AddFeedToEventRequest): Promise<AppResponse<MageEvent, PermissionDeniedError | EntityNotFoundError>>
+  (req: AddFeedToEventRequest): Promise<AppResponse<MageEventAttrs, PermissionDeniedError | EntityNotFoundError>>
 }
 
 export interface ListEventFeedsRequest extends AppRequest {
@@ -32,5 +32,5 @@ export interface RemoveFeedFromEventRequest extends AppRequest {
 }
 
 export interface RemoveFeedFromEvent {
-  (req: RemoveFeedFromEventRequest): Promise<AppResponse<MageEvent, PermissionDeniedError | EntityNotFoundError>>
+  (req: RemoveFeedFromEventRequest): Promise<AppResponse<MageEventAttrs, PermissionDeniedError | EntityNotFoundError>>
 }

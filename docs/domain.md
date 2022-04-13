@@ -82,6 +82,9 @@ A form field type refers to the type of data a form field captures along with th
 #### Examples
 An `email` form field type would accept a text string representing an email address.  The input method would be a simple text input box in which the user manually types an email address.  The `email` type would define validation constraints on the input, namely requiring the `name@domain` standard email format.  Given this form field type, a single form could define several `email` type form fields that have different meanings in a customer's domain.  For example, a customer could define a form that has `email` type form fields called `Point of contact email` and `Witness email`.
 
+### Form Entry
+A form entry is the collection of data values a user entered into the form fields of one instance of a form.
+
 ### Field
 The field refers to the place where mobile device users can observe and collect data on objects and occurrences of interest.
 
@@ -89,7 +92,9 @@ The field refers to the place where mobile device users can observe and collect 
 A field user is a human user collecting data in the field with a mobile device.
 
 ### Event
-An event is a scope to manage users, the data they collect, and the data they can see.  A customer can assign its MAGE users to an event.  The observations those users create while participating in the event will only be available to other users participating in the event.  All observations exist within the scope of an event.  Similarly, the reported locations of users participating in an event are only visible to other users participating in the same event.  A customer also assigns forms to an event, so the types of observations the participants can create are based on the forms assigned to the event.
+An event is a scope to manage users, the data they collect, and the data they are allowed to see.  A customer can assign its MAGE users to an event.  The observations those users create while participating in the event will only be available to other users participating in the event.  All observations exist within the scope of an event.  Similarly, the reported locations of users participating in an event are only visible to other users participating in the same event.  A customer also assigns forms to an event, so the types of observations the participants can create are based on the forms assigned to the event.
+
+An event defines the observation data participants can submit.  Events may define one or more forms into which participants enter observation data about a subject.  Each form defines one or more form fields of varying types into which a participant enters a data value of the field's type, such as a date, text, number, email, etc.  An event may impose validation rules on submitted observations, such as minimum and/or maximum number of entries for a given form.  Form fields may impose validation rules on individual data values, such as required vs. optional, minimum and/or maximum numeric values, text input patterns, or allowed attachment media types.
 
 ### Participant
 A participant is a user that has access to the data associated with a specific event, as well as to submit observations for the event.

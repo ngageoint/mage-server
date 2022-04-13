@@ -5,7 +5,7 @@ import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.erro
 import { FeedId } from '../entities/feeds/entities.feeds'
 import { allPermissions, AnyPermission } from '../entities/authorization/entities.permissions'
 import { FeedsPermissionService } from '../app.api/feeds/app.api.feeds'
-import { MageEvent, MageEventRepository, EventPermission, rolesWithPermission } from '../entities/events/entities.events'
+import { MageEventAttrs, MageEventRepository, EventPermission, rolesWithPermission } from '../entities/events/entities.events'
 import EventModel from '../models/event'
 import access from '../access'
 import mongoose from 'mongoose'
@@ -13,7 +13,7 @@ import { UserId } from '../entities/users/entities.users'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
 
 export interface EventRequestContext extends AppRequestContext<UserDocument> {
-  readonly event: MageEvent | MageEventDocument
+  readonly event: MageEventAttrs | MageEventDocument
 }
 
 type TeamMembership = {
@@ -51,7 +51,7 @@ export class EventPermissionServiceImpl {
     return permissionDenied('READ_EVENT_USER', String(context.requestingPrincipal()))
   }
 
-  async authorizeEventAccess(event: MageEvent | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventPermission): Promise<PermissionDeniedError | null> {
+  async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventPermission): Promise<PermissionDeniedError | null> {
     if (access.userHasPermission(user, appPermission)) {
       return null
     }
@@ -62,7 +62,7 @@ export class EventPermissionServiceImpl {
     return permissionDenied(appPermission, user.username, event.id)
   }
 
-  async userHasEventPermission(event: MageEvent | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
+  async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
     let teams: TeamMembership[] = await this.resolveTeams(event)
     // if asking for event read permission and user is part of a team in this event
     if (eventPermission === 'read') {
@@ -79,7 +79,7 @@ export class EventPermissionServiceImpl {
     return userRoleHasPermission
   }
 
-  private async resolveTeams(event: MageEvent | MageEventDocument): Promise<TeamMembership[]> {
+  private async resolveTeams(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
     if (event instanceof mongoose.Document) {
       if (!(event).populated('teamIds')) {
         event = await new Promise<MageEventDocument>((resolve, reject) => {
@@ -97,10 +97,14 @@ export class EventPermissionServiceImpl {
         }
       })
     }
-    if (!event.teams) {
-      event.teams = (await this.eventRepo.findTeamsInEvent(event.id))!
-    }
-    return event.teams
+    // TODO: eliminate this side-effect mutation of the argument if possible
+    // if (!event.teams) {
+    //   event.teams = (await this.eventRepo.findTeamsInEvent(event.id))!
+    // }
+    // return event.teams
+    // well, let's just try it
+    const teams = await this.eventRepo.findTeamsInEvent(event.id)
+    return teams!
   }
 }
 

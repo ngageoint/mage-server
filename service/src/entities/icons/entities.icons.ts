@@ -37,7 +37,7 @@ export interface StaticIcon {
    */
   mediaType?: string
   /**
-   * The size in pixels is the width and height
+   * The size in pixels is the width and height of the icon's image canvas.
    */
   sizePixels?: ImageSize
   sizeBytes?: number

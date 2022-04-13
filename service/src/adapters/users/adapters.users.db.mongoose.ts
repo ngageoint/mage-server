@@ -5,7 +5,7 @@ import * as legacy from '../../models/user'
 import _ from 'lodash'
 import mongoose from 'mongoose'
 
-export const MageUserModelName = 'User'
+export const UserModelName = 'User'
 
 export type UserDocument = legacy.UserDocument
 export type UserModel = mongoose.Model<UserDocument>

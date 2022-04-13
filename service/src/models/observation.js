@@ -79,16 +79,16 @@ const ObservationSchema = new Schema({
   }
 });
 
-ObservationSchema.index({geometry: "2dsphere"});
-ObservationSchema.index({'lastModified': 1});
-ObservationSchema.index({'attachments.lastModified': 1});
-ObservationSchema.index({'userId': 1});
-ObservationSchema.index({'deviceId': 1});
-ObservationSchema.index({'properties.timestamp': 1});
-ObservationSchema.index({'states.name': 1});
-ObservationSchema.index({'attachments.oriented': 1});
-ObservationSchema.index({'attachments.contentType': 1});
-ObservationSchema.index({'attachments.thumbnails.minDimension': 1});
+ObservationSchema.index({ geometry: '2dsphere' });
+ObservationSchema.index({ lastModified: 1 });
+ObservationSchema.index({ userId: 1 });
+ObservationSchema.index({ deviceId: 1 });
+ObservationSchema.index({ 'properties.timestamp': 1 });
+ObservationSchema.index({ 'states.name': 1 });
+ObservationSchema.index({ 'attachments.lastModified': 1 });
+ObservationSchema.index({ 'attachments.oriented': 1 });
+ObservationSchema.index({ 'attachments.contentType': 1 });
+ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 });
 
 function transformAttachment(attachment, observation) {
   attachment.id = attachment._id;
@@ -221,6 +221,7 @@ function observationModel(event) {
   if (!model) {
     // Creates the Model for the Observation Schema
     model = mongoose.model(name, ObservationSchema, name);
+    // TODO: mongoose should be caching these models so this seems unnecessary
     models[name] = model;
   }
 
@@ -339,17 +340,17 @@ exports.updateObservation = function(event, observationId, update, callback) {
       delete observationForm.id;
       return observationForm;
     })
-    .forEach(observationForm => {
-      const formDefinition = event.forms.find(form => form._id === observationForm.formId);
-      Object.keys(observationForm).forEach(fieldName => {
+    .forEach(formEntry => {
+      const formDefinition = event.forms.find(form => form._id === formEntry.formId);
+      Object.keys(formEntry).forEach(fieldName => {
         const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
         if (fieldDefinition && fieldDefinition.type === 'attachment') {
-          const attachments = observationForm[fieldName] || [];
+          const attachments = formEntry[fieldName] || [];
           addAttachments = addAttachments.concat(attachments
-            .filter(attachment => attachment.action === 'add') 
+            .filter(attachment => attachment.action === 'add')
             .map(attachment => {
               return {
-                observationFormId: observationForm._id,
+                observationFormId: formEntry._id,
                 fieldName: fieldName,
                 name: attachment.name,
                 contentType: attachment.contentType
@@ -361,7 +362,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
             .map(attachment => attachment.id )
           );
 
-          delete observationForm[fieldName]
+          delete formEntry[fieldName]
         }
       });
   });
@@ -383,7 +384,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
       observation.properties = update.properties;
       observation.attachments = observation.attachments.concat(addAttachments);
       observation.attachments = observation.attachments.filter(attachment => {
-        return !removeAttachments.includes(attachment._id.toString()) 
+        return !removeAttachments.includes(attachment._id.toString())
       });
 
       return observation.save();
@@ -397,7 +398,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
     .then(observation => {
       callback(null, observation);
     })
-    .catch(err => callback(err)); 
+    .catch(err => callback(err));
 };
 
 exports.removeObservation = function(event, observationId, callback) {
@@ -509,6 +510,10 @@ exports.getAttachment = function(event, observationId, attachmentId, callback) {
   });
 };
 
+/**
+ * TODO: [OBS-NEXT] this can potentially be deleted if removing the api/attachment module,
+ * which is the only reference to this function
+ */
 exports.addAttachment = function(event, observationId, attachmentId, file, callback) {
   const condition = {
     _id: observationId,

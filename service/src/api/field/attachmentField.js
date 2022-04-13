@@ -1,6 +1,6 @@
-const util = require('util')
-  , Field = require('./field')
-  , Media = require('../../validation/media');
+const util = require('util');
+const Field = require('./field');
+const { attachmentTypeIsValidForField } = require('../../entities/events/entities.events.forms');
 
 function AttachmentField(fieldDefinition, observationForm, observation) {
   AttachmentField.super_.call(this, fieldDefinition, observationForm[fieldDefinition.name]);
@@ -40,8 +40,7 @@ AttachmentField.prototype.validate = function() {
   const addAttachments = fieldValue.filter(attachment => attachment.action === 'add');
   if (addAttachments.length) {
     const invalidAttachments = addAttachments.filter(attachment => {
-      const media = new Media(attachment.contentType);
-      return !media.validate(this.definition.allowedAttachmentTypes);
+      return !attachmentTypeIsValidForField(this.definition, attachment.contentType);
     });
 
     if (invalidAttachments.length != 0) {
