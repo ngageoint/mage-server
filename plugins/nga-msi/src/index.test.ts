@@ -28,9 +28,12 @@ describe('msi mage plugin hooks', function() {
 
       const icons = await hooks.icons.loadPluginStaticIcons()
 
-      expect(icons).toHaveLength(1)
+      expect(icons).toHaveLength(2)
       expect(icons[0]).toMatchObject({
         pluginRelativePath: 'icons/asam.png'
+      })
+      expect(icons[1]).toMatchObject({
+        pluginRelativePath: 'icons/modu.png'
       })
     })
   })
