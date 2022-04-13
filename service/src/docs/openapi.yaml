@@ -1685,7 +1685,21 @@ paths:
         `READ_OBSERVATION_ALL` permission, or have `READ_OBSERVATION_EVENT`
         permission and an ACL entry on the event with `read` permission.
       operationId: getObservationsForEvent
-      parameters: *obsQueryParams
+      # this used to be simply
+      #   parameters: *obsQueryParams
+      # referencing above, instead of the duplicated parameter array, but with
+      # the update to js-yaml 4.1.x through openapi-enforcer, yaml anchors seem
+      # to be broken
+      parameters:
+        - $ref: '#/components/parameters/observationQuery.fields'
+        - $ref: '#/components/parameters/observationQuery.startDate'
+        - $ref: '#/components/parameters/observationQuery.endDate'
+        - $ref: '#/components/parameters/observationQuery.observationStartDate'
+        - $ref: '#/components/parameters/observationQuery.observationEndDate'
+        - $ref: '#/components/parameters/observationQuery.bbox'
+        - $ref: '#/components/parameters/observationQuery.geometry'
+        - $ref: '#/components/parameters/observationQuery.states'
+        - $ref: '#/components/parameters/observationQuery.sort'
       responses:
         200:
           description: >
@@ -4276,7 +4290,7 @@ components:
           type: boolean
         important:
           type: boolean
-          
+
   parameters:
     userIdInPath:
       in: path
