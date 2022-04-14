@@ -11,7 +11,7 @@ import { AnyPermission } from '../entities/authorization/entities.permissions'
 import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
-import { EventPermission, MageEventAttrs } from '../entities/events/entities.events'
+import { EventPermission, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
 import { EventPermissionServiceImpl } from '../permissions/permissions.events'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
@@ -20,7 +20,7 @@ import { LineStyle } from '../entities/entities.global'
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventDocument
-    eventEntity?: MageEventAttrs
+    eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventPermission }
     parameters?: EventQueryParams
     form?: FormJson

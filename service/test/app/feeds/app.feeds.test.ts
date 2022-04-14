@@ -522,7 +522,7 @@ describe('feeds use case interactions', function () {
       describe('updating a service', function () {
 
         it('Not Implemented', async function () {
-          
+
         })
       })
 
@@ -1756,7 +1756,7 @@ describe('feeds use case interactions', function () {
                 itemPropertiesSchema: {
                   type: 'object',
                   title: 'Topic 1 Item Properties'
-                }
+                },
               })
             ],
             conn: Sub.for<FeedServiceConnection>(),
@@ -1790,7 +1790,7 @@ describe('feeds use case interactions', function () {
                 itemPropertiesSchema: {
                   type: 'object',
                   title: 'Topic 2 Item Properties'
-                }
+                },
               })
             ],
             conn: Sub.for<FeedServiceConnection>(),

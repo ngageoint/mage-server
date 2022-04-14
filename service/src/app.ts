@@ -21,7 +21,7 @@ import { UserDocument } from './models/user'
 import SimpleIdFactory from './adapters/adapters.simple_id_factory'
 import { JsonSchemaService, JsonValidator, JSONSchema4 } from './entities/entities.json_types'
 import { MageEventModel, MongooseMageEventRepository } from './adapters/events/adapters.events.db.mongoose'
-import { MageEventRepository } from './entities/events/entities.events'
+import { MageEvent, MageEventRepository } from './entities/events/entities.events'
 import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web'
 import { MongooseStaticIconRepository, StaticIconModel } from './adapters/icons/adapters.icons.db.mongoose'
 import { StaticIconRepository } from './entities/icons/entities.icons'
@@ -44,6 +44,7 @@ import { SearchUsers } from './app.impl/users/app.impl.users'
 import { RoleBasedUsersPermissionService } from './permissions/permissions.users'
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose'
 import path from 'path'
+import { MageEventDocument } from './models/event'
 
 
 export interface MageService {
@@ -390,15 +391,19 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   }
 }
 
+interface MageEventRequestContext extends AppRequestContext<UserDocument> {
+  event: MageEventDocument | MageEvent | undefined
+}
+
 async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
   Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
   // load routes the old way
   const webLayer = await import('./express')
   const webController = webLayer.app
   const webAuth = webLayer.auth
-  const appRequestFactory: WebAppRequestFactory = <Params = unknown>(req: express.Request, params: Params): AppRequest<UserDocument> & Params => {
+  const appRequestFactory: WebAppRequestFactory = <Params>(req: express.Request, params: Params): AppRequest<UserDocument, MageEventRequestContext> & Params => {
     return {
-      ...params as any,
+      ...params,
       context: {
         requestToken: Symbol(),
         requestingPrincipal() {

@@ -2,7 +2,7 @@ import _ from 'lodash'
 import uniqid from 'uniqid'
 import { expect } from 'chai'
 import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
-import { MageEventAttrs, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { copyMageEventAttrs, MageEvent, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { AddFeedToEvent, ListEventFeeds, RemoveFeedFromEvent } from '../../../lib/app.impl/events/app.impl.events'
 import { MageError, ErrEntityNotFound, permissionDenied, ErrPermissionDenied, EntityNotFoundError, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
@@ -28,11 +28,11 @@ function requestBy<P extends object>(user: string, params: P): AppRequest<Substi
 describe('event feeds use case interactions', function() {
 
   let app: EventsUseCaseInteractions
-  let event: MageEventAttrs
+  let event: MageEvent
 
   beforeEach(function() {
     app = new EventsUseCaseInteractions()
-    event = {
+    event = new MageEvent({
       id: 123,
       name: 'Maintenance Issues',
       teamIds: [],
@@ -41,7 +41,7 @@ describe('event feeds use case interactions', function() {
       forms: [],
       acl: {},
       feedIds: []
-    }
+    })
   })
 
   describe('assigning a feed to an event', function() {
@@ -52,9 +52,9 @@ describe('event feeds use case interactions', function() {
         feed: uniqid(),
         event: event.id
       })
-      const updatedEvent = { ...event }
+      const updatedEvent = copyMageEventAttrs(event)
       updatedEvent.feedIds = [ req.feed ]
-      app.eventRepo.findById(event.id).resolves(event)
+      app.eventRepo.findById(event.id).resolves(new MageEvent(updatedEvent))
       app.eventRepo.addFeedsToEvent(req.event, req.feed).resolves(updatedEvent)
       app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
 
@@ -110,11 +110,11 @@ describe('event feeds use case interactions', function() {
   describe('listing event feeds', function() {
 
     let eventId: MageEventId
-    let event: MageEventAttrs
+    let event: MageEvent
 
     beforeEach(async function() {
       eventId = new Date().getMilliseconds()
-      event = {
+      event = new MageEvent({
         id: eventId,
         name: 'List Event Feeds',
         teamIds: [],
@@ -123,7 +123,7 @@ describe('event feeds use case interactions', function() {
         style: {},
         acl: {},
         feedIds: [ uniqid(), uniqid() ]
-      }
+      })
       app.eventRepo.findById(eventId).resolves(event)
     })
 
@@ -232,18 +232,17 @@ describe('event feeds use case interactions', function() {
 
     it('saves the event feed list without the removed feed', async function() {
 
-      event.feedIds.push(uniqid(), uniqid())
-      const updatedEvent = { ...event }
-      updatedEvent.feedIds = [ event.feedIds[1] ]
+      const before = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [ uniqid(), uniqid() ]})
+      const after = new MageEvent({ ...copyMageEventAttrs(before), feedIds: [ before.feedIds[1] ] })
       app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
-      app.eventRepo.findById(event.id).resolves(event)
-      app.eventRepo.removeFeedsFromEvent(event.id, event.feedIds[0]).resolves(updatedEvent)
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: event.id, feed: event.feedIds[0] })
+      app.eventRepo.findById(before.id).resolves(before)
+      app.eventRepo.removeFeedsFromEvent(before.id, before.feedIds[0]).resolves(copyMageEventAttrs(after))
+      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: before.id, feed: before.feedIds[0] })
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(updatedEvent)
-      app.eventRepo.received(1).removeFeedsFromEvent(event.id, event.feedIds[0])
+      expect(res.success).to.deep.equal(copyMageEventAttrs(after))
+      app.eventRepo.received(1).removeFeedsFromEvent(before.id, before.feedIds[0])
     })
 
     it('fails if the event does not exist', async function() {
@@ -264,23 +263,21 @@ describe('event feeds use case interactions', function() {
 
     it('fails if the event was removed before udpating', async function() {
 
-      event.feedIds.push(uniqid(), uniqid())
-      const updatedEvent = { ...event }
-      updatedEvent.feedIds = [ event.feedIds[1] ]
+      const before = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [ uniqid(), uniqid() ] })
       app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
-      app.eventRepo.findById(event.id).resolves(event)
-      app.eventRepo.removeFeedsFromEvent(event.id, event.feedIds[0]).resolves(null)
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: event.id, feed: event.feedIds[0] })
+      app.eventRepo.findById(before.id).resolves(before)
+      app.eventRepo.removeFeedsFromEvent(before.id, before.feedIds[0]).resolves(null)
+      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: before.id, feed: before.feedIds[0] })
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.success).to.be.null
       expect(res.error).to.be.instanceOf(MageError)
       expect(res.error?.code).to.equal(ErrEntityNotFound)
       const err = res.error as EntityNotFoundError
-      expect(err.data.entityId).to.equal(event.id)
+      expect(err.data.entityId).to.equal(before.id)
       expect(err.data.entityType).to.equal('MageEvent')
       expect(err.message).to.equal('event removed before update')
-      app.eventRepo.received(1).removeFeedsFromEvent(event.id, event.feedIds[0])
+      app.eventRepo.received(1).removeFeedsFromEvent(before.id, before.feedIds[0])
     })
 
     it('checks permission for removing the feed from the event', async function() {
@@ -305,8 +302,8 @@ describe('event feeds use case interactions', function() {
 
     it('fails if the feed id is not in the event feeds list', async function() {
 
-      event.feedIds = []
-      app.eventRepo.findById(event.id).resolves(event)
+      const noFeeds = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [] })
+      app.eventRepo.findById(event.id).resolves(noFeeds)
       const req: RemoveFeedFromEventRequest = requestBy('admin', { event: event.id, feed: uniqid() })
       app.permissionService.ensureEventUpdatePermission(Arg.deepEquals(req.context)).resolves(null)
       const res = await app.removeFeedFromEvent(req)

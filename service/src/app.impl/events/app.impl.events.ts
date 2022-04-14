@@ -13,7 +13,7 @@ between permission checks and proceeding application logic
 
 export function AddFeedToEvent(permissionService: EventPermissionServiceImpl, eventRepo: MageEventRepository): AddFeedToEvent {
   return async function(req: AddFeedToEventRequest): ReturnType<AddFeedToEvent> {
-    let event = await eventRepo.findById(req.event)
+    let event: MageEventAttrs | null = await eventRepo.findById(req.event)
     if (!event) {
       return AppResponse.error<MageEventAttrs, EntityNotFoundError>(entityNotFound(req.event, 'MageEvent'))
     }
@@ -22,6 +22,7 @@ export function AddFeedToEvent(permissionService: EventPermissionServiceImpl, ev
     if (denied) {
       return AppResponse.error<MageEventAttrs, PermissionDeniedError>(denied)
     }
+    // TODO: maybe should check event is not null ¯\_(ツ)_/¯
     event = await eventRepo.addFeedsToEvent(req.event, req.feed)
     return AppResponse.success<MageEventAttrs, unknown>(event!)
   }

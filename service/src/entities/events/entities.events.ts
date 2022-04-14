@@ -165,7 +165,7 @@ export type MageEventCreateAttrs = Pick<MageEventAttrs, 'name' | 'description'>
 
 export interface MageEventRepository {
   findAll(): Promise<MageEventAttrs[]>
-  findById(id: MageEventId): Promise<MageEventAttrs | null>
+  findById(id: MageEventId): Promise<MageEvent | null>
   findAllByIds(ids: MageEventId[]): Promise<{ [id: number]: MageEventAttrs | null }>
   /**
    * Return all the MAGE events that are not {@link MageEventAttrs.complete | complete}.

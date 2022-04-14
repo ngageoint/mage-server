@@ -26,39 +26,39 @@ export async function waitForMongooseConnection(): Promise<mongoose.Connection> 
  *   interface, and is the type that repository queries return using
  *   `entityForDocuent`
  */
-export class BaseMongooseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, E extends object> {
+export class BaseMongooseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, Attrs extends object, Entity extends object = Attrs> {
 
   readonly model: M
-  readonly entityForDocument: DocumentMapping<D, E>
-  readonly documentStubForEntity: EntityMapping<D, E>
+  readonly entityForDocument: DocumentMapping<D, Attrs>
+  readonly documentStubForEntity: EntityMapping<D, Attrs>
 
-  constructor(model: M, mapping?: { docToEntity?: DocumentMapping<D, E>, entityToDocStub?: EntityMapping<D, E> }) {
+  constructor(model: M, mapping?: { docToEntity?: DocumentMapping<D, Attrs>, entityToDocStub?: EntityMapping<D, Attrs> }) {
     this.model = model
     this.entityForDocument = mapping?.docToEntity || createDefaultDocMapping()
     this.documentStubForEntity = mapping?.entityToDocStub || createDefaultEntityMapping()
   }
 
-  async create(attrs: Partial<E>): Promise<E> {
+  async create(attrs: Partial<Attrs>): Promise<Attrs> {
     const stub = this.documentStubForEntity(attrs)
     const created = await this.model.create(stub)
     return this.entityForDocument(created)
   }
 
-  async findAll(): Promise<E[]> {
+  async findAll(): Promise<Attrs[]> {
     const docs = await this.model.find().cursor()
-    const entities: E[] = []
+    const entities: Attrs[] = []
     for await (const doc of docs) {
       entities.push(this.entityForDocument(doc))
     }
     return entities
   }
 
-  async findById(id: any): Promise<E | null> {
+  async findById(id: any): Promise<Entity | null> {
     const doc = await this.model.findById(id)
     return doc ? this.entityForDocument(doc) : null as any
   }
 
-  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: E | null } : ID extends number ? { [id: number]: E | null } : never> {
+  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
     if (!ids.length) {
       return {} as any
     }
@@ -75,7 +75,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     return { ...notFound, ...found }
   }
 
-  async update(attrs: Partial<E> & EntityReference): Promise<E | null> {
+  async update(attrs: Partial<Attrs> & EntityReference): Promise<Attrs | null> {
     let doc = (await this.model.findById(attrs.id))
     if (!doc) {
       throw new Error(`document not found for id: ${attrs.id}`)
@@ -86,7 +86,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     return this.entityForDocument(doc)
   }
 
-  async removeById(id: any): Promise<E | null> {
+  async removeById(id: any): Promise<Attrs | null> {
     const doc = await this.model.findByIdAndRemove(id)
     if (doc) {
       return this.entityForDocument(doc)

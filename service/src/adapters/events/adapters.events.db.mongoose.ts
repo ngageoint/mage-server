@@ -1,5 +1,5 @@
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
-import { MageEventRepository, MageEventAttrs, MageEventId } from '../../entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent } from '../../entities/events/entities.events'
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
@@ -12,7 +12,7 @@ export type MageEventDocument = legacy.MageEventDocument
 export type MageEventModel = mongoose.Model<legacy.MageEventDocument>
 export const MageEventSchema = legacy.Model.schema
 
-export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs> implements MageEventRepository {
+export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs, MageEvent> implements MageEventRepository {
 
   async create(): Promise<MageEventAttrs> {
     throw new Error('method not allowed')

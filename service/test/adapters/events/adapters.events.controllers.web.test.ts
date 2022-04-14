@@ -7,7 +7,7 @@ import uniqid from 'uniqid'
 import _ from 'lodash'
 import { AppResponse, AppRequest } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { MageEvent, MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { AddFeedToEventRequest, ListEventFeedsRequest, UserFeed, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { FeedId, FeedContent } from '../../../lib/entities/feeds/entities.feeds'
 import { FetchFeedContentRequest } from '../../../lib/app.api/feeds/app.api.feeds'
@@ -36,11 +36,11 @@ describe('event feeds web controller', function () {
   let eventRepo: SubstituteOf<MageEventRepository>
   let eventFeedsApp: SubstituteOf<EventFeedsApp>
   let client: supertest.SuperTest<supertest.Test>
-  let event: MageEventAttrs
+  let event: MageEvent
 
   beforeEach(function () {
     const eventId = Math.floor(Math.random() * 1000);
-    event = {
+    event = new MageEvent({
       id: eventId,
       name: 'Test Event',
       description: 'For testing',
@@ -56,7 +56,7 @@ describe('event feeds web controller', function () {
           permissions: ['read']
         }
       }
-    }
+    })
     eventRepo = Sub.for<MageEventRepository>()
     eventRepo.findById(eventId).resolves(event)
     eventFeedsApp = Sub.for<EventFeedsApp>()

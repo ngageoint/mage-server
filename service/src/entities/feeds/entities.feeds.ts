@@ -170,6 +170,7 @@ export interface FeedTopic {
   readonly itemSecondaryProperty?: string
   readonly mapStyle?: MapStyle
   readonly itemPropertiesSchema?: JSONSchema4
+  // readonly localizedProperties?: JSONSchema4
 }
 
 export interface FeedTopicContent {
