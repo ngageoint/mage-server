@@ -16,7 +16,7 @@ import * as eventsImpl from './app.impl/events/app.impl.events'
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds'
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web'
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web'
-import { AppRequest } from './app.api/app.api.global'
+import { AppRequest, AppRequestContext } from './app.api/app.api.global'
 import { UserDocument } from './models/user'
 import SimpleIdFactory from './adapters/adapters.simple_id_factory'
 import { JsonSchemaService, JsonValidator, JSONSchema4 } from './entities/entities.json_types'
@@ -404,6 +404,10 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
         requestingPrincipal() {
           return req.user
         },
+        locale() {
+          // TODO: build locale information from accept-language header
+          return null
+        },
         event: req.event || req.eventEntity
       }
     }
@@ -456,7 +460,15 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     return {
       requestToken: Symbol(),
       requestingPrincipal() {
+        /*
+        TODO: this should ideally change so that the existing passport login
+        middleware applies the entity form of a user on the request rather than
+        the mongoose document instance
+        */
         return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
+      },
+      locale() {
+        return null
       }
     }
   }

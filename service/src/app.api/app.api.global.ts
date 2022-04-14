@@ -1,5 +1,6 @@
 import { MageError, PermissionDeniedError } from './app.api.errors'
 import { JsonObject } from '../entities/entities.json_types'
+import { Locale } from '../entities/entities.i18n'
 
 export interface AppRequestContext<Principal = unknown> {
   /**
@@ -11,6 +12,11 @@ export interface AppRequestContext<Principal = unknown> {
    */
   readonly requestToken: unknown
   requestingPrincipal(): Principal
+  /**
+   * Return localization information associated with the request, such as the
+   * language preference of the client.
+   */
+  locale(): Locale | null
 }
 
 

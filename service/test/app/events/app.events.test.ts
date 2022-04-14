@@ -18,7 +18,8 @@ function requestBy<P extends object>(user: string, params: P): AppRequest<Substi
   return {
     context: {
       requestToken: Symbol(),
-      requestingPrincipal: () => userDoc
+      requestingPrincipal: () => userDoc,
+      locale() { return null }
     },
     ...params
   }

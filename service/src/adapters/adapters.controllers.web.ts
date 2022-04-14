@@ -3,7 +3,7 @@ import { ErrEntityNotFound, ErrInvalidInput, ErrPermissionDenied, MageError, Per
 import { AppRequest } from '../app.api/app.api.global';
 
 export interface WebAppRequestFactory {
-  <RequestParams>(webReq: express.Request, params?: RequestParams): AppRequest & RequestParams
+  <RequestParams extends object = {}>(webReq: express.Request, params?: RequestParams): AppRequest & RequestParams
 }
 
 export const mageAppErrorHandler: express.ErrorRequestHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any  => {

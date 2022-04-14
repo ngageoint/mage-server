@@ -18,6 +18,7 @@ function requestBy<T extends object>(principal: string, params?: T): AppRequest<
     context: {
       requestToken: Symbol(),
       requestingPrincipal: () => principal,
+      locale() { return null }
     }
   }
 }

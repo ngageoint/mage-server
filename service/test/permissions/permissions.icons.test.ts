@@ -25,7 +25,8 @@ describe('static icon role-based permission service', function() {
             permissions: [ allPermissions.READ_OBSERVATION_ALL ]
           }
         } as unknown as UserWithRole
-      }
+      },
+      locale() { return null }
     }
     const denied = await permissions.ensureCreateStaticIconPermission(ctx)
 
@@ -46,7 +47,8 @@ describe('static icon role-based permission service', function() {
             permissions: [ allPermissions.READ_OBSERVATION_ALL, StaticIconPermission.STATIC_ICON_WRITE ]
           }
         } as unknown as UserWithRole
-      }
+      },
+      locale() { return null }
     }
     const denied = await permissions.ensureCreateStaticIconPermission(ctx)
 
@@ -64,7 +66,8 @@ describe('static icon role-based permission service', function() {
             permissions: []
           }
         } as unknown as UserWithRole
-      }
+      },
+      locale() { return null }
     }
     const denied = await permissions.ensureGetStaticIconPermission(ctx)
 

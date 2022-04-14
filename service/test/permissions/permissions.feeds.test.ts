@@ -22,9 +22,8 @@ describe('feeds permission service', function() {
     role.permissions.returns!(perms)
     return {
       requestToken: Symbol(),
-      requestingPrincipal() {
-        return user
-      }
+      requestingPrincipal() { return user },
+      locale() { return null }
     }
   }
 

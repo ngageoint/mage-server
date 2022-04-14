@@ -33,6 +33,7 @@ describe('event permissions service', function() {
       requestingPrincipal() {
         return user
       },
+      locale() { return null },
       event
     }
   })
@@ -75,9 +76,8 @@ describe('event permissions service', function() {
 
       const noEventContext: AppRequestContext = {
         requestToken: Symbol(),
-        requestingPrincipal() {
-          return user
-        }
+        requestingPrincipal() { return user },
+        locale() { return null }
       }
       let denied = await eventPermissions.ensureEventReadPermission(noEventContext)
       expect(denied?.code).to.equal(ErrPermissionDenied)
@@ -111,9 +111,8 @@ describe('event feeds permission service', function() {
     event.feedIds.returns!(feedIds)
     let context: EventRequestContext = {
       requestToken: Symbol(),
-      requestingPrincipal() {
-        return user
-      },
+      requestingPrincipal() { return user },
+      locale() { return null },
       event
     }
 
