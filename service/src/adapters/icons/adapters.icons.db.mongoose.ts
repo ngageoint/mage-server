@@ -118,6 +118,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     if (!resolver.isLocalScheme) {
       await this.contentStore.putContent(this.entityForDocument(iconDoc), content)
     }
+    iconDoc = new this.model(iconDoc)
     iconDoc.resolvedTimestamp = Date.now()
     return await iconDoc.save()
   }
