@@ -32,7 +32,8 @@ module.exports = {
     },
     plugins: {
       servicePlugins: [
-        '@ngageoint/mage.nga-msi'
+        '@ngageoint/mage.nga-msi',
+        '@ngageoint/mage.random'
       ],
       webUIPlugins: [
       ],

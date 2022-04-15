@@ -27,6 +27,7 @@
   "dependencies": {
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist/app",
+    "@ngageoint/mage.random": "../plugins/random",
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi"
   }
 }
