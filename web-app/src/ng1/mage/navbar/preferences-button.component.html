@@ -74,6 +74,10 @@
                       ng-model="$ctrl.preferences.coordinateSystem" 
                       ng-change="$ctrl.onCoordinateSystemChange('mgrs')" 
                       uib-btn-radio="'mgrs'">MGRS</label>
+                    <label class="btn btn-default btn-xs" 
+                      ng-model="$ctrl.preferences.coordinateSystem" 
+                      ng-change="$ctrl.onCoordinateSystemChange('dms')" 
+                      uib-btn-radio="'dms'">DMS</label>
                   </div>
                 </div>
               </span>

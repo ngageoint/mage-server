@@ -111,6 +111,7 @@ import {
 } from './observation/observation-view/observation-view';
 
 import {
+  DMSValidatorDirective,
   MGRSValidatorDirective,
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -174,6 +175,7 @@ import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
+    DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedPanelComponent,
     ObservationListItemComponent,
