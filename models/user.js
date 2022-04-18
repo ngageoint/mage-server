@@ -144,7 +144,7 @@ const transform = function (user, ret, options) {
     }
 
     if (user.populated('authenticationId')) {
-      ret.authentication = ret.authenticationId;
+      ret.authentication = ret.authenticationId || {};
       delete ret.authentication.password;
       delete ret.authenticationId;
 
