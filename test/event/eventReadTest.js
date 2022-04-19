@@ -319,15 +319,27 @@ describe("event read tests", function() {
 
     var eventMock = sinon.mock(EventModel);
 
-    eventMock.expects('findById')
-      .withArgs("1")
-      .yields(null, mockEvent);
+    eventMock.expects('findOne')
+      .resolves(mockEvent);
 
-    eventMock.expects('findById')
-      .chain('populate')
-      .withArgs({path: 'teamIds'})
-      .chain('exec')
-      .yields(null, mockEvent);
+    var mockTeam = new TeamModel({
+      _id: 1,
+      name: 'Mock Team'
+    });
+
+    var mockCursor = {
+      toArray: function (callback) {
+        callback(null, [mockTeam]);
+      }
+    };
+
+    sinon.mock(TeamModel.collection)
+      .expects('find')
+      .yields(null, mockCursor);
+
+    sinon.mock(TeamModel)
+      .expects('count')
+      .resolves(1);
 
     request(app)
       .get('/api/events/1/teams')
@@ -422,6 +434,7 @@ describe("event read tests", function() {
     var eventId = 1;
 
     var mockTeam = new TeamModel({
+      _id: mongoose.Types.ObjectId(),
       userIds: [userId],
       acl: {}
     });
@@ -434,28 +447,26 @@ describe("event read tests", function() {
         1: 'NONE'
       }
     });
-    mockEvent.teamIds[0] = mockTeam;
+    mockEvent.teamIds[0] = mockTeam._id;
 
     var eventMock = sinon.mock(EventModel);
 
-    eventMock.expects('findById')
-      .withArgs("1")
-      .yields(null, mockEvent);
+    eventMock.expects('findOne')
+      .resolves(mockEvent);
 
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, mockEvent);
+    var mockCursor = {
+      toArray: function (callback) {
+        callback(null, [mockTeam]);
+      }
+    };
 
-    eventMock.expects('findById')
-      .chain('populate')
-      .withArgs({
-        path: 'teamIds',
-        populate: {
-          path: 'userIds'
-        }
-      })
-      .chain('exec')
-      .yields(null, mockEvent);
+    sinon.mock(TeamModel.collection)
+      .expects('find')
+      .yields(null, mockCursor);
+
+    sinon.mock(TeamModel)
+      .expects('count')
+      .resolves(1);
 
     request(app)
       .get('/api/events/1/teams')

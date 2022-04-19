@@ -1,12 +1,5 @@
-module.exports = {
-  Event: Event,
-  EventAccess: EventAccess
-};
-
-Event.$inject = ['$rootScope', '$resource'];
-
 function Event($rootScope, $resource) {
-  var Event = $resource('/api/events/:id', {
+  const Event = $resource('/api/events/:id', {
     id: '@id'
   },{
     get: {
@@ -63,6 +56,34 @@ function Event($rootScope, $resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    getMembers: {
+      method: 'GET',
+      url: '/api/events/:id/members',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonMembers: {
+      method: 'GET',
+      url: '/api/events/:id/nonMembers',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getTeams: {
+      method: 'GET',
+      url: '/api/events/:id/teams',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonTeams: {
+      method: 'GET',
+      url: '/api/events/:id/nonTeams',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 
@@ -77,10 +98,10 @@ function Event($rootScope, $resource) {
   return Event;
 }
 
-EventAccess.$inject = ['$resource'];
+Event.$inject = ['$rootScope', '$resource'];
 
 function EventAccess($resource) {
-  var EventAccess = $resource('/api/events/:eventId/acl', {
+  const EventAccess = $resource('/api/events/:eventId/acl', {
     eventId: '@eventId',
     userId: '@userId'
   },{
@@ -104,3 +125,11 @@ function EventAccess($resource) {
 
   return EventAccess;
 }
+
+EventAccess.$inject = ['$resource'];
+
+module.exports = {
+  Event: Event,
+  EventAccess: EventAccess
+};
+

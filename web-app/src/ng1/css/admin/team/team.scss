@@ -1,0 +1,73 @@
+.#{admin-teams-} {
+  &user {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 40px;
+    margin: 8px 16px;
+  }
+
+  &user-detail {
+    flex: 1;
+  }
+
+  &table {
+    height: 358px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  &table-status {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: white;
+  }
+
+  &table-status-text {
+    font-size: 48px;
+    color: rgba(0, 0, 0, 0.40);
+    margin-bottom: 8px;
+  }
+
+  &table-status-spinner {
+    font-size: 48px;
+    color: rgba(0, 0, 0, 0.40);
+  }
+
+  &table-content {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  &table-items {
+    flex: 1;
+    padding: 0 8px;
+  }
+
+  &table-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  &table-item-icon {
+    font-size: 26px;
+    margin: 0 8px;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  &pager {
+    margin-right: 8px;
+  }
+}
