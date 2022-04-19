@@ -1,0 +1,15 @@
+.page-container {
+    display: flex;
+    padding: 0 16px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    max-width: 1170px;
+}
+
+.content {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    background-color: white;
+}

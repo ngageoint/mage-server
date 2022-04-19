@@ -3,8 +3,11 @@ import { EventService, LocalStorageService, MapService, UserService } from 'src/
 import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { animate, style, transition, trigger } from '@angular/animations';
-import { MatDialog } from '@angular/material/dialog';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
+import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
+import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'observation-view',
@@ -27,6 +30,7 @@ export class ObservationViewComponent implements OnChanges {
   @Input() observation: any
 
   @Output() close = new EventEmitter<void>()
+  @Output() delete = new EventEmitter<any>()
 
   edit = false
   canEdit = false
@@ -46,7 +50,8 @@ export class ObservationViewComponent implements OnChanges {
   secondaryFeedField: any = {}
 
   constructor(
-    public dialog: MatDialog,
+    private dialog: MatDialog,
+    private bottomSheet: MatBottomSheet,
     @Inject(MapService) private mapService: any,
     @Inject(EventService) private eventService: any,
     @Inject(UserService) private userService: any,
@@ -113,13 +118,42 @@ export class ObservationViewComponent implements OnChanges {
     })
   }
 
-  downloadUrl(): string {
-    return `/api/events/${this.observation.eventId}/observations/${this.observation.id}.zip?access_token=${this.localStorageService.getToken()}`
+  onOptions(): void {
+    this.bottomSheet.open(ObservationOptionsComponent, {
+      panelClass: 'feed-panel'
+    }).afterDismissed().subscribe((option: ObservationOption) => {
+      switch(option) {
+        case ObservationOption.DOWNLOAD: 
+          this.downloadObservation()
+          break;
+        case ObservationOption.DELETE:
+          this.checkDelete()
+          break;
+      }
+    })
   }
 
-  onEdit(): void {
+  editObservation(): void {
     this.onObservationLocationClick();
     this.feedPanelService.edit(this.observation)
+  }
+
+  downloadObservation(): void {
+    window.location.href = `/api/events/${this.observation.eventId}/observations/${this.observation.id}.zip?access_token=${this.localStorageService.getToken()}`;
+  }
+
+  checkDelete(): void {
+    this.dialog.open(ObservationDeleteComponent, {
+      width: '500px',
+      data: this.observation,
+      autoFocus: false
+    }).afterClosed().subscribe(result => {
+      if (result === 'delete') {
+        this.delete.emit({
+          observation: this.observation
+        })
+      }
+    })
   }
 
   onObservationLocationClick(): void {
@@ -154,10 +188,9 @@ export class ObservationViewComponent implements OnChanges {
       },
       forms: []
     }
-
-    this.observation.properties.forms.forEach(form => {
-      const observationForm = this.eventService.createForm(this.observation, formMap[form.formId])
-      observationForm.name = formMap[form.formId].name
+    
+    this.observation.properties.forms.forEach(propertyForm => {
+      const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
       this.observationForm.forms.push(observationForm)
     })
 

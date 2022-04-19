@@ -13,13 +13,13 @@
           </div>
         </div>
 
-        <div *ngIf="user?.user.email">
+        <div *ngIf="user?.location?.properties?.timestamp">
           <div class="item-subtitle">
             {{user?.location?.properties?.timestamp | moment}}
           </div>
         </div>
 
-        <div *ngIf="user?.user?.phones?.length">
+        <div *ngIf="user?.location?.geometry">
           <div class="item-subtitle">
             {{user?.location?.geometry | geometry:5}}
           </div>

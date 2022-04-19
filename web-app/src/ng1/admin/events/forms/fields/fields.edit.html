@@ -81,8 +81,44 @@
                   </div>
                 </div>
 
+                <!-- Attachment Field -->
+                <div class="row" ng-if="field.type === 'attachment'">
+                  <div class="col-md-6">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="top-gap">
+                          <label>Minimum Attachments</label>
+                          <input type="number" ng-model="field.min" value="{{field.min}}" placeholder="No Attachment Minimum"
+                            class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="top-gap">
+                          <label>Maximum Attachments</label>
+                          <input type="number" ng-model="field.max" value="{{field.max}}" placeholder="No Attachment Maximum"
+                            class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                
+                    <!-- Attachment type Image/Video/Voice/Any -->
+                    <div class="row top-gap">
+                      <div class="col-md-12">
+                        <label>Allowed Attachment Types</label>
+                        <ui-select multiple ng-model="field.allowedAttachmentTypes" theme="bootstrap">
+                          <ui-select-match placeholder="No Allowed Attachment Types">{{$item.title}}</ui-select-match>
+                          <ui-select-choices repeat="type.name as type in $ctrl.attachmentAllowedTypes">
+                            <div ng-bind-html="type.title"></div>
+                          </ui-select-choices>
+                        </ui-select>
+                        <p class="help-block">Restrict the type of attachments users can upload.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Default value for text -->
-                <div class="row" ng-hide="$ctrl.showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea'">
+                <div class="row" ng-hide="$ctrl.showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea' || field.type === 'attachment'">
                   <div class="col-md-6">
                     <div class="top-gap">
                       <label>Default Value</label>
@@ -192,7 +228,7 @@
                 </div>
 
                 <!-- Field required -->
-                <div class="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry'">
+                <div class="checkbox" ng-show="field.name !== 'timestamp' && field.name !== 'geometry' && field.type !== 'attachment'">
                   <label>
                   <input type="checkbox" ng-model="field.required"> Required
                   </label>
@@ -223,7 +259,7 @@
               <div class="col-md-6">
                 <div class="top-gap">
                   <label>Type</label>
-                  <select ng-model="$ctrl.newField.type" ng-options="type.name as type.title for type in $ctrl.fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
+                  <select ng-model="$ctrl.newField.type" ng-options="type.name as type.title for type in $ctrl.fieldTypes | filter: {hidden: '!'}" ng-change="$ctrl.onFieldTypeChange()" class="form-control"></select>
                   <p class="help-block" ng-if="$ctrl.isUserDropdown($ctrl.newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
                 </div>
               </div>
@@ -251,11 +287,46 @@
               </div>
             </div>
 
-            <div class="row" ng-if="$ctrl.newField.type !== 'checkbox' && $ctrl.newField.type !== 'numberfield' && $ctrl.newField.type !== 'textarea'">
+            <div class="row" ng-if="$ctrl.newField.type !== 'checkbox' && $ctrl.newField.type !== 'numberfield' && $ctrl.newField.type !== 'textarea' && $ctrl.newField.type !== 'attachment'">
               <div class="col-md-6">
                 <div class="top-gap" ng-hide="$ctrl.hideAddOptions($ctrl.newField)">
                   <label>Default Value</label>
                   <input type="text" ng-model="$ctrl.newField.value" value="{{$ctrl.newField.value}}" class="form-control">
+                </div>
+              </div>
+            </div>
+
+            <!-- Attachment Field-->
+            <div class="row" ng-if="$ctrl.newField.type === 'attachment'">
+              <div class="col-md-6">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Minimum Attachments</label>
+                      <input type="number" ng-model="$ctrl.newField.min" value="{{$ctrl.newField.min}}"
+                        placeholder="No Attachment Minimum" class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Maximum Attachments</label>
+                      <input type="number" ng-model="$ctrl.newField.max" value="{{$ctrl.newField.max}}"
+                        placeholder="No Attachment Maximum" class="form-control">
+                    </div>
+                  </div>
+                </div>
+            
+                <div class="row top-gap">
+                  <div class="col-md-12">
+                    <label>Allowed Attachment Types</label>
+                    <ui-select multiple ng-model="$ctrl.newField.allowedAttachmentTypes" theme="bootstrap">
+                      <ui-select-match placeholder="No Allowed Attachment Types">{{$item.title}}</ui-select-match>
+                      <ui-select-choices repeat="type.name as type in $ctrl.attachmentAllowedTypes">
+                        <div ng-bind-html="type.title"></div>
+                      </ui-select-choices>
+                    </ui-select>
+                    <p class="help-block">Restrict the type of attachments users can upload.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,7 +419,7 @@
                 </div>
               </div>
             </div>
-            <div class="checkbox">
+            <div class="checkbox" ng-if="$ctrl.newField.type !== 'attachment'">
               <label>
                 <input type="checkbox" ng-model="$ctrl.newField.required"> Required
               </label>

@@ -1,0 +1,29 @@
+<section class="mat-typography">
+    <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+</section>
+<section class="mat-typography">
+    <div class="page-container">
+        <div class="content">
+            <mat-tab-group color="primary" mat-stretch-tabs>
+                <mat-tab label="Authentication">
+                    <admin-authentication (saveComplete)="onAuthenticationSaved($event)"
+                        (onDirty)="onAuthenticationDirty($event)" [beginSave]="(onSave)">
+                    </admin-authentication>
+                </mat-tab>
+                <mat-tab label="Banner">
+                    <security-banner (saveComplete)="onBannerSaved($event)" (onDirty)="onBannerDirty($event)"
+                        [beginSave]="(onSave)"></security-banner>
+                </mat-tab>
+                <mat-tab label="Disclaimer">
+                    <security-disclaimer (saveComplete)="onDisclaimerSaved($event)"
+                        (onDirty)="onDisclaimerDirty($event)" [beginSave]="(onSave)"></security-disclaimer>
+                </mat-tab>
+            </mat-tab-group>
+            <div class="settings__action--save">
+                <button mat-flat-button color="primary" (click)="save()" [disabled]="!isDirty()">
+                    <mat-icon>check</mat-icon>Save
+                </button>
+            </div>
+        </div>
+    </div>
+</section>

@@ -3,7 +3,6 @@
 const mongoose = require('mongoose')
   , async = require("async")
   , moment = require('moment')
-  , Setting = require('./setting')
   , Token = require('./token')
   , Login = require('./login')
   , Event = require('./event')
@@ -12,6 +11,7 @@ const mongoose = require('mongoose')
   , Location = require('./location')
   , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
+  , AuthenticationConfiguration = require('./authenticationconfiguration')
   , Paging = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
 
@@ -72,7 +72,7 @@ UserSchema.pre('save', function (next) {
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
       const error = new Error('username already exists');
-      error.status = 400;
+      error.status = 409;
       return next(error);
     }
 
@@ -144,9 +144,22 @@ const transform = function (user, ret, options) {
     }
 
     if (user.populated('authenticationId')) {
-      ret.authentication = ret.authenticationId;
+      ret.authentication = ret.authenticationId || {};
       delete ret.authentication.password;
       delete ret.authenticationId;
+
+      if (user.authentication.populated('authenticationConfigurationId')) {
+        ret.authentication.authenticationConfiguration = ret.authentication.authenticationConfigurationId;
+        //TODO remove settings?
+        /*const keys = Object.keys(ret.authentication.authenticationConfigurationId);
+        keys.forEach(key => {
+          if (key !== 'settings') {
+            ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
+          }
+        });*/
+        delete ret.authentication.authenticationConfigurationId;
+      }
+
     }
 
     if (user.avatar && user.avatar.relativePath) {
@@ -176,7 +189,7 @@ const User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
 exports.getUserById = function (id, callback) {
-  let result = User.findById(id).populate('roleId').populate('authenticationId');
+  let result = User.findById(id).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
   if (typeof callback === 'function') {
     result = result.then(
       user => {
@@ -190,22 +203,33 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate('authenticationId').exec(function (err, user) {
-    callback(err, user);
-  });
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 };
 
-exports.getUserByAuthenticationId = function(id) {
-  return User.findOne({ authenticationId: id} ).exec();
+exports.getUserByAuthenticationId = function (id) {
+  return User.findOne({ authenticationId: id }).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec();
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
-  Authentication.getAuthenticationByStrategy(strategy, uid, function(err, authentication) {
+  Authentication.getAuthenticationByStrategy(strategy, uid, function (err, authentication) {
     if (err || !authentication) return callback(err);
 
-    User.findOne({authenticationId: authentication._id}).populate('roleId').populate('authenticationId').exec(callback);
+    User.findOne({ authenticationId: authentication._id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
   });
 }
+
+function createQueryConditions(filter) {
+  const conditions = FilterParser.parse(filter);
+
+  if (filter.active) {
+    conditions.active = filter.active == 'true';
+  }
+  if (filter.enabled) {
+    conditions.enabled = filter.enabled == 'true';
+  }
+
+  return conditions;
+};
 
 exports.count = function (options, callback) {
   if (typeof options === 'function') {
@@ -234,7 +258,7 @@ exports.getUsers = function (options, callback) {
 
   const conditions = createQueryConditions(filter);
 
-  let query = User.find(conditions).populate('authenticationId');
+  let query = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
 
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
     query = query.populate('roleId');
@@ -249,19 +273,6 @@ exports.getUsers = function (options, callback) {
       callback(err, users, null);
     });
   }
-};
-
-function createQueryConditions(filter) {
-  const conditions = FilterParser.parse(filter);
-
-  if (filter.active) {
-    conditions.active = filter.active == 'true';
-  }
-  if (filter.enabled) {
-    conditions.enabled = filter.enabled == 'true';
-  }
-
-  return conditions;
 };
 
 exports.createUser = function (user, callback) {
@@ -281,7 +292,7 @@ exports.createUser = function (user, callback) {
     User.create(newUser, function (err, user) {
       if (err) return callback(err);
 
-      user.populate('roleId', function (err, user) {
+      user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
         callback(err, user);
       });
     });
@@ -292,7 +303,7 @@ exports.updateUser = function (user, callback) {
   user.save(function (err, user) {
     if (err) return callback(err);
 
-    user.populate('roleId', function (err, user) {
+    user.populate({ path: 'roleId', path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }, function (err, user) {
       callback(err, user);
     });
   });
@@ -305,8 +316,8 @@ exports.deleteUser = function (user, callback) {
 };
 
 exports.invalidLogin = async function (user) {
-  const { settings } = await Setting.getSetting('security');
-  const { accountLock = {} } = settings.local;
+  const local = await AuthenticationConfiguration.getConfiguration('local', 'local');
+  const { accountLock = {} } = local.settings;
 
   if (!accountLock.enabled) return user;
 

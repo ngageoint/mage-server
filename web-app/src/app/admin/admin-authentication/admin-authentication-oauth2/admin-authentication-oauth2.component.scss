@@ -1,0 +1,28 @@
+.oauth2-settings {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.accordian-section {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.basic-auth {
+  margin-bottom: 8px;
+}
+
+.pkce {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+mat-checkbox {
+  margin-right: 8px;
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}

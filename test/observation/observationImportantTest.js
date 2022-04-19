@@ -3,7 +3,6 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -14,9 +13,14 @@ var EventModel = mongoose.model('Event');
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
-describe("observation important tests", function() {
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-  beforeEach(function() {
+describe("observation important tests", function () {
+
+  let app;
+
+  beforeEach(function () {
 
     var mockEvent = new EventModel({
       _id: 1,
@@ -29,12 +33,12 @@ describe("observation important tests", function() {
           name: "timestamp",
           title: "Date",
           required: true
-        },{
+        }, {
           type: "geometry",
           name: "geometry",
           title: "Location",
           required: true
-        },{
+        }, {
           type: "dropdown",
           name: "field1",
           title: "type",
@@ -53,9 +57,26 @@ describe("observation important tests", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -63,13 +84,13 @@ describe("observation important tests", function() {
   function mockTokenWithPermissions(permissions) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, permissions));
   }
 
-  it("should flag observation as important", function(done) {
+  it("should flag observation as important", function (done) {
     mockTokenWithPermissions(['CREATE_OBSERVATION', 'UPDATE_EVENT']);
 
     var ObservationModel = observationModel({
@@ -102,7 +123,7 @@ describe("observation important tests", function() {
 
     var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId, sinon.match( { 'important': sinon.match({ userId: userId }) }), sinon.match.any)
+      .withArgs(observationId, sinon.match({ 'important': sinon.match({ userId: userId }) }), sinon.match.any)
       .chain('populate').withArgs({ path: 'userId', select: 'displayName' })
       .chain('populate').withArgs({ path: 'important.userId', select: 'displayName' })
       .chain('exec')
@@ -117,7 +138,7 @@ describe("observation important tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         observationMock.verify();
         var observation = res.body;
         should.exist(observation);
@@ -129,7 +150,7 @@ describe("observation important tests", function() {
       .end(done);
   });
 
-  it("should fail to flag observation as important if observation does not exist", function(done) {
+  it("should fail to flag observation as important if observation does not exist", function (done) {
     mockTokenWithPermissions(['CREATE_OBSERVATION', 'UPDATE_EVENT']);
 
     var ObservationModel = observationModel({
@@ -155,7 +176,7 @@ describe("observation important tests", function() {
       .end(done);
   });
 
-  it("should fail to flag observation as important without permissions", function(done) {
+  it("should fail to flag observation as important without permissions", function (done) {
     mockTokenWithPermissions(['CREATE_OBSERVATION']);
 
     var ObservationModel = observationModel({
@@ -181,7 +202,7 @@ describe("observation important tests", function() {
       .end(done);
   });
 
-  it("should remove observation important flag", function(done) {
+  it("should remove observation important flag", function (done) {
     mockTokenWithPermissions(['CREATE_OBSERVATION', 'UPDATE_EVENT']);
 
     var ObservationModel = observationModel({
@@ -211,7 +232,7 @@ describe("observation important tests", function() {
 
     var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId, sinon.match( { '$unset': {important: 1} } ), sinon.match.any)
+      .withArgs(observationId, sinon.match({ '$unset': { important: 1 } }), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
@@ -220,7 +241,7 @@ describe("observation important tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         observationMock.verify();
         var observation = res.body;
         should.exist(observation);

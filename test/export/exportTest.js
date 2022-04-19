@@ -3,7 +3,6 @@ const request = require('supertest')
   , mongoose = require('mongoose')
   , mockfs = require('mock-fs')
   , MockToken = require('../mockToken')
-  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('chai').should();
@@ -27,7 +26,31 @@ const observationModel = Observation.observationModel;
 require('../../models/export');
 const ExportModel = mongoose.model('Export');
 
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
+
 describe("export tests", function () {
+
+  let app;
+
+  beforeEach(function() {
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config); 
+
+    app = require('../../express');
+  });
 
   afterEach(function () {
     sinon.restore();
@@ -43,93 +66,6 @@ describe("export tests", function () {
   }
 
   const userId = mongoose.Types.ObjectId();
-
-  it("should export observations as kml - deprecated", function (done) {
-
-    mockTokenWithPermission('READ_OBSERVATION_ALL');
-
-    const eventId = 1;
-    const mockEvent = new EventModel({
-      _id: eventId,
-      name: 'Mock Event',
-      collectionName: 'observations1'
-    });
-
-    sinon.mock(EventModel)
-      .expects('findById')
-      .twice()
-      .onFirstCall()
-      .yields(null, mockEvent)
-      .onSecondCall()
-      .yields(null, mockEvent);
-
-    sinon.mock(UserModel)
-      .expects('find')
-      .chain('exec')
-      .yields(null, [{
-        username: 'user1'
-      }, {
-        username: 'user2'
-      }]);
-
-    sinon.mock(DeviceModel)
-      .expects('find')
-      .chain('exec')
-      .resolves([{
-        uid: '1'
-      }, {
-        uid: '2'
-      }]);
-
-    const ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1',
-      style: {}
-    });
-    const mockObservation = new ObservationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now(),
-        forms: []
-      }
-    });
-
-    sinon.mock(ObservationModel)
-      .expects('find')
-      .chain('exec')
-      .yields(null, [mockObservation]);
-
-    sinon.mock(IconModel)
-      .expects('find')
-      .yields(null, [{
-        relativePath: 'mock/path'
-      }]);
-
-    const fs = {
-      '/var/lib/mage/icons/1': {}
-    };
-    mockfs(fs);
-
-    request(app)
-      .get('/api/kml?eventId=1&observations=true&locations=false&attachments=false')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect(function (res) {
-        res.headers.should.have.property('content-type').that.equals('application/zip');
-        res.headers.should.have.property('content-disposition').that.equals('attachment; filename="mage-kml.zip"');
-      })
-      .end(function (err) {
-        mockfs.restore();
-        done(err);
-      });
-  });
 
   it("should export observations as kml", function (done) {
 

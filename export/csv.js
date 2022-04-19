@@ -19,13 +19,11 @@ function Csv(options) {
 util.inherits(Csv, Exporter);
 module.exports = Csv;
 
-function excelLink(attachment, attachmentNumber) {
-  return '=HYPERLINK("' + attachment.name + '", "attachment' + attachmentNumber + '")';
+function excelLink(attachmentName, attachmentNumber) {
+  return `=HYPERLINK("${attachmentName}", "attachment${attachmentNumber}")`;
 }
 
 Csv.prototype.export = function (streamable) {
-  const self = this;
-
   const observationFields = [{
     label: 'id',
     value: 'id'
@@ -51,11 +49,11 @@ Csv.prototype.export = function (streamable) {
     label: 'Date (ISO8601)',
     value: 'timestamp'
   }, {
-    label: 'excelTimestamp',
-    value: 'Excel Timestamp (UTC)'
+    label: 'Excel Timestamp (UTC)',
+    value: 'excelTimestamp'
   }, {
-    label: 'wkt',
-    value: 'Well Known Text'
+    label: 'Well Known Text',
+    value: 'wkt'
   }, {
     label: 'Location Provider',
     value: 'provider'
@@ -64,15 +62,16 @@ Csv.prototype.export = function (streamable) {
     value: 'accuracy'
   }];
 
-  self._event.forms
+  this._event.forms
     .filter(form => !form.archived)
-    .forEach(function (form) {
-      const formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
+    .forEach(form => {
+      const formPrefix = this._event.forms.length > 1 ? form.name + '.' : '';
 
       form.fields
         .filter(field => !field.archived)
         .sort((a, b) => a.id - b.id)
-        .forEach(function (field) {
+        .filter(field => field.type !== 'attachment')
+        .forEach(field => {
           observationFields.push({
             label: formPrefix + field.title,
             value: formPrefix + field.name
@@ -109,40 +108,39 @@ Csv.prototype.export = function (streamable) {
   archive.pipe(streamable);
 
   async.parallel([
-    function (done) {
-      if (!self._filter.exportObservations) return done();
+    done => {
+      if (!this._filter.exportObservations) return done();
 
       const observationStream = new stream.PassThrough();
       archive.append(observationStream, { name: 'observations.csv' });
-      self.streamObservations(observationStream, archive, observationFields, function (err) {
+      this.streamObservations(observationStream, archive, observationFields, err => {
         observationStream.end();
         done(err);
       });
     },
-    function (done) {
-      if (!self._filter.exportLocations) return done();
+    done => {
+      if (!this._filter.exportLocations) return done();
 
       const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true });
       archive.append(asyncParser.processor, { name: 'locations.csv' });
-      self.streamLocations(asyncParser.input, function (err) {
+      this.streamLocations(asyncParser.input, err => {
         done(err);
       });
     }
   ],
-    function (err) {
-      if (err) {
-        log.info(err);
-      }
+  err => {
+    if (err) {
+      log.info(err);
+    }
 
-      console.log('done writing csv, finalize archive');
-      archive.finalize();
-    });
+    console.log('done writing csv, finalize archive');
+    archive.finalize();
+  });
 };
 
 Csv.prototype.streamObservations = function (stream, archive, fields, done) {
-  const self = this;
-  self.requestObservations(self._filter, function (err, observations) {
-    const json = self.flattenObservations(observations, archive);
+  this.requestObservations(this._filter, (err, observations) => {
+    const json = this.flattenObservations(observations, archive);
 
     try {
       const csv = json2csv.parse(json, { fields });
@@ -159,80 +157,75 @@ Csv.prototype.flattenObservations = function (observations, archive) {
   const users = this._users;
   const devices = this._devices;
 
-  const flattened = [];
+  const rows = [];
 
-  observations.forEach(function (observation) {
-    const properties = observation.properties;
-    properties.id = observation.id;
+  observations
+    .map(observation => observation.toObject())
+    .forEach(observation => {
+      const { forms: observationForms = [], ...observationRow } = observation.properties;
+      observationRow.id = observation.id;
 
-    properties.forms.forEach(function (observationForm) {
-      const form = event.formMap[observationForm.formId];
-      const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
-      for (const name in observationForm) {
-        const field = form.fieldNameToField[name];
-        if (field) {
-          properties[formPrefix + field.name] = observationForm[name];
-          delete observationForm[name];
-        }
+      if (users[observation.userId]) observationRow.user = users[observation.userId].username;
+      if (devices[observation.deviceId]) observationRow.device = devices[observation.deviceId].uid;
+
+      const centroid = turfCentroid(observation);
+      observationRow.mgrs = mgrs.forward(centroid.geometry.coordinates);
+
+      observationRow.shapeType = observation.geometry.type;
+      if (observation.geometry.type === 'Point') {
+        observationRow.longitude = observation.geometry.coordinates[0];
+        observationRow.latitude = observation.geometry.coordinates[1];
+      } else {
+        observationRow.longitude = centroid.geometry.coordinates[0];
+        observationRow.latitude = centroid.geometry.coordinates[1];
       }
-    });
-    delete properties.forms;
+      observationRow.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
 
-    if (users[observation.userId]) properties.user = users[observation.userId].username;
-    if (devices[observation.deviceId]) properties.device = devices[observation.deviceId].uid;
+      observationRow.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
 
-    const centroid = turfCentroid(observation);
-    properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+      rows.push(observationRow);
 
-    properties.shapeType = observation.geometry.type;
-    if (observation.geometry.type === 'Point') {
-      properties.longitude = observation.geometry.coordinates[0];
-      properties.latitude = observation.geometry.coordinates[1];
-    } else {
-      properties.longitude = centroid.geometry.coordinates[0];
-      properties.latitude = centroid.geometry.coordinates[1];
-    }
-    properties.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
+      observationForms.forEach(observationForm => {
+        const formRow = { id: observation.id }
+        const form = event.formMap[observationForm.formId];
+        const formPrefix = event.forms.length > 1 ? form.name + '.' : '';
+        for (const name in observationForm) {
+          const field = form.fieldNameToField[name];
+          if (field) {
+            formRow[formPrefix + field.name] = observationForm[name];
+            delete observationForm[name];
+          }
+        }
 
-    properties.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
-
-    if (observation.attachments.length > 0) {
-      properties.attachment = observation.attachments[0].name;
-      properties.attachmentExcelLink = excelLink(observation.attachments[0], 1);
-      archive.file(path.join(attachmentBase, observation.attachments[0].relativePath), { name: observation.attachments[0].name });
-    }
-
-    flattened.push(properties);
-
-    for (let i = 1; i < observation.attachments.length; i++) {
-      const attachment = observation.attachments[i];
-
-      flattened.push({
-        id: observation.id,
-        attachment: attachment.name,
-        attachmentExcelLink: excelLink(attachment, i + 1)
+        rows.push(formRow);
       });
 
-      archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-    }
-  });
+      observation.attachments.forEach((attachment, index) => {
+        const name = path.basename(attachment.relativePath);
+        rows.push({
+          id: observation.id,
+          attachment: attachment.name,
+          attachmentExcelLink: excelLink(name, index)
+        });
 
-  return flattened;
+        archive.file(path.join(attachmentBase, attachment.relativePath), { name: name });
+      });
+    });
+
+  return rows;
 };
 
 Csv.prototype.streamLocations = function (stream, done) {
-  const self = this;
+  const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
+  const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
+  const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
 
-  let startDate = self._filter.startDate ? moment(self._filter.startDate) : null;
-  const endDate = self._filter.endDate ? moment(self._filter.endDate) : null;
-  const cursor = self.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
-
-  let locations = [];
-  cursor.eachAsync(async function (doc, i) {
-    locations.push(doc);
+  const locations = [];
+  cursor.eachAsync(async location => {
+    locations.push(location);
   }).then(() => {
     if (cursor) cursor.close;
-    self.flattenLocations(locations).forEach(location => {
+    this.flattenLocations(locations).forEach(location => {
       stream.push(location);
     });
 
@@ -240,16 +233,14 @@ Csv.prototype.streamLocations = function (stream, done) {
     log.info('done writing locations');
     stream.push(null);
     done();
-  }).catch(err => {
-    done(err);
-  });
+  }).catch(err => done(err));
 };
 
 Csv.prototype.flattenLocations = function (locations) {
   const users = this._users;
   const devices = this._devices;
 
-  return locations.map(function (location) {
+  return locations.map(location => {
     const properties = location.properties;
     if (users[location.userId]) properties.user = users[location.userId].username;
     if (devices[properties.deviceId]) properties.device = devices[properties.deviceId].uid;

@@ -5,17 +5,18 @@
   display: flex;
   flex-direction: row;
   margin: 16px;
+  min-width: 0;
 }
 
 .item-header-text {
   font-size: 24px;
   color: rgba(30, 136, 229, 0.87);
   font-weight: 500;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   margin-top: 16px;
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item-header-content {

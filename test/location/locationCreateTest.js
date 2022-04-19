@@ -2,7 +2,6 @@ var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , app = require('../../express')
   , MockToken = require('../mockToken')
   , TokenModel = mongoose.model('Token');
 
@@ -20,9 +19,14 @@ var LocationModel = mongoose.model('Location');
 require('../../models/cappedLocation');
 var CappedLocationModel = mongoose.model('CappedLocation');
 
-describe("location create tests", function() {
+const SecurePropertyAppender = require('../../security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../models/authenticationconfiguration');
 
-  beforeEach(function() {
+describe("location create tests", function () {
+
+  let app;
+
+  beforeEach(function () {
     var mockEvent = EventModel({
       _id: 1,
       name: 'Event 1',
@@ -37,9 +41,26 @@ describe("location create tests", function() {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    const configs = [];
+    const config = {
+      name: 'local',
+      type: 'local'
+    };
+    configs.push(config);
+
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getAllConfigurations')
+      .resolves(configs);
+
+    sinon.mock(SecurePropertyAppender)
+      .expects('appendToConfig')
+      .resolves(config);
+
+    app = require('../../express');
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -47,13 +68,13 @@ describe("location create tests", function() {
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
+      .withArgs({ token: "12345" })
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should create locations for an event", function(done) {
+  it("should create locations for an event", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -70,7 +91,7 @@ describe("location create tests", function() {
         "timestamp": Date.now(),
         "accuracy": 39
       }
-    },{
+    }, {
       "eventId": 1,
       "geometry": {
         "type": "Point",
@@ -103,7 +124,7 @@ describe("location create tests", function() {
           "timestamp": Date.now(),
           "accuracy": 39
         }
-      },{
+      }, {
         "eventId": 1,
         "geometry": {
           "type": "Point",
@@ -116,7 +137,7 @@ describe("location create tests", function() {
       }])
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
@@ -125,7 +146,7 @@ describe("location create tests", function() {
       .end(done);
   });
 
-  it("should create a location for an event", function(done) {
+  it("should create a location for an event", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -168,7 +189,7 @@ describe("location create tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         var location = res.body;
         should.exist(location);
         location.should.be.an('object');
@@ -176,7 +197,7 @@ describe("location create tests", function() {
       .end(done);
   });
 
-  it("should fail to create a location for an event when not part of that event", function(done) {
+  it("should fail to create a location for an event when not part of that event", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -202,7 +223,7 @@ describe("location create tests", function() {
       .end(done);
   });
 
-  it("should reject new location w/o geometry", function(done) {
+  it("should reject new location w/o geometry", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -221,13 +242,13 @@ describe("location create tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.be.equal("Missing required parameter 'geometry'.");
       })
       .end(done);
   });
 
-  it("should reject new location w/o properties", function(done) {
+  it("should reject new location w/o properties", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -246,13 +267,13 @@ describe("location create tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.be.equal("Missing required parameter 'properties.timestamp'");
       })
       .end(done);
   });
 
-  it("should reject new location w/o timestamp", function(done) {
+  it("should reject new location w/o timestamp", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
@@ -274,7 +295,7 @@ describe("location create tests", function() {
         }
       })
       .expect(400)
-      .expect(function(res) {
+      .expect(function (res) {
         res.text.should.be.equal("Missing required parameter 'properties.timestamp'");
       })
       .end(done);

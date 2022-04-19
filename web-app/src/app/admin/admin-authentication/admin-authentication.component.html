@@ -1,0 +1,48 @@
+<section class="mat-typography">
+    <div class="auth__action--new">
+        <button mat-stroked-button color="primary" (click)="$event.stopPropagation(); createAuthentication()"
+            *ngIf="hasAuthConfigEditPermission">
+            <mat-icon>add</mat-icon>New Authentication
+        </button>
+    </div>
+</section>
+<section class="mat-typography; accordian-section">
+    <mat-accordion class="headers-align">
+        <div *ngFor="let strategy of strategies; index as i; first as isFirst; last as isLast">
+            <mat-expansion-panel [expanded]="isFirst">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <span *ngIf="!strategy.icon" [ngStyle]="{'color': strategy.buttonColor}">
+                            <mat-icon>security</mat-icon>
+                        </span>
+                        <span *ngIf="strategy.icon">
+                            <img [src]="strategy.icon" style="width:24px; height:24px">
+                        </span>
+                        {{strategy.title}}
+                    </mat-panel-title>
+                    <mat-panel-description>
+                        <div *ngIf="strategy.enabled">Enabled</div>
+                        <div *ngIf="!strategy.enabled">Disabled</div>
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+                <div class="auth__action--enable">
+                    <mat-slide-toggle [(ngModel)]="strategy.enabled" [checked]="strategy.enabled" color="primary"
+                        *ngIf="hasAuthConfigEditPermission"
+                        (click)="$event.stopPropagation(); onAuthenticationToggled(strategy)">
+                    </mat-slide-toggle>
+                    <mat-label>Enable Authentication</mat-label>
+                </div>
+                <admin-authentication-settings [strategy]="strategy" [teams]="teams" [events]="events"
+                    (strategyDirty)="onStrategyDirty($event)">
+                </admin-authentication-settings>
+                <div class="auth__action--delete">
+                    <button mat-button color="warn" id="delete-strategy-button"
+                        (click)="$event.stopPropagation(); deleteStrategy(strategy)"
+                        *ngIf="hasAuthConfigEditPermission && strategy.type.toLowerCase() !== 'local'">
+                        <mat-icon>delete</mat-icon>Delete Authentication
+                    </button>
+                </div>
+            </mat-expansion-panel>
+        </div>
+    </mat-accordion>
+</section>

@@ -9,7 +9,7 @@ module.exports = function(app, security) {
     , {default: upload} = require('../upload')
     , userTransformer = require('../transformers/user');
 
-  var passport = security.authentication.passport;
+  const passport = security.authentication.passport;
 
   function determineReadAccess(req, res, next) {
     if (!access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
@@ -32,14 +32,14 @@ module.exports = function(app, security) {
   }
 
   function parseEventQueryParams(req, res, next) {
-    var parameters = {};
+    const parameters = {};
 
-    var projection = req.param('projection');
+    const projection = req.param('projection');
     if (projection) {
       parameters.projection = JSON.parse(projection);
     }
 
-    var state = req.param('state');
+    const state = req.param('state');
     if (!state || state === 'active') {
       parameters.complete = false;
     } else if (state === 'complete') {
@@ -49,9 +49,9 @@ module.exports = function(app, security) {
     parameters.userId = req.param('userId');
     parameters.populate = req.query.populate !== 'false';
 
-    var form = req.body.form || {};
-    var fields = form.fields || [];
-    var userFields = form.userFields || [];
+    const form = req.body.form || {};
+    const fields = form.fields || [];
+    const userFields = form.userFields || [];
     fields.forEach(function(field) {
       // remove userFields chocies, these are set dynamically
       if (userFields.indexOf(field.name) !== -1) {
@@ -65,9 +65,9 @@ module.exports = function(app, security) {
   }
 
   function parseForm(req, res, next) {
-    var form = req.body || {};
-    var fields = form.fields || [];
-    var userFields = form.userFields || [];
+    const form = req.body || {};
+    const fields = form.fields || [];
+    const userFields = form.userFields || [];
     fields.forEach(function(field) {
       // remove userFields chocies, these are set dynamically
       if (userFields.indexOf(field.name) !== -1) {
@@ -76,17 +76,17 @@ module.exports = function(app, security) {
     });
 
     if (form.style) {
-      var whitelistStyle = reduceStyle(form.style);
-      var primaryField = form.fields.filter(function(field) {
+      const whitelistStyle = reduceStyle(form.style);
+      const primaryField = form.fields.filter(function(field) {
         return field.name === form.primaryField;
       }).shift();
-      var primaryChoices = primaryField ? primaryField.choices.map(function(item) {
+      const primaryChoices = primaryField ? primaryField.choices.map(function(item) {
         return item.title;
       }) : [];
-      var secondaryField = form.fields.filter(function(field) {
+      const secondaryField = form.fields.filter(function(field) {
         return field.name === form.variantField;
       }).shift();
-      var secondaryChoices = secondaryField ? secondaryField.choices.map(function(choice) {
+      const secondaryChoices = secondaryField ? secondaryField.choices.map(function(choice) {
         return choice.title;
       }) : [];
 
@@ -137,7 +137,7 @@ module.exports = function(app, security) {
     determineReadAccess,
     parseEventQueryParams,
     function (req, res, next) {
-      var filter = {
+      const filter = {
         complete: req.parameters.complete
       };
       if (req.parameters.userId) filter.userId = req.parameters.userId;
@@ -263,7 +263,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_EVENT', 'update'),
     parseForm,
     function(req, res, next) {
-      var form = req.form;
+      const form = req.form;
       new api.Event(req.event).addForm(form, function(err, form) {
         if (err) return next(err);
 
@@ -292,7 +292,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_EVENT', 'update'),
     parseForm,
     function(req, res, next) {
-      var form = req.form;
+      const form = req.form;
       form._id = parseInt(req.params.formId);
       new api.Event(req.event).updateForm(form, function(err, form) {
         if (err) return next(err);
@@ -358,11 +358,11 @@ module.exports = function(app, security) {
         if (err) return next();
 
         async.map(icons, function(icon, done) {
-          fs.readFile(icon.path, function(err, data) {
+          fs.readFile(icon.path, async function(err, data) {
             if (err) return done(err);
 
-            var base64;
-            var metadata = fileType(data);
+            let base64;
+            const metadata = await fileType.fromBuffer(data);
             if (metadata) {
               base64 = util.format('data:%s;base64,%s', metadata.mime, Buffer(data).toString('base64'));
             }
@@ -414,15 +414,15 @@ module.exports = function(app, security) {
             res.sendFile(icon.path);
           },
           'application/json': function() {
-            fs.readFile(icon.path, function(err, data) {
+            fs.readFile(icon.path, async function(err, data) {
               if (err) return next(err);
-
+              const dataType = await fileType.fromBuffer(data)
               res.json({
                 eventId: icon.eventId,
                 formId: icon.formId,
                 primary: icon.primary,
                 variant: icon.variant,
-                icon: util.format('data:%s;base64,%s', fileType(data).mime, Buffer(data).toString('base64'))
+                icon: util.format('data:%s;base64,%s',  dataType.mime, Buffer(data).toString('base64'))
               });
             });
           }
@@ -589,7 +589,7 @@ module.exports = function(app, security) {
     authorizeAccess('READ_EVENT_ALL', 'read'),
     determineReadAccess,
     function (req, res, next) {
-      var populate = null;
+      let populate = null;
       if (req.query.populate) {
         populate = req.query.populate.split(",");
       }

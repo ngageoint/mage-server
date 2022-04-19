@@ -1,4 +1,4 @@
-var util = require('util')
+const util = require('util')
   , moment = require('moment')
   , Field = require('./field');
 
@@ -9,13 +9,14 @@ function DateField(fieldDefinition, form) {
 util.inherits(DateField, Field);
 
 DateField.prototype.validate = function() {
-  DateField.super_.prototype.validate.call(this);
+  const error = DateField.super_.prototype.validate.call(this);
+  if (error) return error;
 
   if (!this.value) return;
 
-  var date = moment(this.value, moment.ISO_8601, true);
+  const date = moment(this.value, moment.ISO_8601, true);
   if (!date.isValid()) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property is not a valid ISO8601 date");
+    return { error: 'value', message: `${this.definition.title} must be an ISO8601 string` }
   }
 
   this.form[this.definition.name] = date.toDate();

@@ -15,6 +15,7 @@ const VerificationErrorReason = {
 
 const TokenAssertion = {
   Authorized: 'urn:mage:auth:authorized',
+  Captcha: 'urn:mage:signup:captcha'
 }
 
 class TokenGenerateError extends Error {
@@ -77,24 +78,22 @@ class JWTService {
     this._algorithm = 'HS256';
   }
 
-  generateToken(subject, assertion, secondsToLive) {
+  generateToken(subject, assertion, secondsToLive, claims = {}) {
     return new Promise((resolve, reject) => {
-      JWT.sign(
-        { assertion: assertion },
-        this._secret,
-        {
-          algorithm: this._algorithm,
-          issuer: this._issuer,
-          expiresIn: secondsToLive,
-          subject: subject,
-        },
-        (err, token) => {
-          if (err) {
-            reject(new TokenGenerateError(subject, assertion, secondsToLive, err));
-          } else {
-            resolve(token);
-          }
-        });
+      const payload = Object.assign({ assertion: assertion }, claims);
+
+      JWT.sign(payload, this._secret, {
+        algorithm: this._algorithm,
+        issuer: this._issuer,
+        expiresIn: secondsToLive,
+        subject: subject,
+      },(err, token) => {
+        if (err) {
+          reject(new TokenGenerateError(subject, assertion, secondsToLive, err));
+        } else {
+          resolve(token);
+        }
+      });
     });
   }
 
@@ -112,7 +111,7 @@ class JWTService {
             const jwt = JWT.decode(token, { json: true });
             if (jwt) {
               decoded = Object.assign({}, jwt, { 
-                subject: jwt.sub || null, 
+                subject: jwt.sub || null,
                 assertion: jwt.assertion || null, 
                 expiration: jwt.exp || null 
               });
@@ -148,4 +147,5 @@ class JWTService {
 exports.payload = payload;
 exports.TokenAssertion = TokenAssertion;
 exports.TokenGenerateError = TokenGenerateError;
+exports.VerificationErrorReason = VerificationErrorReason;
 exports.JWTService = JWTService;

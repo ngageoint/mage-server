@@ -9,30 +9,21 @@
   class="component__view"
   [event]="event"
   [observation]="viewObservation"
-  (close)="onObservationViewClose()">
+  (close)="onObservationViewClose()"
+  (delete)="onObservationDelete($event)">
 </observation-view>
 
 <observation-edit *ngIf="editObservation" @slide
   class="component__view"
-  [form]="editForm"
   [observation]="editObservation"
-  (close)="onObservationEditClose($event)"
-  (delete)="onObservationDelete($event)">
+  (close)="onObservationEditClose($event)">
 </observation-edit>
 
-<observation-edit *ngIf="newObservation" @slide (@slide.done)="observationAnimationComplete($event)"
+<observation-edit *ngIf="newObservation" @slide
   class="component__view"
-  [form]="newObservationForm"
   [observation]="newObservation"
   (close)="onObservationEditClose()">
 </observation-edit>
-
-<observation-form *ngIf="newObservationForms" @slide
-  class="component__view"
-  [forms]="newObservationForms"
-  (selected)="createObservation($event)"
-  (close)="cancelNewObservation()">
-</observation-form>
 
 <mat-tab-group class="tabs" #tabGroup mat-stretch-tabs [selectedIndex]="0" animationDuration="0ms" (selectedIndexChange)="tabChanged($event)">
   <mat-tab>

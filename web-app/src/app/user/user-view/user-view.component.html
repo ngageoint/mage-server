@@ -13,7 +13,7 @@
   <mat-card class="user-card">
     <div class="user-map">
       <div class="user-map__view">
-        <map-clip [feature]="user.location"></map-clip>
+        <map-clip [feature]="user.location" [accuracy]="accuracy"></map-clip>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       <span class="user__location--accuracy">
         <span class="user__location--provider">{{user.location.properties.provider}} </span>
         <span>&#177;</span>
-        <span> {{user.location.properties.accuracy}}m</span>
+        <span> {{user.location.properties.accuracy | number:'0.0-5'}}m</span>
       </span>
     </div>
 

@@ -1,5 +1,5 @@
-import { Component, ViewChild, ElementRef, Input, AfterViewInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent, MatChipList } from '@angular/material/chips';
@@ -13,7 +13,6 @@ interface Choice {
 interface MultiSelectField {
   title: string,
   name: string,
-  value?: string[],
   required: boolean,
   choices: Choice[]
 }
@@ -23,19 +22,20 @@ interface MultiSelectField {
   templateUrl: './observation-edit-multiselect.component.html',
   styleUrls: ['./observation-edit-multiselect.component.scss']
 })
-export class ObservationEditMultiselectComponent implements AfterViewInit {
-  @Input() field: MultiSelectField
+export class ObservationEditMultiselectComponent implements OnInit, AfterViewInit {
+  @Input() formGroup: FormGroup
+  @Input() definition: MultiSelectField
 
-  @ViewChild('dropdown') dropdown: FormControl
-  @ViewChild('chipList') chipList: MatChipList
-  @ViewChild('choiceInput') choiceInput: ElementRef<HTMLInputElement>
-  @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger
+  @ViewChild('chipList', { static: false }) chipList: MatChipList
+  @ViewChild('choiceInput', { static: false }) choiceInput: ElementRef<HTMLInputElement>
+  @ViewChild(MatAutocompleteTrigger, {static: false}) autocomplete: MatAutocompleteTrigger
 
   visible = true
   removable = true
   separatorKeysCodes: number[] = [ENTER, COMMA]
+  control: FormControl
   choiceControl = new FormControl()
-  filteredChoices: Observable<any[]>
+  filteredChoices: Observable<Choice[]>
 
   constructor() {
     this.filteredChoices = this.choiceControl.valueChanges.pipe(
@@ -44,19 +44,23 @@ export class ObservationEditMultiselectComponent implements AfterViewInit {
         return !value || typeof value === 'string' ? value : value.title
       }),
       map(title => {
-        return title ? this.filter(title) : this.field.choices.slice()
+        return title ? this.filter(title) : this.definition.choices.slice()
       })
     )
   }
 
+  ngOnInit(): void {
+    this.control = this.formGroup.get(this.definition.name) as FormControl
+  }
+
   ngAfterViewInit(): void {
-    this.dropdown.statusChanges.subscribe(() => {
+    this.control.statusChanges.subscribe(() => {
       this.checkErrorState()
     })
   }
 
   add(event: MatChipInputEvent): void {
-    const choice = this.field.choices.find((choice: Choice) => choice.title === event.value)
+    const choice = this.definition.choices.find((choice: Choice) => choice.title === event.value)
     if (!choice) return
 
     this.addChoice(choice.title)
@@ -66,19 +70,18 @@ export class ObservationEditMultiselectComponent implements AfterViewInit {
       event.input.value = ''
     }
 
-    this.choiceControl.setValue(null)
     this.autocomplete.closePanel()
   }
 
   remove(choice: string): void {
-    const index = this.field.value.indexOf(choice)
+    const index = this.control.value.indexOf(choice)
 
     if (index >= 0) {
-      this.field.value.splice(index, 1)
+      this.control.value.splice(index, 1)
     }
 
-    if (this.field.value.length === 0) {
-      delete this.field.value;
+    if (this.control.value.length === 0) {
+      this.control.setValue(null)
     }
   }
 
@@ -86,23 +89,23 @@ export class ObservationEditMultiselectComponent implements AfterViewInit {
     this.addChoice(event.option.value)
 
     this.choiceInput.nativeElement.value = ''
-    this.choiceControl.setValue(null)
   }
 
   private addChoice(choice: string): void {
-    const choices = new Set(this.field.value)
+    const choices = new Set(this.control.value)
     choices.add(choice)
-    this.field.value = Array.from(choices)
+    this.control.setValue(Array.from(choices))
+    this.choiceControl.setValue(null)
   }
 
   private filter(value: string): Choice[] {
     const filterValue = value.toLowerCase()
 
-    return this.field.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0)
+    return this.definition.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0)
   }
 
   private checkErrorState(): void {
-    this.chipList.errorState = this.field.required && (!this.field.value || this.field.value.length === 0)
+    this.chipList.errorState = this.definition.required && (!this.control.value || this.control.value.length === 0)
   }
 
 }

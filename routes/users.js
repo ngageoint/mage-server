@@ -1,17 +1,36 @@
 module.exports = function (app, security) {
-  const api = require('../api')
+  const crypto = require('crypto')
+    , hasher = require('../utilities/pbkdf2')()
+    , svgCaptcha = require('svg-captcha')
     , log = require('winston')
+    , fs = require('fs-extra')
     , Role = require('../models/role')
     , Event = require('../models/event')
     , Authentication = require('../models/authentication')
+    , api = require('../api')
     , access = require('../access')
-    , fs = require('fs-extra')
+    , verification = require('../authentication/verification')
     , userTransformer = require('../transformers/user')
     , pageInfoTransformer = require('../transformers/pageinfo')
     , { default: upload } = require('../upload')
+    , BearerStrategy = require('passport-http-bearer').Strategy
     , passport = security.authentication.passport;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
+  const JWTService = verification.JWTService;
+  const TokenAssertion = verification.TokenAssertion;
+  const VerificationErrorReason = verification.VerificationErrorReason;
+  const tokenService = new JWTService(crypto.randomBytes(64).toString('hex'), 'urn:mage');
+
+  passport.use('captcha', new BearerStrategy(function (token, done) {
+    const expectation = {
+      assertion: TokenAssertion.Captcha
+    };
+
+    tokenService.verifyToken(token, expectation)
+      .then(payload => done(null, payload))
+      .catch(err => done(err));
+  }));
 
   function isAuthenticated(strategy) {
     return function (req, res, next) {
@@ -24,20 +43,13 @@ module.exports = function (app, security) {
     };
   }
 
-  function defaultRole(req, res, next) {
-    Role.getRole('USER_ROLE', function(err, role) {
-      req.newUser.roleId = role._id;
-      next();
-    });
-  }
-
   function parseIconUpload(req, res, next) {
-    var iconMetadata = req.param('iconMetadata') || {};
+    let iconMetadata = req.param('iconMetadata') || {};
     if (typeof iconMetadata === 'string' || iconMetadata instanceof String) {
       iconMetadata = JSON.parse(iconMetadata);
     }
 
-    let files = req.files || {};
+    const files = req.files || {};
     let [icon] = files.icon || [];
     if (icon) {
       // default type to upload
@@ -60,31 +72,37 @@ module.exports = function (app, security) {
     next();
   }
 
+  function validateUsername(req, res, next) {
+    let username = req.param('username');
+    if (!username) {
+      return res.status(400).send("Invalid user document: missing required parameter 'username'");
+    }
+    username = username.trim();
+
+    req.username = username;
+
+    next();
+  }
+
   /**
    * * TODO: express.Request.param() is deprecated
    *   https://expressjs.com/en/4x/api.html#req.param
    * * TODO: seems like a lot of duplication of the PUT /api/users/{userId}
    *   route.
    */
-  function validateUser(req, res, next) {
+  function validateAccount(req, res, next) {
 
     function missingRequired(param) {
-      return `Invalid user document: missing required parameter '${param}'`;
+      return `Invalid account document: missing required parameter '${param}'`;
     }
 
-    const user = {};
-
-    const username = req.param('username');
-    if (!username) {
-      return res.status(400).send(missingRequired('username'));
-    }
-    user.username = username.trim();
+    const account = {};
 
     const displayName = req.param('displayName');
     if (!displayName) {
       return res.status(400).send(missingRequired('displayName'));
     }
-    user.displayName = displayName;
+    account.displayName = displayName;
 
     const email = req.param('email');
     if (email) {
@@ -92,23 +110,23 @@ module.exports = function (app, security) {
       if (!email.match(emailRegex)) {
         return res.status(400).send('Invalid email address');
       }
-      user.email = email;
+      account.email = email;
     }
 
     const phone = req.param('phone');
     if (phone) {
-      user.phones = [{
-        type: "Main",
+      account.phones = [{
+        type: 'Main',
         number: phone
       }];
     }
 
-    const password = req.param('password');
+    const password = req.body.password;
     if (!password) {
       return res.status(400).send(missingRequired('password'));
     }
 
-    const passwordconfirm = req.param('passwordconfirm');
+    const passwordconfirm = req.body.passwordconfirm;
     if (!passwordconfirm) {
       return res.status(400).send(missingRequired('passwordconfirm'));
     }
@@ -117,12 +135,8 @@ module.exports = function (app, security) {
       return res.status(400).send('Passwords do not match');
     }
 
-    user.authentication = {
-      type: 'local',
-      password: password
-    };
-
-    req.newUser = user;
+    account.password = password;
+    req.account = account;
     next();
   }
 
@@ -132,28 +146,35 @@ module.exports = function (app, security) {
   app.post(
     '/api/users',
     isAuthenticated('bearer'),
+    access.authorize('CREATE_USER'),
     upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
-    validateUser,
+    validateUsername,
+    validateAccount,
     parseIconUpload,
     function (req, res, next) {
-      // If I did not authenticate a user go to the next route
-      // '/api/users' route which does not require authentication
-      if (!access.userHasPermission(req.user, 'CREATE_USER')) {
-        return next();
-      }
-
       const roleId = req.param('roleId');
-
       if (!roleId) return res.status(400).send('roleId is a required field');
-      req.newUser.roleId = roleId;
 
-      // Authorized to update users, activate account by default
-      req.newUser.active = true;
+      const user = {
+        username: req.username,
+        roleId: roleId,
+        active: true, // Authorized to update users, activate account by default
+        displayName: req.account.displayName,
+        email: req.account.email,
+        phones: req.account.phones,
+        authentication: {
+          type: 'local',
+          password: req.account.password,
+          authenticationConfiguration: {
+            name: 'local'
+          }
+        }
+      };
 
       const files = req.files || {};
       const [avatar] = files.avatar || [];
       const [icon] = files.icon || [];
-      new api.User().create(req.newUser, { avatar, icon }).then(newUser => {
+      new api.User().create(user, { avatar, icon }).then(newUser => {
         newUser = userTransformer.transform(newUser, { path: req.getRoot() });
         res.json(newUser);
       }).catch(err => next(err));
@@ -163,14 +184,87 @@ module.exports = function (app, security) {
   // Create a new user
   // Anyone can create a new user, but the new user will not be active
   app.post(
-    '/api/users',
-    validateUser,
-    defaultRole,
-    function(req, res, next) {
-      new api.User().create(req.newUser).then(newUser => {
-        newUser = userTransformer.transform(newUser, { path: req.getRoot() });
-        res.json(newUser);
-      }).catch(err => next(err));
+    '/api/users/signups',
+    validateUsername,
+    function (req, res, next) {
+      const background = req.body.background || '#FFFFFF';
+      const captcha = svgCaptcha.create({
+        size: 6,
+        noise: 4,
+        color: false,
+        background: background.toLowerCase() !== '#ffffff' ? background : null
+      });
+
+      hasher.hashPassword(captcha.text, (err, hash) => {
+        if (err) return next(err);
+
+        const claims = {
+          captcha: hash
+        };
+
+        tokenService.generateToken(req.username, TokenAssertion.Captcha, 60 * 3, claims).then(token => {
+          res.json({
+            token: token,
+            captcha: `data:image/svg+xml;base64,${Buffer.from(captcha.data).toString('base64')}`
+          });
+        }).catch(err => {
+          next(err);
+        });
+      })
+    }
+  );
+
+  app.post(
+    '/api/users/signups/verifications',
+    validateAccount,
+    function verify(req, res, next) {
+      passport.authenticate('captcha', (err, payload) => {
+        if (err) {
+          const status = err.reason === VerificationErrorReason.Expired ? 401 : 400;
+          return res.status(status).send("Invalid captcha, please try again");
+        }
+        if (!payload) return res.sendStatus(400);
+
+        req.payload = payload;
+        next();
+      })(req, res, next);
+    },
+    function role(req, res, next) {
+      Role.getRole('USER_ROLE', (err, role) => {
+        req.userRole = role;
+        next(err);
+      });
+    },
+    function (req, res, next) {
+      hasher.validPassword(req.body.captchaText, req.payload.captcha, (err, valid) => {
+        if (err) return next(err);
+
+        if (!valid) {
+          return res.status(403).send('Invalid captcha, please try again.');
+        }
+
+        const user = {
+          username: req.payload.subject,
+          roleId: req.userRole._id,
+          displayName: req.account.displayName,
+          email: req.account.email,
+          phones: req.account.phones,
+          authentication: {
+            type: 'local',
+            password: req.account.password,
+            authenticationConfiguration: {
+              name: 'local'
+            }
+          }
+        };
+
+        new api.User().create(user).then(newUser => {
+          newUser = userTransformer.transform(newUser, { path: req.getRoot() });
+          res.json(newUser);
+        }).catch(err => {
+          next(err)
+        });
+      })
     }
   );
 
@@ -188,9 +282,9 @@ module.exports = function (app, security) {
     function (req, res, next) {
       var filter = {};
 
-      if(req.query) {
+      if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
             continue;
           }
           filter[key] = value;
@@ -217,7 +311,7 @@ module.exports = function (app, security) {
         sort = req.query.sort;
       }
 
-      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort}, function (err, users, pageInfo) {
+      new api.User().getAll({ filter: filter, populate: populate, limit: limit, start: start, sort: sort }, function (err, users, pageInfo) {
         if (err) return next(err);
 
         let data = null;
@@ -241,9 +335,9 @@ module.exports = function (app, security) {
     function (req, res, next) {
       var filter = {};
 
-      if(req.query) {
+      if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh') {
             continue;
           }
           filter[key] = value;

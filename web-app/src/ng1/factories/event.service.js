@@ -143,7 +143,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
     PollingService.removeListener(pollingServiceListener);
   });
 
-  var service = {
+  const service = {
     addObservationsChangedListener: addObservationsChangedListener,
     removeObservationsChangedListener: removeObservationsChangedListener,
     addUsersChangedListener: addUsersChangedListener,
@@ -303,13 +303,13 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
   }
 
   function addAttachmentToObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     ObservationService.addAttachmentToObservationForEvent(event, observation, attachment);
     observationsChanged({updated: [observation]});
   }
 
   function deleteAttachmentForObservation(observation, attachment) {
-    var event = eventsById[observation.eventId];
+    const event = eventsById[observation.eventId];
     return ObservationService.deleteAttachmentInObservationForEvent(event, observation, attachment).then(function(observation) {
       observationsChanged({updated: [observation]});
     });
@@ -336,25 +336,21 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
     return forms;
   }
 
-  function createForm(observation, form, viewMode) {
+  function createForm(observationForm, formDefinition, viewMode) {
+    const form = angular.copy(formDefinition);
+    form.remoteId = observationForm.id;
 
-    var observationForm = angular.copy(form);
+    const existingPropertyFields = [];
 
-    var existingPropertyFields = [];
-    _.each(observation.properties.forms, function(form) {
-      if (form.formId === observationForm.id) {
-        _.each(form, function(value, key) {
-
-          var field = service.getFormField(observationForm, key);
-          if (field) {
-            if (field.type === 'date' && field.value) {
-              field.value = moment(value).toDate();
-            } else {
-              field.value = value;
-            }
-            existingPropertyFields.push(field);
-          }
-        });
+    _.each(observationForm, function(value, key) {
+      const field = service.getFormField(form, key);
+      if (field) {
+        if (field.type === 'date' && field.value) {
+          field.value = moment(value).toDate();
+        } else {
+          field.value = value;
+        }
+        existingPropertyFields.push(field);
       }
     });
 
@@ -362,7 +358,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
       observationForm.fields = _.intersection(observationForm.fields, existingPropertyFields);
     }
 
-    return observationForm;
+    return form;
   }
 
   function exportForm(event) {

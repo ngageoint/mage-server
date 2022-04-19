@@ -1,0 +1,14 @@
+<section class="mat-typography">
+  <div mat-dialog-title>Delete {{strategy.title}} Authentication?</div>
+</section>
+<section class="mat-typography">
+  <mat-dialog-content>
+      By deleting this authentication strategy, {{userCount}} users will no longer be able to access MAGE.
+  </mat-dialog-content>
+</section>
+<section class="mat-typography">
+  <mat-dialog-actions>
+    <button mat-button (click)="close()" cdkFocusInitial>CANCEL</button>
+    <button mat-button (click)="delete()">DELETE</button>
+  </mat-dialog-actions>
+</section>

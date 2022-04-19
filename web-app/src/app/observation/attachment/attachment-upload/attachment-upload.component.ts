@@ -1,14 +1,23 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { AttachmentAction } from '../../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { AttachmentService } from '../attachment.service';
 
-interface FileUpload {
-  id: number,
+export interface FileUpload {
+  id: number | string,
+  name: string,
+  formControl: FormControl,
+  attachmentId: string,
+  action: AttachmentAction,
   file: File,
   preview?: string,
   uploading?: boolean,
-  uploadProgress?: number,
-  markedForDelete?: boolean
+  uploadProgress?: number
+}
+
+enum PreviewType {
+  LOADING, IMAGE, VIDEO, AUDIO, UNKNOWN
 }
 
 @Component({
@@ -19,26 +28,38 @@ interface FileUpload {
 export class AttachUploadComponent implements OnChanges {
   @Input() attachment: FileUpload
   @Input() url: string
-  @Input() allowUpload: boolean
 
-  @Output() remove = new EventEmitter<{ id: number }>()
-  @Output() upload = new EventEmitter<{ id: number, response: HttpResponseBase }>()
-  @Output() error = new EventEmitter<{ id: number }>()
+  @Output() remove = new EventEmitter<{ id: number | string }>()
+  @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>()
+  @Output() error = new EventEmitter<{ id: number | string }>()
 
+  preview: PreviewType = PreviewType.LOADING
+  previewType = PreviewType
   attachmentsToUpload = 0
+  actions: typeof AttachmentAction = AttachmentAction
 
   constructor(private changeDetector: ChangeDetectorRef, private attachmentService: AttachmentService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.attachment && this.attachment) {
       if (this.attachment.file.type.match('image')) {
-        this.previewImage(this.attachment);
+        this.preview = PreviewType.LOADING
+        this.previewImage(this.attachment)
+          .then(() => { this.preview = PreviewType.IMAGE })
+          .catch(() => this.preview = PreviewType.UNKNOWN)
       } else if (this.attachment.file.type.match('video')) {
-        this.previewVideo(this.attachment);
+        this.preview = PreviewType.LOADING
+        this.previewVideo(this.attachment)
+          .then(() => { this.preview = PreviewType.VIDEO })
+          .catch(() => this.preview = PreviewType.UNKNOWN)
+      } else if (this.attachment.file.type.match('audio')) {
+        this.preview = PreviewType.AUDIO
+      } else {
+        this.preview = PreviewType.UNKNOWN
       }
     }
 
-    if (changes.allowUpload && this.allowUpload === true) {
+    if (changes.url && changes.url.currentValue) {
       this.startUpload();
     }
   }
@@ -63,7 +84,7 @@ export class AttachUploadComponent implements OnChanges {
   }
 
   previewVideo(info: FileUpload): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader()
 
       reader.onload = (): void => {
@@ -83,6 +104,11 @@ export class AttachUploadComponent implements OnChanges {
           resolve()
         })
 
+        video.addEventListener('error', () => {
+          this.changeDetector.detectChanges()
+          reject()
+        })
+
         video.preload = 'metadata'
         video.src = url
         video.muted = true
@@ -94,9 +120,9 @@ export class AttachUploadComponent implements OnChanges {
   }
 
   startUpload(): void {
-    if (!this.attachment || !this.url || !this.allowUpload) return
+    if (!this.attachment || !this.url) return
 
-    this.attachmentService.upload(this.attachment.file, this.url).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
+    this.attachmentService.upload(this.attachment, this.url).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
       if (response.type === HttpEventType.Response) {
         this.attachment.uploading = false
         if (response.status === 200) {

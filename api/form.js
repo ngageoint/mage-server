@@ -214,24 +214,41 @@ function cleanForm(form) {
       return field;
     });
 
-  const primaryFields = fields.filter(field => {
+  const primaryMapField = fields.find(field => {
     return field.name === form.primaryField;
   });
 
-  const secondaryFields = fields.filter(field => {
+  if (primaryMapField) {
+    form.primaryField = fieldName(primaryMapField.id);
+  }
+
+  const secondaryMapField = fields.find(field => {
     return field.name === form.variantField;
   });
+
+  if (secondaryMapField) {
+    form.variantField = fieldName(secondaryMapField.id);
+  }
+
+  const primaryFeedField = fields.find(field => {
+    return field.name === form.primaryFeedField;
+  });
+
+  if (primaryFeedField) {
+    form.primaryFeedField = fieldName(primaryFeedField.id);
+  }
+
+  const secondaryFeedField = fields.find(field => {
+    return field.name === form.secondaryFeedField;
+  });
+
+  if (secondaryFeedField) {
+    form.secondaryFeedField = fieldName(secondaryFeedField.id);
+  }
 
   const userFields = fields.filter(field => {
     return form.userFields.includes(field.name);
   });
-
-  if (primaryFields.length === 1) {
-    form.primaryField = fieldName(primaryFields[0].id);
-  }
-  if (secondaryFields.length === 1) {
-    form.variantField = fieldName(secondaryFields[0].id);
-  }
 
   form.userFields =  [...userFields.reduce((fields, field) => {
     if (form.userFields.includes(field.name)) {
@@ -242,7 +259,8 @@ function cleanForm(form) {
   }, new Set())];
 
   // Re-map the field names based on index
-  // This will ensure we elimnate non-unique field names
+  // This will ensure we eliminate non-unique field names
+  // TODO this breaking primary/secondary map and feed fields
   form.fields = fields.map((field, index) => {
     field.name = fieldName(index);
     return field;

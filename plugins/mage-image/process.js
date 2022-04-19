@@ -1,4 +1,4 @@
-var config = require('./config.json')
+const config = require('./config.json')
   , log = require('../../logger')
   , environment = require('../../environment/env')
   , async = require('async')
@@ -9,15 +9,15 @@ var config = require('./config.json')
   , Observation = require('../../models/observation')
   , gm = require('gm');
 
-var attachmentBase = environment.attachmentBaseDirectory;
-var thumbSizes = config.image.thumbSizes;
+const attachmentBase = environment.attachmentBaseDirectory;
+const thumbSizes = config.image.thumbSizes;
 
-var timeout = config.image.interval * 1000;
+const timeout = config.image.interval * 1000;
 
-var observationTimes = {};
-var lastObservationTimes = {orient: {}, thumbnail: {}};
+const observationTimes = {};
+const lastObservationTimes = {orient: {}, thumbnail: {}};
 
-var mongo = environment.mongo;
+const mongo = environment.mongo;
 mongoose.connect(mongo.uri, mongo.options, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodb is running...');
@@ -25,7 +25,7 @@ mongoose.connect(mongo.uri, mongo.options, function(err) {
   }
 });
 
-var mongooseLogger = log.loggers.get('mongoose');
+const mongooseLogger = log.loggers.get('mongoose');
 mongoose.set('debug', function(collection, method, query, doc, options) {
   mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
 });
@@ -57,16 +57,16 @@ function processAttachment(event, observationId, attachment, callback) {
 function orient(event, observationId, attachment, callback) {
   log.info('orient attachment ' + attachment.name);
 
-  var file = path.join(attachmentBase, attachment.relativePath);
-  var outputFile =  file + "_orient";
+  const file = path.join(attachmentBase, attachment.relativePath);
+  const outputFile =  file + "_orient";
   log.info("file", file);
 
-  var start = new Date().valueOf();
+  const start = new Date().valueOf();
 
   gm(file).out('-auto-orient').write(outputFile, function(err) {
     if (err) return callback(err);
 
-    var end = new Date().valueOf();
+    const end = new Date().valueOf();
     log.info("orientation of attachment " + attachment.name + " complete in " + (end - start)/1000 + " seconds");
     fs.move(outputFile, file, {overwrite: true}, function(err) {
       if (err) return callback(err);
@@ -86,18 +86,18 @@ function orient(event, observationId, attachment, callback) {
 }
 
 function thumbnail(event, observationId, attachment, callback) {
-  var file = path.join(attachmentBase, attachment.relativePath);
+  const file = path.join(attachmentBase, attachment.relativePath);
 
   async.eachSeries(thumbSizes, function(thumbSize, done) {
-    var containsThumbnail = attachment.thumbnails.some(function(thumbnail) {
+    const containsThumbnail = attachment.thumbnails.some(function(thumbnail) {
       return thumbnail.minDimension === thumbSize;
     });
     if (containsThumbnail) return done();
 
-    var thumbPath = path.join(path.dirname(file), path.basename(file, path.extname(file))) + "_" + thumbSize + path.extname(file);
+    const thumbPath = path.join(path.dirname(file), path.basename(file, path.extname(file))) + "_" + thumbSize + path.extname(file);
 
-    var thumbWidth = attachment.width <= attachment.height ? thumbSize : null;
-    var thumbHeight = attachment.height < attachment.width ? thumbSize : null;
+    let thumbWidth = attachment.width <= attachment.height ? thumbSize : null;
+    let thumbHeight = attachment.height < attachment.width ? thumbSize : null;
 
     if (!thumbWidth) thumbWidth = Math.ceil((thumbHeight / attachment.height) * attachment.width);
     if (!thumbHeight) thumbHeight = Math.ceil((thumbWidth / attachment.width) * attachment.height);
@@ -105,7 +105,7 @@ function thumbnail(event, observationId, attachment, callback) {
     if (thumbWidth > attachment.width || thumbHeight > attachment.height) return done();
 
     log.info('thumbnailing attachment ' + attachment.relativePath + ' for size ' + thumbSize);
-    var start = new Date().valueOf();
+    const start = new Date().valueOf();
     gm(file)
       .in("-size")
       .in(thumbWidth * 2 + "x" + thumbHeight * 2)
@@ -116,10 +116,10 @@ function thumbnail(event, observationId, attachment, callback) {
           return;
         } else {
           // write to mongo
-          var end = new Date().valueOf();
+          const end = new Date().valueOf();
           log.info('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
 
-          var stat = fs.statSync(thumbPath);
+          const stat = fs.statSync(thumbPath);
           
           Observation.addAttachmentThumbnail(event, observationId, attachment._id, {
             size: stat.size,
@@ -149,7 +149,7 @@ function thumbnail(event, observationId, attachment, callback) {
   });
 }
 
-var processAttachments = function() {
+const processAttachments = function() {
   log.info('processing attachments, starting from', lastObservationTimes);
 
   async.waterfall([
@@ -171,21 +171,22 @@ var processAttachments = function() {
     },
     function(events, done) {
       // aggregate results into array of attachments that have not been oriented, and orient
-      var results = [];
+      const results = [];
       async.eachSeries(events, function(event, done) {
-        var match = {
-          "attachments.contentType": { "$regex": /^image/ },
-          "attachments.oriented": false
+        const match = {
+          'attachments.relativePath': { 'exists': true },
+          'attachments.contentType': { '$regex': /^image/ },
+          'attachments.oriented': false
         };
 
-        var lastTime = lastObservationTimes.orient[event.collectionName];
+        const lastTime = lastObservationTimes.orient[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
 
-        var sort = {"$sort": { "lastModified": 1 }};
-        var unwind = {"$unwind": "$attachments"};
-        var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
+        const sort = {"$sort": { "lastModified": 1 }};
+        const unwind = {"$unwind": "$attachments"};
+        const project = {"$project": {lastModified: 1, attachment: "$attachments"}};
         Observation.observationModel(event).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
           results.push({event: event, observations: aggregate});
           done(err);
@@ -210,22 +211,22 @@ var processAttachments = function() {
     function(events, done) {
       // aggregate results into array of attachments that have been oriented
       // but do no have all the nessecary thumbnails
-      var results = [];
+      const results = [];
       async.eachSeries(events, function(event, done) {
-        var match =  {
+        const match =  {
           "attachments.contentType": { "$regex": /^image/ },
           "attachments.oriented": true,
           "attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } }
         };
 
-        var lastTime = lastObservationTimes.thumbnail[event.collectionName];
+        const lastTime = lastObservationTimes.thumbnail[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
 
-        var sort = {"$sort": { "lastModified": 1 }};
-        var unwind = {"$unwind": "$attachments"};
-        var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
+        const sort = {"$sort": { "lastModified": 1 }};
+        const unwind = {"$unwind": "$attachments"};
+        const project = {"$project": {lastModified: 1, attachment: "$attachments"}};
         Observation.observationModel(event).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
           results.push({event: event, observations: aggregate});
           done(err);

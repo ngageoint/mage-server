@@ -100,7 +100,7 @@
               <div class="form-group">
                 <label class="control-label col-sm-2">New</label>
                 <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$invalid}">
-                  <input type="password" ng-model="$ctrl.authentication.newPassword" ng-change="$ctrl.newPasswordChanged(authentication.newPassword)" name="newPassword" class="form-control" required>
+                  <input type="password" ng-model="$ctrl.authentication.newPassword" ng-change="$ctrl.newPasswordChanged($ctrl.authentication.newPassword)" name="newPassword" class="form-control" required>
                   <div class="help-block" ng-messages="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$error" ng-if="$ctrl.form.authentication.newPassword.$invalid">
                     <div ng-message="required">New password is required</div>
                   </div>

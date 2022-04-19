@@ -1,0 +1,86 @@
+<section class="mat-typography">
+   <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+</section>
+<section class="mat-typography">
+   <div class="page-container">
+      <div class="content">
+         <mat-horizontal-stepper [linear]="true" (selectionChange)="stepChanged(stepper)" #stepper>
+            <mat-step label="Title" errorMessage="Title is required.">
+               <mat-form-field appearance="outline">
+                  <mat-label>Authentication Title</mat-label>
+                  <input matInput placeholder="e.g. Local LDAP" [(ngModel)]="strategy.title" required>
+                  <button mat-button *ngIf="strategy.title" matSuffix mat-icon-button (click)="strategy.title=''">
+                     <mat-icon>close</mat-icon>
+                  </button>
+               </mat-form-field>
+               <div>
+                  <button [disabled]="!strategy.title.length" mat-button matStepperNext>Next</button>
+               </div>
+            </mat-step>
+            <mat-step label="Type" errorMessage="Type is required.">
+               <mat-form-field appearance="outline">
+                  <mat-label>Choose a type</mat-label>
+                  <mat-select [(ngModel)]="strategy.name" [ngModelOptions]="{standalone: true}" id="type" name="type"
+                     required #type="ngModel">
+                     <mat-option *ngFor="let typeChoice of TYPE_CHOICES" [value]="typeChoice.name">
+                        {{typeChoice.title}}
+                     </mat-option>
+                  </mat-select>
+               </mat-form-field>
+               <div>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <button [disabled]="!strategy.name.length" mat-button matStepperNext>Next</button>
+               </div>
+            </mat-step>
+            <mat-step label="Settings" errorMessage="Missing required settings.">
+               <div [ngSwitch]="strategy.type">
+                  <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy">
+                  </admin-authentication-oidc>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy">
+                  </admin-authentication-oauth2>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy">
+                  </admin-authentication-oauth2>
+                  <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy">
+                  </admin-authentication-ldap>
+                  <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy">
+                  </admin-authentication-saml>
+               </div>
+               <div>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <button mat-button matStepperNext [disabled]="!isValid()">Next</button>
+               </div>
+            </mat-step>
+            <mat-step label="Login Button">
+               <button-preview [strategy]="strategy"></button-preview>
+               <div>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <button mat-button matStepperNext>Next</button>
+               </div>
+            </mat-step>
+            <mat-step label="Summary">
+               <div class="mat-title">{{strategy.title}} ({{strategy.type}})</div>
+               <button-preview [strategy]="strategy" [editable]="false"></button-preview>
+
+               <div [ngSwitch]="strategy.type">
+                  <admin-authentication-oidc *ngSwitchCase="'openidconnect'" [strategy]="strategy" [editable]="false">
+                  </admin-authentication-oidc>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth'" [strategy]="strategy" [editable]="false">
+                  </admin-authentication-oauth2>
+                  <admin-authentication-oauth2 *ngSwitchCase="'oauth2'" [strategy]="strategy" [editable]="false">
+                  </admin-authentication-oauth2>
+                  <admin-authentication-ldap *ngSwitchCase="'ldap'" [strategy]="strategy" [editable]="false">
+                  </admin-authentication-ldap>
+                  <admin-authentication-saml *ngSwitchCase="'saml'" [strategy]="strategy" [editable]="false">
+                  </admin-authentication-saml>
+               </div>
+
+               <div>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <button mat-button (click)="reset(); stepper.reset()">Reset</button>
+                  <button mat-button (click)="save()" [disabled]="!isValid()">Save</button>
+               </div>
+            </mat-step>
+         </mat-horizontal-stepper>
+      </div>
+   </div>
+</section>
