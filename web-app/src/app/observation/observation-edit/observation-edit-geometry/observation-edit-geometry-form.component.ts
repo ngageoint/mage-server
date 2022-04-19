@@ -63,6 +63,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   @Output() cancel = new EventEmitter<any>()
 
   @ViewChild('mgrsModel') mgrsModel: NgModel;
+  @ViewChild('latitudeDmsModel') latitudeDmsModel: NgModel;
+  @ViewChild('longitudeDmsModel') longitudeDmsModel: NgModel;
   @ViewChild('snackbarContainer', { read: ViewContainerRef }) snackBarContainer: ViewContainerRef;
 
   selectedShapeType = 'Point'
@@ -197,8 +199,11 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     this.previousLongitudeValue = parsedLongitudeDMS
     finalLongitudeValue = parsedLongitudeDMS
 
+
     this.latitudeDms = finalLatitudeValue
     this.longitudeDms = finalLongitudeValue
+    this.latitudeDmsModel.control.setValue(this.latitudeDms, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+    this.longitudeDmsModel.control.setValue(this.longitudeDms, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
 
     const valid = DMS.validateLatitudeFromDMS(this.latitudeDms) && DMS.validateLongitudeFromDMS(this.longitudeDms)
     if (valid) {
@@ -344,6 +349,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
 
   updateCoordinates(): void {
     this.mgrs = this.toMgrs(this.feature);
+    this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
 
     if (this.feature.geometry.type === 'Point') {
       this.longitude = this.feature.geometry.coordinates[0]
