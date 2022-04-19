@@ -541,7 +541,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
+    validateObservationCreateAccess(false),
     upload.single('attachment'),
     validateAttachmentFile,
     function (req, res, next) {

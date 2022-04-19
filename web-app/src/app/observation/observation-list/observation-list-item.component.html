@@ -50,12 +50,12 @@
       </div>
 
       <div class="item-thumbnail">
-        <img [src]="observation.style?.iconUrl" />
+        <img [src]="observation?.style?.iconUrl" />
       </div>
     </div>
 
-    <div *ngIf="observation.attachments[0]?.url" class="item-media" matCardImage>
-      <observation-attachment [attachment]="observation.attachments[0]" [label]="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></observation-attachment>
+    <div *ngIf="attachments?.length && attachments[0]?.url" class="item-media" matCardImage>
+      <observation-attachment [attachment]="attachments[0]" [label]="attachments.length > 1 ? '1 of ' + attachments.length : false"></observation-attachment>
     </div>
   </div>
 
@@ -98,8 +98,7 @@
           <span *ngIf="favorites" class="actions__favorite-label">{{favorites}}</span>
         </div>
 
-        <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download"
-          matTooltipPosition="above">
+        <a mat-icon-button [href]="downloadUrl()" class="actions--inactive" matTooltip="Download" matTooltipPosition="above">
           <mat-icon>save_alt</mat-icon>
         </a>
       </div>

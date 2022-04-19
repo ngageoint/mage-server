@@ -41,6 +41,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
 import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
+import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 
 require('angular-minicolors');
 require('select2');
@@ -88,7 +89,8 @@ app
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
   .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
-  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }));
+  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
+  .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))

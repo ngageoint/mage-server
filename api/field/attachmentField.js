@@ -12,9 +12,6 @@ function AttachmentField(fieldDefinition, observationForm, observation) {
 util.inherits(AttachmentField, Field);
 
 AttachmentField.prototype.validate = function() {
-  const error = AttachmentField.super_.prototype.validate.call(this);
-  if (error) return error;
-
   const fieldValue = this.value || [];
   if (!Array.isArray(fieldValue)) {
     return { error: 'value', message: `${this.definition.title} must be an Array` }

@@ -40,7 +40,7 @@
         </observation-edit-geometry>
       </mat-card>
 
-      <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)">
+      <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)" [cdkDropListDisabled]="formGroup?.get('properties')?.get('forms').length <= 1">
         <ng-container *ngFor="let group of formGroup?.get('properties')?.get('forms')?.controls; let i = index">
           <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
             <observation-edit-form

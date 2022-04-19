@@ -111,6 +111,7 @@ import {
 } from './observation/observation-view/observation-view';
 
 import {
+  DMSValidatorDirective,
   MGRSValidatorDirective,
   ObservationEditCheckboxComponent,
   ObservationEditDateComponent,
@@ -157,6 +158,8 @@ import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/a
 import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
+import { AdminEventFormPreviewComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
+import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview-dialog.component';
 
 @NgModule({
   declarations: [
@@ -172,6 +175,7 @@ import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-sett
     LayerHeaderComponent,
     LayerContentComponent,
     ColorPickerComponent,
+    DMSValidatorDirective,
     MGRSValidatorDirective,
     FeedPanelComponent,
     ObservationListItemComponent,
@@ -241,7 +245,9 @@ import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-sett
     AdminAuthenticationSAMLComponent,
     ButtonPreviewComponent,
     AdminAuthenticationSettingsComponent,
-    AdminSettingsUnsavedComponent
+    AdminSettingsUnsavedComponent,
+    AdminEventFormPreviewComponent,
+    AdminEventFormPreviewDialogComponent
   ],
   imports: [
     CommonModule,
