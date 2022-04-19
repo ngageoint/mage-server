@@ -69,25 +69,33 @@ describe('feed-create attribute factory', function() {
             format: 'urn:mage:epoch'
           }
         }
+      },
+      localization: {
+        'x-test': {
+          title: 'Alt Title'
+        }
       }
     }
-    const createAttrs = FeedCreateUnresolved(topic, minimal)
-    expect(createAttrs).to.deep.equal({
+    const expected: Omit<Required<FeedCreateUnresolved>, 'id' | 'itemPrimaryProperty' | 'itemSecondaryProperty'> = {
       service: minimal.service,
       topic: topic.id,
       title: minimal.title,
-      summary: minimal.summary,
-      icon: minimal.icon,
+      summary: minimal.summary!,
+      icon: minimal.icon!,
       itemsHaveIdentity: false,
       itemsHaveSpatialDimension: false,
-      itemTemporalProperty: minimal.itemTemporalProperty,
-      updateFrequencySeconds: minimal.updateFrequencySeconds,
-      constantParams: minimal.constantParams,
-      variableParamsSchema: minimal.variableParamsSchema,
+      itemTemporalProperty: minimal.itemTemporalProperty!,
+      updateFrequencySeconds: minimal.updateFrequencySeconds!,
+      constantParams: minimal.constantParams!,
+      variableParamsSchema: minimal.variableParamsSchema!,
       mapStyle: minimal.mapStyle,
-      itemPropertiesSchema: minimal.itemPropertiesSchema,
+      itemPropertiesSchema: minimal.itemPropertiesSchema!,
+      localization: minimal.localization!,
       unresolvedIcons: []
-    })
+    }
+    const createAttrs = FeedCreateUnresolved(topic, minimal)
+
+    expect(createAttrs).to.deep.equal(expected)
     expect(createAttrs).to.not.have.property('itemPrimaryProperty')
     expect(createAttrs).to.not.have.property('itemSecondaryProperty')
   })
@@ -120,6 +128,12 @@ describe('feed-create attribute factory', function() {
       },
       itemPropertiesSchema: {
         title: 'Topic Properties'
+      },
+      localization: {
+        'x-test': {
+          title: 'Alt Title',
+          summary: 'Alt Summary'
+        }
       }
     }
     const minimal: FeedCreateMinimal = {
@@ -147,7 +161,8 @@ describe('feed-create attribute factory', function() {
       },
       itemPropertiesSchema: topic.itemPropertiesSchema,
       icon: topic.icon,
-      unresolvedIcons: [ topic.icon.sourceUrl, topic.mapStyle.icon?.sourceUrl ]
+      unresolvedIcons: [ topic.icon.sourceUrl, topic.mapStyle.icon?.sourceUrl ],
+      localization: topic.localization
     })
   })
 
@@ -178,7 +193,8 @@ describe('feed-create attribute factory', function() {
       },
       itemPropertiesSchema: {
         title: 'Topic Properties'
-      }
+      },
+      localization: {}
     }
     const minimal: FeedCreateMinimal = {
       service: uniqid(),

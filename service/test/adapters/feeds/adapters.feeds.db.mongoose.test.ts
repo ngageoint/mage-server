@@ -305,6 +305,9 @@ describe('feeds repositories', function() {
           itemPropertiesSchema: {
             title: 'Save Me',
             type: 'object'
+          },
+          localization: {
+            'x-test': { title: 'Test Title' }
           }
         })
         const expectedFeed: Omit<Feed, 'id'> = _.omit(createAttrs, 'id')
@@ -350,6 +353,11 @@ describe('feeds repositories', function() {
             variableParamsSchema: {
               properties: {
                 [uniqid()]: { type: 'string' }
+              },
+            },
+            localization: {
+              'x-derp': {
+                title: 'Title in Derp'
               }
             }
           })
@@ -379,6 +387,9 @@ describe('feeds repositories', function() {
               properties: {
                 [uniqid()]: { type: 'string' }
               }
+            },
+            localization: {
+              'x-derp-ner': { title: 'Title in Derp Ner' }
             }
           })
           const origDoc: FeedDocument = await model.create({ _id: origAttrs.id, ...origAttrs, icon: origAttrs.icon.id })
@@ -418,6 +429,9 @@ describe('feeds repositories', function() {
               properties: {
                 [uniqid()]: { type: 'string' }
               }
+            },
+            localization: {
+              'x-hurr': { summary: 'Summary in hurr' }
             }
           })
           const updatedAttrs: Feed = Object.freeze({

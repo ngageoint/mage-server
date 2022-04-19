@@ -74,7 +74,8 @@ export const FeedSchema = new mongoose.Schema(
     itemPrimaryProperty: { type: String, required: false },
     itemSecondaryProperty: { type: String, required: false },
     mapStyle: { type: mongoose.Schema.Types.Mixed, required: false },
-    itemPropertiesSchema: { type: mongoose.Schema.Types.Mixed, required: false }
+    itemPropertiesSchema: { type: mongoose.Schema.Types.Mixed, required: false },
+    localization: { type: mongoose.Schema.Types.Mixed, required: false },
   },
   {
     toJSON: {
@@ -166,7 +167,8 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
       itemSecondaryProperty: feed.itemSecondaryProperty,
       itemTemporalProperty: feed.itemTemporalProperty,
       mapStyle: feed.mapStyle,
-      updateFrequencySeconds: feed.updateFrequencySeconds
+      updateFrequencySeconds: feed.updateFrequencySeconds,
+      localization: feed.localization
     }
     return await super.update({ ...explicit, id: feed.id })
   }

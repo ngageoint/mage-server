@@ -73,6 +73,7 @@
     "pem-jwk": "1.5.1",
     "pem2jwk": "1.0.1",
     "pug": "2.0.4",
+    "rfc5646": "^3.0.0",
     "svg-captcha": "^1.4.0",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",

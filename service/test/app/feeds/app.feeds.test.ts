@@ -1757,6 +1757,9 @@ describe('feeds use case interactions', function () {
                   type: 'object',
                   title: 'Topic 1 Item Properties'
                 },
+                localization: {
+                  'x-fler': { title: 'Title in Fler' }
+                }
               })
             ],
             conn: Sub.for<FeedServiceConnection>(),
@@ -1791,6 +1794,9 @@ describe('feeds use case interactions', function () {
                   type: 'object',
                   title: 'Topic 2 Item Properties'
                 },
+                localization: {
+                  'x-borp': { title: 'TItle in Borp' }
+                }
               })
             ],
             conn: Sub.for<FeedServiceConnection>(),
@@ -1897,6 +1903,9 @@ describe('feeds use case interactions', function () {
             itemPropertiesSchema: {
               type: 'object',
               title: 'Updated Item Properties'
+            },
+            localization: {
+              'x-goor': { title: 'Title in Goor' }
             }
           }
           const req: UpdateFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
@@ -2003,7 +2012,8 @@ describe('feeds use case interactions', function () {
             itemsHaveSpatialDimension: true,
             icon: null,
             mapStyle: null,
-            updateFrequencySeconds: null
+            updateFrequencySeconds: null,
+            localization: null
           }
           const req: UpdateFeedRequest = requestBy(adminPrincipal, { feed: feedMod })
           const res = await app.updateFeed(req)
@@ -2064,7 +2074,8 @@ describe('feeds use case interactions', function () {
             icon: { id: feedIcon.id },
             mapStyle: {
               icon: { id: mapIcon.id }
-            }
+            },
+            localization: services[0].topics[0].localization
           })
           app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait)
           app.iconRepo.received(1).findOrImportBySourceUrl(Arg.is(x => String(x) === String(feedMod.mapStyle?.icon?.sourceUrl)), StaticIconImportFetch.EagerAwait)

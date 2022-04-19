@@ -5,6 +5,7 @@ import { JSONSchema4 } from 'json-schema'
 import { URL } from 'url'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIconId, StaticIconReference } from '../icons/entities.icons'
 import _ from 'lodash'
+import { LanguageTag, Locale } from '../entities.i18n'
 
 
 export class FeedsError<Code extends symbol, Data> extends Error {
@@ -45,7 +46,20 @@ export interface FeedServiceType {
    * @param config
    */
   redactServiceConfig(config: Json): Json
-  createConnection(config: Json): Promise<FeedServiceConnection>
+  createConnection(config: Json, context?: ServiceConnectionContext): Promise<FeedServiceConnection>
+}
+
+/**
+ * The connection context can include extra standard infmoration, such as the
+ * client's localization information, or perhaps authentication mechanism
+ * parameters, such as OpenID Connect.
+ */
+export interface ServiceConnectionContext {
+  /**
+   * The locale holds localization information such as a client's preferred
+   * language.
+   */
+  locale?: Locale | null | undefined
 }
 
 export type RegisteredFeedServiceType = FeedServiceType & { id: string }
@@ -145,6 +159,14 @@ export interface FeedTopic {
    */
   readonly itemsHaveSpatialDimension?: boolean
   /**
+   * A topic's `itemPropertiesSchema` describes the shape of the [`properties`](https://www.rfc-editor.org/rfc/rfc7946.html#section-3.2)
+   * object of the GeoJSON Features that a topic provides.  The schema should
+   * be relatively flat, describing simple key-value pairs with titles and
+   * descriptions.  Complex schemas with nested structures will not have robust
+   * support from MAGE's core clients.
+   */
+  readonly itemPropertiesSchema?: JSONSchema4
+  /**
    * Feed items with a temporal property will translate to GeoJSON features
    * that have a temporal property whose value is a numeric epoch timestamp.  A
    * value of `undefined` indicates a topic's temporal property is unknown and
@@ -169,13 +191,37 @@ export interface FeedTopic {
    */
   readonly itemSecondaryProperty?: string
   readonly mapStyle?: MapStyle
-  readonly itemPropertiesSchema?: JSONSchema4
-  // readonly localizedProperties?: JSONSchema4
+  /**
+   * The `Topic` `localization` is a dictionary whose keys are [RFC-5646](https://www.rfc-editor.org/rfc/rfc5646.html)
+   * Localization of the topic applies mainly to the titles and descriptions
+   * the {@link FeedTopic.itemPropertiesSchema | `itemPropertiesSchema`} defines,
+   * but could also indicate the language of the {@link FeedTopic.title | title},
+   * {@link FeedTopic.summary | summary}, and even {@link FeedTopic.icon | icon}, if
+   * those properties have localized values.  This is similar to HTTP's
+   * [`Content-Language`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Language) header.
+   */
+  readonly localization?: {
+    [rfc5646LanguageTag: string]: {
+      title?: string,
+      summary?: string,
+      /*
+      TODO: localized icon here, or let icon modules handle that? users can
+      supply icon at feed creation time, but icon upload ui and services could
+      potentially handle localization just for icons
+      TODO: localized map styles here, or on MapStyle type? probably MapStyle
+      */
+    }
+  }
 }
 
 export interface FeedTopicContent {
   topic: FeedTopicId
   items: FeatureCollection
+  /**
+   * A feed service may provide content in different languages based on the
+   * client's {@link ServiceConnectionContext.locale | real or preferred localization}.
+   */
+  language?: LanguageTag[] | null | undefined
   pageCursor?: Json
 }
 
@@ -222,6 +268,7 @@ export interface Feed {
    */
   itemsHaveIdentity: boolean
   itemsHaveSpatialDimension: boolean
+  itemPropertiesSchema?: JSONSchema4
   itemTemporalProperty?: string
   /**
    * A feed that does not have a primary property (implying there is no
@@ -232,7 +279,10 @@ export interface Feed {
   itemPrimaryProperty?: string
   itemSecondaryProperty?: string
   mapStyle?: ResolvedMapStyle
-  itemPropertiesSchema?: JSONSchema4
+  /**
+   * See {@link FeedTopic.localization}.
+   */
+  localization?: FeedTopic['localization']
 }
 
 /**
@@ -322,7 +372,10 @@ export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<Fee
     updateFrequencySeconds: feedMinimal.updateFrequencySeconds === null ? undefined : feedMinimal.updateFrequencySeconds || topic.updateFrequencySeconds,
     mapStyle: feedMinimal.mapStyle === null ? undefined :
       feedMinimal.mapStyle ? { ...feedMinimal.mapStyle } :
-      topic.mapStyle ? { ...topic.mapStyle } : undefined
+      topic.mapStyle ? { ...topic.mapStyle } : undefined,
+    localization: feedMinimal.localization === null ? undefined :
+      feedMinimal.localization ? { ...feedMinimal.localization } :
+      topic.localization ? { ...topic.localization } : undefined
   }
   if (feedMinimal.icon !== null) {
     if (feedMinimal.icon) {

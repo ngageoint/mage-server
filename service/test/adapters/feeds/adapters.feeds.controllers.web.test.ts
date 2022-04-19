@@ -612,6 +612,11 @@ invalid request
           itemPropertiesSchema: {
             type: 'object',
             title: 'Properties of Items'
+          },
+          localization: {
+            'x-test': {
+              title: 'All Title'
+            }
           }
         },
         variableParams: {
@@ -636,7 +641,8 @@ invalid request
           constantParams: appReqParams.feed.constantParams as JsonObject,
           variableParamsSchema: appReqParams.feed.variableParamsSchema as JSONSchema4,
           mapStyle: appReqParams.feed.mapStyle as ResolvedMapStyle,
-          itemPropertiesSchema: appReqParams.feed.itemPropertiesSchema as JSONSchema4
+          itemPropertiesSchema: appReqParams.feed.itemPropertiesSchema as JSONSchema4,
+          localization: appReqParams.feed.localization!
         },
         content: {
           topic,
@@ -679,7 +685,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed
@@ -733,7 +740,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed,
@@ -781,7 +789,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed,
@@ -836,7 +845,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed
@@ -890,7 +900,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed
@@ -943,7 +954,8 @@ invalid request
         variableParamsSchema: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       })
       const appReq: PreviewFeedRequest = createAdminRequest({
         feed: minimalFeed
@@ -1013,7 +1025,8 @@ invalid request
         itemTemporalProperty: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       }
       const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
       const feed: FeedExpanded = {
@@ -1084,7 +1097,10 @@ invalid request
         itemPropertiesSchema: <JSONSchema4>{
           type: 'object',
           title: 'Properties of Items'
-        }
+        },
+        localization: {
+          'x-wat': { title: 'Title in Wat' }
+        },
       }
 
       const feedMinimal: FeedMinimalVerbose = {
@@ -1157,7 +1173,8 @@ invalid request
         itemTemporalProperty: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       }
       const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
       const feed: FeedExpanded = {
@@ -1224,7 +1241,8 @@ invalid request
         itemTemporalProperty: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       }
       const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
       const feed: FeedExpanded = {
@@ -1291,7 +1309,8 @@ invalid request
         itemTemporalProperty: undefined,
         updateFrequencySeconds: undefined,
         mapStyle: undefined,
-        itemPropertiesSchema: undefined
+        itemPropertiesSchema: undefined,
+        localization: undefined,
       }
       const appReq: CreateFeedRequest = createAdminRequest({ feed: feedMinimal })
       const feed: FeedExpanded = {
@@ -1648,6 +1667,9 @@ invalid request
           type: 'object',
           title: 'Updated Schema'
         },
+        localization: {
+          'x-test': { title: 'Alt Title' }
+        },
         superfluous: {
           partOfUpdate: false
         },
@@ -1716,6 +1738,9 @@ invalid request
         itemPropertiesSchema: {
           type: 'object',
           title: 'Updated Schema'
+        },
+        localization: {
+          'x-test': { summary: 'Alt summary' }
         },
         superfluous: {
           partOfUpdate: false
