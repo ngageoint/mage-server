@@ -53,7 +53,7 @@
         <mat-form-field appearance="standard">
           <mat-label>Latitude DMS</mat-label>
           <input matInput type="text" dmsValue="latitude" [(ngModel)]="latitudeDms" (ngModelChange)="onLatLngDmsChange(true)" [disabled]="!feature?.geometry?.coordinates">
-          <mat-error>Invalid DMS</mat-error>
+          <mat-error>Invalid DMS Value</mat-error>
         </mat-form-field>
       </div>
       <div class="coordinate">
