@@ -492,19 +492,34 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
-      const options = {
-        access: req.access,
-        searchTerm: req.query.term,
-        pageSize: parseInt(String(req.query.page_size)) || 2,
-        pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      if (req.query.page != null) {
+        const options = {
+          access: req.access,
+          searchTerm: req.query.term,
+          pageSize: parseInt(String(req.query.page_size)) || 2,
+          pageIndex: parseInt(String(req.query.page)) || 0,
+          includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+        }
+
+        Event.getTeamsInEvent(req.params.id, options).then(page => {
+          if (!page) return res.status(404).send('Event not found');
+
+          res.json(page);
+        }).catch(err => next(err));
+      } else {
+        let populate = null;
+        if (req.query.populate) {
+          populate = req.query.populate.split(",");
+        }
+
+        Event.getTeams(req.event._id, { populate: populate }, function (err, teams) {
+          if (err) return next(err);
+
+          res.json(teams.map(function (team) {
+            return team.toObject({ access: req.access });
+          }));
+        });
       }
-
-      Event.getTeamsInEvent(req.params.id, options).then(page => {
-        if (!page) return res.status(404).send('Event not found');
-
-        res.json(page);
-      }).catch(err => next(err));
     }
   );
 
