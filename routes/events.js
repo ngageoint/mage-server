@@ -512,7 +512,7 @@ module.exports = function(app, security) {
           populate = req.query.populate.split(",");
         }
 
-        Event.getTeams(req.event._id, { populate: populate }, function (err, teams) {
+        Event.getTeams(req.params.id, { populate: populate }, function (err, teams) {
           if (err) return next(err);
 
           res.json(teams.map(function (team) {
