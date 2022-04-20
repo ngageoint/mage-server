@@ -81,6 +81,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   previousLatitudeValue: string
   previousLongitudeValue: string
 
+  userEnteredMgrs: boolean
+
   selectedVertexIndex: number
 
   constructor(
@@ -267,6 +269,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     if (!this.mgrsModel.control.valid) {
       return
     }
+    this.userEnteredMgrs = true
 
     let coordinates = { ...this.feature.geometry.coordinates }
 
@@ -348,8 +351,12 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   }
 
   updateCoordinates(): void {
-    this.mgrs = this.toMgrs(this.feature);
-    this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+    let currentMgrs = this.toMgrs(this.feature);
+    if (!this.userEnteredMgrs) {
+      this.mgrs = currentMgrs
+      this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+    }
+    this.userEnteredMgrs = false
 
     if (this.feature.geometry.type === 'Point') {
       this.longitude = this.feature.geometry.coordinates[0]
