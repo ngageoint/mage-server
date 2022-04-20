@@ -2,7 +2,7 @@ import { AddFeedToEvent, AddFeedToEventRequest, ListEventFeeds, ListEventFeedsRe
 import { MageEventRepository, MageEventAttrs } from '../../entities/events/entities.events'
 import { entityNotFound, EntityNotFoundError, PermissionDeniedError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
-import { Feed, FeedRepository } from '../../entities/feeds/entities.feeds'
+import { FeedRepository, localizedFeed } from '../../entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../permissions/permissions.events'
 
 /*
@@ -39,15 +39,15 @@ export function ListEventFeeds(permissionService: EventPermissionServiceImpl, ev
       return AppResponse.error<UserFeed[], PermissionDeniedError>(denied)
     }
     const feeds = await feedRepo.findAllByIds(event.feedIds)
-    const userFeeds = [] as Feed[]
-    Object.values(feeds).forEach(x => {
-      if (!x) {
-        return
+    const userFeeds = Object.values(feeds).reduce((userFeeds, feed) => {
+      if (feed) {
+        const { constantParams, ...userFeed } = { ...feed }
+        const langs = req.context.locale()?.languagePreferences || []
+        const localized = localizedFeed(userFeed, langs)
+        userFeeds.push(localized)
       }
-      const userFeed = { ...x }
-      delete userFeed['constantParams']
-      userFeeds.push(userFeed)
-    })
+      return userFeeds
+    }, [] as UserFeed[])
     return AppResponse.success(userFeeds)
   }
 }

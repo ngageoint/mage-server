@@ -3,23 +3,24 @@ import uniqid from 'uniqid'
 import { expect } from 'chai'
 import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 import { copyMageEventAttrs, MageEvent, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
-import { AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
+import { AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest, UserFeed } from '../../../lib/app.api/events/app.api.events'
 import { AddFeedToEvent, ListEventFeeds, RemoveFeedFromEvent } from '../../../lib/app.impl/events/app.impl.events'
 import { MageError, ErrEntityNotFound, permissionDenied, ErrPermissionDenied, EntityNotFoundError, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { AppRequest } from '../../../lib/app.api/app.api.global'
 import { Feed, FeedRepository, FeedServiceRepository, FeedServiceTypeRepository } from '../../../lib/entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
+import { LanguageTag, Locale } from '../../../lib/entities/entities.i18n'
 import { UserDocument } from '../../../src/models/user'
 
 
-function requestBy<P extends object>(user: string, params: P): AppRequest<SubstituteOf<UserDocument>> & P {
+function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserDocument>> & P {
   const userDoc = Sub.for<UserDocument>()
   userDoc.id.returns!(uniqid())
   return {
     context: {
       requestToken: Symbol(),
       requestingPrincipal: () => userDoc,
-      locale() { return null }
+      locale() { return locale || null }
     },
     ...params
   }
@@ -195,6 +196,241 @@ describe('event feeds use case interactions', function() {
       expect(res.success).to.deep.equal([
         _.omit(feed, 'constantParams')
       ])
+    })
+
+    it('localizes the feed titles and descriptions', async function() {
+
+      const feeds: { [id: string]: Feed } = {
+        [event.feedIds[0]]: {
+          id: event.feedIds[0],
+          service: uniqid(),
+          topic: 'topic1',
+          title: 'Feed 1',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPropertiesSchema: {
+            properties: {
+              prop11: {
+                title: 'Prop 1.1'
+              },
+              prop12: {
+                title: 'Prop 1.2'
+              }
+            },
+          },
+          localization: {
+            'es': {
+              properties: {
+                prop11: {
+                  title: "ES Prop 1.1"
+                }
+              }
+            }
+          }
+        },
+        [event.feedIds[1]]: {
+          id: event.feedIds[1],
+          service: uniqid(),
+          topic: 'topic2',
+          title: 'Feed 2',
+          summary: 'Feed 2 makes happy',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPropertiesSchema: {
+            properties: {
+              prop21: {
+                title: 'Prop 2.1',
+                description: 'Prop 2.1 is great'
+              },
+              prop22: {
+                title: 'Prop 2.2',
+                description: 'Prop 2.2 is funny'
+              }
+            },
+          },
+          localization: {
+            'es': {
+              title: 'ES Feed 2',
+              summary: 'ES Feed 2 makes happy',
+              properties: {
+                prop21: {
+                  title: 'ES Prop 2.1',
+                  description: 'ES Prop 2.1 is great'
+                }
+              }
+            }
+          }
+        }
+      }
+      const localizedFeeds: UserFeed[] = [
+        {
+          id: event.feedIds[0],
+          service: feeds[event.feedIds[0]].service,
+          topic: 'topic1',
+          title: 'Feed 1',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPropertiesSchema: {
+            properties: {
+              prop11: {
+                title: 'ES Prop 1.1'
+              },
+              prop12: {
+                title: 'Prop 1.2'
+              }
+            },
+          },
+        },
+        {
+          id: event.feedIds[1],
+          service: feeds[event.feedIds[1]].service,
+          topic: 'topic2',
+          title: 'ES Feed 2',
+          summary: 'ES Feed 2 makes happy',
+          itemsHaveIdentity: true,
+          itemsHaveSpatialDimension: true,
+          itemPropertiesSchema: {
+            properties: {
+              prop21: {
+                title: 'ES Prop 2.1',
+                description: 'ES Prop 2.1 is great'
+              },
+              prop22: {
+                title: 'Prop 2.2',
+                description: 'Prop 2.2 is funny'
+              }
+            },
+          }
+        }
+      ]
+      app.feedRepo.findAllByIds(event.feedIds).resolves(feeds)
+      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [ new LanguageTag('es-419'), new LanguageTag('en-US') ]})
+      const res = await app.listEventFeeds(req)
+
+      expect(res.error).to.be.null
+      expect(Array.isArray(res.success)).to.be.true
+      expect(res.success).to.have.deep.members(localizedFeeds)
+    })
+
+    it('omits localization from feeds even when there are no language preferences', async function() {
+
+      const feed: Feed = {
+        id: event.feedIds[0],
+        service: uniqid(),
+        topic: 'topic1',
+        title: 'Feed 1',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        itemPropertiesSchema: {
+          properties: {
+            prop11: {
+              title: 'Prop 1.1'
+            },
+            prop12: {
+              title: 'Prop 1.2'
+            }
+          },
+        },
+        localization: {
+          'es': {
+            properties: {
+              prop11: {
+                title: "ES Prop 1.1"
+              }
+            }
+          }
+        }
+      }
+      const localizedFeed: UserFeed = _.omit(feed, 'localization')
+      app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
+      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [] })
+      const res = await app.listEventFeeds(req)
+
+      expect(res.error).to.be.null
+      expect(Array.isArray(res.success)).to.be.true
+      expect(res.success).to.deep.equal([ localizedFeed ])
+    })
+
+    it('omits localization from feeds when there are no matching language preferences', async function() {
+
+      const feed: Feed = {
+        id: event.feedIds[0],
+        service: uniqid(),
+        topic: 'topic1',
+        title: 'Feed 1',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        itemPropertiesSchema: {
+          properties: {
+            prop11: {
+              title: 'Prop 1.1'
+            },
+            prop12: {
+              title: 'Prop 1.2'
+            }
+          },
+        },
+        localization: {
+          'es': {
+            properties: {
+              prop11: {
+                title: "ES Prop 1.1"
+              }
+            }
+          }
+        }
+      }
+      const localizedFeed: UserFeed = _.omit(feed, 'localization')
+      app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
+      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [ new LanguageTag('en-GB') ] })
+      const res = await app.listEventFeeds(req)
+
+      expect(res.error).to.be.null
+      expect(Array.isArray(res.success)).to.be.true
+      expect(res.success).to.deep.equal([ localizedFeed ])
+    })
+
+    it('omits localization from feeds when there is no locale on the request context', async function() {
+
+      const feed: Feed = {
+        id: event.feedIds[0],
+        service: uniqid(),
+        topic: 'topic1',
+        title: 'Feed 1',
+        itemsHaveIdentity: true,
+        itemsHaveSpatialDimension: true,
+        itemPropertiesSchema: {
+          properties: {
+            prop11: {
+              title: 'Prop 1.1'
+            },
+            prop12: {
+              title: 'Prop 1.2'
+            }
+          },
+        },
+        localization: {
+          'es': {
+            properties: {
+              prop11: {
+                title: "ES Prop 1.1"
+              }
+            }
+          }
+        }
+      }
+      const localizedFeed: UserFeed = _.omit(feed, 'localization')
+      app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
+      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId })
+      const res = await app.listEventFeeds(req)
+
+      expect(res.error).to.be.null
+      expect(Array.isArray(res.success)).to.be.true
+      expect(res.success).to.deep.equal([ localizedFeed ])
     })
 
     it('fails if the event does not exist', async function() {

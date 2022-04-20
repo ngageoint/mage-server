@@ -5,7 +5,7 @@ import { JSONSchema4 } from 'json-schema'
 import { URL } from 'url'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIconId, StaticIconReference } from '../icons/entities.icons'
 import _ from 'lodash'
-import { LanguageTag, Locale } from '../entities.i18n'
+import { LanguageTag, Locale, selectContentLanguageFor } from '../entities.i18n'
 
 
 export class FeedsError<Code extends symbol, Data> extends Error {
@@ -210,6 +210,7 @@ export interface FeedTopic {
       potentially handle localization just for icons
       TODO: localized map styles here, or on MapStyle type? probably MapStyle
       */
+      properties?: { [key: string]: Pick<JSONSchema4, 'title' | 'description'> | undefined }
     }
   }
 }
@@ -352,7 +353,7 @@ export type FeedCreateUnresolved = Omit<FeedCreateAttrs, 'icon' | 'mapStyle'> & 
  * may contain URLs of icons that are not yet registered with MAGE's icon
  * repository.  Any unresolved URLs will be in the `unresolvedIcons` array.
  */
-export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<FeedCreateMinimal>): FeedCreateUnresolved | InvalidFeedAttrsError => {
+export function FeedCreateUnresolved(topic: FeedTopic, feedMinimal: Readonly<FeedCreateMinimal>): FeedCreateUnresolved | InvalidFeedAttrsError {
   type NonNullableCreateAttrs = Omit<FeedCreateAttrs, FeedOverrideTopicNullableKeys>
   const nonNullable: NonNullableCreateAttrs = {
     service: feedMinimal.service,
@@ -405,10 +406,17 @@ export const FeedCreateUnresolved = (topic: FeedTopic, feedMinimal: Readonly<Fee
       delete unresolvedAttrs[attr]
     }
   }
-  return validateItemPropertiesSchemaForFeed(unresolvedAttrs)
+  return validateSchemaPropertyReferencesForFeed(unresolvedAttrs)
 }
 
-export const validateItemPropertiesSchemaForFeed = <T extends Feed | FeedCreateAttrs | FeedCreateMinimal | FeedUpdateMinimal>(feed: T): T | InvalidFeedAttrsError => {
+/**
+ * Ensure the given feed's {@link Feed.itemPrimaryProperty | `itemPrimaryProperty`},
+ * {@link Feed.itemSecondaryProperty | `itemSecondaryProperty`}, and {@link Feed.itemTemporalProperty | `itemTemporalProperty`}
+ * reference valid properties in the feed's {@link Feed.itemPropertiesSchema | `itemPropertiesSchema`}
+ * @param feed
+ * @returns
+ */
+export function validateSchemaPropertyReferencesForFeed<T extends Feed | FeedCreateAttrs | FeedCreateMinimal | FeedUpdateMinimal>(feed: T): T | InvalidFeedAttrsError {
   const schemaProps = feed.itemPropertiesSchema?.properties
   if (!schemaProps) {
     return feed
@@ -439,7 +447,7 @@ const resolvedMapStyle = (unresolved: MapStyle | ResolvedMapStyle, icons: { [ico
   return resolved
 }
 
-export const FeedCreateAttrs = (unresolved: FeedCreateUnresolved, icons: { [iconUrl: string]: StaticIconId }): FeedCreateAttrs => {
+export function FeedCreateAttrs(unresolved: FeedCreateUnresolved, icons: { [iconUrl: string]: StaticIconId }): FeedCreateAttrs {
   icons = icons || {}
   const { unresolvedIcons, icon, mapStyle, ...rest } = unresolved
   const resolved = rest as FeedCreateAttrs
@@ -464,10 +472,11 @@ export const FeedCreateAttrs = (unresolved: FeedCreateUnresolved, icons: { [icon
  * Iterate the features of the given feature collection and remove from the
  * `properties` object of each feature any entries that the given schema does
  * not define.  Return a new feature collection object with the modified
+ * features.
  * @param featureCollection
  * @param itemPropertiesSchema
  */
-export const retainSchemaPropertiesInFeatures = (featureCollection: FeatureCollection, itemPropertiesSchema?: Feed['itemPropertiesSchema'] | null): FeatureCollection => {
+export function retainSchemaPropertiesInFeatures(featureCollection: FeatureCollection, itemPropertiesSchema?: Feed['itemPropertiesSchema'] | null): FeatureCollection {
   if (!itemPropertiesSchema || !itemPropertiesSchema.properties) {
     return featureCollection
   }
@@ -483,6 +492,49 @@ export const retainSchemaPropertiesInFeatures = (featureCollection: FeatureColle
     ...featureCollection,
     features
   }
+}
+
+export function localizedFeed(feed: Feed, targetLanguages: LanguageTag[]): Feed {
+  if (!feed.localization) {
+    return feed
+  }
+  const contentLanguages = Object.keys(feed.localization).map(x =>  new LanguageTag(x))
+  const matchedLanguage = selectContentLanguageFor(targetLanguages, contentLanguages)
+  if (!matchedLanguage) {
+    return _.omit(feed, 'localization')
+  }
+  const translations = feed.localization[matchedLanguage.toString()]
+  const localized = {
+    ...feed
+  }
+  if (translations.title) {
+    localized.title = translations.title
+  }
+  if (translations.summary) {
+    localized.summary = translations.summary
+  }
+  if (translations.properties) {
+    const localProperties = translations.properties
+    const mainProperties = { ...feed.itemPropertiesSchema?.properties }
+    localized.itemPropertiesSchema = {
+      ...feed.itemPropertiesSchema,
+      properties: Object.entries(mainProperties).reduce((properties, entry) => {
+        const [ propertyKey, propertySchema ] = entry
+        const localPropertyDesc = localProperties[propertyKey]
+        const localPropertySchema = { ...propertySchema }
+        if (localPropertyDesc?.title) {
+          localPropertySchema.title = localPropertyDesc.title
+        }
+        if (localPropertyDesc?.description) {
+          localPropertySchema.description = localPropertyDesc.description
+        }
+        properties![propertyKey] = localPropertySchema
+        return properties
+      }, {} as JSONSchema4['properties'])
+    }
+  }
+  delete localized['localization']
+  return localized
 }
 
 export type FeedContentParams = JsonObject

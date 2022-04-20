@@ -52,22 +52,6 @@ export { JSONSchema4 } from 'json-schema'
 
 import { JSONSchema4 } from 'json-schema'
 
-declare module 'json-schema' {
-  interface JSONSchema4 {
-    /**
-     * This property allows for localized titles and descriptions of schemas
-     * and properties.  Clients may choose from the available translations
-     * to best match a user's locale.
-     */
-    localization?: {
-      [rfc5646Tag: string]: {
-        title: string,
-        description: string
-      }
-    }
-  }
-}
-
 export interface JsonValidator {
   validate(instance: Json): Promise<null | Error>
 }

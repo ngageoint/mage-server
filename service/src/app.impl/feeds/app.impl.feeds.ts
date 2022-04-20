@@ -8,6 +8,7 @@ import { JsonSchemaService, JsonValidator } from '../../entities/entities.json_t
 import { MageEventRepository } from '../../entities/events/entities.events'
 import { SourceUrlStaticIconReference, StaticIconImportFetch, StaticIconReference, StaticIconRepository } from '../../entities/icons/entities.icons'
 import { UrlResolutionError } from '../../entities/entities.global'
+import { Locale } from '../../entities/entities.i18n'
 
 
 export function ListFeedServiceTypes(permissionService: api.FeedsPermissionService, repo: FeedServiceTypeRepository): api.ListFeedServiceTypes {
@@ -35,7 +36,7 @@ export function PreviewTopics(permissionService: api.FeedsPermissionService, rep
         if (invalid) {
           return invalidInputServiceConfig(invalid, 'serviceConfig')
         }
-        const conn = await serviceType.createConnection(req.serviceConfig)
+        const conn = await serviceType.createConnection(req.serviceConfig, { locale: req.context.locale() })
         return await conn.fetchAvailableTopics()
       }
     )
@@ -147,7 +148,7 @@ export function ListServiceTopics(permissionService: api.FeedsPermissionService,
     return await withPermission<FeedTopic[], KnownErrorsOf<api.ListServiceTopics>>(
       permissionService.ensureListTopicsPermissionFor(req.context, service.id),
       async (): Promise<FeedTopic[] | EntityNotFoundError> => {
-        const conn = await serviceType.createConnection(service.config)
+        const conn = await serviceType.createConnection(service.config, { locale: req.context.locale() })
         return await conn.fetchAvailableTopics()
       }
     )
@@ -177,11 +178,12 @@ interface FetchContextParams {
   topic: FeedTopicId
   variableParamsSchema?: Feed['variableParamsSchema'] | null
   itemPropertiesSchema?: Feed['itemPropertiesSchema'] | null
+  locale?: Locale | null | undefined
 }
 
 async function buildFetchContext(services: ContentFetchDependencies, fetchContextParams: FetchContextParams): Promise<ContentFetchContext | EntityNotFoundError | InvalidInputError> {
   // TODO: this logic might belong more in the entity/domain layer
-  const { service: serviceId, topic: topicId, variableParamsSchema } = fetchContextParams
+  const { service: serviceId, topic: topicId, variableParamsSchema, locale } = fetchContextParams
   const service = await services.serviceRepo.findById(serviceId)
   if (!service) {
     return entityNotFound(serviceId, 'FeedService')
@@ -190,7 +192,7 @@ async function buildFetchContext(services: ContentFetchDependencies, fetchContex
   if (!serviceType) {
     return entityNotFound(service.serviceType, 'FeedServiceType')
   }
-  const conn = await serviceType.createConnection(service.config)
+  const conn = await serviceType.createConnection(service.config, { locale: fetchContextParams.locale })
   const topics = await conn.fetchAvailableTopics()
   const topic = topics.find(x => x.id === topicId)
   if (!topic) {
@@ -303,20 +305,23 @@ async function resolveFeedCreate(topic: FeedTopic, feedMinimal: api.FeedCreateMi
   const errors: KeyPathError[] = []
   const icons = await Promise.all(unresolved.unresolvedIcons.map(iconUrl => {
     return iconRepo.findOrImportBySourceUrl(iconUrl, iconFetch).then(icon => {
+      /*
+      TODO: this probably should not cause the entire operation to fail. some
+      icon urls might succeed while some fail, and a broken icon reference is
+      not a fatal error for the feed.
+      */
       if (icon instanceof UrlResolutionError) {
          errors.push([ `error resolving icon url: ${iconUrl}`, ...keyPathOfIconUrl(iconUrl, feedMinimal) ])
-         return errors;
+         return errors
       }
       else {
         return ({ [String(iconUrl)]: icon.id })
       }
     })
   }))
-
-  if(errors.length > 0) {
-     return errors;
+  if (errors.length > 0) {
+    return errors
   }
-
   const iconsMerged = Object.assign({}, ...icons)
   const resolved = FeedCreateAttrs(unresolved, iconsMerged)
   return resolved
@@ -433,7 +438,7 @@ export function GetFeed(permissionService: api.FeedsPermissionService, serviceTy
         if (!feed) {
           return entityNotFound(req.feed, 'Feed')
         }
-        const feedCompanions = await buildFetchContext({ serviceTypeRepo, serviceRepo }, feed)
+        const feedCompanions = await buildFetchContext({ serviceTypeRepo, serviceRepo }, { ...feed, locale: req.context.locale() })
         if (feedCompanions instanceof MageError) {
           return feedCompanions as EntityNotFoundError
         }

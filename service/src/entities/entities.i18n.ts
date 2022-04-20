@@ -1,4 +1,4 @@
-const LanguageTagImpl = require('rfc5646') as typeof RFC5646LanguageTagImpl
+const RFC5646LanguageTagImpl = require('rfc5646') as typeof RFC5646LanguageTagImplType
 
 
 /**
@@ -6,7 +6,7 @@ const LanguageTagImpl = require('rfc5646') as typeof RFC5646LanguageTagImpl
  * preferences.
  */
 export interface Locale {
-  language: LanguageTag
+  languagePreferences: LanguageTag[]
 }
 
 /**
@@ -24,13 +24,18 @@ export interface LanguageTag {
   readonly wild: boolean
   readonly length: string
   readonly first: string
+  /**
+   * Return a new tag without the unnecessary script, extensions, and variant
+   * components of this tag.
+   */
+  get minimal(): LanguageTag
   suitableFor(targetLanguageTag: string): boolean
+  toString(): string
 }
 
 export const LanguageTag = RFC5646LanguageTagImpl
 
-
-declare class RFC5646LanguageTagImpl implements LanguageTag {
+declare class RFC5646LanguageTagImplType implements LanguageTag {
   constructor(tag: string)
   readonly language: string
   readonly region: string
@@ -42,9 +47,25 @@ declare class RFC5646LanguageTagImpl implements LanguageTag {
   readonly wild: boolean
   readonly length: string
   readonly first: string
+  get minimal(): LanguageTag
   suitableFor(targetLanguageTag: string): boolean
 }
 
-export function selectLanguageTagFor(target: LanguageTag, contentLanguages: string[]): string | null {
+/**
+ * Choose the best matching content language from the given list of content
+ * languages for the given list of language preferences.  The preferences list
+ * should be in descending order of preference.  Return null if none of the
+ * content languages satisfies the preferences.
+ * @param preferences
+ * @param contentLanguages
+ * @returns the matched content lanugage or null
+ */
+export function selectContentLanguageFor(preferences: LanguageTag[], contentLanguages: LanguageTag[]): LanguageTag | null {
+  for (const pref of preferences) {
+    const match = contentLanguages.find(x => x.suitableFor(pref.minimal.toString()))
+    if (match) {
+      return match
+    }
+  }
   return null
 }

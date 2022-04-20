@@ -88,6 +88,9 @@ function requestBy<RequestType>(principal: TestPrincipal, params?: RequestType):
           requestToken: uniqid(),
           requestingPrincipal() {
             return principal
+          },
+          locale() {
+            return null
           }
         }
       }
@@ -350,7 +353,7 @@ describe('feeds use case interactions', function () {
         serviceType.validateServiceConfig(Arg.any()).resolves(null)
         const conn = Sub.for<FeedServiceConnection>()
         conn.fetchAvailableTopics().resolves([])
-        serviceType.createConnection(Arg.any()).resolves(conn)
+        serviceType.createConnection(Arg.all()).resolves(conn)
 
         res = await app.previewTopics(req)
 
@@ -430,7 +433,7 @@ describe('feeds use case interactions', function () {
         ]
         const conn = Sub.for<FeedServiceConnection>()
         serviceType.validateServiceConfig(Arg.deepEquals(req.serviceConfig)).resolves(null)
-        serviceType.createConnection(Arg.deepEquals(req.serviceConfig)).resolves(conn)
+        serviceType.createConnection(Arg.deepEquals(req.serviceConfig), Arg.any()).resolves(conn)
         conn.fetchAvailableTopics().resolves(topics)
 
         const res = await app.previewTopics(req)
@@ -640,13 +643,13 @@ describe('feeds use case interactions', function () {
           expect(err).to.be.instanceOf(MageError)
           expect(err.code).to.equal(ErrPermissionDenied)
           for (const serviceType of someServiceTypes) {
-            serviceType.didNotReceive().createConnection(Arg.any())
+            serviceType.didNotReceive().createConnection(Arg.all())
           }
 
           const service = Sub.for<FeedServiceConnection>()
           service.fetchAvailableTopics().resolves([])
           const serviceType = someServiceTypes.filter(x => x.id === serviceDesc.serviceType)[0]
-          serviceType.createConnection(Arg.deepEquals(serviceDesc.config)).resolves(service)
+          serviceType.createConnection(Arg.deepEquals(serviceDesc.config), Arg.any()).resolves(service)
           app.permissionService.grantListTopics(bannedPrincipal.user, serviceDesc.id)
 
           const res = await app.listTopics(req)
@@ -654,7 +657,7 @@ describe('feeds use case interactions', function () {
           expect(res.success).to.be.instanceOf(Array)
           expect(res.success).to.have.lengthOf(0)
           expect(res.error).to.be.null
-          serviceType.received(1).createConnection(Arg.any())
+          serviceType.received(1).createConnection(Arg.all())
         })
 
         it('returns all the topics for a service', async function () {
@@ -731,7 +734,7 @@ describe('feeds use case interactions', function () {
           const serviceDesc = someServices[1]
           const serviceType = someServiceTypes.filter(x => x.id === serviceDesc.serviceType)[0]
           const service = Sub.for<FeedServiceConnection>()
-          serviceType.createConnection(Arg.deepEquals(serviceDesc.config)).resolves(service)
+          serviceType.createConnection(Arg.deepEquals(serviceDesc.config), Arg.any()).resolves(service)
           service.fetchAvailableTopics().resolves(topics)
           const req: ListServiceTopicsRequest = requestBy(adminPrincipal, { service: serviceDesc.id })
           const fetched = await app.listTopics(req).then(res => res.success)
@@ -774,7 +777,7 @@ describe('feeds use case interactions', function () {
         app.registerServices(service)
         app.permissionService.grantCreateFeed(adminPrincipal.user, service.id)
         serviceConn = Sub.for<FeedServiceConnection>()
-        someServiceTypes[0].createConnection(Arg.deepEquals(service.config)).resolves(serviceConn)
+        someServiceTypes[0].createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(serviceConn)
       })
 
       type PreviewOrCreateOp = 'previewFeed' | 'createFeed'
@@ -1834,7 +1837,7 @@ describe('feeds use case interactions', function () {
         app.registerFeeds(...feeds)
         const serviceType = someServiceTypes[1]
         for (const serviceTuple of services) {
-          serviceType.createConnection(Arg.deepEquals(serviceTuple.service.config)).resolves(serviceTuple.conn)
+          serviceType.createConnection(Arg.deepEquals(serviceTuple.service.config), Arg.any()).resolves(serviceTuple.conn)
           serviceTuple.conn.fetchAvailableTopics().resolves(serviceTuple.topics)
         }
       })
@@ -2424,7 +2427,7 @@ describe('feeds use case interactions', function () {
       }
       const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams)
       const conn = Sub.for<FeedServiceConnection>()
-      serviceType.createConnection(Arg.deepEquals(service.config)).resolves(conn)
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
       conn.fetchAvailableTopics().resolves([
         { id: feed.topic } as FeedTopic
       ])
@@ -2467,7 +2470,7 @@ describe('feeds use case interactions', function () {
       }
       const mergedParams = Object.assign({ ...expectedContent.variableParams }, feed.constantParams)
       const conn = Sub.for<FeedServiceConnection>()
-      serviceType.createConnection(Arg.deepEquals(service.config)).resolves(conn)
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
       conn.fetchAvailableTopics().resolves([
         { id: feed.topic } as FeedTopic
       ])
@@ -2552,7 +2555,7 @@ describe('feeds use case interactions', function () {
       const conn = Sub.for<FeedServiceConnection>()
       conn.fetchAvailableTopics().resolves([{ id: definedPropertiesFeed.topic } as FeedTopic])
       conn.fetchTopicContent(Arg.all()).resolves(extraPropertiesContent)
-      serviceType.createConnection(Arg.any()).resolves(conn)
+      serviceType.createConnection(Arg.all()).resolves(conn)
       const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: definedPropertiesFeed.id })
       const res = await app.fetchFeedContent(req)
       const content = res.success!

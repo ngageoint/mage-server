@@ -1,5 +1,5 @@
 import uniqid from 'uniqid'
-import { FeedCreateUnresolved, FeedTopic, FeedCreateMinimal, ResolvedMapStyle, FeedCreateAttrs, validateItemPropertiesSchemaForFeed, FeedsError, InvalidFeedAttrsErrorData, InvalidFeedAttrsError, ErrInvalidFeedAttrs } from '../../../lib/entities/feeds/entities.feeds'
+import { FeedCreateUnresolved, FeedTopic, FeedCreateMinimal, ResolvedMapStyle, FeedCreateAttrs, validateSchemaPropertyReferencesForFeed, FeedsError, InvalidFeedAttrsErrorData, InvalidFeedAttrsError, ErrInvalidFeedAttrs } from '../../../lib/entities/feeds/entities.feeds'
 import { expect } from 'chai'
 import { URL } from 'url'
 
@@ -274,7 +274,7 @@ describe('item properties schema validation', function() {
       service: uniqid(),
       topic: uniqid(),
     }
-    let valid = validateItemPropertiesSchemaForFeed(feed)
+    let valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -282,7 +282,7 @@ describe('item properties schema validation', function() {
       ...feed,
       itemPropertiesSchema: null
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -290,7 +290,7 @@ describe('item properties schema validation', function() {
       ...feed,
       itemPropertiesSchema: undefined
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
   })
@@ -313,7 +313,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemPrimaryProperty: 'type'
     }
-    let valid = validateItemPropertiesSchemaForFeed(feed)
+    let valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -321,7 +321,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemSecondaryProperty: 'variant'
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -329,7 +329,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemTemporalProperty: 'when'
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -339,7 +339,7 @@ describe('item properties schema validation', function() {
       itemSecondaryProperty: 'variant',
       itemTemporalProperty: 'when'
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
   })
@@ -365,7 +365,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemPrimaryProperty: 'prop2'
     }
-    let valid = validateItemPropertiesSchemaForFeed(feed)
+    let valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -373,7 +373,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemSecondaryProperty: 'prop1',
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
 
@@ -381,7 +381,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemTemporalProperty: 'prop2'
     }
-    valid = validateItemPropertiesSchemaForFeed(feed)
+    valid = validateSchemaPropertyReferencesForFeed(feed)
 
     expect(valid).to.equal(feed)
   })
@@ -407,7 +407,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemPrimaryProperty: 'missing'
     }
-    let valid: InvalidFeedAttrsError = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+    let valid: InvalidFeedAttrsError = validateSchemaPropertyReferencesForFeed(feed) as InvalidFeedAttrsError
 
     expect(valid).to.be.instanceOf(FeedsError)
     expect(valid.code).to.equal(ErrInvalidFeedAttrs)
@@ -416,7 +416,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemSecondaryProperty: 'missing',
     }
-    valid = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+    valid = validateSchemaPropertyReferencesForFeed(feed) as InvalidFeedAttrsError
 
     expect(valid).to.be.instanceOf(FeedsError)
     expect(valid.code).to.equal(ErrInvalidFeedAttrs)
@@ -425,7 +425,7 @@ describe('item properties schema validation', function() {
       ...feedBase,
       itemTemporalProperty: 'missing'
     }
-    valid = validateItemPropertiesSchemaForFeed(feed) as InvalidFeedAttrsError
+    valid = validateSchemaPropertyReferencesForFeed(feed) as InvalidFeedAttrsError
 
     expect(valid).to.be.instanceOf(FeedsError)
     expect(valid.code).to.equal(ErrInvalidFeedAttrs)

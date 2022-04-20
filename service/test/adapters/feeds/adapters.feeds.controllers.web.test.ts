@@ -1796,4 +1796,12 @@ invalid request
       expect(res.type).to.match(jsonMimeType)
     })
   })
+
+  describe('localization', function() {
+
+    it('passes language from accept-language header', function() {
+
+
+    })
+  })
 })
