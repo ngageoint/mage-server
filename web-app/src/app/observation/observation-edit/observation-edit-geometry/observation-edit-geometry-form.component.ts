@@ -171,9 +171,17 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     if (latitudeField) {
       oldLength = this.previousLatitudeValue ? this.previousLatitudeValue.length : 0
       currentLength = finalLatitudeValue ? finalLatitudeValue.length : 0
+      if (((oldLength - 1) == currentLength) && this.previousLatitudeValue.startsWith(finalLatitudeValue)) {
+        this.previousLatitudeValue = finalLatitudeValue
+        return
+      }
     } else {
       oldLength = this.previousLongitudeValue ? this.previousLongitudeValue.length : 0
       currentLength = finalLongitudeValue ? finalLongitudeValue.length : 0
+      if (((oldLength - 1) == currentLength) && this.previousLongitudeValue.startsWith(finalLongitudeValue)) {
+        this.previousLongitudeValue = finalLongitudeValue
+        return
+      }
     }
     let coordinates = { ...this.feature.geometry.coordinates }
 
