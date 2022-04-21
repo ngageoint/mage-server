@@ -12,14 +12,9 @@ export class RandomServiceType implements FeedServiceType {
 
   readonly id: FeedServiceTypeId = FeedServiceTypeUnregistered
   readonly pluginServiceTypeId: string = RandomServiceType.SERVICE_TYPE_ID
-  readonly title: string = 'Feed Random'
-  readonly summary: string = 'Feed the returns features with random geo points'
-  readonly configSchema: JSONSchema4 = {
-    type: 'string',
-    title: 'URL',
-    description: "Service which returns random GeoJSON points",
-    default: 'https://msi.gs.mil/'
-  }
+  readonly title: string = 'Random Points'
+  readonly summary: string = 'Feed that returns features with random GeoJSON points'
+  readonly configSchema: JSONSchema4 = {}
 
   async validateServiceConfig(config: Json): Promise<null | InvalidServiceConfigError> {
     if (typeof config !== 'string') {

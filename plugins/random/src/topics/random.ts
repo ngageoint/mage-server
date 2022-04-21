@@ -50,6 +50,15 @@ export const topicDescriptor: FeedTopic = {
         format: "date"
       }
     }
+  },
+  localization: {
+    es: {
+      properties: {
+        title: { title: 'Título'},
+        summary: { title: 'Descripción' },
+        timestamp: { title: 'Marca de tiempo' }
+      }
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.random",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Feed plugin that returns random geojson points",
   "main": "lib/index.js",
   "files": [
@@ -38,8 +38,7 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server#readme",
   "dependencies": {
-    "@types/geojson": "^7946.0.7",
-    "axios": "^0.19.2"
+    "@types/geojson": "^7946.0.7"
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "^6.2.0"
