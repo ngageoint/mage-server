@@ -45,6 +45,7 @@ import { RoleBasedUsersPermissionService } from './permissions/permissions.users
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose'
 import path from 'path'
 import { MageEventDocument } from './models/event'
+import { parseAcceptLanguageHeader } from './entities/entities.i18n'
 
 
 export interface MageService {
@@ -410,8 +411,9 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
           return req.user
         },
         locale() {
-          // TODO: build locale information from accept-language header
-          return null
+          return Object.freeze({
+            languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+          })
         },
         event: req.event || req.eventEntity
       }
@@ -473,7 +475,9 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
         return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
       },
       locale() {
-        return null
+        return Object.freeze({
+          languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+        })
       }
     }
   }
