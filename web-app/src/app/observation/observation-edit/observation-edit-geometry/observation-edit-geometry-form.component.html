@@ -52,14 +52,14 @@
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>Latitude DMS</mat-label>
-          <input matInput type="text" dmsValue="latitude" [(ngModel)]="latitudeDms" (ngModelChange)="onLatLngDmsChange(true)" [disabled]="!feature?.geometry?.coordinates">
-          <mat-error>Invalid DMS</mat-error>
+          <input matInput type="text" dmsValue="latitude" [(ngModel)]="latitudeDms" (ngModelChange)="onLatLngDmsChange(true)" [disabled]="!feature?.geometry?.coordinates" #latitudeDmsModel="ngModel">
+          <mat-error>Invalid DMS Value</mat-error>
         </mat-form-field>
       </div>
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>Longitude DMS</mat-label>
-          <input matInput type="text" dmsValue="longitude" [(ngModel)]="longitudeDms" (ngModelChange)="onLatLngDmsChange(false)" [disabled]="!feature?.geometry?.coordinates">
+          <input matInput type="text" dmsValue="longitude" [(ngModel)]="longitudeDms" (ngModelChange)="onLatLngDmsChange(false)" [disabled]="!feature?.geometry?.coordinates" #longitudeDmsModel="ngModel">
           <mat-error>Invalid DMS Value</mat-error>
         </mat-form-field>
       </div>
