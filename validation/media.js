@@ -10,6 +10,10 @@ class Media {
   }
 
   validate(allowedTypes) {
+    // if there are no defined allowed types, all are allowed
+    if (allowedTypes.length == 0) {
+      return true
+    }
     if (this.mimetype) {
       const valid = allowedTypes.some(allowed => {
         const mimetypes = Media.mimetypes[allowed];

@@ -102,7 +102,17 @@
                     </div>
                 
                     <!-- Attachment type Image/Video/Voice/Any -->
-                    <div class="row top-gap">
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="top-gap">
+                        <div class="checkbox"></div>
+                        <label>
+                        <input type="checkbox" ng-checked="field.allowedAttachmentTypes.length !== 0" ng-click="field.allowedAttachmentTypes.length !== 0 ? field.allowedAttachmentTypes = [] : $ctrl.addAllowedAttachmentTypes(field)"> Restrict Attachment Types
+                        </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row" ng-show="field.allowedAttachmentTypes.length !== 0">
                       <div class="col-md-12">
                         <label>Allowed Attachment Types</label>
                         <ui-select multiple ng-model="field.allowedAttachmentTypes" theme="bootstrap">

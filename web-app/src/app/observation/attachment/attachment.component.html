@@ -67,5 +67,7 @@
   <div class="media media-unknown">
     <mat-icon class="media__icon">attach_file</mat-icon>
     <div>{{attachment.name | filename:12}}</div>
+    <a *ngIf="clickable" class="media__link" href="{{attachment.url}}?access_token={{token}}" target="_blank"></a>
+
   </div>
 </ng-template>

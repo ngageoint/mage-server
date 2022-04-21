@@ -1,12 +1,5 @@
-module.exports = {
-  Team: Team,
-  TeamAccess: TeamAccess
-};
-
-Team.$inject = ['$resource'];
-
 function Team($resource) {
-  var Team = $resource('/api/teams/:id', {
+  const Team = $resource('/api/teams/:id', {
     id: '@id'
   },{
     create: {
@@ -41,6 +34,20 @@ function Team($resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    getMembers: {
+      method: 'GET',
+      url: '/api/teams/:id/members',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonMembers: {
+      method: 'GET',
+      url: '/api/teams/:id/nonMembers',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 
@@ -55,10 +62,8 @@ function Team($resource) {
   return Team;
 }
 
-TeamAccess.$inject = ['$resource'];
-
 function TeamAccess($resource) {
-  var TeamAccess = $resource('/api/teams/:teamId/acl', {
+  const TeamAccess = $resource('/api/teams/:teamId/acl', {
     teamId: '@teamId',
     userId: '@userId'
   },{
@@ -82,3 +87,11 @@ function TeamAccess($resource) {
 
   return TeamAccess;
 }
+
+Team.$inject = ['$resource'];
+TeamAccess.$inject = ['$resource'];
+
+module.exports = {
+  Team: Team,
+  TeamAccess: TeamAccess
+};
