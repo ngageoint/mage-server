@@ -33,23 +33,13 @@ export interface LanguageTag {
   toString(): string
 }
 
-export const LanguageTag = RFC5646LanguageTagImpl
+export const ContentLanguageKey = Symbol.for('ContentLanguage')
 
-declare class RFC5646LanguageTagImplType implements LanguageTag {
-  constructor(tag: string)
-  readonly language: string
-  readonly region: string
-  readonly script: string
-  readonly variant: string
-  readonly invalid: boolean | null | undefined
-  readonly privateuse: object
-  readonly extensions: string
-  readonly wild: boolean
-  readonly length: string
-  readonly first: string
-  get minimal(): LanguageTag
-  suitableFor(targetLanguageTag: string): boolean
+export type Localized<T> = T & {
+  [ContentLanguageKey]?: LanguageTag
 }
+
+export const LanguageTag = RFC5646LanguageTagImpl
 
 /**
  * Choose the best matching content language from the given list of content
@@ -68,4 +58,21 @@ export function selectContentLanguageFor(preferences: LanguageTag[], contentLang
     }
   }
   return null
+}
+
+
+declare class RFC5646LanguageTagImplType implements LanguageTag {
+  constructor(tag: string)
+  readonly language: string
+  readonly region: string
+  readonly script: string
+  readonly variant: string
+  readonly invalid: boolean | null | undefined
+  readonly privateuse: object
+  readonly extensions: string
+  readonly wild: boolean
+  readonly length: string
+  readonly first: string
+  get minimal(): LanguageTag
+  suitableFor(targetLanguageTag: string): boolean
 }

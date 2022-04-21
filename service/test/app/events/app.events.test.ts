@@ -9,7 +9,7 @@ import { MageError, ErrEntityNotFound, permissionDenied, ErrPermissionDenied, En
 import { AppRequest } from '../../../lib/app.api/app.api.global'
 import { Feed, FeedRepository, FeedServiceRepository, FeedServiceTypeRepository } from '../../../lib/entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
-import { LanguageTag, Locale } from '../../../lib/entities/entities.i18n'
+import { ContentLanguageKey, LanguageTag, Locale, Localized } from '../../../lib/entities/entities.i18n'
 import { UserDocument } from '../../../src/models/user'
 
 
@@ -262,7 +262,7 @@ describe('event feeds use case interactions', function() {
           }
         }
       }
-      const localizedFeeds: UserFeed[] = [
+      const localizedFeeds: Localized<UserFeed>[] = [
         {
           id: event.feedIds[0],
           service: feeds[event.feedIds[0]].service,
@@ -280,6 +280,7 @@ describe('event feeds use case interactions', function() {
               }
             },
           },
+          [ContentLanguageKey]: new LanguageTag('es')
         },
         {
           id: event.feedIds[1],
@@ -300,7 +301,8 @@ describe('event feeds use case interactions', function() {
                 description: 'Prop 2.2 is funny'
               }
             },
-          }
+          },
+          [ContentLanguageKey]: new LanguageTag('es')
         }
       ]
       app.feedRepo.findAllByIds(event.feedIds).resolves(feeds)
@@ -311,6 +313,13 @@ describe('event feeds use case interactions', function() {
       expect(res.error).to.be.null
       expect(Array.isArray(res.success)).to.be.true
       expect(res.success).to.have.deep.members(localizedFeeds)
+      const lang = new LanguageTag('es')
+      res.success?.forEach(feed => {
+        expect(feed[ContentLanguageKey]?.toString()).to.equal(lang.toString())
+      })
+      const contentLanguage = res.contentLanguage as LanguageTag[]
+      expect(contentLanguage).to.have.length(1)
+      expect(contentLanguage[0].toString()).to.equal(lang.toString())
     })
 
     it('omits localization from feeds even when there are no language preferences', async function() {

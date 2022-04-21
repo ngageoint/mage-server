@@ -4,6 +4,7 @@ import { entityNotFound, EntityNotFoundError, PermissionDeniedError } from '../.
 import { AppResponse } from '../../app.api/app.api.global'
 import { FeedRepository, localizedFeed } from '../../entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../permissions/permissions.events'
+import { ContentLanguageKey, LanguageTag } from '../../entities/entities.i18n'
 
 /*
 TODO:
@@ -39,16 +40,21 @@ export function ListEventFeeds(permissionService: EventPermissionServiceImpl, ev
       return AppResponse.error<UserFeed[], PermissionDeniedError>(denied)
     }
     const feeds = await feedRepo.findAllByIds(event.feedIds)
-    const userFeeds = Object.values(feeds).reduce((userFeeds, feed) => {
+    const langPrefs = req.context.locale()?.languagePreferences || []
+    // TODO: is this the right way to return content languages?
+    const { userFeeds, langs } = Object.values(feeds).reduce(({ userFeeds, langs }, feed) => {
       if (feed) {
         const { constantParams, ...userFeed } = { ...feed }
-        const langs = req.context.locale()?.languagePreferences || []
-        const localized = localizedFeed(userFeed, langs)
+        const localized = localizedFeed(userFeed, langPrefs)
         userFeeds.push(localized)
+        const lang = localized[ContentLanguageKey]
+        if (lang) {
+          langs.add(lang.toString())
+        }
       }
-      return userFeeds
-    }, [] as UserFeed[])
-    return AppResponse.success(userFeeds)
+      return { userFeeds, langs }
+    }, { userFeeds: [] as UserFeed[], langs: new Set<string>() })
+    return AppResponse.success(userFeeds, Array.from(langs).map(x => new LanguageTag(x)))
   }
 }
 

@@ -1,6 +1,6 @@
 import express from 'express'
 import { ErrEntityNotFound, ErrInvalidInput, ErrPermissionDenied, MageError, PermissionDeniedError } from '../app.api/app.api.errors'
-import { AppRequest } from '../app.api/app.api.global';
+import { AppRequest } from '../app.api/app.api.global'
 
 export interface WebAppRequestFactory {
   <RequestParams extends object = {}>(webReq: express.Request, params?: RequestParams): AppRequest & RequestParams

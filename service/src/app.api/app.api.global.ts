@@ -1,6 +1,6 @@
 import { MageError, PermissionDeniedError } from './app.api.errors'
 import { JsonObject } from '../entities/entities.json_types'
-import { Locale } from '../entities/entities.i18n'
+import { LanguageTag, Locale } from '../entities/entities.i18n'
 
 export interface AppRequestContext<Principal = unknown> {
   /**
@@ -52,12 +52,12 @@ export type AnyMageError<KnownErrors> = KnownErrors extends MageError<infer Code
 
 export class AppResponse<Success, KnownErrors> {
 
-  static success<Success, KnownErrors>(result: Success): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return new AppResponse<Success, AnyMageError<KnownErrors>>(result, null)
+  static success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
+    return new AppResponse<Success, AnyMageError<KnownErrors>>(result, null, contentLanguage)
   }
 
-  static error<Success, KnownErrors>(result: AnyMageError<KnownErrors>): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return new AppResponse<Success, AnyMageError<KnownErrors>>(null, result)
+  static error<Success, KnownErrors>(result: AnyMageError<KnownErrors>, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
+    return new AppResponse<Success, AnyMageError<KnownErrors>>(null, result, contentLanguage)
   }
 
   static resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
@@ -70,7 +70,7 @@ export class AppResponse<Success, KnownErrors> {
       })
   }
 
-  private constructor(readonly success: Success | null, readonly error: KnownErrors | null) {}
+  private constructor(readonly success: Success | null, readonly error: KnownErrors | null, readonly contentLanguage?: LanguageTag[] | null | undefined) {}
 }
 
 /**
@@ -91,6 +91,9 @@ export type KnownErrorsOf<T> = T extends (...args: any[]) => Promise<AppResponse
  *
  * @param permissionCheck a Promise that resolves to a permission result
  * @param op the operation to perform if the permission check succeeds
+ *
+ * TODO: localization
+ * permission check would localize its error message presumably
  */
 export async function withPermission<Success, KnownErrors>(
   permissionCheck: Promise<PermissionDeniedError | null>,

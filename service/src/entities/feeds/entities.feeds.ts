@@ -5,7 +5,7 @@ import { JSONSchema4 } from 'json-schema'
 import { URL } from 'url'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIconId, StaticIconReference } from '../icons/entities.icons'
 import _ from 'lodash'
-import { LanguageTag, Locale, selectContentLanguageFor } from '../entities.i18n'
+import { ContentLanguageKey, LanguageTag, Locale, Localized, selectContentLanguageFor } from '../entities.i18n'
 
 
 export class FeedsError<Code extends symbol, Data> extends Error {
@@ -494,7 +494,7 @@ export function retainSchemaPropertiesInFeatures(featureCollection: FeatureColle
   }
 }
 
-export function localizedFeed(feed: Feed, targetLanguages: LanguageTag[]): Feed {
+export function localizedFeed(feed: Feed, targetLanguages: LanguageTag[]): Localized<Feed> {
   if (!feed.localization) {
     return feed
   }
@@ -505,7 +505,8 @@ export function localizedFeed(feed: Feed, targetLanguages: LanguageTag[]): Feed 
   }
   const translations = feed.localization[matchedLanguage.toString()]
   const localized = {
-    ...feed
+    ...feed,
+    [ContentLanguageKey]: matchedLanguage
   }
   if (translations.title) {
     localized.title = translations.title
