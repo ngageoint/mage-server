@@ -9,6 +9,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
+## [6.1.0](https://github.com/ngageoint/mage-server/releases/tag/6.1.0)
+
+##### Features
+* You can now enter and display all coordinates in the app in Degree Minute Second format.
+* Administrators can now allow for any attachment types, or restrict to image, video or audio.
+
+##### Bug Fixes
+* Textarea in observation form is resizeable.
+* User and team paging api update, fixes team and event size limitation. 
+
 ## [6.0.2](https://github.com/ngageoint/mage-server/releases/tag/6.0.2)
 
 ##### Features
