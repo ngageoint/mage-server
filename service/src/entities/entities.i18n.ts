@@ -60,6 +60,36 @@ export function selectContentLanguageFor(preferences: LanguageTag[], contentLang
   return null
 }
 
+/**
+ * Parse the string that represents a client's language preferences, as defined
+ * in [RFC-7231](https://www.rfc-editor.org/rfc/rfc7231.html#section-5.3.5)
+ * (HTTP/1.1).  These strings appear in the `Accept-Language` HTTP header.
+ * Return an array of {@link LanguageTag | language tag} instances in descending
+ * order of preference.
+ *
+ * Example:
+ * ```text
+ * Accept-Language: da, en-gb;q=0.8, en;q=0.7
+ * ```
+ * The portion following `Accept-Language: ` is what this function expects.
+ * @param header
+ * @returns
+ */
+export function parseAcceptLanguageHeader(header: string | null | undefined): LanguageTag[] {
+  if (!header) {
+    return []
+  }
+  const ranges = header.split(',')
+    .reduce((ranges, part) => {
+      const range = parseLanguageRange(part)
+      if (range) {
+        ranges.push(range)
+      }
+      return ranges
+    }, [] as LanguageRange[])
+    .sort((a, b) => b.quality - a.quality)
+  return ranges.map(x => x.tag)
+}
 
 declare class RFC5646LanguageTagImplType implements LanguageTag {
   constructor(tag: string)
@@ -75,4 +105,22 @@ declare class RFC5646LanguageTagImplType implements LanguageTag {
   readonly first: string
   get minimal(): LanguageTag
   suitableFor(targetLanguageTag: string): boolean
+}
+
+interface LanguageRange {
+  tag: LanguageTag
+  quality: number
+}
+
+function parseLanguageRange(range: string): LanguageRange | null {
+  range = range.trim()
+  if (!range.length) {
+    return null
+  }
+  const [ tagStr, qualityStr = '' ] = range.split(';')
+  const tag = new LanguageTag(tagStr.trim())
+  const qualityPart = qualityStr.split(/=\s*/)[1] || ''
+  // absence of quality value implies 1.0 per rfc-7231
+  const quality = parseFloat(qualityPart.trim()) || 1.0
+  return { tag, quality }
 }
