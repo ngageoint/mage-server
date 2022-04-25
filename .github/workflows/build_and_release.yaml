@@ -214,7 +214,7 @@ jobs:
           npm publish ngageoint-mage.service-${{ needs.config.outputs.release-version }}.tgz
           npm publish ngageoint-mage.web-core-lib-${{ needs.config.outputs.release-version }}.tgz
           npm publish ngageoint-mage.web-app-${{ needs.config.outputs.release-version }}.tgz
-          npm publish ngageoint-mage.nga-msi ${{ needs.config.outputs.release-version }}.tgz
+          npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
       - name: add package tarballs to release
         uses: softprops/action-gh-release@v1
         with:
