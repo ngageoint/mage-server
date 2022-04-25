@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.web-core-lib",
-  "version": "6.2.0",
+  "version": "6.2.0-beta.3",
   "peerDependencies": {
     "@angular/animations": "~9.1.13",
     "@angular/cdk": "^9.2.4",
