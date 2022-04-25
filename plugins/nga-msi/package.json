@@ -42,7 +42,7 @@
     "axios": "^0.19.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.0"
+    "@ngageoint/mage.service": "^6.2.0-beta"
   },
   "devDependencies": {
     "@ngageoint/mage.service": "file:../../service",
