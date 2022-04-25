@@ -14,6 +14,7 @@ const process = require('process');
 
 const post = builderOptions => {
   const packageDesc = require('./package');
+  delete packageDesc.private;
   delete packageDesc.scripts;
   delete packageDesc.dependencies;
   delete packageDesc.devDependencies;
