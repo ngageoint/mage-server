@@ -7,20 +7,11 @@ const Schema = mongoose.Schema;
 
 // Collection to hold unique observation ids
 const ObservationIdSchema = new Schema();
+ObservationIdSchema.set("toJSON", { transform });
 const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
-// const FormSchema = new Schema({
-//   formId: { type: Number, required: true }
-// },{
-//   strict: false
-// });
-
-// const PropertiesSchema = new Schema({
-//   timestamp: { type: Date, required: true },
-//   forms: [FormSchema]
-// },{
-//   strict: false
-// });
+exports.ObservationIdSchema = ObservationIdSchema;
+exports.ObservationId = ObservationId;
 
 const StateSchema = new Schema({
   name: { type: String, required: true },
@@ -95,6 +86,7 @@ function transformAttachment(attachment, observation) {
   delete attachment._id;
   delete attachment.thumbnails;
 
+  // TODO: is this actually checking if the attachment is stored?
   if (attachment.relativePath) {
     attachment.url = [observation.url, "attachments", attachment.id].join("/");
   }
@@ -158,17 +150,8 @@ function transform(observation, ret, options) {
   }
 }
 
-ObservationIdSchema.set("toJSON", {
-  transform: transform
-});
-
-ObservationSchema.set('toJSON', {
-  transform: transform
-});
-
-ObservationSchema.set('toObject', {
-  transform: transform
-});
+ObservationSchema.set('toJSON', { transform });
+ObservationSchema.set('toObject', { transform });
 
 const models = {};
 mongoose.model('Attachment', AttachmentSchema);

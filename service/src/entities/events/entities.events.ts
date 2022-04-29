@@ -2,6 +2,7 @@ import { FeedId } from '../feeds/entities.feeds'
 import { copyFormAttrs, Form, FormField, FormId } from './entities.events.forms'
 import { Team, TeamId } from '../teams/entities.teams'
 import { copyLineStyleAttrs, LineStyle } from '../entities.global'
+import { UserId } from '../users/entities.users'
 
 export type MageEventId = number
 
@@ -131,7 +132,12 @@ export function formForId(id: FormId, mageEvent: MageEventAttrs): Form | null {
 
 export type EventPermission = 'read' | 'update' | 'delete'
 export type EventRolePermissions = { [role in EventRole]: EventPermission[] }
-export type EventRole =  'OWNER' | 'MANAGER' | 'GUEST'
+
+export enum EventRole {
+  OWNER = 'OWNER',
+  MANAGER = 'MANAGER',
+  GUEST = 'GUEST'
+}
 
 export const EventRolePermissions: EventRolePermissions = {
   OWNER: ['read', 'update', 'delete'],

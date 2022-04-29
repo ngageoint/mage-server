@@ -3,7 +3,8 @@ import { MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/ev
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
 import { Point } from 'geojson'
-import _, { after } from 'lodash'
+import _ from 'lodash'
+import { PendingEntityId } from '../../../lib/entities/entities.global'
 
 function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): ObservationAttrs {
   const eventId = typeof mageEvent === 'object' ? mageEvent.id : mageEvent
@@ -23,7 +24,7 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
   }
 }
 
-describe('observation entities', function() {
+describe.only('observation entities', function() {
 
   let mageEventAttrs: MageEventAttrs
 
@@ -727,6 +728,18 @@ describe('observation entities', function() {
         return
       }
       expect.fail('constructor succeeded')
+    })
+
+    it('adds a default active state if there are no states', function() {
+
+      const attrs = makeObservationAttrs(mageEventAttrs)
+      attrs.userId = 'user1'
+      const observation = Observation.evaluate(attrs, new MageEvent(mageEventAttrs))
+
+      expect(observation.states).to.have.length(1)
+      expect(observation.states[0].name).to.equal('active')
+      expect(observation.states[0].id).to.equal(PendingEntityId)
+      expect(observation.states[0].userId).to.equal(attrs.userId)
     })
   })
 

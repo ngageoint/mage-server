@@ -212,7 +212,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -226,7 +226,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0], feedIds[2])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -240,7 +240,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -265,7 +265,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[2], uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -279,7 +279,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id - 1, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -446,7 +446,7 @@ describe('event mongoose repository', function() {
           }))
       }))
       eventDoc.teamIds = teamDocs.map(x => x._id)
-      eventDoc = await eventDoc.save()
+      eventDoc = await eventDoc.save() as MageEventDocument
       const fetchedTeams = await repo.findTeamsInEvent(eventDoc.id)
 
       expect(fetchedTeams).to.deep.equal(teams)

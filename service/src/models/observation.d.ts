@@ -1,10 +1,81 @@
 import mongoose from 'mongoose'
-import Observation from '../api/observation'
-import { ObservationId } from '../entities/observations/entities.observations'
+import { MageEvent, MageEventAttrs, MageEventId } from '../entities/events/entities.events'
+import { Attachment, AttachmentId, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
-export type ObservationDocument = mongoose.Document & Omit<Observation, 'eventId'>
+export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
+  userId?: mongoose.Types.ObjectId
+  deviceId?: mongoose.Types.ObjectId
+  favoriteUserIds: mongoose.Types.ObjectId[]
+  states: ObservationStateDocument[]
+  attachments: AttachmentDocument[]
+  properties: ObservationDocumentProperties
+  toJSON(options?: ObservationJsonOptions): ObservationDocumentJson
+}
 export interface ObservationModel extends mongoose.Model<ObservationDocument> {}
+export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 'attachments' | 'states'> & {
+  id: mongoose.Types.ObjectId
+  eventId?: number
+  url: string
+  attachments: AttachmentDocumentJson[]
+  states: ObservationStateDocumentJson[]
+}
+
+/**
+ * This interface defines the options that one can supply to the `toJSON()`
+ * method of the Mongoose Document instances of the Observation model.
+ */
+export interface ObservationJsonOptions extends mongoose.DocumentToObjectOptions {
+  /**
+   * The database schema does not include the event ID for observation
+   * documents.  Use this option to add the `eventId` property to the
+   * observation JSON document.
+   */
+  event?: MageEventDocument | MageEventAttrs | { id: MageEventId, [others: string]: any }
+  /**
+   * If the `path` option is prenent, the JSON transormation will prefix the
+   * `url` property of the observation JSON object with the value of `path`.
+   */
+  path?: string
+}
+
+export type ObservationDocumentProperties = Omit<ObservationFeatureProperties, 'forms'> & {
+  forms: ObservationDocumentFormEntry[]
+}
+
+export type ObservationDocumentFormEntry = FormEntry & {
+  _id: mongoose.Types.ObjectId
+}
+export type ObservationDocumnetFormEntryJson = Omit<FormEntry, 'id'> & {
+  id: ObservationDocumentFormEntry['_id']
+}
+
+export type AttachmentDocument = Omit<mongoose.Document & Attachment, 'id'> & {
+  id: AttachmentId
+}
+export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'thumbnails'> & {
+  id: AttachmentDocument['_id']
+  relativePath?: string
+  url?: string
+}
+
+export type ThumbnailDocument = Omit<mongoose.Document & Thumbnail, 'id'> & {
+  id: string
+  relativePath?: string
+}
+
+export type ObservationStateDocument = Omit<mongoose.Document & ObservationState, 'id' | 'userId'> & {
+  id: ObservationState['id']
+  userId?: mongoose.Types.ObjectId
+}
+export type ObservationStateDocumentJson = Omit<ObservationState, 'id'> & {
+  id: ObservationStateDocument['_id']
+  url: string
+}
+
+export const ObservationIdSchema: mongoose.Schema
+export type ObservationIdDocument = mongoose.Document
+export const ObservationId: mongoose.Model<ObservationIdDocument>
 
 export function observationModel(event: Partial<MageEventDocument> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
 export function updateObservation(event: MageEventDocument, observationId: ObservationId, update: any, callback: (err: any | null, obseration: ObservationDocument) => any): void

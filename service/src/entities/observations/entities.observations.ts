@@ -1,7 +1,7 @@
 import { UserId } from '../users/entities.users'
 import { BBox, Feature, Geometry } from 'geojson'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
-import { PageOf, PagingParameters } from '../entities.global'
+import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
 import { Form, FormField, FormFieldType, FormId } from '../events/entities.events.forms'
 import * as fields from './entities.observations.fields'
 import { JsonPrimitive } from '../entities.json_types'
@@ -25,7 +25,10 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
    */
   favoriteUserIds?: readonly UserId[]
   /**
-   * TODO: scalability - likely not a problem in practice most of the time
+   * * TODO: scalability - likely not a problem in practice most of the time
+   * * TODO: we do not actually have a reason to maintain an array of states -
+   *   state should just be a single value object, and should not need
+   *   a unique id
    */
   states: readonly ObservationState[]
 }
@@ -46,6 +49,7 @@ export interface ObservationImportantFlag {
 }
 
 export interface ObservationState {
+  id: string | PendingEntityId
   name: 'active' | 'archived'
   userId?: UserId | undefined
 }
@@ -152,6 +156,7 @@ export function copyThumbnailAttrs(from: Thumbnail): Thumbnail {
 
 export function copyObservationStateAttrs(from: ObservationState): ObservationState {
   return {
+    id: from.id,
     name: from.name,
     userId: from.userId
   }
@@ -448,8 +453,8 @@ export function validationResultMessage(result: ObservationValidationResult): st
   for (const [ formId, err ] of formCountErrors) {
     errList.push(`${bulletPoint} ${err.message()}`)
   }
-  for (const [ pos, formEntryErr ] of formEntryErrors) {
-    errList.push(`${bulletPoint} Form entry ${pos + 1} (${formEntryErr.formName}) is invalid.`)
+  for (const [ formEntryId, formEntryErr ] of formEntryErrors) {
+    errList.push(`${bulletPoint} Form entry ${formEntryErr.formEntryPosition + 1} (${formEntryErr.formName}) is invalid.`)
     for (const fieldErr of formEntryErr.fieldErrors.values()) {
       errList.push(`  ${bulletPoint} ${fieldErr.message}`)
     }
@@ -577,12 +582,13 @@ export class AttachmentNotFoundError extends Error {
  */
  export interface EventScopedObservationRepository {
   readonly eventScope: MageEventId
+  allocateObservationId(): Promise<ObservationId>
   /**
    * TODO: return errors for invalid ids, including observation, form entry,
    * and attachments
    * @param observation
    */
-  save(observation: Observation): Promise<Observation>
+  save(observation: Observation): Promise<Observation | ObservationRepositoryError>
   findById(id: ObservationId): Promise<Observation | null>
   /**
    * Return the most recent observation in the event as determined by
@@ -590,9 +596,22 @@ export class AttachmentNotFoundError extends Error {
    * observations in the event.
    * @returns an `Observation` object or `null`
    */
-  findLatest(): Promise<Observation | null>
+  findLatest(): Promise<ObservationAttrs | null>
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
   nextFormEntryIds(count?: number): Promise<FormEntryId[]>
+  nextAttachmentIds(count?: number): Promise<AttachmentId[]>
+}
+
+export class ObservationRepositoryError extends Error {
+
+  constructor(readonly code: ObservationRepositoryErrorCode, message?: string) {
+    super(message)
+  }
+}
+
+export enum ObservationRepositoryErrorCode {
+  InvalidObservationId = 'ObservationRepositoryError.InvalidObservationId',
+  InvalidObservation = 'ObservationRepositoryError.InvalidObservation'
 }
 
 export interface ObservationRepositoryForEvent {
