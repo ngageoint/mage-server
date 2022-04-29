@@ -4,6 +4,9 @@ export interface EntityIdFactory<T = string> {
   nextId(): Promise<T>
 }
 
+export const PendingEntityId = Symbol('PendingEntityId')
+export type PendingEntityId = typeof PendingEntityId
+
 /**
  * TODO: This class may belong somewhere else, but for now is here until things
  * evolve a bit more.
