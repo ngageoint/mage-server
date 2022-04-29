@@ -59,7 +59,7 @@ export class EventPermissionServiceImpl {
     if (hasEventAclPermission) {
       return null
     }
-    return permissionDenied(appPermission, user.username, event.id)
+    return permissionDenied(appPermission, user.username, String(event.id))
   }
 
   async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
