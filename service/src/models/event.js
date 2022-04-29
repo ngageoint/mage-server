@@ -96,8 +96,13 @@ const EventSchema = new Schema({
 },{
   autoIndex: false,
   minimize: false,
-  versionKey: false
+  versionKey: false,
+  id: false
 });
+
+EventSchema.virtual('id')
+  .get(function() { return this._id })
+  .set(function(x) { this._id = Number(x) })
 
 EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
