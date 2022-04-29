@@ -1,6 +1,11 @@
 name: Build and Run Tests
 
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - 'no-ci-*'
+      - 'wip-*'
+      - 'x-*'
 
 jobs:
   build:

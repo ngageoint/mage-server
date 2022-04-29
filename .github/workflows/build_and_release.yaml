@@ -1,7 +1,9 @@
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore:
+      - 'no-ci-*'
+      - 'wip-*'
+      - 'x-*'
     tags:
       - 'releases/*'
       - 'prereleases/*'
