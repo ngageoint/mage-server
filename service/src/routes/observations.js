@@ -54,6 +54,11 @@ module.exports = function(app, security) {
       var tasks = [];
       if (validateObservationId) {
         tasks.push(function(done) {
+          /*
+          TODO: this is validating the id from body document, but should it
+          validate the id from the url path instead? the path id is the one
+          that is passed down to the update operation
+          */
           new api.Observation().validateObservationId(req.param('id'), done);
         });
       }
@@ -172,6 +177,7 @@ module.exports = function(app, security) {
       }
     }
 
+    // TODO: shouldn't this always be Feature?
     req.observation.type = req.body.type;
 
     if (req.body.geometry) {
