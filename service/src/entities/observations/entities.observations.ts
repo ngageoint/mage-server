@@ -298,7 +298,7 @@ export interface ObservationValidationResult {
   readonly coreAttrsErrors: { readonly [attr in ObservationValidationCoreAttrKey]?: string }
   readonly formCountErrors: readonly [ FormId, FormCountError ][]
 
-  readonly formEntryErrors: readonly [ FormEntryId, FormEntryValidationError ][]
+  readonly formEntryErrors: readonly [ number, FormEntryValidationError ][]
   /**
    * This list contains attachment error map entries where the key is the
    * position of the attachment in the `attachments` array on the observation,
@@ -370,17 +370,29 @@ export class FormCountError {
 
 export class FormEntryValidationError {
 
-  static invalidFormReference(formEntryId: FormEntryId, formEntryPosition: number): FormEntryValidationError {
-    return new FormEntryValidationError(formEntryId, formEntryPosition)
-  }
-
+  #entryLevelErrors: Set<FormEntryValidationErrorReason> = new Set()
   #fieldErrors: Map<string, FormFieldValidationError> = new Map()
 
-  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number, readonly formName: string | null = null) {}
+  /**
+   * If there is no form reference error, set the form name for convenience
+   * when building the validation error message text.
+   */
+  formName: string | null = null
+
+  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number) {}
+
+  addEntryLevelError(x: FormEntryValidationErrorReason): this {
+    this.#entryLevelErrors.add(x)
+    return this
+  }
 
   addFieldError(x: FormFieldValidationError): this {
     this.#fieldErrors.set(x.fieldName, x)
     return this
+  }
+
+  get entryLevelErrors(): Set<FormEntryValidationErrorReason> {
+    return new Set(this.#entryLevelErrors)
   }
 
   /**
@@ -389,10 +401,11 @@ export class FormEntryValidationError {
   get fieldErrors(): Map<string, FormFieldValidationError> {
     return new Map(this.#fieldErrors)
   }
+}
 
-  get isInvalidFormReference(): boolean {
-    return this.formName === null
-  }
+export enum FormEntryValidationErrorReason {
+  FormRef = 'FormEntryValidationErrorReason.FormRef',
+  DuplicateId = 'FormEntryValidationErrorReason.DuplicateId'
 }
 
 export type FormFieldValidationErrorAttrs = {
@@ -429,9 +442,9 @@ export class FormFieldValidationError {
 }
 
 export enum AttachmentValidationErrorReason {
-  FieldRef = 'field',
-  FormEntryRef = 'form_entry',
-  DuplicateId = 'duplicate_id',
+  FieldRef = 'AttachmentValidationErrorReason.FieldRef',
+  FormEntryRef = 'AttachmentValidationErrorReason.FormEntryRef',
+  DuplicateId = 'AttachmentValidationErrorReason.DuplicateId',
 }
 
 export class AttachmentValidationError {
@@ -716,16 +729,26 @@ function validateObservationFormEntries(validation: ObservationValidationContext
   if (!Array.isArray(observationAttrs.properties.forms)) {
     return validation.addCoreAttrsError('forms', 'The observation requires an array of form entries.')
   }
+  const formEntryIds = new Set<FormEntryId>()
   const formEntryCounts = observationAttrs.properties.forms.reduce((formEntryCounts, formEntry, formEntryPos) => {
+    const formEntryError = new FormEntryValidationError(formEntry.id, formEntryPos)
+    if (formEntryIds.has(formEntry.id)) {
+      formEntryError.addEntryLevelError(FormEntryValidationErrorReason.DuplicateId)
+    }
+    formEntryIds.add(formEntry.id)
     const form = mageEvent.formFor(formEntry.formId)
     if (form) {
       if (!form.archived) {
-        formEntryCounts.set(formEntry.formId, (formEntryCounts.get(formEntry.formId) || 0) + 1)
-        validateFormFieldEntries(formEntry, form, validation)
+        formEntryError.formName = form.name
+        formEntryCounts.set(form.id, (formEntryCounts.get(form.id) || 0) + 1)
+        validateFormFieldEntries(formEntry, form, formEntryError, validation)
       }
     }
     else {
-      validation.addFormEntryError(FormEntryValidationError.invalidFormReference(formEntry.id, formEntryPos))
+      formEntryError.addEntryLevelError(FormEntryValidationErrorReason.FormRef)
+    }
+    if (formEntryHasErrors(formEntryError)) {
+      validation.addFormEntryError(formEntryError)
     }
     return formEntryCounts
   }, new Map<FormId, number>())
@@ -748,6 +771,10 @@ function validateObservationFormEntries(validation: ObservationValidationContext
   }
   // TODO: invalidate new form entries that reference archived forms
   return validation
+}
+
+function formEntryHasErrors(err: FormEntryValidationError): boolean {
+  return err.entryLevelErrors.size > 0 || err.fieldErrors.size > 0
 }
 
 function validateObservationAttachments(validation: ObservationValidationContext): ObservationValidationContext {
@@ -835,23 +862,18 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.TextArea]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
 }
 
-function validateFormFieldEntries(formEntry: FormEntry, form: Form, validation: ObservationValidationContext): void {
+function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
   const { mageEvent, observationAttrs } = validation
-  const formEntryPosition = validation.observationAttrs.properties.forms.findIndex(x => x.id === formEntry.id)
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
-  const formEntryError = activeFields.reduce((formEntryError, field) => {
+  activeFields.forEach(field => {
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
     const fieldError = FieldTypeValidationRules[field.type](fieldValidation)
     if (fieldError) {
       formEntryError.addFieldError(fieldError)
     }
-    return formEntryError
-  }, new FormEntryValidationError(formEntry.id, formEntryPosition, form.name))
-  if (formEntryError.fieldErrors.size > 0) {
-    validation.addFormEntryError(formEntryError)
-  }
+  })
 }
 
 class ObservationValidationContext {
@@ -860,8 +882,8 @@ class ObservationValidationContext {
   readonly mageEvent: MageEvent
 
   readonly #coreAttrsErrors: Map<ObservationValidationCoreAttrKey, string>
-  readonly #formEntryErrors: Map<FormEntryId, FormEntryValidationError>
   readonly #formCountErrors: Map<FormId, FormCountError>
+  readonly #formEntryErrors: Map<number, FormEntryValidationError>
   readonly #attachmentErrors: Map<number, AttachmentValidationError>
   #totalFormCountError: TotalFormCountError | null = null
 
@@ -903,7 +925,7 @@ class ObservationValidationContext {
   }
 
   addFormEntryError(formEntryError: FormEntryValidationError): this {
-    this.#formEntryErrors.set(formEntryError.formEntryId, formEntryError)
+    this.#formEntryErrors.set(formEntryError.formEntryPosition, formEntryError)
     return this
   }
 
@@ -920,16 +942,12 @@ class ObservationValidationContext {
     return new Map(this.#formCountErrors)
   }
 
-  get formEntryErrors(): Map<FormEntryId, FormEntryValidationError> {
+  get formEntryErrors(): Map<number, FormEntryValidationError> {
     return new Map(this.#formEntryErrors)
   }
 
   get attachmentErrors(): Map<number, AttachmentValidationError> {
     return new Map(this.#attachmentErrors)
-  }
-
-  formEntryErrorForId(id: FormEntryId): FormEntryValidationError | null {
-    return this.#formEntryErrors.get(id) || null
   }
 
   get totalFormCountError(): TotalFormCountError | null {

@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -139,12 +139,64 @@ describe.only('observation entities', function() {
 
         expect(invalid.hasErrors).to.be.true
         expect(invalid.formEntryErrors.length).to.equal(1)
-        const entryErr = new Map(invalid.formEntryErrors).get('badFormRef')!
+        const entryErr = new Map(invalid.formEntryErrors).get(0)!
         expect(entryErr.fieldErrors.size).to.equal(0)
         expect(entryErr.formEntryId).to.equal('badFormRef')
         expect(entryErr.formEntryPosition).to.equal(0)
         expect(entryErr.formName).to.be.null
-        expect(entryErr.isInvalidFormReference).to.be.true
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.members([ FormEntryValidationErrorReason.FormRef ])
+      })
+
+      it('fails when form entry ids are not unique on the observation', function() {
+
+        const o = makeObservationAttrs(mageEventAttrs.id)
+        mageEventAttrs.forms[0].fields = [
+          {
+            id: 1,
+            name: 'field1',
+            title: 'Field 1',
+            required: false,
+            type: FormFieldType.Text
+          }
+        ]
+        o.properties.forms = [
+          {
+            id: 'dup id',
+            formId: mageEventAttrs.forms[0].id
+          },
+          {
+            id: 'dup id',
+            formId: mageEventAttrs.forms[0].id,
+            field1: 'not unique'
+          },
+          {
+            id: 'unique',
+            formId: mageEventAttrs.forms[0].id,
+            field1: 'this is fine'
+          },
+          {
+            id: 'dup id',
+            formId: mageEventAttrs.forms[0].id,
+            field1: 'also not unique'
+          }
+        ]
+        const invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.be.true
+        expect(invalid.formEntryErrors.length).to.equal(2)
+        const errs = new Map(invalid.formEntryErrors)
+        let entryErr = errs.get(1)!
+        expect(entryErr.fieldErrors.size).to.equal(0)
+        expect(entryErr.formEntryId).to.equal('dup id')
+        expect(entryErr.formEntryPosition).to.equal(1)
+        expect(entryErr.formName).to.equal(mageEventAttrs.forms[0].name)
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([ FormEntryValidationErrorReason.DuplicateId ])
+        entryErr = errs.get(3)!
+        expect(entryErr.fieldErrors.size).to.equal(0)
+        expect(entryErr.formEntryId).to.equal('dup id')
+        expect(entryErr.formEntryPosition).to.equal(3)
+        expect(entryErr.formName).to.equal(mageEventAttrs.forms[0].name)
+        expect(Array.from(entryErr.entryLevelErrors)).to.have.lengthOf(1).with.members([ FormEntryValidationErrorReason.DuplicateId ])
       })
 
       it('fails with fewer entries than the event requires', function() {
@@ -354,7 +406,7 @@ describe.only('observation entities', function() {
         let invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
-        const formEntryError = new Map(invalid.formEntryErrors).get(invalidFormEntry.id)
+        const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
         // currently, hidden field validation is a no-op
         const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
@@ -550,7 +602,7 @@ describe.only('observation entities', function() {
         let invalid = validateObservation(observationAttrs, mageEvent)
 
         expect(invalid.formEntryErrors.length).to.equal(1)
-        const formEntryError = new Map(invalid.formEntryErrors).get(invalidFormEntry.id)
+        const formEntryError = new Map(invalid.formEntryErrors).get(0)
         expect(formEntryError).to.exist
         // currently, hidden field validation is a no-op
         const invalidFieldsExceptHidden = form.fields.filter(x => x.type !== FormFieldType.Hidden).map(x => x.name)
@@ -625,8 +677,8 @@ describe.only('observation entities', function() {
           expect(invalid.hasErrors).to.be.true
           let formEntryErrors = new Map(invalid.formEntryErrors)
           expect(formEntryErrors.size).to.equal(1)
-          expect(formEntryErrors).to.have.all.keys(formEntry.id)
-          let fieldErrors = formEntryErrors.get(formEntry.id)?.fieldErrors
+          expect(formEntryErrors).to.have.all.keys(0)
+          let fieldErrors = formEntryErrors.get(0)?.fieldErrors
           expect(fieldErrors?.size).to.equal(1)
           expect(fieldErrors?.get(field.name)?.constraint).to.equal(FieldConstraintKey.Min)
 
@@ -636,8 +688,8 @@ describe.only('observation entities', function() {
           expect(invalid.hasErrors).to.be.true
           formEntryErrors = new Map(invalid.formEntryErrors)
           expect(formEntryErrors.size).to.equal(1)
-          expect(formEntryErrors).to.have.all.keys(formEntry.id)
-          fieldErrors = formEntryErrors.get(formEntry.id)?.fieldErrors
+          expect(formEntryErrors).to.have.all.keys(0)
+          fieldErrors = formEntryErrors.get(0)?.fieldErrors
           expect(fieldErrors?.size).to.equal(1)
           expect(fieldErrors?.get(field.name)?.constraint).to.equal(FieldConstraintKey.Max)
 
@@ -740,6 +792,10 @@ describe.only('observation entities', function() {
       expect(observation.states[0].name).to.equal('active')
       expect(observation.states[0].id).to.equal(PendingEntityId)
       expect(observation.states[0].userId).to.equal(attrs.userId)
+    })
+
+    it.skip('deep copies and does not reference any values from the source attributes', function() {
+
     })
   })
 
@@ -1084,6 +1140,12 @@ describe.only('observation entities', function() {
       })
     })
 
+    describe('form entries', function() {
+
+      it.skip('TODO: provides mutation functions for adding, updating, and removing form entries')
+      it.skip('fails if the form entry ids are not unique on the observation')
+    })
+
     describe('attachments', function() {
 
       let attachmentField1: FormField
@@ -1278,7 +1340,7 @@ describe.only('observation entities', function() {
           expect(mod2.validation.hasErrors).to.be.true
           const formEntryErrors = new Map(mod2.validation.formEntryErrors)
           expect(formEntryErrors.size).to.equal(1)
-          const entryErr = formEntryErrors.get(formEntry.id)
+          const entryErr = formEntryErrors.get(0)
           expect(entryErr?.fieldErrors.size).to.equal(1)
           const fieldErr = entryErr?.fieldErrors.get(attachmentField2.name)
           expect(fieldErr?.constraint).to.equal(FieldConstraintKey.Max)
