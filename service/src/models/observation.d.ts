@@ -3,9 +3,10 @@ import { MageEvent, MageEventAttrs, MageEventId } from '../entities/events/entit
 import { Attachment, AttachmentId, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
-export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
+export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'importantFlag' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
   userId?: mongoose.Types.ObjectId
   deviceId?: mongoose.Types.ObjectId
+  important?: ObservationDocumentImportantFlag
   favoriteUserIds: mongoose.Types.ObjectId[]
   states: ObservationStateDocument[]
   attachments: AttachmentDocument[]
@@ -50,13 +51,18 @@ export type ObservationDocumnetFormEntryJson = Omit<FormEntry, 'id'> & {
   id: ObservationDocumentFormEntry['_id']
 }
 
-export type AttachmentDocument = Omit<mongoose.Document & Attachment, 'id'> & {
+export type AttachmentDocument = Omit<mongoose.Document & Attachment, 'id' | 'observationFormId'> & {
   id: AttachmentId
+  observationFormId: mongoose.Types.ObjectId
 }
 export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'thumbnails'> & {
   id: AttachmentDocument['_id']
   relativePath?: string
   url?: string
+}
+
+export type ObservationDocumentImportantFlag = Omit<ObservationImportantFlag, 'userId'> & {
+  userId?: mongoose.Types.ObjectId
 }
 
 export type ThumbnailDocument = Omit<mongoose.Document & Thumbnail, 'id'> & {

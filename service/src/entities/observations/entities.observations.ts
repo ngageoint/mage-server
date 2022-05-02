@@ -254,7 +254,14 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.createdAt = attrs.createdAt
     this.lastModified = attrs.lastModified
     this.importantFlag = attrs.importantFlag ? Object.freeze({ ...attrs.importantFlag }) : undefined
-    this.states = Object.freeze([ ...attrs.states ])
+    const states = attrs.states.length ? attrs.states.map(copyObservationStateAttrs) : [
+      {
+        id: PendingEntityId,
+        name: 'active',
+        userId: attrs.userId
+      }
+    ] as ObservationState[]
+    this.states = Object.freeze(states)
     this.type = 'Feature'
     this.bbox = attrs.bbox
     this.geometry = attrs.geometry

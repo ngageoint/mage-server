@@ -15,6 +15,7 @@ import { ObservationModel } from '../../../src/models/observation'
 import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage, copyObservationAttrs } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
+import { PendingEntityId } from '../../../lib/entities/entities.global'
 
 const TeamModel = TeamModelModule.TeamModel
 
@@ -204,6 +205,7 @@ describe.only('mongoose observation repository', function() {
         const id = await repo.allocateObservationId()
         const attrs = observationStub(id, event.id)
         const observation = Observation.evaluate(attrs, event)
+        const beforeSaveAttrs = copyObservationAttrs(observation)
         const saved = await repo.save(observation) as Observation
         const found = await repo.findById(id) as Observation
         const savedAttrs = copyObservationAttrs(saved)
@@ -213,8 +215,11 @@ describe.only('mongoose observation repository', function() {
         expect(saved).to.be.instanceOf(Observation)
         expect(saved.id).to.equal(id)
         expect(saved.validation.hasErrors).to.be.false
-        expect(omitUndefinedValues(savedAttrs)).to.deep.equal(attrs)
-        expect(omitUndefinedValues(foundAttrs)).to.deep.equal(attrs)
+        expect(_.omit(savedAttrs, 'states')).to.deep.equal(_.omit(beforeSaveAttrs, 'states'))
+        expect(savedAttrs.states).to.have.length(1)
+        expect(savedAttrs.states[0].id).to.be.a('string')
+        expect(savedAttrs.states[0].name).to.equal('active')
+        expect(foundAttrs).to.deep.equal(savedAttrs)
         expect(count).to.equal(1)
       })
 
@@ -237,9 +242,14 @@ describe.only('mongoose observation repository', function() {
             id: attachmentId,
             observationFormId: formEntryId,
             fieldName: 'field3',
+            name: 'test.jpg',
             oriented: false,
             thumbnails: [],
-            contentType: AttachmentMediaTypes[AttachmentPresentationType.Image][0]
+            contentType: AttachmentMediaTypes[AttachmentPresentationType.Image][0],
+            lastModified: new Date(Date.now() - 1000 * 60 * 60),
+            height: undefined,
+            width: undefined,
+            size: 12345,
           }
         ]
         attrs.states = [
@@ -247,10 +257,17 @@ describe.only('mongoose observation repository', function() {
             id: mongoose.Types.ObjectId().toHexString(),
             name: 'active',
             userId: mongoose.Types.ObjectId().toHexString()
+          },
+          {
+            id: mongoose.Types.ObjectId().toHexString(),
+            name: 'archived',
+            userId: undefined
           }
         ]
         attrs.importantFlag = {
-
+          timestamp: new Date(),
+          description: 'look at me',
+          userId: mongoose.Types.ObjectId().toHexString(),
         }
         const observation = Observation.evaluate(attrs, event)
 
@@ -265,6 +282,22 @@ describe.only('mongoose observation repository', function() {
         expect(omitUndefinedValues(savedAttrs)).to.deep.equal(attrs)
         expect(omitUndefinedValues(foundAttrs)).to.deep.equal(attrs)
         expect(count).to.equal(1)
+      })
+
+      it('assigns new ids to new states', async function() {
+
+      })
+
+      it('assigns new ids to new form entries', async function() {
+
+      })
+
+      it('assigns new ids to new attachments', async function() {
+
+      })
+
+      it('retains ids for existing entities', async function() {
+
       })
     })
   })

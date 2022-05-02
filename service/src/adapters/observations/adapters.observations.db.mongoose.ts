@@ -1,10 +1,10 @@
 import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
-import { PageOf, PagingParameters } from '../../entities/entities.global'
+import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { AttachmentDocument, ObservationStateDocument } from '../../models/observation'
 
@@ -29,6 +29,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async save(observation: Observation): Promise<Observation | ObservationRepositoryError> {
+    if (observation.validation.hasErrors) {
+      return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservation)
+    }
     let dbId
     try {
       dbId = mongoose.Types.ObjectId(observation.id)
@@ -43,13 +46,18 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
       }
     }
-    if (observation.validation.hasErrors) {
-      return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservation)
-    }
     const attrs = copyObservationAttrs(observation)
     const docStub = { ...attrs, _id: dbId } as any
-    const doc = await new this.model(docStub).save() as legacy.ObservationDocument
-    const savedAttrs = this.entityForDocument(doc)
+    delete docStub.importantFlag
+    if (attrs.importantFlag) {
+      docStub.important = attrs.importantFlag
+    }
+    docStub.properties.forms = attrs.properties.forms.map(assignMongoIdToStub)
+    docStub.attachments = attrs.attachments.map(assignMongoIdToStub)
+    docStub.states = attrs.states.map(assignMongoIdToStub)
+    const beforeSaveDoc = new this.model(docStub)
+    const afterSaveDoc = await beforeSaveDoc.save() as legacy.ObservationDocument
+    const savedAttrs = this.entityForDocument(afterSaveDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     return saved
   }
@@ -118,17 +126,37 @@ function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.Obs
       attachments: doc.attachments.map(attachmentAttrsForDoc),
       userId: doc.userId?.toHexString(),
       deviceId: doc.deviceId?.toHexString(),
-      importantFlag: { ...doc.importantFlag },
+      importantFlag: importantFlagAttrsForDoc(doc),
       favoriteUserIds: doc.favoriteUserIds?.map(x => x.toHexString()),
     }
     return attrs
   }
 }
 
+function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationImportantFlag | undefined {
+  /*
+  because the observation schema defines `important` as a nested documnet
+  instead of a subdocument schema, a mongoose observation document instance
+  always returns a value for `observation.important`, even if the `important`
+  key is undefined in the database.  so, if `important` is undefined in the
+  database, the mongoose document instance `important` getter will return an
+  empty object `{}`.  not cool, mongoose.
+  */
+  const docImportant = doc.important
+  if (docImportant?.userId || docImportant?.timestamp || docImportant?.description) {
+    return {
+      userId: docImportant.userId?.toHexString(),
+      timestamp: docImportant.timestamp,
+      description: docImportant.description
+    }
+  }
+  return void(0)
+}
+
 function attachmentAttrsForDoc(doc: AttachmentDocument): Attachment {
   return {
     id: doc.id,
-    observationFormId: doc.observationFormId,
+    observationFormId: doc.observationFormId.toHexString(),
     fieldName: doc.fieldName,
     lastModified: doc.lastModified ? new Date(doc.lastModified) : undefined,
     name: doc.name,
@@ -155,4 +183,21 @@ function formEntryForDoc(doc: legacy.ObservationDocumentFormEntry): FormEntry {
     ...withoutDbId,
     id: _id.toHexString()
   }
+}
+
+type EntityDocumentStub = {
+  id: string | number | PendingEntityId | undefined
+  [attr: string]: any
+}
+type DocumentStub = {
+  _id: mongoose.Types.ObjectId | number
+}
+
+function assignMongoIdToStub(attrs: EntityDocumentStub): DocumentStub {
+  const { id, ...stub } = attrs
+  stub._id =
+    typeof id === 'string' ? mongoose.Types.ObjectId(id)
+    : typeof id === 'number' ? id
+    : mongoose.Types.ObjectId()
+  return stub as DocumentStub
 }
