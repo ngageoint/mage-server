@@ -11,7 +11,7 @@ import { MageEventDocument } from '../../../src/models/event'
 import TeamModelModule = require('../../../lib/models/team')
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
-import { ObservationModel } from '../../../src/models/observation'
+import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
 import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage, copyObservationAttrs } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
@@ -39,7 +39,11 @@ function observationStub(id: ObservationId, eventId: MageEventId): ObservationAt
 }
 
 function omitUndefinedValues<T extends object>(x: T): T {
-  return _.omitBy(x, v => v === undefined) as T
+  return _.omitBy(x, (v, k) => v === undefined) as T
+}
+
+function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, ...keys: K[]): Omit<T, K> {
+  return omitUndefinedValues(_.omit(x, keys))
 }
 
 describe.only('mongoose observation repository', function() {
@@ -151,19 +155,6 @@ describe.only('mongoose observation repository', function() {
 
     describe('new observations', function() {
 
-      it('fails if the id is invalid', async function() {
-
-        const stub = observationStub('not an objectid', event.id)
-        const observation = Observation.evaluate(stub, event)
-        const err = await repo.save(observation) as ObservationRepositoryError
-
-        expect(observation.validation.hasErrors).to.be.false
-        expect(err).to.be.instanceOf(ObservationRepositoryError)
-        expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-        const count = await model.count({})
-        expect(count).to.equal(0)
-      })
-
       it('fails if the observation is new and the id is not in the id collection', async function() {
 
         const id = mongoose.Types.ObjectId()
@@ -174,28 +165,6 @@ describe.only('mongoose observation repository', function() {
         expect(observation.validation.hasErrors).to.be.false
         expect(err).to.be.instanceOf(ObservationRepositoryError)
         expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
-        const count = await model.count({})
-        expect(count).to.equal(0)
-      })
-
-      it('fails if the observation is invalid', async function() {
-
-        const id = await repo.allocateObservationId()
-        const stub = observationStub(id, event.id)
-        const formEntryId = (await repo.nextFormEntryIds())[0]
-        stub.properties.forms = [
-          {
-            id: formEntryId,
-            formId: event.forms[0].id,
-          }
-        ]
-        const observation = Observation.evaluate(stub, event)
-        const err = await repo.save(observation) as ObservationRepositoryError
-
-        console.log(validationResultMessage(observation.validation))
-        expect(observation.validation.hasErrors).to.be.true
-        expect(err).to.be.instanceOf(ObservationRepositoryError)
-        expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservation)
         const count = await model.count({})
         expect(count).to.equal(0)
       })
@@ -283,22 +252,175 @@ describe.only('mongoose observation repository', function() {
         expect(omitUndefinedValues(foundAttrs)).to.deep.equal(attrs)
         expect(count).to.equal(1)
       })
+    })
 
-      it('assigns new ids to new states', async function() {
+    describe('updating observations', function() {
 
+      let origAttrs: ObservationAttrs
+      let origDoc: ObservationDocument
+      let orig: Observation
+
+      beforeEach(async function() {
+
+        const id = await repo.allocateObservationId()
+        const formEntryId = (await repo.nextFormEntryIds())[0]
+        const attachmentId = (await repo.nextAttachmentIds())[0]
+        origAttrs = observationStub(id, event.id)
+        origAttrs.properties.forms = [
+          {
+            id: formEntryId,
+            formId: event.forms[0].id
+          }
+        ]
+        origAttrs.states = [
+          { id: mongoose.Types.ObjectId().toHexString(), name: 'active', userId: mongoose.Types.ObjectId().toHexString() }
+        ]
+        origAttrs.properties.forms = [
+          {
+            id: formEntryId,
+            formId: event.forms[0].id,
+            field1: 'original text'
+          }
+        ]
+        origAttrs.attachments = [
+          {
+            id: attachmentId,
+            fieldName: 'field3',
+            observationFormId: formEntryId,
+            oriented: true,
+            thumbnails: [],
+            name: 'original.png',
+            contentType: 'image/png',
+            lastModified: new Date()
+          }
+        ]
+        orig = await repo.save(Observation.evaluate(origAttrs, event)) as Observation
+        origDoc = await model.findById(id) as ObservationDocument
       })
 
-      it('assigns new ids to new form entries', async function() {
+      it.only('uses put/replace semantics to save the observation as the attributes specify', async function() {
 
+        const putAttrs = copyObservationAttrs(origAttrs)
+        putAttrs.geometry = {
+          type: 'Point',
+          coordinates: [ 12, 34 ]
+        }
+        putAttrs.states = [
+          { name: 'archived', id: PendingEntityId }
+        ]
+        putAttrs.properties.forms = [
+          {
+            id: orig.properties.forms[0].id,
+            formId: event.forms[0].id,
+            field1: 'mod text',
+            field2: 20
+          }
+        ]
+        putAttrs.attachments = []
+        const put = Observation.evaluate(putAttrs, event)
+        const saved = await repo.save(put) as Observation
+        const found = await repo.findById(orig.id) as Observation
+        const savedAttrs = copyObservationAttrs(saved)
+        const foundAttrs = copyObservationAttrs(found)
+        const count = await model.count({})
+
+        expect(saved).to.be.instanceOf(Observation)
+        expect(saved.id).to.equal(orig.id)
+        expect(omitKeysAndUndefinedValues(savedAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
+        expect(omitKeysAndUndefinedValues(foundAttrs, 'lastModified', 'states')).to.deep.equal(omitKeysAndUndefinedValues(putAttrs, 'lastModified', 'states'))
+        expect(savedAttrs.states[0].id).to.be.a('string')
+        expect(savedAttrs.states[0].name).to.equal('archived')
+        expect(savedAttrs.states[0].userId).to.be.undefined
+        expect(() => mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
+        expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
+        expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
+        expect(count).to.equal(1)
       })
+    })
 
-      it('assigns new ids to new attachments', async function() {
+    it('fails if the id is invalid', async function() {
 
+      const stub = observationStub('not an objectid', event.id)
+      const observation = Observation.evaluate(stub, event)
+      const err = await repo.save(observation) as ObservationRepositoryError
+
+      expect(observation.validation.hasErrors).to.be.false
+      expect(err).to.be.instanceOf(ObservationRepositoryError)
+      expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservationId)
+      const count = await model.count({})
+      expect(count).to.equal(0)
+    })
+
+    it('fails if the observation is invalid', async function() {
+
+      const id = await repo.allocateObservationId()
+      const stub = observationStub(id, event.id)
+      const formEntryId = (await repo.nextFormEntryIds())[0]
+      stub.properties.forms = [
+        {
+          id: formEntryId,
+          formId: event.forms[0].id,
+        }
+      ]
+      const observation = Observation.evaluate(stub, event)
+      const err = await repo.save(observation) as ObservationRepositoryError
+
+      expect(observation.validation.hasErrors).to.be.true
+      expect(err).to.be.instanceOf(ObservationRepositoryError)
+      expect(err.code).to.equal(ObservationRepositoryErrorCode.InvalidObservation)
+      const count = await model.count({})
+      expect(count).to.equal(0)
+    })
+
+    it('assigns new ids to new states', async function() {
+
+      const id = await repo.allocateObservationId()
+      const state1Stub = observationStub(id, event.id)
+      state1Stub.states = [
+        {
+          id: PendingEntityId,
+          name: 'archived',
+          userId: mongoose.Types.ObjectId().toHexString()
+        }
+      ]
+      const state1 = Observation.evaluate(state1Stub, event)
+      const state1Saved = await repo.save(state1) as Observation
+      console.log('saved state 1', state1Saved.states)
+      const state1Found = await repo.findById(id) as Observation
+      const state2Stub = copyObservationAttrs(state1Saved)
+      state2Stub.states = [
+        {
+          id: PendingEntityId,
+          name: 'active',
+          userId: mongoose.Types.ObjectId().toHexString()
+        },
+        state1Saved.states[0],
+      ]
+      const state2 = Observation.evaluate(state2Stub, event)
+      const state2Saved = await repo.save(state2) as Observation
+      console.log('saved state 2', state2Saved.states)
+      const state2Found = await repo.findById(id) as Observation
+
+      expect(state1Saved.states).to.have.length(1)
+      expect(state1Saved.states[0]).to.deep.include({
+        name: 'archived',
+        userId: state1Stub.states[0].userId
       })
-
-      it('retains ids for existing entities', async function() {
-
+      expect(() => mongoose.Types.ObjectId(state1Saved.states[0].id as string).toHexString()).not.to.throw()
+      expect(copyObservationAttrs(state1Found)).to.deep.equal(copyObservationAttrs(state1Saved))
+      expect(state2Saved.states).to.have.length(2)
+      expect(state2Saved.states[0]).to.deep.include({
+        name: 'active',
+        userId: state2Stub.states[0].userId
       })
+      expect(() => mongoose.Types.ObjectId(state2Saved.states[0].id as string).toHexString()).not.to.throw()
+      expect(copyObservationAttrs(state2Found)).to.deep.equal(copyObservationAttrs(state2Saved))
+      expect(state2Saved.states[1]).to.deep.equal(state1Saved.states[0])
+      expect(state2Saved.states[0].id).not.to.equal(state2Saved.states[1].id)
+    })
+
+    it.skip('retains ids for existing entities', async function() {
+
     })
   })
 })

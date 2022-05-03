@@ -39,7 +39,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     catch (err) {
       return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
     }
-    const beforeDoc = await this.model.findById(dbId)
+    let beforeDoc = await this.model.findById(dbId)
     if (!beforeDoc) {
       const idVerified = await this.idModel.findById(dbId)
       if (!idVerified) {
@@ -55,9 +55,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     docStub.properties.forms = attrs.properties.forms.map(assignMongoIdToStub)
     docStub.attachments = attrs.attachments.map(assignMongoIdToStub)
     docStub.states = attrs.states.map(assignMongoIdToStub)
-    const beforeSaveDoc = new this.model(docStub)
-    const afterSaveDoc = await beforeSaveDoc.save() as legacy.ObservationDocument
-    const savedAttrs = this.entityForDocument(afterSaveDoc)
+    beforeDoc = beforeDoc ? beforeDoc.set(docStub) as legacy.ObservationDocument : new this.model(docStub)
+    const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
+    const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     return saved
   }

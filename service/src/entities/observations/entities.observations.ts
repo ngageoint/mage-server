@@ -251,8 +251,8 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.id = attrs.id
     this.eventId = attrs.eventId
     this.userId = attrs.userId
-    this.createdAt = attrs.createdAt
-    this.lastModified = attrs.lastModified
+    this.createdAt = new Date(attrs.createdAt)
+    this.lastModified = new Date(attrs.lastModified)
     this.importantFlag = attrs.importantFlag ? Object.freeze({ ...attrs.importantFlag }) : undefined
     const states = attrs.states.length ? attrs.states.map(copyObservationStateAttrs) : [
       {
@@ -618,6 +618,10 @@ export class AttachmentNotFoundError extends Error {
    */
   findLatest(): Promise<ObservationAttrs | null>
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
+  /**
+   * Because attachments reference a form entry by its ID, an API to generate
+   * form entry IDs is necessary.
+   */
   nextFormEntryIds(count?: number): Promise<FormEntryId[]>
   nextAttachmentIds(count?: number): Promise<AttachmentId[]>
 }
