@@ -210,6 +210,7 @@ export class Observation implements Readonly<ObservationAttrs> {
       return ObservationUpdateError.eventIdMismatch(target.eventId, update.eventId)
     }
     update = copyObservationAttrs(update)
+    update.createdAt = new Date(target.createdAt)
     update.lastModified = new Date()
     return Observation.evaluate(update, target.mageEvent)
   }
@@ -689,6 +690,11 @@ export interface AttachmentStore {
 }
 
 export class AttachmentStoreError<Code extends AttachmentStoreErrorCode> extends Error {
+
+  static invalidAttachmentId(attachmentId: AttachmentId, observation: Observation): AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId> {
+    return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId, `observation ${observation.id} has no attachment ${attachmentId}`)
+  }
+
   constructor(readonly errorCode: Code, message?: string) {
     super(message)
   }

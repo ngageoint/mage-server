@@ -907,6 +907,25 @@ describe.only('observation entities', function() {
         expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
       })
 
+      it('does not change create timestamp', function() {
+
+        const now = Date.now()
+        const diff = 1000 * 60 * 99
+        const then = Date.now() - diff
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.createdAt = new Date(then)
+        const before = Observation.evaluate(beforeAttrs, mageEvent)
+        const afterAttrs = copyObservationAttrs(beforeAttrs)
+        afterAttrs.createdAt = new Date(now)
+        const after = Observation.assignTo(before, afterAttrs) as Observation
+
+        const beforeUnchanged = _.omit(copyObservationAttrs(before), 'createdAt', 'lastModified')
+        const afterUnchanged = _.omit(copyObservationAttrs(after), 'createdAt', 'lastModified')
+        expect(afterUnchanged).to.deep.equal(beforeUnchanged)
+        expect(after.createdAt.getTime()).to.equal(before.createdAt.getTime())
+        expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
+      })
+
       it('adds form entries', function() {
 
         const beforeAttrs = makeObservationAttrs(mageEvent)
@@ -924,8 +943,8 @@ describe.only('observation entities', function() {
         ]
         const after = Observation.assignTo(before, afterAttrs) as Observation
 
-        const beforeUnchanged = _.omit(before, 'properties.forms')
-        const afterUnchanged = _.omit(before, 'properties.forms')
+        const beforeUnchanged = _.omit(before, 'properties.forms', 'lastModified')
+        const afterUnchanged = _.omit(before, 'properties.forms', 'lastModified')
         expect(afterUnchanged).to.deep.equal(beforeUnchanged)
         expect(before.properties.forms).to.deep.equal([])
         expect(after.validation.hasErrors).to.be.false

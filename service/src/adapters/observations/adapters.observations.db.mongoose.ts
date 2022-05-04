@@ -39,13 +39,6 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     catch (err) {
       return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
     }
-    let beforeDoc = await this.model.findById(dbId)
-    if (!beforeDoc) {
-      const idVerified = await this.idModel.findById(dbId)
-      if (!idVerified) {
-        return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
-      }
-    }
     const attrs = copyObservationAttrs(observation)
     const docStub = { ...attrs, _id: dbId } as any
     delete docStub.importantFlag
@@ -55,7 +48,21 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     docStub.properties.forms = attrs.properties.forms.map(assignMongoIdToStub)
     docStub.attachments = attrs.attachments.map(assignMongoIdToStub)
     docStub.states = attrs.states.map(assignMongoIdToStub)
-    beforeDoc = beforeDoc ? beforeDoc.set(docStub) as legacy.ObservationDocument : new this.model(docStub)
+    let beforeDoc = await this.model.findById(dbId)
+    if (beforeDoc) {
+      if (docStub.createdAt.getTime() !== beforeDoc.createdAt.getTime()) {
+        console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docStub.createdAt}`)
+        docStub.createdAt = new Date(beforeDoc.createdAt)
+      }
+      beforeDoc = beforeDoc.set(docStub) as legacy.ObservationDocument
+    }
+    else {
+      const idVerified = await this.idModel.findById(dbId)
+      if (!idVerified) {
+        return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
+      }
+      beforeDoc = new this.model(docStub)
+    }
     const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)

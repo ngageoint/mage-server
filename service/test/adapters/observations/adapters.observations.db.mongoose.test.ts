@@ -266,6 +266,8 @@ describe.only('mongoose observation repository', function() {
         const formEntryId = (await repo.nextFormEntryIds())[0]
         const attachmentId = (await repo.nextAttachmentIds())[0]
         origAttrs = observationStub(id, event.id)
+        origAttrs.createdAt = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+        origAttrs.lastModified = new Date(origAttrs.createdAt.getTime() + 1000 * 60 * 60 * 5)
         origAttrs.properties.forms = [
           {
             id: formEntryId,
@@ -298,7 +300,7 @@ describe.only('mongoose observation repository', function() {
         origDoc = await model.findById(id) as ObservationDocument
       })
 
-      it.only('uses put/replace semantics to save the observation as the attributes specify', async function() {
+      it('uses put/replace semantics to save the observation as the attributes specify', async function() {
 
         const putAttrs = copyObservationAttrs(origAttrs)
         putAttrs.geometry = {
@@ -335,6 +337,19 @@ describe.only('mongoose observation repository', function() {
         expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
         expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
         expect(count).to.equal(1)
+      })
+
+      it('does not allow changing the create timestamp', async function() {
+
+        const modAttrs = copyObservationAttrs(orig)
+        const createdTime = modAttrs.createdAt.getTime()
+        modAttrs.createdAt = new Date()
+        const mod = Observation.evaluate(modAttrs, event)
+        const saved = await repo.save(mod) as Observation
+        const foundDoc = await model.findById(orig.id) as ObservationDocument
+
+        expect(saved.createdAt.getTime()).to.equal(createdTime)
+        expect(foundDoc.createdAt.getTime()).to.equal(createdTime)
       })
     })
 
@@ -419,8 +434,6 @@ describe.only('mongoose observation repository', function() {
       expect(state2Saved.states[0].id).not.to.equal(state2Saved.states[1].id)
     })
 
-    it.skip('retains ids for existing entities', async function() {
-
-    })
+    it('retains ids for existing entities')
   })
 })
