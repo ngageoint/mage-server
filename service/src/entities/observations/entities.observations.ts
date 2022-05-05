@@ -673,7 +673,7 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
+  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
@@ -682,20 +682,20 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
+  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
+  readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
+  deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
 }
 
-export class AttachmentStoreError<Code extends AttachmentStoreErrorCode> extends Error {
+export class AttachmentStoreError extends Error {
 
-  static invalidAttachmentId(attachmentId: AttachmentId, observation: Observation): AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId> {
+  static invalidAttachmentId(attachmentId: AttachmentId, observation: Observation): AttachmentStoreError {
     return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId, `observation ${observation.id} has no attachment ${attachmentId}`)
   }
 
-  constructor(readonly errorCode: Code, message?: string) {
+  constructor(readonly errorCode: AttachmentStoreErrorCode, message?: string) {
     super(message)
   }
 }
@@ -711,6 +711,11 @@ export enum AttachmentStoreErrorCode {
    * store.
    */
   ContentNotFound = 'AttachmentStoreError.ContentNotFound',
+  /**
+   * The underlying storage system, e.g. file system, raised an error during
+   * some I/O operation.
+   */
+  StorageError = 'AttachmentStoreError.StorageError'
 }
 
 function validateObservationCoreAttrs(validation: ObservationValidationContext): ObservationValidationContext {
