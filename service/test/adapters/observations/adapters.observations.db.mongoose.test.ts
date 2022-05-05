@@ -400,7 +400,6 @@ describe.only('mongoose observation repository', function() {
       ]
       const state1 = Observation.evaluate(state1Stub, event)
       const state1Saved = await repo.save(state1) as Observation
-      console.log('saved state 1', state1Saved.states)
       const state1Found = await repo.findById(id) as Observation
       const state2Stub = copyObservationAttrs(state1Saved)
       state2Stub.states = [
@@ -413,7 +412,6 @@ describe.only('mongoose observation repository', function() {
       ]
       const state2 = Observation.evaluate(state2Stub, event)
       const state2Saved = await repo.save(state2) as Observation
-      console.log('saved state 2', state2Saved.states)
       const state2Found = await repo.findById(id) as Observation
 
       expect(state1Saved.states).to.have.length(1)
