@@ -57,7 +57,7 @@ jobs:
       - name: Archive
         run:  |
           cd ..
-          tar czf mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.tar.gz mage-server --transform s/mage-server/mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}/
+          tar --exclude-vcs czf mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}.tar.gz mage-server --transform s/mage-server/mage_${{steps.get_version.outputs.VERSION}}_node${{matrix.node}}_${{env.FRIENDLY_OS}}/
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
