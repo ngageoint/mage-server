@@ -35,6 +35,18 @@ describe.only('file system attachment store', function() {
       expect(baseDirStats.isDirectory()).to.be.true
       expect(pendingDirStats.isDirectory()).to.be.true
     })
+
+    it('succeeds if the directories already exist', async function() {
+
+      const retainedFilePath = path.join(baseDirPath, 'retained.txt')
+      const retainedFileContent = stream.Readable.from(Buffer.from('save me'))
+      const retainedFileOut = fs.createWriteStream(retainedFilePath)
+      await util.promisify(stream.pipeline)(retainedFileContent, retainedFileOut)
+      const anotherStore = await intializeAttachmentStore(baseDirPath)
+      const afterInitRetainedContent = await util.promisify(fs.readFile)(retainedFilePath)
+
+      expect(afterInitRetainedContent.toString()).to.equal('save me')
+    })
   })
 
   describe('staging pending content', function() {
@@ -112,36 +124,96 @@ describe.only('file system attachment store', function() {
         ]
       }
       obs = Observation.evaluate(attrs, event)
+      attachment = obs.attachments[0]
     })
 
-    describe('from a direct stream', function() {
+    describe('for attachments', function() {
 
+      describe('from a direct stream', function() {
 
-    })
+        it('saves the content directly to the permanent location', async function() {
 
-    describe('from staged content', function() {
+          const content = stream.Readable.from(Buffer.from('such good content'))
+          const err = await store.saveContent(content, attachment.id, obs)
+          const relPath = relativePathOfAttachment(attachment.id, obs) as string
+          const absPath = path.resolve(baseDirPath, relPath)
+          const stats = await util.promisify(fs.stat)(absPath)
+          const savedContent = await util.promisify(fs.readFile)(absPath)
 
-      it('moves the staged content to the permanent location', async function() {
+          expect(err).to.be.null
+          expect(stats.isFile()).to.be.true
+          expect(savedContent.toString()).to.equal('such good content')
+        })
 
-        const attachment = obs.attachments[0]
-        const content = stream.Readable.from(Buffer.from('such good content'))
-        const pending = await store.stagePendingContent()
-        await util.promisify(stream.pipeline)(content, pending.tempLocation)
-        const err = await store.saveContent(pending.id, attachment.id, obs)
-        const relPath = relativePathOfAttachment(attachment.id, obs) as string
-        const absPath = path.resolve(baseDirPath, relPath)
-        const stats = await util.promisify(fs.stat)(absPath)
-        const savedContent = await util.promisify(fs.readFile)(absPath)
+        it('overwrites existing content', async function() {
 
-        expect(err).to.be.null
-        expect(stats.isFile()).to.be.true
-        expect(savedContent.toString()).to.equal('such good content')
+          const content = stream.Readable.from(Buffer.from('such good content'))
+          const err1 = await store.saveContent(content, attachment.id, obs)
+          const betterContent = stream.Readable.from(Buffer.from('even better content'))
+          const err2 = await store.saveContent(betterContent, attachment.id, obs)
+          const relPath = relativePathOfAttachment(attachment.id, obs) as string
+          const absPath = path.resolve(baseDirPath, relPath)
+          const stats = await util.promisify(fs.stat)(absPath)
+          const savedContent = await util.promisify(fs.readFile)(absPath)
+
+          expect(err1).to.be.null
+          expect(err2).to.be.null
+          expect(stats.isFile()).to.be.true
+          expect(savedContent.toString()).to.equal('even better content')
+        })
       })
 
-      it('returns an error if the creating the destination directory fails')
-      it('returns an error if moving the staged content to the permanent path fails')
+      describe('from staged content', function() {
+
+        it('moves the staged content to the permanent location', async function() {
+
+          const content = stream.Readable.from(Buffer.from('such good content'))
+          const pending = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(content, pending.tempLocation)
+          const err = await store.saveContent(pending.id, attachment.id, obs)
+          const relPath = relativePathOfAttachment(attachment.id, obs) as string
+          const absPath = path.resolve(baseDirPath, relPath)
+          const stats = await util.promisify(fs.stat)(absPath)
+          const savedContent = fs.readFileSync(absPath)
+          const pendingDirEntries = fs.readdirSync(pendingDirPath)
+
+          expect(err).to.be.null
+          expect(stats.isFile()).to.be.true
+          expect(savedContent.toString()).to.equal('such good content')
+          expect(pendingDirEntries).to.be.empty
+        })
+
+        it('overwrites existing content', async function() {
+
+          const content = stream.Readable.from(Buffer.from('such good content'))
+          const pending1 = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(content, pending1.tempLocation)
+          const err1 = await store.saveContent(pending1.id, attachment.id, obs)
+          const betterContent = stream.Readable.from(Buffer.from('even better content'))
+          const pending2 = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(betterContent, pending2.tempLocation)
+          const err2 = await store.saveContent(pending2.id, attachment.id, obs)
+          const relPath = relativePathOfAttachment(attachment.id, obs) as string
+          const absPath = path.resolve(baseDirPath, relPath)
+          const stats = await util.promisify(fs.stat)(absPath)
+          const savedContent = await util.promisify(fs.readFile)(absPath)
+
+          expect(err1).to.be.null
+          expect(err2).to.be.null
+          expect(stats.isFile()).to.be.true
+          expect(savedContent.toString()).to.equal('even better content')
+        })
+
+        it('returns an error if creating the destination directory fails')
+        it('returns an error if moving the staged content to the permanent path fails')
+      })
+
+      it('returns an error if the observation does not have the attachment id')
     })
 
-    it('returns an error if the observation does not have the attachment id')
+    describe('for thumbnails', function() {
+
+
+    })
   })
 })

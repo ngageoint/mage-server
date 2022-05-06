@@ -1,5 +1,6 @@
-import fs from 'fs'
+import fs, { createWriteStream } from 'fs'
 import path from 'path'
+import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
 import { AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, Observation, PendingAttachmentContent, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
@@ -20,16 +21,16 @@ export class FileSystemAttachmentStore implements AttachmentStore {
   }
 
   async saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
+    const saveRelPath = relativePathOfAttachment(attachmentId, observation)
+    if (saveRelPath instanceof AttachmentStoreError) {
+      return saveRelPath
+    }
+    const savePath = path.resolve(this.baseDirPath, saveRelPath)
+    const saveDirPath = path.dirname(savePath)
+    const mkdir = util.promisify(fs.mkdir)
     if (typeof content === 'string') {
-      const tempPath = path.join(this.pendingDirPath, content)
-      const saveRelPath = relativePathOfAttachment(attachmentId, observation)
-      if (saveRelPath instanceof AttachmentStoreError) {
-        return saveRelPath
-      }
-      const savePath = path.resolve(this.baseDirPath, saveRelPath)
-      const saveDirPath = path.dirname(savePath)
-      const mkdir = util.promisify(fs.mkdir)
       const move = util.promisify(fs.rename)
+      const tempPath = path.join(this.pendingDirPath, content)
       return mkdir(saveDirPath, { recursive: true })
         .then(_ => move(tempPath, savePath))
         .then(_ => null, err => {
@@ -38,7 +39,16 @@ export class FileSystemAttachmentStore implements AttachmentStore {
           return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
         })
     }
-    throw new Error('Method not implemented.')
+    const source = content as NodeJS.ReadableStream
+    const pipe = util.promisify(stream.pipeline)
+    return mkdir(saveDirPath, { recursive: true })
+      .then(_ => createWriteStream(savePath))
+      .then(dest => pipe(source, dest))
+      .then(_ => null, err => {
+        const message = `error saving source stream to path ${savePath}`
+        console.error(message, err)
+        return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
+      })
   }
 
   saveThumbnailContent(content: unknown, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
@@ -62,6 +72,14 @@ export class FileSystemAttachmentStore implements AttachmentStore {
   }
 }
 
+/**
+ * Create the directories for an attachment store at the given path if they
+ * do not exist.  Return a file system attachment store that stores content
+ * under the given base directory.  Return an error if there was an error
+ * creating the required directories.
+ * @param baseDirPath
+ * @returns {@link FileSystemAttachmentStore} or {@link FileSystemAttachmentStoreInitError}
+ */
 export async function intializeAttachmentStore(baseDirPath: string): Promise<FileSystemAttachmentStore | FileSystemAttachmentStoreInitError> {
   const mkdir = util.promisify(fs.mkdir)
   baseDirPath = path.resolve(baseDirPath)
