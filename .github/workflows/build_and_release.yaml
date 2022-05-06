@@ -27,7 +27,7 @@ jobs:
       node_versions-pre_latest-json: ${{ steps.node_versions.outputs.pre_latest-json }}
       release-is_release: ${{ steps.release_info.outputs.is_release }}
       release-is_prerelease: ${{ steps.release_info.outputs.is_prerelease }}
-      release-version: ${{ steps.release_info.outputs.version }}
+      release-name: ${{ steps.release_info.outputs.version }}
 
     steps:
       - id: sort_node_versions
@@ -186,7 +186,7 @@ jobs:
         if: ${{ needs.config.outputs.release-is_release }}
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ needs.config.outputs.release-version }}
+          name: ${{ needs.config.outputs.release-name }}
           prerelease: ${{ needs.config.outputs.release-is_prerelease }}
 
   release_packages:
@@ -213,14 +213,14 @@ jobs:
         run: |
           npm config set @ngageoint:registry https://gitlab.gs.mil/api/v4/projects/14746/packages/npm/
           npm config set -- '//gitlab.gs.mil/api/v4/projects/14746/packages/npm/:_authToken' ${{ secrets.GITLAB_PACKAGE_REGISTRY_TOKEN }}
-          npm publish ngageoint-mage.service-${{ needs.config.outputs.release-version }}.tgz
-          npm publish ngageoint-mage.web-core-lib-${{ needs.config.outputs.release-version }}.tgz
-          npm publish ngageoint-mage.web-app-${{ needs.config.outputs.release-version }}.tgz
+          npm publish $(ls -1 ngageoint-mage.service-*.tgz)
+          npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
+          npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
           npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
       - name: add package tarballs to release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ needs.config.outputs.release-version }}
+          name: ${{ needs.config.outputs.release-name }}
           files: |
             package.json
             ngageoint-mage.*.tgz
@@ -255,7 +255,7 @@ jobs:
           mage_platform_package=$(printf 'mage.instance-%s-node-%s' ${{ runner.os }} ${{ matrix.node }} | tr '[:upper:]' '[:lower:]')
           printf 'mage_platform_package=%s\n' ${mage_platform_package} >> ${GITHUB_ENV}
           (
-          printf '{ "name": "%s", "version": "%s" }\n' ${mage_platform_package} ${{ needs.config.outputs.release-version }} &&
+          printf '{ "name": "%s", "version": "%s" }\n' ${mage_platform_package} ${{ needs.config.outputs.release-name }} &&
           printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi" }}\n' &&
           printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
           printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz) &&
@@ -267,10 +267,10 @@ jobs:
         if: ${{ needs.config.outputs.release-is_release }}
         run: |
           npm i --production
-          tar --exclude-vcs czf ${mage_platform_package}-${{ needs.config.outputs.release-version }}.tgz ngageoint-*.tgz package*.json node_modules
+          tar --exclude-vcs czf ${mage_platform_package}-${{ needs.config.outputs.release-name }}.tgz ngageoint-*.tgz package*.json node_modules
       - name: release platform instance asset
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ needs.config.outputs.release-version }}
+          name: ${{ needs.config.outputs.release-name }}
           files: |
-            ${{ env.mage_platform_package }}-${{ needs.config.outputs.release-version }}.tgz
+            ${{ env.mage_platform_package }}-${{ needs.config.outputs.release-name }}.tgz
