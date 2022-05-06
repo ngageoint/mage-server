@@ -267,7 +267,7 @@ jobs:
         if: ${{ needs.config.outputs.release-is_release }}
         run: |
           npm i --production
-          tar --exclude-vcs czf ${mage_platform_package}-${{ needs.config.outputs.release-name }}.tgz ngageoint-*.tgz package*.json node_modules
+          tar czf ${mage_platform_package}-${{ needs.config.outputs.release-name }}.tgz --exclude-vcs ngageoint-*.tgz package*.json node_modules
       - name: release platform instance asset
         uses: softprops/action-gh-release@v1
         with:
