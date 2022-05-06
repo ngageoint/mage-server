@@ -683,7 +683,18 @@ export interface AttachmentStore {
    * @param observation
    */
   saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
-  readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  /**
+   * Return a read stream of the content for the given attachment.  The client
+   * can specify an optional zero-based range of bytes to read from the
+   * content, which will return a read stream limited the specified range.
+   * Note that the end index of the range is inclusive, as is the case with
+   * Node's streams API, as opposed to typeical array and sring operations, for
+   * which the end index is typically exclusive.
+   * @param attachmentId
+   * @param observation
+   * @param range
+   */
+  readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | AttachmentStoreError>
   readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
   deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
   deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>

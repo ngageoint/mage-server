@@ -38,12 +38,22 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return this.#saveContent(content, savePath)
   }
 
-  readContent(attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
-    throw new Error('Method not implemented.')
+  async readContent(attachmentId: string, observation: Observation, range: { start: number, end?: number } = { start: 0 }): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
+    const contentRelPath = relativePathForAttachment(attachmentId, observation)
+    if (contentRelPath instanceof AttachmentStoreError) {
+      return contentRelPath
+    }
+    const contentPath = path.join(this.baseDirPath, contentRelPath)
+    return fs.createReadStream(contentPath, range)
   }
 
-  readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
-    throw new Error('Method not implemented.')
+  async readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
+    const contentRelPath = relativePathForThumbnail(minDimension, attachmentId, observation)
+    if (contentRelPath instanceof AttachmentStoreError) {
+      return contentRelPath
+    }
+    const contentPath = path.join(this.baseDirPath, contentRelPath)
+    return fs.createReadStream(contentPath)
   }
 
   deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
