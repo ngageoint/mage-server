@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, Observation, PendingAttachmentContent, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, Observation, PendingAttachmentContent, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -20,39 +20,22 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return Object.freeze({ id, tempLocation })
   }
 
-  async saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    const saveRelPath = relativePathOfAttachment(attachmentId, observation)
+  saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
+    const saveRelPath = relativePathForAttachment(attachmentId, observation)
     if (saveRelPath instanceof AttachmentStoreError) {
-      return saveRelPath
+      return Promise.resolve(saveRelPath)
     }
     const savePath = path.resolve(this.baseDirPath, saveRelPath)
-    const saveDirPath = path.dirname(savePath)
-    const mkdir = util.promisify(fs.mkdir)
-    if (typeof content === 'string') {
-      const move = util.promisify(fs.rename)
-      const tempPath = path.join(this.pendingDirPath, content)
-      return mkdir(saveDirPath, { recursive: true })
-        .then(_ => move(tempPath, savePath))
-        .then(_ => null, err => {
-          const message = `error moving staged content ${tempPath} to ${savePath}`
-          console.error(message, err)
-          return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
-        })
-    }
-    const source = content as NodeJS.ReadableStream
-    const pipe = util.promisify(stream.pipeline)
-    return mkdir(saveDirPath, { recursive: true })
-      .then(_ => createWriteStream(savePath))
-      .then(dest => pipe(source, dest))
-      .then(_ => null, err => {
-        const message = `error saving source stream to path ${savePath}`
-        console.error(message, err)
-        return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
-      })
+    return this.#saveContent(content, savePath)
   }
 
   saveThumbnailContent(content: unknown, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    throw new Error('Method not implemented.')
+    const saveRelPath = relativePathForThumbnail(minDimension, attachmentId, observation)
+    if (saveRelPath instanceof AttachmentStoreError) {
+      return Promise.resolve(saveRelPath)
+    }
+    const savePath = path.resolve(this.baseDirPath, saveRelPath)
+    return this.#saveContent(content, savePath)
   }
 
   readContent(attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
@@ -69,6 +52,32 @@ export class FileSystemAttachmentStore implements AttachmentStore {
 
   deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
     throw new Error('Method not implemented.')
+  }
+
+  #saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, dest: string): Promise<AttachmentStoreError | null> {
+    const destBaseDirPath = path.dirname(dest)
+    const mkdir: (() => Promise<void>) = () => util.promisify(fs.mkdir)(destBaseDirPath, { recursive: true }).then(_ => void(0))
+    if (typeof content === 'string') {
+      const move = util.promisify(fs.rename)
+      const tempPath = path.join(this.pendingDirPath, content)
+      return mkdir()
+        .then(_ => move(tempPath, dest))
+        .then(_ => null, err => {
+          const message = `error moving staged content ${tempPath} to ${dest}`
+          console.error(message, err)
+          return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
+        })
+    }
+    const source = content as NodeJS.ReadableStream
+    const pipe = util.promisify(stream.pipeline)
+    return mkdir()
+      .then(_ => createWriteStream(dest))
+      .then(dest => pipe(source, dest))
+      .then(_ => null, err => {
+        const message = `error saving source stream to path ${dest}`
+        console.error(message, err)
+        return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
+      })
   }
 }
 
@@ -91,25 +100,34 @@ export async function intializeAttachmentStore(baseDirPath: string): Promise<Fil
   return new FileSystemAttachmentStore(FileSystemAttachmentStoreConstructorToken, baseDirPath, pendingDirPath)
 }
 
-export class FileSystemAttachmentStoreInitError extends Error {
+export class FileSystemAttachmentStoreInitError extends Error {}
 
+export function relativePathForAttachment(attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
+  return relativeBasePathForAttachment(attachmentId, observation)
 }
 
-export function relativePathOfAttachment(attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
+export function relativePathForThumbnail(size: number, attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
+  const basePath = relativeBasePathForAttachment(attachmentId, observation)
+  if (basePath instanceof AttachmentStoreError) {
+    return basePath
+  }
+  return `${basePath}-${size}`
+}
+
+function relativeBasePathForAttachment(attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
   const attachment = observation.attachmentFor(attachmentId)
   if (!attachment) {
     return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
   }
-  const extName = path.extname(attachment.name || '')
   const created = observation.createdAt
-  const savePath = path.join(
+  const baseDirPath = path.join(
     `event-${observation.eventId}`,
     String(created.getUTCFullYear()),
     String(created.getUTCMonth() + 1),
     String(created.getUTCDate()),
     observation.id,
-    attachment.id)
-  return savePath + extName
+    attachmentId)
+  return baseDirPath
 }
 
 const FileSystemAttachmentStoreConstructorToken = Symbol('FileSystemAttachmentStoreConstructorToken')

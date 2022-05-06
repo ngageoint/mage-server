@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import stream from 'stream'
 import util from 'util'
-import { FileSystemAttachmentStore, intializeAttachmentStore, relativePathOfAttachment } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
+import { FileSystemAttachmentStore, intializeAttachmentStore, relativePathForAttachment } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
 import { Attachment, AttachmentId, Observation, ObservationAttrs } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
@@ -67,6 +67,8 @@ describe.only('file system attachment store', function() {
 
     let obs: Observation
     let attachment: Attachment
+    let contentBaseRelPath: string
+    let contentBaseAbsPath: string
 
     beforeEach(function() {
       const event = new MageEvent({
@@ -125,6 +127,14 @@ describe.only('file system attachment store', function() {
       }
       obs = Observation.evaluate(attrs, event)
       attachment = obs.attachments[0]
+      contentBaseRelPath = path.join(
+        `event-${obs.eventId}`,
+        String(obs.createdAt.getUTCFullYear()),
+        String(obs.createdAt.getUTCMonth() + 1),
+        String(obs.createdAt.getUTCDate()),
+        obs.id,
+        attachment.id)
+      contentBaseAbsPath = path.join(baseDirPath, contentBaseRelPath)
     })
 
     describe('for attachments', function() {
@@ -135,8 +145,7 @@ describe.only('file system attachment store', function() {
 
           const content = stream.Readable.from(Buffer.from('such good content'))
           const err = await store.saveContent(content, attachment.id, obs)
-          const relPath = relativePathOfAttachment(attachment.id, obs) as string
-          const absPath = path.resolve(baseDirPath, relPath)
+          const absPath = path.resolve(baseDirPath, contentBaseRelPath)
           const stats = await util.promisify(fs.stat)(absPath)
           const savedContent = await util.promisify(fs.readFile)(absPath)
 
@@ -151,10 +160,8 @@ describe.only('file system attachment store', function() {
           const err1 = await store.saveContent(content, attachment.id, obs)
           const betterContent = stream.Readable.from(Buffer.from('even better content'))
           const err2 = await store.saveContent(betterContent, attachment.id, obs)
-          const relPath = relativePathOfAttachment(attachment.id, obs) as string
-          const absPath = path.resolve(baseDirPath, relPath)
-          const stats = await util.promisify(fs.stat)(absPath)
-          const savedContent = await util.promisify(fs.readFile)(absPath)
+          const stats = await util.promisify(fs.stat)(contentBaseAbsPath)
+          const savedContent = await util.promisify(fs.readFile)(contentBaseAbsPath)
 
           expect(err1).to.be.null
           expect(err2).to.be.null
@@ -171,10 +178,8 @@ describe.only('file system attachment store', function() {
           const pending = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(content, pending.tempLocation)
           const err = await store.saveContent(pending.id, attachment.id, obs)
-          const relPath = relativePathOfAttachment(attachment.id, obs) as string
-          const absPath = path.resolve(baseDirPath, relPath)
-          const stats = await util.promisify(fs.stat)(absPath)
-          const savedContent = fs.readFileSync(absPath)
+          const stats = await util.promisify(fs.stat)(contentBaseAbsPath)
+          const savedContent = fs.readFileSync(contentBaseAbsPath)
           const pendingDirEntries = fs.readdirSync(pendingDirPath)
 
           expect(err).to.be.null
@@ -193,10 +198,8 @@ describe.only('file system attachment store', function() {
           const pending2 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(betterContent, pending2.tempLocation)
           const err2 = await store.saveContent(pending2.id, attachment.id, obs)
-          const relPath = relativePathOfAttachment(attachment.id, obs) as string
-          const absPath = path.resolve(baseDirPath, relPath)
-          const stats = await util.promisify(fs.stat)(absPath)
-          const savedContent = await util.promisify(fs.readFile)(absPath)
+          const stats = await util.promisify(fs.stat)(contentBaseAbsPath)
+          const savedContent = await util.promisify(fs.readFile)(contentBaseAbsPath)
 
           expect(err1).to.be.null
           expect(err2).to.be.null
@@ -213,7 +216,49 @@ describe.only('file system attachment store', function() {
 
     describe('for thumbnails', function() {
 
+      describe('from a direct stream', function() {
 
+        it('saves thumbnails qualified with a given size', async function() {
+
+          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
+          const content240 = stream.Readable.from(Buffer.from('thumb 240'))
+          const err120 = await store.saveThumbnailContent(content120, 120, attachment.id, obs)
+          const err240 = await store.saveThumbnailContent(content240, 240, attachment.id, obs)
+          const thumb120Path = `${contentBaseAbsPath}-120`
+          const thumb240Path = `${contentBaseAbsPath}-240`
+          const saved120 = fs.readFileSync(thumb120Path)
+          const saved240 = fs.readFileSync(thumb240Path)
+
+          expect(err120).to.be.null
+          expect(saved120.toString()).to.equal('thumb 120')
+          expect(err240).to.be.null
+          expect(saved240.toString()).to.equal('thumb 240')
+        })
+      })
+
+      describe('from staged content', function() {
+
+        it('saves a thumbnail for a given size', async function() {
+
+          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
+          const content240 = stream.Readable.from(Buffer.from('thumb 240'))
+          const pending120 = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(content120, pending120.tempLocation)
+          const pending240 = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(content240, pending240.tempLocation)
+          const err120 = await store.saveThumbnailContent(pending120.id, 120, attachment.id, obs)
+          const err240 = await store.saveThumbnailContent(pending240.id, 240, attachment.id, obs)
+          const thumb120Path = `${contentBaseAbsPath}-120`
+          const thumb240Path = `${contentBaseAbsPath}-240`
+          const saved120 = fs.readFileSync(thumb120Path)
+          const saved240 = fs.readFileSync(thumb240Path)
+
+          expect(err120).to.be.null
+          expect(saved120.toString()).to.equal('thumb 120')
+          expect(err240).to.be.null
+          expect(saved240.toString()).to.equal('thumb 240')
+        })
+      })
     })
   })
 })
