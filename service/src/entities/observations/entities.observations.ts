@@ -606,6 +606,33 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   return Observation.evaluate(patchedObservation, observation.mageEvent)
 }
 
+/**
+ * Add the given thumbnail to the given attachment.  If the attachment already
+ * has a thumbnail at the same minimum dimension as the given thumbnail,
+ * replace the existing thumbnail with the given thumbnail at the same position
+ * in the thumbnails array.
+ * @param observation
+ * @param attachmentId
+ * @param thumbnail
+ * @returns
+ */
+export function putAttachmentThumbnailForMinDimension(observation: Observation, attachmentId: AttachmentId, thumbnail: Thumbnail): Observation | AttachmentNotFoundError {
+  const target = observation.attachmentFor(attachmentId)
+  if (!target) {
+    return new AttachmentNotFoundError(attachmentId)
+  }
+  const thumbnailsPatch = target.thumbnails.map(copyThumbnailAttrs)
+  const targetThumbPos = thumbnailsPatch.findIndex(x => x.minDimension === thumbnail.minDimension)
+  const putThumbAttrs = copyThumbnailAttrs(thumbnail)
+  if (targetThumbPos >= 0) {
+    thumbnailsPatch[targetThumbPos] = putThumbAttrs
+  }
+  else {
+    thumbnailsPatch.push(putThumbAttrs)
+  }
+  return patchAttachment(observation, attachmentId, { thumbnails: thumbnailsPatch })
+}
+
 export class AttachmentAddError extends Error {
 
   static invalidNewAttachment(invalidErr: AttachmentValidationError): AttachmentAddError {

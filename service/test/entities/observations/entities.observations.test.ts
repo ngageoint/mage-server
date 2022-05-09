@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -762,6 +762,8 @@ describe.only('observation entities', function() {
           expect(attachmentErrors.get(1)?.reason).to.equal(AttachmentValidationErrorReason.DuplicateId)
         })
       })
+
+      it('TODO: validates one thumbnail per min dimension')
     })
   })
 
@@ -1162,7 +1164,7 @@ describe.only('observation entities', function() {
     describe('form entries', function() {
 
       it.skip('TODO: provides mutation functions for adding, updating, and removing form entries')
-      it.skip('fails if the form entry ids are not unique on the observation')
+      it.skip('TODO: fails if the form entry ids are not unique on the observation')
     })
 
     describe('attachments', function() {
@@ -1470,20 +1472,104 @@ describe.only('observation entities', function() {
           expect(mod.lastModified.getTime()).to.equal(mod.attachments[0].lastModified?.getTime())
         })
 
-        it('patches the last attachment', function() {
+        it('TODO: patches the last attachment')
+        it('TODO: patches an attachment in the middle')
+        it('TODO: fails if the attachment does not exist')
+        it('TODO: fails if the attachment is invalid')
 
+        it('adds a new thumbnail to an attachment', function() {
+
+          const formEntry: FormEntry = {
+            id: 'formEntry0',
+            formId: mageEvent.forms[0].id,
+          }
+          const attachment: Required<Attachment> = {
+            id: 'attachment0',
+            fieldName: attachmentField1.name,
+            observationFormId: formEntry.id,
+            lastModified: new Date(Date.now() - 1000 * 60),
+            oriented: false,
+            thumbnails: [],
+            contentType: 'image/png',
+            height: 100,
+            width: 200,
+            name: 'test.png',
+            size: 123456,
+            contentLocator: 'abc123:attachment0'
+          }
+          const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
+          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.attachments = [ attachment ]
+          const observation = Observation.evaluate(observationAttrs, mageEvent)
+
+          expect(observation.validation.hasErrors).to.be.false
+
+          const thumb: Required<Thumbnail> = {
+            minDimension: 100,
+            contentLocator: '1qa2ws3ed',
+            contentType: 'image/png',
+            width: 100,
+            height: 150,
+            name: 'test@100.png',
+            size: 500
+          }
+          const mod = putAttachmentThumbnailForMinDimension(observation, attachment.id, thumb)
+
+          if (mod instanceof AttachmentNotFoundError) {
+            expect.fail('expected an observation instance')
+          }
+          expect(mod.attachments.length).to.equal(1)
+          expect(mod.attachments[0].thumbnails).to.deep.equal([ thumb ])
+          expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
+          expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
-        it('patches an attachment in the middle', function() {
+        it('replaces a thumbnail for the same min dimension', function() {
 
-        })
+          const formEntry: FormEntry = {
+            id: 'formEntry0',
+            formId: mageEvent.forms[0].id,
+          }
+          const attachment: Required<Attachment> = {
+            id: 'attachment0',
+            fieldName: attachmentField1.name,
+            observationFormId: formEntry.id,
+            lastModified: new Date(Date.now() - 1000 * 60),
+            oriented: false,
+            thumbnails: [
+              { minDimension: 100, contentLocator: 'aw3se4dr5' },
+              { minDimension: 200, contentLocator: '5rd4es3wa' },
+              { minDimension: 400, contentLocator: '0ok9ij8uh' }
+            ],
+            contentType: 'image/png',
+            height: 100,
+            width: 200,
+            name: 'test.png',
+            size: 123456,
+            contentLocator: 'abc123:attachment0'
+          }
+          const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
+          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.attachments = [ attachment ]
+          const observation = Observation.evaluate(observationAttrs, mageEvent)
+          const thumb: Required<Thumbnail> = {
+            minDimension: 200,
+            contentLocator: 'somewhere else',
+            contentType: 'image/png',
+            width: 200,
+            height: 300,
+            name: 'test@200.png',
+            size: 720
+          }
+          const mod = putAttachmentThumbnailForMinDimension(observation, attachment.id, thumb)
 
-        it('fails if the attachment does not exist', function() {
-
-        })
-
-        it('fails if the attachment is invalid', function() {
-
+          if (mod instanceof AttachmentNotFoundError) {
+            expect.fail('expected an observation instance')
+          }
+          expect(mod.attachments.length).to.equal(1)
+          expect(mod.attachments[0].thumbnails).to.deep.equal([ copyThumbnailAttrs(attachment.thumbnails[0]), thumb, copyThumbnailAttrs(attachment.thumbnails[2]) ])
+          expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
+          expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
       })
     })
