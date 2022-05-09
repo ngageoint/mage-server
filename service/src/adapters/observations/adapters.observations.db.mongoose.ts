@@ -1,12 +1,11 @@
 import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
 import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
-import { AttachmentDocument, ObservationStateDocument } from '../../models/observation'
 
 export type ObservationIdDocument = mongoose.Document
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
@@ -40,28 +39,28 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
     }
     const attrs = copyObservationAttrs(observation)
-    const docStub = { ...attrs, _id: dbId } as any
-    delete docStub.importantFlag
+    const docSeed = { ...attrs, _id: dbId } as any
+    delete docSeed.importantFlag
     if (attrs.importantFlag) {
-      docStub.important = attrs.importantFlag
+      docSeed.important = attrs.importantFlag
     }
-    docStub.properties.forms = attrs.properties.forms.map(assignMongoIdToStub)
-    docStub.attachments = attrs.attachments.map(assignMongoIdToStub)
-    docStub.states = attrs.states.map(assignMongoIdToStub)
+    docSeed.properties.forms = attrs.properties.forms.map(assignMongoIdToDocAttrs)
+    docSeed.attachments = attrs.attachments.map(attachmentDocSeedForEntity)
+    docSeed.states = attrs.states.map(assignMongoIdToDocAttrs)
     let beforeDoc = await this.model.findById(dbId)
     if (beforeDoc) {
-      if (docStub.createdAt.getTime() !== beforeDoc.createdAt.getTime()) {
-        console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docStub.createdAt}`)
-        docStub.createdAt = new Date(beforeDoc.createdAt)
+      if (docSeed.createdAt.getTime() !== beforeDoc.createdAt.getTime()) {
+        console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
+        docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      beforeDoc = beforeDoc.set(docStub) as legacy.ObservationDocument
+      beforeDoc = beforeDoc.set(docSeed) as legacy.ObservationDocument
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
       if (!idVerified) {
         return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
       }
-      beforeDoc = new this.model(docStub)
+      beforeDoc = new this.model(docSeed)
     }
     const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
     const savedAttrs = this.entityForDocument(savedDoc)
@@ -160,7 +159,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
   return void(0)
 }
 
-function attachmentAttrsForDoc(doc: AttachmentDocument): Attachment {
+function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
   return {
     id: doc.id,
     observationFormId: doc.observationFormId.toHexString(),
@@ -172,11 +171,25 @@ function attachmentAttrsForDoc(doc: AttachmentDocument): Attachment {
     height: doc.height,
     size: doc.size,
     oriented: doc.oriented,
-    thumbnails: doc.thumbnails.slice(),
+    contentLocator: doc.relativePath,
+    thumbnails: doc.thumbnails.map(thumbnailAttrsForDoc),
   }
 }
 
-function stateAttrsForDoc(doc: ObservationStateDocument): ObservationState {
+function thumbnailAttrsForDoc(doc: legacy.ThumbnailDocument): Thumbnail {
+  return {
+    // TODO: is id necessary for thumnails? needs cleanup
+    contentLocator: doc.relativePath,
+    minDimension: doc.minDimension,
+    contentType: doc.contentType,
+    height: doc.height,
+    width: doc.width,
+    size: doc.size,
+    name: doc.name,
+  }
+}
+
+function stateAttrsForDoc(doc: legacy.ObservationStateDocument): ObservationState {
   return {
     id: doc.id,
     name: doc.name,
@@ -192,19 +205,32 @@ function formEntryForDoc(doc: legacy.ObservationDocumentFormEntry): FormEntry {
   }
 }
 
-type EntityDocumentStub = {
-  id: string | number | PendingEntityId | undefined
-  [attr: string]: any
-}
-type DocumentStub = {
-  _id: mongoose.Types.ObjectId | number
-}
-
-function assignMongoIdToStub(attrs: EntityDocumentStub): DocumentStub {
-  const { id, ...stub } = attrs
-  stub._id =
+function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _id: number | mongoose.Types.ObjectId, [other: string]: any } {
+  const { id, ...withoutId } = attrs as any
+  withoutId._id =
     typeof id === 'string' ? mongoose.Types.ObjectId(id)
     : typeof id === 'number' ? id
     : mongoose.Types.ObjectId()
-  return stub as DocumentStub
+  return withoutId
+}
+
+function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttrs {
+  const seed = assignMongoIdToDocAttrs(attrs)
+  seed.relativePath = attrs.contentLocator
+  delete seed['contentLocator']
+  seed.thumbnails = attrs.thumbnails.map(thumbnailDocSeedForEntity)
+  return seed as legacy.AttachmentDocAttrs
+}
+
+function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
+  return {
+    _id: mongoose.Types.ObjectId(),
+    relativePath: attrs.contentLocator,
+    minDimension: attrs.minDimension,
+    name: attrs.name,
+    contentType: attrs.contentType,
+    size: attrs.size,
+    width: attrs.width,
+    height: attrs.height,
+  }
 }

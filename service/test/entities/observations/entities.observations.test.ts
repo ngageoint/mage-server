@@ -1385,7 +1385,8 @@ describe.only('observation entities', function() {
             height: 100,
             width: 200,
             name: 'test.png',
-            size: 123456
+            size: 123456,
+            contentLocator: 'abc123:attachment0'
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
@@ -1402,8 +1403,9 @@ describe.only('observation entities', function() {
             name: 'test.jpeg',
             oriented: true,
             size: 12345,
+            contentLocator: '0pl9ok',
             thumbnails: [
-              { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234 }
+              { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234, contentLocator: 'z1x2c3' }
             ]
           }
           const mod = patchAttachment(observation, attachment.id, patch)
@@ -1434,7 +1436,8 @@ describe.only('observation entities', function() {
             height: 100,
             width: 200,
             name: 'test.png',
-            size: 123456
+            size: 123456,
+            contentLocator: '1q2w3e'
           }
           const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
           observationAttrs.lastModified = new Date(Date.now() - 1000 * 60 * 60)
@@ -1451,8 +1454,9 @@ describe.only('observation entities', function() {
             name: 'test.jpeg',
             oriented: true,
             size: 12345,
+            contentLocator: 'r4t5y6',
             thumbnails: [
-              { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234 }
+              { minDimension: 60, contentType: 'image/jpeg', width: 120, height: 60, name: 'test-thumb-1.jpeg', size: 1234, contentLocator: '8u7y6t' }
             ]
           }
           const mod = patchAttachment(observation, attachment.id, patch)

@@ -86,6 +86,10 @@ export interface Attachment {
   id: AttachmentId
   observationFormId: FormEntryId
   fieldName: string
+  /**
+   * TODO: Nothing seems to use this property.  Should we remove it, or
+   * actually use it to inform browser caching?
+   */
   lastModified?: Date
   /**
    * The content type is an IANA standard media type string, e.g., `image/jpeg`.
@@ -95,12 +99,31 @@ export interface Attachment {
   name?: string
   width?: number
   height?: number
+  /**
+   * The attachment's content locator is an abstract term that mostly exists
+   * to reconcile with the legacy design of storing the relative file system
+   * path of an attachment's file on the attachment document itself.  However,
+   * as MAGE transitions to cloud-native infrastructure, one can more easily
+   * envision swapping some sort of cloud-based BLOB storage service for the
+   * legacy local file system storage.  Renaming the old `relativePath`
+   * property to `contentLocator` is an attempt allow for saving a lookup key
+   * that does not necessarily imply an underlying file system as the storage
+   * layer.  Implementations of the abstract {@link AttachmentStore} interface
+   * would assign their own lookup key to this property, although the intention
+   * of that interface's design is to be completely opaque with respect to how
+   * an implementation stores and indexes attachment content.
+   */
+  contentLocator?: string
   oriented: boolean
   thumbnails: Thumbnail[]
 }
 
 export interface Thumbnail {
   minDimension: number
+  /**
+   * See {@link Attachment.contentLocator} for an explanation.
+   */
+  contentLocator: string
   contentType?: string
   size?: number
   name?: string
@@ -140,12 +163,14 @@ export function copyAttachmentAttrs(from: Attachment): Attachment {
     height: from.height,
     oriented: from.oriented,
     thumbnails: from.thumbnails.map(copyThumbnailAttrs),
+    contentLocator: from.contentLocator
   }
 }
 
 export function copyThumbnailAttrs(from: Thumbnail): Thumbnail {
   return {
     minDimension: from.minDimension,
+    contentLocator: from.contentLocator,
     contentType: from.contentType,
     name: from.name,
     size: from.size,
@@ -569,6 +594,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   patched.name = patch.hasOwnProperty('name') ? patch.name : patched.name
   patched.oriented = patch.hasOwnProperty('oriented') ? !!patch.oriented : patched.oriented
   patched.size = patch.hasOwnProperty('size') ? patch.size : patched.size
+  patched.contentLocator = patch.hasOwnProperty('contentLocator') ? patch.contentLocator : patched.contentLocator
   patched.thumbnails = patch.hasOwnProperty('thumbnails') ? patch.thumbnails?.map(copyThumbnailAttrs) as Thumbnail[] : patched.thumbnails
   patched.lastModified = new Date()
   const patchedObservation = copyObservationAttrs(observation)

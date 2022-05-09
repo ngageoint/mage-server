@@ -306,11 +306,15 @@ describe.only('file system attachment store', function() {
       expect(thumb100Read.bytes.toString()).to.equal(thumb100Content)
       expect(thumb300Read.bytes.toString()).to.equal(thumb300Content)
     })
+
+    it('uses the path property on the attachment if present', async function() {
+      expect.fail('todo')
+    })
   })
 
   describe('deleting', function() {
 
-    describe('all observation content', function() {
+    describe('all observation attachment content', function() {
 
     })
 

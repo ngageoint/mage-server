@@ -51,23 +51,29 @@ export type ObservationDocumnetFormEntryJson = Omit<FormEntry, 'id'> & {
   id: ObservationDocumentFormEntry['_id']
 }
 
-export type AttachmentDocument = Omit<mongoose.Document & Attachment, 'id' | 'observationFormId'> & {
-  id: AttachmentId
+export type AttachmentDocAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'contentLocator' | 'thumbnails'> & {
+  _id: mongoose.Types.ObjectId
   observationFormId: mongoose.Types.ObjectId
+  relativePath?: string
+  thumbnails: ThumbnailDocAttrs[]
 }
-export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'thumbnails'> & {
+export type AttachmentDocument = mongoose.Document & Omit<AttachmentDocAttrs, 'thumbnails'> & {
+  thumbnails: ThumbnailDocument[]
+}
+export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'contentLocator' | 'thumbnails'> & {
   id: AttachmentDocument['_id']
   relativePath?: string
   url?: string
 }
 
+export type ThumbnailDocAttrs = Omit<Thumbnail, 'id' | 'contentLocator'> & {
+  _id: mongoose.Types.ObjectId
+  relativePath: string
+}
+export type ThumbnailDocument = mongoose.Document & ThumbnailDocAttrs
+
 export type ObservationDocumentImportantFlag = Omit<ObservationImportantFlag, 'userId'> & {
   userId?: mongoose.Types.ObjectId
-}
-
-export type ThumbnailDocument = Omit<mongoose.Document & Thumbnail, 'id'> & {
-  id: string
-  relativePath?: string
 }
 
 export type ObservationStateDocument = Omit<mongoose.Document & ObservationState, 'id' | 'userId'> & {

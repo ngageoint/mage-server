@@ -213,11 +213,22 @@ describe.only('mongoose observation repository', function() {
             fieldName: 'field3',
             name: 'test.jpg',
             oriented: false,
-            thumbnails: [],
+            thumbnails: [
+              {
+                minDimension: 150,
+                contentLocator: attachmentId + '@150',
+                size: 1234,
+                contentType: undefined,
+                height: undefined,
+                width: undefined,
+                name: undefined,
+              }
+            ],
             contentType: AttachmentMediaTypes[AttachmentPresentationType.Image][0],
             lastModified: new Date(Date.now() - 1000 * 60 * 60),
             height: undefined,
             width: undefined,
+            contentLocator: 'a1s2d3',
             size: 12345,
           }
         ]
