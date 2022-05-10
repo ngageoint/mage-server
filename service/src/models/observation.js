@@ -19,13 +19,13 @@ const StateSchema = new Schema({
 });
 
 const ThumbnailSchema = new Schema({
+  minDimension: { type: Number, required: true },
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
   name: { type: String, required: false },
-  relativePath: { type: String, required: true },
-  minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
-  height: { type: Number, required: false}
+  height: { type: Number, required: false},
+  relativePath: { type: String, required: false },
 },{
   strict: false
 });

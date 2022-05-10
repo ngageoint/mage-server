@@ -68,7 +68,7 @@ export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'contentLocator' | 
 
 export type ThumbnailDocAttrs = Omit<Thumbnail, 'id' | 'contentLocator'> & {
   _id: mongoose.Types.ObjectId
-  relativePath: string
+  relativePath?: string
 }
 export type ThumbnailDocument = mongoose.Document & ThumbnailDocAttrs
 

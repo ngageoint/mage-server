@@ -123,7 +123,7 @@ export interface Thumbnail {
   /**
    * See {@link Attachment.contentLocator} for an explanation.
    */
-  contentLocator: string
+  contentLocator?: string
   contentType?: string
   size?: number
   name?: string
@@ -651,6 +651,25 @@ export class AttachmentNotFoundError extends Error {
 }
 
 /**
+ * Return the index of the thumbnail in the given attachment's thumbnail array
+ * that best satisfies the given target size.  This is essentially the
+ * thumbnail with the smallest minimum dimension greater than or equal to the
+ * requested target size.
+ * @param targetSize
+ */
+export function indexOfThumbnailForTargetSize(targetSize: number, attachment: Attachment): number | undefined {
+  const orderedThumbs = attachment.thumbnails.slice().sort((a, b) => a.minDimension - b.minDimension)
+  const pos = orderedThumbs.findIndex(thumbnail => {
+    return (thumbnail.minDimension < Number(attachment.height) || !attachment.height) &&
+      (thumbnail.minDimension < Number(attachment.width) || !attachment.width) &&
+      thumbnail.minDimension >= targetSize
+  })
+  return pos >= 0 ? pos : undefined
+}
+
+
+
+/**
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
  */
@@ -759,6 +778,10 @@ export class AttachmentStoreError extends Error {
     return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId, `observation ${observation.id} has no attachment ${attachmentId}`)
   }
 
+  static invalidThumbnailDimension(minDimension: number, attachmentId: AttachmentId, observation: Observation): AttachmentStoreError {
+    return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidThumbnailDimension, `attachment ${attachmentId} on observation ${observation.id} has no thumbnail with dimension ${minDimension}`)
+  }
+
   constructor(readonly errorCode: AttachmentStoreErrorCode, message?: string) {
     super(message)
   }
@@ -770,6 +793,7 @@ export enum AttachmentStoreErrorCode {
    * attachment list.
    */
   InvalidAttachmentId = 'AttachmentStoreError.InvalidAttachmentId',
+  InvalidThumbnailDimension = 'AttachmentStoreError.InvalidThumbnailDimension',
   /**
    * The content for the given attachment ID was not found in the attachment
    * store.
