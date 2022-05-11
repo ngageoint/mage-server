@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, Observation, PendingAttachmentContent, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, PendingAttachmentContent, PendingAttachmentContentId, putAttachmentThumbnailForMinDimension, Thumbnail } from '../../entities/observations/entities.observations'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -20,38 +20,67 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return Object.freeze({ id, tempLocation })
   }
 
-  saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    const saveRelPath = relativeWriteBasePathForAttachment(attachmentId, observation)
-    if (saveRelPath instanceof AttachmentStoreError) {
-      return Promise.resolve(saveRelPath)
+  async saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
     }
-    const savePath = path.resolve(this.baseDirPath, saveRelPath)
-    return this.#saveContent(content, savePath)
+    const saveRelPath = relativeWriteBasePathForAttachment(attachment, observation)
+    const savePath = path.join(this.baseDirPath, saveRelPath)
+    const err = await this.#saveContent(content, savePath)
+    if (err) {
+      return err
+    }
+    if (attachment.contentLocator) {
+      return null
+    }
+    return patchAttachment(observation, attachmentId, { contentLocator: saveRelPath }) as Observation
   }
 
-  saveThumbnailContent(content: unknown, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    const saveRelPath = relativeWritePathForThumbnail(minDimension, attachmentId, observation)
-    if (saveRelPath instanceof AttachmentStoreError) {
-      return Promise.resolve(saveRelPath)
+  async saveThumbnailContent(content: unknown, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
     }
-    const savePath = path.resolve(this.baseDirPath, saveRelPath)
-    return this.#saveContent(content, savePath)
+    const thumbnailPos = attachment.thumbnails.findIndex(x => x.minDimension === minDimension)
+    const thumbnail = attachment.thumbnails[thumbnailPos]
+    if (!thumbnail) {
+      return AttachmentStoreError.invalidThumbnailDimension(minDimension, attachmentId, observation)
+    }
+    const saveRelPath = relativeWritePathForThumbnail(thumbnail, attachment, observation)
+    const savePath = path.join(this.baseDirPath, saveRelPath)
+    const err = await this.#saveContent(content, savePath)
+    if (err) {
+      return err
+    }
+    if (thumbnail.contentLocator) {
+      return null
+    }
+    const savedThumbnail = copyThumbnailAttrs(thumbnail)
+    savedThumbnail.contentLocator = saveRelPath
+    return putAttachmentThumbnailForMinDimension(observation, attachmentId, savedThumbnail) as Observation
   }
 
   async readContent(attachmentId: string, observation: Observation, range: { start: number, end?: number } = { start: 0 }): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
-    const contentRelPath = relativeReadPathForAttachment(attachmentId, observation)
-    if (contentRelPath instanceof AttachmentStoreError) {
-      return contentRelPath
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return Promise.resolve(AttachmentStoreError.invalidAttachmentId(attachmentId, observation))
     }
+    const contentRelPath = relativeReadPathForAttachment(attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
     return fs.createReadStream(contentPath, range)
   }
 
   async readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
-    const contentRelPath = relativeReadPathForThumbnail(minDimension, attachmentId, observation)
-    if (contentRelPath instanceof AttachmentStoreError) {
-      return contentRelPath
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return Promise.resolve(AttachmentStoreError.invalidAttachmentId(attachmentId, observation))
     }
+    const thumbnail = attachment.thumbnails.find(x => x.minDimension === minDimension)
+    if (!thumbnail) {
+      return Promise.resolve(AttachmentStoreError.invalidThumbnailDimension(minDimension, attachmentId, observation))
+    }
+    const contentRelPath = relativeReadPathForThumbnail(thumbnail, attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
     return fs.createReadStream(contentPath)
   }
@@ -112,62 +141,46 @@ export async function intializeAttachmentStore(baseDirPath: string): Promise<Fil
 
 export class FileSystemAttachmentStoreInitError extends Error {}
 
-function relativeWritePathForThumbnail(minDimension: number, attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
-  const basePath = relativeWriteBasePathForAttachment(attachmentId, observation)
-  if (basePath instanceof AttachmentStoreError) {
-    return basePath
+function relativeWritePathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {
+  if (thumbnail.contentLocator) {
+    return thumbnail.contentLocator
   }
-  return `${basePath}-${minDimension}`
+  const basePath = relativeWriteBasePathForAttachment(attachment, observation)
+  return `${basePath}-${thumbnail.minDimension}`
 }
 
-function relativeWriteBasePathForAttachment(attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
-  const attachment = observation.attachmentFor(attachmentId)
-  if (!attachment) {
-    return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
+function relativeWriteBasePathForAttachment(attachment: Attachment, observation: Observation): string {
+  if (attachment.contentLocator) {
+    return attachment.contentLocator
   }
   const created = observation.createdAt
   const baseDirPath = path.join(
     `event-${observation.eventId}`,
     String(created.getUTCFullYear()),
-    String(created.getUTCMonth() + 1),
-    String(created.getUTCDate()),
+    String(created.getUTCMonth() + 1).padStart(2, '0'),
+    String(created.getUTCDate()).padStart(2, '0'),
     observation.id,
-    attachmentId)
+    attachment.id)
   return baseDirPath
 }
 
 /**
- * If the attachment has a non-empty {@link Attachment.contentLocator|`contentLocator`},
+ * If the attachment has a non-empty {@link Attachment.contentLocator | `contentLocator`},
  * return that.  Otherwise, return the presumed path based on the observation
  * and attachment attributes.
- * @param attachmentId
- * @param observation
- * @returns
  */
-function relativeReadPathForAttachment(attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
-  const attachment = observation.attachmentFor(attachmentId)
-  if (!attachment) {
-    return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
-  }
+function relativeReadPathForAttachment(attachment: Attachment, observation: Observation): string {
   if (attachment.contentLocator) {
     return attachment.contentLocator
   }
-  return relativeWriteBasePathForAttachment(attachmentId, observation)
+  return relativeWriteBasePathForAttachment(attachment, observation)
 }
 
-function relativeReadPathForThumbnail(minDimension: number, attachmentId: AttachmentId, observation: Observation): string | AttachmentStoreError {
-  const attachment = observation.attachmentFor(attachmentId)
-  if (!attachment) {
-    return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
-  }
-  const thumbnail = attachment.thumbnails.find(x => x.minDimension === minDimension)
-  if (!thumbnail) {
-    return AttachmentStoreError.invalidThumbnailDimension(minDimension, attachmentId, observation)
-  }
+function relativeReadPathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {
   if (thumbnail.contentLocator) {
     return thumbnail.contentLocator
   }
-  return relativeWritePathForThumbnail(minDimension, attachmentId, observation)
+  return relativeWritePathForThumbnail(thumbnail, attachment, observation)
 }
 
 const FileSystemAttachmentStoreConstructorToken = Symbol('FileSystemAttachmentStoreConstructorToken')

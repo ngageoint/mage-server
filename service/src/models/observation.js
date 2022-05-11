@@ -324,6 +324,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
       return observationForm;
     })
     .forEach(formEntry => {
+      // TODO: move to app or web layer
       const formDefinition = event.forms.find(form => form._id === formEntry.formId);
       Object.keys(formEntry).forEach(fieldName => {
         const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);

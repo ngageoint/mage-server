@@ -111,7 +111,8 @@ export interface Attachment {
    * layer.  Implementations of the abstract {@link AttachmentStore} interface
    * would assign their own lookup key to this property, although the intention
    * of that interface's design is to be completely opaque with respect to how
-   * an implementation stores and indexes attachment content.
+   * an implementation stores and indexes attachment content.  An attachment
+   * store implementation may not use `contentLocator` at all.
    */
   contentLocator?: string
   oriented: boolean
@@ -740,12 +741,17 @@ export interface AttachmentStore {
    * Save the given content to the store for the specified attachment.  If the
    * `content` argument is an ID for {@link PendingAttachmentContent staged content},
    * the store will move the content at the temporary location to the permanent
-   * location for the specified attachment.
+   * location for the specified attachment.  If the store assigns a new
+   * {@link Attachment.contentLocator | content locator} to the attachment after
+   * a successful save, return a new observation instance with the {@link patchAttachment | patched}
+   * attachment.  Return `null` if the save succeeded and no change to the
+   * attachment was necessary.  Return an {@link AttachmentStoreError} if the
+   * save failed.
    * @param content
    * @param attachmentId
    * @param observation
    */
-  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
+  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
@@ -754,7 +760,7 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the
