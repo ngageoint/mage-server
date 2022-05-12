@@ -774,6 +774,11 @@ export interface AttachmentStore {
    */
   readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | AttachmentStoreError>
   readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  /**
+   * Delete the content for the given attachment ID, including any thumbnails.
+   * @param attachmentId
+   * @param observation
+   */
   deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
   deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
 }

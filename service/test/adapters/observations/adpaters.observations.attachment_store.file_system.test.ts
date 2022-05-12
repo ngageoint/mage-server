@@ -4,7 +4,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
-import { Attachment, AttachmentId, copyObservationAttrs, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail } from '../../../lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
@@ -273,12 +273,34 @@ describe.only('file system attachment store', function() {
       it('TODO: returns an error if creating the destination directory fails')
       it('TODO: returns an error if the observation does not have the attachment id')
 
-      it('TODO: does not write outside the base directory if the content locator is an absolute path', async function() {
-        expect.fail('todo')
+      it('does not write outside the base directory if the content locator is an absolute path', async function() {
+
+        const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
+        store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+        const contentLocator = path.join('/tmp', 'absolute', 'should_not_write')
+        obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
+        const content = stream.Readable.from(Buffer.from('sinister content'))
+        const result = await store.saveContent(content, att.id, obs)
+        const okPath = path.join(safeBaseDirPath, contentLocator)
+
+        expect(contentLocator.startsWith('/')).to.be.true
+        expect(okPath).to.equal(`${safeBaseDirPath}${path.sep}tmp${path.sep}absolute${path.sep}should_not_write`)
+        expect(fs.existsSync(okPath)).to.be.true
+        expect(result).to.be.null
       })
 
       it('TODO: does not write outside the base directory if the content locator references the parent directory', async function() {
-        expect.fail('todo')
+
+        const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
+        store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+        const contentLocator = path.join('..', '..', 'should_not_write')
+        obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
+        const content = stream.Readable.from(Buffer.from('sinister content'))
+        const result = await store.saveContent(content, att.id, obs)
+        const dangerousPath = path.resolve(safeBaseDirPath, contentLocator)
+
+        expect(fs.existsSync(dangerousPath)).to.be.false
+        expect(result).to.be.instanceOf(AttachmentStoreError)
       })
     })
 
@@ -494,6 +516,10 @@ describe.only('file system attachment store', function() {
 
     describe('thumbnail content', function() {
       it('TODO: may not be necessary')
+    })
+
+    it('cannot delete content outside the base directory', function() {
+      expect.fail('todo')
     })
   })
 })

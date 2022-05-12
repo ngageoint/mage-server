@@ -94,7 +94,12 @@ export class FileSystemAttachmentStore implements AttachmentStore {
   }
 
   #saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, dest: string): Promise<AttachmentStoreError | null> {
-    const destBaseDirPath = path.dirname(dest)
+    const destResolved = path.resolve(dest)
+    const isDescendantOfBaseDir = path.relative(destResolved, this.baseDirPath).split(path.sep).every(x => x === '..')
+    if (!isDescendantOfBaseDir) {
+      return Promise.resolve(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `content destination ${dest} is not a descendent of base dir ${this.baseDirPath}`))
+    }
+    const destBaseDirPath = path.dirname(destResolved)
     const mkdir: (() => Promise<void>) = () => util.promisify(fs.mkdir)(destBaseDirPath, { recursive: true }).then(_ => void(0))
     if (typeof content === 'string') {
       const move = util.promisify(fs.rename)
