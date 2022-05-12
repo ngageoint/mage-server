@@ -289,7 +289,7 @@ describe.only('file system attachment store', function() {
         expect(result).to.be.null
       })
 
-      it('TODO: does not write outside the base directory if the content locator references the parent directory', async function() {
+      it('does not write outside the base directory if the content locator references the parent directory', async function() {
 
         const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
         store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
