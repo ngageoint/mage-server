@@ -723,6 +723,12 @@ export interface PendingAttachmentContent {
   tempLocation: NodeJS.WritableStream
 }
 
+/**
+ * TODO: Maybe instead of the `null | Observation | AttachmentStoreError`
+ * pattern many of these method signatures use, a single `AttachmentStoreResult`
+ * class with a `success` flag and `observation` and `error` properties would
+ * be eaiser for clients to consume.
+ */
 export interface AttachmentStore {
   /**
    * Create a temporary staging area to hold attachment content pending
@@ -776,11 +782,13 @@ export interface AttachmentStore {
   readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
   /**
    * Delete the content for the given attachment ID, including any thumbnails.
-   * @param attachmentId
-   * @param observation
+   * If the attachment and/or thumbnails had content locators, return a new
+   * observation instance with content locators removed from the attachments
+   * and thumbnails.  Return an error if the attachment ID does not exist on
+   * the given observation, if the attachment content was missing, or some
+   * other error occurred deleting the content from the underlying store.
    */
-  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
-  deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError>
+  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
 }
 
 export class AttachmentStoreError extends Error {

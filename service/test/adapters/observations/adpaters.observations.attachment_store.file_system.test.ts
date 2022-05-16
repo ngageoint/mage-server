@@ -10,6 +10,20 @@ import { FormFieldType } from '../../../lib/entities/events/entities.events.form
 import uniqid from 'uniqid'
 import _ from 'lodash'
 
+function contentLocatorOfAttachment(att: AttachmentId, obs: Observation): string {
+  return path.join(
+    `event-${obs.eventId}`,
+    String(obs.createdAt.getUTCFullYear()),
+    String(obs.createdAt.getUTCMonth() + 1).padStart(2, '0'),
+    String(obs.createdAt.getUTCDate()).padStart(2, '0'),
+    obs.id,
+    att)
+}
+
+function contentLocatorOfThumbnail(minDimension: number, att: AttachmentId, obs: Observation): string {
+  return `${contentLocatorOfAttachment(att, obs)}-${minDimension}`
+}
+
 const baseDirPath = path.resolve(`${__filename}.data`)
 const pendingDirPath = path.resolve(baseDirPath, 'pending')
 
@@ -130,13 +144,7 @@ describe.only('file system attachment store', function() {
 
     beforeEach(function() {
 
-      contentBaseRelPath = path.join(
-        `event-${obs.eventId}`,
-        String(obs.createdAt.getUTCFullYear()),
-        String(obs.createdAt.getUTCMonth() + 1).padStart(2, '0'),
-        String(obs.createdAt.getUTCDate()).padStart(2, '0'),
-        obs.id,
-        att.id)
+      contentBaseRelPath = contentLocatorOfAttachment(att.id, obs)
       contentBaseAbsPath = path.join(baseDirPath, contentBaseRelPath)
     })
 
@@ -503,11 +511,94 @@ describe.only('file system attachment store', function() {
     })
   })
 
-  describe('deleting', function() {
+  describe.only('deleting', function() {
+
+    let savedObs: Observation
+    let savedAtt: Attachment
+    let savedThumb100: Thumbnail
+    let savedThumb300: Thumbnail
+    let attContentPath: string
+    let thumb100Path: string
+    let thumb300Path: string
+
+    beforeEach(async function() {
+
+      obs = patchAttachment(obs, att.id, {
+        thumbnails: [
+          { minDimension: 100, name: 'thumb100' },
+          { minDimension: 300, name: 'thumb300' }
+        ]
+      }) as Observation
+      att = obs.attachmentFor(att.id)!
+      const attContent = stream.Readable.from('delete_me.main')
+      const thumb100Content = stream.Readable.from('delete_me.x-small')
+      const thumb300Content = stream.Readable.from('delete_me.small')
+      savedObs = await store.saveContent(attContent, att.id, obs) as Observation
+      savedObs = await store.saveThumbnailContent(thumb100Content, 100, att.id, savedObs) as Observation
+      savedObs = await store.saveThumbnailContent(thumb300Content, 300, att.id, savedObs) as Observation
+      savedAtt = savedObs.attachmentFor(att.id) as Attachment
+      savedThumb100 = savedAtt.thumbnails.find(x => x.minDimension === 100) as Thumbnail
+      savedThumb300 = savedAtt.thumbnails.find(x => x.minDimension === 300) as Thumbnail
+      attContentPath = path.join(baseDirPath, savedAtt.contentLocator as string)
+      thumb100Path = path.join(baseDirPath, savedThumb100.contentLocator as string)
+      thumb300Path = path.join(baseDirPath, savedThumb300.contentLocator as string)
+
+      expect(fs.readFileSync(attContentPath).toString()).to.equal('delete_me.main')
+      expect(fs.readFileSync(thumb100Path).toString()).to.equal('delete_me.x-small')
+      expect(fs.readFileSync(thumb300Path).toString()).to.equal('delete_me.small')
+    })
 
     describe('a single attachment', function() {
-      it('TODO: deletes attachment content')
-      it('TODO: deletes thumbnail content')
+
+      it('deletes attachment content', async function() {
+
+        const result = await store.deleteContent(att.id, savedObs) as Observation
+
+        expect(result).to.be.instanceOf(Observation)
+        expect(result.attachmentFor(att.id)).to.exist
+        expect(result.attachmentFor(att.id)?.contentLocator).to.be.undefined
+        expect(fs.existsSync(attContentPath)).to.be.false
+      })
+
+      it('deletes thumbnail content for the attachment', async function() {
+
+        const result = await store.deleteContent(att.id, savedObs) as Observation
+        const resultAtt = result.attachmentFor(att.id) as Attachment
+
+        expect(result).to.be.instanceOf(Observation)
+        expect(resultAtt.thumbnails.length).to.equal(2)
+        expect(resultAtt.thumbnails).to.deep.equal(att.thumbnails)
+        for (const thumb of resultAtt.thumbnails) {
+          expect(thumb.contentLocator).to.be.undefined
+        }
+      })
+
+      it('deletes the presumed path if the attachment does not have a content locator', async function() {
+
+        const impliedRelPath = contentLocatorOfAttachment(att.id, savedObs)
+        const impliedThumb100RelPath = contentLocatorOfThumbnail(100, att.id, savedObs)
+        const impliedThumb300RelPath = contentLocatorOfThumbnail(300, att.id, savedObs)
+        const impliedPath = path.join(baseDirPath, impliedRelPath)
+        const impliedThumb100Path = path.join(baseDirPath, impliedThumb100RelPath)
+        const impliedThumb300Path = path.join(baseDirPath, impliedThumb300RelPath)
+
+        expect(savedAtt.contentLocator).to.equal(impliedRelPath)
+        expect(savedThumb100.contentLocator).to.equal(impliedThumb100RelPath)
+        expect(savedThumb300.contentLocator).to.equal(impliedThumb300RelPath)
+        expect(fs.existsSync(impliedPath)).to.be.true
+        expect(fs.existsSync(impliedThumb100Path)).to.be.true
+        expect(fs.existsSync(impliedThumb300Path)).to.be.true
+        expect(obs.attachmentFor(att.id)).to.have.property('contentLocator', undefined)
+        expect(obs.attachmentFor(att.id)?.thumbnails[0]).to.have.property('contentLocator', undefined)
+        expect(obs.attachmentFor(att.id)?.thumbnails[1]).to.have.property('contentLocator', undefined)
+
+        const result = await store.deleteContent(att.id, obs)
+
+        expect(result).to.be.null
+        expect(fs.existsSync(impliedPath)).to.be.false
+        expect(fs.existsSync(impliedThumb100Path)).to.be.false
+        expect(fs.existsSync(impliedThumb300Path)).to.be.false
+      })
     })
 
     describe('all observation attachment content', function() {
@@ -518,8 +609,32 @@ describe.only('file system attachment store', function() {
       it('TODO: may not be necessary')
     })
 
-    it('cannot delete content outside the base directory', function() {
-      expect.fail('todo')
+    it('cannot delete content outside the base directory', async function() {
+
+      const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
+      const attRelPath= path.join('..', '..', 'preserve')
+      const thumb100RelPath = path.join('..', '..', 'preserve100')
+      const thumb300RelPath = path.join('..', '..', 'preserve300')
+      const preservePath = path.resolve(safeBaseDirPath, attRelPath)
+      const preserve100Path = path.resolve(safeBaseDirPath, attRelPath + '-100')
+      const preserve300Path = path.resolve(safeBaseDirPath, attRelPath + '-300')
+      store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
+      fs.writeFileSync(preservePath, 'very valuable')
+      fs.writeFileSync(preserve100Path, 'very valuable 100')
+      fs.writeFileSync(preserve300Path, 'very valuable 300')
+      const attackObs = patchAttachment(obs, att.id, {
+        contentLocator: attRelPath,
+        thumbnails: [
+          { minDimension: 100, contentLocator: thumb100RelPath },
+          { minDimension: 300, contentLocator: thumb300RelPath }
+        ]
+      }) as Observation
+      const result = await store.deleteContent(att.id, attackObs)
+
+      expect(result).to.be.instanceOf(AttachmentStoreError)
+      expect(fs.readFileSync(preservePath).toString()).to.equal('very valuable')
+      expect(fs.readFileSync(preserve100Path).toString()).to.equal('very valuable 100')
+      expect(fs.readFileSync(preserve300Path).toString()).to.equal('very valuable 300')
     })
   })
 })

@@ -25,7 +25,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     if (!attachment) {
       return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
     }
-    const saveRelPath = relativeWriteBasePathForAttachment(attachment, observation)
+    const saveRelPath = relativeWritePathForAttachment(attachment, observation)
     const savePath = path.join(this.baseDirPath, saveRelPath)
     const err = await this.#saveContent(content, savePath)
     if (err) {
@@ -85,18 +85,56 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return fs.createReadStream(contentPath)
   }
 
-  deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    throw new Error('Method not implemented.')
-  }
-
-  deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
-    throw new Error('Method not implemented.')
+  async deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
+    }
+    const thumbnails = attachment.thumbnails
+    const contentRelPath = relativeReadPathForAttachment(attachment, observation)
+    const contentPath = path.join(this.baseDirPath, contentRelPath)
+    const rm = async (path: string) => {
+      if (!this.#baseDirIsAncestorOf(path)) {
+        throw new Error(`cannot remove path ${path} because it is not a descendant of store base dir ${this.baseDirPath}`)
+      }
+      return await util.promisify(fs.rm)(path)
+    }
+    const err = await rm(contentPath).then(() => null, err => err)
+    if (err) {
+      const message = `error deleting content for attachment ${attachmentId} on observation ${observation.id}`
+      console.error(message, err)
+      return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `${message}: ${String(err)}`)
+    }
+    const thumbRemoves = await Promise.all(thumbnails.map(thumb => {
+      const thumbRelPath = relativeReadPathForThumbnail(thumb, attachment, observation)
+      const thumbPath = path.join(this.baseDirPath, thumbRelPath)
+      return rm(thumbPath).then(
+        () => ({ thumb, success: true }),
+        err => {
+          console.error(`error deleting thumbnail ${thumb.minDimension} for attachment ${attachmentId} on observation ${observation.id} @ ${thumbPath}`, err)
+          return { thumb, success: false }
+        })
+    }))
+    const thumbUpdate = thumbRemoves.reduce((thumbUpdate, thumbRemove) => {
+      const { success, thumb } = thumbRemove
+      if (success && thumb.contentLocator) {
+        const updatedThumb = { ...copyThumbnailAttrs(thumb), contentLocator: undefined }
+        thumbUpdate = { isNecessary: true, thumbnails: thumbUpdate.thumbnails.concat(updatedThumb) }
+      }
+      else {
+        thumbUpdate = { isNecessary: thumbUpdate.isNecessary, thumbnails: thumbUpdate.thumbnails.concat(thumb) }
+      }
+      return thumbUpdate
+    }, { isNecessary: false, thumbnails: [] as Thumbnail[] })
+    if (attachment.contentLocator || thumbUpdate.isNecessary) {
+      return patchAttachment(observation, attachmentId, { contentLocator: undefined, thumbnails: thumbUpdate.thumbnails }) as Observation
+    }
+    return null
   }
 
   #saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, dest: string): Promise<AttachmentStoreError | null> {
     const destResolved = path.resolve(dest)
-    const isDescendantOfBaseDir = path.relative(destResolved, this.baseDirPath).split(path.sep).every(x => x === '..')
-    if (!isDescendantOfBaseDir) {
+    if (!this.#baseDirIsAncestorOf(destResolved)) {
       return Promise.resolve(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `content destination ${dest} is not a descendent of base dir ${this.baseDirPath}`))
     }
     const destBaseDirPath = path.dirname(destResolved)
@@ -123,6 +161,10 @@ export class FileSystemAttachmentStore implements AttachmentStore {
         return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
       })
   }
+
+  #baseDirIsAncestorOf(testPath: string): boolean {
+    return path.relative(testPath, this.baseDirPath).split(path.sep).every(x => x === '..')
+  }
 }
 
 /**
@@ -146,15 +188,15 @@ export async function intializeAttachmentStore(baseDirPath: string): Promise<Fil
 
 export class FileSystemAttachmentStoreInitError extends Error {}
 
-function relativeWritePathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {
-  if (thumbnail.contentLocator) {
-    return thumbnail.contentLocator
-  }
-  const basePath = relativeWriteBasePathForAttachment(attachment, observation)
-  return `${basePath}-${thumbnail.minDimension}`
-}
-
-function relativeWriteBasePathForAttachment(attachment: Attachment, observation: Observation): string {
+/**
+ * Return a path relative to the store's base directory suitable to write the
+ * file for the given attachment's main content bytes.  If the attachment has
+ * a {@link Attachment.contentLocator contentLocator}, simply return that as
+ * the relative path.  Otherwise, construct a relative path based on the
+ * property values of the attachment and its parent observation.
+ * @returns `string`
+ */
+function relativeWritePathForAttachment(attachment: Attachment, observation: Observation): string {
   if (attachment.contentLocator) {
     return attachment.contentLocator
   }
@@ -178,7 +220,15 @@ function relativeReadPathForAttachment(attachment: Attachment, observation: Obse
   if (attachment.contentLocator) {
     return attachment.contentLocator
   }
-  return relativeWriteBasePathForAttachment(attachment, observation)
+  return relativeWritePathForAttachment(attachment, observation)
+}
+
+function relativeWritePathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {
+  if (thumbnail.contentLocator) {
+    return thumbnail.contentLocator
+  }
+  const basePath = relativeWritePathForAttachment(attachment, observation)
+  return `${basePath}-${thumbnail.minDimension}`
 }
 
 function relativeReadPathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {
