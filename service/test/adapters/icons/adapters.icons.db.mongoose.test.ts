@@ -421,7 +421,7 @@ describe('static icon mongoose repository', function() {
           scheme3.received(1).resolveContent(Arg.all())
         })
 
-        it.only('fetches if the icon was already registered and not fetched', async function() {
+        it('fetches if the icon was already registered and not fetched', async function() {
 
           const sourceUrl = scheme1.urlWithPath('eager/registered')
           const iconId = uniqid()

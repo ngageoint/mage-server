@@ -27,7 +27,7 @@ function contentLocatorOfThumbnail(minDimension: number, att: AttachmentId, obs:
 const baseDirPath = path.resolve(`${__filename}.data`)
 const pendingDirPath = path.resolve(baseDirPath, 'pending')
 
-describe.only('file system attachment store', function() {
+describe('file system attachment store', function() {
 
   let store: FileSystemAttachmentStore
   let obs: Observation
@@ -511,7 +511,7 @@ describe.only('file system attachment store', function() {
     })
   })
 
-  describe.only('deleting', function() {
+  describe('deleting', function() {
 
     let savedObs: Observation
     let savedAtt: Attachment

@@ -10,7 +10,6 @@ module.exports = function(app, security) {
     , environment = require('../environment/env')
     , fs = require('fs-extra')
     , moment = require('moment')
-    , Event = require('../models/event')
     , Team = require('../models/team')
     , access = require('../access')
     , turfCentroid = require('@turf/centroid')

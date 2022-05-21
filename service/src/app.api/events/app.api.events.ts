@@ -1,5 +1,5 @@
 import { AppRequest, AppResponse } from '../app.api.global'
-import { FeedId, Feed, FeedContent } from '../../entities/feeds/entities.feeds'
+import { FeedId, Feed } from '../../entities/feeds/entities.feeds'
 import { MageEventId, MageEventAttrs } from '../../entities/events/entities.events'
 import { EntityNotFoundError, PermissionDeniedError } from '../app.api.errors'
 import { Localized } from '../../entities/entities.i18n'
