@@ -7,27 +7,25 @@ const moment = require('moment')
   , access = require('../access')
   , exportXform = require('../transformers/export')
   , exporterFactory = require('../export/exporterFactory')
-  , Export = require('../models/export');
+  , Export = require('../models/export')
+  , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
 module.exports = function (app, security) {
 
   const passport = security.authentication.passport;
 
-  function authorizeEventAccess(req, res, next) {
+  async function authorizeEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
-      next();
-    } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
-      // Make sure I am part of this event
-      Event.userHasEventPermission(req.event, req.user._id, 'read', function (err, hasPermission) {
-        if (hasPermission) {
-          return next();
-        } else {
-          return res.sendStatus(403);
-        }
-      });
-    } else {
-      res.sendStatus(403);
+      return next();
     }
+    else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
+      // Make sure I am part of this event
+      const allowed = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
+      if (allowed) {
+        return next();
+      }
+    }
+    res.sendStatus(403);
   }
 
   function authorizeExportAccess(permission) {
@@ -139,6 +137,13 @@ module.exports = function (app, security) {
       exportData(req.param('exportId'), req.event);
     });
 };
+
+
+/*
+TODO: This should not be using middleware to parse query parameters and find the
+event and add those keys to the incoming request object.  Just do those things
+in the actual request handler.
+*/
 
 function getExport(req, res, next) {
   Export.getExportById(req.params.exportId).then(result => {
