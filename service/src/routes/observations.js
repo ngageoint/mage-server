@@ -18,7 +18,7 @@ module.exports = function(app, security) {
     , { defaultHandler: upload } = require('../upload')
     , FileType = require('file-type')
     , passport = security.authentication.passport
-    , { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
+    , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   const sortColumnWhitelist = ["lastModified"];
 

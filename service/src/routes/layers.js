@@ -11,7 +11,7 @@ module.exports = function(app, security) {
     layerXform = require('../transformers/layer'),
     GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
     { defaultHandler: upload } = require('../upload'),
-    { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
+    { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   const passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
