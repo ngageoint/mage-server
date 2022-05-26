@@ -166,7 +166,7 @@ module.exports = function(app, security) {
     }
     if (access.userHasPermission(req.user, 'READ_LAYER_EVENT')) {
       // Make sure I am part of this event
-      const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user._id, 'read')
+      const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
       if (hasPermission) {
         return next();
       }
