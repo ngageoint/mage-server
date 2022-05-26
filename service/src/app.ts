@@ -337,11 +337,11 @@ async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']
 
 async function initEventsAppLayer(repos: Repositories): Promise<AppLayer['events']> {
   const eventPermissions = await import('./permissions/permissions.events')
-  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(repos.events.eventRepo, eventPermissions.defaultEventPermissionsSevice)
+  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(repos.events.eventRepo, eventPermissions.defaultEventPermissionsService)
   return {
-    addFeedToEvent: eventsImpl.AddFeedToEvent(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo),
-    listEventFeeds: eventsImpl.ListEventFeeds(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo, repos.feeds.feedRepo),
-    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo),
+    addFeedToEvent: eventsImpl.AddFeedToEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
+    listEventFeeds: eventsImpl.ListEventFeeds(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo, repos.feeds.feedRepo),
+    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
     fetchFeedContent: feedsImpl.FetchFeedContent(eventFeedsPermissions, repos.feeds.serviceTypeRepo, repos.feeds.serviceRepo, repos.feeds.feedRepo, jsonSchemaService)
   }
 }
