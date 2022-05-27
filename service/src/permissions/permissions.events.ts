@@ -11,13 +11,15 @@ import access from '../access'
 import mongoose from 'mongoose'
 import { UserId } from '../entities/users/entities.users'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
+import { TeamId } from '../entities/teams/entities.teams'
 
 export interface EventRequestContext extends AppRequestContext<UserDocument> {
   readonly event: MageEventAttrs | MageEventDocument
 }
 
 type TeamMembership = {
-  userIds: string[]
+  id: TeamId
+  userIds: UserId[]
 }
 
 declare module 'mongoose' {
@@ -63,13 +65,9 @@ export class EventPermissionServiceImpl {
   }
 
   async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
-    let teams: TeamMembership[] = await this.resolveTeams(event)
-    // if asking for event read permission and user is part of a team in this event
-    if (eventPermission === 'read') {
-      const userIsEventParticipant = teams.some(team => team.userIds.indexOf(userId) !== -1)
-      if (userIsEventParticipant) {
-        return true
-      }
+    // if asking for event read permission and user is a member of a team in this event
+    if (eventPermission === 'read' && await this.userIsParticipantInEvent(event, userId)) {
+      return true
     }
     let userEventRole = event.acl[userId]
     if (typeof userEventRole === 'object') {
@@ -79,36 +77,29 @@ export class EventPermissionServiceImpl {
     return userRoleHasPermission
   }
 
-  private async resolveTeams(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
-    if (event instanceof mongoose.Document) {
-      if (!(event).populated('teamIds')) {
-        event = await new Promise<MageEventDocument>((resolve, reject) => {
-          this.eventRepo.model.populate(event, 'teamIds' as any, (err, x) => {
-            if (err) {
-              reject(err)
-            }
-            resolve(x as MageEventDocument)
-          })
-        })
-      }
-      return (event.teamIds as TeamDocument[]).map(x => {
-        return {
-          userIds: x.userIds.map(id => id.toHexString())
-        }
-      })
-    }
-    // TODO: eliminate this side-effect mutation of the argument if possible
-    // if (!event.teams) {
-    //   event.teams = (await this.eventRepo.findTeamsInEvent(event.id))!
-    // }
-    // return event.teams
-    // well, let's just try it
-    const teams = await this.eventRepo.findTeamsInEvent(event.id)
+  /**
+   * Check whether the given user is a member of any of the given MAGE event's
+   * teams.
+   * TODO: This is arguably an entity-layer function, but is here for now as
+   * the concept of team membership only really has value in access control
+   * decisions, currently.
+   * @param event
+   * @param userId
+   * @returns
+   */
+  async userIsParticipantInEvent(event: MageEventAttrs | MageEventDocument, userId: UserId): Promise<boolean> {
+    const teams = await this.resolveTeamsForEvent(event)
+    return teams.some(team => team.userIds.indexOf(userId) !== -1)
+  }
+
+  private async resolveTeamsForEvent(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
+    const eventId = event instanceof mongoose.Document ? event._id : event.id
+    const teams = await this.eventRepo.findTeamsInEvent(eventId)
     return teams!
   }
 }
 
-export const defaultEventPermissionsSevice = new EventPermissionServiceImpl(new MongooseMageEventRepository(EventModel.Model))
+export const defaultEventPermissionsService = new EventPermissionServiceImpl(new MongooseMageEventRepository(EventModel.Model))
 
 export class EventFeedsPermissionService implements FeedsPermissionService {
 

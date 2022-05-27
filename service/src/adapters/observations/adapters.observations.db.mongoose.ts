@@ -114,6 +114,10 @@ export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventR
   }
 }
 
+export function docToEntity(doc: legacy.ObservationDocument, eventId: MageEventId): ObservationAttrs {
+  return createDocumentMapping(eventId)(doc)
+}
+
 function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
   return doc => {
     const attrs: ObservationAttrs = {

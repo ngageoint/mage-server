@@ -4,8 +4,14 @@ declare module 'express-serve-static-core' {
   export interface Request {
     user: UserDocument
     /**
-     * Return the root HTTP URL of the server.
+     * Return the root HTTP URL of the server, including the scheme, e.g.,
+     * `https://mage.io`.
      */
     getRoot(): string
+    /**
+     * Return the fully qualified request path, which is the path of the
+     * request concatenated to the result of {@link getRoot()}
+     */
+    getPath(): string
   }
 }

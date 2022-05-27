@@ -307,21 +307,6 @@ module.exports = function(app, security) {
     next();
   }
 
-  // TODO: set a location header for the created observation
-  app.post(
-    '/api/events/:eventId/observations/id',
-    passport.authenticate('bearer'),
-    validateObservationCreateAccess(false),
-    function (req, res, next) {
-      new api.Observation().createObservationId(function(err, doc) {
-        if (err) return next(err);
-
-        const response = observationXform.transform(doc, transformOptions(req));
-        res.status(201).json(response);
-      });
-    }
-  );
-
   app.put(
     '/api/events/:eventId/observations/:existingObservationId',
     passport.authenticate('bearer'),
