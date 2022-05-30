@@ -1,7 +1,7 @@
 import { Arg, Substitute as Sub, SubstituteOf } from '@fluffy-spoon/substitute'
 import { ObservationPermissionsServiceImpl } from '../../lib/permissions/permissions.observations'
 import { ObservationRequestContext } from '../../lib/app.api/observations/app.api.observations'
-import { MageEvent } from '../../lib/entities/events/entities.events'
+import { EventAccessType, MageEvent } from '../../lib/entities/events/entities.events'
 import { EventScopedObservationRepository } from '../../lib/entities/observations/entities.observations'
 import { EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { UserWithRole } from '../../lib/permissions/permissions.role-based.base'

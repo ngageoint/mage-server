@@ -130,13 +130,11 @@ export function formForId(id: FormId, mageEvent: MageEventAttrs): Form | null {
   return mageEvent.forms.find(x => x.id === id) || null
 }
 
-export enum EventPermission {
+export enum EventAccessType {
   Read = 'read',
   Update = 'update',
   Delete = 'delete',
 }
-
-export type EventRolePermissions = { [role in EventRole]: EventPermission[] }
 
 export enum EventRole {
   OWNER = 'OWNER',
@@ -144,13 +142,15 @@ export enum EventRole {
   GUEST = 'GUEST'
 }
 
+export type EventRolePermissions = { [role in EventRole]: EventAccessType[] }
+
 export const EventRolePermissions: EventRolePermissions = {
-  OWNER: [ EventPermission.Read, EventPermission.Update, EventPermission.Delete ],
-  MANAGER: [ EventPermission.Read, EventPermission.Update ],
-  GUEST: [ EventPermission.Read ],
+  OWNER: [ EventAccessType.Read, EventAccessType.Update, EventAccessType.Delete ],
+  MANAGER: [ EventAccessType.Read, EventAccessType.Update ],
+  GUEST: [ EventAccessType.Read ],
 }
 
-export function rolesWithPermission(permission: EventPermission): EventRole[] {
+export function rolesWithPermission(permission: EventAccessType): EventRole[] {
   const roles: EventRole[] = []
   for (const key in EventRolePermissions) {
     if (EventRolePermissions[key as EventRole].indexOf(permission) !== -1) {
@@ -168,7 +168,7 @@ export function rolesWithPermission(permission: EventPermission): EventRole[] {
 export interface Acl {
   [userId: string]: {
     role: EventRole
-    permissions: EventPermission[]
+    permissions: EventAccessType[]
   }
 }
 

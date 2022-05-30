@@ -5,7 +5,7 @@ import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.erro
 import { FeedId } from '../entities/feeds/entities.feeds'
 import { allPermissions, AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
 import { FeedsPermissionService } from '../app.api/feeds/app.api.feeds'
-import { MageEventAttrs, MageEventRepository, EventPermission, rolesWithPermission } from '../entities/events/entities.events'
+import { MageEventAttrs, MageEventRepository, EventAccessType, rolesWithPermission } from '../entities/events/entities.events'
 import EventModel from '../models/event'
 import access from '../access'
 import mongoose from 'mongoose'
@@ -40,7 +40,7 @@ export class EventPermissionServiceImpl {
   async ensureEventUpdatePermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventPermission.Update)
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     }
     return permissionDenied(MageEventPermission.UPDATE_EVENT, String(context.requestingPrincipal()))
   }
@@ -48,7 +48,7 @@ export class EventPermissionServiceImpl {
   async ensureEventReadPermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventPermission.Read)
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
     }
     return permissionDenied(MageEventPermission.READ_EVENT_USER, String(context.requestingPrincipal()))
   }
@@ -64,7 +64,7 @@ export class EventPermissionServiceImpl {
    * @param eventPermission
    * @returns
    */
-  async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventPermission): Promise<PermissionDeniedError | null> {
+  async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventAccessType): Promise<PermissionDeniedError | null> {
     if (access.userHasPermission(user, appPermission)) {
       return null
     }
@@ -75,8 +75,8 @@ export class EventPermissionServiceImpl {
     return permissionDenied(appPermission, user.username, String(event.id))
   }
 
-  async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
-    if (eventPermission === EventPermission.Read && await this.userIsParticipantInEvent(event, userId)) {
+  async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventAccessType): Promise<boolean> {
+    if (eventPermission === EventAccessType.Read && await this.userIsParticipantInEvent(event, userId)) {
       return true
     }
     let userEventRole = event.acl[userId]
