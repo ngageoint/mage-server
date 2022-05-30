@@ -40,24 +40,35 @@ export class EventPermissionServiceImpl {
   async ensureEventUpdatePermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, 'update')
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventPermission.Update)
     }
-    return permissionDenied('UPDATE_EVENT', String(context.requestingPrincipal()))
+    return permissionDenied(MageEventPermission.UPDATE_EVENT, String(context.requestingPrincipal()))
   }
 
   async ensureEventReadPermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, 'read')
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventPermission.Read)
     }
-    return permissionDenied('READ_EVENT_USER', String(context.requestingPrincipal()))
+    return permissionDenied(MageEventPermission.READ_EVENT_USER, String(context.requestingPrincipal()))
   }
 
+  /**
+   * Check for the given app-level permission on the role of the given user.
+   * If present, grant the user access.  If not, check for the given event-
+   * level permission on the ACL of the given event.  If present, grant the
+   * user access.  Otherwise, deny access.
+   * @param event
+   * @param user
+   * @param appPermission
+   * @param eventPermission
+   * @returns
+   */
   async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventPermission): Promise<PermissionDeniedError | null> {
     if (access.userHasPermission(user, appPermission)) {
       return null
     }
-    const hasEventAclPermission = await this.userHasEventPermission(event, user._id.toHexString(), eventPermission)
+    const hasEventAclPermission = await this.userHasEventPermission(event, user.id, eventPermission)
     if (hasEventAclPermission) {
       return null
     }
@@ -65,8 +76,7 @@ export class EventPermissionServiceImpl {
   }
 
   async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
-    // if asking for event read permission and user is a member of a team in this event
-    if (eventPermission === 'read' && await this.userIsParticipantInEvent(event, userId)) {
+    if (eventPermission === EventPermission.Read && await this.userIsParticipantInEvent(event, userId)) {
       return true
     }
     let userEventRole = event.acl[userId]

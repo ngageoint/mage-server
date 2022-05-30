@@ -130,7 +130,12 @@ export function formForId(id: FormId, mageEvent: MageEventAttrs): Form | null {
   return mageEvent.forms.find(x => x.id === id) || null
 }
 
-export type EventPermission = 'read' | 'update' | 'delete'
+export enum EventPermission {
+  Read = 'read',
+  Update = 'update',
+  Delete = 'delete',
+}
+
 export type EventRolePermissions = { [role in EventRole]: EventPermission[] }
 
 export enum EventRole {
@@ -140,10 +145,10 @@ export enum EventRole {
 }
 
 export const EventRolePermissions: EventRolePermissions = {
-  OWNER: ['read', 'update', 'delete'],
-  MANAGER: ['read', 'update'],
-  GUEST: ['read'],
-};
+  OWNER: [ EventPermission.Read, EventPermission.Update, EventPermission.Delete ],
+  MANAGER: [ EventPermission.Read, EventPermission.Update ],
+  GUEST: [ EventPermission.Read ],
+}
 
 export function rolesWithPermission(permission: EventPermission): EventRole[] {
   const roles: EventRole[] = []

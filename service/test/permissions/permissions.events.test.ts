@@ -6,7 +6,7 @@ import { FeedServiceId, FeedId } from '../../lib/entities/feeds/entities.feeds'
 import { ErrPermissionDenied, permissionDenied } from '../../lib/app.api/app.api.errors'
 import { EventFeedsPermissionService, EventRequestContext, EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
-import { MageEventRepository, MageEventAttrs } from '../../lib/entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs, EventPermission } from '../../lib/entities/events/entities.events'
 // for some reason vs code marks an error if using @lib/models/user, even though tsc builds fine
 // nobody seems to care though - https://github.com/microsoft/TypeScript/issues/39709
 import { UserDocument } from '../../src/models/user'
@@ -57,7 +57,7 @@ describe.only('event permissions service', function() {
         permission: permissionError.data.permission,
         object: permissionError.data.object
       })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.READ_EVENT_USER, 'read')
+      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.READ_EVENT_USER, EventPermission.Read)
     })
 
     it('ensures event update permission', async function() {
@@ -73,7 +73,7 @@ describe.only('event permissions service', function() {
         permission: permissionError.data.permission,
         object: permissionError.data.object
       })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.UPDATE_EVENT, 'update')
+      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.UPDATE_EVENT, EventPermission.Update)
     })
 
     it('denies if the context has no event', async function() {
