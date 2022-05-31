@@ -121,7 +121,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.addFeedToEvent(Arg.is(x => _.isMatch(x, requestParams)))
-        .resolves(AppResponse.error<MageEventAttrs, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', testUser)))
+        .resolves(AppResponse.error(permissionDenied('UPDATE_EVENT', testUser)))
 
       const res = await client
         .post(`${rootPath}/${event.id}/feeds`)
@@ -203,7 +203,7 @@ describe('event feeds web controller', function () {
         event: event.id
       }
       eventFeedsApp.listEventFeeds(Arg.is(x => _.isMatch(x, reqParams)))
-        .resolves(AppResponse.error<UserFeed[], PermissionDeniedError>(permissionDenied('READ_EVENT_USER', testUser)))
+        .resolves(AppResponse.error(permissionDenied('READ_EVENT_USER', testUser)))
       const res = await client.get(`${rootPath}/${event.id}/feeds`)
 
       expect(res.status).to.equal(403)
@@ -237,7 +237,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.error<MageEventAttrs, EntityNotFoundError>(entityNotFound(event, 'MageEvent')))
+        .resolves(AppResponse.error(entityNotFound(event, 'MageEvent')))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
       expect(res.status).to.equal(400)
@@ -262,7 +262,7 @@ describe('event feeds web controller', function () {
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.error<MageEventAttrs, PermissionDeniedError>(permissionDenied('UPDATE_EVENT', String(testUser))))
+        .resolves(AppResponse.error(permissionDenied('UPDATE_EVENT', String(testUser))))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
       expect(res.status).to.equal(403)

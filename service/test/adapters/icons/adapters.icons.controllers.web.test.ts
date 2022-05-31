@@ -94,7 +94,7 @@ describe('icons web controller', function() {
       const id = uniqid()
       const appReq: GetStaticIconRequest = createAppRequest({ iconRef: { id }})
       appReqFactory.createRequest(Arg.all()).returns(appReq)
-      appLayer.getIcon(Arg.all()).resolves(AppResponse.error<StaticIcon, EntityNotFoundError>(entityNotFound(id, 'StaticIcon')))
+      appLayer.getIcon(Arg.all()).resolves(AppResponse.error(entityNotFound(id, 'StaticIcon')))
       const res = await client.get(`${root}/${id}`)
 
       expect(res.status).to.equal(404)
@@ -289,7 +289,7 @@ describe('icons web controller', function() {
       const iconId = 'not_there'
       const appReq: GetStaticIconContentRequest = createAppRequest({ iconId })
       appReqFactory.createRequest(Arg.any(), Arg.deepEquals({ iconId })).returns(appReq)
-      appLayer.getIconContent(Arg.all()).resolves(AppResponse.error<StaticIconWithContent, EntityNotFoundError>(entityNotFound(iconId, 'StaticIcon')))
+      appLayer.getIconContent(Arg.all()).resolves(AppResponse.error(entityNotFound(iconId, 'StaticIcon')))
       const res = await client.get(`${root}/${iconId}/content`)
 
       expect(res.status).to.equal(404)

@@ -6,7 +6,7 @@ export function AllocateObservationId(permissionService: ObservationPermissionSe
   return async function allocateObservationId(req: AllocateObservationIdRequest): ReturnType<AllocateObservationId> {
     const denied = await permissionService.ensureCreateObservationPermission(req.context)
     if (denied) {
-      return AppResponse.error<any, PermissionDeniedError>(denied)
+      return AppResponse.error(denied)
     }
     const repo = req.context.observationRepository
     const id = await repo.allocateObservationId()

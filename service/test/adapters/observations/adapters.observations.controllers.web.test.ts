@@ -86,7 +86,7 @@ describe.only('observations web controller', function () {
 
     it('returns 403 without permission', async function() {
 
-      app.allocateObservationId(Arg.any()).resolves(AppResponse.error<ObservationId, PermissionDeniedError>(permissionDenied('create', testUser)))
+      app.allocateObservationId(Arg.any()).resolves(AppResponse.error(permissionDenied('create', testUser)))
       const res = await client.post(`${basePath}/events/${mageEvent.id}/observations/id`)
         .set('accept', 'application/json')
 
