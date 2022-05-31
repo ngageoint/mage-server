@@ -1,6 +1,8 @@
+import access from '../access'
 import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.errors'
 import { ObservationPermissionService, ObservationRequestContext } from '../app.api/observations/app.api.observations'
 import { ObservationPermission } from '../entities/authorization/entities.permissions'
+import { EventAccessType } from '../entities/events/entities.events'
 import { EventPermissionServiceImpl } from './permissions.events'
 import { ensureContextUserHasPermission, UserWithRole } from './permissions.role-based.base'
 
@@ -18,7 +20,16 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
     return isParticipant ? null : permissionDenied(ObservationPermission.CREATE_OBSERVATION, user.id)
   }
 
-  ensureUpdateObservationPermission(context: ObservationRequestContext): Promise<PermissionDeniedError | null> {
-    throw new Error('unimplemented')
+  async ensureUpdateObservationPermission(context: ObservationRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
+    const user = context.requestingPrincipal()
+    if (access.userHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_ALL)) {
+      return null
+    }
+    if (access.userHasPermission(user, ObservationPermission.UPDATE_OBSERVATION_EVENT)) {
+      if (await this.eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read)) {
+        return null
+      }
+    }
+    return permissionDenied('UPDATE_OBSERVATION', user.id)
   }
 }

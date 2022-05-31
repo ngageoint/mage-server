@@ -430,6 +430,14 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
+    /*
+    TODO: this is a strange permission check.  this is because the request
+    modifies data, but there is a USER_NO_EDIT_ROLE role that has permission to
+    create observations, but not edit them.  however, simply being an event
+    participant with read access would seem to be enough for permission to
+    favorite an observation, because this does not mutate actual observation
+    form data.
+    */
     validateObservationCreateAccess(false),
     function (req, res, next) {
       new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
@@ -448,6 +456,7 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
+    /* TODO: see above note on PUT favorite permission check */
     validateObservationCreateAccess(false),
     function (req, res, next) {
 

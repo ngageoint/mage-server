@@ -33,6 +33,13 @@ export type UserObservation = Omit<Observation, 'attachments'> & {
 export type UserAttachment = Omit<Attachment, 'thumbnails'>
 
 export interface ObservationPermissionService {
+  /**
+   * Create permission applies when {@link AllocateObservationId | allocating}
+   * new observation IDs, as well as saving a new observation.
+   */
   ensureCreateObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
+  /**
+   * Update permission applies when updating an existing observation.
+   */
   ensureUpdateObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
 }

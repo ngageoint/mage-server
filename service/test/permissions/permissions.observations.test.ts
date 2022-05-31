@@ -9,7 +9,6 @@ import mongoose from 'mongoose'
 import { expect } from 'chai'
 import { ObservationPermission } from '../../lib/entities/authorization/entities.permissions'
 import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib/app.api/app.api.errors'
-import { stringify } from 'querystring'
 
 describe.only('observation permissions service', function() {
 
@@ -123,7 +122,7 @@ describe.only('observation permissions service', function() {
         ]
       ]
       denyTests.forEach(([ testName, setupContext ]) => {
-        test(testName, async function() {
+        it(testName, async function() {
           setupContext()
           const denied = await permissions.ensureUpdateObservationPermission(context)
           expect(denied).to.be.instanceOf(MageError)
