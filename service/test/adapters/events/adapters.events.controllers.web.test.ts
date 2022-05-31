@@ -7,7 +7,7 @@ import uniqid from 'uniqid'
 import _ from 'lodash'
 import { AppResponse, AppRequest } from '../../../lib/app.api/app.api.global'
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
-import { EventRole, MageEvent, MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { EventAccessType, EventRole, MageEvent, MageEventAttrs, MageEventRepository } from '../../../lib/entities/events/entities.events'
 import { AddFeedToEventRequest, ListEventFeedsRequest, UserFeed, RemoveFeedFromEventRequest } from '../../../lib/app.api/events/app.api.events'
 import { FeedId, FeedContent } from '../../../lib/entities/feeds/entities.feeds'
 import { FetchFeedContentRequest } from '../../../lib/app.api/feeds/app.api.feeds'
@@ -53,7 +53,7 @@ describe('event feeds web controller', function () {
       acl: {
         [testUser]: {
           role: EventRole.GUEST,
-          permissions: ['read']
+          permissions: [ EventAccessType.Read ]
         }
       }
     })
