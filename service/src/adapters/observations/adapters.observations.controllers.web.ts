@@ -17,7 +17,7 @@ export interface ObservationAppLayer {
 }
 
 export interface ObservationWebAppRequestFactory {
-  <Params extends object>(req: express.Request): Omit<Params, 'context'> & ObservationRequest<unknown>
+  <Params extends object>(req: express.Request, params?: Params): Params & ObservationRequest<unknown>
 }
 
 export interface EnsureEventScope {

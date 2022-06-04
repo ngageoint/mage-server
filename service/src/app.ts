@@ -460,15 +460,15 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     bearerAuth,
     iconsRoutes
   ])
-  const observationRequestFactory: ObservationWebAppRequestFactory = (req, params = {}) => {
-    return {
-      ...params as any,
-      context: {
-        ...baseAppRequestContext(req),
-        mageEvent: req[observationEventScopeKey]!.mageEvent,
-        observationRepository: req[observationEventScopeKey]!.observationRepository
-      },
+  const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
+    const context: observationsApi.ObservationRequestContext = {
+      ...baseAppRequestContext(req),
+      mageEvent: req[observationEventScopeKey]!.mageEvent,
+      userId: req.user.id,
+      deviceId: req.provisionedDeviceId,
+      observationRepository: req[observationEventScopeKey]!.observationRepository
     }
+    return { ...params, context }
   }
   const observationsRoutes = ObservationRoutes(app.observations, observationRequestFactory)
   webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
