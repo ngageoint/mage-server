@@ -207,6 +207,12 @@ Observation.prototype.update = function(observationId, observation, callback) {
       EventEmitter.emit(ObservationEvents.events.update, updatedObservation.toObject({event: this._event}), this._event, this._user);
 
       // Remove any deleted attachments from file system
+      /*
+      TODO: this might not even work. observation form entries are not stored
+      with field entry keys for attachment fields, so finding attachments based
+      on matching form entry keys with form field names will not produce any
+      results.
+      */
       const {forms: formEntries = []}  = observation.properties || {};
       formEntries.forEach(formEntry => {
         const formDefinition = this._event.forms.find(form => form._id === formEntry.formId);
@@ -217,6 +223,7 @@ Observation.prototype.update = function(observationId, observation, callback) {
             attachmentsField.filter(attachmentField => attachmentField.action === 'delete').forEach(attachmentField => {
               const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentField.id);
               if (attachment) {
+                console.info(`deleting attachment ${attachment.id} for field ${fieldName} on observation ${observation.id}`)
                 new Attachment(this._event, observation).delete(attachment._id, err => {
                   log.warn('Error removing deleted attachment from file system', err);
                 });

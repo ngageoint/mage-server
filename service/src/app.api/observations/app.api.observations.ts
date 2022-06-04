@@ -1,18 +1,25 @@
-import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { EntityNotFoundError, InvalidInputError, MageError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { URL } from 'url'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationId } from '../../entities/observations/entities.observations'
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
+import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId } from '../../entities/observations/entities.observations'
+import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
+import { UserId } from '../../entities/users/entities.users'
 
 
 
 export interface ObservationRequestContext<Principal = unknown> extends AppRequestContext<Principal> {
   mageEvent: MageEvent
+  /**
+   * TODO: This is obviously redundant with respect to `requestingPrincipal()`,
+   * but that is in a transitional phase because that returns a Mongoose
+   * `UserDocument` instead of a `User` entity.  `requestPrincipal()` should
+   * probably be a user-device pair, eventually.
+   */
+  userId: UserId
+  deviceId: string
   observationRepository: EventScopedObservationRepository
 }
-export interface ObservationRequest<Principal = unknown, Context extends ObservationRequestContext<Principal> = ObservationRequestContext<Principal>> extends AppRequest<Principal, Context> {}
+export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> {}
 
 export interface AllocateObservationId {
   (req: AllocateObservationIdRequest): Promise<AppResponse<ObservationId, PermissionDeniedError>>
@@ -20,32 +27,74 @@ export interface AllocateObservationId {
 export interface AllocateObservationIdRequest extends ObservationRequest {}
 
 export interface SaveObservation {
-  (req: SaveObservationRequest): Promise<AppResponse<UserObservation, PermissionDeniedError | InvalidInputError>>
+  (req: SaveObservationRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
 }
 export interface SaveObservationRequest extends ObservationRequest {
-  observation: ObservationSaveAttrs
+  observation: ExoObservationMod
 }
-
-export type ObservationSaveAttrs = Omit<ObservationAttrs, 'eventId'>
 
 // TODO: add other model json transformation here
-export type UserObservation = Omit<ObservationAttrs, 'attachments'> & {
-  attachments: UserAttachment[]
+
+/**
+ * ExoObservation refers to the view of observations that app clients receive
+ * and send, the exo- prefix indicating the outermost, client-facing layer of
+ * the application.
+ */
+export type ExoObservation = Omit<ObservationAttrs, 'attachments'> & {
+  attachments: ExoAttachment[]
 }
 
-export type UserAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
+export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
 
-export function userObservationFor(from: ObservationAttrs): UserObservation {
+export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'properties' | 'states' | 'attachments'> & {
+  properties: ExoObservationPropertiesMod
+}
+
+export type ExoObservationPropertiesMod = Omit<ObservationFeatureProperties, 'forms'> & {
+  forms: ExoFormEntryMod[]
+}
+
+
+export type ExoFormEntryMod =
+  & Partial<Pick<FormEntry, 'id'>>
+  & Pick<FormEntry, 'formId'>
+  & { [formFieldName: string]: FormFieldEntry | ExoAttachmentMod[] }
+
+export type ExoAttachmentMod = ExoAttachment & {
+  id?: Attachment['id']
+  action?: AttachmentModAction
+}
+
+export enum AttachmentModAction {
+  Add = 'add',
+  Delete = 'delete',
+}
+
+export function exoObservationFor(from: ObservationAttrs): ExoObservation {
   const attrs = copyObservationAttrs(from)
-  const attachments = attrs.attachments.map(userAttachmentFor)
+  const attachments = attrs.attachments.map(exoAttachmentFor)
   return {
     ...attrs,
     attachments
   }
 }
 
-export function userAttachmentFor(from: Attachment): UserAttachment {
+export function exoAttachmentFor(from: Attachment): ExoAttachment {
   return _.omit(from, 'thumbnails', 'contentLocator')
+}
+
+export function domainObservationFor(from: ExoObservation): ObservationAttrs {
+  return {
+    ...from,
+    attachments: from.attachments.map(domainAttachmentFor)
+  }
+}
+
+export function domainAttachmentFor(from: ExoAttachment): Attachment {
+  return {
+    ...from,
+    thumbnails: []
+  }
 }
 
 export interface ObservationPermissionService {

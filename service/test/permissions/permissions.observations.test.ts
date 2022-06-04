@@ -5,10 +5,10 @@ import { EventAccessType, MageEvent } from '../../lib/entities/events/entities.e
 import { EventScopedObservationRepository } from '../../lib/entities/observations/entities.observations'
 import { EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { UserWithRole } from '../../lib/permissions/permissions.role-based.base'
-import mongoose from 'mongoose'
 import { expect } from 'chai'
 import { ObservationPermission } from '../../lib/entities/authorization/entities.permissions'
 import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib/app.api/app.api.errors'
+import uniqid from 'uniqid'
 
 describe.only('observation permissions service', function() {
 
@@ -33,17 +33,18 @@ describe.only('observation permissions service', function() {
       style: {}
     })
     obsRepo = Sub.for<EventScopedObservationRepository>()
-    const userId = mongoose.Types.ObjectId()
     user = {
-      id: 'user1',
+      id: uniqid(),
       roleId: {
-        id: 'role1',
+        id: uniqid(),
         name: 'Role 1',
         permissions: []
       } as any
     } as any
     context = {
       mageEvent,
+      userId: uniqid(),
+      deviceId: uniqid(),
       observationRepository: obsRepo,
       requestToken: Symbol(),
       requestingPrincipal() { return user },
