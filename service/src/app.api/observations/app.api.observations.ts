@@ -60,9 +60,12 @@ export type ExoFormEntryMod =
   & Pick<FormEntry, 'formId'>
   & { [formFieldName: string]: FormFieldEntry | ExoAttachmentMod[] }
 
-export type ExoAttachmentMod = ExoAttachment & {
-  id?: Attachment['id']
+export type ExoAttachmentMod = Partial<ExoAttachment> & {
+  /**
+   * TODO: Ignore attachment mods without an action?
+   */
   action?: AttachmentModAction
+  id?: any
 }
 
 export enum AttachmentModAction {

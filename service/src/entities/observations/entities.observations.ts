@@ -543,9 +543,9 @@ export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 
 /**
  * Add the given attachment to the given observation.  Return a new observation
- * instance with the added attachment, or return an {@link AttachmentValidationError}
+ * instance with the added attachment, or return an {@link AttachmentAddError}
  * if the given attachment does not reference a valid form entry and field.
- * Note that returned observation may still have validation errors resulting
+ * Note that the returned observation may still have validation errors resulting
  * from the added attachment if the attachment violates the associated form
  * constraints, such as min/max or allowed attachment types.
  * @param observation

@@ -1,9 +1,10 @@
 import Attachment from '../../api/attachment'
 import { entityNotFound, invalidInput, permissionDenied, PermissionDeniedError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
-import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, domainObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, domainObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
+import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, copyAttachmentAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, validationResultMessage } from '../../entities/observations/entities.observations'
 
 export function AllocateObservationId(permissionService: ObservationPermissionService): AllocateObservationId {
   return async function allocateObservationId(req: AllocateObservationIdRequest): ReturnType<AllocateObservationId> {
@@ -20,14 +21,9 @@ export function AllocateObservationId(permissionService: ObservationPermissionSe
 export function SaveObservation(permissionService: ObservationPermissionService): SaveObservation {
   return async function saveObservation(req: SaveObservationRequest): ReturnType<SaveObservation> {
     const repo = req.context.observationRepository
-    const mageEvent = req.context.mageEvent
     const mod = req.observation
     const before = await repo.findById(mod.id)
-    const newFormEntries = mod.properties.forms.filter(x => x.id && !before?.formEntryForId(x.id))
-    const newFormEntryIds = newFormEntries.length ? await repo.nextFormEntryIds(newFormEntries.length) : []
-    newFormEntries.forEach((x, index) => x.id = newFormEntryIds[index])
-    const obsAttrs = observationAttrsForMod(mod, req.context, before)
-    const obs = Observation.evaluate(obsAttrs, mageEvent)
+    const obs = await prepareObservationMod(mod, before, req.context)
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {
       const userObs: ExoObservation = exoObservationFor(saved)
@@ -42,9 +38,56 @@ export function SaveObservation(permissionService: ObservationPermissionService)
   }
 }
 
-function observationAttrsForMod(mod: ExoObservationMod, context: ObservationRequestContext, before: Observation | null): ObservationAttrs {
+async function prepareObservationMod(mod: ExoObservationMod, before: Observation | null, context: ObservationRequestContext): Promise<Observation> {
   const event = context.mageEvent
-  const attrs: ObservationAttrs = {
+  const repo = context.observationRepository
+  const attrs = baseObservationAttrsForMod(mod, before, context)
+  // first get new form entry ids so new attachments have a proper id to reference
+  const newFormEntries = mod.properties.forms.filter(x => x.id && !before?.formEntryForId(x.id))
+  const newFormEntryIds = newFormEntries.length ? await repo.nextFormEntryIds(newFormEntries.length) : []
+  newFormEntries.forEach((x, index) => x.id = newFormEntryIds[index])
+  const allAttachmentMods = {
+    [AttachmentModAction.Add]: [],
+    [AttachmentModAction.Delete]: []
+  } as ExtractedAttachmentMods
+  attrs.properties.forms = mod.properties.forms.map(formEntryMod => {
+    const form = event.formFor(formEntryMod.formId)
+    if (!form) {
+      /*
+      TODO: is this ok? the observation will not be valid and will not save
+      because of the invalid form reference anyway, and this should never
+      happen, except for rogue api clients.  seems fine for now ¯\_(ツ)_/¯
+      */
+      return { id: formEntryMod.id || '', formId: formEntryMod.formId }
+    }
+    const { formEntry, attachmentMods } = extractAttachmentModsFromFormEntry(formEntryMod, event)
+    allAttachmentMods[AttachmentModAction.Add].push(...attachmentMods[AttachmentModAction.Add])
+    allAttachmentMods[AttachmentModAction.Delete].push(...attachmentMods[AttachmentModAction.Delete])
+    return formEntry
+  })
+  const attachmentsToAdd = allAttachmentMods[AttachmentModAction.Add]
+  const attachmentIds = attachmentsToAdd.length ? await repo.nextAttachmentIds(attachmentsToAdd.length) : []
+  const obs = attachmentsToAdd.reduce((obs, attachmentMod, index) => {
+    const added = addAttachment(obs, attachmentIds[index], attachmentMod.fieldName, attachmentMod.formEntryId, attachmentCreateAttrsForMod(attachmentMod))
+    if (added instanceof Observation) {
+      return added
+    }
+    const message = `unexpected attachment add error on observation ${obs.id}`
+    console.error(message, added)
+    throw new Error(`${message}: ${String(added.stack)}`)
+  }, Observation.evaluate(attrs, event))
+  return obs
+}
+
+/**
+ * Return obsevation attributes for the given mod based on the optional
+ * existing observation.  The result will not include form entries and
+ * attachments, which require separate processing to resolve IDs and actions.
+ * @param mod
+ * @param before
+ */
+function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation | null, context: ObservationRequestContext): ObservationAttrs {
+  return {
     id: mod.id,
     eventId: context.mageEvent.id,
     userId: before ? before.userId : context.userId,
@@ -61,30 +104,49 @@ function observationAttrsForMod(mod: ExoObservationMod, context: ObservationRequ
       timestamp: mod.properties.timestamp,
       forms: []
     },
-    attachments: [],
+    attachments: before?.attachments || [],
   }
-  const attachmentMods = [] as ExoAttachmentMod[]
-  attrs.properties.forms = mod.properties.forms.map(formEntry => {
-    const { id, formId, ...fieldEntries } = formEntry as Required<ExoFormEntryMod>
-    const form = event.formFor(formId)
-    if (!form) {
-      /*
-      TODO: is this ok? the observation will not be validate and will not save,
-      anyway, and this should never happen, except for rogue api clients.  seems
-      fine for now ¯\_(ツ)_/¯
-      */
-      return { id, formId }
+}
+
+type ExtractedAttachmentMods = {
+  [AttachmentModAction.Add]: QualifiedAttachmentMod[]
+  [AttachmentModAction.Delete]: QualifiedAttachmentMod[]
+}
+type QualifiedAttachmentMod = ExoAttachmentMod & { fieldName: string, formEntryId: FormEntryId }
+
+/**
+ * Find the attachment modification entries in the given form entry, remove
+ * them from the form entry.  Return the resulting form entry and the
+ * extracted attachment mods.
+ */
+function extractAttachmentModsFromFormEntry(formEntryMod: ExoFormEntryMod, event: MageEvent): { formEntry: FormEntry, attachmentMods: ExtractedAttachmentMods } {
+  const attachmentMods = {
+    [AttachmentModAction.Add]: [],
+    [AttachmentModAction.Delete]: []
+  } as ExtractedAttachmentMods
+  const { id, formId, ...fieldEntries } = formEntryMod as Required<ExoFormEntryMod>
+  const formEntry = Object.entries(fieldEntries).reduce((formEntry, [ fieldName, fieldEntry ]) => {
+    const field = event.formFieldFor(fieldName, formId)
+    if (field?.type === FormFieldType.Attachment) {
+      const attachmentModEntry = fieldEntry as ExoAttachmentMod[]
+      attachmentModEntry.forEach(x => void(x.action && attachmentMods[x.action].push({ ...x, formEntryId: formEntry.id, fieldName })))
     }
-    return Object.entries(fieldEntries).reduce((formEntry, [ fieldName, fieldEntry ]) => {
-      const field = event.formFieldFor(fieldName, formId)
-      if (field?.type === FormFieldType.Attachment) {
-        attachmentMods.push(...fieldEntry as ExoAttachmentMod[])
-      }
-      else {
-        formEntry[fieldName] = fieldEntry as FormFieldEntry
-      }
-      return formEntry
-    }, { id, formId } as FormEntry)
-  })
-  return attrs
+    else if (field) {
+      formEntry[fieldName] = fieldEntry as FormFieldEntry
+    }
+    return formEntry
+  }, { id, formId } as FormEntry)
+  return { formEntry, attachmentMods }
+}
+
+function attachmentCreateAttrsForMod(mod: ExoAttachmentMod): AttachmentCreateAttrs {
+  return {
+    contentType: mod.contentType,
+    name: mod.name,
+    size: mod.size,
+    width: mod.width,
+    height: mod.height,
+    oriented: mod.oriented || false,
+    thumbnails: [],
+  }
 }
