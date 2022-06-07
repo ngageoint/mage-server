@@ -10,7 +10,7 @@ import { ObservationPermission } from '../../lib/entities/authorization/entities
 import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib/app.api/app.api.errors'
 import uniqid from 'uniqid'
 
-describe.only('observation permissions service', function() {
+describe('observation permissions service', function() {
 
   let permissions: ObservationPermissionsServiceImpl
   let eventPermissions: SubstituteOf<EventPermissionServiceImpl>

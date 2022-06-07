@@ -17,7 +17,7 @@ import { MageEventDocument } from '../../src/models/event'
 import { Team } from '../../lib/entities/teams/entities.teams'
 
 
-describe.only('event permissions service', function() {
+describe('event permissions service', function() {
 
   let eventRepo: SubstituteOf<MongooseMageEventRepository>
   let mockEventPermissions: SubstituteOf<EventPermissionServiceImpl>
