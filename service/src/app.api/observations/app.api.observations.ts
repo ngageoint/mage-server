@@ -46,7 +46,7 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments'> & {
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
 
-export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'properties' | 'states' | 'attachments'> & {
+export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'states' | 'attachments' | 'properties'> & {
   properties: ExoObservationPropertiesMod
 }
 

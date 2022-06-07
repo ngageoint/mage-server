@@ -23,6 +23,12 @@ export function SaveObservation(permissionService: ObservationPermissionService)
     const repo = req.context.observationRepository
     const mod = req.observation
     const before = await repo.findById(mod.id)
+    const denied = before ?
+       await permissionService.ensureUpdateObservationPermission(req.context) :
+       await permissionService.ensureCreateObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
     const obs = await prepareObservationMod(mod, before, req.context)
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {

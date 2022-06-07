@@ -1,11 +1,11 @@
-import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute'
+import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
 import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
-import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput } from '../../../lib/app.api/app.api.errors'
+import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import deepEqual from 'deep-equal'
 import _ from 'lodash'
@@ -29,9 +29,9 @@ describe.only('observations use case interactions', function() {
       name: 'Observation App Layer Tests',
       style: {}
     })
-    obsRepo = Substitute.for<EventScopedObservationRepository>()
-    permissions = Substitute.for<api.ObservationPermissionService>()
-    principalHandle = Substitute.for<{ requestingPrincipal(): string }>()
+    obsRepo = Sub.for<EventScopedObservationRepository>()
+    permissions = Sub.for<api.ObservationPermissionService>()
+    principalHandle = Sub.for<{ requestingPrincipal(): string }>()
     context = {
       mageEvent,
       userId: uniqid(),
@@ -98,6 +98,8 @@ describe.only('observations use case interactions', function() {
         attachments: [],
         states: [],
       }
+      permissions.ensureCreateObservationPermission(Arg.all()).resolves(null)
+      permissions.ensureUpdateObservationPermission(Arg.all()).resolves(null)
     })
 
     it('does not save when the obsevation event id does not match the context event', async function() {
@@ -105,7 +107,7 @@ describe.only('observations use case interactions', function() {
       const eventIdOverride = mageEvent.id * 3
       const req: api.SaveObservationRequest = {
         context,
-        observation: { ...api.exoObservationFor(minimalObs), eventId: eventIdOverride } as any
+        observation: { ...observationModFor(minimalObs), eventId: eventIdOverride } as any
       }
       obsRepo.findById(Arg.any()).resolves(null)
       obsRepo.save(Arg.any()).resolves(new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservation))
@@ -123,11 +125,31 @@ describe.only('observations use case interactions', function() {
         obsRepo.findById(Arg.any()).resolves(null)
       })
 
+      it('ensures create permission when no observation exists', async function() {
+
+        const deny = Sub.for<api.ObservationPermissionService>()
+        deny.ensureCreateObservationPermission(Arg.all()).resolves(permissionDenied('test create', context.userId, minimalObs.id))
+        saveObservation = SaveObservation(deny)
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: observationModFor(minimalObs)
+        }
+        const res = await saveObservation(req)
+        const denied = res.error as PermissionDeniedError
+
+        expect(res.success).to.be.null
+        expect(denied).to.be.instanceOf(MageError)
+        expect(denied.code).to.equal(ErrPermissionDenied)
+        deny.received(1).ensureCreateObservationPermission(context)
+        deny.didNotReceive().ensureUpdateObservationPermission(Arg.all())
+        obsRepo.didNotReceive().save(Arg.all())
+      })
+
       it('validates the id for a new observation', async function() {
 
         const req: api.SaveObservationRequest = {
           context,
-          observation: api.exoObservationFor(minimalObs)
+          observation: observationModFor(minimalObs)
         }
         obsRepo.save(Arg.any()).resolves(new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId))
         const res = await saveObservation(req)
@@ -200,6 +222,26 @@ describe.only('observations use case interactions', function() {
           ]
         }, mageEvent)
         obsRepo.findById(obsBefore.id).resolves(obsBefore)
+      })
+
+      it('ensures update permission when an observation already exists', async function() {
+
+        const deny = Sub.for<api.ObservationPermissionService>()
+        deny.ensureUpdateObservationPermission(Arg.all()).resolves(permissionDenied('test update', context.userId, minimalObs.id))
+        saveObservation = SaveObservation(deny)
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: observationModFor(minimalObs)
+        }
+        const res = await saveObservation(req)
+        const denied = res.error as PermissionDeniedError
+
+        expect(res.success).to.be.null
+        expect(denied).to.be.instanceOf(MageError)
+        expect(denied.code).to.equal(ErrPermissionDenied)
+        deny.received(1).ensureUpdateObservationPermission(context)
+        deny.didNotReceive().ensureCreateObservationPermission(Arg.all())
+        obsRepo.didNotReceive().save(Arg.all())
       })
 
       it('obtains ids for new form entries', async function() {
@@ -423,4 +465,8 @@ function validObservation(): (actual: Observation) => boolean {
 
 function omitUndefinedFrom<T extends object>(x: T): Partial<T> {
   return _.omitBy(x, (value) => value === undefined)
+}
+
+function observationModFor(observation: ObservationAttrs): api.ExoObservationMod {
+  return _.omit(copyObservationAttrs(observation), 'eventId', 'createdAt', 'lastModified', 'states', 'attachments')
 }
