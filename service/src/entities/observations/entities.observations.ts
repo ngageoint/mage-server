@@ -984,6 +984,13 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.TextArea]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
 }
 
+/**
+ * TODO: This retains legacy functionality of only keying of form fields in the
+ * event form to validate the values in the form entry.  However, this leaves
+ * keys in the form entry that do not have a corresponding form field.  A
+ * client could thus submit an observation with thousands of keys in a fomr
+ * entry.
+ */
 function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
   const { mageEvent, observationAttrs } = validation
   const formFields = form.fields || []

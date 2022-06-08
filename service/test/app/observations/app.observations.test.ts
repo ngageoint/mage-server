@@ -290,7 +290,7 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.all())
       })
 
-      it('obtains attachment ids for new attachments', async function() {
+      it('obtains ids for new attachments', async function() {
 
         /*
         do clients send a complete array of attachments for the form fields or
@@ -360,9 +360,9 @@ describe.only('observations use case interactions', function() {
               {
                 ...obsBefore.properties.forms[0],
                 field2: [{
+                  action: api.AttachmentModAction.Add,
                   observationFormId: 'invalidFormEntryId',
                   fieldName: 'notField2',
-                  action: api.AttachmentModAction.Add,
                   name: newAttachment.name,
                 }]
               },
@@ -393,16 +393,87 @@ describe.only('observations use case interactions', function() {
       })
 
       it('ignores the attachments array on the observation', async function() {
-        expect.fail('todo')
+
+        // TODO: for create as well
+
+        const obsMod: api.ExoObservationMod = <any>{
+          ...copyObservationAttrs(obsBefore),
+          attachments: [
+            <Attachment>{ ...obsBefore.attachments[0], size: Number(obsBefore.attachments[0].size) * 2, name: 'do not change.png' },
+            <Attachment>{ id: uniqid(), observationFormId: obsBefore.formEntries[0].id, fieldName: 'field2', name: 'cannot add from here.png', oriented: false, thumbnails: [] }
+          ]
+        }
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsBefore)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(saved.attachments).to.have.length(1)
+        expect(omitUndefinedFrom(saved.attachments[0])).to.deep.equal(omitUndefinedFrom(api.exoAttachmentFor(obsBefore.attachments[0])))
+        obsRepo.didNotReceive().nextAttachmentIds(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsBefore, 'repository save argument')))
+        obsRepo.received(1).save(Arg.all())
       })
 
       it('does not save attachment mods without a corresponding form field', async function() {
+
         /*
         a client could submit an attachment mod array for a field name that
-        does not exist in the event form, so just omit that from the final
-        saved observation
+        does not exist in the event form
         */
-        expect.fail('todo')
+
+        /*
+        TODO: this bit should change to invalidate or remove the invalid form
+        entry key.  currently observation validation only considers form field
+        entries that have corresponding fields, while simply ignoring field
+        entries without a corresponding field or a field that is archived.
+        */
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.formEntries[0],
+                whoops: [ { action: api.AttachmentModAction.Add, name: 'bad field reference.png' } as any ]
+              }
+            ]
+          }
+        }) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.properties.forms[0],
+                whoops: [ { action: api.AttachmentModAction.Add, name: 'bad field reference.png' } ]
+              },
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.attachments.map(copyAttachmentAttrs)).to.deep.equal(obsBefore.attachments.map(copyAttachmentAttrs))
+        expect(saved.attachments).to.have.length(1)
+        expect(omitUndefinedFrom(saved.attachments[0])).to.deep.equal(omitUndefinedFrom(api.exoAttachmentFor(obsBefore.attachments[0])))
+        obsRepo.didNotReceive().nextAttachmentIds(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+        obsRepo.received(1).save(Arg.all())
       })
 
       it('preserves ids of existing attachments', async function() {
@@ -436,7 +507,7 @@ describe.only('observations use case interactions', function() {
     })
   })
 
-  describe('saving attachments', function() {
+  describe('saving attachment content', function() {
 
     it('checks permissions', async function() {
       expect.fail('todo')
@@ -457,6 +528,10 @@ function equalToObservationIgnoringDates(expected: ObservationAttrs, message?: s
     expect(actualWithoutDates).to.deep.equal(expectedWithoutDates, message)
     return true
   }
+}
+
+function not<Arg>(predicate: (actual: Arg) => boolean): (actual: Arg) => boolean {
+  return actual => !predicate(actual)
 }
 
 function validObservation(): (actual: Observation) => boolean {
