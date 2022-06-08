@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyThumbnailAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import deepEqual from 'deep-equal'
@@ -529,7 +529,58 @@ describe.only('observations use case interactions', function() {
       })
 
       it('preserves attachment thumbnails even though app clients do not send them', async function() {
-        expect.fail('todo')
+
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.formEntries[0],
+                field1: 'mod field 1',
+              }
+            ]
+          }
+        }) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.formEntries[0],
+                field1: 'mod field 1',
+                field2: null // no attachment mods
+              },
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsBefore.attachments.map(copyAttachmentAttrs)).to.deep.equal([
+          copyAttachmentAttrs({
+            id: obsBefore.attachments[0].id,
+            observationFormId: obsBefore.formEntries[0].id,
+            fieldName: 'field2',
+            name: 'photo1.png',
+            oriented: false,
+            thumbnails: [
+              { minDimension: 120, name: 'photo1@120.png' }
+            ]
+          })
+        ])
+        expect(obsAfter.attachments.map(copyAttachmentAttrs)).to.deep.equal(obsBefore.attachments.map(copyAttachmentAttrs))
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+        obsRepo.received(1).save(Arg.all())
       })
 
       it('removes attachment content for removed form entries', async function() {
