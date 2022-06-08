@@ -146,7 +146,7 @@ function extractAttachmentModsFromFormEntry(formEntryMod: ExoFormEntryMod, event
   const formEntry = Object.entries(fieldEntries).reduce((formEntry, [ fieldName, fieldEntry ]) => {
     const field = event.formFieldFor(fieldName, formId)
     if (field?.type === FormFieldType.Attachment) {
-      const attachmentModEntry = fieldEntry as ExoAttachmentMod[]
+      const attachmentModEntry = (fieldEntry || []) as ExoAttachmentMod[]
       attachmentModEntry.forEach(x => void(x.action && attachmentMods[x.action].push({ ...x, formEntryId: formEntry.id, fieldName })))
     }
     else {

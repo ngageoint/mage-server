@@ -476,17 +476,56 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.all())
       })
 
-      it('preserves ids of existing attachments', async function() {
-        expect.fail('todo')
-      })
-
       it('preserves existing attachments when the attachment field entry is null', async function() {
         /*
         for some reason the web client sends a null value for the attachment field
         in form entries other than the one that has a new attachment appended, so
-        the server needs to ignore that
+        the server needs to ignore that. for example
+        {
+          id: 'aq1sw2',
+          ...
+          properties: {
+            forms: [
+              {
+                ...
+                attField1: [ { action: 'add', ... } ],
+                attField2: null
+              }
+            ]
+          }
+        }
         */
-        expect.fail('todo')
+
+        const obsAfter = Observation.assignTo(obsBefore, obsBefore) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.properties.forms[0],
+                field2: null
+              },
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(saved.properties.forms).to.deep.equal(obsBefore.properties.forms)
+        expect(saved.attachments).to.have.length(1)
+        expect(saved.attachments.map(omitUndefinedFrom)).to.deep.equal(obsAfter.attachments.map(api.exoAttachmentFor).map(omitUndefinedFrom))
+        obsRepo.didNotReceive().nextAttachmentIds(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+        obsRepo.received(1).save(Arg.all())
       })
 
       it('preserves attachment thumbnails even though app clients do not send them', async function() {
