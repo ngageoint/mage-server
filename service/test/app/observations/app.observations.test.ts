@@ -86,6 +86,8 @@ describe.only('observations use case interactions', function() {
       minimalObs = {
         id: uniqid(),
         eventId: mageEvent.id,
+        userId: uniqid(),
+        deviceId: uniqid(),
         createdAt: new Date(),
         lastModified: new Date(),
         type: 'Feature',
@@ -241,6 +243,44 @@ describe.only('observations use case interactions', function() {
         deny.received(1).ensureUpdateObservationPermission(context)
         deny.didNotReceive().ensureCreateObservationPermission(Arg.all())
         obsRepo.didNotReceive().save(Arg.all())
+      })
+
+
+      it('preserves creator user id and device id', async function() {
+
+        const modUserId = uniqid()
+        const modDeviceId = uniqid()
+        const mod: api.ExoObservationMod = {
+          id: obsBefore.id,
+          userId: modUserId,
+          deviceId: modDeviceId,
+          type: 'Feature',
+          geometry: obsBefore.geometry,
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [ { id: obsBefore.formEntries[0].id, formId: obsBefore.formEntries[0].formId, field1: 'updated field' } ]
+          }
+        }
+        const obsAfterAtrs: ObservationAttrs = {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [ { id: obsBefore.formEntries[0].id, formId: obsBefore.formEntries[0].formId, field1: 'updated field' } ]
+          }
+        }
+        const obsAfter = Observation.assignTo(obsBefore, obsAfterAtrs) as Observation
+        const req: api.SaveObservationRequest = { context, observation: mod }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(obsAfter.validation.hasErrors, 'valid update').to.be.false
+        expect(obsAfter.userId).to.equal(obsBefore.userId)
+        expect(obsAfter.deviceId).to.equal(obsBefore.deviceId)
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).save(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter)))
       })
 
       it('obtains ids for new form entries', async function() {
@@ -697,17 +737,13 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
+      it('removes attachment content for removed attachments', async function() {
+        expect.fail('todo')
+      })
+
       it('removes attachment content for removed form entries', async function() {
         expect.fail('todo')
       })
-    })
-
-    it('preserves creator user id', async function() {
-      expect.fail('todo')
-    })
-
-    it('preserves creator device id', async function() {
-      expect.fail('todo')
     })
   })
 
