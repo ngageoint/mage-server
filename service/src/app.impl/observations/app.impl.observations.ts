@@ -4,7 +4,7 @@ import { AppResponse } from '../../app.api/app.api.global'
 import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, domainObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentAddError, AttachmentCreateAttrs, copyAttachmentAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentAddError, AttachmentCreateAttrs, copyAttachmentAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
 
 export function AllocateObservationId(permissionService: ObservationPermissionService): AllocateObservationId {
   return async function allocateObservationId(req: AllocateObservationIdRequest): ReturnType<AllocateObservationId> {
@@ -57,19 +57,27 @@ async function prepareObservationMod(mod: ExoObservationMod, before: Observation
   newFormEntries.forEach((x, index) => x.id = newFormEntryIds[index])
   const attachmentExtraction = extractAttachmentModsFromFormEntries(mod, event)
   attrs.properties.forms = attachmentExtraction.formEntries
-  const attachmentsToAdd = attachmentExtraction.attachmentMods[AttachmentModAction.Add]
-  const attachmentIds = attachmentsToAdd.length ? await repo.nextAttachmentIds(attachmentsToAdd.length) : []
-  const obs = attachmentsToAdd.reduce<Observation | InvalidInputError>((obs, attachmentMod, index) => {
+  const attachmentMods = attachmentExtraction.attachmentMods
+  const addCount = attachmentMods.reduce((count, x) => x.action === AttachmentModAction.Add ? count + 1 : count, 0)
+  const attachmentIds = addCount ? await repo.nextAttachmentIds(addCount) : []
+  const obs = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
     if (obs instanceof MageError) {
       return obs
     }
-    const added = addAttachment(obs, attachmentIds[index], attachmentMod.fieldName, attachmentMod.formEntryId, attachmentCreateAttrsForMod(attachmentMod))
-    if (added instanceof Observation) {
-      return added
+    const mod =
+      attachmentMod.action === AttachmentModAction.Add ?
+        addAttachment(obs, attachmentIds.shift() as string, attachmentMod.fieldName, attachmentMod.formEntryId, attachmentCreateAttrsForMod(attachmentMod)) :
+      attachmentMod.action === AttachmentModAction.Delete ?
+        removeAttachment(obs, attachmentMod.id) :
+      null
+    if (mod instanceof Observation) {
+      return mod
+    }
+    if (mod === null) {
+      return invalidInput(`invalid attachment action: ${attachmentMod.action}`)
     }
     const message = `error adding attachment on observation ${obs.id}`
-    console.error(message, added)
-    return invalidInput(`${message}: ${String(added)}`)
+    return invalidInput(`${message}: ${String(mod)}`)
   }, Observation.evaluate(attrs, event))
   return obs
 }
@@ -103,17 +111,10 @@ function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation 
   }
 }
 
-type ExtractedAttachmentMods = {
-  [AttachmentModAction.Add]: QualifiedAttachmentMod[]
-  [AttachmentModAction.Delete]: QualifiedAttachmentMod[]
-}
 type QualifiedAttachmentMod = ExoAttachmentMod & { fieldName: string, formEntryId: FormEntryId }
 
-function extractAttachmentModsFromFormEntries(mod: ExoObservationMod, event: MageEvent): { formEntries: FormEntry[], attachmentMods: ExtractedAttachmentMods } {
-  const allAttachmentMods = {
-    [AttachmentModAction.Add]: [],
-    [AttachmentModAction.Delete]: []
-  } as ExtractedAttachmentMods
+function extractAttachmentModsFromFormEntries(mod: ExoObservationMod, event: MageEvent): { formEntries: FormEntry[], attachmentMods: QualifiedAttachmentMod[] } {
+  const allAttachmentMods = [] as QualifiedAttachmentMod[]
   const formEntries = mod.properties.forms.map(formEntryMod => {
     const form = event.formFor(formEntryMod.formId)
     if (!form) {
@@ -125,8 +126,7 @@ function extractAttachmentModsFromFormEntries(mod: ExoObservationMod, event: Mag
       return { id: formEntryMod.id || '', formId: formEntryMod.formId }
     }
     const { formEntry, attachmentMods } = extractAttachmentModsFromFormEntry(formEntryMod, event)
-    allAttachmentMods[AttachmentModAction.Add].push(...attachmentMods[AttachmentModAction.Add])
-    allAttachmentMods[AttachmentModAction.Delete].push(...attachmentMods[AttachmentModAction.Delete])
+    allAttachmentMods.push(...attachmentMods)
     return formEntry
   })
   return { formEntries, attachmentMods: allAttachmentMods }
@@ -137,17 +137,14 @@ function extractAttachmentModsFromFormEntries(mod: ExoObservationMod, event: Mag
  * them from the form entry.  Return the resulting form entry and the
  * extracted attachment mods.
  */
-function extractAttachmentModsFromFormEntry(formEntryMod: ExoFormEntryMod, event: MageEvent): { formEntry: FormEntry, attachmentMods: ExtractedAttachmentMods } {
-  const attachmentMods = {
-    [AttachmentModAction.Add]: [],
-    [AttachmentModAction.Delete]: []
-  } as ExtractedAttachmentMods
+function extractAttachmentModsFromFormEntry(formEntryMod: ExoFormEntryMod, event: MageEvent): { formEntry: FormEntry, attachmentMods: QualifiedAttachmentMod[] } {
+  const attachmentMods = [] as QualifiedAttachmentMod[]
   const { id, formId, ...fieldEntries } = formEntryMod as Required<ExoFormEntryMod>
   const formEntry = Object.entries(fieldEntries).reduce((formEntry, [ fieldName, fieldEntry ]) => {
     const field = event.formFieldFor(fieldName, formId)
     if (field?.type === FormFieldType.Attachment) {
       const attachmentModEntry = (fieldEntry || []) as ExoAttachmentMod[]
-      attachmentModEntry.forEach(x => void(x.action && attachmentMods[x.action].push({ ...x, formEntryId: formEntry.id, fieldName })))
+      attachmentModEntry.forEach(x => void(x.action && attachmentMods.push({ ...x, formEntryId: formEntry.id, fieldName })))
     }
     else {
       // let it be invalid

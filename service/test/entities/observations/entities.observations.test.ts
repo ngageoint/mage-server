@@ -24,7 +24,7 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
   }
 }
 
-describe('observation entities', function() {
+describe.only('observation entities', function() {
 
   let mageEventAttrs: MageEventAttrs
 
@@ -1573,7 +1573,7 @@ describe('observation entities', function() {
         })
       })
 
-      describe.only('removing attachments', function() {
+      describe('removing attachments', function() {
 
         it('removes the attachment for the given id', function() {
 

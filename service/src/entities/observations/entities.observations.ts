@@ -36,7 +36,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
 export interface ObservationFeatureProperties {
   /**
    * This timestamp is a user-supplied timestamp that indicates the actual time
-   * time the observation occurred.
+   * the observation occurred.
    */
   timestamp: Date
   forms: FormEntry[]
@@ -303,6 +303,16 @@ export class Observation implements Readonly<ObservationAttrs> {
     return this.#validation
   }
 
+  /**
+   * This is a convenience accessor for {@link ObservationFeatureProperties.timestamp}.
+   */
+  get timestamp(): Date {
+    return this.properties.timestamp
+  }
+
+  /**
+   * This is a convenience accessor for {@link ObservationFeatureProperties.forms}.
+   */
   get formEntries(): FormEntry[] {
     return Array.from(this.#formEntriesById.values())
   }

@@ -4,10 +4,9 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyThumbnailAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, removeAttachment } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
-import deepEqual from 'deep-equal'
 import _ from 'lodash'
 
 describe.only('observations use case interactions', function() {
@@ -581,6 +580,121 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.is(validObservation()))
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
         obsRepo.received(1).save(Arg.all())
+      })
+
+      it('removes attachments', async function() {
+
+        const obsAfter =
+          removeAttachment(
+            Observation.assignTo(obsBefore, {
+              ...copyObservationAttrs(obsBefore),
+              properties: {
+                timestamp: obsBefore.timestamp,
+                forms: [
+                  {
+                    ...obsBefore.formEntries[0],
+                    field1: 'mod field 1'
+                  }
+                ]
+              }
+            }) as Observation,
+            obsBefore.attachments[0].id) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.formEntries[0],
+                field1: 'mod field 1',
+                field2: [
+                  {
+                    action: api.AttachmentModAction.Delete,
+                    id: obsBefore.attachments[0].id
+                  }
+                ]
+              },
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.attachments).to.have.length(1)
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.attachments).to.be.empty
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+      })
+
+      it('adds and removes attachments', async function() {
+
+        const nextAttachmentId = uniqid()
+        const addedAttachment: Attachment = { id: nextAttachmentId, observationFormId: obsBefore.formEntries[0].id, fieldName: 'field2', oriented: false, thumbnails: [], name: 'added.png' }
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [
+              { ...obsBefore.formEntries[0], field1: 'mod field 1' }
+            ],
+          },
+          attachments: [ addedAttachment ]
+        }) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              {
+                ...obsBefore.formEntries[0],
+                field1: 'mod field 1',
+                field2: [
+                  {
+                    action: api.AttachmentModAction.Delete,
+                    id: obsBefore.attachments[0].id
+                  },
+                  {
+                    action: api.AttachmentModAction.Add,
+                    name: addedAttachment.name
+                  }
+                ]
+              },
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.nextAttachmentIds(1).resolves([ nextAttachmentId ])
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.attachments).to.have.length(1)
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.attachments).to.have.length(1)
+        expect(obsAfter.attachments[0]).to.deep.equal(copyAttachmentAttrs({
+          id: nextAttachmentId,
+          observationFormId: obsBefore.formEntries[0].id,
+          fieldName: 'field2',
+          name: 'added.png',
+          oriented: false,
+          thumbnails: [],
+        }))
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).nextAttachmentIds(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
       it('removes attachment content for removed form entries', async function() {
