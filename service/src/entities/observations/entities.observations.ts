@@ -607,6 +607,19 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   return Observation.evaluate(patchedObservation, observation.mageEvent)
 }
 
+export function removeAttachment(observation: Observation, attachmentId: AttachmentId): Observation | AttachmentNotFoundError {
+  const targetPos = observation.attachments.findIndex(x => x.id === attachmentId)
+  const target = observation.attachments[targetPos]
+  if (!target) {
+    return new AttachmentNotFoundError(attachmentId)
+  }
+  const afterAttrs = copyObservationAttrs(observation)
+  const attachments = afterAttrs.attachments.slice()
+  attachments.splice(targetPos, 1)
+  afterAttrs.attachments = attachments
+  return Observation.assignTo(observation, afterAttrs) as Observation
+}
+
 /**
  * Add the given thumbnail to the given attachment.  If the attachment already
  * has a thumbnail at the same minimum dimension as the given thumbnail,

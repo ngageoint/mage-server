@@ -1,5 +1,5 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs } from '../../../lib/entities/observations/entities.observations'
-import { MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs } from '../../../lib/entities/observations/entities.observations'
+import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
 import { Point } from 'geojson'
@@ -1091,7 +1091,7 @@ describe('observation entities', function() {
         // TODO: attachment updated event
       })
 
-      it.skip('removes attachments', function() {
+      it('removes attachments', function() {
         // TODO: attachment removed event
       })
 
@@ -1572,11 +1572,152 @@ describe('observation entities', function() {
           expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
       })
-    })
 
+      describe.only('removing attachments', function() {
 
-    describe('removing attachments', function() {
+        it('removes the attachment for the given id', function() {
 
+          const formEntry: FormEntry = {
+            id: 'formEntry0',
+            formId: mageEvent.forms[0].id,
+          }
+          const attachments: Attachment[] = [
+            {
+              id: 'attachment0',
+              fieldName: attachmentField1.name,
+              observationFormId: formEntry.id,
+              oriented: false,
+              thumbnails: [],
+              name: 'test1.png',
+              contentType: 'image/png',
+              size: 123456,
+              contentLocator: 'abc123:attachment0'
+            },
+            {
+              id: 'attachment1',
+              fieldName: attachmentField1.name,
+              observationFormId: formEntry.id,
+              oriented: false,
+              thumbnails: [],
+              name: 'test2.png',
+              contentType: 'image/png',
+              size: 654321,
+              contentLocator: 'abc123:attachment1'
+            }
+          ]
+          const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
+          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.attachments = attachments
+          const before = Observation.evaluate(observationAttrs, mageEvent)
+          const after = Observation.evaluate(
+            {
+              ...copyObservationAttrs(observationAttrs),
+              attachments: [ attachments[1] ]
+            },
+            mageEvent
+          )
+          const mod = removeAttachment(before, attachments[0].id)
+
+          if (mod instanceof AttachmentNotFoundError) {
+            expect.fail('expected an observation instance')
+          }
+          expect(mod.validation.hasErrors).to.be.false
+          expect(mod.attachments).to.have.length(1)
+          expect(copyAttachmentAttrs(mod.attachments[0])).to.deep.equal(copyAttachmentAttrs(before.attachments[1]))
+          expect(_.omit(copyObservationAttrs(mod), 'lastModified')).to.deep.equal(_.omit(copyObservationAttrs(after), 'lastModified'))
+          expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
+        })
+
+        it('returns an invalid observation if removing the attachment violates the form constraints', function() {
+
+          const formEntry: FormEntry = {
+            id: 'formEntry0',
+            formId: mageEvent.forms[0].id,
+          }
+          const attachments: Attachment[] = [
+            {
+              id: 'attachment0',
+              fieldName: attachmentField1.name,
+              observationFormId: formEntry.id,
+              oriented: false,
+              thumbnails: [],
+              name: 'test1.png',
+              contentType: 'image/png',
+              size: 123456,
+              contentLocator: 'abc123:attachment0'
+            }
+          ]
+          const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
+          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.attachments = attachments
+          mageEvent = new MageEvent({
+            ...copyMageEventAttrs(mageEvent),
+            forms: [
+              {
+                ...mageEvent.forms[0],
+                fields: [
+                  {
+                    ...attachmentField1,
+                    min: 1
+                  }
+                ]
+              }
+            ]
+          })
+          const before = Observation.evaluate(observationAttrs, mageEvent)
+          const after = Observation.evaluate(
+            {
+              ...copyObservationAttrs(observationAttrs),
+              attachments: []
+            },
+            mageEvent
+          )
+          const mod = removeAttachment(before, attachments[0].id)
+
+          if (mod instanceof AttachmentNotFoundError) {
+            expect.fail('expected an observation instance')
+          }
+          expect(before.validation.hasErrors, 'before should be valid').to.be.false
+          expect(after.validation.hasErrors, 'after should be invalid').to.be.true
+          expect(mod.validation.hasErrors, 'mod should be invalid').to.be.true
+          expect(mod.attachments).to.be.empty
+          expect(_.omit(copyObservationAttrs(mod), 'lastModified')).to.deep.equal(_.omit(copyObservationAttrs(after), 'lastModified'))
+          expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
+        })
+
+        it('returns an error if the attachment id does not exist', function() {
+
+          const formEntry: FormEntry = {
+            id: 'formEntry0',
+            formId: mageEvent.forms[0].id,
+          }
+          const attachments: Attachment[] = [
+            {
+              id: 'attachment0',
+              fieldName: attachmentField1.name,
+              observationFormId: formEntry.id,
+              oriented: false,
+              thumbnails: [],
+              name: 'test1.png',
+              contentType: 'image/png',
+              size: 123456,
+              contentLocator: 'abc123:attachment0'
+            }
+          ]
+          const observationAttrs: ObservationAttrs = makeObservationAttrs(mageEventAttrs.id)
+          observationAttrs.properties.forms = [ formEntry ]
+          observationAttrs.attachments = attachments
+          const before = Observation.evaluate(observationAttrs, mageEvent)
+          const mod = removeAttachment(before, attachments[0].id + 'wut') as AttachmentNotFoundError
+
+          expect(mod).to.be.instanceOf(AttachmentNotFoundError)
+          expect(before.validation.hasErrors, 'before should be valid').to.be.false
+          expect(before.attachments).to.have.length(1)
+          expect(before.attachments[0]).to.deep.equal(attachments[0])
+        })
+
+        it('TODO: adds an attachment removed event to the observation')
+      })
     })
 
     describe('adding form entries', function() {
