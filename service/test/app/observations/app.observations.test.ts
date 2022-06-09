@@ -86,8 +86,6 @@ describe.only('observations use case interactions', function() {
       minimalObs = {
         id: uniqid(),
         eventId: mageEvent.id,
-        userId: uniqid(),
-        deviceId: uniqid(),
         createdAt: new Date(),
         lastModified: new Date(),
         type: 'Feature',
@@ -163,6 +161,10 @@ describe.only('observations use case interactions', function() {
         expect(err.data.entityType).to.equal('ObservationId')
         obsRepo.received(1).save(Arg.any())
       })
+
+      it('populates creating user id and device id fron request context', async function() {
+        expect.fail('todo')
+      })
     })
 
     describe('updating', function() {
@@ -203,6 +205,8 @@ describe.only('observations use case interactions', function() {
         const formEntryId = uniqid()
         obsBefore = Observation.evaluate({
           ...minimalObs,
+          userId: uniqid(),
+          deviceId: uniqid(),
           properties: {
             timestamp: minimalObs.properties.timestamp,
             forms: [
@@ -274,6 +278,12 @@ describe.only('observations use case interactions', function() {
         const res = await saveObservation(req)
         const saved = res.success as api.ExoObservation
 
+        expect(obsBefore.userId).to.exist.and.not.be.empty
+        expect(obsBefore.deviceId).to.exist.and.not.be.empty
+        expect(context.userId).to.not.equal(obsBefore.userId)
+        expect(context.deviceId).to.not.equal(obsBefore.deviceId)
+        expect(mod.userId).to.not.equal(obsBefore.userId)
+        expect(mod.deviceId).to.not.equal(obsBefore.deviceId)
         expect(obsAfter.validation.hasErrors, 'valid update').to.be.false
         expect(obsAfter.userId).to.equal(obsBefore.userId)
         expect(obsAfter.deviceId).to.equal(obsBefore.deviceId)

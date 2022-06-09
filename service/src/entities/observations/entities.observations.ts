@@ -278,6 +278,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.id = attrs.id
     this.eventId = attrs.eventId
     this.userId = attrs.userId
+    this.deviceId = attrs.deviceId
     this.createdAt = new Date(attrs.createdAt)
     this.lastModified = new Date(attrs.lastModified)
     this.importantFlag = attrs.importantFlag ? Object.freeze({ ...attrs.importantFlag }) : undefined
