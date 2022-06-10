@@ -4,7 +4,8 @@ import { AppResponse } from '../../app.api/app.api.global'
 import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, domainObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentAddError, AttachmentCreateAttrs, copyAttachmentAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: ObservationPermissionService): AllocateObservationId {
   return async function allocateObservationId(req: AllocateObservationIdRequest): ReturnType<AllocateObservationId> {
@@ -18,7 +19,7 @@ export function AllocateObservationId(permissionService: ObservationPermissionSe
   }
 }
 
-export function SaveObservation(permissionService: ObservationPermissionService): SaveObservation {
+export function SaveObservation(permissionService: ObservationPermissionService, userRepo: UserRepository): SaveObservation {
   return async function saveObservation(req: SaveObservationRequest): ReturnType<SaveObservation> {
     const repo = req.context.observationRepository
     const mod = req.observation
@@ -35,8 +36,9 @@ export function SaveObservation(permissionService: ObservationPermissionService)
     }
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {
-      const userObs: ExoObservation = exoObservationFor(saved)
-      return AppResponse.success(userObs)
+      const creator = saved.userId ? await userRepo.findById(saved.userId) : null
+      const exoObs: ExoObservation = exoObservationFor(saved, creator)
+      return AppResponse.success(exoObs)
     }
     switch (saved.code) {
       case ObservationRepositoryErrorCode.InvalidObservation:
@@ -60,6 +62,7 @@ async function prepareObservationMod(mod: ExoObservationMod, before: Observation
   const attachmentMods = attachmentExtraction.attachmentMods
   const addCount = attachmentMods.reduce((count, x) => x.action === AttachmentModAction.Add ? count + 1 : count, 0)
   const attachmentIds = addCount ? await repo.nextAttachmentIds(addCount) : []
+  const initialObs = before ? Observation.assignTo(before, attrs) as Observation : Observation.evaluate(attrs, event)
   const obs = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
     if (obs instanceof MageError) {
       return obs
@@ -78,7 +81,7 @@ async function prepareObservationMod(mod: ExoObservationMod, before: Observation
     }
     const message = `error adding attachment on observation ${obs.id}`
     return invalidInput(`${message}: ${String(mod)}`)
-  }, Observation.evaluate(attrs, event))
+  }, initialObs)
   return obs
 }
 

@@ -370,7 +370,7 @@ async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['
   const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(eventPermissions.defaultEventPermissionsService)
   return {
     allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
-    saveObservation: observationsImpl.SaveObservation(obsPermissionsService)
+    saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo)
   }
 }
 

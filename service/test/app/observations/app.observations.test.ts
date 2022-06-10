@@ -8,11 +8,13 @@ import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, 
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
+import { User, UserRepository } from '../../../lib/entities/users/entities.users'
 
 describe.only('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
+  let userRepo: SubstituteOf<UserRepository>
   let permissions: SubstituteOf<api.ObservationPermissionService>
   let context: api.ObservationRequestContext
   let principalHandle: SubstituteOf<{ requestingPrincipal(): string }>
@@ -29,6 +31,7 @@ describe.only('observations use case interactions', function() {
       style: {}
     })
     obsRepo = Sub.for<EventScopedObservationRepository>()
+    userRepo = Sub.for<UserRepository>()
     permissions = Sub.for<api.ObservationPermissionService>()
     principalHandle = Sub.for<{ requestingPrincipal(): string }>()
     context = {
@@ -40,6 +43,13 @@ describe.only('observations use case interactions', function() {
       requestingPrincipal() { return principalHandle.requestingPrincipal() },
       locale() { return null }
     }
+  })
+
+  describe('external view of observation', function() {
+
+    it('omits attachment thumbnails', function() {
+      expect.fail('todo')
+    })
   })
 
   describe('allocating observation ids', function() {
@@ -82,7 +92,7 @@ describe.only('observations use case interactions', function() {
     let minimalObs: ObservationAttrs
 
     beforeEach(function() {
-      saveObservation = SaveObservation(permissions)
+      saveObservation = SaveObservation(permissions, userRepo)
       minimalObs = {
         id: uniqid(),
         eventId: mageEvent.id,
@@ -118,6 +128,43 @@ describe.only('observations use case interactions', function() {
       obsRepo.received(1).save(Arg.any())
     })
 
+    it('populates the creator user id when present', async function() {
+
+      const creator: User = {
+        id: context.userId,
+        active: true,
+        enabled: true,
+        authenticationId: 'auth1',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        displayName: 'Populate Me',
+        lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        phones: [],
+        roleId: uniqid(),
+        username: 'populate.me',
+      }
+      const req: api.SaveObservationRequest = {
+        context,
+        observation: observationModFor(minimalObs)
+      }
+      const obsAfter = Observation.evaluate({
+        ...minimalObs,
+        userId: creator.id
+      }, mageEvent)
+      obsRepo.findById(Arg.all()).resolves(null)
+      obsRepo.save(Arg.all()).resolves(obsAfter)
+      userRepo.findById(creator.id).resolves(creator)
+      const res = await saveObservation(req)
+      const saved = res.success as api.ExoObservation
+
+      expect(res.error).to.be.null
+      expect(obsAfter.validation.hasErrors).to.be.false
+      expect(saved.user).to.deep.equal({ id: context.userId, displayName: creator.displayName })
+    })
+
+    it('populates the state user id when present', async function() {
+      expect.fail('todo')
+    })
+
     describe('creating', function() {
 
       beforeEach(function() {
@@ -128,7 +175,7 @@ describe.only('observations use case interactions', function() {
 
         const deny = Sub.for<api.ObservationPermissionService>()
         deny.ensureCreateObservationPermission(Arg.all()).resolves(permissionDenied('test create', context.userId, minimalObs.id))
-        saveObservation = SaveObservation(deny)
+        saveObservation = SaveObservation(deny, userRepo)
         const req: api.SaveObservationRequest = {
           context,
           observation: observationModFor(minimalObs)
@@ -162,7 +209,7 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.any())
       })
 
-      it('populates creating user id and device id fron request context', async function() {
+      it('assigns creating user id and device id fron request context', async function() {
 
         const req: api.SaveObservationRequest = {
           context,
@@ -174,7 +221,9 @@ describe.only('observations use case interactions', function() {
           deviceId: context.deviceId
         }
         const created = Observation.evaluate(createdAttrs, mageEvent)
+        const creator: User = { id: context.userId, displayName: `User ${context.userId}` } as User
         obsRepo.save(Arg.all()).resolves(created)
+        userRepo.findById(context.userId).resolves(creator)
         const res = await saveObservation(req)
         const saved = res.success as api.ExoObservation
 
@@ -182,7 +231,7 @@ describe.only('observations use case interactions', function() {
         expect(created.validation.hasErrors).to.be.false
         expect(created.userId).to.equal(context.userId)
         expect(created.deviceId).to.equal(context.deviceId)
-        expect(saved).to.deep.equal(api.exoObservationFor(created))
+        expect(saved).to.deep.equal(api.exoObservationFor(created, creator))
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
       })
@@ -248,13 +297,14 @@ describe.only('observations use case interactions', function() {
           ]
         }, mageEvent)
         obsRepo.findById(obsBefore.id).resolves(obsBefore)
+        userRepo.findById(Arg.is(x => x === obsBefore.userId!)).resolves(null)
       })
 
       it('ensures update permission when an observation already exists', async function() {
 
         const deny = Sub.for<api.ObservationPermissionService>()
         deny.ensureUpdateObservationPermission(Arg.all()).resolves(permissionDenied('test update', context.userId, minimalObs.id))
-        saveObservation = SaveObservation(deny)
+        saveObservation = SaveObservation(deny, userRepo)
         const req: api.SaveObservationRequest = {
           context,
           observation: observationModFor(minimalObs)

@@ -3,7 +3,7 @@ import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
 import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
-import { UserId } from '../../entities/users/entities.users'
+import { User, UserId } from '../../entities/users/entities.users'
 
 
 
@@ -42,9 +42,12 @@ export interface SaveObservationRequest extends ObservationRequest {
  */
 export type ExoObservation = Omit<ObservationAttrs, 'attachments'> & {
   attachments: ExoAttachment[]
+  user?: ExoObservationUserLite
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
+
+export type ExoObservationUserLite = Pick<User, 'id' | 'displayName'>
 
 export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'states' | 'attachments' | 'properties'> & {
   properties: ExoObservationPropertiesMod
@@ -73,17 +76,22 @@ export enum AttachmentModAction {
   Delete = 'delete',
 }
 
-export function exoObservationFor(from: ObservationAttrs): ExoObservation {
+export function exoObservationFor(from: ObservationAttrs, creator?: User | null): ExoObservation {
   const attrs = copyObservationAttrs(from)
   const attachments = attrs.attachments.map(exoAttachmentFor)
   return {
     ...attrs,
-    attachments
+    attachments,
+    user: exoObservationUserLiteFor(creator)
   }
 }
 
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
   return _.omit(from, 'thumbnails', 'contentLocator')
+}
+
+export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {
+  return from ? { id: from.id, displayName: from.displayName } : void(0)
 }
 
 export function domainObservationFor(from: ExoObservation): ObservationAttrs {

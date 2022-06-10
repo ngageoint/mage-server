@@ -227,6 +227,10 @@ export class Observation implements Readonly<ObservationAttrs> {
    * Eventually this should perform the logic to find the differences and
    * produce the domain events resulting from updating the target observation
    * to the update attributes.
+   *
+   * Return an {@link ObservationUpdateError} if the event IDs on the target
+   * and udpate do not match.
+   *
    * @param target
    * @param update
    * @returns
