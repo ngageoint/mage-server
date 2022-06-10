@@ -163,7 +163,28 @@ describe.only('observations use case interactions', function() {
       })
 
       it('populates creating user id and device id fron request context', async function() {
-        expect.fail('todo')
+
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: observationModFor(minimalObs)
+        }
+        const createdAttrs: ObservationAttrs = {
+          ...copyObservationAttrs(minimalObs),
+          userId: context.userId,
+          deviceId: context.deviceId
+        }
+        const created = Observation.evaluate(createdAttrs, mageEvent)
+        obsRepo.save(Arg.all()).resolves(created)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(created.validation.hasErrors).to.be.false
+        expect(created.userId).to.equal(context.userId)
+        expect(created.deviceId).to.equal(context.deviceId)
+        expect(saved).to.deep.equal(api.exoObservationFor(created))
+        obsRepo.received(1).save(Arg.all())
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
       })
     })
 
