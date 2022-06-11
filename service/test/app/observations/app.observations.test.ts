@@ -8,7 +8,7 @@ import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, 
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
-import { User, UserRepository } from '../../../lib/entities/users/entities.users'
+import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
 
 describe.only('observations use case interactions', function() {
 
@@ -152,7 +152,7 @@ describe.only('observations use case interactions', function() {
       }, mageEvent)
       obsRepo.findById(Arg.all()).resolves(null)
       obsRepo.save(Arg.all()).resolves(obsAfter)
-      userRepo.findById(creator.id).resolves(creator)
+      userRepo.findAllByIds([ creator.id ]).resolves({ [creator.id]: creator })
       const res = await saveObservation(req)
       const saved = res.success as api.ExoObservation
 
@@ -161,8 +161,97 @@ describe.only('observations use case interactions', function() {
       expect(saved.user).to.deep.equal({ id: context.userId, displayName: creator.displayName })
     })
 
-    it('populates the state user id when present', async function() {
-      expect.fail('todo')
+    it('populates the important flag user id when present', async function() {
+
+      const importantFlagger: User = {
+        id: uniqid(),
+        active: true,
+        enabled: true,
+        authenticationId: 'auth1',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        displayName: 'Populate Me',
+        lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        phones: [],
+        roleId: uniqid(),
+        username: 'populate.me',
+      }
+      const req: api.SaveObservationRequest = {
+        context,
+        observation: observationModFor(minimalObs)
+      }
+      const obsAfter = Observation.evaluate({
+        ...minimalObs,
+        importantFlag: {
+          userId: importantFlagger.id,
+          description: 'populate the user who flagged this observation',
+          timestamp: new Date(Date.now() - 1000 * 60 * 15)
+        }
+      }, mageEvent)
+      obsRepo.findById(Arg.all()).resolves(null)
+      obsRepo.save(Arg.all()).resolves(obsAfter)
+      userRepo.findAllByIds([ importantFlagger.id ]).resolves({ [importantFlagger.id]: importantFlagger })
+      const res = await saveObservation(req)
+      const saved = res.success as api.ExoObservation
+
+      expect(res.error).to.be.null
+      expect(obsAfter.validation.hasErrors).to.be.false
+      expect(saved.importantFlag?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName })
+    })
+
+
+    it('populates the creator and important flag user id when present', async function() {
+
+      const creator: User = {
+        id: uniqid(),
+        active: true,
+        enabled: true,
+        authenticationId: 'auth1',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        displayName: 'I Made This',
+        lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        phones: [],
+        roleId: uniqid(),
+        username: 'user1',
+      }
+      const importantFlagger: User = {
+        id: uniqid(),
+        active: true,
+        enabled: true,
+        authenticationId: 'auth1',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        displayName: 'I Flagged This',
+        lastUpdated: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+        phones: [],
+        roleId: uniqid(),
+        username: 'user2',
+      }
+      const req: api.SaveObservationRequest = {
+        context,
+        observation: observationModFor(minimalObs)
+      }
+      const obsAfter = Observation.evaluate({
+        ...minimalObs,
+        userId: creator.id,
+        importantFlag: {
+          userId: importantFlagger.id,
+          description: 'populate the user who flagged this observation',
+          timestamp: new Date(Date.now() - 1000 * 60 * 15)
+        }
+      }, mageEvent)
+      obsRepo.findById(Arg.all()).resolves(null)
+      obsRepo.save(Arg.all()).resolves(obsAfter)
+      userRepo.findAllByIds(Arg.any()).resolves({ [creator.id]: creator, [importantFlagger.id]: importantFlagger })
+      const res = await saveObservation(req)
+      const saved = res.success as api.ExoObservation
+
+      expect(res.error).to.be.null
+      expect(obsAfter.validation.hasErrors).to.be.false
+      expect(saved.user).to.deep.equal({ id: creator.id, displayName: creator.displayName }, 'creator')
+      expect(saved.importantFlag?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName }, 'important flagger')
+      expect(saved).to.deep.equal(api.exoObservationFor(obsAfter, { creator, importantFlagger }), 'saved result')
+      userRepo.received(1).findAllByIds(Arg.all())
+      userRepo.received(1).findAllByIds(Arg.is((x: UserId[]) => x.length === 2 && x.every(id => [ creator.id, importantFlagger.id ].includes(id))))
+      userRepo.didNotReceive().findById(Arg.all())
     })
 
     describe('creating', function() {
@@ -223,7 +312,7 @@ describe.only('observations use case interactions', function() {
         const created = Observation.evaluate(createdAttrs, mageEvent)
         const creator: User = { id: context.userId, displayName: `User ${context.userId}` } as User
         obsRepo.save(Arg.all()).resolves(created)
-        userRepo.findById(context.userId).resolves(creator)
+        userRepo.findAllByIds([ context.userId ]).resolves({ [context.userId]: creator })
         const res = await saveObservation(req)
         const saved = res.success as api.ExoObservation
 
@@ -231,7 +320,7 @@ describe.only('observations use case interactions', function() {
         expect(created.validation.hasErrors).to.be.false
         expect(created.userId).to.equal(context.userId)
         expect(created.deviceId).to.equal(context.deviceId)
-        expect(saved).to.deep.equal(api.exoObservationFor(created, creator))
+        expect(saved).to.deep.equal(api.exoObservationFor(created, { creator }))
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
       })
@@ -297,7 +386,7 @@ describe.only('observations use case interactions', function() {
           ]
         }, mageEvent)
         obsRepo.findById(obsBefore.id).resolves(obsBefore)
-        userRepo.findById(Arg.is(x => x === obsBefore.userId!)).resolves(null)
+        userRepo.findAllByIds(Arg.any()).resolves({})
       })
 
       it('ensures update permission when an observation already exists', async function() {
@@ -823,6 +912,10 @@ describe.only('observations use case interactions', function() {
       })
 
       it('removes attachment content for removed form entries', async function() {
+        expect.fail('todo')
+      })
+
+      it('preserves the important flag', async function() {
         expect.fail('todo')
       })
     })

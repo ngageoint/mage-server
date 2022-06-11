@@ -5,7 +5,7 @@ import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermiss
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
 import { addAttachment, AttachmentCreateAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
-import { UserRepository } from '../../entities/users/entities.users'
+import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: ObservationPermissionService): AllocateObservationId {
   return async function allocateObservationId(req: AllocateObservationIdRequest): ReturnType<AllocateObservationId> {
@@ -36,8 +36,11 @@ export function SaveObservation(permissionService: ObservationPermissionService,
     }
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {
-      const creator = saved.userId ? await userRepo.findById(saved.userId) : null
-      const exoObs: ExoObservation = exoObservationFor(saved, creator)
+      const userIds = { creator: saved.userId, importantFlagger: saved.importantFlag?.userId }
+      const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
+      const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
+      const users = { creator: usersFound[userIds.creator || ''], importantFlagger: usersFound[userIds.importantFlagger || ''] }
+      const exoObs: ExoObservation = exoObservationFor(saved, users)
       return AppResponse.success(exoObs)
     }
     switch (saved.code) {

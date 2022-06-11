@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InvalidInputError, MageError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId } from '../../entities/observations/entities.observations'
+import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -40,16 +40,21 @@ export interface SaveObservationRequest extends ObservationRequest {
  * and send, the exo- prefix indicating the outermost, client-facing layer of
  * the application.
  */
-export type ExoObservation = Omit<ObservationAttrs, 'attachments'> & {
+export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'importantFlag'> & {
   attachments: ExoAttachment[]
   user?: ExoObservationUserLite
+  importantFlag?: ExoObservationImportantFlag
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
 
+export interface ExoObservationImportantFlag extends ObservationImportantFlag {
+  user?: ExoObservationUserLite
+}
+
 export type ExoObservationUserLite = Pick<User, 'id' | 'displayName'>
 
-export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'states' | 'attachments' | 'properties'> & {
+export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'importantFlag' | 'states' | 'attachments' | 'properties'> & {
   properties: ExoObservationPropertiesMod
 }
 
@@ -76,13 +81,17 @@ export enum AttachmentModAction {
   Delete = 'delete',
 }
 
-export function exoObservationFor(from: ObservationAttrs, creator?: User | null): ExoObservation {
+export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
   const attrs = copyObservationAttrs(from)
   const attachments = attrs.attachments.map(exoAttachmentFor)
   return {
     ...attrs,
     attachments,
-    user: exoObservationUserLiteFor(creator)
+    user: exoObservationUserLiteFor(users?.creator),
+    importantFlag: {
+      ...from.importantFlag,
+      user: exoObservationUserLiteFor(users?.importantFlagger)
+    }
   }
 }
 
