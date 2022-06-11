@@ -366,6 +366,11 @@ describe.only('observations use case interactions', function() {
           ...minimalObs,
           userId: uniqid(),
           deviceId: uniqid(),
+          importantFlag: {
+            userId: uniqid(),
+            timestamp: new Date(minimalObs.lastModified.getTime() - 1000 * 60 * 20),
+            description: 'oh my goodness look'
+          },
           properties: {
             timestamp: minimalObs.properties.timestamp,
             forms: [
@@ -385,8 +390,8 @@ describe.only('observations use case interactions', function() {
             }
           ]
         }, mageEvent)
-        obsRepo.findById(obsBefore.id).resolves(obsBefore)
-        userRepo.findAllByIds(Arg.any()).resolves({})
+        obsRepo.findById(Arg.is(x => x === obsBefore.id)).resolves(obsBefore)
+        userRepo.findAllByIds(Arg.all()).resolves({})
       })
 
       it('ensures update permission when an observation already exists', async function() {
@@ -916,6 +921,45 @@ describe.only('observations use case interactions', function() {
       })
 
       it('preserves the important flag', async function() {
+
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [
+              { ...obsBefore.formEntries[0], field1: 'mod field 1' }
+            ],
+          }
+        }) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              { ...obsBefore.formEntries[0], field1: 'mod field 1' }
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.importantFlag).to.have.property('userId').that.is.a('string')
+        expect(obsBefore.importantFlag).to.have.property('timestamp').that.is.instanceOf(Date)
+        expect(obsBefore.importantFlag).to.have.property('description', 'oh my goodness look')
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.importantFlag).to.deep.equal(obsBefore.importantFlag)
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+      })
+
+      it('preserves states', async function() {
         expect.fail('todo')
       })
     })
