@@ -390,7 +390,8 @@ describe.only('observations use case interactions', function() {
             }
           ]
         }, mageEvent)
-        obsRepo.findById(Arg.is(x => x === obsBefore.id)).resolves(obsBefore)
+        const obsBeforeId = obsBefore.id
+        obsRepo.findById(Arg.is(x => x === obsBeforeId)).resolves(obsBefore)
         userRepo.findAllByIds(Arg.all()).resolves({})
       })
 
@@ -960,7 +961,47 @@ describe.only('observations use case interactions', function() {
       })
 
       it('preserves states', async function() {
-        expect.fail('todo')
+
+        obsBefore = Observation.evaluate({
+          ...copyObservationAttrs(obsBefore),
+          id: uniqid(),
+          states: [
+            { id: uniqid(), name: 'active', userId: uniqid() },
+            { id: uniqid(), name: 'archived', userId: uniqid() }
+          ]
+        }, mageEvent) as Observation
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [ { ...obsBefore.formEntries[0], field1: 'mod field 1' } ]
+          }
+        }) as Observation
+        const mod: api.ExoObservationMod = {
+          ...observationModFor(obsBefore),
+          properties: {
+            timestamp: obsBefore.timestamp,
+            forms: [ { ...obsBefore.formEntries[0], field1: 'mod field 1' } ]
+          },
+          states: []
+        } as any
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: mod
+        }
+        obsRepo.findById(Arg.is(x => x === obsBefore.id)).resolves(obsBefore)
+        const before = await obsRepo.findById(obsBefore.id)
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.states).to.have.length(2)
+        expect(obsAfter.states).to.deep.equal(obsBefore.states)
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter), 'saved result')
+        expect(saved.states).to.deep.equal(obsAfter.states)
+        obsRepo.received(1).save(Arg.all())
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'save argument')))
       })
     })
   })
