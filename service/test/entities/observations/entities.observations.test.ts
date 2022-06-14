@@ -20,6 +20,7 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
       forms: []
     },
     states: [],
+    favoriteUserIds: [],
     attachments: []
   }
 }

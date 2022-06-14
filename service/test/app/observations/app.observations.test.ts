@@ -58,6 +58,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         attachments: [
           {
             id: uniqid(),
@@ -112,6 +113,7 @@ describe.only('observations use case interactions', function() {
         properties: { timestamp: new Date(), forms: [] },
         userId: uniqid(),
         states: [],
+        favoriteUserIds: [],
         important: {
           userId: uniqid(),
           timestamp: new Date(),
@@ -141,6 +143,7 @@ describe.only('observations use case interactions', function() {
         properties: { timestamp: new Date(), forms: [] },
         userId: uniqid(),
         states: [],
+        favoriteUserIds: [],
         attachments: []
       }
       const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
@@ -161,6 +164,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         attachments: []
       }
       const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
@@ -181,6 +185,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         important: {
           userId: uniqid(),
           timestamp: new Date(),
@@ -206,6 +211,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         important: {
           timestamp: new Date(),
           description: 'populate the user',
@@ -230,6 +236,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         attachments: []
       }
       const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
@@ -249,6 +256,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         attachments: []
       }
       const exo = api.exoObservationFor(from)
@@ -267,6 +275,7 @@ describe.only('observations use case interactions', function() {
         geometry: { type: 'Point', coordinates: [ 55, 66 ] },
         properties: { timestamp: new Date(), forms: [] },
         states: [],
+        favoriteUserIds: [],
         attachments: []
       }
       let exo = api.exoObservationFor(from)
@@ -338,8 +347,9 @@ describe.only('observations use case interactions', function() {
           timestamp: new Date(),
           forms: []
         },
-        attachments: [],
         states: [],
+        favoriteUserIds: [],
+        attachments: [],
       }
       permissions.ensureCreateObservationPermission(Arg.all()).resolves(null)
       permissions.ensureUpdateObservationPermission(Arg.all()).resolves(null)
