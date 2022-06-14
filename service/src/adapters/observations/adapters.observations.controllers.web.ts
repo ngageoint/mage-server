@@ -48,8 +48,12 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
   routes.route('/:observationId')
     .put(async (req, res, next) => {
       const body = req.body
+      const observationId = req.params.observationId
+      if (body.hasOwnProperty('id') && body.id !== observationId) {
+        return res.status(400).json('Body observation ID does not match path observation ID')
+      }
       const mod: ExoObservationMod = {
-        id: req.params.observationId,
+        id: observationId,
         type: 'Feature',
         geometry: req.body.geometry,
         properties: {
@@ -58,6 +62,9 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
         }
       }
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
+      if (body.hasOwnProperty('eventId') && body.eventId !== appReq.context.mageEvent.id) {
+        return res.status(400).json('Body event ID does not match path event ID')
+      }
       const appRes = await app.saveObservation(appReq)
       if (appRes.success) {
         return res.json(appRes.success)
