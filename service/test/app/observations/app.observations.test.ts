@@ -48,6 +48,215 @@ describe.only('observations use case interactions', function() {
   describe('external view of observation', function() {
 
     it('omits attachment thumbnails', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        attachments: [
+          {
+            id: uniqid(),
+            observationFormId: uniqid(),
+            fieldName: 'field1',
+            oriented: false,
+            thumbnails: [
+              { minDimension: 100 },
+              { minDimension: 200 },
+            ]
+          },
+          {
+            id: uniqid(),
+            observationFormId: uniqid(),
+            fieldName: 'field10',
+            oriented: false,
+            thumbnails: [
+              { minDimension: 100 },
+              { minDimension: 200 },
+            ]
+          }
+        ]
+      }
+      const exo = api.exoObservationFor(from)
+
+      expect(exo.attachments).to.have.length(2)
+      expect(exo.attachments.map(omitUndefinedFrom)).to.deep.equal([
+        {
+          id: from.attachments[0].id,
+          observationFormId: from.attachments[0].observationFormId,
+          fieldName: 'field1',
+          oriented: false,
+        },
+        {
+          id: from.attachments[1].id,
+          observationFormId: from.attachments[1].observationFormId,
+          fieldName: 'field10',
+          oriented: false,
+        }
+      ])
+    })
+
+    it('adds populated user display name for creator and important flag', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        userId: uniqid(),
+        states: [],
+        important: {
+          userId: uniqid(),
+          timestamp: new Date(),
+          description: 'populate the user',
+        },
+        attachments: []
+      }
+      const creator = { id: from.userId!, displayName: 'Creator Test' } as User
+      const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
+      const exo = api.exoObservationFor(from, { creator, importantFlagger })
+
+      expect(exo.userId).to.equal(from.userId)
+      expect(exo.user).to.deep.equal(creator)
+      expect(exo.important?.userId).to.equal(from.important?.userId)
+      expect(exo.important?.user).to.deep.equal(importantFlagger)
+    })
+
+    it('does not populate creator user if the given id does not match', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        userId: uniqid(),
+        states: [],
+        attachments: []
+      }
+      const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
+      const exo = api.exoObservationFor(from, { creator })
+
+      expect(exo.userId).to.equal(from.userId)
+      expect(exo.user).to.be.undefined
+    })
+
+    it('does not populate creator user if the observation does not have a creator', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        attachments: []
+      }
+      const creator = { id: uniqid(), displayName: 'Creator Mismatch' } as User
+      const exo = api.exoObservationFor(from, { creator })
+
+      expect(exo.userId).to.be.undefined
+      expect(exo.user).to.be.undefined
+    })
+
+    it('does not populate important flag user if given id does not match', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        important: {
+          userId: uniqid(),
+          timestamp: new Date(),
+          description: 'populate the user',
+        },
+        attachments: []
+      }
+      const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
+      const exo = api.exoObservationFor(from, { importantFlagger })
+
+      expect(exo.important?.userId).to.equal(from.important?.userId)
+      expect(exo.important?.user).to.deep.equal(importantFlagger)
+    })
+
+    it('does not populate important flag user if important flag has no user', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        important: {
+          timestamp: new Date(),
+          description: 'populate the user',
+        },
+        attachments: []
+      }
+      const importantFlagger = { id: uniqid(), displayName: 'Important Flagger Test' } as User
+      const exo = api.exoObservationFor(from, { importantFlagger })
+
+      expect(exo.important?.userId).to.be.undefined
+      expect(exo.important?.user).to.be.undefined
+    })
+
+    it('does not populate important flag user if the observation has no important flag', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        attachments: []
+      }
+      const importantFlagger = { id: from.important?.userId!, displayName: 'Important Flagger Test' } as User
+      const exo = api.exoObservationFor(from, { importantFlagger })
+
+      expect(exo.important).to.be.undefined
+    })
+
+    it('maps undefined important flag', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        attachments: []
+      }
+      const exo = api.exoObservationFor(from)
+
+      expect(exo.important).to.be.undefined
+    })
+
+    it('uses only the most recent state', function() {
       expect.fail('todo')
     })
   })
@@ -181,7 +390,7 @@ describe.only('observations use case interactions', function() {
       }
       const obsAfter = Observation.evaluate({
         ...minimalObs,
-        importantFlag: {
+        important: {
           userId: importantFlagger.id,
           description: 'populate the user who flagged this observation',
           timestamp: new Date(Date.now() - 1000 * 60 * 15)
@@ -195,7 +404,7 @@ describe.only('observations use case interactions', function() {
 
       expect(res.error).to.be.null
       expect(obsAfter.validation.hasErrors).to.be.false
-      expect(saved.importantFlag?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName })
+      expect(saved.important?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName })
     })
 
 
@@ -232,7 +441,7 @@ describe.only('observations use case interactions', function() {
       const obsAfter = Observation.evaluate({
         ...minimalObs,
         userId: creator.id,
-        importantFlag: {
+        important: {
           userId: importantFlagger.id,
           description: 'populate the user who flagged this observation',
           timestamp: new Date(Date.now() - 1000 * 60 * 15)
@@ -247,7 +456,7 @@ describe.only('observations use case interactions', function() {
       expect(res.error).to.be.null
       expect(obsAfter.validation.hasErrors).to.be.false
       expect(saved.user).to.deep.equal({ id: creator.id, displayName: creator.displayName }, 'creator')
-      expect(saved.importantFlag?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName }, 'important flagger')
+      expect(saved.important?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName }, 'important flagger')
       expect(saved).to.deep.equal(api.exoObservationFor(obsAfter, { creator, importantFlagger }), 'saved result')
       userRepo.received(1).findAllByIds(Arg.all())
       userRepo.received(1).findAllByIds(Arg.is((x: UserId[]) => x.length === 2 && x.every(id => [ creator.id, importantFlagger.id ].includes(id))))
@@ -366,7 +575,7 @@ describe.only('observations use case interactions', function() {
           ...minimalObs,
           userId: uniqid(),
           deviceId: uniqid(),
-          importantFlag: {
+          important: {
             userId: uniqid(),
             timestamp: new Date(minimalObs.lastModified.getTime() - 1000 * 60 * 20),
             description: 'oh my goodness look'
@@ -950,11 +1159,11 @@ describe.only('observations use case interactions', function() {
         const saved = res.success as api.ExoObservation
 
         expect(res.error).to.be.null
-        expect(obsBefore.importantFlag).to.have.property('userId').that.is.a('string')
-        expect(obsBefore.importantFlag).to.have.property('timestamp').that.is.instanceOf(Date)
-        expect(obsBefore.importantFlag).to.have.property('description', 'oh my goodness look')
+        expect(obsBefore.important).to.have.property('userId').that.is.a('string')
+        expect(obsBefore.important).to.have.property('timestamp').that.is.instanceOf(Date)
+        expect(obsBefore.important).to.have.property('description', 'oh my goodness look')
         expect(obsAfter.validation.hasErrors).to.be.false
-        expect(obsAfter.importantFlag).to.deep.equal(obsBefore.importantFlag)
+        expect(obsAfter.important).to.deep.equal(obsBefore.important)
         expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
         obsRepo.received(1).save(Arg.is(validObservation()))
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))

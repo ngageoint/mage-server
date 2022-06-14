@@ -41,8 +41,8 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     const attrs = copyObservationAttrs(observation)
     const docSeed = { ...attrs, _id: dbId } as any
     delete docSeed.importantFlag
-    if (attrs.importantFlag) {
-      docSeed.important = attrs.importantFlag
+    if (attrs.important) {
+      docSeed.important = attrs.important
     }
     docSeed.properties.forms = attrs.properties.forms.map(assignMongoIdToDocAttrs)
     docSeed.attachments = attrs.attachments.map(attachmentDocSeedForEntity)
@@ -136,7 +136,7 @@ function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.Obs
       attachments: doc.attachments.map(attachmentAttrsForDoc),
       userId: doc.userId?.toHexString(),
       deviceId: doc.deviceId?.toHexString(),
-      importantFlag: importantFlagAttrsForDoc(doc),
+      important: importantFlagAttrsForDoc(doc),
       favoriteUserIds: doc.favoriteUserIds?.map(x => x.toHexString()),
     }
     return attrs

@@ -18,7 +18,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
   createdAt: Date
   lastModified: Date
   attachments: readonly Attachment[]
-  importantFlag?: Readonly<ObservationImportantFlag> | undefined
+  important?: Readonly<ObservationImportantFlag> | undefined
   /**
    * TODO: scalability - potential problem if thousands of users favorite;
    * this should not be returned to the client
@@ -141,7 +141,7 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
     createdAt: new Date(from.createdAt.getTime()),
     lastModified: new Date(from.lastModified.getTime()),
     attachments: from.attachments.map(copyAttachmentAttrs),
-    importantFlag: from.importantFlag ? copyImportantFlagAttrs(from.importantFlag) : undefined,
+    important: from.important ? copyImportantFlagAttrs(from.important) : undefined,
     favoriteUserIds: from.favoriteUserIds ? Object.freeze([ ...from.favoriteUserIds ]) : undefined,
     states: Object.freeze(from.states.map(copyObservationStateAttrs)),
     type: 'Feature',
@@ -265,7 +265,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly deviceId?: string | undefined
   readonly createdAt: Date
   readonly lastModified: Date
-  readonly importantFlag?: Readonly<ObservationImportantFlag> | undefined
+  readonly important?: Readonly<ObservationImportantFlag> | undefined
   readonly states: readonly ObservationState[]
   readonly favoriteUserIds?: readonly UserId[] | undefined
   readonly type = 'Feature'
@@ -286,7 +286,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.deviceId = attrs.deviceId
     this.createdAt = new Date(attrs.createdAt)
     this.lastModified = new Date(attrs.lastModified)
-    this.importantFlag = attrs.importantFlag ? Object.freeze({ ...attrs.importantFlag }) : undefined
+    this.important = attrs.important ? Object.freeze({ ...attrs.important }) : undefined
     const states = attrs.states.length ? attrs.states.map(copyObservationStateAttrs) : [
       {
         id: PendingEntityId,

@@ -1,7 +1,6 @@
-import Attachment from '../../api/attachment'
-import { entityNotFound, invalidInput, InvalidInputError, MageError, permissionDenied, PermissionDeniedError } from '../../app.api/app.api.errors'
+import { entityNotFound, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
-import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, domainObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
 import { addAttachment, AttachmentCreateAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
@@ -36,7 +35,7 @@ export function SaveObservation(permissionService: ObservationPermissionService,
     }
     const saved = await repo.save(obs)
     if (saved instanceof Observation) {
-      const userIds = { creator: saved.userId, importantFlagger: saved.importantFlag?.userId }
+      const userIds = { creator: saved.userId, importantFlagger: saved.important?.userId }
       const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
       const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
       const users = { creator: usersFound[userIds.creator || ''], importantFlagger: usersFound[userIds.importantFlagger || ''] }
@@ -108,7 +107,7 @@ function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation 
     states: before ? before.states : [],
     bbox: mod.bbox || before?.bbox,
     favoriteUserIds: before?.favoriteUserIds,
-    importantFlag: before?.importantFlag,
+    important: before?.important,
     properties: {
       timestamp: mod.properties.timestamp,
       forms: []

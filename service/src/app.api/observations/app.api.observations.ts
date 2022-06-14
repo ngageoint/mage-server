@@ -1,6 +1,6 @@
-import { EntityNotFoundError, InvalidInputError, MageError, PermissionDeniedError } from '../app.api.errors'
+import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag } from '../../entities/observations/entities.observations'
+import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -40,10 +40,10 @@ export interface SaveObservationRequest extends ObservationRequest {
  * and send, the exo- prefix indicating the outermost, client-facing layer of
  * the application.
  */
-export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'importantFlag'> & {
+export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important'> & {
   attachments: ExoAttachment[]
   user?: ExoObservationUserLite
-  importantFlag?: ExoObservationImportantFlag
+  important?: ExoObservationImportantFlag
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
@@ -84,14 +84,15 @@ export enum AttachmentModAction {
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
   const attrs = copyObservationAttrs(from)
   const attachments = attrs.attachments.map(exoAttachmentFor)
+  users = users || {}
   return {
     ...attrs,
     attachments,
-    user: exoObservationUserLiteFor(users?.creator),
-    importantFlag: {
-      ...from.importantFlag,
-      user: exoObservationUserLiteFor(users?.importantFlagger)
-    }
+    user: from.userId === users.creator?.id ? exoObservationUserLiteFor(users.creator) : void(0),
+    important: from.important ? {
+      ...from.important,
+      user: from.important.userId === users.importantFlagger?.id ? exoObservationUserLiteFor(users.importantFlagger) : void(0)
+    } : void(0)
   }
 }
 
@@ -106,6 +107,7 @@ export function exoObservationUserLiteFor(from: User | null | undefined): ExoObs
 export function domainObservationFor(from: ExoObservation): ObservationAttrs {
   return {
     ...from,
+    states: [],
     attachments: from.attachments.map(domainAttachmentFor)
   }
 }

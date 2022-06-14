@@ -1,9 +1,8 @@
-import { describe, it, before } from 'mocha'
+import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import mongoose from 'mongoose'
-import uniqid from 'uniqid'
 import _ from 'lodash'
-import { MongooseMageEventRepository, MageEventModel } from '../../../lib/adapters/events/adapters.events.db.mongoose'
+import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
 import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
@@ -12,7 +11,7 @@ import TeamModelModule = require('../../../lib/models/team')
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, validationResultMessage, copyObservationAttrs } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -46,7 +45,7 @@ function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, .
   return omitUndefinedValues(_.omit(x, keys))
 }
 
-describe('mongoose observation repository', function() {
+describe.only('mongoose observation repository', function() {
 
   let model: ObservationModel
   let repo: MongooseObservationRepository
@@ -244,7 +243,7 @@ describe('mongoose observation repository', function() {
             userId: undefined
           }
         ]
-        attrs.importantFlag = {
+        attrs.important = {
           timestamp: new Date(),
           description: 'look at me',
           userId: mongoose.Types.ObjectId().toHexString(),
