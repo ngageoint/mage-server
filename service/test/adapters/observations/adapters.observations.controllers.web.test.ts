@@ -136,7 +136,7 @@ describe.only('observations web controller', function () {
             mod.properties.forms[1] as FormEntry
           ]
         },
-        states: [ { id: uniqid(), name: 'active', userId: uniqid() } ],
+        state: { id: uniqid(), name: 'active', userId: uniqid() },
         attachments: []
       }
       app.saveObservation(Arg.all()).resolves(AppResponse.success(appRes))
@@ -195,7 +195,7 @@ describe.only('observations web controller', function () {
             mod.properties.forms[1] as FormEntry
           ]
         },
-        states: [ { id: uniqid(), name: 'active', userId: uniqid() } ],
+        state: { id: uniqid(), name: 'active', userId: uniqid() },
         attachments: []
       }
       app.saveObservation(Arg.all()).resolves(AppResponse.success(appRes))

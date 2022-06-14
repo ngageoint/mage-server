@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag } from '../../entities/observations/entities.observations'
+import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -40,10 +40,11 @@ export interface SaveObservationRequest extends ObservationRequest {
  * and send, the exo- prefix indicating the outermost, client-facing layer of
  * the application.
  */
-export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important'> & {
-  attachments: ExoAttachment[]
+export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' | 'states'> & {
   user?: ExoObservationUserLite
   important?: ExoObservationImportantFlag
+  state?: ObservationState
+  attachments: ExoAttachment[]
 }
 
 export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
@@ -82,13 +83,14 @@ export enum AttachmentModAction {
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
-  const attrs = copyObservationAttrs(from)
+  const { states, ...attrs } = copyObservationAttrs(from)
   const attachments = attrs.attachments.map(exoAttachmentFor)
   users = users || {}
   return {
     ...attrs,
     attachments,
     user: from.userId === users.creator?.id ? exoObservationUserLiteFor(users.creator) : void(0),
+    state: states ? states[0] : void(0),
     important: from.important ? {
       ...from.important,
       user: from.important.userId === users.importantFlagger?.id ? exoObservationUserLiteFor(users.importantFlagger) : void(0)

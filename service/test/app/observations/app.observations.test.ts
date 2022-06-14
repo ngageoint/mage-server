@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, removeAttachment } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, removeAttachment } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -256,8 +256,33 @@ describe.only('observations use case interactions', function() {
       expect(exo.important).to.be.undefined
     })
 
-    it('uses only the most recent state', function() {
-      expect.fail('todo')
+    it('maps only the most recent state', function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        attachments: []
+      }
+      let exo = api.exoObservationFor(from)
+
+      expect(exo).not.to.have.property('states')
+      expect(exo.state).to.be.undefined
+
+      const states: ObservationState[] = [
+        { id: uniqid(), name: 'archived', userId: uniqid() },
+        { id: uniqid(), name: 'active', userId: uniqid() }
+      ]
+      from.states = states.map(copyObservationStateAttrs)
+      exo = api.exoObservationFor(from)
+
+      expect(exo).not.to.have.property('states')
+      expect(exo.state).to.deep.equal({ id: states[0].id, name: 'archived', userId: states[0].userId })
     })
   })
 
@@ -1199,7 +1224,6 @@ describe.only('observations use case interactions', function() {
           observation: mod
         }
         obsRepo.findById(Arg.is(x => x === obsBefore.id)).resolves(obsBefore)
-        const before = await obsRepo.findById(obsBefore.id)
         obsRepo.save(Arg.all()).resolves(obsAfter)
         const res = await saveObservation(req)
         const saved = res.success as api.ExoObservation
@@ -1208,7 +1232,7 @@ describe.only('observations use case interactions', function() {
         expect(obsBefore.states).to.have.length(2)
         expect(obsAfter.states).to.deep.equal(obsBefore.states)
         expect(saved).to.deep.equal(api.exoObservationFor(obsAfter), 'saved result')
-        expect(saved.states).to.deep.equal(obsAfter.states)
+        expect(saved.state).to.deep.equal(obsAfter.states[0])
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'save argument')))
       })
