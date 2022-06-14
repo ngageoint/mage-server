@@ -25,7 +25,7 @@ export interface EntityNotFoundErrorData {
 }
 
 export function permissionDenied(permission: string, subject: string, object?: string): PermissionDeniedError {
-  const message = `${subject} does not have permission ${permission}` + object ? ` on ${object}` : ''
+  const message = `${subject} does not have permission ${permission}` + (object ? ` on ${object}` : '')
   return new MageError(ErrPermissionDenied, { permission, subject, object: object || null }, message)
 }
 
