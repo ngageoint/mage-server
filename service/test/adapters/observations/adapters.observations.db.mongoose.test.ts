@@ -31,8 +31,9 @@ function observationStub(id: ObservationId, eventId: MageEventId): ObservationAt
       timestamp: new Date(now),
       forms: []
     },
-    attachments: [],
     states: [],
+    favoriteUserIds: [],
+    attachments: [],
   }
   return attrs
 }

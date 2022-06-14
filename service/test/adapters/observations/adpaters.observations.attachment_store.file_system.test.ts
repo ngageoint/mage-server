@@ -66,6 +66,7 @@ describe('file system attachment store', function() {
       eventId: 1,
       createdAt: new Date('2022-03-09'),
       lastModified: new Date(),
+      favoriteUserIds: [],
       states: [],
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [ 12, 34 ] },

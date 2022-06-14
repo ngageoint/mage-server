@@ -106,7 +106,7 @@ function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation 
     type: 'Feature',
     states: before ? before.states : [],
     bbox: mod.bbox || before?.bbox,
-    favoriteUserIds: before?.favoriteUserIds,
+    favoriteUserIds: before?.favoriteUserIds || [],
     important: before?.important,
     properties: {
       timestamp: mod.properties.timestamp,

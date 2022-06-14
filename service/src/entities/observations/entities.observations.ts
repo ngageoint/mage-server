@@ -23,7 +23,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
    * TODO: scalability - potential problem if thousands of users favorite;
    * this should not be returned to the client
    */
-  favoriteUserIds?: readonly UserId[]
+  favoriteUserIds: readonly UserId[]
   /**
    * * TODO: scalability - likely not a problem in practice most of the time
    * * TODO: we do not actually have a reason to maintain an array of states -
@@ -142,7 +142,7 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
     lastModified: new Date(from.lastModified.getTime()),
     attachments: from.attachments.map(copyAttachmentAttrs),
     important: from.important ? copyImportantFlagAttrs(from.important) : undefined,
-    favoriteUserIds: from.favoriteUserIds ? Object.freeze([ ...from.favoriteUserIds ]) : undefined,
+    favoriteUserIds: Object.freeze([ ...from.favoriteUserIds ]),
     states: Object.freeze(from.states.map(copyObservationStateAttrs)),
     type: 'Feature',
     // meh, these shallow copies are probably fine ... right?
@@ -267,7 +267,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly lastModified: Date
   readonly important?: Readonly<ObservationImportantFlag> | undefined
   readonly states: readonly ObservationState[]
-  readonly favoriteUserIds?: readonly UserId[] | undefined
+  readonly favoriteUserIds: readonly UserId[]
   readonly type = 'Feature'
   readonly bbox?: BBox | undefined
   readonly geometry: Readonly<Geometry>
@@ -295,6 +295,7 @@ export class Observation implements Readonly<ObservationAttrs> {
       }
     ] as ObservationState[]
     this.states = Object.freeze(states)
+    this.favoriteUserIds = Object.freeze(attrs.favoriteUserIds.slice())
     this.type = 'Feature'
     this.bbox = attrs.bbox
     this.geometry = attrs.geometry

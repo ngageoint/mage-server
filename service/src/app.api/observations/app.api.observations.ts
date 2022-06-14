@@ -55,7 +55,7 @@ export interface ExoObservationImportantFlag extends ObservationImportantFlag {
 
 export type ExoObservationUserLite = Pick<User, 'id' | 'displayName'>
 
-export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'importantFlag' | 'states' | 'attachments' | 'properties'> & {
+export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'importantFlag' | 'states' | 'favoriteUserIds' | 'attachments' | 'properties'> & {
   properties: ExoObservationPropertiesMod
 }
 

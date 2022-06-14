@@ -137,6 +137,7 @@ describe.only('observations web controller', function () {
           ]
         },
         state: { id: uniqid(), name: 'active', userId: uniqid() },
+        favoriteUserIds: [],
         attachments: []
       }
       app.saveObservation(Arg.all()).resolves(AppResponse.success(appRes))
@@ -196,6 +197,7 @@ describe.only('observations web controller', function () {
           ]
         },
         state: { id: uniqid(), name: 'active', userId: uniqid() },
+        favoriteUserIds: [],
         attachments: []
       }
       app.saveObservation(Arg.all()).resolves(AppResponse.success(appRes))
@@ -326,6 +328,7 @@ describe.only('observations web controller', function () {
           forms: reqBody.properties.forms
         },
         states: [],
+        favoriteUserIds: [],
         attachments: [],
       }
       const obs = Observation.evaluate(obsAttrs, mageEvent)
