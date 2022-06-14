@@ -9,8 +9,9 @@ import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { PermissionDeniedError, permissionDenied } from '../../../lib/app.api/app.api.errors'
 import { ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { EventScopedObservationRepository, ObservationId } from '../../../lib/entities/observations/entities.observations'
-import { ObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
+import { EventScopedObservationRepository, FormEntry, ObservationFeatureProperties, ObservationId } from '../../../lib/entities/observations/entities.observations'
+import { ExoObservation, exoObservationFor, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
+import { Geometry } from 'geojson'
 
 const hostUrl = 'http://mage.test'
 const basePath = '/observations-test'
@@ -18,7 +19,7 @@ const baseUrl = `${hostUrl}${basePath}`
 const jsonMimeType = /^application\/json/
 const testUser = 'lummytin'
 
-describe('observations web controller', function () {
+describe.only('observations web controller', function () {
 
   let createAppRequest: ObservationWebAppRequestFactory
   let app: SubstituteOf<ObservationAppLayer>
@@ -26,6 +27,7 @@ describe('observations web controller', function () {
   let client: supertest.SuperTest<supertest.Test>
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
+  let context: ObservationRequestContext
 
   beforeEach(function() {
     mageEvent = new MageEvent({
@@ -38,19 +40,19 @@ describe('observations web controller', function () {
       style: {}
     })
     obsRepo = Sub.for<EventScopedObservationRepository>()
+    context = {
+      requestToken: Symbol(),
+      requestingPrincipal(): typeof testUser {
+        return testUser
+      },
+      locale() { return null },
+      mageEvent,
+      userId: uniqid(),
+      deviceId: uniqid(),
+      observationRepository: obsRepo
+    }
     createAppRequest = <P extends { context?: never } = {}>(webReq: express.Request, params?: P): ObservationRequest & P => {
-      return {
-        context: {
-          requestToken: Symbol(),
-          requestingPrincipal(): typeof testUser {
-            return testUser
-          },
-          locale() { return null },
-          mageEvent,
-          observationRepository: obsRepo
-        },
-        ...(params || {})
-      } as ObservationRequest & P
+      return { context, ...(params || {} as P) }
     }
     app = Sub.for<ObservationAppLayer>()
     const routes = ObservationRoutes(app, createAppRequest)
@@ -63,7 +65,7 @@ describe('observations web controller', function () {
     client = supertest(webApp)
   })
 
-  describe('POST /observations/id', function() {
+  describe('POST /id', function() {
 
     it('allocates an observation id', async function() {
 
@@ -92,6 +94,79 @@ describe('observations web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
+    })
+  })
+
+  describe.only('PUT /observations/{observationId}', function() {
+
+    it('saves the observation for a mod request', async function() {
+
+      const obsId = uniqid()
+      const reqBody = {
+        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        properties: {
+          timestamp: new Date().toISOString(),
+          forms: [
+            { formId: 357, field1: 'new form entry', field2: 'wimwam' },
+            { id: 'updated-form-entry', formId: 246, field1: 'slipslop' }
+          ]
+        }
+      }
+      const mod: ExoObservationMod = {
+        id: obsId,
+        type: 'Feature',
+        geometry: reqBody.geometry as Geometry,
+        properties: {
+          timestamp: new Date(reqBody.properties.timestamp),
+          forms: reqBody.properties.forms
+        },
+      }
+      const appRes: ExoObservation = {
+        id: obsId,
+        eventId: mageEvent.id,
+        user: { id: context.userId, displayName: 'Thor Odinson' },
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: mod.geometry,
+        properties: {
+          timestamp: mod.properties.timestamp,
+          forms: [
+            { ...mod.properties.forms[0], id: uniqid() },
+            mod.properties.forms[1] as FormEntry
+          ]
+        },
+        states: [ { id: uniqid(), name: 'active', userId: uniqid() } ],
+        attachments: []
+      }
+      app.saveObservation(Arg.all()).resolves(AppResponse.success(appRes))
+      const res = await client.put(`${basePath}/events/${mageEvent.id}/observations/${obsId}`)
+        .set('accept', 'application/json')
+        .send(reqBody)
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMimeType)
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(appRes)))
+    })
+
+    it('picks only geometry and properties from the request body', async function() {
+      expect.fail('todo')
+    })
+
+    it('picks event id and observation id only from the path', async function() {
+      expect.fail('todo')
+    })
+
+    it('returns 403 without permission', async function() {
+      expect.fail('todo')
+    })
+
+    it('returns 404 when the observation id does not exist', async function() {
+      expect.fail('todo')
+    })
+
+    it('returns 400 when the observation is invalid', async function() {
+      expect.fail('todo')
     })
   })
 })

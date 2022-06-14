@@ -66,7 +66,7 @@ export type ExoObservationPropertiesMod = Omit<ObservationFeatureProperties, 'fo
 export type ExoFormEntryMod =
   & Partial<Pick<FormEntry, 'id'>>
   & Pick<FormEntry, 'formId'>
-  & { [formFieldName: string]: FormFieldEntry | ExoAttachmentMod[] }
+  & { [formFieldName: string]: FormFieldEntry | ExoAttachmentMod[] | undefined }
 
 export type ExoAttachmentMod = Partial<ExoAttachment> & {
   /**

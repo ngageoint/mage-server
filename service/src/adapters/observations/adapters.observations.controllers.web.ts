@@ -3,7 +3,7 @@ import express from 'express'
 import { ErrEntityNotFound } from '../../app.api/app.api.errors'
 import { mageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { PagingParameters } from '../../entities/entities.global'
-import { AllocateObservationId, AllocateObservationIdRequest, ObservationRequest, SaveObservation } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, AllocateObservationIdRequest, ExoObservationMod, ObservationRequest, SaveObservation, SaveObservationRequest } from '../../app.api/observations/app.api.observations'
 import { ObservationDocument } from '../../models/observation'
 import { EventScopedObservationRepository, ObservationAttrs } from '../../entities/observations/entities.observations'
 import mongoose from 'mongoose'
@@ -26,7 +26,7 @@ export interface EnsureEventScope {
 
 export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: ObservationWebAppRequestFactory): express.Router {
 
-  const routes = express.Router()
+  const routes = express.Router().use(express.json())
 
   routes.route('/id')
     .post(async (req, res, next) => {
@@ -46,10 +46,23 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
     })
 
   routes.route('/:observationId')
-    .put((req, res, next) => {
-
-      // TODO: 404 if saving an observation with an id that does not exist in the observation id collection
-      next()
+    .put(async (req, res, next) => {
+      const body = req.body
+      const mod: ExoObservationMod = {
+        id: req.params.observationId,
+        type: 'Feature',
+        geometry: req.body.geometry,
+        properties: {
+          timestamp: new Date(body.properties.timestamp),
+          forms: body.properties.forms
+        }
+      }
+      const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
+      const appRes = await app.saveObservation(appReq)
+      if (appRes.success) {
+        return res.json(appRes.success)
+      }
+      next(appRes.error)
     })
 
   return routes.use(mageAppErrorHandler)
