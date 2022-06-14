@@ -231,7 +231,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.equal('Body event ID does not match path event ID')
+      expect(res.body).to.deep.equal({ message: 'Body event ID does not match path event ID' })
       app.didNotReceive().saveObservation(Arg.all())
     })
 
@@ -254,7 +254,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.equal('Body observation ID does not match path observation ID')
+      expect(res.body).to.deep.equal({ message: 'Body observation ID does not match path observation ID' })
       app.didNotReceive().saveObservation(Arg.all())
     })
 
@@ -278,7 +278,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.equal(`permission denied: ${appRes.error?.data.permission}`)
+      expect(res.body).to.deep.equal({ message: `permission denied: ${appRes.error?.data.permission}` })
     })
 
     it('returns 404 when the observation id does not exist', async function() {
@@ -301,7 +301,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.equal(`Observation not found: ${obsId}`)
+      expect(res.body).to.deep.equal({ message: `Observation not found: ${obsId}` })
     })
 
     it('returns 400 when the observation is invalid', async function() {
@@ -340,7 +340,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.equal(appRes.error?.message)
+      expect(res.body).to.deep.equal({ message: appRes.error?.message })
       app.received(1).saveObservation(Arg.all())
     })
   })

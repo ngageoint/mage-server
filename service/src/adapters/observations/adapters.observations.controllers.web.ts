@@ -1,5 +1,5 @@
 import express from 'express'
-import { mageAppErrorHandler } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
 import { AllocateObservationId, ExoObservationMod, ObservationRequest, SaveObservation, SaveObservationRequest } from '../../app.api/observations/app.api.observations'
 import { ObservationDocument } from '../../models/observation'
 import { EventScopedObservationRepository, ObservationAttrs } from '../../entities/observations/entities.observations'
@@ -47,7 +47,7 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
       const body = req.body
       const observationId = req.params.observationId
       if (body.hasOwnProperty('id') && body.id !== observationId) {
-        return res.status(400).json('Body observation ID does not match path observation ID')
+        return res.status(400).json({ message: 'Body observation ID does not match path observation ID' })
       }
       const mod: ExoObservationMod = {
         id: observationId,
@@ -60,7 +60,7 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
       }
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
       if (body.hasOwnProperty('eventId') && body.eventId !== appReq.context.mageEvent.id) {
-        return res.status(400).json('Body event ID does not match path event ID')
+        return res.status(400).json({ message: 'Body event ID does not match path event ID' })
       }
       const appRes = await app.saveObservation(appReq)
       if (appRes.success) {
@@ -69,7 +69,7 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
       next(appRes.error)
     })
 
-  return routes.use(mageAppErrorHandler)
+  return routes.use(compatibilityMageAppErrorHandler)
 }
 
 export type ObservationJson = {
