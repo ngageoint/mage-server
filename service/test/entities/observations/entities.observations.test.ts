@@ -796,9 +796,85 @@ describe.only('observation entities', function() {
       expect(observation.states[0].userId).to.equal(attrs.userId)
     })
 
-    it.skip('deep copies and does not reference any values from the source attributes', function() {
+    it('parses date field entries during for the evaulated observation', function() {
 
+      const form: Form = {
+        id: 1,
+        fields: [
+          {
+            id: 1,
+            name: 'parsedDate',
+            required: false,
+            title: 'Parsed Date',
+            type: FormFieldType.DateTime
+          },
+        ],
+        archived: false,
+        color: 'green',
+        name: 'form0',
+        userFields: [],
+      }
+      mageEventAttrs = {
+        ...mageEventAttrs,
+        forms: [ form ]
+      }
+      const mageEvent = new MageEvent(mageEventAttrs)
+      const attrs = makeObservationAttrs(mageEventAttrs.id)
+      const dateEntry1 = new Date(Date.now() - 1000 * 60 * 5)
+      const dateEntry2 = new Date(Date.now() - 1000 * 60 * 3)
+      attrs.properties.forms = [
+        { id: 'entry1', formId: form.id, parsedDate: dateEntry1.toISOString() },
+        { id: 'entry2', formId: form.id, parsedDate: dateEntry2.toISOString() },
+      ]
+      const obs = Observation.evaluate(attrs, mageEvent)
+
+      expect(obs.validation.hasErrors).to.be.false
+      expect(obs.formEntryForId('entry1')?.parsedDate).to.deep.equal(dateEntry1)
+      expect(obs.formEntryForId('entry2')?.parsedDate).to.deep.equal(dateEntry2)
+      expect(attrs.properties.forms[0].parsedDate).to.equal(dateEntry1.toISOString(), 'should not mutate input attrs')
+      expect(attrs.properties.forms[1].parsedDate).to.equal(dateEntry2.toISOString(), 'should not mutate input attrs')
     })
+
+    it('accepts date field entries that are already date instances', function() {
+
+      const form: Form = {
+        id: 1,
+        fields: [
+          {
+            id: 1,
+            name: 'parsedDate',
+            required: false,
+            title: 'Parsed Date',
+            type: FormFieldType.DateTime
+          },
+        ],
+        archived: false,
+        color: 'green',
+        name: 'form0',
+        userFields: [],
+      }
+      mageEventAttrs = {
+        ...mageEventAttrs,
+        forms: [ form ]
+      }
+      const mageEvent = new MageEvent(mageEventAttrs)
+      const attrs = makeObservationAttrs(mageEventAttrs.id)
+      const dateEntry1 = new Date(Date.now() - 1000 * 60 * 5)
+      const dateEntry2 = new Date(Date.now() - 1000 * 60 * 3)
+      attrs.properties.forms = [
+        { id: 'entry1', formId: form.id, parsedDate: dateEntry1 },
+        { id: 'entry2', formId: form.id, parsedDate: dateEntry2 },
+      ]
+      const obs = Observation.evaluate(attrs, mageEvent)
+
+      expect(obs.validation.hasErrors).to.be.false
+      expect(obs.formEntryForId('entry1')?.parsedDate).to.deep.equal(dateEntry1)
+      expect(obs.formEntryForId('entry2')?.parsedDate).to.deep.equal(dateEntry2)
+      expect(attrs.properties.forms[0].parsedDate).to.deep.equal(dateEntry1, 'should not mutate input attrs')
+      expect(attrs.properties.forms[1].parsedDate).to.deep.equal(dateEntry2, 'should not mutate input attrs')
+    })
+
+    it.skip('deep copies and does not reference any values from the source attributes')
   })
 
   describe('observation mutations', function() {
@@ -1713,7 +1789,7 @@ describe.only('observation entities', function() {
           expect(mod).to.be.instanceOf(AttachmentNotFoundError)
           expect(before.validation.hasErrors, 'before should be valid').to.be.false
           expect(before.attachments).to.have.length(1)
-          expect(before.attachments[0]).to.deep.equal(attachments[0])
+          expect(copyAttachmentAttrs(before.attachments[0])).to.deep.equal(copyAttachmentAttrs(attachments[0]))
         })
 
         it('TODO: adds an attachment removed event to the observation')

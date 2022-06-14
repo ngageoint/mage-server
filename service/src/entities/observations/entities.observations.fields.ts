@@ -3,7 +3,7 @@ import { FieldConstraintKey, FormFieldEntry } from './entities.observations'
 
 export interface SimpleFieldValidationResult<Failed, Success> {
   failedBecauseTheEntry(reason: string, constraint?: FieldConstraintKey): Failed
-  succeeded(): Success
+  succeeded(parsed?: FormFieldEntry): Success
 }
 
 export interface SimpleFieldValidation {

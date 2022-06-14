@@ -66,7 +66,7 @@ export interface FormEntry {
   [formFieldName: string]: FormFieldEntry
 }
 
-export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry
+export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry | Date
 export type FormFieldEntry = FormFieldEntryItem | FormFieldEntryItem[] | null
 
 export type AttachmentId = string
@@ -216,6 +216,7 @@ export class Observation implements Readonly<ObservationAttrs> {
    * @param mageEvent
    */
   static evaluate(attrs: ObservationAttrs, mageEvent: MageEvent): Observation {
+    attrs = copyObservationAttrs(attrs)
     const validation = validateObservation(attrs, mageEvent)
     return new Observation(ObservationConstructionToken, attrs, mageEvent, validation)
   }
@@ -970,17 +971,17 @@ interface FormFieldValidationContext {
   mageEvent: MageEvent,
 }
 
-function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, null> {
+function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, FormFieldEntry | undefined> {
   return {
     failedBecauseTheEntry(reason: string, constraint: FieldConstraintKey = FieldConstraintKey.Value): FormFieldValidationError {
       return new FormFieldValidationError({ fieldName: context.field.name, message: `${context.field.name} ${reason}`, constraint: constraint })
     },
-    succeeded(): null { return null }
+    succeeded(parsed?: FormFieldEntry): typeof parsed { return parsed }
   }
 }
 
 interface FormFieldValidationRule {
-  (context: FormFieldValidationContext): FormFieldValidationError | null
+  (context: FormFieldValidationContext): FormFieldValidationError | FormFieldEntry | undefined
 }
 
 function validateRequiredThen(rule: FormFieldValidationRule): FormFieldValidationRule {
@@ -1026,9 +1027,12 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
   activeFields.forEach(field => {
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
-    const fieldError = FieldTypeValidationRules[field.type](fieldValidation)
-    if (fieldError) {
-      formEntryError.addFieldError(fieldError)
+    const resultEntry = FieldTypeValidationRules[field.type](fieldValidation)
+    if (resultEntry instanceof FormFieldValidationError) {
+      formEntryError.addFieldError(resultEntry)
+    }
+    else if (resultEntry !== void(0)) {
+      formEntry[field.name] = resultEntry
     }
   })
 }
