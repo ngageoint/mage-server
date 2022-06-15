@@ -1,10 +1,7 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoObservationMod, ObservationRequest, SaveObservation, SaveObservationRequest } from '../../app.api/observations/app.api.observations'
-import { ObservationDocument } from '../../models/observation'
-import { EventScopedObservationRepository, ObservationAttrs } from '../../entities/observations/entities.observations'
-import mongoose from 'mongoose'
-import { docToEntity } from './adapters.observations.db.mongoose'
+import { AllocateObservationId, ExoAttachment, ExoObservation, ExoObservationMod, ObservationRequest, SaveObservation, SaveObservationRequest } from '../../app.api/observations/app.api.observations'
+import { EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 
 
@@ -64,7 +61,7 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
       }
       const appRes = await app.saveObservation(appReq)
       if (appRes.success) {
-        return res.json(appRes.success)
+        return res.json(jsonForObservation(appRes.success, `${req.getRoot()}${req.baseUrl}`))
       }
       next(appRes.error)
     })
@@ -72,11 +69,26 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
   return routes.use(compatibilityMageAppErrorHandler)
 }
 
-export type ObservationJson = {
-
+export type WebObservation = Omit<ExoObservation, 'attachments' | 'state'> & {
+  url: string
+  state?: WebObservationState
+  attachments: WebAttachment[]
 }
 
-export function jsonForObservation(x: Partial<ObservationAttrs | ObservationDocument>, eventId: MageEventId): ObservationJson {
-  const obs = x instanceof mongoose.Document ? docToEntity(x as ObservationDocument, eventId) : x as Partial<ObservationAttrs>
-  return obs
+export type WebObservationState = ObservationState & {
+  url: string
+}
+
+export type WebAttachment = ExoAttachment & {
+  url: string
+}
+
+export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObservation {
+  const obsUrl = `${baseUrl}/${o.id}`
+  return {
+    ...o,
+    url: obsUrl,
+    state: o.state ? { ...o.state, url: `${obsUrl}/states/${o.state.id as string}` } : void(0),
+    attachments: o.attachments.map(a => ({ ...a, url: `${obsUrl}/attachments/${a.id}` })),
+  }
 }

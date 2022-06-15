@@ -7,10 +7,10 @@ import uniqid from 'uniqid'
 import _ from 'lodash'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
-import { PermissionDeniedError, permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
-import { ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
-import { ExoObservation, exoObservationFor, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
+import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
+import { jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
+import { EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
 
 const hostUrl = 'http://mage.test'
@@ -63,6 +63,46 @@ describe.only('observations web controller', function () {
       })
       .use(`${basePath}/events/:eventId/observations`, routes)
     client = supertest(webApp)
+  })
+
+  describe('observation response json', function() {
+
+    it('is exo observation with urls added', function() {
+
+      const obs: ExoObservation = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        user: { id: context.userId, displayName: 'Thor Odinson' },
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: [
+            { id: uniqid(), formId: 6, field1: 'lutrut' },
+          ]
+        },
+        state: { id: uniqid(), name: 'active', userId: uniqid() },
+        favoriteUserIds: [ uniqid(), uniqid() ],
+        attachments: [
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false }
+        ]
+      }
+      const obsWeb = jsonForObservation(obs, `https://test.mage/events/${mageEvent.id}/observations`)
+      const withoutUrls = _.omit(
+        {
+          ...obsWeb,
+          state: _.omit(obsWeb.state, 'url'),
+          attachments: obsWeb.attachments.map(x => _.omit(x, 'url'))
+        }, 'url')
+
+      expect(withoutUrls).to.deep.equal(obs)
+      expect(obsWeb.url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}`)
+      expect(obsWeb.state?.url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/states/${obs.state?.id as string}`)
+      expect(obsWeb.attachments[0].url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/attachments/${obs.attachments[0].id}`)
+      expect(obsWeb.attachments[1].url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/attachments/${obs.attachments[1].id}`)
+    })
   })
 
   describe('POST /id', function() {
@@ -147,7 +187,7 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(appRes)))
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(jsonForObservation(appRes, `${baseUrl}/events/${mageEvent.id}/observations`))))
       app.received(1).saveObservation(Arg.all())
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
@@ -207,12 +247,12 @@ describe.only('observations web controller', function () {
 
       expect(res.status).to.equal(200)
       expect(res.type).to.match(jsonMediaType)
-      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(appRes)))
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(jsonForObservation(appRes, `${baseUrl}/events/${mageEvent.id}/observations`))))
       app.received(1).saveObservation(Arg.all())
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
 
-    it('picks event id only from the path', async function() {
+    it('uses event id only from the path', async function() {
 
       const obsId = uniqid()
       const reqBody = {
@@ -235,7 +275,7 @@ describe.only('observations web controller', function () {
       app.didNotReceive().saveObservation(Arg.all())
     })
 
-    it('picks observation id only from the path', async function() {
+    it('uses observation id only from the path', async function() {
 
       const obsIdInPath = uniqid()
       const reqBody = {

@@ -659,7 +659,6 @@ describe.only('observations use case interactions', function() {
         obsRepo.didNotReceive().save(Arg.all())
       })
 
-
       it('preserves creator user id and device id', async function() {
 
         const modUserId = uniqid()
