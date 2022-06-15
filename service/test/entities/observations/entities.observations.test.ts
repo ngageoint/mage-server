@@ -1,10 +1,11 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
 import { Point } from 'geojson'
 import _ from 'lodash'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
+import uniqid from 'uniqid'
 
 function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): ObservationAttrs {
   const eventId = typeof mageEvent === 'object' ? mageEvent.id : mageEvent
@@ -223,6 +224,45 @@ describe.only('observation entities', function() {
         expect(invalid.hasErrors).to.equal(true)
         expect(invalid.totalFormCountError?.constraint).to.equal(MaxFormsConstraint)
         expect(invalid.totalFormCountError?.constraintCount).to.equal(Number(mageEventAttrs.maxObservationForms))
+      })
+
+      it('fails with fewer entries than the form min constraint', function() {
+
+        mageEventAttrs.forms[0].min = 1
+        let o = makeObservationAttrs(mageEventAttrs.id)
+        o.properties.forms = []
+        let invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.equal(true)
+        expect(invalid.formCountErrors).to.have.length(1)
+        expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
+        expect(invalid.formCountErrors[0][1].constraint).to.equal(MinFormsConstraint)
+
+        mageEventAttrs.forms[0].min = 2
+        o = makeObservationAttrs(mageEventAttrs.id)
+        o.properties.forms = [ { id: uniqid(), formId: mageEventAttrs.forms[0].id } ]
+        invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.equal(true)
+        expect(invalid.formCountErrors).to.have.length(1)
+        expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
+        expect(invalid.formCountErrors[0][1].constraint).to.equal(MinFormsConstraint)
+      })
+
+      it('fails with more entries than the form max constraint', function() {
+
+        mageEventAttrs.forms[0].max = 1
+        const o = makeObservationAttrs(mageEventAttrs.id)
+        o.properties.forms = [
+          { id: uniqid(), formId: mageEventAttrs.forms[0].id },
+          { id: uniqid(), formId: mageEventAttrs.forms[0].id }
+        ]
+        const invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.equal(true)
+        expect(invalid.formCountErrors).to.have.length(1)
+        expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
+        expect(invalid.formCountErrors[0][1].constraint).to.equal(MaxFormsConstraint)
       })
 
       it('validates all the field types', function() {
@@ -1073,15 +1113,68 @@ describe.only('observation entities', function() {
             field1: 'form entry after'
           }
         ])
-        // TODO: form entry udpated event
+        // TODO: form entry udpated event?
       })
 
-      it.skip('removes form entries', function() {
-        // TODO: form entry removed event
-        // TODO: consider attachments of removed form entries
+      it('removes form entries', function() {
+
+        // TODO: form entry removed event?
+
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.properties.forms = [
+          {
+            id: 'formEntry1',
+            formId: form1.id,
+            field1: 'form entry 1 before'
+          },
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+            field1: 'form entry 2 before'
+          }
+        ]
+        const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
+        const afterAttrs = copyObservationAttrs(beforeAttrs)
+        afterAttrs.properties.forms = [
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+            field1: 'form entry 2 after'
+          }
+        ]
+        const after = Observation.assignTo(before, afterAttrs) as Observation
+
+        const beforeUnchanged = _.omit(before, 'properties.forms')
+        const afterUnchanged = _.omit(before, 'properties.forms')
+        expect(afterUnchanged).to.deep.equal(beforeUnchanged)
+        expect(before.properties.forms).to.deep.equal([
+          {
+            id: 'formEntry1',
+            formId: form1.id,
+            field1: 'form entry 1 before'
+          },
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+            field1: 'form entry 2 before'
+          }
+        ])
+        expect(after.validation.hasErrors).to.be.false
+        expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
+        expect(after.properties.forms).to.deep.equal([
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+            field1: 'form entry 2 after'
+          }
+        ])
       })
 
-      it.skip('adds attachments', function() {
+      it('removes child attachments of removed form entries', function() {
+        expect.fail('todo')
+      })
+
+      it.skip('TODO: adds attachments', function() {
         // TODO: attachment added event
       })
 
@@ -1242,6 +1335,131 @@ describe.only('observation entities', function() {
 
       it.skip('TODO: provides mutation functions for adding, updating, and removing form entries')
       it.skip('TODO: fails if the form entry ids are not unique on the observation')
+
+      describe('removing form entries', function() {
+
+        let mageEvent: MageEvent
+        let form1: Form
+        let form2: Form
+
+        beforeEach(function() {
+          form1 = {
+            id: 1,
+            name: 'Form 1',
+            fields: [
+              {
+                id: 1,
+                name: 'form1Text',
+                title: 'Form 1 Text',
+                type: FormFieldType.Text,
+                required: false,
+              },
+              {
+                id: 2,
+                name: 'form1Attachment',
+                title: 'Form 1 Attachment',
+                type: FormFieldType.Attachment,
+                required: false,
+              },
+            ],
+            userFields: [],
+            min: 1,
+            color: '#aabbcc',
+            archived: false
+          }
+          form2 = {
+            id: 2,
+            name: 'Form 2',
+            fields: [
+              {
+                id: 1,
+                name: 'form2Text',
+                title: 'Form 2 Text',
+                type: FormFieldType.Text,
+                required: false,
+              },
+              {
+                id: 2,
+                name: 'form2Attachment',
+                title: 'Form 2 Attachment',
+                type: FormFieldType.Attachment,
+                required: false,
+              },
+            ],
+            userFields: [],
+            color: '#aabbcc',
+            archived: false
+          }
+          mageEventAttrs.forms = [ form1, form2 ]
+          mageEvent = new MageEvent(mageEventAttrs)
+        })
+
+        it('removes the specified entry', function() {
+
+          const beforeAttrs = makeObservationAttrs(mageEvent)
+          beforeAttrs.properties.forms = [
+            {
+              id: 'formEntry1',
+              formId: form1.id,
+              form1Text: 'form entry 1'
+            },
+            {
+              id: 'formEntry2',
+              formId: form1.id,
+              form1Text: 'form entry 2'
+            }
+          ]
+          const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
+          const after = removeFormEntry(before, before.formEntries[0].id)
+
+          expect(after.validation.hasErrors).to.be.false
+          expect(after.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
+          expect(after.properties.forms).to.deep.equal([
+            {
+              id: 'formEntry2',
+              formId: form1.id,
+              form1Text: 'form entry 2'
+            }
+          ])
+        })
+
+        it('removes attachments that reference removed form entries', function() {
+
+          const beforeAttrs = makeObservationAttrs(mageEvent)
+          beforeAttrs.properties.forms = [
+            {
+              id: 'formEntry1',
+              formId: form1.id,
+              form1Text: 'form entry 1'
+            },
+            {
+              id: 'formEntry2',
+              formId: form1.id,
+              form1Text: 'form entry 2'
+            }
+          ]
+          beforeAttrs.attachments = [
+            { id: uniqid(), observationFormId: 'formEntry1', fieldName: 'form1Attachment', name: 'a1.png', oriented: false, thumbnails: [] },
+            { id: uniqid(), observationFormId: 'formEntry1', fieldName: 'form1Attachment', name: 'a2.png', oriented: false, thumbnails: [] },
+            { id: uniqid(), observationFormId: 'formEntry2', fieldName: 'form1Attachment', name: 'a3.png', oriented: false, thumbnails: [] },
+          ]
+          const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
+          const after1 = removeFormEntry(before, 'formEntry1')
+          const after2 = removeFormEntry(after1, 'formEntry2')
+
+          expect(after1.formEntries).to.deep.equal([
+            { id: 'formEntry2', formId: form1.id, form1Text: 'form entry 2' }
+          ])
+          expect(after1.attachments).to.deep.equal([
+            copyAttachmentAttrs({ id: before.attachments[2].id, observationFormId: 'formEntry2', fieldName: 'form1Attachment', name: 'a3.png', oriented: false, thumbnails: [] })
+          ])
+          console.info('INVALID --- \n', validationResultMessage(after2.validation))
+          expect(after1.validation.hasErrors).to.be.false
+          expect(after2.formEntries).to.be.empty
+          expect(after2.attachments).to.be.empty
+          expect(after2.validation.hasErrors).to.be.true
+        })
+      })
     })
 
     describe('attachments', function() {

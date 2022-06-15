@@ -332,7 +332,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     return this.#attachmentsById.get(id) || null
   }
 
-  attachmentsFor(fieldName: string, formEntryId: FormEntryId): Attachment[] {
+  attachmentsForField(fieldName: string, formEntryId: FormEntryId): Attachment[] {
     return attachmentsForField(fieldName, formEntryId, this)
   }
 }
@@ -555,6 +555,14 @@ export function attachmentsForField(field: FormField | string, formEntry: FormEn
   return observationAttrs.attachments.filter(x => x.fieldName === fieldName && x.observationFormId === formEntryId)
 }
 
+export function removeFormEntry(observation: Observation, formEntryId: FormEntryId): Observation {
+  const mod = copyObservationAttrs(observation)
+  const targetPos = observation.formEntries.findIndex(x => x.id === formEntryId)
+  mod.properties.forms.splice(targetPos, 1)
+  mod.attachments = observation.attachments.filter(x => x.observationFormId !== formEntryId)
+  return Observation.assignTo(observation, mod) as Observation
+}
+
 export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 
@@ -586,7 +594,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   }
   const mod = copyObservationAttrs(observation)
   mod.attachments = [ ...mod.attachments, attachment ]
-  return Observation.evaluate(mod, observation.mageEvent)
+  return Observation.assignTo(observation, mod) as Observation
 }
 
 /**
@@ -621,7 +629,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   const attachments = before.concat(patched, after)
   patchedObservation.attachments = Object.freeze(attachments)
   patchedObservation.lastModified = new Date(patched.lastModified)
-  return Observation.evaluate(patchedObservation, observation.mageEvent)
+  return Observation.assignTo(observation, patchedObservation) as Observation
 }
 
 export function removeAttachment(observation: Observation, attachmentId: AttachmentId): Observation | AttachmentNotFoundError {
@@ -903,7 +911,7 @@ function validateObservationFormEntries(validation: ObservationValidationContext
       validation.addFormEntryError(formEntryError)
     }
     return formEntryCounts
-  }, new Map<FormId, number>())
+  }, new Map<FormId, number>(mageEvent.forms.map(x => [ x.id, 0 ])))
   let totalActiveFormEntryCount = 0
   for (const [ formId, formEntryCount ] of formEntryCounts) {
     const form = mageEvent.formFor(formId)!
