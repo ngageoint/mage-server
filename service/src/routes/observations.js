@@ -307,41 +307,41 @@ module.exports = function(app, security) {
     next();
   }
 
-  app.put(
-    '/api/events/:eventId/observations/:existingObservationId',
-    passport.authenticate('bearer'),
-    fetchExistingObservation,
-    validateCreateOrUpdateAccess,
-    populateObservation,
-    populateUserFields,
-    function (req, res, next) {
-      const existingObservation = req.existingObservation;
-      const { forms: reqForms = [] } = req.observation.properties || {}
-      // TODO: why is this a map() that returns nothing?
-      reqForms.map(reqForm => {
-        if (existingObservation) {
-          const { forms: exisitingForms = [] } = existingObservation.properties || {};
-          const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === reqForm.id);
-          if (exisitingForm) {
-            reqForm._id = exisitingForm._id;
-            delete reqForm.id;
-          }
-        }
-        return reqForm;
-      });
+  // app.put(
+  //   '/api/events/:eventId/observations/:existingObservationId',
+  //   passport.authenticate('bearer'),
+  //   fetchExistingObservation,
+  //   validateCreateOrUpdateAccess,
+  //   populateObservation,
+  //   populateUserFields,
+  //   function (req, res, next) {
+  //     const existingObservation = req.existingObservation;
+  //     const { forms: reqForms = [] } = req.observation.properties || {}
+  //     // TODO: why is this a map() that returns nothing?
+  //     reqForms.map(reqForm => {
+  //       if (existingObservation) {
+  //         const { forms: exisitingForms = [] } = existingObservation.properties || {};
+  //         const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === reqForm.id);
+  //         if (exisitingForm) {
+  //           reqForm._id = exisitingForm._id;
+  //           delete reqForm.id;
+  //         }
+  //       }
+  //       return reqForm;
+  //     });
 
-      new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
-        if (err) return next(err);
+  //     new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
+  //       if (err) return next(err);
 
-        if (!updatedObservation) {
-          return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
-        }
+  //       if (!updatedObservation) {
+  //         return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
+  //       }
 
-        const response = observationXform.transform(updatedObservation, transformOptions(req));
-        res.json(response);
-      });
-    }
-  );
+  //       const response = observationXform.transform(updatedObservation, transformOptions(req));
+  //       res.json(response);
+  //     });
+  //   }
+  // );
 
   app.get(
     '/api/events/:eventId/observations/(:observationId).zip',
