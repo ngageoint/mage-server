@@ -86,10 +86,11 @@ describe.only('observations web controller', function () {
         state: { id: uniqid(), name: 'active', userId: uniqid() },
         favoriteUserIds: [ uniqid(), uniqid() ],
         attachments: [
-          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false }
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false, contentStored: true },
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false, contentStored: true }
         ]
       }
-      const obsWeb = jsonForObservation(obs, `https://test.mage/events/${mageEvent.id}/observations`)
+      const obsWeb = jsonForObservation(obs, `${baseUrl}/events/${mageEvent.id}/observations`)
       const withoutUrls = _.omit(
         {
           ...obsWeb,
@@ -102,6 +103,30 @@ describe.only('observations web controller', function () {
       expect(obsWeb.state?.url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/states/${obs.state?.id as string}`)
       expect(obsWeb.attachments[0].url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/attachments/${obs.attachments[0].id}`)
       expect(obsWeb.attachments[1].url).to.equal(`${baseUrl}/events/${mageEvent.id}/observations/${obs.id}/attachments/${obs.attachments[1].id}`)
+    })
+
+    it('omits attachment url if content is not stored', function() {
+
+      const obs: ExoObservation = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        user: { id: context.userId, displayName: 'Thor Odinson' },
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 23, 45 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: []
+        },
+        favoriteUserIds: [],
+        attachments: [
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field2', oriented: false, contentStored: false }
+        ]
+      }
+      const obsWeb = jsonForObservation(obs, `https://test.mage/events/${mageEvent.id}/observations`)
+
+      expect(obsWeb.attachments[0].url).to.be.undefined
     })
   })
 
@@ -137,7 +162,7 @@ describe.only('observations web controller', function () {
     })
   })
 
-  describe.only('PUT /observations/{observationId}', function() {
+  describe('PUT /observations/{observationId}', function() {
 
     it('saves the observation for a mod request', async function() {
 

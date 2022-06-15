@@ -47,7 +47,9 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' 
   attachments: ExoAttachment[]
 }
 
-export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'>
+export type ExoAttachment = Omit<Attachment, 'thumbnails' | 'contentLocator'> & {
+  contentStored: boolean
+}
 
 export interface ExoObservationImportantFlag extends ObservationImportantFlag {
   user?: ExoObservationUserLite
@@ -99,7 +101,8 @@ export function exoObservationFor(from: ObservationAttrs, users?: { creator?: Us
 }
 
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
-  return _.omit(from, 'thumbnails', 'contentLocator')
+  const { thumbnails, contentLocator, ...exo } = from
+  return { ...exo, contentStored: !!from.contentLocator }
 }
 
 export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {

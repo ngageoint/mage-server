@@ -91,12 +91,14 @@ describe.only('observations use case interactions', function() {
           observationFormId: from.attachments[0].observationFormId,
           fieldName: 'field1',
           oriented: false,
+          contentStored: false,
         },
         {
           id: from.attachments[1].id,
           observationFormId: from.attachments[1].observationFormId,
           fieldName: 'field10',
           oriented: false,
+          contentStored: false,
         }
       ])
     })
@@ -292,6 +294,31 @@ describe.only('observations use case interactions', function() {
 
       expect(exo).not.to.have.property('states')
       expect(exo.state).to.deep.equal({ id: states[0].id, name: 'archived', userId: states[0].userId })
+    })
+
+    it('sets content stored flag on attachments according to presence of content locator', async function() {
+
+      const from: ObservationAttrs = {
+        id: uniqid(),
+        eventId: 987,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        states: [],
+        favoriteUserIds: [],
+        attachments: [
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field1', oriented: false, thumbnails: [], contentLocator: void(0) },
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field1', oriented: false, thumbnails: [], contentLocator: 'over there' },
+          { id: uniqid(), observationFormId: uniqid(), fieldName: 'field1', oriented: false, thumbnails: [] },
+        ]
+      }
+      const exo = api.exoObservationFor(from)
+
+      expect(exo.attachments[0].contentStored).to.be.false
+      expect(exo.attachments[1].contentStored).to.be.true
+      expect(exo.attachments[2].contentStored).to.be.false
     })
   })
 

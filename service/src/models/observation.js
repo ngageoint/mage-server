@@ -86,7 +86,12 @@ function transformAttachment(attachment, observation) {
   delete attachment._id;
   delete attachment.thumbnails;
 
-  // TODO: is this actually checking if the attachment is stored?
+  /*
+  TODO: is this actually checking if the attachment is stored?
+  ANSWER: yes it is. the clients depend on it. the web client will not upload
+    if the url property is present on an attachment.
+    stop sending absolute urls to the clients.
+  */
   if (attachment.relativePath) {
     attachment.url = [observation.url, "attachments", attachment.id].join("/");
   }

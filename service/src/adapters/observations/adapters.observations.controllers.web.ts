@@ -80,7 +80,7 @@ export type WebObservationState = ObservationState & {
 }
 
 export type WebAttachment = ExoAttachment & {
-  url: string
+  url?: string
 }
 
 export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObservation {
@@ -89,6 +89,6 @@ export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObser
     ...o,
     url: obsUrl,
     state: o.state ? { ...o.state, url: `${obsUrl}/states/${o.state.id as string}` } : void(0),
-    attachments: o.attachments.map(a => ({ ...a, url: `${obsUrl}/attachments/${a.id}` })),
+    attachments: o.attachments.map(a => ({ ...a, url: a.contentStored ? `${obsUrl}/attachments/${a.id}` : void(0) })),
   }
 }
