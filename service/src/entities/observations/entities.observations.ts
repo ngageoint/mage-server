@@ -240,9 +240,11 @@ export class Observation implements Readonly<ObservationAttrs> {
     if (update.eventId !== target.eventId) {
       return ObservationUpdateError.eventIdMismatch(target.eventId, update.eventId)
     }
-    update = copyObservationAttrs(update)
-    update.createdAt = new Date(target.createdAt)
-    update.lastModified = new Date()
+    update = {
+      ...update,
+      createdAt: new Date(target.createdAt),
+      lastModified: new Date()
+    }
     return Observation.evaluate(update, target.mageEvent)
   }
 
@@ -341,7 +343,6 @@ export interface ObservationValidationResult {
   readonly hasErrors: boolean
   readonly coreAttrsErrors: { readonly [attr in ObservationValidationCoreAttrKey]?: string }
   readonly formCountErrors: readonly [ FormId, FormCountError ][]
-
   readonly formEntryErrors: readonly [ number, FormEntryValidationError ][]
   /**
    * This list contains attachment error map entries where the key is the
