@@ -1170,8 +1170,12 @@ describe.only('observation entities', function() {
         ])
       })
 
-      it('removes child attachments of removed form entries', function() {
-        expect.fail('todo')
+      it.skip('removes child attachments of removed form entries', function() {
+        /*
+        TODO: better to just let the observation become invalid if assigning
+        attrs with removed form enties and orphaned attachments?  but then is
+        Observation.assignTo() really worth antyhing?
+        */
       })
 
       it.skip('TODO: adds attachments', function() {
