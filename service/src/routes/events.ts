@@ -573,27 +573,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     }
   );
 
-  app.get(
-    '/api/events/:eventId/teams',
-    passport.authenticate('bearer'),
-    middlewareAuthorizeAccess('READ_EVENT_ALL', 'read'),
-    determineReadAccess,
-    function (req, res, next) {
-      let populate: string[] | null = null
-      if (typeof req.query.populate === 'string') {
-        populate = req.query.populate.split(",");
-      }
-      EventModel.getTeams(req.event!._id, {populate: populate}, function(err: any, teams: any) {
-        if (err) {
-          return next(err);
-        }
-        res.json(teams.map(function(team: any) {
-          return team.toObject({access: req.access});
-        }));
-      });
-    }
-  );
-
   app.delete(
     '/api/events/:eventId/teams/:teamId',
     passport.authenticate('bearer'),
