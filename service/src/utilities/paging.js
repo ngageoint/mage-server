@@ -61,4 +61,5 @@ function countAndPage(countQuery, query, options, dataKey) {
 module.exports = {
   page,
   countAndPage,
+  PageInfo
 };
