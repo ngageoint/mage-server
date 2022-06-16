@@ -3,28 +3,41 @@ import { PagingParameters } from '../../entities/entities.global'
 
 type EntityReference = { id: string | number }
 
-type DocumentMapping<D extends mongoose.Document, E extends object> = (doc: D) => E
-type EntityMapping<D extends mongoose.Document, E extends object> = (entity: Partial<E>) => any
+/**
+ * Map Mongoose `Document` instances to plain entity objects.
+ */
+export type DocumentMapping<D extends mongoose.Document, E extends object> = (doc: D) => E
+/**
+ * Map entities to objects suitable to create Mongoose `Document` instances, as
+ * in `new mongoose.Model(stub)`.
+ */
+export type EntityMapping<D extends mongoose.Document, E extends object> = (entity: Partial<E>) => any
 
-function createDefaultDocMapping<D extends mongoose.Document, E extends object>(): DocumentMapping<D, E> {
+/**
+ * Return a document mapping that calls `toJSON()` on the given `Document`
+ * instance and returns the result.
+ */
+export function createDefaultDocMapping<D extends mongoose.Document, E extends object>(): DocumentMapping<D, E> {
   return (d): any => d.toJSON()
 }
 
-function createDefaultEntityMapping<D extends mongoose.Document, E extends object>(): EntityMapping<D, E> {
+/**
+ * Return an entity mapping that simply returns the given entity object as is.
+ */
+export function createDefaultEntityMapping<D extends mongoose.Document, E extends object>(): EntityMapping<D, E> {
   return e => e as any
-}
-
-export async function waitForMongooseConnection(): Promise<mongoose.Connection> {
-  throw new Error('unimplemented')
 }
 
 /**
  * * Type parameter `D` is a subtype of `mongoose.Document`
  * * Type parameter `M` is a subtpye of `mongoose.Model<D>` that creates
  *   instances of type `D`.
- * * Type parameter `E` is the entity type, which is typically a plain object
- *   interface, and is the type that repository queries return using
- *   `entityForDocuent`
+ * * Type parameter `Attrs` is the entity attributes type, which is typically a
+ *   plain object interface, and is the type that repository queries return
+ *   using `entityForDocuent()`.
+ * * Type parameter `Entity` is an optional, typically more objected-oriented
+ *   entity type that provides extra functionality beyond just the raw data
+ *   of the `Attrs` type.
  */
 export class BaseMongooseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, Attrs extends object, Entity extends object = Attrs> {
 
@@ -53,7 +66,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     return entities
   }
 
-  async findById(id: any): Promise<Entity | null> {
+  async findById(id: any): Promise<Attrs | null> {
     const doc = await this.model.findById(id)
     return doc ? this.entityForDocument(doc) : null as any
   }

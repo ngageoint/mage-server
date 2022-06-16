@@ -1,4 +1,4 @@
-enum DevicePermission {
+export enum DevicePermission {
   CREATE_DEVICE = 'CREATE_DEVICE',
   READ_DEVICE = 'READ_DEVICE',
   UPDATE_DEVICE = 'UPDATE_DEVICE',
@@ -14,7 +14,7 @@ export enum UsersPermission {
   UPDATE_USER_PASSWORD = 'UPDATE_USER_PASSWORD'
 }
 
-enum RolePermission {
+export enum RolePermission {
   CREATE_ROLE = 'CREATE_ROLE',
   READ_ROLE = 'READ_ROLE',
   UPDATE_ROLE = 'UPDATE_ROLE',
@@ -29,7 +29,7 @@ export enum MageEventPermission {
   DELETE_EVENT = 'DELETE_EVENT'
 }
 
-enum LayerPermission {
+export enum LayerPermission {
   READ_LAYER_ALL = 'READ_LAYER_ALL',
   READ_LAYER_EVENT = 'READ_LAYER_EVENT',
   UPDATE_LAYER = 'UPDATE_LAYER',
@@ -37,7 +37,7 @@ enum LayerPermission {
   DELETE_LAYER = 'DELETE_LAYER'
 }
 
-enum ObservationPermission {
+export enum ObservationPermission {
   READ_OBSERVATION_ALL = 'READ_OBSERVATION_ALL',
   READ_OBSERVATION_EVENT = 'READ_OBSERVATION_EVENT',
   READ_OBSERVATION_TEAM = 'READ_OBSERVATION_TEAM',
@@ -50,7 +50,7 @@ enum ObservationPermission {
   DELETE_OBSERVATION = 'DELETE_OBSERVATION'
 }
 
-enum LocationPermission {
+export enum LocationPermission {
   READ_LOCATION_ALL = 'READ_LOCATION_ALL',
   READ_LOCATION_EVENT = 'READ_LOCATION_EVENT',
   READ_LOCATION_TEAM = 'READ_LOCATION_TEAM',
@@ -63,14 +63,14 @@ enum LocationPermission {
   DELETE_LOCATION = 'DELETE_LOCATION'
 }
 
-enum TeamPermission {
+export enum TeamPermission {
   CREATE_TEAM = 'CREATE_TEAM',
   READ_TEAM = 'READ_TEAM',
   UPDATE_TEAM = 'UPDATE_TEAM',
   DELETE_TEAM = 'DELETE_TEAM'
 }
 
-enum SettingPermission {
+export enum SettingPermission {
   READ_SETTINGS = 'READ_SETTINGS',
   UPDATE_SETTINGS = 'UPDATE_SETTINGS'
 }
@@ -103,7 +103,18 @@ export const allPermissions = Object.freeze({
   ...StaticIconPermission
 })
 
-export type AnyPermission = keyof typeof allPermissions
+export type AnyPermission =
+  | DevicePermission
+  | UsersPermission
+  | RolePermission
+  | MageEventPermission
+  | LayerPermission
+  | ObservationPermission
+  | LocationPermission
+  | TeamPermission
+  | SettingPermission
+  | FeedsPermission
+  | StaticIconPermission
 
 const allPermissionsList = Object.freeze(Object.values(allPermissions))
 

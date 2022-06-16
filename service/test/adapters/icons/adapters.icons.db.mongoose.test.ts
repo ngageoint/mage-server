@@ -433,16 +433,13 @@ describe('static icon mongoose repository', function() {
           expect(lazy.resolvedTimestamp).to.be.undefined
           expect(repo.entityForDocument(lazyDoc!)).to.deep.equal(lazy)
 
-          let fetchResolved = false
           let resolveFetch = () => {}
           const content = Readable.from('')
-          const fetch = function(resolve: (x: NodeJS.ReadableStream) => any): any {
+          const fetchPromise = new Promise(function(resolve: (x: NodeJS.ReadableStream) => any): any {
             resolveFetch = () => {
-              fetchResolved = true
               resolve(content)
             }
-          }
-          const fetchPromise = new Promise(fetch)
+          })
           scheme1.resolveContent(Arg.sameStringValueAs(sourceUrl)).returns(fetchPromise)
           contentStore.putContent(Arg.all()).resolves()
           const eager = await repo.findOrImportBySourceUrl(sourceUrl, StaticIconImportFetch.Eager)
@@ -450,20 +447,15 @@ describe('static icon mongoose repository', function() {
 
           expect(eager).to.deep.equal(lazy)
           expect(repo.entityForDocument(eagerDoc!)).to.deep.equal(eager)
-          expect(fetchResolved).to.be.false
           scheme1.received(1).resolveContent(Arg.sameStringValueAs(sourceUrl))
           contentStore.didNotReceive().putContent(Arg.all())
 
           resolveFetch()
           await fetchPromise
 
-          let updatedDoc = await model.findById(iconId)
-
-          expect(repo.entityForDocument(updatedDoc!)).to.deep.equal(lazy)
-          expect(fetchResolved).to.equal(true)
           contentStore.received(1).putContent(Arg.deepEquals(lazy) as StaticIcon, content)
 
-          updatedDoc = await new Promise((resolve) => {
+          const updatedDoc = await new Promise<StaticIconDocument>((resolve) => {
             setTimeout(function check() {
               model.findById(iconId).then(x => {
                 if (typeof x?.resolvedTimestamp === 'number') {
@@ -474,7 +466,7 @@ describe('static icon mongoose repository', function() {
             })
           })
 
-          expect(updatedDoc?.resolvedTimestamp).to.be.closeTo(Date.now(), 100)
+          expect(updatedDoc.resolvedTimestamp).to.be.closeTo(Date.now(), 100)
           expect(repo.entityForDocument(updatedDoc!)).to.deep.include(lazy)
           scheme1.received(1).resolveContent(Arg.all())
         })
@@ -523,7 +515,7 @@ describe('static icon mongoose repository', function() {
 
           expect(icon).to.deep.include({ id: iconId, sourceUrl })
           expect(icon.resolvedTimestamp).to.be.undefined
-          expect(repo.entityForDocument(iconDoc!)).to.deep.equal(icon)
+          expect(_.omit(repo.entityForDocument(iconDoc!), 'resolvedTimestamp')).to.deep.equal(_.omit(icon, 'resolvedTimestamp'))
           expect(resolvedDoc.resolvedTimestamp).to.be.closeTo(Date.now(), 100)
           expect(repo.entityForDocument(resolvedDoc)).to.deep.include(icon)
           scheme2Local.received(1).resolveContent(Arg.sameStringValueAs(sourceUrl))

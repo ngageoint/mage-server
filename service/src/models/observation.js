@@ -7,20 +7,11 @@ const Schema = mongoose.Schema;
 
 // Collection to hold unique observation ids
 const ObservationIdSchema = new Schema();
+ObservationIdSchema.set("toJSON", { transform });
 const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
-// const FormSchema = new Schema({
-//   formId: { type: Number, required: true }
-// },{
-//   strict: false
-// });
-
-// const PropertiesSchema = new Schema({
-//   timestamp: { type: Date, required: true },
-//   forms: [FormSchema]
-// },{
-//   strict: false
-// });
+exports.ObservationIdSchema = ObservationIdSchema;
+exports.ObservationId = ObservationId;
 
 const StateSchema = new Schema({
   name: { type: String, required: true },
@@ -28,13 +19,13 @@ const StateSchema = new Schema({
 });
 
 const ThumbnailSchema = new Schema({
+  minDimension: { type: Number, required: true },
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
   name: { type: String, required: false },
-  relativePath: { type: String, required: true },
-  minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
-  height: { type: Number, required: false}
+  height: { type: Number, required: false},
+  relativePath: { type: String, required: false },
 },{
   strict: false
 });
@@ -95,6 +86,12 @@ function transformAttachment(attachment, observation) {
   delete attachment._id;
   delete attachment.thumbnails;
 
+  /*
+  TODO: is this actually checking if the attachment is stored?
+  ANSWER: yes it is. the clients depend on it. the web client will not upload
+    if the url property is present on an attachment.
+    stop sending absolute urls to the clients.
+  */
   if (attachment.relativePath) {
     attachment.url = [observation.url, "attachments", attachment.id].join("/");
   }
@@ -158,17 +155,8 @@ function transform(observation, ret, options) {
   }
 }
 
-ObservationIdSchema.set("toJSON", {
-  transform: transform
-});
-
-ObservationSchema.set('toJSON', {
-  transform: transform
-});
-
-ObservationSchema.set('toObject', {
-  transform: transform
-});
+ObservationSchema.set('toJSON', { transform });
+ObservationSchema.set('toObject', { transform });
 
 const models = {};
 mongoose.model('Attachment', AttachmentSchema);
@@ -341,6 +329,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
       return observationForm;
     })
     .forEach(formEntry => {
+      // TODO: move to app or web layer
       const formDefinition = event.forms.find(form => form._id === formEntry.formId);
       Object.keys(formEntry).forEach(fieldName => {
         const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);

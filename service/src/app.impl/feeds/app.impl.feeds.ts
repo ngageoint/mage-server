@@ -139,11 +139,11 @@ export function ListServiceTopics(permissionService: api.FeedsPermissionService,
   return async function listTopics(req: api.ListServiceTopicsRequest): ReturnType<api.ListServiceTopics> {
     const service = await serviceRepo.findById(req.service)
     if (!service) {
-      return AppResponse.error<FeedTopic[], EntityNotFoundError>(entityNotFound(req.service, 'FeedService'))
+      return AppResponse.error(entityNotFound(req.service, 'FeedService'))
     }
     const serviceType = await serviceTypeRepo.findById(service.serviceType)
     if (!serviceType) {
-      return AppResponse.error<FeedTopic[], EntityNotFoundError>(entityNotFound(service.serviceType, 'FeedServiceType'))
+      return AppResponse.error(entityNotFound(service.serviceType, 'FeedServiceType'))
     }
     return await withPermission<FeedTopic[], KnownErrorsOf<api.ListServiceTopics>>(
       permissionService.ensureListTopicsPermissionFor(req.context, service.id),
@@ -453,7 +453,7 @@ export function UpdateFeed(permissionService: api.FeedsPermissionService, servic
   return async function updateFeed(req: api.UpdateFeedRequest): ReturnType<api.UpdateFeed> {
     const feed = await feedRepo.findById(req.feed.id)
     if (!feed) {
-      return AppResponse.error<api.FeedExpanded, EntityNotFoundError>(entityNotFound(req.feed.id, 'Feed'))
+      return AppResponse.error(entityNotFound(req.feed.id, 'Feed'))
     }
     const invalidKeys: KeyPathError[] = []
     if ('service' in req.feed && (req.feed as any).service !== feed.service) {
@@ -463,7 +463,7 @@ export function UpdateFeed(permissionService: api.FeedsPermissionService, servic
       invalidKeys.push([ 'changing feed topic is not allowed', 'feed', 'topic' ])
     }
     if (invalidKeys.length) {
-      return AppResponse.error<api.FeedExpanded, InvalidInputError>(invalidInput('feed service and topic cannot be modified', ...invalidKeys))
+      return AppResponse.error(invalidInput('feed service and topic cannot be modified', ...invalidKeys))
     }
     return await withPermission<api.FeedExpanded, KnownErrorsOf<api.UpdateFeed>>(
       permissionService.ensureCreateFeedPermissionFor(req.context, feed.service),
@@ -492,7 +492,7 @@ export function DeleteFeed(permissionService: api.FeedsPermissionService, feedRe
   return async function deleteFeed(req: api.DeleteFeedRequest): ReturnType<api.DeleteFeed> {
     const feed = await feedRepo.findById(req.feed)
     if (!feed) {
-      return AppResponse.error<true, EntityNotFoundError>(entityNotFound(req.feed, 'Feed'))
+      return AppResponse.error(entityNotFound(req.feed, 'Feed'))
     }
     return await withPermission<true, KnownErrorsOf<api.DeleteFeed>>(
       permissionService.ensureCreateFeedPermissionFor(req.context, feed.service),

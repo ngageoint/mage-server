@@ -22,6 +22,10 @@ app.use(function(req, res, next) {
     return req.getRoot() + req.path;
   };
 
+  if (process.env.MAGE_HTTP_DEBUG === 'true') {
+    console.debug(`[HTTP REQUEST] ${req.method} ${req.getPath()}\n`, req.rawHeaders)
+  }
+
   return next();
 });
 

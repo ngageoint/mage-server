@@ -11,7 +11,7 @@ module.exports = function(app, security) {
     layerXform = require('../transformers/layer'),
     GeoPackageUtility = require('../utilities/geopackage').GeoPackageUtility,
     { defaultHandler: upload } = require('../upload'),
-    { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
+    { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   const passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
@@ -166,7 +166,7 @@ module.exports = function(app, security) {
     }
     if (access.userHasPermission(req.user, 'READ_LAYER_EVENT')) {
       // Make sure I am part of this event
-      const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user._id, 'read')
+      const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
       if (hasPermission) {
         return next();
       }

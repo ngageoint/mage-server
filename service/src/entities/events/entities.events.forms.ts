@@ -51,6 +51,10 @@ export interface Form {
    * specifies a data source for its choices
    */
   userFields: string[]
+  /**
+   * Color must be a valid hexadecimal color string prefixed with a "#" symbol,
+   * e.g., #0a0b0c.
+   */
   color: string
   style?: LineStyle
   archived: boolean

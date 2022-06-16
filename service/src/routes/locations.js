@@ -4,7 +4,7 @@ module.exports = function(app, security) {
     , Team = require('../models/team')
     , Event = require('../models/event')
     , access = require('../access')
-    , { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events');
+    , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   var passport = security.authentication.passport;
   var location = new Location();

@@ -34,7 +34,7 @@ exports.down = function(done) {
     if (err) return done(err);
 
     events.forEach({populate: 'teamIds'}, function(event) {
-      event.teamsIds.forEach(function(team) {
+      event.teamIds.forEach(function(team) {
         if (team.teamEventId) {
           Team.deleteTeam(team, function(err) {
             done(err);

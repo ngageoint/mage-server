@@ -53,7 +53,7 @@ module.exports = function(app, security) {
 
   // Dynamically import all routes
   modulesPathsInDir(__dirname).forEach(modulePath => {
-    const moduleName = modulePath.substr(0, modulePath.indexOf('.'));
+    const moduleName = modulePath.slice(0, modulePath.indexOf('.'));
     log.debug(`loading ${moduleName} routes from ${modulePath}`);
     const initRoutes = require('./' + moduleName);
     initRoutes(app, security);

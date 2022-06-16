@@ -8,7 +8,7 @@ import * as legacy from '../../../lib/models/event'
 import { MageEventDocument } from '../../../src/models/event'
 import TeamModelModule = require('../../../lib/models/team')
 import { Team } from '../../../lib/entities/teams/entities.teams'
-import { MageEventAttrs, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'
+import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventCreateAttrs } from '../../../lib/entities/events/entities.events'
 
 const TeamModel = TeamModelModule.TeamModel
 
@@ -63,10 +63,11 @@ describe('event mongoose repository', function() {
 
   describe('finding events by id', function() {
 
-    it('looks up a feed by id', async function() {
+    it('looks up an event by id', async function() {
 
       const fetched = await repo.findById(eventDoc._id)
-      expect(fetched).to.deep.equal(eventDoc.toJSON())
+      expect(fetched).to.be.instanceOf(MageEvent)
+      expect(omitUndefinedFrom(copyMageEventAttrs(fetched!))).to.deep.equal(eventDoc.toJSON())
     })
   })
 
@@ -145,7 +146,7 @@ describe('event mongoose repository', function() {
       const fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal([ feedId ])
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
     })
 
     it('adds a feed id to a non-empty feeds list', async function() {
@@ -156,13 +157,13 @@ describe('event mongoose repository', function() {
       let fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal([ feedIds[0] ])
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
 
       updated = await repo.addFeedsToEvent(eventDoc?._id, feedIds[1])
       fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
     })
 
     it('adds multiple feed ids to the feeds list', async function() {
@@ -173,7 +174,7 @@ describe('event mongoose repository', function() {
       let fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
     })
 
     it('does not add duplicate feed ids', async function() {
@@ -184,13 +185,13 @@ describe('event mongoose repository', function() {
       let fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
 
       updated = await repo.addFeedsToEvent(eventDoc?._id, feedIds[0])
       fetched = await repo.findById(eventDoc?._id)
 
       expect(updated?.feedIds).to.deep.equal(feedIds)
-      expect(fetched).to.deep.equal(updated)
+      expect(copyMageEventAttrs(fetched!)).to.deep.equal(copyMageEventAttrs(updated!))
     })
 
     it('returns null if the event does not exist', async function() {
@@ -201,7 +202,7 @@ describe('event mongoose repository', function() {
 
       expect(typedEventDoc.feedIds).to.be.empty
       expect(updated).to.be.null
-      expect(fetched).to.deep.equal(typedEventDoc.toJSON())
+      expect(omitUndefinedFrom(copyMageEventAttrs(fetched!))).to.deep.equal(typedEventDoc.toJSON())
     })
   })
 
@@ -212,13 +213,13 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
       expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
       expect(fetched!.feedIds).to.deep.equal([ feedIds[1]] )
-      expect(updated).to.deep.equal(fetched)
+      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
     })
 
     it('removes multiple feed ids from the list', async function() {
@@ -226,13 +227,13 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[0], feedIds[2])
       const fetched = await repo.findById(typedEventDoc.id)
 
       expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
       expect(fetched!.feedIds).to.deep.equal([ feedIds[1]] )
-      expect(updated).to.deep.equal(fetched)
+      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
     })
 
     it('has no affect if the feed ids are not in the list', async function() {
@@ -240,13 +241,13 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
       expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
       expect(fetched!.feedIds).to.deep.equal(feedIds)
-      expect(updated).to.deep.equal(fetched)
+      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
     })
 
     it('has no affect if the event feed ids list is empty', async function() {
@@ -257,7 +258,7 @@ describe('event mongoose repository', function() {
 
       expect(typedEventDoc.feedIds).to.be.empty
       expect(fetched!.feedIds).to.be.empty
-      expect(updated).to.deep.equal(fetched)
+      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
     })
 
     it('removes the given feed ids that are in the list and ignores feed ids that are not', async function() {
@@ -265,13 +266,13 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id, feedIds[2], uniqid())
       const fetched = await repo.findById(typedEventDoc.id)
 
       expect(typedEventDoc.feedIds).to.deep.equal(feedIds)
       expect(fetched!.feedIds).to.deep.equal([ feedIds[0], feedIds[1] ])
-      expect(updated).to.deep.equal(fetched)
+      expect(copyMageEventAttrs(updated!)).to.deep.equal(copyMageEventAttrs(fetched!))
     })
 
     it('returns null if the event does not exist', async function() {
@@ -279,7 +280,7 @@ describe('event mongoose repository', function() {
       const feedIds = Object.freeze([ uniqid(), uniqid(), uniqid() ])
       let typedEventDoc = eventDoc as MageEventDocument
       typedEventDoc.feedIds = [ ...feedIds ]
-      typedEventDoc = await typedEventDoc.save()
+      typedEventDoc = await typedEventDoc.save() as MageEventDocument
       const updated = await repo.removeFeedsFromEvent(typedEventDoc.id - 1, feedIds[0])
       const fetched = await repo.findById(typedEventDoc.id)
 
@@ -446,7 +447,7 @@ describe('event mongoose repository', function() {
           }))
       }))
       eventDoc.teamIds = teamDocs.map(x => x._id)
-      eventDoc = await eventDoc.save()
+      eventDoc = await eventDoc.save() as MageEventDocument
       const fetchedTeams = await repo.findTeamsInEvent(eventDoc.id)
 
       expect(fetchedTeams).to.deep.equal(teams)
@@ -466,3 +467,7 @@ describe('event mongoose repository', function() {
     await expect(repo.update({ id: eventDoc._id, feedIds: [ 'not_allowed' ] })).to.eventually.rejectWith(Error)
   })
 })
+
+function omitUndefinedFrom(x: any) {
+  return _.omitBy(x, v => v === void(0))
+}

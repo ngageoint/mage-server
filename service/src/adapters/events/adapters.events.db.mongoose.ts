@@ -14,12 +14,24 @@ export const MageEventSchema = legacy.Model.schema
 
 export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs, MageEvent> implements MageEventRepository {
 
+  constructor(model: MageEventModel) {
+    super(model)
+  }
+
   async create(): Promise<MageEventAttrs> {
     throw new Error('method not allowed')
   }
 
   async update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEventAttrs | null> {
     throw new Error('method not allowed')
+  }
+
+  async findById(id: MageEventId): Promise<MageEvent | null> {
+    const attrs = await super.findById(id)
+    if (attrs) {
+      return new MageEvent(attrs)
+    }
+    return null
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
@@ -36,7 +48,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
         }
       },
       { new: true })
-    return updated?.toJSON() || null
+    return updated ? this.entityForDocument(updated) : null
   }
 
   async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null> {
@@ -48,7 +60,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
         }
       },
       { new: true })
-    return updated?.toJSON() || null
+    return updated ? this.entityForDocument(updated) : null
   }
 
   async removeFeedsFromEvents(...feeds: FeedId[]): Promise<number> {
@@ -56,12 +68,22 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return updated.nModified
   }
 
-  // TODO: this might be misplaced; team repository?
-  async findTeamsInEvent(event: MageEventId): Promise<Team[] | null> {
-    const eventDoc = await this.model.findById(event).populate('teamIds')
-    if (!eventDoc) {
-      return null
+  /**
+   * TODO: this is misplaced; create a team repository
+   */
+  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<Team[] | null> {
+    let eventDoc: MageEventDocument | null
+    if (!(event instanceof this.model)) {
+      const eventId = typeof event === 'object' && 'id' in event ? event.id : event
+      eventDoc = await this.model.findById(eventId)
+      if (!eventDoc) {
+        return null
+      }
     }
+    else {
+      eventDoc = event
+    }
+    await this.model.populate(eventDoc, { path: 'teamIds' })
     const teamDocs = eventDoc.teamIds as mongoose.Document[]
     return teamDocs.map((x: mongoose.Document) => {
       const team = x.toJSON()

@@ -1,11 +1,11 @@
 import mongoose, { DocumentToObjectOptions } from 'mongoose'
 import { UserDocument } from './user'
-import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventPermission, EventRole } from '../entities/events/entities.events'
+import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventAccessType, EventRole } from '../entities/events/entities.events'
 import { Team, TeamMemberRole } from '../entities/teams/entities.teams'
 import { Form, FormField, FormFieldChoice } from '../entities/events/entities.events.forms'
 
 export interface MageEventDocumentToObjectOptions extends DocumentToObjectOptions {
-  access: { user: UserDocument, permission: EventPermission }
+  access: { user: UserDocument, permission: EventAccessType }
   projection: any
 }
 
@@ -20,7 +20,9 @@ export type TeamDocument = Omit<Team, 'acl' | 'userIds'> & mongoose.Document & {
   }
 }
 
-export type MageEventDocument = mongoose.Document & Omit<MageEventAttrs, 'teamIds' | 'layerIds' | 'acl'> & {
+export type MageEventDocument = Omit<mongoose.Document, '_id' | 'id'> & Omit<MageEventAttrs, 'id' | 'teamIds' | 'layerIds' | 'acl'> & {
+  _id: number
+  id: number
   /**
    * The event's collection name is the name of the MongoDB collection that
    * stores observations for the event.
@@ -54,8 +56,8 @@ export declare function count(options: TODO, callback: Callback<number>): void
 export declare function getEvents(options: TODO, callback: Callback<MageEventDocument[]>): void
 export declare function getById(id: MageEventId, options: TODO, callback: Callback<MageEventDocument | null>): void
 export declare function filterEventsByUserId(events: MageEventDocument[], userId: string, callback: Callback<MageEventDocument[]>): void
-export declare function userHasEventPermission(event: MageEventDocument, userId: string, permission: EventPermission, callback: Callback<boolean>): void
 export declare function create(event: MageEventCreateAttrs, user: Partial<UserDocument> & Pick<UserDocument, '_id'>, callback: Callback<MageEventDocument>): void
+export declare function addForm(eventId: MageEventId, form: any, callback: Callback<MageEventDocument>): void
 export declare function addLayer(event: MageEventDocument, layer: any, callback: Callback<MageEventDocument>): void
 export declare function removeLayer(event: MageEventDocument, layer: { id: any }, callback: Callback<MageEventDocument>): void
 export declare function getUsers(eventId: MageEventId, callback: Callback<UserDocument[]>): void

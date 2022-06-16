@@ -20,7 +20,7 @@ var ObservationIdModel = mongoose.model('ObservationId');
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-describe("observation create tests", function () {
+describe.skip("observation create tests", function () {
 
   let app;
 
@@ -497,11 +497,11 @@ describe("observation create tests", function () {
         res.text.should.equal("Cannot submit an observation for an event that you are not part of.");
       })
       .end(done);
-  }); 
+  });
 
   it("should reject observation with invalid total min forms", function (done) {
     sinon.restore();
-    
+
     mockTokenWithPermission('CREATE_OBSERVATION');
 
     var mockEvent = EventModel({
