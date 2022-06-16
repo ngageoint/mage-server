@@ -3,7 +3,7 @@ import { AppResponse } from '../../app.api/app.api.global'
 import { AllocateObservationId, AllocateObservationIdRequest, ObservationPermissionService, SaveObservation, SaveObservationRequest, ExoObservation, exoObservationFor, ExoObservationMod, ObservationRequestContext, ExoAttachmentMod, ExoFormEntryMod, AttachmentModAction } from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, removeFormEntry, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: ObservationPermissionService): AllocateObservationId {
@@ -51,21 +51,52 @@ export function SaveObservation(permissionService: ObservationPermissionService,
   }
 }
 
+/**
+ * TODO:
+ * Much of this logic should move to resolve added and removed form entries and
+ * attachments should move to {@link Observation.assignTo()} so that method can
+ * generate appropriate domain events, but that will require some API changes
+ * in the entity layer, i.e., some alternative to the pre-generated ID
+ * requirements for new form entries and attachments.  That could be soemthing
+ * like generating pending identifiers that are easily distinguished from
+ * persistence layer identifiers; maybe a `PendingId` class or `Id` class with
+ * an `isPending` property.  That should be reasonable to implement, but no
+ * time now, as usual.
+ */
 async function prepareObservationMod(mod: ExoObservationMod, before: Observation | null, context: ObservationRequestContext): Promise<Observation | InvalidInputError> {
   const event = context.mageEvent
   const repo = context.observationRepository
-  const attrs = baseObservationAttrsForMod(mod, before, context)
+  const modAttrs = baseObservationAttrsForMod(mod, before, context)
   // first get new form entry ids so new attachments have a proper id to reference
-  const newFormEntries = mod.properties.forms.filter(x => x.id && !before?.formEntryForId(x.id))
+  const [ removedFormEntries, newFormEntries ] = mod.properties.forms.reduce(([ removed, added ], entryMod ) => {
+    if (entryMod.id && before?.formEntryForId(entryMod.id)) {
+      removed.delete(entryMod.id)
+    }
+    else {
+      added.push(entryMod)
+    }
+    return [ removed, added ]
+  }, [ new Map(before?.formEntries.map(x => [ x.id, x ]) || []), [] as ExoFormEntryMod[] ])
   const newFormEntryIds = newFormEntries.length ? await repo.nextFormEntryIds(newFormEntries.length) : []
-  newFormEntries.forEach((x, index) => x.id = newFormEntryIds[index])
+  newFormEntries.forEach(x => x.id = newFormEntryIds.shift())
   const attachmentExtraction = extractAttachmentModsFromFormEntries(mod, event)
-  attrs.properties.forms = attachmentExtraction.formEntries
+  modAttrs.properties.forms = attachmentExtraction.formEntries
   const attachmentMods = attachmentExtraction.attachmentMods
   const addCount = attachmentMods.reduce((count, x) => x.action === AttachmentModAction.Add ? count + 1 : count, 0)
   const attachmentIds = addCount ? await repo.nextAttachmentIds(addCount) : []
-  const initialObs = before ? Observation.assignTo(before, attrs) as Observation : Observation.evaluate(attrs, event)
-  const obs = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
+  const afterRemovedFormEntryAttachments = before?.attachments.reduce((obs, attachment) => {
+    if (removedFormEntries.has(attachment.observationFormId)) {
+      return removeAttachment(obs, attachment.id) as Observation
+    }
+    return obs
+  }, before)
+  if (afterRemovedFormEntryAttachments) {
+    modAttrs.attachments = afterRemovedFormEntryAttachments.attachments
+  }
+  const afterFormEntriesRemoved = afterRemovedFormEntryAttachments ?
+    Observation.assignTo(afterRemovedFormEntryAttachments, modAttrs) as Observation :
+    Observation.evaluate(modAttrs, event)
+  const afterAttachmentMods = attachmentMods.reduce<Observation | InvalidInputError>((obs, attachmentMod) => {
     if (obs instanceof MageError) {
       return obs
     }
@@ -83,16 +114,16 @@ async function prepareObservationMod(mod: ExoObservationMod, before: Observation
     }
     const message = `error adding attachment on observation ${obs.id}`
     return invalidInput(`${message}: ${String(mod)}`)
-  }, initialObs)
-  return obs
+  }, afterFormEntriesRemoved)
+  return afterAttachmentMods
 }
 
 /**
  * Return obsevation attributes for the given mod based on the optional
  * existing observation.  The result will not include form entries and
  * attachments, which require separate processing to resolve IDs and actions.
- * @param mod
- * @param before
+ * @param mod the modifications from an external client
+ * @param before the observation to update, or null if none exists
  */
 function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation | null, context: ObservationRequestContext): ObservationAttrs {
   return {
@@ -112,7 +143,7 @@ function baseObservationAttrsForMod(mod: ExoObservationMod, before: Observation 
       timestamp: mod.properties.timestamp,
       forms: []
     },
-    attachments: before?.attachments || [],
+    attachments: [],
   }
 }
 

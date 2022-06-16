@@ -4,13 +4,13 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, removeAttachment } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
 
-describe.only('observations use case interactions', function() {
+describe('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
@@ -1065,6 +1065,34 @@ describe.only('observations use case interactions', function() {
         expect(obsAfter.attachments.map(copyAttachmentAttrs)).to.deep.equal(obsBefore.attachments.map(copyAttachmentAttrs))
         obsRepo.received(1).save(Arg.is(validObservation()))
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+        obsRepo.received(1).save(Arg.all())
+      })
+
+      it('removes form entries and their attachment meta-data', async function() {
+
+        const obsAfter = removeFormEntry(obsBefore, obsBefore.formEntries[0].id)
+        const obsMod: api.ExoObservationMod = {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: []
+          }
+        }
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(saved.properties.forms).to.be.empty
+        expect(saved.attachments).to.be.empty
+        obsRepo.didNotReceive().nextFormEntryIds(Arg.all())
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter)))
         obsRepo.received(1).save(Arg.all())
       })
 

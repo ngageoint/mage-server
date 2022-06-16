@@ -556,6 +556,12 @@ export function attachmentsForField(field: FormField | string, formEntry: FormEn
   return observationAttrs.attachments.filter(x => x.fieldName === fieldName && x.observationFormId === formEntryId)
 }
 
+/**
+ * Remove the form entry with the given ID and return the resulting
+ * (potentially invalid) observation.
+ *
+ * TODO: add a `FormEntryNotFound` error similar to `removeAttachment()`
+ */
 export function removeFormEntry(observation: Observation, formEntryId: FormEntryId): Observation {
   const mod = copyObservationAttrs(observation)
   const targetPos = observation.formEntries.findIndex(x => x.id === formEntryId)

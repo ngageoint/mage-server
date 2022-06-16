@@ -19,7 +19,7 @@ const baseUrl = `${hostUrl}${basePath}`
 const jsonMediaType = /^application\/json/
 const testUser = 'lummytin'
 
-describe.only('observations web controller', function () {
+describe('observations web controller', function () {
 
   let createAppRequest: ObservationWebAppRequestFactory
   let app: SubstituteOf<ObservationAppLayer>
