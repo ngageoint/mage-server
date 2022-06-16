@@ -515,7 +515,7 @@ describe('static icon mongoose repository', function() {
 
           expect(icon).to.deep.include({ id: iconId, sourceUrl })
           expect(icon.resolvedTimestamp).to.be.undefined
-          expect(repo.entityForDocument(iconDoc!)).to.deep.equal(icon)
+          expect(_.omit(repo.entityForDocument(iconDoc!), 'resolvedTimestamp')).to.deep.equal(_.omit(icon, 'resolvedTimestamp'))
           expect(resolvedDoc.resolvedTimestamp).to.be.closeTo(Date.now(), 100)
           expect(repo.entityForDocument(resolvedDoc)).to.deep.include(icon)
           scheme2Local.received(1).resolveContent(Arg.sameStringValueAs(sourceUrl))
