@@ -21,13 +21,16 @@ var AttachmentModel = mongoose.model('Attachment');
 
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
 
 describe('updating attachments', function () {
 
   let app;
+  let mockEvent;
+  let userId;
 
   beforeEach(function () {
-    var mockEvent = new EventModel({
+    mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -61,6 +64,7 @@ describe('updating attachments', function () {
       .expects('appendToConfig')
       .resolves(config);
 
+    userId = mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
   });
 
@@ -69,7 +73,6 @@ describe('updating attachments', function () {
     mockfs.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
@@ -90,19 +93,10 @@ describe('updating attachments', function () {
     fs[env.tempDirectory] = {};
     mockfs(fs);
 
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
+    sinon.mock(eventPermissions)
+      .expects('userHasEventPermission')
+      .withArgs(mockEvent, userId.toHexString(), 'read')
+      .resolves(true)
 
     const ObservationModel = observationModel({
       _id: 1,

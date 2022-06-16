@@ -1,4 +1,4 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
@@ -9,23 +9,27 @@ var request = require('supertest')
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
+const TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
-var EventModel = mongoose.model('Event');
+const EventModel = mongoose.model('Event');
 
-var Observation = require('../../lib/models/observation');
-var observationModel = Observation.observationModel;
+const Observation = require('../../lib/models/observation');
+const observationModel = Observation.observationModel;
 
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("observation read tests", function () {
 
+  let mockEvent;
+  let userId;
   let app;
 
   beforeEach(function () {
-    var mockEvent = new EventModel({
+    mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -34,6 +38,8 @@ describe("observation read tests", function () {
     sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
+
+    userId = mongoose.Types.ObjectId()
 
     const configs = [];
     const config = {
@@ -57,7 +63,6 @@ describe("observation read tests", function () {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -74,12 +79,12 @@ describe("observation read tests", function () {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var mockObservation = new ObservationModel({
+    const mockObservation = new ObservationModel({
       _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
@@ -208,29 +213,15 @@ describe("observation read tests", function () {
     observations[0].should.deep.include({ important: { user: null } })
   });
 
-  it("should get observations for event I am a part of", function (done) {
+  it("allows event participants to read observations", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
-
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var mockObservation = new ObservationModel({
+    const mockObservation = new ObservationModel({
       _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
@@ -245,6 +236,10 @@ describe("observation read tests", function () {
       .expects('find')
       .chain('exec')
       .yields(null, [mockObservation]);
+    sinon.mock(eventPermissions)
+      .expects('userHasEventPermission')
+      .withArgs(mockEvent, userId.toHexString(), EventAccessType.Read)
+      .resolves(true)
 
     request(app)
       .get('/api/events/1/observations')
@@ -617,29 +612,15 @@ describe("observation read tests", function () {
       .end(done);
   });
 
-  it("should deny observations for event I am not part of", function (done) {
+  it("denies observation read when requestor is not an event participant", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [mongoose.Types.ObjectId()]
-        }]
-      });
-
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var mockObservation = new ObservationModel({
+    const mockObservation = new ObservationModel({
       _id: mongoose.Types.ObjectId(),
       type: 'Feature',
       geometry: {
@@ -653,6 +634,10 @@ describe("observation read tests", function () {
     sinon.mock(ObservationModel)
       .expects('find')
       .yields(null, [mockObservation]);
+    sinon.mock(eventPermissions)
+      .expects('userHasEventPermission')
+      .withArgs(mockEvent, userId.toHexString(), EventAccessType.Read)
+      .resolves(false)
 
     request(app)
       .get('/api/events/1/observations')

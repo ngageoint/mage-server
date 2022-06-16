@@ -13,8 +13,7 @@ import authentication from '../authentication'
 import fs from 'fs-extra'
 import { EventAccessType, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
-import { EventPermissionServiceImpl } from '../permissions/permissions.events'
-import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
+import { defaultEventPermissionsService } from '../permissions/permissions.events'
 import { LineStyle } from '../entities/entities.global'
 
 declare module 'express-serve-static-core' {
@@ -40,11 +39,9 @@ function determineReadAccess(req: express.Request, res: express.Response, next: 
  * that layer will enforce permissions and these routes will have no direct
  * need for the permission service.
  */
-const shouldBeAppLayerPermissionService = new EventPermissionServiceImpl(new MongooseMageEventRepository(EventModel.Model))
-
 function middlewareAuthorizeAccess(collectionPermission: AnyPermission, aclPermission: EventAccessType): express.RequestHandler {
   return async (req, res, next) => {
-    const denied = await shouldBeAppLayerPermissionService.authorizeEventAccess(req.event!, req.user, collectionPermission, aclPermission)
+    const denied = await defaultEventPermissionsService.authorizeEventAccess(req.event!, req.user, collectionPermission, aclPermission)
     if (!denied) {
       return next()
     }

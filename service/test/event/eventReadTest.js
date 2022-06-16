@@ -17,10 +17,14 @@ var EventModel = mongoose.model('Event');
 
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { MageEventPermission } = require('../../lib/entities/authorization/entities.permissions');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("event read tests", function() {
 
   let app;
+  let userId;
 
   beforeEach(function() {
     const configs = [];
@@ -38,6 +42,7 @@ describe("event read tests", function() {
       .expects('appendToConfig')
       .resolves(config);
 
+    userId = mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
   });
 
@@ -45,7 +50,6 @@ describe("event read tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -369,14 +373,12 @@ describe("event read tests", function() {
   it("should read users in event with team access", function(done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-
-    var mockTeam = new TeamModel({
+    const eventId = 1;
+    const mockTeam = new TeamModel({
       userIds: [userId],
       acl: {}
     });
-
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
       teamIds: [],
@@ -386,7 +388,7 @@ describe("event read tests", function() {
     });
     mockEvent.teamIds[0] = mockTeam;
 
-    var eventMock = sinon.mock(EventModel);
+    const eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -406,6 +408,11 @@ describe("event read tests", function() {
       })
       .chain('exec')
       .yields(null, mockEvent);
+
+    sinon.mock(eventPermissions)
+      .expects('authorizeEventAccess')
+      .withArgs(mockEvent, sinon.match.has('_id', userId), MageEventPermission.READ_EVENT_ALL, EventAccessType.Read)
+      .resolves(null)
 
     request(app)
       .get('/api/events/1/users')
@@ -419,14 +426,12 @@ describe("event read tests", function() {
   it("should read teams in event with team access", function(done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-
-    var mockTeam = new TeamModel({
+    const eventId = 1;
+    const mockTeam = new TeamModel({
       userIds: [userId],
       acl: {}
     });
-
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
       teamIds: [],
@@ -436,7 +441,7 @@ describe("event read tests", function() {
     });
     mockEvent.teamIds[0] = mockTeam;
 
-    var eventMock = sinon.mock(EventModel);
+    const eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -456,6 +461,11 @@ describe("event read tests", function() {
       })
       .chain('exec')
       .yields(null, mockEvent);
+
+    sinon.mock(eventPermissions)
+      .expects('authorizeEventAccess')
+      .withArgs(mockEvent, sinon.match.has('_id', userId), MageEventPermission.READ_EVENT_ALL, EventAccessType.Read)
+      .resolves(null)
 
     request(app)
       .get('/api/events/1/teams')

@@ -22,6 +22,8 @@ require('sinon-mongoose');
 
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("user update tests", function () {
 
@@ -1132,13 +1134,11 @@ describe("user update tests", function () {
       .onFirstCall()
       .yields(null, mockEvent1);
 
-      sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        teamIds: [{
-          userIds: [userId]
-        }]
-      });
+    sinon.mock(eventPermissions)
+      .expects('userHasEventPermission')
+      .withArgs(mockEvent1, mockUser.id, EventAccessType.Read)
+      .resolves(true)
+
 
     sinon.mock(UserModel)
       .expects('findByIdAndUpdate')
