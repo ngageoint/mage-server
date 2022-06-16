@@ -113,12 +113,6 @@ module.exports = function(app, security) {
     });
   }
 
-  function validateCreateOrUpdateAccess(req, res, next) {
-    req.existingObservation ?
-      validateObservationUpdateAccess(req, res, next) :
-      validateObservationCreateAccess(true)(req, res, next);
-  }
-
   function authorizeEventAccess(collectionPermission, aclPermission) {
     return async function(req, res, next) {
       if (access.userHasPermission(req.user, collectionPermission)) {
@@ -144,52 +138,6 @@ module.exports = function(app, security) {
       return next();
     }
     res.sendStatus(403);
-  }
-
-  function populateUserFields(req, res, next) {
-    new api.Form(req.event).populateUserFields(function(err) {
-      if (err) {
-        return next(err);
-      }
-      next();
-    });
-  }
-
-  function fetchExistingObservation(req, res, next) {
-    new api.Observation(req.event).getById(req.params.existingObservationId, function (err, observation) {
-      req.existingObservation = observation;
-      next(err);
-    });
-  }
-
-  function populateObservation(req, res, next) {
-    req.observation = {};
-
-    if (!req.existingObservation) {
-      const userId = req.user ? req.user._id : null;
-      if (userId) {
-        req.observation.userId = userId;
-      }
-      const deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) {
-        req.observation.deviceId = deviceId;
-      }
-    }
-
-    // TODO: shouldn't this always be Feature?
-    req.observation.type = req.body.type;
-
-    if (req.body.geometry) {
-      req.observation.geometry = req.body.geometry;
-    }
-
-    if (req.body.properties) {
-      req.observation.properties = req.body.properties;
-    }
-
-    req.observation.attachments = req.existingObservation ? req.existingObservation.attachments : [];
-
-    next();
   }
 
   function getUserForObservation(req, res, next) {
@@ -306,42 +254,6 @@ module.exports = function(app, security) {
 
     next();
   }
-
-  // app.put(
-  //   '/api/events/:eventId/observations/:existingObservationId',
-  //   passport.authenticate('bearer'),
-  //   fetchExistingObservation,
-  //   validateCreateOrUpdateAccess,
-  //   populateObservation,
-  //   populateUserFields,
-  //   function (req, res, next) {
-  //     const existingObservation = req.existingObservation;
-  //     const { forms: reqForms = [] } = req.observation.properties || {}
-  //     // TODO: why is this a map() that returns nothing?
-  //     reqForms.map(reqForm => {
-  //       if (existingObservation) {
-  //         const { forms: exisitingForms = [] } = existingObservation.properties || {};
-  //         const exisitingForm = exisitingForms.find(exisitingForm => exisitingForm._id.toString() === reqForm.id);
-  //         if (exisitingForm) {
-  //           reqForm._id = exisitingForm._id;
-  //           delete reqForm.id;
-  //         }
-  //       }
-  //       return reqForm;
-  //     });
-
-  //     new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
-  //       if (err) return next(err);
-
-  //       if (!updatedObservation) {
-  //         return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
-  //       }
-
-  //       const response = observationXform.transform(updatedObservation, transformOptions(req));
-  //       res.json(response);
-  //     });
-  //   }
-  // );
 
   app.get(
     '/api/events/:eventId/observations/(:observationId).zip',
@@ -610,19 +522,6 @@ module.exports = function(app, security) {
             return res.sendStatus(404);
           });
         }
-      });
-    }
-  );
-
-  app.delete(
-    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    passport.authenticate('bearer'),
-    authorizeDeleteAccess,
-    function(req, res, next) {
-      new api.Attachment(req.event, req.observation).delete(req.params.attachmentId, err => {
-        if (err) return next(err);
-
-        res.sendStatus(204);
       });
     }
   );
