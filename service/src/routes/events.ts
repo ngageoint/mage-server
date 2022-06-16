@@ -635,6 +635,27 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       });
     }
   );
+
+  app.get(
+    '/api/events/:id/members',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getMembers(req.event!._id, options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
 };
 
 export = EventRoutes

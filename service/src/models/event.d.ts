@@ -3,6 +3,7 @@ import { UserDocument } from './user'
 import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventPermission, EventRole } from '../entities/events/entities.events'
 import { Team, TeamMemberRole } from '../entities/teams/entities.teams'
 import { Form, FormField, FormFieldChoice } from '../entities/events/entities.events.forms'
+import { PageInfo } from '../utilities/paging';
 
 export interface MageEventDocumentToObjectOptions extends DocumentToObjectOptions {
   access: { user: UserDocument, permission: EventPermission }
@@ -64,5 +65,6 @@ export declare function getTeams(eventId: MageEventId, options: { populate: stri
 export declare function removeTeam(event: MageEventDocument, team: any, callback: Callback<MageEventDocument>): void
 export declare function updateUserInAcl(eventId: MageEventId, userId: string, role: string, callback: Callback<MageEventDocument>): void
 export declare function removeUserFromAcl(eventId: MageEventId, userId: string, callback: Callback<MageEventDocument>): void
+export declare function getMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
 
 export declare const Model: mongoose.Model<MageEventDocument>
