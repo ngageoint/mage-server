@@ -71,11 +71,19 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   /**
    * TODO: this is misplaced; create a team repository
    */
-  async findTeamsInEvent(event: MageEventId): Promise<Team[] | null> {
-    const eventDoc = await this.model.findById(event).populate('teamIds')
-    if (!eventDoc) {
-      return null
+  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<Team[] | null> {
+    let eventDoc: MageEventDocument | null
+    if (!(event instanceof this.model)) {
+      const eventId = typeof event === 'object' && 'id' in event ? event.id : event
+      eventDoc = await this.model.findById(eventId)
+      if (!eventDoc) {
+        return null
+      }
     }
+    else {
+      eventDoc = event
+    }
+    await this.model.populate(eventDoc, { path: 'teamIds' })
     const teamDocs = eventDoc.teamIds as mongoose.Document[]
     return teamDocs.map((x: mongoose.Document) => {
       const team = x.toJSON()

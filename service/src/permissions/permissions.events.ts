@@ -103,8 +103,7 @@ export class EventPermissionServiceImpl {
   }
 
   private async resolveTeamsForEvent(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
-    const eventId = event instanceof mongoose.Document ? event._id : event.id
-    const teams = await this.eventRepo.findTeamsInEvent(eventId)
+    const teams = await this.eventRepo.findTeamsInEvent(event)
     return teams!
   }
 }
