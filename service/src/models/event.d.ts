@@ -66,5 +66,8 @@ export declare function removeTeam(event: MageEventDocument, team: any, callback
 export declare function updateUserInAcl(eventId: MageEventId, userId: string, role: string, callback: Callback<MageEventDocument>): void
 export declare function removeUserFromAcl(eventId: MageEventId, userId: string, callback: Callback<MageEventDocument>): void
 export declare function getMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
+export declare function getNonMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
+export declare function getTeamsInEvent(eventId: MageEventId, options: TODO): Promise<PageInfo>
+export declare function getTeamsNotInEvent(eventId: MageEventId, options: TODO): Promise<PageInfo>
 
 export declare const Model: mongoose.Model<MageEventDocument>

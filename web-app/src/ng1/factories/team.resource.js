@@ -41,6 +41,20 @@ function Team($resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    getMembers: {
+      method: 'GET',
+      url: '/api/teams/:id/members',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonMembers: {
+      method: 'GET',
+      url: '/api/teams/:id/nonMembers',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 

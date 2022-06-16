@@ -637,7 +637,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   );
 
   app.get(
-    '/api/events/:id/members',
+    '/api/events/:eventId/members',
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
@@ -650,6 +650,69 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       }
 
       EventModel.getMembers(req.event!._id, options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/nonMembers',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getNonMembers(req.event!._id, options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/teams',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getTeamsInEvent(req.event!._id, options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/nonTeams',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getTeamsNotInEvent(req.event!._id, options).then(page => {
         if (!page) return res.status(404).send('Event not found');
 
         res.json(page);
