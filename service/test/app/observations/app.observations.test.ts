@@ -1211,11 +1211,11 @@ describe('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
-      it('removes attachment content for removed attachments', async function() {
+      it.skip('TODO: removes attachment content for removed attachments', async function() {
         expect.fail('todo')
       })
 
-      it('removes attachment content for removed form entries', async function() {
+      it.skip('TODO: removes attachment content for removed form entries', async function() {
         expect.fail('todo')
       })
 
@@ -1305,11 +1305,11 @@ describe('observations use case interactions', function() {
 
   describe('saving attachment content', function() {
 
-    it('checks permissions', async function() {
+    it.skip('TODO: checks permissions', async function() {
       expect.fail('todo')
     })
 
-    it('saves the attachment content to the attachment store', async function() {
+    it.skip('TODO: saves the attachment content to the attachment store', async function() {
       expect.fail('todo')
     })
   })
