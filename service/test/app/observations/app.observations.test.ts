@@ -9,6 +9,8 @@ import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, En
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
+import { app } from '../../../src/authentication'
+import { Readable } from 'stream'
 
 describe('observations use case interactions', function() {
 
@@ -1098,21 +1100,20 @@ describe('observations use case interactions', function() {
 
       it('removes attachments', async function() {
 
-        const obsAfter =
-          removeAttachment(
-            Observation.assignTo(obsBefore, {
-              ...copyObservationAttrs(obsBefore),
-              properties: {
-                timestamp: obsBefore.timestamp,
-                forms: [
-                  {
-                    ...obsBefore.formEntries[0],
-                    field1: 'mod field 1'
-                  }
-                ]
-              }
-            }) as Observation,
-            obsBefore.attachments[0].id) as Observation
+        const obsAfter = removeAttachment(
+          Observation.assignTo(obsBefore, {
+            ...copyObservationAttrs(obsBefore),
+            properties: {
+              timestamp: obsBefore.timestamp,
+              forms: [
+                {
+                  ...obsBefore.formEntries[0],
+                  field1: 'mod field 1'
+                }
+              ]
+            }
+          }) as Observation,
+          obsBefore.attachments[0].id) as Observation
         const obsMod: api.ExoObservationMod = _.omit({
           ...copyObservationAttrs(obsBefore),
           properties: {
@@ -1305,11 +1306,57 @@ describe('observations use case interactions', function() {
 
   describe('saving attachment content', function() {
 
-    it.skip('TODO: checks permissions', async function() {
+    it('TODO: checks permissions', async function() {
+
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: ExoAttachmentContent = {
+        mediaType: 'image/jpeg',
+        size: bytesBuffer.length,
+        bytes,
+      }
+      const req: StoreAttachmentContentRequest = {
+        context,
+        observationId,
+        attachmentId,
+        content,
+      }
+      const res = await app.storeAttachmentContent()
       expect.fail('todo')
     })
 
-    it.skip('TODO: saves the attachment content to the attachment store', async function() {
+    it('TODO: saves the attachment content to the attachment store', async function() {
+      expect.fail('todo')
+    })
+
+    it('updates the attachment meta-data on the observation', async function() {
+      expect.fail('todo')
+    })
+
+    it('fails if the observation does not exist', async function() {
+      expect.fail('todo')
+    })
+
+    it('fails if the attachment does not exist on the observation', async function() {
+      expect.fail('todo: should find attachment by id, name, and media type for backward compatibility')
+    })
+  })
+
+  describe('reading attachment content', function() {
+
+    it('checks permission', async function() {
+      expect.fail('todo')
+    })
+
+    it('fails if the observation does not exist', async function() {
+      expect.fail('todo')
+    })
+
+    it('fails if the attachment does not exist on the observation', async function() {
+      expect.fail('todo')
+    })
+
+    it('fails if the content does not exist in the attachment store', async function() {
       expect.fail('todo')
     })
   })
