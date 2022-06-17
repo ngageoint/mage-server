@@ -16,8 +16,6 @@ import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes }
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
 
-const TeamModel = TeamModelModule.TeamModel
-
 function observationStub(id: ObservationId, eventId: MageEventId): ObservationAttrs {
   const now = Date.now()
   const attrs: ObservationAttrs = {

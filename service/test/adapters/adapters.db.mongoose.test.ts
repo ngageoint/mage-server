@@ -64,19 +64,15 @@ describe('waitForMongooseConnection', function() {
   it('rejects when the connection timeout passes', async function() {
 
     mocks.useFakeTimers()
-
-    const firstConnect = Promise.reject<Mongoose>('first connect rejection')
-
     connectStub.onFirstCall().callsFake(function() {
       process.nextTick(function() {
-        firstConnect.catch(function() {
-          mocks.clock.tick(connectTimeout + 1)
-        })
+        mocks.clock.tick(connectTimeout + 1)
       })
-      return firstConnect as unknown as MongooseThenable
+      return new Promise<Mongoose>((resolve, reject) => {
+        reject('first connect rejection')
+      }) as unknown as MongooseThenable
     })
-    const secondConnect = Promise.reject<MongooseThenable>()
-    connectStub.onSecondCall().rejects(secondConnect)
+    connectStub.onSecondCall().rejects('second connect rejection')
 
     await waitForConnection().catch(function(err: Error) {
       expect(err).to.match(/^timed out/)

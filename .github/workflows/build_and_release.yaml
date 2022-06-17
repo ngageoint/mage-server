@@ -149,10 +149,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: setup  node
+      - name: setup node
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: 14
           cache: npm
           cache-dependency-path: web-app/package-lock.json
       - name: build web-app

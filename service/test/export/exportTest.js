@@ -3,7 +3,8 @@ const request = require('supertest')
   , mongoose = require('mongoose')
   , mockfs = require('mock-fs')
   , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , TokenModel = mongoose.model('Token')
+  , path = require('path');
 
 require('chai').should();
 require('sinon-mongoose');
@@ -26,8 +27,11 @@ const observationModel = Observation.observationModel;
 require('../../lib/models/export');
 const ExportModel = mongoose.model('Export');
 
+const exporterFactory = require('../../lib/export/exporterFactory')
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("export tests", function () {
 
@@ -129,6 +133,11 @@ describe("export tests", function () {
       .chain('exec')
       .yields(null, [mockObservation]);
 
+    sinon.mock(eventPermissions)
+      .expects('userHasEventPermission')
+      .withArgs(2, userId.toHexString(), EventAccessType.Read)
+      .resolves(true)
+
     const exportMeta = new ExportModel({
       _id: mongoose.Types.ObjectId(),
       userId: mongoose.Types.ObjectId(),
@@ -141,9 +150,18 @@ describe("export tests", function () {
       }
     });
 
-    sinon.mock(ExportModel)
+    const ExportModelMock = sinon.mock(ExportModel)
+    ExportModelMock
       .expects('create')
-      .resolves(exportMeta);
+      .resolves(exportMeta)
+    ExportModelMock
+      .expects('findByIdAndUpdate')
+      .chain('exec')
+      .resolves(exportMeta)
+    ExportModelMock
+      .expects('findByIdAndUpdate')
+      .chain('exec')
+      .resolves(exportMeta)
 
     sinon.mock(IconModel)
       .expects('find')
@@ -151,8 +169,19 @@ describe("export tests", function () {
         relativePath: 'mock/path'
       }]);
 
+    sinon.mock(exporterFactory)
+      .expects('createExporter')
+      .returns({
+        export() {
+          console.info('MOCK EXPORT')
+          return Promise.resolve().then(() => done())
+        }
+      })
+
     const fs = {
-      '/var/lib/mage/icons/2': {}
+      '/var/lib/mage/icons/2': {},
+      '/var/lib/mage/export': {},
+      node_modules: mockfs.load(path.resolve(process.cwd(), 'node_modules'))
     };
     mockfs(fs);
 
@@ -172,9 +201,6 @@ describe("export tests", function () {
         res.headers.should.have.property('content-type').that.contains('application/json');
         res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
       })
-      .end(function (err) {
-        mockfs.restore();
-        done(err);
-      });
+      .end(() => {});
   });
 });

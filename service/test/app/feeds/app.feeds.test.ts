@@ -571,7 +571,7 @@ describe('feeds use case interactions', function () {
           ]
           app.registerFeeds(...feeds)
           app.eventRepo.removeFeedsFromEvents(Arg.all()).mimicks(async (...feeds: FeedId[]): Promise<number> => {
-            if (app.feedRepo.db.size > 0 || app.serviceRepo.db.has(service.id)) {
+            if (app.feedRepo.db.size < 2 || !app.serviceRepo.db.has(service.id)) {
               throw new Error('remove feeds from events first')
             }
             return 2
