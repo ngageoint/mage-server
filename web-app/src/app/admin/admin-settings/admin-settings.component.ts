@@ -11,7 +11,6 @@ import { TransitionService } from '@uirouter/core';
     styleUrls: ['./admin-settings.component.scss']
 })
 export class AdminSettingsComponent implements OnInit {
-
     readonly breadcrumbs: AdminBreadcrumb[] = [{
         title: 'Settings',
         icon: 'build'
