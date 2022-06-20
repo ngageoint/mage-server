@@ -3,21 +3,23 @@ import { MageEventDocument, TeamDocument } from '../models/event'
 import { AppRequestContext } from '../app.api/app.api.global'
 import { PermissionDeniedError, permissionDenied } from '../app.api/app.api.errors'
 import { FeedId } from '../entities/feeds/entities.feeds'
-import { allPermissions, AnyPermission } from '../entities/authorization/entities.permissions'
+import { allPermissions, AnyPermission, MageEventPermission } from '../entities/authorization/entities.permissions'
 import { FeedsPermissionService } from '../app.api/feeds/app.api.feeds'
-import { MageEventAttrs, MageEventRepository, EventPermission, rolesWithPermission } from '../entities/events/entities.events'
+import { MageEventAttrs, MageEventRepository, EventAccessType, rolesWithPermission } from '../entities/events/entities.events'
 import EventModel from '../models/event'
 import access from '../access'
 import mongoose from 'mongoose'
 import { UserId } from '../entities/users/entities.users'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
+import { TeamId } from '../entities/teams/entities.teams'
 
 export interface EventRequestContext extends AppRequestContext<UserDocument> {
   readonly event: MageEventAttrs | MageEventDocument
 }
 
 type TeamMembership = {
-  userIds: string[]
+  id: TeamId
+  userIds: UserId[]
 }
 
 declare module 'mongoose' {
@@ -38,38 +40,44 @@ export class EventPermissionServiceImpl {
   async ensureEventUpdatePermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), 'UPDATE_EVENT', 'update')
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     }
-    return permissionDenied('UPDATE_EVENT', String(context.requestingPrincipal()))
+    return permissionDenied(MageEventPermission.UPDATE_EVENT, String(context.requestingPrincipal()))
   }
 
   async ensureEventReadPermission(context: AppRequestContext): Promise<PermissionDeniedError | null> {
     const eventContext = context as EventRequestContext
     if (eventContext.event) {
-      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), 'READ_EVENT_USER', 'read')
+      return await this.authorizeEventAccess(eventContext.event, eventContext.requestingPrincipal(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
     }
-    return permissionDenied('READ_EVENT_USER', String(context.requestingPrincipal()))
+    return permissionDenied(MageEventPermission.READ_EVENT_USER, String(context.requestingPrincipal()))
   }
 
-  async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventPermission): Promise<PermissionDeniedError | null> {
+  /**
+   * Check for the given app-level permission on the role of the given user.
+   * If present, grant the user access.  If not, check for the given event-
+   * level permission on the ACL of the given event.  If present, grant the
+   * user access.  Otherwise, deny access.
+   * @param event
+   * @param user
+   * @param appPermission
+   * @param eventPermission
+   * @returns
+   */
+  async authorizeEventAccess(event: MageEventAttrs | MageEventDocument, user: UserDocument, appPermission: AnyPermission, eventPermission: EventAccessType): Promise<PermissionDeniedError | null> {
     if (access.userHasPermission(user, appPermission)) {
       return null
     }
-    const hasEventAclPermission = await this.userHasEventPermission(event, user._id.toHexString(), eventPermission)
+    const hasEventAclPermission = await this.userHasEventPermission(event, user.id, eventPermission)
     if (hasEventAclPermission) {
       return null
     }
-    return permissionDenied(appPermission, user.username, event.id)
+    return permissionDenied(appPermission, user.username, String(event.id))
   }
 
-  async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventPermission): Promise<boolean> {
-    let teams: TeamMembership[] = await this.resolveTeams(event)
-    // if asking for event read permission and user is part of a team in this event
-    if (eventPermission === 'read') {
-      const userIsEventParticipant = teams.some(team => team.userIds.indexOf(userId) !== -1)
-      if (userIsEventParticipant) {
-        return true
-      }
+  async userHasEventPermission(event: MageEventAttrs | MageEventDocument, userId: UserId, eventPermission: EventAccessType): Promise<boolean> {
+    if (eventPermission === EventAccessType.Read && await this.userIsParticipantInEvent(event, userId)) {
+      return true
     }
     let userEventRole = event.acl[userId]
     if (typeof userEventRole === 'object') {
@@ -79,36 +87,28 @@ export class EventPermissionServiceImpl {
     return userRoleHasPermission
   }
 
-  private async resolveTeams(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
-    if (event instanceof mongoose.Document) {
-      if (!(event).populated('teamIds')) {
-        event = await new Promise<MageEventDocument>((resolve, reject) => {
-          this.eventRepo.model.populate(event, 'teamIds' as any, (err, x) => {
-            if (err) {
-              reject(err)
-            }
-            resolve(x as MageEventDocument)
-          })
-        })
-      }
-      return (event.teamIds as TeamDocument[]).map(x => {
-        return {
-          userIds: x.userIds.map(id => id.toHexString())
-        }
-      })
-    }
-    // TODO: eliminate this side-effect mutation of the argument if possible
-    // if (!event.teams) {
-    //   event.teams = (await this.eventRepo.findTeamsInEvent(event.id))!
-    // }
-    // return event.teams
-    // well, let's just try it
-    const teams = await this.eventRepo.findTeamsInEvent(event.id)
+  /**
+   * Check whether the given user is a member of any of the given MAGE event's
+   * teams.
+   * TODO: This is arguably an entity-layer function, but is here for now as
+   * the concept of team membership only really has value in access control
+   * decisions, currently.
+   * @param event
+   * @param userId
+   * @returns
+   */
+  async userIsParticipantInEvent(event: MageEventAttrs | MageEventDocument, userId: UserId): Promise<boolean> {
+    const teams = await this.resolveTeamsForEvent(event)
+    return teams.some(team => team.userIds.indexOf(userId) !== -1)
+  }
+
+  private async resolveTeamsForEvent(event: MageEventAttrs | MageEventDocument): Promise<TeamMembership[]> {
+    const teams = await this.eventRepo.findTeamsInEvent(event)
     return teams!
   }
 }
 
-export const defaultEventPermissionsSevice = new EventPermissionServiceImpl(new MongooseMageEventRepository(EventModel.Model))
+export const defaultEventPermissionsService = new EventPermissionServiceImpl(new MongooseMageEventRepository(EventModel.Model))
 
 export class EventFeedsPermissionService implements FeedsPermissionService {
 

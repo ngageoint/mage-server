@@ -2,6 +2,7 @@ import { FeedId } from '../feeds/entities.feeds'
 import { copyFormAttrs, Form, FormField, FormId } from './entities.events.forms'
 import { Team, TeamId } from '../teams/entities.teams'
 import { copyLineStyleAttrs, LineStyle } from '../entities.global'
+import { UserId } from '../users/entities.users'
 
 export type MageEventId = number
 
@@ -129,17 +130,27 @@ export function formForId(id: FormId, mageEvent: MageEventAttrs): Form | null {
   return mageEvent.forms.find(x => x.id === id) || null
 }
 
-export type EventPermission = 'read' | 'update' | 'delete'
-export type EventRolePermissions = { [role in EventRole]: EventPermission[] }
-export type EventRole =  'OWNER' | 'MANAGER' | 'GUEST'
+export enum EventAccessType {
+  Read = 'read',
+  Update = 'update',
+  Delete = 'delete',
+}
+
+export enum EventRole {
+  OWNER = 'OWNER',
+  MANAGER = 'MANAGER',
+  GUEST = 'GUEST'
+}
+
+export type EventRolePermissions = { [role in EventRole]: EventAccessType[] }
 
 export const EventRolePermissions: EventRolePermissions = {
-  OWNER: ['read', 'update', 'delete'],
-  MANAGER: ['read', 'update'],
-  GUEST: ['read'],
-};
+  OWNER: [ EventAccessType.Read, EventAccessType.Update, EventAccessType.Delete ],
+  MANAGER: [ EventAccessType.Read, EventAccessType.Update ],
+  GUEST: [ EventAccessType.Read ],
+}
 
-export function rolesWithPermission(permission: EventPermission): EventRole[] {
+export function rolesWithPermission(permission: EventAccessType): EventRole[] {
   const roles: EventRole[] = []
   for (const key in EventRolePermissions) {
     if (EventRolePermissions[key as EventRole].indexOf(permission) !== -1) {
@@ -157,7 +168,7 @@ export function rolesWithPermission(permission: EventPermission): EventRole[] {
 export interface Acl {
   [userId: string]: {
     role: EventRole
-    permissions: EventPermission[]
+    permissions: EventAccessType[]
   }
 }
 

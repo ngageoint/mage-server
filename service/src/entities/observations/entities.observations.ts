@@ -1,7 +1,7 @@
 import { UserId } from '../users/entities.users'
 import { BBox, Feature, Geometry } from 'geojson'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
-import { PageOf, PagingParameters } from '../entities.global'
+import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
 import { Form, FormField, FormFieldType, FormId } from '../events/entities.events.forms'
 import * as fields from './entities.observations.fields'
 import { JsonPrimitive } from '../entities.json_types'
@@ -18,14 +18,17 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
   createdAt: Date
   lastModified: Date
   attachments: readonly Attachment[]
-  importantFlag?: Readonly<ObservationImportantFlag> | undefined
+  important?: Readonly<ObservationImportantFlag> | undefined
   /**
    * TODO: scalability - potential problem if thousands of users favorite;
    * this should not be returned to the client
    */
-  favoriteUserIds?: readonly UserId[]
+  favoriteUserIds: readonly UserId[]
   /**
-   * TODO: scalability - likely not a problem in practice most of the time
+   * * TODO: scalability - likely not a problem in practice most of the time
+   * * TODO: we do not actually have a reason to maintain an array of states -
+   *   state should just be a single value object, and should not need
+   *   a unique id
    */
   states: readonly ObservationState[]
 }
@@ -33,7 +36,7 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
 export interface ObservationFeatureProperties {
   /**
    * This timestamp is a user-supplied timestamp that indicates the actual time
-   * time the observation occurred.
+   * the observation occurred.
    */
   timestamp: Date
   forms: FormEntry[]
@@ -46,6 +49,7 @@ export interface ObservationImportantFlag {
 }
 
 export interface ObservationState {
+  id: string | PendingEntityId
   name: 'active' | 'archived'
   userId?: UserId | undefined
 }
@@ -62,7 +66,7 @@ export interface FormEntry {
   [formFieldName: string]: FormFieldEntry
 }
 
-export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry
+export type FormFieldEntryItem = Exclude<JsonPrimitive, null> | Geometry | Date
 export type FormFieldEntry = FormFieldEntryItem | FormFieldEntryItem[] | null
 
 export type AttachmentId = string
@@ -82,6 +86,10 @@ export interface Attachment {
   id: AttachmentId
   observationFormId: FormEntryId
   fieldName: string
+  /**
+   * TODO: Nothing seems to use this property.  Should we remove it, or
+   * actually use it to inform browser caching?
+   */
   lastModified?: Date
   /**
    * The content type is an IANA standard media type string, e.g., `image/jpeg`.
@@ -91,12 +99,32 @@ export interface Attachment {
   name?: string
   width?: number
   height?: number
+  /**
+   * The attachment's content locator is an abstract term that mostly exists
+   * to reconcile with the legacy design of storing the relative file system
+   * path of an attachment's file on the attachment document itself.  However,
+   * as MAGE transitions to cloud-native infrastructure, one can more easily
+   * envision swapping some sort of cloud-based BLOB storage service for the
+   * legacy local file system storage.  Renaming the old `relativePath`
+   * property to `contentLocator` is an attempt allow for saving a lookup key
+   * that does not necessarily imply an underlying file system as the storage
+   * layer.  Implementations of the abstract {@link AttachmentStore} interface
+   * would assign their own lookup key to this property, although the intention
+   * of that interface's design is to be completely opaque with respect to how
+   * an implementation stores and indexes attachment content.  An attachment
+   * store implementation may not use `contentLocator` at all.
+   */
+  contentLocator?: string
   oriented: boolean
   thumbnails: Thumbnail[]
 }
 
 export interface Thumbnail {
   minDimension: number
+  /**
+   * See {@link Attachment.contentLocator} for an explanation.
+   */
+  contentLocator?: string
   contentType?: string
   size?: number
   name?: string
@@ -113,8 +141,8 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
     createdAt: new Date(from.createdAt.getTime()),
     lastModified: new Date(from.lastModified.getTime()),
     attachments: from.attachments.map(copyAttachmentAttrs),
-    importantFlag: from.importantFlag ? copyImportantFlagAttrs(from.importantFlag) : undefined,
-    favoriteUserIds: from.favoriteUserIds ? Object.freeze([ ...from.favoriteUserIds ]) : undefined,
+    important: from.important ? copyImportantFlagAttrs(from.important) : undefined,
+    favoriteUserIds: Object.freeze([ ...from.favoriteUserIds ]),
     states: Object.freeze(from.states.map(copyObservationStateAttrs)),
     type: 'Feature',
     // meh, these shallow copies are probably fine ... right?
@@ -136,12 +164,14 @@ export function copyAttachmentAttrs(from: Attachment): Attachment {
     height: from.height,
     oriented: from.oriented,
     thumbnails: from.thumbnails.map(copyThumbnailAttrs),
+    contentLocator: from.contentLocator
   }
 }
 
 export function copyThumbnailAttrs(from: Thumbnail): Thumbnail {
   return {
     minDimension: from.minDimension,
+    contentLocator: from.contentLocator,
     contentType: from.contentType,
     name: from.name,
     size: from.size,
@@ -152,6 +182,7 @@ export function copyThumbnailAttrs(from: Thumbnail): Thumbnail {
 
 export function copyObservationStateAttrs(from: ObservationState): ObservationState {
   return {
+    id: from.id,
     name: from.name,
     userId: from.userId
   }
@@ -185,6 +216,7 @@ export class Observation implements Readonly<ObservationAttrs> {
    * @param mageEvent
    */
   static evaluate(attrs: ObservationAttrs, mageEvent: MageEvent): Observation {
+    attrs = copyObservationAttrs(attrs)
     const validation = validateObservation(attrs, mageEvent)
     return new Observation(ObservationConstructionToken, attrs, mageEvent, validation)
   }
@@ -196,6 +228,10 @@ export class Observation implements Readonly<ObservationAttrs> {
    * Eventually this should perform the logic to find the differences and
    * produce the domain events resulting from updating the target observation
    * to the update attributes.
+   *
+   * Return an {@link ObservationUpdateError} if the event IDs on the target
+   * and udpate do not match.
+   *
    * @param target
    * @param update
    * @returns
@@ -204,8 +240,11 @@ export class Observation implements Readonly<ObservationAttrs> {
     if (update.eventId !== target.eventId) {
       return ObservationUpdateError.eventIdMismatch(target.eventId, update.eventId)
     }
-    update = copyObservationAttrs(update)
-    update.lastModified = new Date()
+    update = {
+      ...update,
+      createdAt: new Date(target.createdAt),
+      lastModified: new Date()
+    }
     return Observation.evaluate(update, target.mageEvent)
   }
 
@@ -228,9 +267,9 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly deviceId?: string | undefined
   readonly createdAt: Date
   readonly lastModified: Date
-  readonly importantFlag?: Readonly<ObservationImportantFlag> | undefined
+  readonly important?: Readonly<ObservationImportantFlag> | undefined
   readonly states: readonly ObservationState[]
-  readonly favoriteUserIds?: readonly UserId[] | undefined
+  readonly favoriteUserIds: readonly UserId[]
   readonly type = 'Feature'
   readonly bbox?: BBox | undefined
   readonly geometry: Readonly<Geometry>
@@ -246,10 +285,19 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.id = attrs.id
     this.eventId = attrs.eventId
     this.userId = attrs.userId
-    this.createdAt = attrs.createdAt
-    this.lastModified = attrs.lastModified
-    this.importantFlag = attrs.importantFlag ? Object.freeze({ ...attrs.importantFlag }) : undefined
-    this.states = Object.freeze([ ...attrs.states ])
+    this.deviceId = attrs.deviceId
+    this.createdAt = new Date(attrs.createdAt)
+    this.lastModified = new Date(attrs.lastModified)
+    this.important = attrs.important ? Object.freeze({ ...attrs.important }) : undefined
+    const states = attrs.states.length ? attrs.states.map(copyObservationStateAttrs) : [
+      {
+        id: PendingEntityId,
+        name: 'active',
+        userId: attrs.userId
+      }
+    ] as ObservationState[]
+    this.states = Object.freeze(states)
+    this.favoriteUserIds = Object.freeze(attrs.favoriteUserIds.slice())
     this.type = 'Feature'
     this.bbox = attrs.bbox
     this.geometry = attrs.geometry
@@ -264,6 +312,16 @@ export class Observation implements Readonly<ObservationAttrs> {
     return this.#validation
   }
 
+  /**
+   * This is a convenience accessor for {@link ObservationFeatureProperties.timestamp}.
+   */
+  get timestamp(): Date {
+    return this.properties.timestamp
+  }
+
+  /**
+   * This is a convenience accessor for {@link ObservationFeatureProperties.forms}.
+   */
   get formEntries(): FormEntry[] {
     return Array.from(this.#formEntriesById.values())
   }
@@ -276,7 +334,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     return this.#attachmentsById.get(id) || null
   }
 
-  attachmentsFor(fieldName: string, formEntryId: FormEntryId): Attachment[] {
+  attachmentsForField(fieldName: string, formEntryId: FormEntryId): Attachment[] {
     return attachmentsForField(fieldName, formEntryId, this)
   }
 }
@@ -285,8 +343,7 @@ export interface ObservationValidationResult {
   readonly hasErrors: boolean
   readonly coreAttrsErrors: { readonly [attr in ObservationValidationCoreAttrKey]?: string }
   readonly formCountErrors: readonly [ FormId, FormCountError ][]
-
-  readonly formEntryErrors: readonly [ FormEntryId, FormEntryValidationError ][]
+  readonly formEntryErrors: readonly [ number, FormEntryValidationError ][]
   /**
    * This list contains attachment error map entries where the key is the
    * position of the attachment in the `attachments` array on the observation,
@@ -358,17 +415,29 @@ export class FormCountError {
 
 export class FormEntryValidationError {
 
-  static invalidFormReference(formEntryId: FormEntryId, formEntryPosition: number): FormEntryValidationError {
-    return new FormEntryValidationError(formEntryId, formEntryPosition)
-  }
-
+  #entryLevelErrors: Set<FormEntryValidationErrorReason> = new Set()
   #fieldErrors: Map<string, FormFieldValidationError> = new Map()
 
-  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number, readonly formName: string | null = null) {}
+  /**
+   * If there is no form reference error, set the form name for convenience
+   * when building the validation error message text.
+   */
+  formName: string | null = null
+
+  constructor(readonly formEntryId: FormEntryId, readonly formEntryPosition: number) {}
+
+  addEntryLevelError(x: FormEntryValidationErrorReason): this {
+    this.#entryLevelErrors.add(x)
+    return this
+  }
 
   addFieldError(x: FormFieldValidationError): this {
     this.#fieldErrors.set(x.fieldName, x)
     return this
+  }
+
+  get entryLevelErrors(): Set<FormEntryValidationErrorReason> {
+    return new Set(this.#entryLevelErrors)
   }
 
   /**
@@ -377,10 +446,11 @@ export class FormEntryValidationError {
   get fieldErrors(): Map<string, FormFieldValidationError> {
     return new Map(this.#fieldErrors)
   }
+}
 
-  get isInvalidFormReference(): boolean {
-    return this.formName === null
-  }
+export enum FormEntryValidationErrorReason {
+  FormRef = 'FormEntryValidationErrorReason.FormRef',
+  DuplicateId = 'FormEntryValidationErrorReason.DuplicateId'
 }
 
 export type FormFieldValidationErrorAttrs = {
@@ -417,9 +487,9 @@ export class FormFieldValidationError {
 }
 
 export enum AttachmentValidationErrorReason {
-  FieldRef = 'field',
-  FormEntryRef = 'form_entry',
-  DuplicateId = 'duplicate_id',
+  FieldRef = 'AttachmentValidationErrorReason.FieldRef',
+  FormEntryRef = 'AttachmentValidationErrorReason.FormEntryRef',
+  DuplicateId = 'AttachmentValidationErrorReason.DuplicateId',
 }
 
 export class AttachmentValidationError {
@@ -448,8 +518,8 @@ export function validationResultMessage(result: ObservationValidationResult): st
   for (const [ formId, err ] of formCountErrors) {
     errList.push(`${bulletPoint} ${err.message()}`)
   }
-  for (const [ pos, formEntryErr ] of formEntryErrors) {
-    errList.push(`${bulletPoint} Form entry ${pos + 1} (${formEntryErr.formName}) is invalid.`)
+  for (const [ formEntryId, formEntryErr ] of formEntryErrors) {
+    errList.push(`${bulletPoint} Form entry ${formEntryErr.formEntryPosition + 1} (${formEntryErr.formName}) is invalid.`)
     for (const fieldErr of formEntryErr.fieldErrors.values()) {
       errList.push(`  ${bulletPoint} ${fieldErr.message}`)
     }
@@ -486,14 +556,28 @@ export function attachmentsForField(field: FormField | string, formEntry: FormEn
   return observationAttrs.attachments.filter(x => x.fieldName === fieldName && x.observationFormId === formEntryId)
 }
 
+/**
+ * Remove the form entry with the given ID and return the resulting
+ * (potentially invalid) observation.
+ *
+ * TODO: add a `FormEntryNotFound` error similar to `removeAttachment()`
+ */
+export function removeFormEntry(observation: Observation, formEntryId: FormEntryId): Observation {
+  const mod = copyObservationAttrs(observation)
+  const targetPos = observation.formEntries.findIndex(x => x.id === formEntryId)
+  mod.properties.forms.splice(targetPos, 1)
+  mod.attachments = observation.attachments.filter(x => x.observationFormId !== formEntryId)
+  return Observation.assignTo(observation, mod) as Observation
+}
+
 export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 
 /**
  * Add the given attachment to the given observation.  Return a new observation
- * instance with the added attachment, or return an {@link AttachmentValidationError}
+ * instance with the added attachment, or return an {@link AttachmentAddError}
  * if the given attachment does not reference a valid form entry and field.
- * Note that returned observation may still have validation errors resulting
+ * Note that the returned observation may still have validation errors resulting
  * from the added attachment if the attachment violates the associated form
  * constraints, such as min/max or allowed attachment types.
  * @param observation
@@ -517,7 +601,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   }
   const mod = copyObservationAttrs(observation)
   mod.attachments = [ ...mod.attachments, attachment ]
-  return Observation.evaluate(mod, observation.mageEvent)
+  return Observation.assignTo(observation, mod) as Observation
 }
 
 /**
@@ -543,6 +627,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   patched.name = patch.hasOwnProperty('name') ? patch.name : patched.name
   patched.oriented = patch.hasOwnProperty('oriented') ? !!patch.oriented : patched.oriented
   patched.size = patch.hasOwnProperty('size') ? patch.size : patched.size
+  patched.contentLocator = patch.hasOwnProperty('contentLocator') ? patch.contentLocator : patched.contentLocator
   patched.thumbnails = patch.hasOwnProperty('thumbnails') ? patch.thumbnails?.map(copyThumbnailAttrs) as Thumbnail[] : patched.thumbnails
   patched.lastModified = new Date()
   const patchedObservation = copyObservationAttrs(observation)
@@ -551,7 +636,47 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
   const attachments = before.concat(patched, after)
   patchedObservation.attachments = Object.freeze(attachments)
   patchedObservation.lastModified = new Date(patched.lastModified)
-  return Observation.evaluate(patchedObservation, observation.mageEvent)
+  return Observation.assignTo(observation, patchedObservation) as Observation
+}
+
+export function removeAttachment(observation: Observation, attachmentId: AttachmentId): Observation | AttachmentNotFoundError {
+  const targetPos = observation.attachments.findIndex(x => x.id === attachmentId)
+  const target = observation.attachments[targetPos]
+  if (!target) {
+    return new AttachmentNotFoundError(attachmentId)
+  }
+  const afterAttrs = copyObservationAttrs(observation)
+  const attachments = afterAttrs.attachments.slice()
+  attachments.splice(targetPos, 1)
+  afterAttrs.attachments = attachments
+  return Observation.assignTo(observation, afterAttrs) as Observation
+}
+
+/**
+ * Add the given thumbnail to the given attachment.  If the attachment already
+ * has a thumbnail at the same minimum dimension as the given thumbnail,
+ * replace the existing thumbnail with the given thumbnail at the same position
+ * in the thumbnails array.
+ * @param observation
+ * @param attachmentId
+ * @param thumbnail
+ * @returns
+ */
+export function putAttachmentThumbnailForMinDimension(observation: Observation, attachmentId: AttachmentId, thumbnail: Thumbnail): Observation | AttachmentNotFoundError {
+  const target = observation.attachmentFor(attachmentId)
+  if (!target) {
+    return new AttachmentNotFoundError(attachmentId)
+  }
+  const thumbnailsPatch = target.thumbnails.map(copyThumbnailAttrs)
+  const targetThumbPos = thumbnailsPatch.findIndex(x => x.minDimension === thumbnail.minDimension)
+  const putThumbAttrs = copyThumbnailAttrs(thumbnail)
+  if (targetThumbPos >= 0) {
+    thumbnailsPatch[targetThumbPos] = putThumbAttrs
+  }
+  else {
+    thumbnailsPatch.push(putThumbAttrs)
+  }
+  return patchAttachment(observation, attachmentId, { thumbnails: thumbnailsPatch })
 }
 
 export class AttachmentAddError extends Error {
@@ -572,17 +697,37 @@ export class AttachmentNotFoundError extends Error {
 }
 
 /**
+ * Return the index of the thumbnail in the given attachment's thumbnail array
+ * that best satisfies the given target size.  This is essentially the
+ * thumbnail with the smallest minimum dimension greater than or equal to the
+ * requested target size.
+ * @param targetSize
+ */
+export function indexOfThumbnailForTargetSize(targetSize: number, attachment: Attachment): number | undefined {
+  const orderedThumbs = attachment.thumbnails.slice().sort((a, b) => a.minDimension - b.minDimension)
+  const pos = orderedThumbs.findIndex(thumbnail => {
+    return (thumbnail.minDimension < Number(attachment.height) || !attachment.height) &&
+      (thumbnail.minDimension < Number(attachment.width) || !attachment.width) &&
+      thumbnail.minDimension >= targetSize
+  })
+  return pos >= 0 ? pos : undefined
+}
+
+
+
+/**
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
  */
  export interface EventScopedObservationRepository {
   readonly eventScope: MageEventId
+  allocateObservationId(): Promise<ObservationId>
   /**
    * TODO: return errors for invalid ids, including observation, form entry,
    * and attachments
    * @param observation
    */
-  save(observation: Observation): Promise<Observation>
+  save(observation: Observation): Promise<Observation | ObservationRepositoryError>
   findById(id: ObservationId): Promise<Observation | null>
   /**
    * Return the most recent observation in the event as determined by
@@ -590,9 +735,26 @@ export class AttachmentNotFoundError extends Error {
    * observations in the event.
    * @returns an `Observation` object or `null`
    */
-  findLatest(): Promise<Observation | null>
+  findLatest(): Promise<ObservationAttrs | null>
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
+  /**
+   * Because attachments reference a form entry by its ID, an API to generate
+   * form entry IDs is necessary.
+   */
   nextFormEntryIds(count?: number): Promise<FormEntryId[]>
+  nextAttachmentIds(count?: number): Promise<AttachmentId[]>
+}
+
+export class ObservationRepositoryError extends Error {
+
+  constructor(readonly code: ObservationRepositoryErrorCode, message?: string) {
+    super(message)
+  }
+}
+
+export enum ObservationRepositoryErrorCode {
+  InvalidObservationId = 'ObservationRepositoryError.InvalidObservationId',
+  InvalidObservation = 'ObservationRepositoryError.InvalidObservation'
 }
 
 export interface ObservationRepositoryForEvent {
@@ -606,6 +768,12 @@ export interface PendingAttachmentContent {
   tempLocation: NodeJS.WritableStream
 }
 
+/**
+ * TODO: Maybe instead of the `null | Observation | AttachmentStoreError`
+ * pattern many of these method signatures use, a single `AttachmentStoreResult`
+ * class with a `success` flag and `observation` and `error` properties would
+ * be eaiser for clients to consume.
+ */
 export interface AttachmentStore {
   /**
    * Create a temporary staging area to hold attachment content pending
@@ -624,12 +792,17 @@ export interface AttachmentStore {
    * Save the given content to the store for the specified attachment.  If the
    * `content` argument is an ID for {@link PendingAttachmentContent staged content},
    * the store will move the content at the temporary location to the permanent
-   * location for the specified attachment.
+   * location for the specified attachment.  If the store assigns a new
+   * {@link Attachment.contentLocator | content locator} to the attachment after
+   * a successful save, return a new observation instance with the {@link patchAttachment | patched}
+   * attachment.  Return `null` if the save succeeded and no change to the
+   * attachment was necessary.  Return an {@link AttachmentStoreError} if the
+   * save failed.
    * @param content
    * @param attachmentId
    * @param observation
    */
-  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
+  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
@@ -638,15 +811,42 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
-  deleteThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound>>
+  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  /**
+   * Return a read stream of the content for the given attachment.  The client
+   * can specify an optional zero-based range of bytes to read from the
+   * content, which will return a read stream limited the specified range.
+   * Note that the end index of the range is inclusive, as is the case with
+   * Node's streams API, as opposed to typeical array and sring operations, for
+   * which the end index is typically exclusive.
+   * @param attachmentId
+   * @param observation
+   * @param range
+   */
+  readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  /**
+   * Delete the content for the given attachment ID, including any thumbnails.
+   * If the attachment and/or thumbnails had content locators, return a new
+   * observation instance with content locators removed from the attachments
+   * and thumbnails.  Return an error if the attachment ID does not exist on
+   * the given observation, if the attachment content was missing, or some
+   * other error occurred deleting the content from the underlying store.
+   */
+  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
 }
 
-export class AttachmentStoreError<Code extends AttachmentStoreErrorCode> extends Error {
-  constructor(readonly errorCode: Code, message?: string) {
+export class AttachmentStoreError extends Error {
+
+  static invalidAttachmentId(attachmentId: AttachmentId, observation: Observation): AttachmentStoreError {
+    return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId, `observation ${observation.id} has no attachment ${attachmentId}`)
+  }
+
+  static invalidThumbnailDimension(minDimension: number, attachmentId: AttachmentId, observation: Observation): AttachmentStoreError {
+    return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidThumbnailDimension, `attachment ${attachmentId} on observation ${observation.id} has no thumbnail with dimension ${minDimension}`)
+  }
+
+  constructor(readonly errorCode: AttachmentStoreErrorCode, message?: string) {
     super(message)
   }
 }
@@ -657,11 +857,17 @@ export enum AttachmentStoreErrorCode {
    * attachment list.
    */
   InvalidAttachmentId = 'AttachmentStoreError.InvalidAttachmentId',
+  InvalidThumbnailDimension = 'AttachmentStoreError.InvalidThumbnailDimension',
   /**
    * The content for the given attachment ID was not found in the attachment
    * store.
    */
   ContentNotFound = 'AttachmentStoreError.ContentNotFound',
+  /**
+   * The underlying storage system, e.g. file system, raised an error during
+   * some I/O operation.
+   */
+  StorageError = 'AttachmentStoreError.StorageError'
 }
 
 function validateObservationCoreAttrs(validation: ObservationValidationContext): ObservationValidationContext {
@@ -690,19 +896,29 @@ function validateObservationFormEntries(validation: ObservationValidationContext
   if (!Array.isArray(observationAttrs.properties.forms)) {
     return validation.addCoreAttrsError('forms', 'The observation requires an array of form entries.')
   }
+  const formEntryIds = new Set<FormEntryId>()
   const formEntryCounts = observationAttrs.properties.forms.reduce((formEntryCounts, formEntry, formEntryPos) => {
+    const formEntryError = new FormEntryValidationError(formEntry.id, formEntryPos)
+    if (formEntryIds.has(formEntry.id)) {
+      formEntryError.addEntryLevelError(FormEntryValidationErrorReason.DuplicateId)
+    }
+    formEntryIds.add(formEntry.id)
     const form = mageEvent.formFor(formEntry.formId)
     if (form) {
       if (!form.archived) {
-        formEntryCounts.set(formEntry.formId, (formEntryCounts.get(formEntry.formId) || 0) + 1)
-        validateFormFieldEntries(formEntry, form, validation)
+        formEntryError.formName = form.name
+        formEntryCounts.set(form.id, (formEntryCounts.get(form.id) || 0) + 1)
+        validateFormFieldEntries(formEntry, form, formEntryError, validation)
       }
     }
     else {
-      validation.addFormEntryError(FormEntryValidationError.invalidFormReference(formEntry.id, formEntryPos))
+      formEntryError.addEntryLevelError(FormEntryValidationErrorReason.FormRef)
+    }
+    if (formEntryHasErrors(formEntryError)) {
+      validation.addFormEntryError(formEntryError)
     }
     return formEntryCounts
-  }, new Map<FormId, number>())
+  }, new Map<FormId, number>(mageEvent.forms.map(x => [ x.id, 0 ])))
   let totalActiveFormEntryCount = 0
   for (const [ formId, formEntryCount ] of formEntryCounts) {
     const form = mageEvent.formFor(formId)!
@@ -722,6 +938,10 @@ function validateObservationFormEntries(validation: ObservationValidationContext
   }
   // TODO: invalidate new form entries that reference archived forms
   return validation
+}
+
+function formEntryHasErrors(err: FormEntryValidationError): boolean {
+  return err.entryLevelErrors.size > 0 || err.fieldErrors.size > 0
 }
 
 function validateObservationAttachments(validation: ObservationValidationContext): ObservationValidationContext {
@@ -767,17 +987,17 @@ interface FormFieldValidationContext {
   mageEvent: MageEvent,
 }
 
-function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, null> {
+function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, FormFieldEntry | undefined> {
   return {
     failedBecauseTheEntry(reason: string, constraint: FieldConstraintKey = FieldConstraintKey.Value): FormFieldValidationError {
       return new FormFieldValidationError({ fieldName: context.field.name, message: `${context.field.name} ${reason}`, constraint: constraint })
     },
-    succeeded(): null { return null }
+    succeeded(parsed?: FormFieldEntry): typeof parsed { return parsed }
   }
 }
 
 interface FormFieldValidationRule {
-  (context: FormFieldValidationContext): FormFieldValidationError | null
+  (context: FormFieldValidationContext): FormFieldValidationError | FormFieldEntry | undefined
 }
 
 function validateRequiredThen(rule: FormFieldValidationRule): FormFieldValidationRule {
@@ -809,23 +1029,28 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.TextArea]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
 }
 
-function validateFormFieldEntries(formEntry: FormEntry, form: Form, validation: ObservationValidationContext): void {
+/**
+ * TODO: This retains legacy functionality of only keying of form fields in the
+ * event form to validate the values in the form entry.  However, this leaves
+ * keys in the form entry that do not have a corresponding form field.  A
+ * client could thus submit an observation with thousands of keys in a fomr
+ * entry.
+ */
+function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
   const { mageEvent, observationAttrs } = validation
-  const formEntryPosition = validation.observationAttrs.properties.forms.findIndex(x => x.id === formEntry.id)
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
-  const formEntryError = activeFields.reduce((formEntryError, field) => {
+  activeFields.forEach(field => {
     const fieldEntry = formEntry[field.name]
     const fieldValidation: FormFieldValidationContext = { field, fieldEntry, formEntry, mageEvent, observationAttrs }
-    const fieldError = FieldTypeValidationRules[field.type](fieldValidation)
-    if (fieldError) {
-      formEntryError.addFieldError(fieldError)
+    const resultEntry = FieldTypeValidationRules[field.type](fieldValidation)
+    if (resultEntry instanceof FormFieldValidationError) {
+      formEntryError.addFieldError(resultEntry)
     }
-    return formEntryError
-  }, new FormEntryValidationError(formEntry.id, formEntryPosition, form.name))
-  if (formEntryError.fieldErrors.size > 0) {
-    validation.addFormEntryError(formEntryError)
-  }
+    else if (resultEntry !== void(0)) {
+      formEntry[field.name] = resultEntry
+    }
+  })
 }
 
 class ObservationValidationContext {
@@ -834,8 +1059,8 @@ class ObservationValidationContext {
   readonly mageEvent: MageEvent
 
   readonly #coreAttrsErrors: Map<ObservationValidationCoreAttrKey, string>
-  readonly #formEntryErrors: Map<FormEntryId, FormEntryValidationError>
   readonly #formCountErrors: Map<FormId, FormCountError>
+  readonly #formEntryErrors: Map<number, FormEntryValidationError>
   readonly #attachmentErrors: Map<number, AttachmentValidationError>
   #totalFormCountError: TotalFormCountError | null = null
 
@@ -877,7 +1102,7 @@ class ObservationValidationContext {
   }
 
   addFormEntryError(formEntryError: FormEntryValidationError): this {
-    this.#formEntryErrors.set(formEntryError.formEntryId, formEntryError)
+    this.#formEntryErrors.set(formEntryError.formEntryPosition, formEntryError)
     return this
   }
 
@@ -894,16 +1119,12 @@ class ObservationValidationContext {
     return new Map(this.#formCountErrors)
   }
 
-  get formEntryErrors(): Map<FormEntryId, FormEntryValidationError> {
+  get formEntryErrors(): Map<number, FormEntryValidationError> {
     return new Map(this.#formEntryErrors)
   }
 
   get attachmentErrors(): Map<number, AttachmentValidationError> {
     return new Map(this.#attachmentErrors)
-  }
-
-  formEntryErrorForId(id: FormEntryId): FormEntryValidationError | null {
-    return this.#formEntryErrors.get(id) || null
   }
 
   get totalFormCountError(): TotalFormCountError | null {

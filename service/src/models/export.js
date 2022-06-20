@@ -100,7 +100,7 @@ exports.getExportsByUserId = function (userId, options = {}) {
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }
-  
+
   return query.exec();
 };
 

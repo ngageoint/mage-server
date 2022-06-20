@@ -108,7 +108,7 @@ describe('feeds web controller', function () {
 
     it('fails without permission', async function () {
 
-      appLayer.listServiceTypes(Arg.any()).resolves(AppResponse.error<any, PermissionDeniedError>(permissionDenied('list service types', 'admin')))
+      appLayer.listServiceTypes(Arg.any()).resolves(AppResponse.error(permissionDenied('list service types', 'admin')))
 
       const res = await client.get(`${rootPath}/service_types`)
 
@@ -159,7 +159,7 @@ describe('feeds web controller', function () {
     it('fails with 403 without permission', async function () {
 
       appLayer.previewTopics(Arg.any())
-        .resolves(AppResponse.error<FeedTopic[], PermissionDeniedError>(permissionDenied('preview topics', 'you')))
+        .resolves(AppResponse.error(permissionDenied('preview topics', 'you')))
 
       const res = await client.post(`${rootPath}/service_types/nga-msi/topic_preview`).send({
         serviceConfig: 'https://msi.gs.mil'
@@ -173,7 +173,7 @@ describe('feeds web controller', function () {
     it('fails with 404 if the service type does not exist', async function () {
 
       appLayer.previewTopics(Arg.any())
-        .resolves(AppResponse.error<FeedTopic[], EntityNotFoundError>(entityNotFound('nga-msi', 'feed service type')))
+        .resolves(AppResponse.error(entityNotFound('nga-msi', 'feed service type')))
 
       const res = await client.post(`${rootPath}/service_types/nga-msi/topic_preview`).send({
         serviceConfig: 'does not exist'
@@ -187,7 +187,7 @@ describe('feeds web controller', function () {
     it('fails with 400 if the service config is invalid', async function () {
 
       appLayer.previewTopics(Arg.any())
-        .resolves(AppResponse.error<FeedTopic[], InvalidInputError>(invalidInput('bad service config', ['unexpected null', 'serviceConfig'])))
+        .resolves(AppResponse.error(invalidInput('bad service config', ['unexpected null', 'serviceConfig'])))
 
       const res = await client.post(`${rootPath}/service_types/nga-msi/topic_preview`).send({
         serviceConfig: null
@@ -230,7 +230,7 @@ describe('feeds web controller', function () {
 
     it('fails with 403 without permission', async function () {
 
-      appLayer.createService(Arg.any()).resolves(AppResponse.error<any, PermissionDeniedError>(permissionDenied('create service', 'admin')))
+      appLayer.createService(Arg.any()).resolves(AppResponse.error(permissionDenied('create service', 'admin')))
 
       const res = await client.post(`${rootPath}/services`)
         .send({
@@ -253,7 +253,7 @@ describe('feeds web controller', function () {
           url: 'https://invalid.service.url'
         },
       }
-      appLayer.createService(Arg.any()).resolves(AppResponse.error<any, InvalidInputError>(invalidInput('invalid service config', ['url is invalid', 'config', 'url'])))
+      appLayer.createService(Arg.any()).resolves(AppResponse.error(invalidInput('invalid service config', ['url is invalid', 'config', 'url'])))
 
       const res = await client.post(`${rootPath}/services`).send(reqBody)
 
@@ -273,7 +273,7 @@ invalid service config
         title: 'What Service Type?',
         config: {}
       }
-      appLayer.createService(Arg.any()).resolves(AppResponse.error<any, EntityNotFoundError>(entityNotFound(reqBody.serviceType, 'FeedServiceType')))
+      appLayer.createService(Arg.any()).resolves(AppResponse.error(entityNotFound(reqBody.serviceType, 'FeedServiceType')))
 
       const res = await client.post(`${rootPath}/services`).send(reqBody)
 
@@ -391,7 +391,7 @@ invalid request
     it('returns 403 without permission', async function () {
 
       appLayer.listServices(Arg.any())
-        .resolves(AppResponse.error<FeedService[], PermissionDeniedError>(permissionDenied('list services', 'you')))
+        .resolves(AppResponse.error(permissionDenied('list services', 'you')))
       const res = await client.get(`${rootPath}/services`)
 
       expect(res.status).to.equal(403)
@@ -434,7 +434,7 @@ invalid request
       const service = uniqid()
       const appReq: GetFeedServiceRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
-      appLayer.getService(Arg.any()).resolves(AppResponse.error<FeedServiceExpanded, EntityNotFoundError>(entityNotFound(service, 'feed service')))
+      appLayer.getService(Arg.any()).resolves(AppResponse.error(entityNotFound(service, 'feed service')))
       const res = await client.get(`${rootPath}/services/${service}`)
 
       expect(res.status).to.equal(404)
@@ -448,7 +448,7 @@ invalid request
       const service = uniqid()
       const appReq: GetFeedServiceRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
-      appLayer.getService(Arg.any()).resolves(AppResponse.error<FeedServiceExpanded, PermissionDeniedError>(permissionDenied('get service', adminPrincipal.user, service)))
+      appLayer.getService(Arg.any()).resolves(AppResponse.error(permissionDenied('get service', adminPrincipal.user, service)))
       const res = await client.get(`${rootPath}/services/${service}`)
 
       expect(res.status).to.equal(403)
@@ -477,7 +477,7 @@ invalid request
       const service = uniqid()
       const appReq: DeleteFeedServiceRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
-      appLayer.deleteService(Arg.any()).resolves(AppResponse.error<true, EntityNotFoundError>(entityNotFound(service, 'feed service')))
+      appLayer.deleteService(Arg.any()).resolves(AppResponse.error(entityNotFound(service, 'feed service')))
       const res = await client.delete(`${rootPath}/services/${service}`)
 
       expect(res.status).to.equal(404)
@@ -491,7 +491,7 @@ invalid request
       const service = uniqid()
       const appReq: DeleteFeedServiceRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
-      appLayer.deleteService(Arg.any()).resolves(AppResponse.error<true, PermissionDeniedError>(permissionDenied('delete service', adminPrincipal.user, service)))
+      appLayer.deleteService(Arg.any()).resolves(AppResponse.error(permissionDenied('delete service', adminPrincipal.user, service)))
       const res = await client.delete(`${rootPath}/services/${service}`)
 
       expect(res.status).to.equal(403)
@@ -546,7 +546,7 @@ invalid request
       const appReq: ListServiceTopicsRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
       appLayer.listTopics(Arg.requestTokenMatches(appReq))
-        .resolves(AppResponse.error<FeedTopic[], EntityNotFoundError>(entityNotFound(service, 'FeedService')))
+        .resolves(AppResponse.error(entityNotFound(service, 'FeedService')))
 
       const res = await client.get(`${rootPath}/services/${service}/topics`)
       expect(res.status).to.equal(404)
@@ -560,7 +560,7 @@ invalid request
       const appReq: ListServiceTopicsRequest = createAdminRequest({ service })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ service })).returns(appReq)
       appLayer.listTopics(Arg.requestTokenMatches(appReq))
-        .resolves(AppResponse.error<FeedTopic[], PermissionDeniedError>(permissionDenied('list topics', adminPrincipal.user)))
+        .resolves(AppResponse.error(permissionDenied('list topics', adminPrincipal.user)))
 
       const res = await client.get(`${rootPath}/services/${service}/topics`)
       expect(res.status).to.equal(403)
@@ -872,7 +872,7 @@ invalid request
       }
 
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
-      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, EntityNotFoundError>(entityNotFound(service, 'FeedService')))
+      appLayer.previewFeed(appReq).resolves(AppResponse.error(entityNotFound(service, 'FeedService')))
 
       const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
 
@@ -927,7 +927,7 @@ invalid request
       }
 
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
-      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, EntityNotFoundError>(entityNotFound(topic, 'FeedTopic')))
+      appLayer.previewFeed(appReq).resolves(AppResponse.error(entityNotFound(topic, 'FeedTopic')))
 
       const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
 
@@ -981,7 +981,7 @@ invalid request
       }
 
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: minimalFeed, variableParams: undefined })).returns(appReq)
-      appLayer.previewFeed(appReq).resolves(AppResponse.error<FeedPreview, PermissionDeniedError>(permissionDenied('FEEDS_CREATE_FEED', adminPrincipal.user)))
+      appLayer.previewFeed(appReq).resolves(AppResponse.error(permissionDenied('FEEDS_CREATE_FEED', adminPrincipal.user)))
 
       const res = await client.post(`${rootPath}/services/${service}/topics/${topic}/feed_preview`).send({})
 
@@ -1198,7 +1198,7 @@ invalid request
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
-      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, PermissionDeniedError>(permissionDenied(service, 'feed service')))
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(permissionDenied(service, 'feed service')))
 
       const res = await client
         .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
@@ -1266,7 +1266,7 @@ invalid request
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
-      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service, 'feed service')))
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed.service, 'feed service')))
 
       const res = await client
         .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
@@ -1334,7 +1334,7 @@ invalid request
         variableParamsSchema: appReq.feed.variableParamsSchema || undefined
       }
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: appReq.feed })).returns(appReq)
-      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service.serviceType, 'feed service type')))
+      appLayer.createFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed.service.serviceType, 'feed service type')))
 
       const res = await client
         .post(`${rootPath}/services/${service}/topics/${topic}/feeds`)
@@ -1380,7 +1380,7 @@ invalid request
 
     it('returns 404 if the service is not found', async function () {
 
-      appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error<Feed[], EntityNotFoundError>(entityNotFound('404', 'feed service')))
+      appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error(entityNotFound('404', 'feed service')))
       const res = await client.get(`${rootPath}/services/404/feeds`)
 
       expect(res.status).to.equal(404)
@@ -1390,7 +1390,7 @@ invalid request
 
     it('returns 403 without permission', async function () {
 
-      appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error<Feed[], PermissionDeniedError>(permissionDenied('list feeds', adminPrincipal.user, 'abc123')))
+      appLayer.listServiceFeeds(Arg.any()).resolves(AppResponse.error(permissionDenied('list feeds', adminPrincipal.user, 'abc123')))
       const res = await client.get(`${rootPath}/services/abc123/feeds`)
 
       expect(res.status).to.equal(403)
@@ -1513,7 +1513,7 @@ invalid request
       }
       const appReq = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.all()).returns(appReq)
-      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed, 'feed')))
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed, 'feed')))
       const res = await client.get(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(404)
@@ -1553,7 +1553,7 @@ invalid request
       }
       const appReq = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.all()).returns(appReq)
-      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service, 'service')))
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed.service, 'service')))
       const res = await client.get(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(404)
@@ -1593,7 +1593,7 @@ invalid request
       }
       const appReq = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.all()).returns(appReq)
-      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.topic, 'topic')))
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed.topic, 'topic')))
       const res = await client.get(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(404)
@@ -1633,7 +1633,7 @@ invalid request
       }
       const appReq = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.all()).returns(appReq)
-      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(feed.service.serviceType, 'service type')))
+      appLayer.getFeed(Arg.requestTokenMatches(appReq)).resolves(AppResponse.error(entityNotFound(feed.service.serviceType, 'service type')))
       const res = await client.get(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(404)
@@ -1751,7 +1751,7 @@ invalid request
       const feedUpdate: Required<FeedUpdateMinimal> = _.omit(body, 'superfluous', 'service', 'topic')
       const appReq = createAdminRequest({ feed: feedUpdate })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedUpdate })).returns(appReq)
-      appLayer.updateFeed(appReq).resolves(AppResponse.error<FeedExpanded, EntityNotFoundError>(entityNotFound(body.id, 'feed')))
+      appLayer.updateFeed(appReq).resolves(AppResponse.error(entityNotFound(body.id, 'feed')))
       const res = await client.put(`${rootPath}/${body.id}`).send(body)
 
       expect(res.status).to.equal(404)
@@ -1778,7 +1778,7 @@ invalid request
       const feedId = uniqid()
       const appReq: DeleteFeedRequest = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedId })).returns(appReq)
-      appLayer.deleteFeed(appReq).resolves(AppResponse.error<true, PermissionDeniedError>(permissionDenied('delete feed', adminPrincipal.user)))
+      appLayer.deleteFeed(appReq).resolves(AppResponse.error(permissionDenied('delete feed', adminPrincipal.user)))
       const res = await client.delete(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(403)
@@ -1789,7 +1789,7 @@ invalid request
       const feedId = uniqid()
       const appReq: DeleteFeedRequest = createAdminRequest({ feed: feedId })
       appRequestFactory.createRequest(Arg.any(), Arg.deepEquals({ feed: feedId })).returns(appReq)
-      appLayer.deleteFeed(appReq).resolves(AppResponse.error<true, EntityNotFoundError>(entityNotFound(feedId, 'feed')))
+      appLayer.deleteFeed(appReq).resolves(AppResponse.error(entityNotFound(feedId, 'feed')))
       const res = await client.delete(`${rootPath}/${feedId}`)
 
       expect(res.status).to.equal(404)

@@ -57,9 +57,21 @@ Form.prototype.populateUserFields = function(callback) {
   // None of the forms in this event contain user fields
   if (!formsUserFields.length) return callback();
 
-  var teamIds = (event.populated && event.populated('teamIds')) || event.teamIds;
-  Team.getTeams({teamIds: teamIds}, function(err, teams) {
-    if (err) return callback(err);
+  /*
+  TODO: This used to use event.populated('teamIds'), after a check that the
+  populated() function exists on the event document instance, which was
+  confusing.  Apparently that check was there because the pre-init hook on the
+  event schema calls populateUserFields() for every document Mongoose fetches
+  from the database.  However, apparently Mongoose does not add the populated()
+  method until the pre-init hooks finish.  So, this whole situation needs some
+  clean-up.
+  */
+  const teamIds = (event.teamIds || []).map(x => x._id ? x._id : x)
+  Team.getTeams({ teamIds }, function(err, teams) {
+    if (err) {
+      console.error(err);
+      return callback(err);
+    }
 
     var choices = [];
     var users = {};

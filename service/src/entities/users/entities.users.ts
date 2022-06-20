@@ -31,7 +31,7 @@ export interface Phone {
 }
 
 /**
- * A user's icon is that appears to mark the user's location on a map.
+ * A user's icon is what appears on the map to mark the user's location.
  */
 export interface UserIcon {
   type: UserIconType

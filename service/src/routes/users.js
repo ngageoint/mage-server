@@ -13,7 +13,7 @@ module.exports = function (app, security) {
     , userTransformer = require('../transformers/user')
     , pageInfoTransformer = require('../transformers/pageinfo')
     , { defaultHandler: upload } = require('../upload')
-    , { defaultEventPermissionsSevice: eventPermissions } = require('../permissions/permissions.events')
+    , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events')
     , passport = security.authentication.passport;
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;

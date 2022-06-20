@@ -97,8 +97,13 @@ const EventSchema = new Schema({
 },{
   autoIndex: false,
   minimize: false,
-  versionKey: false
+  versionKey: false,
+  id: false
 });
+
+EventSchema.virtual('id')
+  .get(function() { return this._id })
+  .set(function(x) { this._id = Number(x) })
 
 EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
@@ -130,6 +135,17 @@ function populateUserFields(event, callback) {
 }
 
 EventSchema.pre('init', function(next, event) {
+  /**
+  TODO: This is not ideal.  If one uses a query like EventModel.findById(1).populate('teamIds'),
+  chaining the populate step onto the query builder, Mongoose does not seem to
+  correctly set the populated('teamIds') state before the pre-init middleware is
+  finished executing.  Since populateUserFields() checks event.populated('teamIds'),
+  this causes an error because the teamIds on the Event document are actually
+  Team documents, but populateUserFields() attempts to tream them as ObjectID
+  instances to query for the teams, and Mongoose throws a type cast error.
+  Actually, Mongoose might not even add th populated() method to the document
+  instance during the pre-init hook's execution.
+  */
   if (event.forms) {
     populateUserFields(event, function() {
       next();

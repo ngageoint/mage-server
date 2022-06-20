@@ -6,11 +6,15 @@ import { FeedServiceId, FeedId } from '../../lib/entities/feeds/entities.feeds'
 import { ErrPermissionDenied, permissionDenied } from '../../lib/app.api/app.api.errors'
 import { EventFeedsPermissionService, EventRequestContext, EventPermissionServiceImpl } from '../../lib/permissions/permissions.events'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
-import { MageEventRepository, MageEventAttrs } from '../../lib/entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs, EventAccessType } from '../../lib/entities/events/entities.events'
 // for some reason vs code marks an error if using @lib/models/user, even though tsc builds fine
 // nobody seems to care though - https://github.com/microsoft/TypeScript/issues/39709
 import { UserDocument } from '../../src/models/user'
 import { MongooseMageEventRepository } from '../../lib/adapters/events/adapters.events.db.mongoose'
+import { MageEventPermission } from '../../lib/entities/authorization/entities.permissions'
+import { Model as MageEventModel } from '../../lib/models/event'
+import { MageEventDocument } from '../../src/models/event'
+import { Team } from '../../lib/entities/teams/entities.teams'
 
 
 describe('event permissions service', function() {
@@ -53,7 +57,7 @@ describe('event permissions service', function() {
         permission: permissionError.data.permission,
         object: permissionError.data.object
       })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, 'READ_EVENT_USER', 'read')
+      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
     })
 
     it('ensures event update permission', async function() {
@@ -69,7 +73,7 @@ describe('event permissions service', function() {
         permission: permissionError.data.permission,
         object: permissionError.data.object
       })
-      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, 'UPDATE_EVENT', 'update')
+      mockEventPermissions.received(1).authorizeEventAccess(context.event, user, MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     })
 
     it('denies if the context has no event', async function() {
@@ -83,6 +87,53 @@ describe('event permissions service', function() {
       expect(denied?.code).to.equal(ErrPermissionDenied)
       denied = await eventPermissions.ensureEventUpdatePermission(noEventContext)
       expect(denied?.code).to.equal(ErrPermissionDenied)
+    })
+  })
+
+  describe('checking user event participation', function() {
+
+    it('returns true if the user is a member of an event team', async function() {
+
+      const team1: Team = {
+        id: 'team1',
+        userIds: [ 'user1', 'user2', 'user3' ]
+      } as Team
+      const team2: Team = {
+        id: 'team2',
+        userIds: [ 'user3', 'user4', 'user5' ]
+      } as Team
+      const eventDoc = new MageEventModel({
+        _id: 2,
+      }) as MageEventDocument
+      const eventAttrs: MageEventAttrs = { id: 2 } as MageEventAttrs
+      eventRepo.findTeamsInEvent(Arg.is((x: any) => Number(x.id) === 2)).resolves([ team1, team2 ])
+      const eventDocParticipation = await eventPermissions.userIsParticipantInEvent(eventDoc, 'user4')
+      const eventEntityParticipation = await eventPermissions.userIsParticipantInEvent(eventAttrs, 'user4')
+
+      expect(eventDocParticipation).to.be.true
+      expect(eventEntityParticipation).to.be.true
+    })
+
+    it('returns false if the user is not a member of any event team', async function() {
+
+      const team1: Team = {
+        id: 'team1',
+        userIds: [ 'user1', 'user2', 'user3' ]
+      } as Team
+      const team2: Team = {
+        id: 'team2',
+        userIds: [ 'user3', 'user4', 'user5' ]
+      } as Team
+      const eventDoc = new MageEventModel({
+        _id: 2,
+      }) as MageEventDocument
+      const eventAttrs: MageEventAttrs = { id: 2 } as MageEventAttrs
+      eventRepo.findTeamsInEvent(Arg.is((x: any) => Number(x.id) === 2)).resolves([ team1, team2 ])
+      const eventDocParticipation = await eventPermissions.userIsParticipantInEvent(eventDoc, 'user6')
+      const eventEntityParticipation = await eventPermissions.userIsParticipantInEvent(eventAttrs, 'user6')
+
+      expect(eventDocParticipation).to.be.false
+      expect(eventEntityParticipation).to.be.false
     })
   })
 })

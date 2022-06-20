@@ -14,11 +14,11 @@
   </observation-view>
 
   <observation-edit *ngIf="editObservation" @slide class="component__view" [observation]="editObservation"
-    (close)="onObservationEditClose()">
+    (close)="onObservationEditClose($event)">
   </observation-edit>
 
   <observation-edit *ngIf="newObservation" @slide class="component__view" [observation]="newObservation"
-    (close)="onObservationEditClose()">
+    (close)="onObservationEditClose($event)">
   </observation-edit>
 
   <feed-item *ngIf="feedItem" @slide class="component__view" [item]="feedItem.item" [feed]="feedItem.feed">

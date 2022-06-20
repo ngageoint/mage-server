@@ -20,6 +20,8 @@ var TeamSchema = new Schema({
   minimize: false
 });
 
+// TODO: index userIds and teamEventId?
+
 var permissions = {
   OWNER: ['read', 'update', 'delete'],
   MANAGER: ['read', 'update'],
@@ -104,7 +106,6 @@ TeamSchema.set("toJSON", {
   transform: transform
 });
 
-// Creates the Model for the Team Schema
 var Team = mongoose.model('Team', TeamSchema);
 exports.TeamModel = Team;
 

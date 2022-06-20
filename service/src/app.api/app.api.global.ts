@@ -56,8 +56,8 @@ export class AppResponse<Success, KnownErrors> {
     return new AppResponse<Success, AnyMageError<KnownErrors>>(result, null, contentLanguage)
   }
 
-  static error<Success, KnownErrors>(result: AnyMageError<KnownErrors>, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return new AppResponse<Success, AnyMageError<KnownErrors>>(null, result, contentLanguage)
+  static error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
+    return new AppResponse<any, KnownErrors>(null, result, contentLanguage)
   }
 
   static resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
@@ -100,7 +100,7 @@ export async function withPermission<Success, KnownErrors>(
   op: (...args: any[]) => Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors | PermissionDeniedError>>> {
   const denied = await permissionCheck
   if (denied) {
-    return AppResponse.error<Success, PermissionDeniedError>(denied)
+    return AppResponse.error<PermissionDeniedError>(denied)
   }
   return await AppResponse.resultOf<Success, KnownErrors>(op())
 }

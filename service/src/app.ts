@@ -13,6 +13,8 @@ import * as feedsApi from './app.api/feeds/app.api.feeds'
 import * as feedsImpl from './app.impl/feeds/app.impl.feeds'
 import * as eventsApi from './app.api/events/app.api.events'
 import * as eventsImpl from './app.impl/events/app.impl.events'
+import * as observationsApi from './app.api/observations/app.api.observations'
+import * as observationsImpl from './app.impl/observations/app.impl.observations'
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds'
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web'
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web'
@@ -21,7 +23,7 @@ import { UserDocument } from './models/user'
 import SimpleIdFactory from './adapters/adapters.simple_id_factory'
 import { JsonSchemaService, JsonValidator, JSONSchema4 } from './entities/entities.json_types'
 import { MageEventModel, MongooseMageEventRepository } from './adapters/events/adapters.events.db.mongoose'
-import { MageEvent, MageEventRepository } from './entities/events/entities.events'
+import { MageEvent, MageEventId, MageEventRepository } from './entities/events/entities.events'
 import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web'
 import { MongooseStaticIconRepository, StaticIconModel } from './adapters/icons/adapters.icons.db.mongoose'
 import { StaticIconRepository } from './entities/icons/entities.icons'
@@ -46,6 +48,10 @@ import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugi
 import path from 'path'
 import { MageEventDocument } from './models/event'
 import { parseAcceptLanguageHeader } from './entities/entities.i18n'
+import { ObservationRoutes, ObservationWebAppRequestFactory } from './adapters/observations/adapters.observations.controllers.web'
+import { UserWithRole } from './permissions/permissions.role-based.base'
+import { EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
+import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
 
 
 export interface MageService {
@@ -211,6 +217,10 @@ type AppLayer = {
     removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
     fetchFeedContent: feedsApi.FetchFeedContent
   },
+  observations: {
+    allocateObservationId: observationsApi.AllocateObservationId
+    saveObservation: observationsApi.SaveObservation
+  },
   feeds: {
     jsonSchemaService: JsonSchemaService
     permissionService: feedsApi.FeedsPermissionService
@@ -265,6 +275,9 @@ type Repositories = {
   events: {
     eventRepo: MageEventRepository
   },
+  observations: {
+    obsRepoFactory: ObservationRepositoryForEvent
+  }
   feeds: {
     serviceTypeRepo: FeedServiceTypeRepository,
     serviceRepo: FeedServiceRepository,
@@ -305,6 +318,9 @@ async function initRepositories(models: DatabaseModels, config: BootConfig): Pro
     events: {
       eventRepo
     },
+    observations: {
+      obsRepoFactory: createObservationRepositoryFactory(eventRepo)
+    },
     icons: {
       staticIconRepo
     },
@@ -316,11 +332,13 @@ async function initRepositories(models: DatabaseModels, config: BootConfig): Pro
 
 async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const events = await initEventsAppLayer(repos)
+  const observations = await initObservationsAppLayer(repos)
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
   return {
     events,
+    observations,
     feeds,
     icons,
     users,
@@ -337,12 +355,22 @@ async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']
 
 async function initEventsAppLayer(repos: Repositories): Promise<AppLayer['events']> {
   const eventPermissions = await import('./permissions/permissions.events')
-  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(repos.events.eventRepo, eventPermissions.defaultEventPermissionsSevice)
+  const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(repos.events.eventRepo, eventPermissions.defaultEventPermissionsService)
   return {
-    addFeedToEvent: eventsImpl.AddFeedToEvent(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo),
-    listEventFeeds: eventsImpl.ListEventFeeds(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo, repos.feeds.feedRepo),
-    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(eventPermissions.defaultEventPermissionsSevice, repos.events.eventRepo),
+    addFeedToEvent: eventsImpl.AddFeedToEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
+    listEventFeeds: eventsImpl.ListEventFeeds(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo, repos.feeds.feedRepo),
+    removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(eventPermissions.defaultEventPermissionsService, repos.events.eventRepo),
     fetchFeedContent: feedsImpl.FetchFeedContent(eventFeedsPermissions, repos.feeds.serviceTypeRepo, repos.feeds.serviceRepo, repos.feeds.feedRepo, jsonSchemaService)
+  }
+}
+
+async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['observations']> {
+  const eventPermissions = await import('./permissions/permissions.events')
+  const obsPermissions = await import('./permissions/permissions.observations')
+  const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(eventPermissions.defaultEventPermissionsService)
+  return {
+    allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
+    saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo)
   }
 }
 
@@ -406,15 +434,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     return {
       ...params,
       context: {
-        requestToken: Symbol(),
-        requestingPrincipal() {
-          return req.user
-        },
-        locale() {
-          return Object.freeze({
-            languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
-          })
-        },
+        ...baseAppRequestContext(req),
         event: req.event || req.eventEntity
       }
     }
@@ -440,11 +460,28 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     bearerAuth,
     iconsRoutes
   ])
+  const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
+    const context: observationsApi.ObservationRequestContext = {
+      ...baseAppRequestContext(req),
+      mageEvent: req[observationEventScopeKey]!.mageEvent,
+      userId: req.user.id,
+      deviceId: req.provisionedDeviceId,
+      observationRepository: req[observationEventScopeKey]!.observationRepository
+    }
+    return { ...params, context }
+  }
+  const observationsRoutes = ObservationRoutes(app.observations, observationRequestFactory)
+  webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
+    bearerAuth,
+    ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
+    observationsRoutes
+  ])
   const eventFeedsRoutes = EventFeedsRoutes({ ...app.events, eventRepo: repos.events.eventRepo }, appRequestFactory)
   webController.use('/api/events', [
     bearerAuth,
     eventFeedsRoutes
   ])
+
   /*
   no /api prefix here, because this is not really part of the service api. the
   only reason this is here is because there is currently no clean way to apply
@@ -494,6 +531,45 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
       const routes = initPluginRoutes(pluginAppRequestContext)
       webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
+    }
+  }
+}
+
+function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
+  return {
+    requestToken: Symbol(),
+    requestingPrincipal() {
+      return req.user as UserWithRole
+    },
+    locale() {
+      return Object.freeze({
+        languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+      })
+    }
+  }
+}
+
+const observationEventScopeKey = 'observationEventScope' as const
+
+function ensureObservationEventScope(eventRepo: MageEventRepository, createObsRepo: ObservationRepositoryForEvent) {
+  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const eventIdFromPath = req.params[observationEventScopeKey]
+    const eventId: MageEventId = parseInt(eventIdFromPath)
+    const mageEvent = Number.isInteger(eventId) ? await eventRepo.findById(eventId) : null
+    if (mageEvent) {
+      const observationRepository = await createObsRepo(mageEvent.id)
+      req[observationEventScopeKey] = { mageEvent, observationRepository }
+      return next()
+    }
+    res.status(404).json(`event not found: ${eventIdFromPath}`)
+  }
+}
+
+declare module 'express' {
+  interface Request {
+    [observationEventScopeKey]?: {
+      mageEvent: MageEvent,
+      observationRepository: EventScopedObservationRepository
     }
   }
 }
