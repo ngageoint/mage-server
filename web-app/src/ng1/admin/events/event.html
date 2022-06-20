@@ -106,7 +106,7 @@
               <div class="admin-teams-table-content">
                 <div class="admin-teams-table-items">
                   <div class="admin-teams-table-item" ng-repeat="user in $ctrl.nonMembersPage.items">
-                    <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
+                    <div class="row pointer" ng-click="$ctrl.gotoMember(user)">
                       <div class="admin-teams-user">
                         <user-avatar class="right-gap" [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
                         <div class="admin-teams-user-detail">
@@ -169,7 +169,7 @@
             <div class="admin-teams-table-content">
               <div class="admin-teams-table-items">
                 <div class="admin-teams-table-item" ng-repeat="user in $ctrl.membersPage.items">
-                  <div class="row pointer" ng-click="$ctrl.gotoUser(user)">
+                  <div class="row pointer" ng-click="$ctrl.gotoMember(user)">
                     <div class="admin-teams-user">
                       <user-avatar class="pull-left right-gap" [user]="user" avatar-width="40" avatar-height="40"></user-avatar>
                       <div class="admin-teams-user-detail">
@@ -232,7 +232,7 @@
               <div class="admin-teams-table-content">
                 <div class="admin-teams-table-items">
                   <div class="admin-teams-table-item" ng-repeat="team in $ctrl.nonTeamsPage.items">
-                    <div class="row pointer" ng-click="$ctrl.gotoTeam(team)">
+                    <div class="row pointer" ng-click="$ctrl.gotoMember(team)">
                       <div class="admin-teams-user">
                         <i class="fa fa-people admin-teams-table-item-icon"></i>
                         <div class="admin-teams-user-detail">
@@ -294,7 +294,7 @@
             <div class="admin-teams-table-content">
               <div class="admin-teams-table-items">
                 <div class="admin-teams-table-item" ng-repeat="team in $ctrl.teamsPage.items">
-                  <div class="row pointer" ng-click="$ctrl.gotoTeam(team)">
+                  <div class="row pointer" ng-click="$ctrl.gotoMember(team)">
                     <div class="admin-teams-user">
                         <i class="fa fa-people admin-teams-table-item-icon"></i>
                       <div class="admin-teams-user-detail">

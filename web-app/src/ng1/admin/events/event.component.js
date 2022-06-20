@@ -432,7 +432,7 @@ class AdminEventController {
   }
 
   gotoMember(member) {
-    if (member.type === 'user') {
+    if (member.username) {
       this.$state.go('admin.user', { userId: member.id });
     } else {
       this.$state.go('admin.team', { teamId: member.id });
