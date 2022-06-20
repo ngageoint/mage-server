@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
   , Event = require('./event')
   , User = require('./user')
   , userTransformer = require('../transformers/user')
-  , Paging = require('../utilities/paging')
+  , { countAndPage } = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
@@ -345,7 +345,7 @@ exports.getTeams = function(options, callback) {
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
     var countQuery = Team.find(conditions);
-    Paging.pageTeams(countQuery, query, options, callback);
+    pageTeams(countQuery, query, options, callback);
   } else {
     query.exec(function (err, teams) {
       callback(err, teams);
@@ -358,6 +358,14 @@ function createQueryConditions(filter) {
 
   return conditions;
 };
+
+function pageTeams(countQuery, query, options, callback) {
+  countAndPage(countQuery, query, options, 'teams').then(pageInfo => {
+    callback(null, pageInfo.teams, pageInfo);
+  }).catch(err => {
+    callback(err, null, null);
+  });
+}
 
 exports.createTeam = function(team, user, callback) {
   var create = {
