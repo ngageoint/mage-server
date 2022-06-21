@@ -1,8 +1,9 @@
 import { Component, Directive, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
-import mgrs from 'mgrs';
 import { AbstractControl, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import mgrs from 'mgrs';
+import { DMS } from 'src/app/geometry/geometry-dms';
+import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -21,16 +22,40 @@ export class MGRSValidatorDirective implements Validator {
         }
       };
     }
-
     return error;
   }
+}
+
+@Directive({
+  selector: '[dmsValue][formControlName],[dmsValue][formControl],[dmsValue][ngModel]',
+  providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }]
+})
+export class DMSValidatorDirective implements Validator {
+  @Input()
+  dmsValue: string
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    if (this.dmsValue === 'latitude' && DMS.validateLatitudeFromDMS(control.value)) {
+      return null
+    } else if (this.dmsValue === 'longitude' && DMS.validateLongitudeFromDMS(control.value)) {
+      return null
+    }
+    const error: ValidationErrors | null = {
+      dms: {
+        value: control.value
+      }
+    }
+    return error;
+  }
+
 }
 
 @Component({
   selector: 'observation-edit-geometry-form',
   templateUrl: './observation-edit-geometry-form.component.html',
   styleUrls: ['./observation-edit-geometry-form.component.scss'],
-  providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }]
+  providers: [{ provide: NG_VALIDATORS,  useExisting: MGRSValidatorDirective, multi: true },
+    { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }]
 })
 export class ObservationEditGeometryFormComponent implements OnChanges {
   @Input() feature: any
@@ -38,6 +63,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   @Output() cancel = new EventEmitter<any>()
 
   @ViewChild('mgrsModel') mgrsModel: NgModel;
+  @ViewChild('latitudeDmsModel') latitudeDmsModel: NgModel;
+  @ViewChild('longitudeDmsModel') longitudeDmsModel: NgModel;
   @ViewChild('snackbarContainer', { read: ViewContainerRef }) snackBarContainer: ViewContainerRef;
 
   selectedShapeType = 'Point'
@@ -48,6 +75,13 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   latitude: number
   longitude: number
   mgrs: string
+  latitudeDms: string
+  longitudeDms: string
+
+  previousLatitudeValue: string
+  previousLongitudeValue: string
+
+  userEnteredMgrs: boolean
 
   selectedVertexIndex: number
 
@@ -128,6 +162,91 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     }
   }
 
+  onLatLngDmsChange(latitudeField: boolean): void {
+    let finalLatitudeValue = this.latitudeDms
+    let finalLongitudeValue = this.longitudeDms
+    let oldLength = 0
+    let currentLength = 0
+
+    if (latitudeField) {
+      oldLength = this.previousLatitudeValue ? this.previousLatitudeValue.length : 0
+      currentLength = finalLatitudeValue ? finalLatitudeValue.length : 0
+      if (((oldLength - 1) == currentLength) && this.previousLatitudeValue.startsWith(finalLatitudeValue)) {
+        this.previousLatitudeValue = finalLatitudeValue
+        return
+      }
+    } else {
+      oldLength = this.previousLongitudeValue ? this.previousLongitudeValue.length : 0
+      currentLength = finalLongitudeValue ? finalLongitudeValue.length : 0
+      if (((oldLength - 1) == currentLength) && this.previousLongitudeValue.startsWith(finalLongitudeValue)) {
+        this.previousLongitudeValue = finalLongitudeValue
+        return
+      }
+    }
+    let coordinates = { ...this.feature.geometry.coordinates }
+
+    if ((currentLength - oldLength) > 1) {
+      let split = latitudeField ? DMS.splitCoordinates(finalLatitudeValue) : DMS.splitCoordinates(finalLongitudeValue)
+      if (split.length > 1) {
+        if (latitudeField) {
+          finalLatitudeValue = split[0]
+          if (finalLongitudeValue.length === 0) {
+            finalLongitudeValue = split[1]
+          }
+        } else {
+          finalLongitudeValue = split[1]
+          if (finalLatitudeValue.length === 0) {
+            finalLatitudeValue = split[0]
+          }
+        }
+      }
+    }
+
+    const parsedLatitudeDMS =  DMS.parseToDMSString(finalLatitudeValue, false, true)
+    const parsedLongitudeDMS = DMS.parseToDMSString(finalLongitudeValue, false, false)
+    this.previousLatitudeValue = parsedLatitudeDMS
+    finalLatitudeValue = parsedLatitudeDMS
+    this.previousLongitudeValue = parsedLongitudeDMS
+    finalLongitudeValue = parsedLongitudeDMS
+
+
+    this.latitudeDms = finalLatitudeValue
+    this.longitudeDms = finalLongitudeValue
+    this.latitudeDmsModel.control.setValue(this.latitudeDms, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+    this.longitudeDmsModel.control.setValue(this.longitudeDms, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+
+    const valid = DMS.validateLatitudeFromDMS(this.latitudeDms) && DMS.validateLongitudeFromDMS(this.longitudeDms)
+    if (valid) {
+
+      const latitude = DMS.parse(this.latitudeDms, true)
+      const longitude = DMS.parse(this.longitudeDms, false)
+
+      // copy edit field lat/lng in coordinates at correct index
+      if (this.feature.geometry.type === 'Point') {
+        coordinates = [longitude, latitude]
+      } else if (this.feature.geometry.type === 'LineString') {
+        coordinates[this.selectedVertexIndex] = [longitude, latitude]
+      } else if (this.feature.geometry.type === 'Polygon') {
+        if (coordinates[0]) {
+          coordinates[0][this.selectedVertexIndex] = [longitude, latitude]
+        }
+      }
+
+      // transform corrdinates to valid GeoJSON
+      this.toGeoJSON(this.feature, coordinates);
+
+      // Check for polygon for intersections
+      if (this.hasIntersections(this.feature, coordinates)) {
+        return;
+      }
+
+      this.feature.geometry.coordinates = coordinates;
+      this.featureEdit.update(this.feature);
+    } else {
+      this.feature.geometry.coordinates = []
+    }
+  }
+
   onLatLngChange(): void {
     let coordinates = { ...this.feature.geometry.coordinates }
 
@@ -158,6 +277,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     if (!this.mgrsModel.control.valid) {
       return
     }
+    this.userEnteredMgrs = true
 
     let coordinates = { ...this.feature.geometry.coordinates }
 
@@ -203,7 +323,6 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
 
   shapeTypeChanged(shapeType?: string): void {
     this.selectedShapeType = shapeType
-    console.log('selected', shapeType)
 
     switch (shapeType) {
       case 'Point':
@@ -219,9 +338,13 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         this.feature.geometry.type = 'Polygon'
         break;
       default:
-        this.latitude = null;
-        this.longitude = null;
-        this.mgrs = null;
+        this.latitude = null
+        this.longitude = null
+        this.mgrs = null
+        this.latitudeDms = null
+        this.longitudeDms = null
+        this.previousLatitudeValue = null
+        this.previousLongitudeValue = null
         delete this.feature.geometry.type
         this.featureEdit.cancel()
         break;
@@ -236,17 +359,34 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
   }
 
   updateCoordinates(): void {
-    this.mgrs = this.toMgrs(this.feature);
+    let currentMgrs = this.toMgrs(this.feature);
+    if (!this.userEnteredMgrs) {
+      this.mgrs = currentMgrs
+      this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+    }
+    this.userEnteredMgrs = false
 
     if (this.feature.geometry.type === 'Point') {
       this.longitude = this.feature.geometry.coordinates[0]
       this.latitude = this.feature.geometry.coordinates[1]
+      this.longitudeDms = DMS.longitudeDMSString(this.feature.geometry.coordinates[0])
+      this.latitudeDms = DMS.latitudeDMSString(this.feature.geometry.coordinates[1])
+      this.previousLatitudeValue = this.latitudeDms
+      this.previousLongitudeValue = this.longitudeDms
     } else if (this.feature.geometry.type === 'Polygon') {
       this.longitude = this.feature.geometry.coordinates[0][this.selectedVertexIndex][0]
       this.latitude = this.feature.geometry.coordinates[0][this.selectedVertexIndex][1]
+      this.longitudeDms = DMS.longitudeDMSString(this.feature.geometry.coordinates[0][this.selectedVertexIndex][0])
+      this.latitudeDms = DMS.latitudeDMSString(this.feature.geometry.coordinates[0][this.selectedVertexIndex][1])
+      this.previousLatitudeValue = this.latitudeDms
+      this.previousLongitudeValue = this.longitudeDms
     } else if (this.feature.geometry.type === 'LineString') {
       this.longitude = this.feature.geometry.coordinates[this.selectedVertexIndex][0]
       this.latitude = this.feature.geometry.coordinates[this.selectedVertexIndex][1]
+      this.longitudeDms = DMS.longitudeDMSString(this.feature.geometry.coordinates[this.selectedVertexIndex][0])
+      this.latitudeDms = DMS.latitudeDMSString(this.feature.geometry.coordinates[this.selectedVertexIndex][1])
+      this.previousLatitudeValue = this.latitudeDms
+      this.previousLongitudeValue = this.longitudeDms
     }
   }
 }

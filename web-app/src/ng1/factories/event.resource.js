@@ -1,10 +1,3 @@
-module.exports = {
-  Event: Event,
-  EventAccess: EventAccess
-};
-
-Event.$inject = ['$rootScope', '$resource'];
-
 function Event($rootScope, $resource) {
   const Event = $resource('/api/events/:id', {
     id: '@id'
@@ -119,7 +112,7 @@ function Event($rootScope, $resource) {
   return Event;
 }
 
-EventAccess.$inject = ['$resource'];
+Event.$inject = ['$rootScope', '$resource'];
 
 function EventAccess($resource) {
   const EventAccess = $resource('/api/events/:eventId/acl', {
@@ -146,3 +139,11 @@ function EventAccess($resource) {
 
   return EventAccess;
 }
+
+EventAccess.$inject = ['$resource'];
+
+module.exports = {
+  Event: Event,
+  EventAccess: EventAccess
+};
+

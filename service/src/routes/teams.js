@@ -1,5 +1,5 @@
 module.exports = function(app, security) {
-  var Team = require('../models/team')
+  const Team = require('../models/team')
     , access = require('../access')
     , pageInfoTransformer = require('../transformers/pageinfo.js')
     , passport = security.authentication.passport;
@@ -62,9 +62,9 @@ module.exports = function(app, security) {
     function (req, res, next) {
       var filter = {};
 
-      if(req.query) {
+      if (req.query) {
         for (let [key, value] of Object.entries(req.query)) {
-          if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
+          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
             continue;
           }
           filter[key] = value;
@@ -148,7 +148,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_TEAM', 'update'),
     validateTeamParams,
     function(req, res, next) {
-      var update = {};
+      const update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description) update.description = req.teamParam.description;
       if (req.teamParam.users) update.users = req.teamParam.users;
@@ -172,6 +172,46 @@ module.exports = function(app, security) {
 
         res.json(team);
       });
+    }
+  );
+
+  app.get(
+    '/api/teams/:id/members',
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      Team.getMembers(req.params.id, options).then(page => {
+        if (!page) return res.status(404).send('Team not found');
+        
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/teams/:id/nonMembers',
+    determineReadAccess,
+    async function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      Team.getNonMembers(req.params.id, options).then(page => {
+        if (!page) return res.status(404).send('Team not found');
+        
+        res.json(page);
+      }).catch(err => next(err))
     }
   );
 

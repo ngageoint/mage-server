@@ -84,7 +84,7 @@
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
           (click)="setDirty(true)">
         <mat-hint align="end">
-          The id property that is returned in the user profile. Defaults to 'id'.
+          The id property that is returned in the user profile. Defaults to 'sub'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
@@ -92,7 +92,7 @@
         <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName"
           (click)="setDirty(true)">
         <mat-hint align="end">
-          The display name property that is returned in the user profile. Defaults to 'displayName'.
+          The display name property that is returned in the user profile. Defaults to 'name'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">

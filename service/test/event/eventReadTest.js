@@ -40,7 +40,7 @@ describe("event read tests", function() {
 
     sinon.mock(SecurePropertyAppender)
       .expects('appendToConfig')
-      .resolves(config); 
+      .resolves(config);
 
     userId = mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
@@ -312,7 +312,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read teams in event", function(done) {
+  it("should read teams page in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
@@ -346,7 +346,7 @@ describe("event read tests", function() {
       .resolves(1);
 
     request(app)
-      .get('/api/events/1/teams')
+      .get('/api/events/1/teams?page=0')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -435,7 +435,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read teams in event with team access", function(done) {
+  it("should read teams page in event with team access", function(done) {
     mockTokenWithPermission('');
 
     const eventId = 1;
@@ -479,7 +479,7 @@ describe("event read tests", function() {
       .resolves(null)
 
     request(app)
-      .get('/api/events/1/teams')
+      .get('/api/events/1/teams?page=0')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .query({populate: 'users'})

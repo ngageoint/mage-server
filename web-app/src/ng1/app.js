@@ -51,6 +51,7 @@ import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-fe
 import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
 import { AdminFeedEditComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed-edit/admin-feed-edit.component';
 import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
+import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 
 require('angular-minicolors');
 require('select2');
@@ -107,7 +108,8 @@ app
   .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
-  .directive('contact', downgradeComponent({ component: ContactComponent }));
+  .directive('contact', downgradeComponent({ component: ContactComponent }))
+  .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
 
 app
   .component('filterPanel', require('./filter/filter'))

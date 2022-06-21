@@ -397,6 +397,9 @@ class LeafletController {
             });
           }
         }
+        if (layerInfo.options.onLayer) {
+          layerInfo.options.onLayer(layer, feature);
+        }
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: (feature, latlng) => {

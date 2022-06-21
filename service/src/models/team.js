@@ -167,7 +167,7 @@ exports.getMembers = async function (teamId, options) {
     query['$or'] = accesses;
   }
   const team = await Team.findOne(query)
-  
+
   if (team) {
     const { searchTerm } = options || {}
     const searchRegex = new RegExp(searchTerm, 'i')

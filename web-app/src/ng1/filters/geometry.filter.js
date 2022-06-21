@@ -1,4 +1,4 @@
-var turfCenter = require('@turf/center')
+const turfCenter = require('@turf/center')
   , mgrs = require('mgrs');
 
 module.exports = GeometryFilter;
@@ -12,6 +12,8 @@ function GeometryFilter(LocalStorageService) {
     switch(LocalStorageService.getCoordinateSystemView()) {
     case 'mgrs':
       return toMgrs(input);
+    case 'dms':
+      return toDms(input);
     default:
       return toWgs84(input, format);
     }
@@ -23,17 +25,22 @@ function GeometryFilter(LocalStorageService) {
 }
 
 function toWgs84(input, format) {
-  var coordinates = center(input).geometry.coordinates;
+  const coordinates = center(input).geometry.coordinates;
   return coordinates[1].toFixed(format) + ', ' + coordinates[0].toFixed(format);
 }
 
 function toMgrs(input) {
-  var coordinates = center(input).geometry.coordinates;
+  const coordinates = center(input).geometry.coordinates;
   return mgrs.forward(coordinates);
 }
 
+function toDms(input) {
+  const coordinates = center(input).geometry.coordinates;
+  return 'dms ' + coordinates[0] + ', ' + coordinates[1]
+}
+
 function center(input) {
-  var feature = {
+  const feature = {
     type: 'Feature',
     properties: {},
     geometry: input

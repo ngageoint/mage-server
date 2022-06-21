@@ -167,7 +167,10 @@ function configure(strategy) {
     `/auth/${strategy.name}/callback`,
     authenticate,
     function (req, res) {
-      const state = JSON.parse(req.body.RelayState) || {};
+      let state = {};
+      try {
+        state = JSON.parse(req.body.RelayState)
+      } catch(ignore) {}
 
       if (state.initiator === 'mage') {
         if (state.client === 'mobile') {
@@ -184,10 +187,10 @@ function configure(strategy) {
         }
       } else {
         if (req.user.active && req.user.enabled) {
-          res.redirect(`/#/signin?strategy=${config.name}&action=authorize-device&token=${req.token}`);
+          res.redirect(`/#/signin?strategy=${strategy.name}&action=authorize-device&token=${req.token}`);
         } else {
           const action = !req.user.active ? 'inactive-account' : 'disabled-account';
-          res.redirect(`/#/signin?strategy=${config.name}&action=${action}`);
+          res.redirect(`/#/signin?strategy=${strategy.name}&action=${action}`);
         }
       }
     }

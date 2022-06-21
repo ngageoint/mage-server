@@ -1,8 +1,9 @@
-import { Pipe, PipeTransform, Inject } from '@angular/core'
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
+import { Inject, Pipe, PipeTransform } from '@angular/core'
 import * as turfCenter from '@turf/center'
+import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
-import { Point, Feature } from 'geojson'
+import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
+import { DMS } from './geometry-dms'
 
 @Pipe({
   name: 'geometry'
@@ -17,6 +18,8 @@ export class GeometryPipe implements PipeTransform {
     switch (this.localStorageService.getCoordinateSystemView()) {
       case 'mgrs':
         return this.toMgrs(value)
+      case 'dms':
+        return this.toDms(value)
       default:
         return this.toWgs84(value, format)
     }
@@ -25,6 +28,11 @@ export class GeometryPipe implements PipeTransform {
   toMgrs(value: any): string {
     const coordinates = this.center(value).coordinates
     return mgrs.forward(coordinates)
+  }
+
+  toDms(value: any): string {
+    const coordinates = this.center(value).coordinates
+    return `${DMS.latitudeDMSString(coordinates[1])}, ${DMS.longitudeDMSString(coordinates[0])}`
   }
 
   toWgs84(value: any, format: number): string {

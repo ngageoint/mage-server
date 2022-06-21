@@ -37,7 +37,7 @@
               <span>{{$ctrl.event.name}}</span>
             </div>
           </div>
-          
+
           <div class="row top-gap-s bottom-gap">
             <div class="col-md-3">
               <span class="muted">Description:&nbsp;</span>
@@ -134,7 +134,7 @@
                   </div>
                 </div>
               </div>
-            
+
               <div class="admin-teams-table-status" ng-if="$ctrl.loadingNonMembers">
                 <div class="admin-teams-table-status-text">Loading</div>
                 <div>
@@ -151,7 +151,7 @@
                     <a class="navbar-brand">Team Members <sup><span
                           class="badge">{{$ctrl.membersPage.totalCount}}</span></sup></a>
                   </div>
-          
+
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
                       <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.memberSearchTerm"
@@ -197,7 +197,7 @@
                 </div>
               </div>
             </div>
-          
+
             <div class="admin-teams-table-status" ng-if="$ctrl.loadingMembers">
               <div class="admin-teams-table-status-text">Loading</div>
               <div>
@@ -227,7 +227,7 @@
                 </nav>
               </div>
             </div>
-          
+
             <div class="admin-table admin-teams-table">
               <div class="admin-teams-table-content">
                 <div class="admin-teams-table-items">
@@ -259,7 +259,7 @@
                   </div>
                 </div>
               </div>
-          
+
               <div class="admin-teams-table-status" ng-if="$ctrl.loadingNonTeams">
                 <div class="admin-teams-table-status-text">Loading</div>
                 <div>
@@ -276,7 +276,7 @@
                     <a class="navbar-brand">Teams <sup><span
                           class="badge">{{$ctrl.teamsPage.totalCount}}</span></sup></a>
                   </div>
-          
+
                   <form class="navbar-form navbar-left">
                     <div class="form-group">
                       <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.teamSearchTerm"
@@ -322,7 +322,7 @@
                 </div>
               </div>
             </div>
-          
+
             <div class="admin-teams-table-status" ng-if="$ctrl.loadingTeams">
               <div class="admin-teams-table-status-text">Loading</div>
               <div>
@@ -341,7 +341,7 @@
                     <div class="navbar-header">
                       <a class="navbar-brand">Add Layer to Event <sup><span class="badge">{{$ctrl.nonLayers.length}}</span></sup></a>
                     </div>
-            
+
                     <form class="navbar-form navbar-left">
                       <div class="form-group">
                         <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.nonLayerSearch">
@@ -371,7 +371,7 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-md-12">            
+                  <div class="col-md-12">
                     <ul class="pager pull-right admin-teams-pager">
                       <li ng-class="{'disabled': $ctrl.nonLayersPage == 0}">
                         <a href="javascript:void(0);"
@@ -570,7 +570,7 @@
                 <li ng-repeat="(key, error) in $ctrl.restrictionsError.errors">{{error.message}}</li>
               </ul>
             </div>
-          
+
             <div class="top-gap">
               <button class="btn btn-success" ng-click="$ctrl.saveFormRestrictions()" ng-disabled="!$ctrl.restrictions.$dirty">Save Restrictions</button>
             </div>

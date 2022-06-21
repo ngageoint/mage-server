@@ -181,6 +181,10 @@ class AdminFormFieldsEditController {
     }
   }
 
+  addAllowedAttachmentTypes(field) {
+    field.allowedAttachmentTypes = this.attachmentAllowedTypes.map(type => type.name);
+  }
+
   addField() {
     if (this.newFieldForm.$invalid) {
       return;
