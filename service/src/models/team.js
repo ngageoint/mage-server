@@ -358,12 +358,7 @@ exports.getTeams = async function(options, callback) {
       const counted = await pageQuery(baseQuery, which);
       const teams = [];
       for await (const teamDoc of counted.query.cursor()) {
-        const json = teamDoc.toJSON();
-        const entity = {
-          ...json,
-          id: teamDoc._id.toHexString()
-        }
-        teams.push(entity);
+        teams.push(entityForDocument(teamDoc));
       }
       const pageof = pageOf(teams, which, counted.totalCount);
       callback(null, teams, pageof);
@@ -377,6 +372,16 @@ exports.getTeams = async function(options, callback) {
     });
   }
 };
+
+function entityForDocument(doc) {
+  const json = doc.toJSON();
+  const entity = {
+    ...json,
+    id: doc._id.toHexString()
+  }
+
+  return entity;
+}
 
 function createQueryConditions(filter) {
   var conditions = FilterParser.parse(filter);
