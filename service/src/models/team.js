@@ -359,7 +359,11 @@ exports.getTeams = async function(options, callback) {
       const teams = [];
       for await (const teamDoc of counted.query.cursor()) {
         const json = teamDoc.toJSON();
-        teams.push(json);
+        const entity = {
+          ...json,
+          id: teamDoc._id.toHexString()
+        }
+        teams.push(entity);
       }
       const pageof = pageOf(teams, which, counted.totalCount);
       callback(null, teams, pageof);
