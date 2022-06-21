@@ -32,4 +32,18 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
     }
     return permissionDenied('UPDATE_OBSERVATION', user.id)
   }
+
+  async ensureReadObservationPermission(context: ObservationRequestContext<UserWithRole>): Promise<PermissionDeniedError | null> {
+    const user = context.requestingPrincipal()
+    if (access.userHasPermission(user, ObservationPermission.READ_OBSERVATION_ALL)) {
+      return null
+    }
+    if (access.userHasPermission(user, ObservationPermission.READ_OBSERVATION_EVENT)) {
+      // Make sure I am part of this event
+      if (await this.eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read)) {
+        return null
+      }
+    }
+    return permissionDenied('READ_OBSERVATION', user.id)
+  }
 }

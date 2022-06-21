@@ -134,4 +134,5 @@ export interface ObservationPermissionService {
    * Update permission applies when updating an existing observation.
    */
   ensureUpdateObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
+  ensureReadObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
 }

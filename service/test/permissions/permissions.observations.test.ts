@@ -142,4 +142,54 @@ describe('observation permissions service', function() {
       expect(denied?.data.permission).to.equal('UPDATE_OBSERVATION')
     })
   })
+
+  describe('read permission', function() {
+
+    it('grants when the context user role has permission to read all observations globally', async function() {
+
+      user.roleId.permissions = [ ObservationPermission.READ_OBSERVATION_ALL ]
+      const denied = await permissions.ensureReadObservationPermission(context)
+
+      expect(denied).to.be.null
+    })
+
+    it('grants when the context user role has event event-scoped read permission and the event acl has an entry for the user', async function() {
+
+      user.roleId.permissions = [ ObservationPermission.READ_OBSERVATION_EVENT ]
+      eventPermissions.userHasEventPermission(context.mageEvent, user.id, EventAccessType.Read).resolves(true)
+      const denied = await permissions.ensureReadObservationPermission(context)
+
+      expect(denied).to.be.null
+    })
+
+    describe('denies', function() {
+
+      const denyTests: [ testName: string, setupContext: () => any ][] = [
+        [ 'with empty permissions', () => void(0) ],
+        [
+          'with participant read permission but without event read access',
+          () => {
+            user.roleId.permissions = [ ObservationPermission.READ_OBSERVATION_EVENT ]
+            eventPermissions.userHasEventPermission(Arg.all()).resolves(false)
+          }
+        ],
+        [
+          'with event read access but without participant read permission',
+          () => {
+            user.roleId.permissions = []
+            eventPermissions.userHasEventPermission(Arg.all()).resolves(true)
+          }
+        ]
+      ]
+      denyTests.forEach(([ testName, setupContext ]) => {
+        it(testName, async function() {
+          setupContext()
+          const denied = await permissions.ensureReadObservationPermission(context)
+          expect(denied).to.be.instanceOf(MageError)
+          expect(denied?.code).to.equal(ErrPermissionDenied)
+          expect(denied?.data.permission).to.equal('READ_OBSERVATION')
+        })
+      })
+    })
+  })
 })
