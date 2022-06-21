@@ -1,5 +1,5 @@
 import { Injectable, ComponentFactoryResolver, Injector, ApplicationRef } from '@angular/core';
-import { LeafletMouseEvent, Layer } from 'leaflet';
+import { LeafletMouseEvent, Layer, Marker } from 'leaflet';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { Feature } from 'geojson';
