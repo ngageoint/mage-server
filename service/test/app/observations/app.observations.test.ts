@@ -2,17 +2,16 @@ import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
-import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
+import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
-import { app } from '../../../src/authentication'
 import { Readable } from 'stream'
 
-describe('observations use case interactions', function() {
+describe.only('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
@@ -1212,11 +1211,11 @@ describe('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
-      it.skip('TODO: removes attachment content for removed attachments', async function() {
+      it('TODO: removes attachment content for removed attachments', async function() {
         expect.fail('todo')
       })
 
-      it.skip('TODO: removes attachment content for removed form entries', async function() {
+      it('TODO: removes attachment content for removed form entries', async function() {
         expect.fail('todo')
       })
 
@@ -1306,46 +1305,225 @@ describe('observations use case interactions', function() {
 
   describe('saving attachment content', function() {
 
-    it('TODO: checks permissions', async function() {
+    let storeAttachmentContent: api.StoreAttachmentContent
+    let store: SubstituteOf<AttachmentStore>
+    let obs: Observation
 
+    beforeEach(function() {
+      const permittedUser = context.userId
+      permissions.ensureUpdateObservationPermission(Arg.all()).mimicks(async context => {
+        if (context.userId === permittedUser) {
+          return null
+        }
+        return permissionDenied('update observation', context.userId)
+      })
+      store = Sub.for<AttachmentStore>()
+      mageEvent = new MageEvent({
+        ...copyMageEventAttrs(mageEvent),
+        forms: [
+          {
+            id: 1,
+            name: 'Save Attachment Content',
+            archived: false,
+            color: '#12ab34',
+            fields: [
+              {
+                id: 1,
+                name: 'description',
+                title: 'Description',
+                type: FormFieldType.Text,
+                required: false,
+              },
+              {
+                id: 2,
+                name: 'attachments',
+                title: 'Attachments',
+                type: FormFieldType.Attachment,
+                required: false,
+              }
+            ],
+            userFields: []
+          }
+        ]
+      })
+      const baseObsAttrs: ObservationAttrs = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: [
+            { id: 'formEntry1', formId: mageEvent.forms[0].id, description: `something interesting at ${new Date().toISOString()}` }
+          ]
+        },
+        states: [],
+        favoriteUserIds: [],
+        attachments: []
+      }
+      baseObsAttrs.attachments = [
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry1',
+          fieldName: 'attachments',
+          oriented: false,
+          thumbnails: [],
+          contentLocator: uniqid()
+        },
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry1',
+          fieldName: 'attachments',
+          oriented: false,
+          thumbnails: [],
+        }
+      ]
+      obs = Observation.evaluate(baseObsAttrs, mageEvent)
+      storeAttachmentContent = StoreAttachmentContent(permissions, store)
+
+      expect(obs.validation.hasErrors).to.be.false
+    })
+
+    it('checks permissions', async function() {
+
+      const forbiddenUser = uniqid()
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: ExoAttachmentContent = {
+      context.userId = forbiddenUser
+      const content: api.ExoAttachmentContent = {
         mediaType: 'image/jpeg',
-        size: bytesBuffer.length,
+        contentLength: bytesBuffer.length,
         bytes,
       }
-      const req: StoreAttachmentContentRequest = {
+      const observationId = uniqid()
+      const attachmentId = uniqid()
+      const req: api.StoreAttachmentContentRequest = {
         context,
         observationId,
         attachmentId,
         content,
       }
-      const res = await app.storeAttachmentContent()
-      expect.fail('todo')
+      const res = await storeAttachmentContent(req)
+      const denied = res.error as PermissionDeniedError
+
+      expect(res.success).to.be.null
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
+      expect(denied.data.permission).to.equal('update observation')
+      expect(denied.data.subject).to.equal(forbiddenUser)
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().findById(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
-    it('TODO: saves the attachment content to the attachment store', async function() {
-      expect.fail('todo')
+    it('saves the attachment content to the attachment store', async function() {
+
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        mediaType: 'image/jpeg',
+        contentLength: bytesBuffer.length,
+        bytes,
+      }
+      const attachmentId = obs.attachments[0].id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        content,
+      }
+      const contentLocator = uniqid()
+      const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(equalToObservationIgnoringDates(afterStore)))
     })
 
     it('updates the attachment meta-data on the observation', async function() {
       expect.fail('todo')
     })
 
-    it('fails if the observation does not exist', async function() {
+    it('does not update the attachment meta-data if storing content failed', async function() {
       expect.fail('todo')
+    })
+
+    it('fails if the observation does not exist', async function() {
+
+      const bytes = Sub.for<NodeJS.ReadableStream>()
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: uniqid(),
+        attachmentId: uniqid(),
+        content: { bytes },
+      }
+      obsRepo.findById(Arg.all()).resolves(null)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.observationId)
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
     it('fails if the attachment does not exist on the observation', async function() {
       expect.fail('todo: should find attachment by id, name, and media type for backward compatibility')
     })
+
+    it('fails if the attachment content media type invalidates the observation', async function() {
+      expect.fail('todo')
+    })
   })
 
   describe('reading attachment content', function() {
 
+    let store: SubstituteOf<AttachmentStore>
+    let readAttachmentContent: api.ReadAttachmentContent
+
+    beforeEach(function() {
+      store = Sub.for<AttachmentStore>()
+      const permittedUser = context.userId
+      permissions.ensureReadObservationPermission(Arg.all()).mimicks(async context => {
+        if (context.userId === permittedUser) {
+          return null
+        }
+        return permissionDenied('read observation', context.userId)
+      })
+      readAttachmentContent = ReadAttachmentContent(permissions, store)
+    })
+
     it('checks permission', async function() {
-      expect.fail('todo')
+
+      const forbiddenUser = uniqid()
+      const observationId = uniqid()
+      const attachmentId = uniqid()
+      context.userId = forbiddenUser
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId,
+        attachmentId,
+      }
+      const res = await readAttachmentContent(req)
+      const denied = res.error as PermissionDeniedError
+
+      expect(res.success).to.be.null
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
+      expect(denied.data.permission).to.equal('read observation')
+      expect(denied.data.subject).to.equal(forbiddenUser)
+      obsRepo.didNotReceive().findById(Arg.all())
+      store.didNotReceive().readContent(Arg.all())
+      store.didNotReceive().readThumbnailContent(Arg.all())
     })
 
     it('fails if the observation does not exist', async function() {

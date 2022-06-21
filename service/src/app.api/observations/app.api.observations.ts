@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -33,7 +33,24 @@ export interface SaveObservationRequest extends ObservationRequest {
   observation: ExoObservationMod
 }
 
-// TODO: add other model json transformation here
+export interface StoreAttachmentContent {
+  (req: StoreAttachmentContentRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError>>
+}
+export interface StoreAttachmentContentRequest extends ObservationRequest {
+  observationId: ObservationId
+  attachmentId: AttachmentId
+  content: ExoAttachmentContent
+}
+
+export interface ReadAttachmentContent {
+  (req: ReadAttachmentContentRequest): Promise<AppResponse<ExoAttachmentContent, PermissionDeniedError | EntityNotFoundError>>
+}
+export interface ReadAttachmentContentRequest extends ObservationRequest {
+  observationId: ObservationId
+  attachmentId: AttachmentId
+  minDimension?: number
+}
+
 
 /**
  * ExoObservation refers to the view of observations that app clients receive
@@ -65,7 +82,6 @@ export type ExoObservationPropertiesMod = Omit<ObservationFeatureProperties, 'fo
   forms: ExoFormEntryMod[]
 }
 
-
 export type ExoFormEntryMod =
   & Partial<Pick<FormEntry, 'id'>>
   & Pick<FormEntry, 'formId'>
@@ -82,6 +98,12 @@ export type ExoAttachmentMod = Partial<ExoAttachment> & {
 export enum AttachmentModAction {
   Add = 'add',
   Delete = 'delete',
+}
+
+export interface ExoAttachmentContent {
+  bytes: NodeJS.ReadableStream
+  mediaType?: string
+  contentLength?: number
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
