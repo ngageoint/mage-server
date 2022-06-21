@@ -3,8 +3,9 @@ var mongoose = require('mongoose')
   , Event = require('./event')
   , User = require('./user')
   , userTransformer = require('../transformers/user')
-  , { countAndPage } = require('../utilities/paging')
-  , FilterParser = require('../utilities/filterParser');
+  , FilterParser = require('../utilities/filterParser')
+  , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')
+  , { pageOf } = require('../entities/entities.global');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -300,7 +301,7 @@ exports.count = function(options, callback) {
   });
 };
 
-exports.getTeams = function(options, callback) {
+exports.getTeams = async function(options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -337,17 +338,37 @@ exports.getTeams = function(options, callback) {
     conditions['$or'] = accesses;
   }
 
-  var query = Team.find(conditions);
+  var baseQuery = Team.find(conditions).sort('_id');
   if(options.populate == null || options.populate == 'true') {
-    query = query.populate('userIds');
+    baseQuery = baseQuery.populate('userIds');
   }
 
   var isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    var countQuery = Team.find(conditions);
-    pageTeams(countQuery, query, options, callback);
+    const limit = Math.abs(options.limit) || 10;
+    const start = (Math.abs(options.start) || 0);
+    const page = Math.ceil(start / limit);
+
+    const which = {
+      pageSize: limit,
+      pageIndex: page,
+      includeTotalCount: true
+    };
+    try {
+      const counted = await pageQuery(baseQuery, which);
+      const teams = [];
+      for await (const teamDoc of counted.query.cursor()) {
+        const json = teamDoc.toJSON();
+        teams.push(json);
+      }
+      const pageof = pageOf(teams, which, counted.totalCount);
+      callback(null, teams, pageof);
+    } catch (err) {
+      callback(err);
+    }
+   
   } else {
-    query.exec(function (err, teams) {
+    baseQuery.exec(function (err, teams) {
       callback(err, teams);
     });
   }
@@ -358,14 +379,6 @@ function createQueryConditions(filter) {
 
   return conditions;
 };
-
-function pageTeams(countQuery, query, options, callback) {
-  countAndPage(countQuery, query, options, 'teams').then(pageInfo => {
-    callback(null, pageInfo.teams, pageInfo);
-  }).catch(err => {
-    callback(err, null, null);
-  });
-}
 
 exports.createTeam = function(team, user, callback) {
   var create = {
