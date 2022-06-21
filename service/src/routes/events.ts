@@ -570,27 +570,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     }
   );
 
-  app.get(
-    '/api/events/:eventId/teams',
-    passport.authenticate('bearer'),
-    middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    determineReadAccess,
-    function (req, res, next) {
-      let populate: string[] | null = null
-      if (typeof req.query.populate === 'string') {
-        populate = req.query.populate.split(",");
-      }
-      EventModel.getTeams(req.event!._id, {populate: populate}, function(err: any, teams: any) {
-        if (err) {
-          return next(err);
-        }
-        res.json(teams.map(function(team: any) {
-          return team.toObject({access: req.access});
-        }));
-      });
-    }
-  );
-
   app.delete(
     '/api/events/:eventId/teams/:teamId',
     passport.authenticate('bearer'),
@@ -630,6 +609,90 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         }
         res.json(event);
       });
+    }
+  );
+
+  app.get(
+    '/api/events/:id/members',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getMembers(parseInt(req.params.id), options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:id/nonMembers',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getNonMembers(parseInt(req.params.id), options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:id/teams',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getTeamsInEvent(parseInt(req.params.id), options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
+    }
+  );
+
+  app.get(
+    '/api/events/:id/nonTeams',
+    passport.authenticate('bearer'),
+    determineReadAccess,
+    function (req, res, next) {
+      const options = {
+        access: req.access,
+        searchTerm: req.query.term,
+        pageSize: parseInt(String(req.query.page_size)) || 2,
+        pageIndex: parseInt(String(req.query.page)) || 0,
+        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
+      }
+
+      EventModel.getTeamsNotInEvent(parseInt(req.params.id), options).then(page => {
+        if (!page) return res.status(404).send('Event not found');
+
+        res.json(page);
+      }).catch(err => next(err));
     }
   );
 };

@@ -77,6 +77,34 @@ function Event($rootScope, $resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    getMembers: {
+      method: 'GET',
+      url: '/api/events/:id/members',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonMembers: {
+      method: 'GET',
+      url: '/api/events/:id/nonMembers',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getTeams: {
+      method: 'GET',
+      url: '/api/events/:id/teams',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    getNonTeams: {
+      method: 'GET',
+      url: '/api/events/:id/nonTeams',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 

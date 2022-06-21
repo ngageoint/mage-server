@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , Event = require('./event')
+  , User = require('./user')
   , userTransformer = require('../transformers/user')
   , { countAndPage } = require('../utilities/paging')
   , FilterParser = require('../utilities/filterParser');
@@ -146,6 +147,120 @@ exports.getTeamById = function(id, options, callback) {
   }
 
   query.exec(callback);
+};
+
+exports.getMembers = async function (teamId, options) {
+  const query = { _id: teamId };
+  if (options.access) {
+    const accesses = [{
+      userIds: {
+        '$in': [options.access.user._id]
+      }
+    }];
+
+    rolesWithPermission(options.access.permission).forEach(function (role) {
+      const access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
+    });
+
+    query['$or'] = accesses;
+  }
+  const team = await Team.findOne(query)
+  
+  if (team) {
+    const { searchTerm } = options || {}
+    const searchRegex = new RegExp(searchTerm, 'i')
+    const params = searchTerm ? {
+      '$or': [
+        { username: searchRegex },
+        { displayName: searchRegex },
+        { email: searchRegex },
+        { 'phones.number': searchRegex }
+      ]
+    } : {}
+
+    params._id = { '$in': team.userIds.toObject() }
+
+    // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
+    // add _id to sort to ensure consistent ordering
+    const members = await User.Model.find(params)
+      .sort('displayName _id')
+      .limit(options.pageSize)
+      .skip(options.pageIndex * options.pageSize)
+
+    const page = {
+      pageSize: options.pageSize,
+      pageIndex: options.pageIndex,
+      items: members
+    }
+
+    const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
+    if (includeTotalCount) {
+      page.totalCount = await User.Model.count(params);
+    }
+
+    return page;
+  } else {
+    return null;
+  }
+};
+
+exports.getNonMembers = async function (teamId, options) {
+  const query = { _id: teamId };
+  if (options.access) {
+    const accesses = [{
+      userIds: {
+        '$in': [options.access.user._id]
+      }
+    }];
+
+    rolesWithPermission(options.access.permission).forEach(function (role) {
+      const access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
+    });
+
+    query['$or'] = accesses;
+  }
+  const team = await Team.findOne(query)
+
+  if (team) {
+    const { searchTerm } = options || {}
+    const searchRegex = new RegExp(searchTerm, 'i')
+    const params = searchTerm ? {
+      '$or': [
+        { username: searchRegex },
+        { displayName: searchRegex },
+        { email: searchRegex },
+        { 'phones.number': searchRegex }
+      ]
+    } : {}
+
+    params._id = { '$nin': team.userIds.toObject() }
+
+    // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
+    // add _id to sort to ensure consistent ordering
+    const nonMembers = await User.Model.find(params)
+      .sort('displayName _id')
+      .limit(options.pageSize)
+      .skip(options.pageIndex * options.pageSize)
+
+    const page = {
+      pageSize: options.pageSize,
+      pageIndex: options.pageIndex,
+      items: nonMembers
+    }
+
+    const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
+    if (includeTotalCount) {
+      page.totalCount = await User.Model.count(params);
+    }
+
+    return page;
+  } else {
+    return null;
+  }
 };
 
 exports.teamsForUserInEvent = function(user, event, callback) {
@@ -298,12 +413,8 @@ exports.createTeamForEvent = function(event, user, callback) {
   });
 };
 
-exports.getTeamForEvent = function (event, callback) {
-  const conditions = {
-    teamEventId: event._id
-  };
-
-  Team.findOne(conditions, callback);
+exports.getTeamForEvent = function (event) {
+ return Team.findOne({ teamEventId: event._id });
 };
 
 // TODO: should this do something with ACL?
