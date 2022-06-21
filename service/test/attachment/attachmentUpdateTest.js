@@ -142,6 +142,20 @@ describe('updating attachments', function () {
       attachments: [mockAttachment]
     });
 
+    sinon.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sinon.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
     sinon.mock(ObservationModel)
       .expects('findById')
       .twice()
