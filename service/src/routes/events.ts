@@ -613,7 +613,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   );
 
   app.get(
-    '/api/events/:eventId/members',
+    '/api/events/:id/members',
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
@@ -625,7 +625,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
       }
 
-      EventModel.getMembers(req.event!._id, options).then(page => {
+      EventModel.getMembers(parseInt(req.params.id), options).then(page => {
         if (!page) return res.status(404).send('Event not found');
 
         res.json(page);
@@ -634,7 +634,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   );
 
   app.get(
-    '/api/events/:eventId/nonMembers',
+    '/api/events/:id/nonMembers',
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
@@ -646,7 +646,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
       }
 
-      EventModel.getNonMembers(req.event!._id, options).then(page => {
+      EventModel.getNonMembers(parseInt(req.params.id), options).then(page => {
         if (!page) return res.status(404).send('Event not found');
 
         res.json(page);
@@ -655,7 +655,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   );
 
   app.get(
-    '/api/events/:eventId/teams',
+    '/api/events/:id/teams',
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
@@ -667,7 +667,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
       }
 
-      EventModel.getTeamsInEvent(req.event!._id, options).then(page => {
+      EventModel.getTeamsInEvent(parseInt(req.params.id), options).then(page => {
         if (!page) return res.status(404).send('Event not found');
 
         res.json(page);
@@ -676,7 +676,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
   );
 
   app.get(
-    '/api/events/:eventId/nonTeams',
+    '/api/events/:id/nonTeams',
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
@@ -688,7 +688,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
       }
 
-      EventModel.getTeamsNotInEvent(req.event!._id, options).then(page => {
+      EventModel.getTeamsNotInEvent(parseInt(req.params.id), options).then(page => {
         if (!page) return res.status(404).send('Event not found');
 
         res.json(page);
