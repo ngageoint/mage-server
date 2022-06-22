@@ -3,6 +3,7 @@ import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.erro
 import { ObservationPermissionService, ObservationRequestContext } from '../app.api/observations/app.api.observations'
 import { ObservationPermission } from '../entities/authorization/entities.permissions'
 import { EventAccessType } from '../entities/events/entities.events'
+import { AttachmentId, Observation } from '../entities/observations/entities.observations'
 import { EventPermissionServiceImpl } from './permissions.events'
 import { ensureContextUserHasPermission, UserWithRole } from './permissions.role-based.base'
 
@@ -45,5 +46,30 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
       }
     }
     return permissionDenied('READ_OBSERVATION', user.id)
+  }
+
+  async ensureStoreAttachmentContentPermission(context: ObservationRequestContext<UserWithRole>, observation: Observation, attachmentId: AttachmentId): Promise<PermissionDeniedError | null> {
+    const user = context.requestingPrincipal()
+    const attachment = observation.attachmentFor(attachmentId)
+    if (!attachment) {
+      return null
+    }
+    const hasUpdatePermission = await this.ensureUpdateObservationPermission(context).then(x => x === null)
+    const contentExists = !!attachment.contentLocator
+    if (contentExists) {
+      if (hasUpdatePermission) {
+        return null
+      }
+    }
+    else {
+      if (hasUpdatePermission) {
+        return null
+      }
+      const isContextUserCreator = observation.userId === user.id
+      if (isContextUserCreator && await this.ensureCreateObservationPermission(context).then(x => x === null)) {
+        return null
+      }
+    }
+    return permissionDenied('STORE_ATTACHMENT_CONTENT', user.id, `observation ${observation.id}, attachment ${attachmentId}`)
   }
 }
