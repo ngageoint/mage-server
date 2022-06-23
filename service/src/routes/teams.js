@@ -1,7 +1,7 @@
 module.exports = function(app, security) {
   const Team = require('../models/team')
     , access = require('../access')
-    , pageInfoTransformer = require('../transformers/pageinfo.js')
+    , pageinfoTransformer = require('../transformers/pageinfo')
     , passport = security.authentication.passport;
 
   app.all('/api/teams*', passport.authenticate('bearer'));
@@ -87,17 +87,13 @@ module.exports = function(app, security) {
       }
 
       Team.getTeams({access: req.access, populate: req.query.populate, filter: filter, limit: limit, start: start, sort: sort}, 
-        function (err, teams, pageInfo) {
+        function (err, teams, page) {
         if (err) return next(err);
 
         let data = null;
 
-        if (pageInfo != null) {
-          data = pageInfoTransformer.transform(pageInfo, req);
-          data.teams = teams.map(function(team) {
-            return team.toObject({access: req.access, path: req.getRoot()});
-          });
-          data = [data];
+        if (page != null) {
+          data = [pageinfoTransformer.transform(page, req, start, limit)];
         } else {
           data = teams.map(function(team) {
             return team.toObject({access: req.access, path: req.getRoot()});

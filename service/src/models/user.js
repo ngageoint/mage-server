@@ -12,7 +12,8 @@ const mongoose = require('mongoose')
   , CappedLocation = require('./cappedLocation')
   , Authentication = require('./authentication')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
-  , { countAndPage } = require('../utilities/paging')
+  , { pageQuery } = require('../adapters/base/adapters.base.db.mongoose')
+  , { pageOf } = require('../entities/entities.global')
   , FilterParser = require('../utilities/filterParser');
 
 // Creates a new Mongoose Schema object
@@ -247,7 +248,7 @@ exports.count = function (options, callback) {
   });
 };
 
-exports.getUsers = function (options, callback) {
+exports.getUsers = async function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -258,33 +259,53 @@ exports.getUsers = function (options, callback) {
 
   const conditions = createQueryConditions(filter);
 
-  let query = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
+  let baseQuery = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
 
   if(options.lean) {
-    query = query.lean();
+    baseQuery = baseQuery.lean();
   }
 
   if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
-    query = query.populate('roleId');
+    baseQuery = baseQuery.populate('roleId');
   }
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    const countQuery = User.find(conditions);
-    pageUsers(countQuery, query, options, callback);
+    const limit = Math.abs(options.limit) || 10;
+    const start = (Math.abs(options.start) || 0);
+    const page = Math.ceil(start / limit);
+
+    const which = {
+      pageSize: limit,
+      pageIndex: page,
+      includeTotalCount: true
+    };
+    try {
+      const counted = await pageQuery(baseQuery, which);
+      const users = [];
+      for await (const userDoc of counted.query.cursor()) {
+        users.push(entityForDocument(userDoc));
+      }
+      const pageof = pageOf(users, which, counted.totalCount);
+      callback(null, users, pageof);
+    } catch (err) {
+      callback(err);
+    }
   } else {
-    query.exec(function (err, users) {
+    baseQuery.exec(function (err, users) {
       callback(err, users, null);
     });
   }
 };
 
-function pageUsers(countQuery, query, options, callback) {
-  countAndPage(countQuery, query, options, 'users').then(pageInfo => {
-    callback(null, pageInfo.users, pageInfo);
-  }).catch(err => {
-    callback(err, null, null);
-  });
+function entityForDocument(doc) {
+  const json = doc.toJSON();
+  const entity = {
+    ...json,
+    id: doc._id.toHexString()
+  }
+
+  return entity;
 }
 
 exports.createUser = function (user, callback) {
