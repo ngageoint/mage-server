@@ -1,9 +1,9 @@
-import { entityNotFound, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
+import { entityNotFound, infrastructureError, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentStore, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryErrorCode, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
@@ -53,16 +53,41 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
 
 export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
-    const denied = await permissionService.ensureUpdateObservationPermission(req.context)
-    if (denied) {
-      return AppResponse.error(denied)
-    }
     const obsRepo = req.context.observationRepository
     const obsBefore = await obsRepo.findById(req.observationId)
     if (!obsBefore) {
       return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
     }
-    throw new Error('unimplemented')
+    const attachmentBefore = obsBefore.attachmentFor(req.attachmentId)
+    if (!attachmentBefore) {
+      return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
+    }
+    const content = req.content
+    if (content.mediaType !== attachmentBefore.contentType || content.name !== attachmentBefore.name) {
+      return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
+    }
+    const denied = await permissionService.ensureStoreAttachmentContentPermission(req.context, obsBefore, attachmentBefore.id)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    let obsAfterStore = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    if (obsAfterStore instanceof AttachmentStoreError) {
+      if (obsAfterStore.errorCode === AttachmentStoreErrorCode.StorageError) {
+        return AppResponse.error(infrastructureError(obsAfterStore))
+      }
+      return AppResponse.error(invalidInput(obsAfterStore.message))
+    }
+    if (attachmentBefore.size !== content.contentLength) {
+      obsAfterStore = patchAttachment(obsAfterStore || obsBefore, req.attachmentId, { size: content.contentLength }) as Observation
+    }
+    if (obsAfterStore === null) {
+      return AppResponse.success(api.exoObservationFor(obsBefore))
+    }
+    const obsAfterSave = await obsRepo.save(obsAfterStore)
+    if (obsAfterSave instanceof Observation) {
+      return AppResponse.success(api.exoObservationFor(obsAfterSave))
+    }
+    return AppResponse.error(invalidInput(obsAfterSave.message))
   }
 }
 

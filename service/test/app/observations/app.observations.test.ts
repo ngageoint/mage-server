@@ -4,8 +4,8 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
-import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
+import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
+import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
@@ -1311,7 +1311,7 @@ describe.only('observations use case interactions', function() {
 
     beforeEach(function() {
       const permittedUser = context.userId
-      permissions.ensureUpdateObservationPermission(Arg.all()).mimicks(async context => {
+      permissions.ensureStoreAttachmentContentPermission(Arg.all()).mimicks(async context => {
         if (context.userId === permittedUser) {
           return null
         }
@@ -1368,6 +1368,9 @@ describe.only('observations use case interactions', function() {
           id: uniqid(),
           observationFormId: 'formEntry1',
           fieldName: 'attachments',
+          name: 'store test 1.jpg',
+          contentType: 'image/jpeg',
+          size: 12345,
           oriented: false,
           thumbnails: [],
           contentLocator: uniqid()
@@ -1376,6 +1379,9 @@ describe.only('observations use case interactions', function() {
           id: uniqid(),
           observationFormId: 'formEntry1',
           fieldName: 'attachments',
+          name: 'store test 2.jpg',
+          contentType: 'image/jpeg',
+          size: 23456,
           oriented: false,
           thumbnails: [],
         }
@@ -1386,25 +1392,26 @@ describe.only('observations use case interactions', function() {
       expect(obs.validation.hasErrors).to.be.false
     })
 
-    it('checks permissions', async function() {
+    it('checks permission to store the attachment', async function() {
 
+      const attachment = obs.attachments[0]
       const forbiddenUser = uniqid()
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
       context.userId = forbiddenUser
       const content: api.ExoAttachmentContent = {
-        mediaType: 'image/jpeg',
-        contentLength: bytesBuffer.length,
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: attachment.size!,
         bytes,
       }
-      const observationId = uniqid()
-      const attachmentId = uniqid()
       const req: api.StoreAttachmentContentRequest = {
         context,
-        observationId,
-        attachmentId,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
         content,
       }
+      obsRepo.findById(obs.id).resolves(obs)
       const res = await storeAttachmentContent(req)
       const denied = res.error as PermissionDeniedError
 
@@ -1414,17 +1421,20 @@ describe.only('observations use case interactions', function() {
       expect(denied.data.permission).to.equal('update observation')
       expect(denied.data.subject).to.equal(forbiddenUser)
       store.didNotReceive().saveContent(Arg.all())
-      obsRepo.didNotReceive().findById(Arg.all())
       obsRepo.didNotReceive().save(Arg.all())
+      permissions.received(1).ensureStoreAttachmentContentPermission(Arg.all())
+      permissions.received(1).ensureStoreAttachmentContentPermission(context, obs, obs.attachments[0].id)
     })
 
     it('saves the attachment content to the attachment store', async function() {
 
+      const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
       const content: api.ExoAttachmentContent = {
-        mediaType: 'image/jpeg',
-        contentLength: bytesBuffer.length,
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: attachment.size!,
         bytes,
       }
       const attachmentId = obs.attachments[0].id
@@ -1436,23 +1446,116 @@ describe.only('observations use case interactions', function() {
       }
       const contentLocator = uniqid()
       const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
+      const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
       obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
+      obsRepo.save(afterStore).resolves(afterSave)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterSave))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.received(1).save(Arg.all())
+      obsRepo.received(1).save(Arg.is(validObservation()))
+      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
+    })
+
+    it('does not save the observation if the attachment store did not update the observation', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: attachment.size!,
+        bytes,
+      }
+      const attachmentId = attachment.id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(null)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(obs))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('updates the attachment size from the request content if different', async function() {
+
+      const attachment = obs.attachments[1]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: attachment.size! + 1,
+        bytes,
+      }
+      const attachmentId = attachment.id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      const contentLocator = uniqid()
+      const afterStore = patchAttachment(obs, attachment.id, { contentLocator }) as Observation
+      const expectedSaved = patchAttachment(afterStore, attachment.id, { size: content.contentLength }) as Observation
+      obsRepo.findById(obs.id).resolves(obs)
+      obsRepo.save(Arg.all()).resolves(expectedSaved)
       store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
+      expect(res.success).to.deep.equal(api.exoObservationFor(expectedSaved))
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
-      store.received(1).saveContent(bytes, attachmentId, Arg.is(equalToObservationIgnoringDates(afterStore)))
+      store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.received(1).save(Arg.all())
+      obsRepo.received(1).save(Arg.is(validObservation()))
+      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(expectedSaved)))
     })
 
-    it('updates the attachment meta-data on the observation', async function() {
-      expect.fail('todo')
-    })
+    it('fails if storing the content failed', async function() {
 
-    it('does not update the attachment meta-data if storing content failed', async function() {
-      expect.fail('todo')
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: bytesBuffer.length,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(Arg.all()).resolves(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, 'the imaginary storage failed'))
+      const res = await storeAttachmentContent(req)
+      const err = res.error as InfrastructureError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrInfrastructure)
+      expect(err.message).to.contain('the imaginary storage failed')
+      store.received(1).saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
     it('fails if the observation does not exist', async function() {
@@ -1462,7 +1565,7 @@ describe.only('observations use case interactions', function() {
         context,
         observationId: uniqid(),
         attachmentId: uniqid(),
-        content: { bytes },
+        content: { bytes, name: 'fail.jpg', mediaType: 'image/jpeg', contentLength: 12345 },
       }
       obsRepo.findById(Arg.all()).resolves(null)
       const res = await storeAttachmentContent(req)
@@ -1477,11 +1580,93 @@ describe.only('observations use case interactions', function() {
     })
 
     it('fails if the attachment does not exist on the observation', async function() {
-      expect.fail('todo: should find attachment by id, name, and media type for backward compatibility')
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        contentLength: bytesBuffer.length,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: 'wut',
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
-    it('fails if the attachment content media type invalidates the observation', async function() {
-      expect.fail('todo')
+    it('fails if the request content name does not match', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: 'img_123.wut',
+        mediaType: attachment.contentType!,
+        contentLength: bytesBuffer.length,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if the request media type does not match', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoAttachmentContent = {
+        name: attachment.name!,
+        mediaType: 'image/wut',
+        contentLength: bytesBuffer.length,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
     })
   })
 
@@ -1527,7 +1712,21 @@ describe.only('observations use case interactions', function() {
     })
 
     it('fails if the observation does not exist', async function() {
-      expect.fail('todo')
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: uniqid(),
+        attachmentId: uniqid(),
+      }
+      obsRepo.findById(Arg.all()).resolves(null)
+      const res = await readAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.observationId)
+      expect(err.data.entityType).to.equal('Observation')
     })
 
     it('fails if the attachment does not exist on the observation', async function() {
@@ -1549,10 +1748,6 @@ function equalToObservationIgnoringDates(expected: ObservationAttrs, message?: s
     expect(actualWithoutDates).to.deep.equal(expectedWithoutDates, message)
     return true
   }
-}
-
-function not<Arg>(predicate: (actual: Arg) => boolean): (actual: Arg) => boolean {
-  return actual => !predicate(actual)
 }
 
 function validObservation(): (actual: Observation) => boolean {

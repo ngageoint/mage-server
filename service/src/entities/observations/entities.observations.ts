@@ -848,6 +848,7 @@ export class AttachmentStoreError extends Error {
 
   constructor(readonly errorCode: AttachmentStoreErrorCode, message?: string) {
     super(message)
+    this.name = errorCode
   }
 }
 

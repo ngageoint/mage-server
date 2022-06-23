@@ -1,4 +1,4 @@
-import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
+import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
 import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
@@ -34,7 +34,7 @@ export interface SaveObservationRequest extends ObservationRequest {
 }
 
 export interface StoreAttachmentContent {
-  (req: StoreAttachmentContentRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError>>
+  (req: StoreAttachmentContentRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
 export interface StoreAttachmentContentRequest extends ObservationRequest {
   observationId: ObservationId
@@ -43,7 +43,7 @@ export interface StoreAttachmentContentRequest extends ObservationRequest {
 }
 
 export interface ReadAttachmentContent {
-  (req: ReadAttachmentContentRequest): Promise<AppResponse<ExoAttachmentContent, PermissionDeniedError | EntityNotFoundError>>
+  (req: ReadAttachmentContentRequest): Promise<AppResponse<ExoAttachmentContent, PermissionDeniedError | EntityNotFoundError | InfrastructureError>>
 }
 export interface ReadAttachmentContentRequest extends ObservationRequest {
   observationId: ObservationId
@@ -102,8 +102,9 @@ export enum AttachmentModAction {
 
 export interface ExoAttachmentContent {
   bytes: NodeJS.ReadableStream
-  mediaType?: string
-  contentLength?: number
+  name: string
+  mediaType: string
+  contentLength: number
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {

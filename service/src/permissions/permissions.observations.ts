@@ -65,6 +65,26 @@ export class ObservationPermissionsServiceImpl implements ObservationPermissionS
       if (hasUpdatePermission) {
         return null
       }
+      /*
+      TODO:
+      This create permission check preserves backward compatibility for a MAGE
+      client that uses a role with permission only to create observations, but
+      not update them.  Adding attachments requires two or more requests, one
+      to create the observation document with attachment meta-data embdedded in
+      form field entries, and one request per attachment to save the content of
+      the attachment(s).  Hence, to support the create-only role, the old
+      attachment submission code checked for observation create permission
+      instead of observation update permission to ensure that users with the
+      create-only role could still add attachment content to observations they
+      created.
+
+      This permission check should go away when we implement fully custom roles
+      and permissions management, however, we may also need to implement some
+      kind of transaction mechanism to group all the requests for submitting an
+      observation with attachments, whether creating or updating.  This could
+      be some token that the service returns and the API client submits with
+      each request until the observation submission is complete.
+      */
       const isContextUserCreator = observation.userId === user.id
       if (isContextUserCreator && await this.ensureCreateObservationPermission(context).then(x => x === null)) {
         return null
