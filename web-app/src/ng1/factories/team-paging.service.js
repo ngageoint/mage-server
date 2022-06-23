@@ -36,9 +36,9 @@ function TeamPagingService(Team, $q) {
 
         for (const [key, value] of Object.entries(stateAndData)) {
 
-            var promise = $q.all({ count: Team.count(value.countFilter).$promise, pageInfo: Team.query(value.teamFilter).$promise }).then(result => {
-                stateAndData[key].teamCount = result.count.count;
-                stateAndData[key].pageInfo = result.pageInfo[0];
+            var promise = Team.query(value.teamFilter).$promise.then(page => {
+                stateAndData[key].teamCount = page[0].totalCount;
+                stateAndData[key].pageInfo = page[0];
                 $q.resolve(key);
             });
 
@@ -87,15 +87,15 @@ function TeamPagingService(Team, $q) {
         filter.start = start;
         return $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
             data.pageInfo = result.pageInfo[0];
-            return $q.resolve(data.pageInfo.teams);
+            return $q.resolve(data.pageInfo.items);
         });
     }
 
     function teams(data) {
         var teams = [];
 
-        if (data.pageInfo && data.pageInfo.teams) {
-            teams = data.pageInfo.teams;
+        if (data.pageInfo && data.pageInfo.items) {
+            teams = data.pageInfo.items;
         }
 
         return teams;
@@ -103,7 +103,7 @@ function TeamPagingService(Team, $q) {
 
     function search(data, teamSearch, nameSearchOnly) {
 
-        if (data.pageInfo == null || data.pageInfo.teams == null) {
+        if (data.pageInfo == null || data.pageInfo.items == null) {
             return $q.resolve([]);
         }
 
@@ -113,7 +113,7 @@ function TeamPagingService(Team, $q) {
 
         if (previousSearch == '' && teamSearch == '') {
             //Not performing a seach
-            promise = $q.resolve(data.pageInfo.teams);
+            promise = $q.resolve(data.pageInfo.items);
         } else if (previousSearch != '' && teamSearch == '') {
             //Clearing out the search
             data.searchFilter = '';
@@ -121,11 +121,11 @@ function TeamPagingService(Team, $q) {
 
             promise = $q.all({pageInfo: Team.query(data.teamFilter).$promise }).then(result => {
                 data.pageInfo = result.pageInfo[0];
-                return $q.resolve(data.pageInfo.teams);
+                return $q.resolve(data.pageInfo.items);
             });
         } else if (previousSearch == teamSearch) {
             //Search is being performed, no need to keep searching the same info over and over
-            promise = $q.resolve(data.pageInfo.teams);
+            promise = $q.resolve(data.pageInfo.items);
         } else {
             //Perform the server side searching
             data.searchFilter = teamSearch;
@@ -144,7 +144,7 @@ function TeamPagingService(Team, $q) {
 
             promise = $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
                 data.pageInfo = result.pageInfo[0];
-                return $q.resolve(data.pageInfo.teams);
+                return $q.resolve(data.pageInfo.items);
             });
         }
 
