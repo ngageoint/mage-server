@@ -11,7 +11,6 @@ module.exports = function (app, security) {
     , access = require('../access')
     , verification = require('../authentication/verification')
     , userTransformer = require('../transformers/user')
-    , pageInfoTransformer = require('../transformers/pageinfo')
     , { defaultHandler: upload } = require('../upload')
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events')
     , passport = security.authentication.passport;
@@ -311,14 +310,13 @@ module.exports = function (app, security) {
         sort = req.query.sort;
       }
 
-      new api.User().getAll({ filter, populate, limit, start, sort }, function (err, users, pageInfo) {
+      new api.User().getAll({ filter, populate, limit, start, sort }, function (err, users, page) {
         if (err) return next(err);
 
         let data = null;
 
-        if (pageInfo) {
-          data = pageInfoTransformer.transform(pageInfo, req);
-          data.users = userTransformer.transform(users, { path: req.getRoot() });
+        if (page) {
+          data = page;
         } else {
           data = userTransformer.transform(users, { path: req.getRoot() });
         }
