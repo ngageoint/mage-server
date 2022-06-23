@@ -11,6 +11,7 @@ module.exports = function (app, security) {
     , access = require('../access')
     , verification = require('../authentication/verification')
     , userTransformer = require('../transformers/user')
+    , pageinfoTransformer = require('../transformers/pageinfo')
     , { defaultHandler: upload } = require('../upload')
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events')
     , passport = security.authentication.passport;
@@ -316,7 +317,7 @@ module.exports = function (app, security) {
         let data = null;
 
         if (page) {
-          data = page;
+          data = pageinfoTransformer.transform(page, req, start, limit);
         } else {
           data = userTransformer.transform(users, { path: req.getRoot() });
         }

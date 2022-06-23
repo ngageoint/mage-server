@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
   var Team = require('../models/team')
     , access = require('../access')
+    , pageinfoTransformer = require('../transformers/pageinfo')
     , passport = security.authentication.passport;
 
   app.all('/api/teams*', passport.authenticate('bearer'));
@@ -92,7 +93,7 @@ module.exports = function(app, security) {
         let data = null;
 
         if (page != null) {
-          data = [page];
+          data = [pageinfoTransformer.transform(page, req, start, limit)];
         } else {
           data = teams.map(function(team) {
             return team.toObject({access: req.access, path: req.getRoot()});
