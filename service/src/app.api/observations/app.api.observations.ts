@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -104,7 +104,6 @@ export interface ExoAttachmentContent {
   bytes: NodeJS.ReadableStream
   name: string
   mediaType: string
-  contentLength: number
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {

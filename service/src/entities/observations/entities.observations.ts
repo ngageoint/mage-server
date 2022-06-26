@@ -794,10 +794,11 @@ export interface AttachmentStore {
    * the store will move the content at the temporary location to the permanent
    * location for the specified attachment.  If the store assigns a new
    * {@link Attachment.contentLocator | content locator} to the attachment after
-   * a successful save, return a new observation instance with the {@link patchAttachment | patched}
-   * attachment.  Return `null` if the save succeeded and no change to the
-   * attachment was necessary.  Return an {@link AttachmentStoreError} if the
-   * save failed.
+   * a successful save, and/or changes the size of the attachment to the actual
+   * number of bytes writen, return a new observation instance with the
+   * {@link patchAttachment | patched} attachment.  Return `null` if the save
+   * succeeded and no change to the attachment was necessary.  Return an
+   * {@link AttachmentStoreError} if the save failed.
    * @param content
    * @param attachmentId
    * @param observation

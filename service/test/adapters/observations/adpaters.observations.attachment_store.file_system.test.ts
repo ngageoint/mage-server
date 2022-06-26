@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import fs from 'fs'
 import path from 'path'
-import stream from 'stream'
+import stream, { Readable } from 'stream'
 import util from 'util'
 import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
 import { Attachment, AttachmentId, copyObservationAttrs, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError } from '../../../lib/entities/observations/entities.observations'
@@ -9,6 +9,7 @@ import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
 import _ from 'lodash'
+import { BufferWriteable } from '../../utils'
 
 function contentLocatorOfAttachment(att: AttachmentId, obs: Observation): string {
   return path.join(
@@ -27,7 +28,7 @@ function contentLocatorOfThumbnail(minDimension: number, att: AttachmentId, obs:
 const baseDirPath = path.resolve(`${__filename}.data`)
 const pendingDirPath = path.resolve(baseDirPath, 'pending')
 
-describe('file system attachment store', function() {
+describe.only('file system attachment store', function() {
 
   let store: FileSystemAttachmentStore
   let obs: Observation
@@ -86,7 +87,7 @@ describe('file system attachment store', function() {
           observationFormId: 'entry1',
           oriented: false,
           thumbnails: [],
-          name: 'attachment_store.test'
+          name: 'attachment_store.test',
         }
       ]
     }
@@ -183,8 +184,10 @@ describe('file system attachment store', function() {
 
         it('assigns a content locator to an attachment without a content locator', async function() {
 
-          const content = stream.Readable.from(Buffer.from('such good content'))
-          const mod = await store.saveContent(content, att.id, obs) as Observation
+          const content = Buffer.from('such good content')
+          obs = patchAttachment(obs, att.id, { size: content.length }) as Observation
+          att = obs.attachmentFor(att.id) as Attachment
+          const mod = await store.saveContent(Readable.from(content), att.id, obs) as Observation
           const modAtt = mod.attachmentFor(att.id) as Attachment
           const contentPath = path.join(baseDirPath, contentBaseRelPath)
           const savedContent = fs.readFileSync(contentPath)
@@ -196,12 +199,30 @@ describe('file system attachment store', function() {
           expect(savedContent.toString()).to.equal('such good content')
         })
 
+
+        it('updates size an an attachment if the saved content size is different', async function() {
+
+          obs = patchAttachment(obs, att.id, { size: 1 }) as Observation
+          const bytes = Buffer.from(Array.from({ length: 20 }).map(x => 'photo of trees').join(' '))
+          const contentStream = Readable.from(bytes)
+          const mod = await store.saveContent(contentStream, att.id, obs) as Observation
+          const modAtt = mod.attachmentFor(att.id) as Attachment
+          const contentPath = path.join(baseDirPath, contentBaseRelPath)
+          const savedContent = fs.readFileSync(contentPath)
+
+          expect(mod).to.be.instanceOf(Observation)
+          expect(mod).not.to.equal(obs)
+          expect(modAtt).to.deep.include({ ..._.omit(copyAttachmentAttrs(att), 'lastModified'), contentLocator: contentBaseRelPath, size: bytes.length })
+          expect(modAtt.lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
+          expect(savedContent.toString()).to.equal(bytes.toString())
+        })
+
         it('uses the content locator if present', async function() {
 
           const contentLocator = uniqid()
-          obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
-          const content = stream.Readable.from(Buffer.from('already located'))
-          const saveResult = await store.saveContent(content, att.id, obs)
+          const content = Buffer.from('already located')
+          obs = patchAttachment(obs, att.id, { contentLocator, size: content.length }) as Observation
+          const saveResult = await store.saveContent(Readable.from(content), att.id, obs)
           const saved = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
           expect(saveResult).to.be.null
@@ -247,9 +268,11 @@ describe('file system attachment store', function() {
 
         it('assigns a content locator to an attachment without a content locator', async function() {
 
-          const content = stream.Readable.from(Buffer.from('such good content'))
+          const content = Buffer.from('such good content')
+          obs = patchAttachment(obs, att.id, { size: content.length }) as Observation
+          att = obs.attachmentFor(att.id) as Attachment
           const staged = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content, staged.tempLocation)
+          await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
           const mod = await store.saveContent(staged.id, att.id, obs) as Observation
           const modAtt = mod.attachmentFor(att.id) as Attachment
           const contentPath = path.join(baseDirPath, contentBaseRelPath)
@@ -262,13 +285,31 @@ describe('file system attachment store', function() {
           expect(savedContent.toString()).to.equal('such good content')
         })
 
+        it('updates size an an attachment if the saved content size is different', async function() {
+
+          const content = Buffer.from('such good content')
+          obs = patchAttachment(obs, att.id, { size: 1 }) as Observation
+          const staged = await store.stagePendingContent()
+          await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
+          const mod = await store.saveContent(staged.id, att.id, obs) as Observation
+          const modAtt = mod.attachmentFor(att.id) as Attachment
+          const contentPath = path.join(baseDirPath, contentBaseRelPath)
+          const savedContent = fs.readFileSync(contentPath)
+
+          expect(mod).to.be.instanceOf(Observation)
+          expect(mod).not.to.equal(obs)
+          expect(modAtt).to.deep.include({ ..._.omit(copyAttachmentAttrs(att), 'lastModified'), contentLocator: contentBaseRelPath, size: content.length })
+          expect(modAtt.lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
+          expect(savedContent.toString()).to.equal('such good content')
+        })
+
         it('uses the content locator if present', async function() {
 
           const contentLocator = uniqid()
-          obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
-          const content = stream.Readable.from(Buffer.from('already located'))
+          const content = Buffer.from('already located')
+          obs = patchAttachment(obs, att.id, { contentLocator, size: content.length }) as Observation
           const staged = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content, staged.tempLocation)
+          await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
           const saveResult = await store.saveContent(staged.id, att.id, obs)
           const saved = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
@@ -287,9 +328,9 @@ describe('file system attachment store', function() {
         const safeBaseDirPath = path.join(baseDirPath, 'safe1', 'safe2')
         store = await intializeAttachmentStore(safeBaseDirPath) as FileSystemAttachmentStore
         const contentLocator = path.join('/tmp', 'absolute', 'should_not_write')
-        obs = patchAttachment(obs, att.id, { contentLocator }) as Observation
-        const content = stream.Readable.from(Buffer.from('sinister content'))
-        const result = await store.saveContent(content, att.id, obs)
+        const content = Buffer.from('sinister content')
+        obs = patchAttachment(obs, att.id, { contentLocator, size: content.length }) as Observation
+        const result = await store.saveContent(Readable.from(content), att.id, obs)
         const okPath = path.join(safeBaseDirPath, contentLocator)
 
         expect(contentLocator.startsWith('/')).to.be.true
@@ -345,30 +386,43 @@ describe('file system attachment store', function() {
           expect(saved240.toString()).to.equal('thumb 240')
         })
 
-        it('assigns a content locator to a thumbnail without a content locator', async function() {
+        it('assigns a content locator and size to a thumbnail without a content locator and size', async function() {
 
           const attBefore = copyAttachmentAttrs(att)
           const thumb120Before = attBefore.thumbnails.find(x => x.minDimension === 120)
-          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
-          const result120 = await store.saveThumbnailContent(content120, 120, att.id, obs) as Observation
+          const content120 = Buffer.from('thumb 120')
+          const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs) as Observation
           const attAfter = copyAttachmentAttrs(result120.attachmentFor(att.id) as Attachment)
           const thumb120After = attAfter.thumbnails.find(x => x.minDimension === 120) as Thumbnail
 
           expect(result120).to.be.instanceOf(Observation)
           expect(result120).to.not.equal(obs)
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
-          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120` })
+          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
         })
 
         it('uses the content locator if present', async function() {
 
           const contentLocator = uniqid()
-          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 120, contentLocator }) as Observation
-          const content120 = stream.Readable.from(Buffer.from('thumb 120 located'))
-          const result120 = await store.saveThumbnailContent(content120, 120, att.id, obs)
+          const content120 = Buffer.from('thumb 120 located')
+          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 120, contentLocator, size: content120.length }) as Observation
+          const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs)
           const readContent120 = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
           expect(result120).to.be.null
+          expect(readContent120.toString()).to.equal('thumb 120 located')
+        })
+
+        it('updates the thumbnail size if necessary', async function() {
+
+          const contentLocator = uniqid()
+          const content120 = Buffer.from('thumb 120 located')
+          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 240, contentLocator }) as Observation
+          const result120 = await store.saveThumbnailContent(Readable.from(content120), 240, att.id, obs) as Observation
+          const readContent120 = fs.readFileSync(path.join(baseDirPath, contentLocator))
+
+          expect(result120).to.be.instanceOf(Observation)
+          expect(result120.attachments[0].thumbnails[1]).to.deep.equal({ ...obs.attachments[0].thumbnails[1], size: content120.length })
           expect(readContent120.toString()).to.equal('thumb 120 located')
         })
       })
@@ -396,13 +450,13 @@ describe('file system attachment store', function() {
           expect(saved240.toString()).to.equal('thumb 240')
         })
 
-        it('assigns a content locator to a thumbnail without a content locator', async function() {
+        it('assigns a content locator and size to a thumbnail without a content locator and size', async function() {
 
           const attBefore = copyAttachmentAttrs(att)
           const thumb120Before = attBefore.thumbnails.find(x => x.minDimension === 120)
-          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
+          const content120 = Buffer.from('thumb 120')
           const pending120 = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content120, pending120.tempLocation)
+          await util.promisify(stream.pipeline)(stream.Readable.from(content120), pending120.tempLocation)
           const result120 = await store.saveThumbnailContent(pending120.id, 120, att.id, obs) as Observation
           const attAfter = copyAttachmentAttrs(result120.attachmentFor(att.id) as Attachment)
           const thumb120After = attAfter.thumbnails.find(x => x.minDimension === 120) as Thumbnail
@@ -410,16 +464,16 @@ describe('file system attachment store', function() {
           expect(result120).to.be.instanceOf(Observation)
           expect(result120).to.not.equal(obs)
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
-          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120` })
+          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
         })
 
         it('uses the content locator if present', async function() {
 
           const contentLocator = uniqid()
-          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 120, contentLocator }) as Observation
-          const content120 = stream.Readable.from(Buffer.from('thumb 120 located'))
+          const content120 = Buffer.from('thumb 120 located')
+          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 120, contentLocator, size: content120.length }) as Observation
           const pending120 = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content120, pending120.tempLocation)
+          await util.promisify(stream.pipeline)(Readable.from(content120), pending120.tempLocation)
           const result120 = await store.saveThumbnailContent(pending120.id, 120, att.id, obs)
           const readContent120 = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
@@ -524,19 +578,20 @@ describe('file system attachment store', function() {
 
     beforeEach(async function() {
 
+      const attContent = Buffer.from('delete_me.main')
+      const thumb100Content = Buffer.from('delete_me.x-small')
+      const thumb300Content = Buffer.from('delete_me.small')
       obs = patchAttachment(obs, att.id, {
+        size: attContent.length,
         thumbnails: [
-          { minDimension: 100, name: 'thumb100' },
-          { minDimension: 300, name: 'thumb300' }
+          { minDimension: 100, name: 'thumb100', size: thumb100Content.length },
+          { minDimension: 300, name: 'thumb300', size: thumb300Content.length }
         ]
       }) as Observation
       att = obs.attachmentFor(att.id)!
-      const attContent = stream.Readable.from('delete_me.main')
-      const thumb100Content = stream.Readable.from('delete_me.x-small')
-      const thumb300Content = stream.Readable.from('delete_me.small')
-      savedObs = await store.saveContent(attContent, att.id, obs) as Observation
-      savedObs = await store.saveThumbnailContent(thumb100Content, 100, att.id, savedObs) as Observation
-      savedObs = await store.saveThumbnailContent(thumb300Content, 300, att.id, savedObs) as Observation
+      savedObs = await store.saveContent(stream.Readable.from(attContent), att.id, obs) as Observation
+      savedObs = await store.saveThumbnailContent(stream.Readable.from(thumb100Content), 100, att.id, savedObs) as Observation
+      savedObs = await store.saveThumbnailContent(stream.Readable.from(thumb300Content), 300, att.id, savedObs) as Observation
       savedAtt = savedObs.attachmentFor(att.id) as Attachment
       savedThumb100 = savedAtt.thumbnails.find(x => x.minDimension === 100) as Thumbnail
       savedThumb300 = savedAtt.thumbnails.find(x => x.minDimension === 300) as Thumbnail
@@ -639,22 +694,3 @@ describe('file system attachment store', function() {
     })
   })
 })
-
-class BufferWriteable extends stream.Writable {
-
-  #bytes: Buffer = Buffer.alloc(0)
-
-  constructor(opts?: stream.WritableOptions) {
-    super({
-      ...opts,
-      write: (chunk: any, encoding: BufferEncoding, callback: (err?: any) => void) => {
-        this.#bytes = Buffer.concat([ this.#bytes, chunk ])
-        callback()
-      }
-    })
-  }
-
-  get bytes() {
-    return this.#bytes
-  }
-}
