@@ -1,10 +1,10 @@
-import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
+import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
-import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
+import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 
 export type ObservationIdDocument = mongoose.Document
