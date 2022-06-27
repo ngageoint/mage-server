@@ -71,7 +71,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     return doc ? this.entityForDocument(doc) : null as any
   }
 
-  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
+  async findAllByIds<ID>(ids: any[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
     if (!ids.length) {
       return {} as any
     }
@@ -79,7 +79,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
       notFound[id] = null
       return notFound
     }, {} as any)
-    const docs = await this.model.find({ _id: { $in: ids }});
+    const docs: D[] = await this.model.find({ _id: { $in: ids }}).exec();
     const found = {} as any
     for (const doc of docs) {
       found[doc.id] = this.entityForDocument(doc)
