@@ -35,7 +35,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
-    const docs = await this.model.find({ complete: { $in: [ null, false ] }})
+    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [ undefined, false ] }}).exec()
     return docs.map(this.entityForDocument)
   }
 
@@ -71,7 +71,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   /**
    * TODO: this is misplaced; create a team repository
    */
-  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<Team[] | null> {
+  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<any> {
     let eventDoc: MageEventDocument | null
     if (!(event instanceof this.model)) {
       const eventId = typeof event === 'object' && 'id' in event ? event.id : event
