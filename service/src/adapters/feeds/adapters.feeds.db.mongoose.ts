@@ -1,7 +1,7 @@
 
 import mongoose, { Model, SchemaOptions } from 'mongoose'
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
-import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceType, FeedRepository, Feed, FeedId, FeedServiceId } from '../../entities/feeds/entities.feeds'
+import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceType, FeedRepository, Feed, FeedServiceId } from '../../entities/feeds/entities.feeds'
 import { FeedServiceTypeRepository, FeedServiceRepository } from '../../entities/feeds/entities.feeds'
 import { FeedServiceDescriptor } from '../../app.api/feeds/app.api.feeds'
 import { EntityIdFactory } from '../../entities/entities.global'
@@ -19,7 +19,7 @@ export type FeedServiceTypeIdentity = Pick<FeedServiceType, 'pluginServiceTypeId
 }
 export type FeedServiceTypeIdentityDocument = FeedServiceTypeIdentity & mongoose.Document
 export type FeedServiceTypeIdentityModel = Model<FeedServiceTypeIdentityDocument>
-export const FeedServiceTypeIdentitySchema = new mongoose.Schema({
+export const FeedServiceTypeIdentitySchema = new mongoose.Schema<FeedServiceTypeIdentityDocument>({
   pluginServiceTypeId: { type: String, required: true },
   moduleName: { type: String, required: true }
 })
@@ -31,7 +31,7 @@ export type FeedServiceDocument = Omit<FeedServiceDescriptor, 'serviceType'> & m
   serviceType: mongoose.Types.ObjectId
 }
 export type FeedServiceModel = Model<FeedServiceDocument>
-export const FeedServiceSchema = new mongoose.Schema(
+export const FeedServiceSchema = new mongoose.Schema<FeedServiceDocument>(
   {
     serviceType: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedServiceTypeIdentity },
     title: { type: String, required: true },
@@ -57,7 +57,7 @@ export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & 
   icon?: string
 }
 export type FeedModel = Model<FeedDocument>
-export const FeedSchema = new mongoose.Schema(
+export const FeedSchema = new mongoose.Schema<FeedDocument>(
   {
     _id: { type: String, required: true },
     service: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedService },
@@ -173,8 +173,8 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
     return await super.update({ ...explicit, id: feed.id })
   }
 
-  async findFeedsForService(service: FeedServiceId): Promise<Feed[]> {
-    const docs = await this.model.find({ service })
+  async findFeedsForService(service: FeedServiceId): Promise<any[]> {
+    const docs = await this.model.find({ id: service }).exec()
     return docs.map(x => x.toJSON())
   }
 
