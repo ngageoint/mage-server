@@ -11,7 +11,7 @@ export type StaticIconDocument = Omit<StaticIcon, 'sourceUrl'> & mongoose.Docume
 }
 export type StaticIconModel = mongoose.Model<StaticIconDocument>
 export const StaticIconModelName = 'StaticIcon'
-export const StaticIconSchema = new mongoose.Schema(
+export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
   {
     _id: { type: String, required: true },
     sourceUrl: { type: String, required: true, unique: true },
@@ -221,7 +221,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     tags: true,
     title: true
   }
-  const update: Partial<StaticIcon> & mongodb.UpdateQuery<StaticIcon> = {}
+  const update: Partial<StaticIconDocument> & mongodb.UpdateQuery<StaticIconDocument> = {}
   const $unset: { [key in keyof StaticIcon]?: true } = {}
   for (const key of Object.keys(writableKeys) as (keyof StaticIconStub)[]) {
     if (key in stub && stub[key] && writableKeys[key]) {
@@ -232,7 +232,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     }
   }
   if (Object.keys($unset).length > 0) {
-    update.$unset = $unset as mongodb.UpdateQuery<StaticIcon>['$unset']
+    update.$unset = $unset as mongodb.UpdateQuery<StaticIconDocument>['$unset']
   }
   update.contentHash = stub.contentHash
   update.contentTimestamp = Date.now()
