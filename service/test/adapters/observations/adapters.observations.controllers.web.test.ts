@@ -9,9 +9,10 @@ import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
 import { jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
+import { BufferWriteable } from '../../utils'
 
 const hostUrl = 'http://mage.test'
 const basePath = '/observations-test'
@@ -19,7 +20,7 @@ const baseUrl = `${hostUrl}${basePath}`
 const jsonMediaType = /^application\/json/
 const testUser = 'lummytin'
 
-describe('observations web controller', function () {
+describe.only('observations web controller', function () {
 
   let createAppRequest: ObservationWebAppRequestFactory
   let app: SubstituteOf<ObservationAppLayer>
@@ -27,6 +28,7 @@ describe('observations web controller', function () {
   let client: supertest.SuperTest<supertest.Test>
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
+  let attachmentStore: SubstituteOf<AttachmentStore>
   let context: ObservationRequestContext
 
   beforeEach(function() {
@@ -55,7 +57,8 @@ describe('observations web controller', function () {
       return { context, ...(params || {} as P) }
     }
     app = Sub.for<ObservationAppLayer>()
-    const routes = ObservationRoutes(app, createAppRequest)
+    attachmentStore = Sub.for<AttachmentStore>()
+    const routes = ObservationRoutes(app, attachmentStore, createAppRequest)
     webApp = express()
       .use((req, res, next) => {
         req.getRoot = () => hostUrl
@@ -408,6 +411,78 @@ describe('observations web controller', function () {
       expect(res.body).to.deep.equal({ message: appRes.error?.message })
       app.received(1).saveObservation(Arg.all())
     })
+  })
+
+  describe('PUT /observations/{observationId}/attachments/{attachmentId}', function() {
+
+    let observationId: string
+    let attachmentId: string
+    let attachmentRequestPath: string
+    let attachmentBytes: Buffer
+
+    beforeEach(function() {
+      observationId = uniqid()
+      attachmentId = uniqid()
+      attachmentRequestPath = `${basePath}/events/${mageEvent.id}/observations/${observationId}/attachments/${attachmentId}`
+      attachmentBytes = Buffer.from(Array.from({ length: 10000 }).map(x => uniqid()).join(' | '))
+    })
+
+    it.only('accepts a file upload to store as attachment content', async function() {
+
+      const fileName = uniqid('attachment-', '.mp4')
+      const obs: ExoObservation = {
+        id: uniqid(),
+        createdAt: new Date(),
+        lastModified: new Date(),
+        eventId: mageEvent.id,
+        favoriteUserIds: [],
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 65, 56 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: []
+        },
+        attachments: [
+          { id: 'some-other-attachment-1', contentStored: true, observationFormId: 'entry1', fieldName: 'field1', oriented: false },
+          {
+            id: attachmentId,
+            observationFormId: 'entry1',
+            fieldName: 'field1',
+            contentStored: true,
+            oriented: false,
+            size: attachmentBytes.length,
+            contentType: 'video/mp4',
+          }
+        ]
+      }
+      const uploaded = new BufferWriteable()
+      const stagedContent = new StagedAttachmentContent(uniqid(), uploaded)
+      attachmentStore.stagePendingContent().resolves(stagedContent)
+      app.storeAttachmentContent(Arg.all()).resolves(AppResponse.success(obs))
+      const res = await client.put(attachmentRequestPath)
+        .attach('attachment', attachmentBytes, { filename: fileName, contentType: 'video/mp4' })
+        .accept('application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal(obs.attachments[1])
+      expect(uploaded.bytes.toString()).to.equal(attachmentBytes.toString())
+      app.received(1).storeAttachmentContent(Arg.all())
+      app.received(1).storeAttachmentContent(Arg.is(actualReq => {
+        expect(actualReq.observationId).to.equal(observationId)
+        expect(actualReq.attachmentId).to.equal(attachmentId)
+        expect(actualReq.content.name).to.equal(fileName)
+        expect(actualReq.content.mediaType).to.equal('video/mp4')
+        const reqBytes = actualReq.content.bytes as StagedAttachmentContentRef
+        expect(reqBytes).to.be.instanceOf(StagedAttachmentContentRef)
+        expect(reqBytes.id).to.equal(stagedContent.id)
+        return true
+      }))
+    })
+  })
+
+  describe('GET /observations/{observationId}/attachments/{attachmentId}', function() {
+
   })
 })
 

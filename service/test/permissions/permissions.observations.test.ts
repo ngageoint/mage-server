@@ -11,7 +11,7 @@ import { ErrPermissionDenied, MageError, PermissionDeniedError } from '../../lib
 import uniqid from 'uniqid'
 import { FormFieldType } from '../../lib/entities/events/entities.events.forms'
 
-describe.only('observation permissions service', function() {
+describe('observation permissions service', function() {
 
   let permissions: ObservationPermissionsServiceImpl
   let eventPermissions: SubstituteOf<EventPermissionServiceImpl>

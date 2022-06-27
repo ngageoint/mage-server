@@ -761,11 +761,19 @@ export interface ObservationRepositoryForEvent {
   (event: MageEventId): Promise<EventScopedObservationRepository>
 }
 
-export type PendingAttachmentContentId = unknown
+export type StagedAttachmentContentId = unknown
 
-export interface PendingAttachmentContent {
-  id: PendingAttachmentContentId
-  tempLocation: NodeJS.WritableStream
+export class StagedAttachmentContentRef {
+  constructor(readonly id: StagedAttachmentContentId) {}
+}
+
+export class StagedAttachmentContent extends StagedAttachmentContentRef {
+  constructor(
+    id: StagedAttachmentContentId,
+    readonly tempLocation: NodeJS.WritableStream
+  ) {
+    super(id)
+  }
 }
 
 /**
@@ -787,10 +795,10 @@ export interface AttachmentStore {
    * This mechanism also facilitates periodic cleanup of orphaned temporary
    * content.
    */
-  stagePendingContent(): Promise<PendingAttachmentContent>
+  stagePendingContent(): Promise<StagedAttachmentContent>
   /**
    * Save the given content to the store for the specified attachment.  If the
-   * `content` argument is an ID for {@link PendingAttachmentContent staged content},
+   * `content` argument is an ID for {@link StagedAttachmentContent staged content},
    * the store will move the content at the temporary location to the permanent
    * location for the specified attachment.  If the store assigns a new
    * {@link Attachment.contentLocator | content locator} to the attachment after
@@ -803,7 +811,7 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  saveContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
@@ -812,7 +820,7 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the

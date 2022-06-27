@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, PendingAttachmentContentId } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -39,7 +39,7 @@ export interface StoreAttachmentContent {
 export interface StoreAttachmentContentRequest extends ObservationRequest {
   observationId: ObservationId
   attachmentId: AttachmentId
-  content: ExoAttachmentContent
+  content: ExoIncomingAttachmentContent
 }
 
 export interface ReadAttachmentContent {
@@ -50,7 +50,6 @@ export interface ReadAttachmentContentRequest extends ObservationRequest {
   attachmentId: AttachmentId
   minDimension?: number
 }
-
 
 /**
  * ExoObservation refers to the view of observations that app clients receive
@@ -100,10 +99,15 @@ export enum AttachmentModAction {
   Delete = 'delete',
 }
 
-export interface ExoAttachmentContent {
-  bytes: NodeJS.ReadableStream
+export interface ExoIncomingAttachmentContent {
+  bytes: StagedAttachmentContentRef | NodeJS.ReadableStream
   name: string
   mediaType: string
+}
+
+export interface ExoAttachmentContent {
+  attachment: ExoAttachment
+  bytes: NodeJS.ReadableStream
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {

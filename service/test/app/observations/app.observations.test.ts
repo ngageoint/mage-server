@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -1399,10 +1399,9 @@ describe.only('observations use case interactions', function() {
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
       context.userId = forbiddenUser
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: attachment.size!,
         bytes,
       }
       const req: api.StoreAttachmentContentRequest = {
@@ -1431,10 +1430,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: attachment.size!,
         bytes,
       }
       const attachmentId = obs.attachments[0].id
@@ -1462,15 +1460,48 @@ describe.only('observations use case interactions', function() {
       obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
     })
 
+    it('saves previously staged content to the attachment store', async function() {
+
+      const attachment = obs.attachments[0]
+      const stagedRef = new StagedAttachmentContentRef(uniqid())
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes: stagedRef,
+      }
+      const attachmentId = obs.attachments[0].id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        content,
+      }
+      const contentLocator = uniqid()
+      const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
+      const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(stagedRef, req.attachmentId, obs).resolves(afterStore)
+      obsRepo.save(afterStore).resolves(afterSave)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterSave))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(stagedRef, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(stagedRef, attachmentId, obs)
+      obsRepo.received(1).save(Arg.all())
+      obsRepo.received(1).save(Arg.is(validObservation()))
+      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
+    })
+
     it('does not save the observation if the attachment store did not update the observation', async function() {
 
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: attachment.size!,
         bytes,
       }
       const attachmentId = attachment.id
@@ -1497,10 +1528,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[1]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: attachment.size! + 1,
         bytes,
       }
       const attachmentId = attachment.id
@@ -1511,21 +1541,20 @@ describe.only('observations use case interactions', function() {
         content,
       }
       const contentLocator = uniqid()
-      const afterStore = patchAttachment(obs, attachment.id, { contentLocator }) as Observation
-      const expectedSaved = patchAttachment(afterStore, attachment.id, { size: content.contentLength }) as Observation
+      const afterStore = patchAttachment(obs, attachment.id, { contentLocator, size: bytesBuffer.length }) as Observation
       obsRepo.findById(obs.id).resolves(obs)
-      obsRepo.save(Arg.all()).resolves(expectedSaved)
+      obsRepo.save(Arg.all()).resolves(afterStore)
       store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(api.exoObservationFor(expectedSaved))
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(bytes, attachmentId, obs)
       obsRepo.received(1).save(Arg.all())
       obsRepo.received(1).save(Arg.is(validObservation()))
-      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(expectedSaved)))
+      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
     })
 
     it('fails if storing the content failed', async function() {
@@ -1533,10 +1562,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: bytesBuffer.length,
         bytes,
       }
       const req: api.StoreAttachmentContentRequest = {
@@ -1565,7 +1593,7 @@ describe.only('observations use case interactions', function() {
         context,
         observationId: uniqid(),
         attachmentId: uniqid(),
-        content: { bytes, name: 'fail.jpg', mediaType: 'image/jpeg', contentLength: 12345 },
+        content: { bytes, name: 'fail.jpg', mediaType: 'image/jpeg' },
       }
       obsRepo.findById(Arg.all()).resolves(null)
       const res = await storeAttachmentContent(req)
@@ -1584,10 +1612,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: attachment.contentType!,
-        contentLength: bytesBuffer.length,
         bytes,
       }
       const req: api.StoreAttachmentContentRequest = {
@@ -1614,10 +1641,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: 'img_123.wut',
         mediaType: attachment.contentType!,
-        contentLength: bytesBuffer.length,
         bytes,
       }
       const req: api.StoreAttachmentContentRequest = {
@@ -1644,10 +1670,9 @@ describe.only('observations use case interactions', function() {
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
       const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoAttachmentContent = {
+      const content: api.ExoIncomingAttachmentContent = {
         name: attachment.name!,
         mediaType: 'image/wut',
-        contentLength: bytesBuffer.length,
         bytes,
       }
       const req: api.StoreAttachmentContentRequest = {

@@ -1,13 +1,25 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoAttachment, ExoObservation, ExoObservationMod, ObservationRequest, SaveObservation, SaveObservationRequest } from '../../app.api/observations/app.api.observations'
-import { EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ReadAttachmentContent, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
+import { AttachmentStore, EventScopedObservationRepository, ObservationState, StagedAttachmentContentRef } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
+import multer from 'multer'
 
+declare global {
+  namespace Express {
+    namespace Multer {
+      interface File {
+        stagedContent: StagedAttachmentContentRef
+      }
+    }
+  }
+}
 
 export interface ObservationAppLayer {
   allocateObservationId: AllocateObservationId
   saveObservation: SaveObservation
+  storeAttachmentContent: StoreAttachmentContent
+  readAttachmentContent: ReadAttachmentContent
 }
 
 export interface ObservationWebAppRequestFactory {
@@ -18,7 +30,7 @@ export interface EnsureEventScope {
   (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, observationRepository: EventScopedObservationRepository }>
 }
 
-export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: ObservationWebAppRequestFactory): express.Router {
+export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: AttachmentStore, createAppRequest: ObservationWebAppRequestFactory): express.Router {
 
   const routes = express.Router().use(express.json())
 
@@ -38,6 +50,50 @@ export function ObservationRoutes(app: ObservationAppLayer, createAppRequest: Ob
       }
       next(appRes.error)
     })
+
+  const attachmentUpload = multer({
+    storage: {
+      async _handleFile(req, file, callback) {
+        const staged = await attachmentStore.stagePendingContent()
+        file.stream.pipe(staged.tempLocation)
+        callback(null, {
+          ...file,
+          stagedContent: new StagedAttachmentContentRef(staged.id)
+        })
+      },
+      _removeFile(req, file, callback) {
+        callback(null)
+      }
+    }
+  })
+
+  routes.route('/:observationId/attachments/:attachmentId')
+    .put(
+      attachmentUpload.single('attachment'),
+      async (req, res, next) => {
+        if (!req.file) {
+          return res.status(400).json({ message: 'no attachment content found' })
+        }
+        const content: ExoIncomingAttachmentContent = {
+          bytes: req.file.stagedContent,
+          mediaType: req.file.mimetype,
+          name: req.file.originalname,
+        }
+        const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = {
+          observationId: req.params.observationId,
+          attachmentId: req.params.attachmentId,
+          content,
+        }
+        const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
+        const appRes = await app.storeAttachmentContent(appReq)
+        if (appRes.success) {
+          const obs = appRes.success
+          const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)
+          return res.json(attachment)
+        }
+        return next(appRes.error)
+      }
+    )
 
   routes.route('/:observationId')
     .put(async (req, res, next) => {

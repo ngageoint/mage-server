@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, PendingAttachmentContent, PendingAttachmentContentId, putAttachmentThumbnailForMinDimension, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentId, putAttachmentThumbnailForMinDimension, StagedAttachmentContentRef, Thumbnail } from '../../entities/observations/entities.observations'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -13,14 +13,14 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     }
   }
 
-  async stagePendingContent(): Promise<PendingAttachmentContent> {
+  async stagePendingContent(): Promise<StagedAttachmentContent> {
     const id = uniqid()
     const tempPath = path.join(this.pendingDirPath, id)
     const tempLocation = fs.createWriteStream(tempPath)
-    return Object.freeze({ id, tempLocation })
+    return new StagedAttachmentContent(id, tempLocation)
   }
 
-  async saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+  async saveContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
     const attachment = observation.attachmentFor(attachmentId)
     if (!attachment) {
       return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
@@ -37,7 +37,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return null
   }
 
-  async saveThumbnailContent(content: unknown, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+  async saveThumbnailContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
     const attachment = observation.attachmentFor(attachmentId)
     if (!attachment) {
       return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
@@ -133,7 +133,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return null
   }
 
-  #saveContent(content: PendingAttachmentContentId | NodeJS.ReadableStream, dest: string): Promise<AttachmentStoreError | number> {
+  #saveContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, dest: string): Promise<AttachmentStoreError | number> {
     const destResolved = path.resolve(dest)
     if (!this.#baseDirIsAncestorOf(destResolved)) {
       return Promise.resolve(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `content destination ${dest} is not a descendent of base dir ${this.baseDirPath}`))
@@ -141,9 +141,9 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     const destBaseDirPath = path.dirname(destResolved)
     const mkdir: (() => Promise<void>) = () => util.promisify(fs.mkdir)(destBaseDirPath, { recursive: true }).then(_ => void(0))
     const statSize = ((path: string) => util.promisify(fs.stat)(path).then(x => x.size)) as (path: string) => Promise<number>
-    if (typeof content === 'string') {
+    if (content instanceof StagedAttachmentContentRef) {
       const move = util.promisify(fs.rename)
-      const tempPath = path.join(this.pendingDirPath, content)
+      const tempPath = path.join(this.pendingDirPath, content.id as string)
       return mkdir()
         .then(_ => move(tempPath, dest))
         .then(_ => statSize(dest), err => {
@@ -152,11 +152,10 @@ export class FileSystemAttachmentStore implements AttachmentStore {
           return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
         })
     }
-    const source = content as NodeJS.ReadableStream
     const pipe = util.promisify(stream.pipeline)
     return mkdir()
       .then(_ => fs.createWriteStream(dest))
-      .then(dest => pipe(source, dest))
+      .then(dest => pipe(content, dest))
       .then(_ => statSize(dest), err => {
         const message = `error saving source stream to path ${dest}`
         console.error(message, err)

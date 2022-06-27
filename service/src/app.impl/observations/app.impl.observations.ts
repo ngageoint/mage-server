@@ -77,9 +77,6 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       }
       return AppResponse.error(invalidInput(obsAfterStore.message))
     }
-    if (attachmentBefore.size !== content.contentLength) {
-      obsAfterStore = patchAttachment(obsAfterStore || obsBefore, req.attachmentId, { size: content.contentLength }) as Observation
-    }
     if (obsAfterStore === null) {
       return AppResponse.success(api.exoObservationFor(obsBefore))
     }

@@ -4,7 +4,7 @@ import path from 'path'
 import stream, { Readable } from 'stream'
 import util from 'util'
 import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
-import { Attachment, AttachmentId, copyObservationAttrs, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError } from '../../../lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
@@ -135,6 +135,7 @@ describe.only('file system attachment store', function() {
       const writtenBytes = await util.promisify(fs.readFile)(path.join(pendingDirPath, pending.id as string))
       const writtenContent = writtenBytes.toString()
 
+      expect(pending).to.be.instanceOf(StagedAttachmentContent)
       expect(writtenContent).to.equal('such good content')
     })
   })
@@ -237,7 +238,7 @@ describe.only('file system attachment store', function() {
           const content = stream.Readable.from(Buffer.from('such good content'))
           const staged = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(content, staged.tempLocation)
-          const saveResult = await store.saveContent(staged.id, att.id, obs)
+          const saveResult = await store.saveContent(staged, att.id, obs)
           const absPath = path.resolve(baseDirPath, contentBaseRelPath)
           const stats = fs.statSync(absPath)
           const savedContent = fs.readFileSync(absPath)
@@ -252,11 +253,11 @@ describe.only('file system attachment store', function() {
           const content = stream.Readable.from(Buffer.from('such good content'))
           const staged1 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(content, staged1.tempLocation)
-          const saveResult1 = await store.saveContent(staged1.id, att.id, obs)
+          const saveResult1 = await store.saveContent(staged1, att.id, obs)
           const betterContent = stream.Readable.from(Buffer.from('even better content'))
           const staged2 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(betterContent, staged2.tempLocation)
-          const saveResult2 = await store.saveContent(staged2.id, att.id, obs)
+          const saveResult2 = await store.saveContent(staged2, att.id, obs)
           const stats = fs.statSync(contentBaseAbsPath)
           const savedContent = fs.readFileSync(contentBaseAbsPath)
 
@@ -273,7 +274,7 @@ describe.only('file system attachment store', function() {
           att = obs.attachmentFor(att.id) as Attachment
           const staged = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
-          const mod = await store.saveContent(staged.id, att.id, obs) as Observation
+          const mod = await store.saveContent(staged, att.id, obs) as Observation
           const modAtt = mod.attachmentFor(att.id) as Attachment
           const contentPath = path.join(baseDirPath, contentBaseRelPath)
           const savedContent = fs.readFileSync(contentPath)
@@ -291,7 +292,7 @@ describe.only('file system attachment store', function() {
           obs = patchAttachment(obs, att.id, { size: 1 }) as Observation
           const staged = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
-          const mod = await store.saveContent(staged.id, att.id, obs) as Observation
+          const mod = await store.saveContent(staged, att.id, obs) as Observation
           const modAtt = mod.attachmentFor(att.id) as Attachment
           const contentPath = path.join(baseDirPath, contentBaseRelPath)
           const savedContent = fs.readFileSync(contentPath)
@@ -310,7 +311,7 @@ describe.only('file system attachment store', function() {
           obs = patchAttachment(obs, att.id, { contentLocator, size: content.length }) as Observation
           const staged = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(Readable.from(content), staged.tempLocation)
-          const saveResult = await store.saveContent(staged.id, att.id, obs)
+          const saveResult = await store.saveContent(staged, att.id, obs)
           const saved = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
           expect(saveResult).to.be.null
@@ -437,8 +438,8 @@ describe.only('file system attachment store', function() {
           await util.promisify(stream.pipeline)(content120, pending120.tempLocation)
           const pending240 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(content240, pending240.tempLocation)
-          const save120 = await store.saveThumbnailContent(pending120.id, 120, att.id, obs)
-          const save240 = await store.saveThumbnailContent(pending240.id, 240, att.id, obs)
+          const save120 = await store.saveThumbnailContent(pending120, 120, att.id, obs)
+          const save240 = await store.saveThumbnailContent(pending240, 240, att.id, obs)
           const thumb120Path = `${contentBaseAbsPath}-120`
           const thumb240Path = `${contentBaseAbsPath}-240`
           const saved120 = fs.readFileSync(thumb120Path)
@@ -457,7 +458,7 @@ describe.only('file system attachment store', function() {
           const content120 = Buffer.from('thumb 120')
           const pending120 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(stream.Readable.from(content120), pending120.tempLocation)
-          const result120 = await store.saveThumbnailContent(pending120.id, 120, att.id, obs) as Observation
+          const result120 = await store.saveThumbnailContent(pending120, 120, att.id, obs) as Observation
           const attAfter = copyAttachmentAttrs(result120.attachmentFor(att.id) as Attachment)
           const thumb120After = attAfter.thumbnails.find(x => x.minDimension === 120) as Thumbnail
 
@@ -474,7 +475,7 @@ describe.only('file system attachment store', function() {
           obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 120, contentLocator, size: content120.length }) as Observation
           const pending120 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(Readable.from(content120), pending120.tempLocation)
-          const result120 = await store.saveThumbnailContent(pending120.id, 120, att.id, obs)
+          const result120 = await store.saveThumbnailContent(pending120, 120, att.id, obs)
           const readContent120 = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
           expect(result120).to.be.null
