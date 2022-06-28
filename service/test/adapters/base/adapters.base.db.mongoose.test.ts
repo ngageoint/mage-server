@@ -22,7 +22,7 @@ describe('mongoose adapter layer base', function() {
   type BaseModel = mongoose.Model<BaseDocument>
 
   const collection = 'base'
-  const schema = new mongoose.Schema({
+  const schema = new mongoose.Schema<BaseDocument>({
     derp: { type: String, required: true },
     lerp: { type: String, required: false },
     squee: { type: Boolean, required: false, default: false },
@@ -270,9 +270,9 @@ describe('mongoose adapter layer base', function() {
     it('adds paging to a query without total count', async function() {
 
       const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
-        this.count = function(): mongoose.Query<number> {
-          return Promise.reject() as unknown as mongoose.Query<number>
+      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+        this.count = function(): mongoose.Query<number, BaseDocument> {
+          return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
         }
         return baseQuery
       } as unknown as (new (...args: any[]) => mongoose.DocumentQuery<unknown, mongoose.Document>)
@@ -294,11 +294,11 @@ describe('mongoose adapter layer base', function() {
     it('returns the total count if requested', async function() {
 
       const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
-              return Promise.resolve(999) as unknown as mongoose.Query<number>
+              return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
           }
         })
@@ -321,11 +321,11 @@ describe('mongoose adapter layer base', function() {
     it('includes total count when total count parameter is absent and page index is 0', async function() {
 
       const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
-              return Promise.resolve(999) as unknown as mongoose.Query<number>
+              return Promise.resolve(999) as unknown as mongoose.Query<number, BaseDocument>
             }
           }
         })
@@ -347,11 +347,11 @@ describe('mongoose adapter layer base', function() {
     it('does not include total count when total count parameter is absent and page index is greater than 0', async function() {
 
       const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
-              return Promise.reject() as unknown as mongoose.Query<number>
+              return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
             }
           }
         })
