@@ -30,24 +30,22 @@ const DeviceSchema = new Schema({
 DeviceSchema.path('userId').validate(function (userId, done) {
   User.getUserById(userId, function (err, user) {
     if (err || !user) {
-      done(false);
-    } else {
-      done(true);
+      throw new Error(err);
     }
   });
 }, 'Invalid POC user, user does not exist');
 
-DeviceSchema.pre('findOneAndUpdate', function (next) {
+DeviceSchema.pre('findOneAndUpdate', function () {
   if (this.getUpdate().registered === false) {
     Token.removeTokenForDevice({ _id: this.getQuery()._id }, function (err) {
-      next(err);
+     if (err) {
+      throw new Error(err);
+     }
     });
-  } else {
-    next();
   }
 });
 
-DeviceSchema.pre('remove', function (next) {
+DeviceSchema.pre('remove', function () {
   const device = this;
 
   async.parallel({
@@ -63,7 +61,9 @@ DeviceSchema.pre('remove', function (next) {
     }
   },
     function (err) {
-      next(err);
+      if (err) {
+        throw new Error(err);
+       }
     });
 });
 

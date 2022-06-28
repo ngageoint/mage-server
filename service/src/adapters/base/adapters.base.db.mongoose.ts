@@ -113,7 +113,7 @@ export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingP
   const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
   const includeTotalCount = typeof paging.includeTotalCount === 'boolean' ? paging.includeTotalCount : paging.pageIndex === 0
   if (includeTotalCount) {
-    const countQuery = new BaseQuery().countDocuments()
+    const countQuery = new BaseQuery().count()
     return countQuery.then((totalCount: number) => {
       return { totalCount, query: pageQuery }
     })

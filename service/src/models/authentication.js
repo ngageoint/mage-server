@@ -42,12 +42,12 @@ AuthenticationSchema.method('validatePassword', function (password, callback) {
 });
 
 // Encrypt password before save
-LocalSchema.pre('save', function (next) {
+LocalSchema.pre('save', function () {
   const authentication = this;
 
   // only hash the password if it has been modified (or is new)
   if (!authentication.isModified('password')) {
-    return next();
+    return;
   }
 
   async.waterfall([
@@ -74,22 +74,23 @@ LocalSchema.pre('save', function (next) {
       });
     }
   ], function (err, policy, password) {
-    if (err) return next(err);
+    if (err) {
+      throw new Error(err);
+     }
 
     authentication.password = password;
     authentication.previousPasswords.unshift(password);
     authentication.previousPasswords = authentication.previousPasswords.slice(0, policy.passwordHistoryCount);
-    next();
   });
 });
 
 // Remove Token if password changed
-LocalSchema.pre('save', function (next) {
+LocalSchema.pre('save', function () {
   const authentication = this;
 
   // only remove token if password has been modified (or is new)
   if (!authentication.isModified('password')) {
-    return next();
+    return;
   }
 
   async.waterfall([
@@ -112,7 +113,9 @@ LocalSchema.pre('save', function (next) {
       }
     }
   ], function (err) {
-    return next(err);
+    if (err) {
+      throw new Error(err);
+     }
   });
 
 });

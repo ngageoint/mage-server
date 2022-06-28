@@ -14,29 +14,29 @@ const RoleSchema = new Schema({
   versionKey: false
 });
 
-RoleSchema.pre('remove', function(next) {
+RoleSchema.pre('remove', function() {
   const role = this;
 
   User.removeRoleFromUsers(role, function(err) {
-    next(err);
+    if (err) {
+      throw new Error(err);
+    }
   });
 });
 
-RoleSchema.pre('save', function(next) {
+RoleSchema.pre('save', function() {
   const role = this;
 
   // only check for valid permission if the permissions have been modified (or is new)
   if (!role.isModified('permissions')) {
-    return next();
+    return;
   }
 
   for (const permission of role.permissions) {
     if (!validPermissions[permission]) {
-      return next(new Error("Permission '" + permission + "' is not a valid permission"));
+      throw new Error("Permission '" + permission + "' is not a valid permission");
     }
   };
-
-  next();
 });
 
 function transform(user, ret) {
