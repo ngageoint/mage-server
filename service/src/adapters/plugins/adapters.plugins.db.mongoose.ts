@@ -19,7 +19,7 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
   constructor(public readonly pluginId: string, public readonly mongoose: Mongoose.Mongoose) {
     const collectionName = `plugin_state_${pluginId}`
     const modelNames = mongoose.modelNames()
-    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new Mongoose.Schema(SCHEMA_SPEC), collectionName)
+    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new Mongoose.Schema<PluginStateDocument<State>>(SCHEMA_SPEC), collectionName)
   }
 
   async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
