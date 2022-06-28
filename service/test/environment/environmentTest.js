@@ -45,7 +45,6 @@ describe("environment", function() {
     expect(mongo).to.have.property('connectRetryDelay', 5000);
     expect(mongo).to.have.property('connectTimeout', 300000);
     const options = mongo.options;
-    expect(options).to.have.property('useMongoClient', true);
     expect(options).to.have.property('poolSize', 5);
     expect(options).to.have.property('ssl', false);
     expect(options).to.not.have.property('auth');
@@ -83,7 +82,6 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 15000);
       expect(mongo).to.have.property('connectTimeout', 12345000);
       const options = mongo.options;
-      expect(options).to.have.property('useMongoClient', true);
       expect(options).to.have.property('poolSize', 87);
       expect(options).to.have.property('ssl', true);
       expect(options).to.have.deep.property('auth', { "user": "mage_test", "password": "test_mage" });
@@ -197,7 +195,6 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 5000);
       expect(mongo).to.have.property('connectTimeout', 300000);
       const options = mongo.options;
-      expect(options).to.have.property('useMongoClient', true);
       expect(options).to.have.property('ssl', false);
       expect(options).to.have.property('poolSize', 99);
       expect(options).to.have.deep.property('auth', { "user": "cloudfoundry", "password": "foundrycloud" });

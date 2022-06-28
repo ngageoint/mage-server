@@ -26,7 +26,6 @@ describe('feeds repositories', function() {
 
   beforeEach(async function() {
     conn = await mongoose.createConnection(uri, {
-      useMongoClient: true,
       promiseLibrary: Promise
     })
   })

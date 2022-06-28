@@ -32,7 +32,6 @@ describe('mongoose plugin state repository', function() {
   beforeEach(async function() {
     mongoose = new Mongoose.Mongoose()
     conn = await mongoose.connect(uri, {
-      useMongoClient: true,
       promiseLibrary: Promise
     })
     pluginId = uniqid('@test/')

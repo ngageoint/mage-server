@@ -43,7 +43,6 @@ describe('static icon mongoose repository', function() {
 
   beforeEach(async function() {
     conn = await mongoose.createConnection(uri, {
-      useMongoClient: true,
       promiseLibrary: Promise
     })
     model = StaticIconModel(conn, 'test_static_icons')
