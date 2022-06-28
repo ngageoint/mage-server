@@ -95,14 +95,15 @@ LayerSchema.set('toJSON', {
 });
 
 // Validate the layer before save
-LayerSchema.pre('save', function() {
+LayerSchema.pre('save', function(next) {
   //TODO validate layer before save
+  next();
 });
 
-LayerSchema.pre('remove', function() {
+LayerSchema.pre('remove', function(next) {
   const layer = this;
 
-  Event.removeLayerFromEvents(layer);
+  Event.removeLayerFromEvents(layer, next);
 });
 
 // Creates the Model for the Layer Schema

@@ -65,34 +65,34 @@ UserSchema.virtual('authentication').get(function () {
 
 // Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
-UserSchema.pre('save', function () {
+UserSchema.pre('save', function (next) {
   const user = this;
   user.username = user.username.toLowerCase();
   this.model('User').findOne({ username: user.username }, function (err, possibleDuplicate) {
-    if (err) {
-      throw new Error(err);
-    }
+    if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
       const error = new Error('username already exists');
       error.status = 409;
-      throw new Error(error);
+      return next(error);
     }
+
+    next();
   });
 });
 
-UserSchema.pre('save', function () {
+UserSchema.pre('save', function (next) {
   const user = this;
   if (user.active === false || user.enabled === false) {
     Token.removeTokensForUser(user, function (err) {
-      if (err) {
-        throw new Error(err);
-      }
+      next(err);
     });
+  } else {
+    next();
   }
 });
 
-UserSchema.pre('remove', function () {
+UserSchema.pre('remove', function (next) {
   const user = this;
 
   async.parallel({
@@ -124,9 +124,7 @@ UserSchema.pre('remove', function () {
     }
   },
     function (err) {
-      if (err) {
-        throw new Error(err);
-      }
+      next(err);
     });
 });
 

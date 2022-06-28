@@ -111,13 +111,11 @@ FormSchema.path('fields').validate(hasAtLeastOneField, 'A form must contain at l
 FormSchema.path('fields').validate(fieldNamesAreUnique, 'Form field names must be unique.');
 FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
 
-function validateTeamIds(eventId, teamIds) {
-  if (!teamIds || !teamIds.length) return;
+function validateTeamIds(eventId, teamIds, next) {
+  if (!teamIds || !teamIds.length) return next();
 
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
-    if (err) {
-      throw new Error(err);
-     }
+    if (err) return next(err);
 
     const containsInvalidTeam = teams.some(function(team) {
       return team.teamEventId && team.teamEventId !== eventId;
@@ -125,10 +123,10 @@ function validateTeamIds(eventId, teamIds) {
     if (containsInvalidTeam) {
       const error = new Error("Cannot add a team that belongs specifically to another event");
       error.status = 405;
-      if (err) {
-        throw new Error(error);
-       }
+      return next(error);
     }
+
+    next();
   });
 }
 
@@ -136,7 +134,7 @@ function populateUserFields(event, callback) {
   new api.Form(event).populateUserFields(callback);
 }
 
-EventSchema.pre('init', function(event) {
+EventSchema.pre('init', function(next, event) {
   /**
   TODO: This is not ideal.  If one uses a query like EventModel.findById(1).populate('teamIds'),
   chaining the populate step onto the query builder, Mongoose does not seem to
@@ -150,12 +148,15 @@ EventSchema.pre('init', function(event) {
   */
   if (event.forms) {
     populateUserFields(event, function() {
+      next();
     });
+  } else {
+    next();
   }
 });
 
-EventSchema.pre('remove', function() {
-  dropObservationCollection(this)
+EventSchema.pre('remove', function(next) {
+  dropObservationCollection(this, next)
 });
 
 EventSchema.post('remove', function(event) {

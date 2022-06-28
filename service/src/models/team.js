@@ -41,27 +41,27 @@ function rolesWithPermission(permission) {
   return roles;
 }
 
-TeamSchema.pre('remove', function() {
+TeamSchema.pre('remove', function(next) {
   var team = this;
 
-  if (!team.teamEventId) return;
+  if (!team.teamEventId) return next();
 
   Event.getById(team.teamEventId, function(err, event) {
-    if (err) {
-      throw new Error(err);
-    }
+    if (err) return next(err);
 
     if (event) {
       var error = new Error("Cannot delete an events team, event '" + event.name + "' still exists.");
       error.status = 405;
-      throw new Error(error);
+      return next(error);
     }
+
+    return next();
   });
 });
 
-TeamSchema.pre('remove', function() {
+TeamSchema.pre('remove', function(next) {
   var team = this;
-  Event.removeTeamFromEvents(team);
+  Event.removeTeamFromEvents(team, next);
 });
 
 function transform(team, ret, options) {
