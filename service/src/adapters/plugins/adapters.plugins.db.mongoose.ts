@@ -23,8 +23,9 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
   }
 
   async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
-    const updated = await this.model.findByIdAndUpdate(this.pluginId, { state }, { new: true, upsert: true })
-    return updated.toJSON().state
+    const query: PluginStateDocument<State> = state as PluginStateDocument<State>;
+    const updated = await this.model.findByIdAndUpdate(this.pluginId, { query }, { new: true, upsert: true })
+    return updated.toJSON().state as any
   }
 
   async patch(state: Partial<EnsureJson<State>>): Promise<EnsureJson<State>> {
@@ -39,11 +40,11 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
       return update
     }, {} as any)
     const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true })
-    return patched.toJSON().state
+    return patched.toJSON().state as any
   }
 
   async get(): Promise<EnsureJson<State> | null> {
     const doc = await this.model.findById(this.pluginId)
-    return doc?.toJSON().state || null
+    return doc?.toJSON().state as any || null 
   }
 }
