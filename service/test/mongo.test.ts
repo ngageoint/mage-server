@@ -39,7 +39,6 @@ export function mongoTestBeforeAllHook(opts?: MongoMemoryServerOpts): () => Prom
     const server = await MongoMemoryServer.create(opts)
     const uri = server.getUri()
     const conn = await mongoose.createConnection(uri, {
-      useMongoClient: true,
       promiseLibrary: Promise
     })
     this.mongo = { server, uri, conn }
