@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import { MongoosePluginStateRepository, PluginStateDocument } from '../../../lib/adapters/plugins/adapters.plugins.db.mongoose'
+import { MongoosePluginStateRepository } from '../../../lib/adapters/plugins/adapters.plugins.db.mongoose'
 import Mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import _ from 'lodash'
@@ -31,7 +31,7 @@ describe('mongoose plugin state repository', function() {
 
   beforeEach(async function() {
     mongoose = new Mongoose.Mongoose()
-    conn = await mongoose.connect(uri, {
+    conn = await mongoose.createConnection(uri, {
       promiseLibrary: Promise
     })
     pluginId = uniqid('@test/')
