@@ -27,14 +27,19 @@ const DeviceSchema = new Schema({
   versionKey: false
 });
 
-DeviceSchema.path('userId').validate(function (userId, done) {
-  User.getUserById(userId, function (err, user) {
-    if (err || !user) {
-      done(false);
-    } else {
-      done(true);
-    }
-  });
+DeviceSchema.path('userId').validate(async function (userId) {
+  let isValid = true;
+
+  try {
+    const user = await User.getUserById(userId);
+    if(!user) {
+      isValid = false;
+    } 
+  } catch(err) {
+    isValid = false;
+  }
+ 
+  return isValid;
 }, 'Invalid POC user, user does not exist');
 
 DeviceSchema.pre('findOneAndUpdate', function (next) {
@@ -207,11 +212,6 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
 }
 
 exports.createDevice = async function (device) {
-  // TODO there is a ticket in mongooose that is currently open
-  // to add support for running setters on findOneAndUpdate
-  // once that happens there is no need to do this
-  device.uid = device.uid.toLowerCase();
-
   const update = {
     name: device.name,
     description: device.description,
@@ -227,12 +227,6 @@ exports.createDevice = async function (device) {
 };
 
 exports.updateDevice = async function (id, update) {
-  // TODO there is a ticket in mongooose that is currently open
-  // to add support for running setters on findOneAndUpdate
-  // once that happens there is no need to do this
-  if (update.uid) {
-    update.uid = update.uid.toLowerCase();
-  }
   return await Device.findByIdAndUpdate(id, update, { new: true, setDefaultsOnInsert: true, runValidators: true });
 };
 
