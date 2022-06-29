@@ -1,13 +1,13 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 require('../lib/models/user');
-var UserModel = mongoose.model('User');
+const UserModel = mongoose.model('User');
 
 require('../lib/models/role');
-var RoleModel = mongoose.model('Role');
+const RoleModel = mongoose.model('Role');
 
 function createToken(userId, permissions) {
-  var mockUser = new UserModel({
+  const mockUser = new UserModel({
     _id: userId,
     username: 'test',
     active: true,
@@ -16,8 +16,8 @@ function createToken(userId, permissions) {
     })
   });
 
-  var token = {
-    _id: '1',
+  const token = {
+    _id: mongoose.Types.ObjectId(),
     token: '12345',
     deviceId: mongoose.Types.ObjectId(),
     userId: {
