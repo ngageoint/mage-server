@@ -3,7 +3,7 @@ import { EnsureJson } from '../../entities/entities.json_types'
 import { PluginStateRepository } from '../../plugins.api'
 
 export type PluginStateDocument<State extends object> = Mongoose.Document & {
-  _id: 0,
+  _id: 'string',
   state: State
 }
 
