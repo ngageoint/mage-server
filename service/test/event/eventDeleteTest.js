@@ -155,7 +155,7 @@ describe('deleting events', function() {
       .yields(null, null);
 
     sinon.mock(EventModel.collection)
-      .expects('remove')
+      .expects('deleteOne')
       .yields(null);
 
     sinon.mock(mongoose.connection.db)
@@ -198,7 +198,7 @@ describe('deleting events', function() {
       .yields(null, [mockTeam]);
 
     var removeTeamExpectation = sinon.mock(TeamModel.collection)
-      .expects('remove')
+      .expects('deleteOne')
       .yields(null);
 
     request(app)

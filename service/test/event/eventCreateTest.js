@@ -228,7 +228,7 @@ describe("event create tests", function() {
       });
 
     sinon.mock(EventModel.collection)
-      .expects('insert')
+      .expects('insertOne')
       .yields(uniqueError, null);
 
     request(app)
