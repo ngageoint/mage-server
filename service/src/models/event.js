@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
@@ -52,7 +54,7 @@ function validateColor(color) {
   return /^#[0-9A-F]{6}$/i.test(color);
 }
 
-var FormSchema = new Schema({
+const FormSchema = new Schema({
   _id: { type: Number, required: true, unique: true, sparse: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
@@ -134,7 +136,7 @@ function populateUserFields(event, callback) {
   new api.Form(event).populateUserFields(callback);
 }
 
-EventSchema.pre('init', function(next, event) {
+EventSchema.pre('init', function(event) {
   /**
   TODO: This is not ideal.  If one uses a query like EventModel.findById(1).populate('teamIds'),
   chaining the populate step onto the query builder, Mongoose does not seem to
@@ -148,10 +150,7 @@ EventSchema.pre('init', function(next, event) {
   */
   if (event.forms) {
     populateUserFields(event, function() {
-      next();
     });
-  } else {
-    next();
   }
 });
 
@@ -245,20 +244,20 @@ EventSchema.set("toObject", {
 });
 
 // Creates the Model for the Layer Schema
-var Event = mongoose.model('Event', EventSchema);
-var Form = mongoose.model('Form', FormSchema);
+const Event = mongoose.model('Event', EventSchema);
+const Form = mongoose.model('Form', FormSchema);
 exports.Model = Event;
 
 function convertProjection(field, keys, projection) {
   keys = keys || [];
   projection = projection || {};
 
-  for (var childField in field) {
+  for (let childField in field) {
     keys.push(childField);
     if (Object(field[childField]) === field[childField]) {
       convertProjection(field[childField], keys, projection);
     } else {
-      var key = keys.join(".");
+      const key = keys.join(".");
       if (field[childField]) projection[key] = field[childField];
       keys.pop();
     }
@@ -272,7 +271,7 @@ function filterEventsByUserId(events, userId, callback) {
   Event.populate(events, 'teamIds', function(err, events) {
     if (err) return callback(err);
 
-    var filteredEvents = events.filter(function(event) {
+    const filteredEvents = events.filter(function(event) {
       // Check if user has read access to the event based on
       // being on a team that is in the event
       if (event.teamIds.some(function(team) { return team.userIds.indexOf(userId) !== -1; })) {
@@ -320,12 +319,12 @@ exports.getEvents = function(options, callback) {
     options = {};
   }
 
-  var query = {};
-  var filter = options.filter || {};
+  const query = {};
+  const filter = options.filter || {};
   if (filter.complete === true) query.complete = true;
   if (filter.complete === false) query.complete = {$ne: true};
 
-  var projection = {};
+  const projection = {};
   if (options.projection) {
     projection = convertProjection(options.projection);
 
@@ -337,7 +336,7 @@ exports.getEvents = function(options, callback) {
   Event.find(query, projection, function (err, events) {
     if (err) return callback(err);
 
-    var filters = [];
+    const filters = [];
 
     // First filter out events user cannot access
     if (options.access && options.access.user) {
@@ -388,7 +387,7 @@ exports.getById = function(id, options, callback) {
   Event.findById(id, function (err, event) {
     if (err || !event) return callback(err);
 
-    var filters = [];
+    const filters = [];
     // First filter out events user my not have access to
     if (options.access && options.access.userId) {
       filters.push(function(done) {
@@ -515,14 +514,14 @@ exports.addForm = function(eventId, form, callback) {
     .then(id => {
       form._id = id;
 
-      var update = {
+      const update = {
         $push: {forms: form}
       };
 
       Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
         if (err) return callback(err);
 
-        var forms = event.forms.filter(function(f) {
+        const forms = event.forms.filter(function(f) {
           return f._id === form._id;
         });
 
@@ -536,7 +535,7 @@ exports.updateForm = function(event, form, callback) {
   new Form(form).validate(function(err) {
     if (err) return callback(err);
 
-    var update = {
+    const update = {
       $set: {
         'forms.$': form
       }
@@ -545,7 +544,7 @@ exports.updateForm = function(event, form, callback) {
     Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
       if (err) return callback(err);
 
-      var forms = event.forms.filter(function(f) {
+      const forms = event.forms.filter(function(f) {
         return f._id === form._id;
       });
 
@@ -800,7 +799,7 @@ exports.addTeam = function(event, team, callback) {
       validateTeamIds(event._id, [team.id], done);
     },
     function(done) {
-      var update = {
+      const update = {
         $addToSet: {
           teamIds: mongoose.Types.ObjectId(team.id)
         }
@@ -816,12 +815,12 @@ exports.addTeam = function(event, team, callback) {
 
 exports.removeTeam = function(event, team, callback) {
   if (event._id === team.teamEventId) {
-    var err = new Error("Cannot remove an events team, event '" + event.name);
+    const err = new Error("Cannot remove an events team, event '" + event.name);
     err.status = 405;
     return callback(err);
   }
 
-  var update = {
+  const update = {
     $pull: {
       teamIds: { $in: [mongoose.Types.ObjectId(team.id)] }
     }
@@ -833,7 +832,7 @@ exports.removeTeam = function(event, team, callback) {
 };
 
 exports.addLayer = function(event, layer, callback) {
-  var update = {
+  const update = {
     $addToSet: {
       layerIds: layer.id
     }
@@ -845,7 +844,7 @@ exports.addLayer = function(event, layer, callback) {
 };
 
 exports.removeLayer = function(event, layer, callback) {
-  var update = {
+  const update = {
     $pull: {
       layerIds: { $in: [layer.id] }
     }
@@ -857,7 +856,7 @@ exports.removeLayer = function(event, layer, callback) {
 };
 
 exports.removeLayerFromEvents = function(layer, callback) {
-  var update = {
+  const update = {
     $pull: {layerIds: layer._id}
   };
   Event.update({}, update, function(err) {
@@ -866,7 +865,7 @@ exports.removeLayerFromEvents = function(layer, callback) {
 };
 
 exports.removeTeamFromEvents = function(team, callback) {
-  var update = {
+  const update = {
     $pull: {teamIds: team._id}
   };
   Event.update({}, update, function(err) {
@@ -889,7 +888,7 @@ exports.updateUserInAcl = function(eventId, userId, role, callback) {
     return callback(err);
   }
 
-  var update = {};
+  const update = {};
   update['acl.' + userId] = role;
 
   Event.findOneAndUpdate({_id: eventId}, update, {new: true, runValidators: true}, function(err, event) {
@@ -935,7 +934,7 @@ exports.remove = function(event, callback) {
 };
 
 exports.getUsers = function(eventId, callback) {
-  var populate = {
+  const populate = {
     path: 'teamIds',
     populate: {
       path: 'userIds'
@@ -951,7 +950,7 @@ exports.getUsers = function(eventId, callback) {
       return callback(err);
     }
 
-    var users = event.teamIds.reduce(function(users, team) {
+    const users = event.teamIds.reduce(function(users, team) {
       return users.concat(team.userIds);
     }, []);
 
@@ -960,11 +959,11 @@ exports.getUsers = function(eventId, callback) {
 };
 
 exports.getTeams = function(eventId, options, callback) {
-  var projection = {
+  const projection = {
     teamIds: 1
   };
 
-  var populate = {
+  const populate = {
     path: 'teamIds'
   };
 

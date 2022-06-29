@@ -1,4 +1,6 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , expect = require('chai').expect
@@ -10,7 +12,7 @@ require('chai').should();
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
+const TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
@@ -62,8 +64,8 @@ describe("event read tests", function() {
   it("should read active events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -83,7 +85,7 @@ describe("event read tests", function() {
   it("should read active events if user has read permission in acl", function(done) {
     mockTokenWithPermission('');
 
-    var mockEvent1 = {
+    const mockEvent1 = {
       _id: 1,
       name: 'Mock Event',
       acl: {
@@ -93,13 +95,13 @@ describe("event read tests", function() {
     };
     mockEvent1.acl[userId] = 'GUEST';
 
-    var mockEvent2 = {
+    const mockEvent2 = {
       _id: 2,
       name: 'Mock Event',
       acl: {}
     };
 
-    var mockCursor = {
+    const mockCursor = {
       toArray: function(callback) {
         callback(null, [mockEvent1, mockEvent2]);
       }
@@ -126,9 +128,9 @@ describe("event read tests", function() {
   it("should read active events if user is part of a team in event", function(done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
+    const eventId = 1;
 
-    var mockEvent1 = new EventModel({
+    const mockEvent1 = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
       teamIds: [],
@@ -140,7 +142,7 @@ describe("event read tests", function() {
       userIds: [userId]
     };
 
-    var mockEvent2 = new EventModel({
+    const mockEvent2 = new EventModel({
       _id: eventId,
       name: 'Mock Event 267',
       acl: {}
@@ -171,15 +173,15 @@ describe("event read tests", function() {
   it("should not read events if user is not part of a team in event or in acl", function(done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
+    const eventId = 1;
 
-    var mockEvent1 = new EventModel({
+    const mockEvent1 = new EventModel({
       _id: eventId,
       name: 'Mock Event 1',
       acl: {}
     });
 
-    var mockEvent2 = new EventModel({
+    const mockEvent2 = new EventModel({
       _id: eventId,
       name: 'Mock Event 2',
       acl: {}
@@ -211,8 +213,8 @@ describe("event read tests", function() {
   it("should read complete events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -237,8 +239,8 @@ describe("event read tests", function() {
   it("should read all events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -263,8 +265,8 @@ describe("event read tests", function() {
   it("should read event by id", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -289,8 +291,8 @@ describe("event read tests", function() {
   it("should fail to read event by id if event does not exist", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -315,23 +317,23 @@ describe("event read tests", function() {
   it("should read teams page in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
 
-    var eventMock = sinon.mock(EventModel);
+    const eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findOne')
       .resolves(mockEvent);
 
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: 1,
       name: 'Mock Team'
     });
 
-    var mockCursor = {
+    const mockCursor = {
       toArray: function (callback) {
         callback(null, [mockTeam]);
       }
@@ -356,13 +358,13 @@ describe("event read tests", function() {
   it("should read users in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
 
-    var eventMock = sinon.mock(EventModel);
+    const eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -459,7 +461,7 @@ describe("event read tests", function() {
     eventMock.expects('findOne')
       .resolves(mockEvent);
 
-    var mockCursor = {
+    const mockCursor = {
       toArray: function (callback) {
         callback(null, [mockTeam]);
       }
