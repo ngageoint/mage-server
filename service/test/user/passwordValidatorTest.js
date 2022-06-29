@@ -487,7 +487,7 @@ describe("Password Validator Tests", function () {
 
     const proxyquire = require('proxyquire');
     proxyquire('../../lib/models/authentication', {
-      '../utilities/pbkdf2': function () {
+      '../pbkdf2': function () {
         return {
           hashPassword: hasherStub
         }
