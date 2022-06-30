@@ -609,7 +609,7 @@ describe("user update tests", function () {
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
-      .expects('update')
+      .expects('updateOne')
       .yields(null, {});
 
     sinon.mock(UserModel.collection)
@@ -664,7 +664,7 @@ describe("user update tests", function () {
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
-      .expects('update')
+      .expects('updateOne')
       .yields(null, {});
 
     sinon.mock(UserModel.collection)
