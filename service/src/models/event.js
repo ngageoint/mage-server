@@ -324,7 +324,7 @@ exports.getEvents = function(options, callback) {
   if (filter.complete === true) query.complete = true;
   if (filter.complete === false) query.complete = {$ne: true};
 
-  const projection = {};
+  let projection = {};
   if (options.projection) {
     projection = convertProjection(options.projection);
 
