@@ -174,7 +174,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
   }
 
   async findFeedsForService(service: FeedServiceId): Promise<any[]> {
-    const docs = await this.model.find({ id: service }).exec()
+    const docs = await this.model.find({ service }).exec()
     return docs.map(x => x.toJSON())
   }
 
