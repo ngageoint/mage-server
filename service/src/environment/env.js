@@ -82,7 +82,6 @@ const environment = {
     connectTimeout: parseInt(process.env.MAGE_MONGO_CONN_TIMEOUT) * 1000 || 300000,
     connectRetryDelay: parseInt(process.env.MAGE_MONGO_CONN_RETRY_DELAY) * 1000 || 5000,
     options: {
-      useMongoClient: true, // this can be removed after upgrading to mongoose 5+ http://mongoosejs.com/docs/connections.html#v5-changes
       poolSize: mongoConfig.poolSize,
       replicaSet: mongoConfig.replicaSet,
       ssl: mongoSsl
