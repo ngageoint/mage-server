@@ -19,7 +19,7 @@ describe('mongoose plugin state repository', function() {
 
   let mongo: MongoMemoryServer
   let uri: string
-  let mongoose: Mongoose.Mongoose
+ // let mongoose: Mongoose.Mongoose
   let conn: Mongoose.Connection
   let repo: MongoosePluginStateRepository<TestState>
   let pluginId: string
@@ -30,12 +30,12 @@ describe('mongoose plugin state repository', function() {
   })
 
   beforeEach(async function() {
-    mongoose = new Mongoose.Mongoose()
-    conn = await mongoose.createConnection(uri, {
+    //mongoose = new Mongoose.Mongoose()
+    conn = await Mongoose.createConnection(uri, {
       promiseLibrary: Promise
     })
     pluginId = uniqid('@test/')
-    repo = new MongoosePluginStateRepository(pluginId, mongoose)
+    repo = new MongoosePluginStateRepository(pluginId, conn)
   })
 
   afterEach(async function() {
@@ -51,14 +51,14 @@ describe('mongoose plugin state repository', function() {
 
     const name = `plugin_state_${pluginId}`
 
-    expect(mongoose.modelNames()).to.deep.equal([ name ])
+    expect(conn.modelNames()).to.deep.equal([ name ])
 
-    const model = mongoose.model(name)
+    const model = conn.model(name)
 
     expect(model).to.equal(repo.model)
     expect(model.collection.name).to.equal(name)
 
-    const repo2 = new MongoosePluginStateRepository(pluginId, mongoose)
+    const repo2 = new MongoosePluginStateRepository(pluginId, conn)
 
     expect(repo2.model).to.equal(repo.model)
   })

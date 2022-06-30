@@ -145,7 +145,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       if (token === PluginStateRepositoryToken) {
         let stateRepo = pluginScopeServices.get(PluginStateRepositoryToken)
         if (!stateRepo) {
-          stateRepo = new MongoosePluginStateRepository(pluginId, mongoose)
+          stateRepo = new MongoosePluginStateRepository(pluginId, models.conn)
           pluginScopeServices.set(PluginStateRepositoryToken, stateRepo)
         }
         return stateRepo

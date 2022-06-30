@@ -16,15 +16,14 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
 
   readonly model: Mongoose.Model<PluginStateDocument<State>>
 
-  constructor(public readonly pluginId: string, public readonly mongoose: Mongoose.Mongoose) {
+  constructor(public readonly pluginId: string, public readonly conn: Mongoose.Connection) {
     const collectionName = `plugin_state_${pluginId}`
-    const modelNames = mongoose.modelNames()
-    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new Mongoose.Schema<PluginStateDocument<State>>(SCHEMA_SPEC), collectionName)
+    const modelNames = conn.modelNames();
+    this.model = modelNames.includes(collectionName) ? conn.model(collectionName) : conn.model(collectionName, new Mongoose.Schema<PluginStateDocument<State>>(SCHEMA_SPEC), collectionName)
   }
 
-  async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
-    const query: PluginStateDocument<State> = state as PluginStateDocument<State>;
-    const updated = await this.model.findByIdAndUpdate(this.pluginId, { query }, { new: true, upsert: true })
+  async put(state: any): Promise<EnsureJson<State>> {
+    const updated = await this.model.findOneAndUpdate({ _id: this.pluginId }, { state }, { new: true, upsert: true }).exec()
     return updated.toJSON().state as any
   }
 
