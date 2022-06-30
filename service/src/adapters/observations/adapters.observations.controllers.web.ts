@@ -63,29 +63,23 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
         next()
       },
       async (req, res, next) => {
-        const afterUploadStream = {
-          successResult: null as WebAttachment | null,
-          errorResult: null as Error | null,
-          invalidRequestStructure() {
-            afterUploadStream.error(invalidInput(`request must contain only one file part named 'attachment'`))
-          },
-          error(x: Error) {
-            if (!afterUploadStream.errorResult) {
-              afterUploadStream.errorResult = x
-            }
-          },
-          success(x: WebAttachment) {
-            if (!afterUploadStream.successResult) {
-              afterUploadStream.successResult = x
-            }
+        const afterUploadStreamEvent = 'afterUploadStream'
+        const sendInvalidRequestStructure = () => next(invalidInput(`request must contain only one file part named 'attachment'`))
+        const afterUploadStream = (finishResponse: () => void) => {
+          if (req.attachmentUpload?.listenerCount(afterUploadStreamEvent)) {
+            return
           }
+          if (req.attachmentUpload?.writable) {
+            return void(req.attachmentUpload.on(afterUploadStreamEvent, finishResponse))
+          }
+          finishResponse()
         }
         req.pipe(req.attachmentUpload!
           .on('file', async (fieldName, stream, info) => {
-            if (fieldName !== 'attachment' || afterUploadStream.errorResult) {
+            if (fieldName !== 'attachment') {
               // per busboy docs, drain the file stream and move on
-              afterUploadStream.invalidRequestStructure()
-              return void(stream.resume())
+              stream.resume()
+              return afterUploadStream(sendInvalidRequestStructure)
             }
             const content: ExoIncomingAttachmentContent = {
               bytes: stream,
@@ -100,13 +94,14 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
               const obs = appRes.success
               const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)!
               const attachmentJson = jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`)
-              return void(afterUploadStream.success(attachmentJson))
+              return void(afterUploadStream(() => res.json(attachmentJson)))
             }
             if (appRes.error) {
-              afterUploadStream.error(appRes.error)
+              const error = appRes.error
+              afterUploadStream(() => next(error))
             }
             else {
-              afterUploadStream.invalidRequestStructure()
+              afterUploadStream(sendInvalidRequestStructure)
             }
             /*
             per busboy docs, drain the stream and ignore the contents; necessary
@@ -114,13 +109,11 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
             */
             stream.resume()
           })
-          .on('filesLimit', afterUploadStream.invalidRequestStructure)
-          .on('fieldsLimit', afterUploadStream.invalidRequestStructure)
+          .on('filesLimit', () => afterUploadStream(sendInvalidRequestStructure))
+          .on('fieldsLimit', () => afterUploadStream(sendInvalidRequestStructure))
           .on('close', () => {
-            if (afterUploadStream.successResult) {
-              return res.json(afterUploadStream.successResult)
-            }
-            next(afterUploadStream.errorResult)
+            req.attachmentUpload?.emit(afterUploadStreamEvent)
+            req.attachmentUpload?.removeAllListeners()
           })
         )
       }
