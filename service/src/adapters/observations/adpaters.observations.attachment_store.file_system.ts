@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentId, putAttachmentThumbnailForMinDimension, StagedAttachmentContentRef, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentId, putAttachmentThumbnailForMinDimension, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs } from '../../entities/observations/entities.observations'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -20,7 +20,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return new StagedAttachmentContent(id, tempLocation)
   }
 
-  async saveContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
+  async saveContent(content: StagedAttachmentContentRef | NodeJS.ReadableStream, attachmentId: string, observation: Observation): Promise<null | AttachmentContentPatchAttrs | AttachmentStoreError> {
     const attachment = observation.attachmentFor(attachmentId)
     if (!attachment) {
       return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
@@ -32,7 +32,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
       return savedSize
     }
     if (!attachment.contentLocator || attachment.size !== savedSize) {
-      return patchAttachment(observation, attachmentId, { contentLocator: saveRelPath, size: savedSize }) as Observation
+      return { contentLocator: saveRelPath, size: savedSize }
     }
     return null
   }

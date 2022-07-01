@@ -1446,7 +1446,7 @@ describe.only('observations use case interactions', function() {
       const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
       const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
       obsRepo.findById(obs.id).resolves(obs)
-      store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
+      store.saveContent(bytes, req.attachmentId, obs).resolves({ contentLocator, size: 887766 })
       obsRepo.save(afterStore).resolves(afterSave)
       const res = await storeAttachmentContent(req)
 
@@ -1480,7 +1480,7 @@ describe.only('observations use case interactions', function() {
       const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
       const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
       obsRepo.findById(obs.id).resolves(obs)
-      store.saveContent(stagedRef, req.attachmentId, obs).resolves(afterStore)
+      store.saveContent(stagedRef, req.attachmentId, obs).resolves({ contentLocator, size: 335566 })
       obsRepo.save(afterStore).resolves(afterSave)
       const res = await storeAttachmentContent(req)
 
@@ -1544,7 +1544,7 @@ describe.only('observations use case interactions', function() {
       const afterStore = patchAttachment(obs, attachment.id, { contentLocator, size: bytesBuffer.length }) as Observation
       obsRepo.findById(obs.id).resolves(obs)
       obsRepo.save(Arg.all()).resolves(afterStore)
-      store.saveContent(bytes, req.attachmentId, obs).resolves(afterStore)
+      store.saveContent(bytes, req.attachmentId, obs).resolves({ contentLocator, size: bytesBuffer.length })
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null

@@ -70,21 +70,23 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (denied) {
       return AppResponse.error(denied)
     }
-    let obsAfterStore = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
-    if (obsAfterStore instanceof AttachmentStoreError) {
-      if (obsAfterStore.errorCode === AttachmentStoreErrorCode.StorageError) {
-        return AppResponse.error(infrastructureError(obsAfterStore))
-      }
-      return AppResponse.error(invalidInput(obsAfterStore.message))
-    }
-    if (obsAfterStore === null) {
-      return AppResponse.success(api.exoObservationFor(obsBefore))
-    }
-    const obsAfterSave = await obsRepo.save(obsAfterStore)
-    if (obsAfterSave instanceof Observation) {
-      return AppResponse.success(api.exoObservationFor(obsAfterSave))
-    }
-    return AppResponse.error(invalidInput(obsAfterSave.message))
+    throw new Error('implement attachment patch on repository')
+    // let obsAfterStore = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    // // TODO: implement patch attachment here
+    // if (obsAfterStore instanceof AttachmentStoreError) {
+    //   if (obsAfterStore.errorCode === AttachmentStoreErrorCode.StorageError) {
+    //     return AppResponse.error(infrastructureError(obsAfterStore))
+    //   }
+    //   return AppResponse.error(invalidInput(obsAfterStore.message))
+    // }
+    // if (obsAfterStore === null) {
+    //   return AppResponse.success(api.exoObservationFor(obsBefore))
+    // }
+    // const obsAfterSave = await obsRepo.save(obsAfterStore)
+    // if (obsAfterSave instanceof Observation) {
+    //   return AppResponse.success(api.exoObservationFor(obsAfterSave))
+    // }
+    // return AppResponse.error(invalidInput(obsAfterSave.message))
   }
 }
 

@@ -572,6 +572,7 @@ export function removeFormEntry(observation: Observation, formEntryId: FormEntry
 
 export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
+export type AttachmentContentPatchAttrs = Required<Pick<Attachment, 'contentLocator' | 'size'>>
 
 /**
  * Add the given attachment to the given observation.  Return a new observation
@@ -713,8 +714,6 @@ export function indexOfThumbnailForTargetSize(targetSize: number, attachment: At
   return pos >= 0 ? pos : undefined
 }
 
-
-
 /**
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
@@ -723,8 +722,12 @@ export function indexOfThumbnailForTargetSize(targetSize: number, attachment: At
   readonly eventScope: MageEventId
   allocateObservationId(): Promise<ObservationId>
   /**
-   * TODO: return errors for invalid ids, including observation, form entry,
-   * and attachments
+   * Save the given observation.  This operation uses PUT semantics, so
+   * essentially overwrites an existing observation with the given attributes.
+   * Therefore, the risk of conflicting udpates exists, when two or more
+   * clients fetch the same version of an observation, and each client makes
+   * different changes to the observation, the client that saves its changes
+   * last will win, overwriting the changes the other clients saved.
    * @param observation
    */
   save(observation: Observation): Promise<Observation | ObservationRepositoryError>
@@ -737,6 +740,24 @@ export function indexOfThumbnailForTargetSize(targetSize: number, attachment: At
    */
   findLatest(): Promise<ObservationAttrs | null>
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
+  /**
+   * Update the specified attachment with the given attributes that {@link AttachmentContentStore.storeAttachmentContent storing}
+   * the content generated.  This persistence function exists alongside the
+   * {@link save} method to prevent concurrent updates from colliding and
+   * overwriting each other.  That situation is common when storing attachment
+   * content because a single client will intiate several parallel content
+   * uploads for multiple attachments.  Each separate content upload could
+   * fetch the same version of the observation from the database, store the
+   * content, then update that version of the observation record.  If using
+   * the whole observation `save()` method to apply the update just for a
+   * single attachment, each save operation would overwrite the changes for the
+   * save operations that came before.  Return the updated `Observation` entity
+   * instance on a successful update.  Return an `AttachmentNotFoundError`
+   * if the given observation did not have an attachment with the given
+   * attachment ID.  Return null if the given observation does not exist in
+   * the database.
+   */
+  patchAttachmentContentInfo(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
   /**
    * Because attachments reference a form entry by its ID, an API to generate
    * form entry IDs is necessary.
@@ -803,7 +824,8 @@ export interface AttachmentStore {
    * location for the specified attachment.  If the store assigns a new
    * {@link Attachment.contentLocator | content locator} to the attachment after
    * a successful save, and/or changes the size of the attachment to the actual
-   * number of bytes writen, return a new observation instance with the
+   * number of bytes writen, return a {@link AttachmentContentPatchAttrs patch}
+   * to {@link EventScopedObservationRepository.patchAttachmentContentInfo update} the attachment  new observation instance with the
    * {@link patchAttachment | patched} attachment.  Return `null` if the save
    * succeeded and no change to the attachment was necessary.  Return an
    * {@link AttachmentStoreError} if the save failed.
@@ -811,7 +833,7 @@ export interface AttachmentStore {
    * @param attachmentId
    * @param observation
    */
-  saveContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  saveContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentContentPatchAttrs | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.

@@ -1,5 +1,5 @@
 import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
@@ -87,6 +87,22 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
 
   async findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<Observation>> {
     throw new Error('unimplemented')
+  }
+
+  async patchAttachmentContentInfo(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {
+    const patchedObs = patchAttachment(observation, attachmentId, contentInfo)
+    if (!(patchedObs instanceof Observation)) {
+      return patchedObs
+    }
+    const attachment = attachmentDocSeedForEntity(patchedObs.attachmentFor(attachmentId) as Attachment)
+    const doc = await this.model.findOneAndUpdate(
+      { _id: mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: mongoose.Types.ObjectId(attachmentId) } } },
+      { $set: { 'attachments.$': attachment } },
+      { new: true })
+    if (doc) {
+      return Observation.evaluate(this.entityForDocument(doc), observation.mageEvent)
+    }
+    return null
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
