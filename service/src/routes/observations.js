@@ -447,40 +447,6 @@ module.exports = function(app, security) {
     }
   );
 
-  app.put(
-    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    passport.authenticate('bearer'),
-    /*
-    though checking create permission to add an attachment to an observation is
-    counterintuitive, the reason is because a mage client has a requirement
-    that their users can create observations as well as add attachments, but
-    cannot update the observation meta-data.  therefore, this checks create
-    permission to that users can create observations, as well send the
-    attachment content for the created observation.  before multi-form and
-    attachments-as-form-fields, submitting an attachment with meta-data was a
-    single request.  now, the client must send the attachment content after
-    saving the attachment meta-data within the observation form entries.
-    */
-    validateObservationCreateAccess(false),
-    upload.single('attachment'),
-    validateAttachmentFile,
-    function (req, res, next) {
-      if (!req.file) {
-        return res.status(400).send('no attachment');
-      }
-
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function (err, attachment) {
-        if (err) return next(err);
-
-        if (!attachment) return res.sendStatus(404);
-
-        req.observation.attachments = [attachment];
-        const response = observationXform.transform(req.observation, transformOptions(req)).attachments[0]
-        return res.json(response);
-      });
-    }
-  );
-
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),

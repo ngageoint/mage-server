@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -1442,22 +1442,22 @@ describe.only('observations use case interactions', function() {
         attachmentId: obs.attachments[0].id,
         content,
       }
-      const contentLocator = uniqid()
-      const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
-      const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
+      const attachmentPatch: AttachmentContentPatchAttrs = Object.freeze({ contentLocator: uniqid(), size: 887766 })
+      const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
-      store.saveContent(bytes, req.attachmentId, obs).resolves({ contentLocator, size: 887766 })
-      obsRepo.save(afterStore).resolves(afterSave)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(api.exoObservationFor(afterSave))
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(bytes, attachmentId, obs)
-      obsRepo.received(1).save(Arg.all())
-      obsRepo.received(1).save(Arg.is(validObservation()))
-      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(equalToObservationIgnoringDates(obs)), attachmentId, attachmentPatch)
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
     it('saves previously staged content to the attachment store', async function() {
@@ -1476,25 +1476,25 @@ describe.only('observations use case interactions', function() {
         attachmentId: obs.attachments[0].id,
         content,
       }
-      const contentLocator = uniqid()
-      const afterStore = patchAttachment(obs, attachmentId, { contentLocator }) as Observation
-      const afterSave = Observation.assignTo(afterStore, copyObservationAttrs(afterStore)) as Observation
+      const attachmentPatch: AttachmentContentPatchAttrs = { contentLocator: uniqid(), size: 223344 }
+      const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
-      store.saveContent(stagedRef, req.attachmentId, obs).resolves({ contentLocator, size: 335566 })
-      obsRepo.save(afterStore).resolves(afterSave)
+      store.saveContent(stagedRef, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(api.exoObservationFor(afterSave))
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(stagedRef, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(stagedRef, attachmentId, obs)
-      obsRepo.received(1).save(Arg.all())
-      obsRepo.received(1).save(Arg.is(validObservation()))
-      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachmentContentInfo(obs, attachmentId, attachmentPatch)
+      obsRepo.didNotReceive().save(Arg.all())
     })
 
-    it('does not save the observation if the attachment store did not update the observation', async function() {
+    it('does not save the observation if the attachment store did not return a patch', async function() {
 
       const attachment = obs.attachments[0]
       const bytesBuffer = Buffer.from('photo of something')
@@ -1520,41 +1520,8 @@ describe.only('observations use case interactions', function() {
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.didNotReceive().patchAttachmentContentInfo(Arg.all())
       obsRepo.didNotReceive().save(Arg.all())
-    })
-
-    it('updates the attachment size from the request content if different', async function() {
-
-      const attachment = obs.attachments[1]
-      const bytesBuffer = Buffer.from('photo of something')
-      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
-      const content: api.ExoIncomingAttachmentContent = {
-        name: attachment.name!,
-        mediaType: attachment.contentType!,
-        bytes,
-      }
-      const attachmentId = attachment.id
-      const req: api.StoreAttachmentContentRequest = {
-        context,
-        observationId: obs.id,
-        attachmentId: attachment.id,
-        content,
-      }
-      const contentLocator = uniqid()
-      const afterStore = patchAttachment(obs, attachment.id, { contentLocator, size: bytesBuffer.length }) as Observation
-      obsRepo.findById(obs.id).resolves(obs)
-      obsRepo.save(Arg.all()).resolves(afterStore)
-      store.saveContent(bytes, req.attachmentId, obs).resolves({ contentLocator, size: bytesBuffer.length })
-      const res = await storeAttachmentContent(req)
-
-      expect(res.error).to.be.null
-      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
-      store.received(1).saveContent(Arg.all())
-      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
-      store.received(1).saveContent(bytes, attachmentId, obs)
-      obsRepo.received(1).save(Arg.all())
-      obsRepo.received(1).save(Arg.is(validObservation()))
-      obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(afterStore)))
     })
 
     it('fails if storing the content failed', async function() {

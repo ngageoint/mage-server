@@ -3,7 +3,7 @@ import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
@@ -70,23 +70,27 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (denied) {
       return AppResponse.error(denied)
     }
-    throw new Error('implement attachment patch on repository')
-    // let obsAfterStore = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
-    // // TODO: implement patch attachment here
-    // if (obsAfterStore instanceof AttachmentStoreError) {
-    //   if (obsAfterStore.errorCode === AttachmentStoreErrorCode.StorageError) {
-    //     return AppResponse.error(infrastructureError(obsAfterStore))
-    //   }
-    //   return AppResponse.error(invalidInput(obsAfterStore.message))
-    // }
-    // if (obsAfterStore === null) {
-    //   return AppResponse.success(api.exoObservationFor(obsBefore))
-    // }
-    // const obsAfterSave = await obsRepo.save(obsAfterStore)
-    // if (obsAfterSave instanceof Observation) {
-    //   return AppResponse.success(api.exoObservationFor(obsAfterSave))
-    // }
-    // return AppResponse.error(invalidInput(obsAfterSave.message))
+    const attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
+    // TODO: implement patch attachment here
+    if (attachmentPatch instanceof AttachmentStoreError) {
+      if (attachmentPatch.errorCode === AttachmentStoreErrorCode.StorageError) {
+        return AppResponse.error(infrastructureError(attachmentPatch))
+      }
+      return AppResponse.error(invalidInput(attachmentPatch.message))
+    }
+    if (attachmentPatch === null) {
+      return AppResponse.success(api.exoObservationFor(obsBefore))
+    }
+    const obsAfterSave = await obsRepo.patchAttachmentContentInfo(obsBefore, attachmentBefore.id, attachmentPatch)
+    if (obsAfterSave instanceof Observation) {
+      return AppResponse.success(api.exoObservationFor(obsAfterSave))
+    }
+    if (obsAfterSave instanceof AttachmentNotFoundError) {
+      // should not happen, except if the observation was updated by another client ¯\_(ツ)_/¯
+      return AppResponse.error(invalidInput(obsAfterSave.message))
+    }
+    // the observation was deleted by another client ¯\_(ツ)_/¯
+    return AppResponse.error(entityNotFound(obsBefore.id, 'Observation'))
   }
 }
 
