@@ -71,7 +71,6 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
       return AppResponse.error(denied)
     }
     const attachmentPatch = await attachmentStore.saveContent(req.content.bytes, attachmentBefore.id, obsBefore)
-    // TODO: implement patch attachment here
     if (attachmentPatch instanceof AttachmentStoreError) {
       if (attachmentPatch.errorCode === AttachmentStoreErrorCode.StorageError) {
         return AppResponse.error(infrastructureError(attachmentPatch))

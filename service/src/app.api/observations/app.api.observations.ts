@@ -49,6 +49,7 @@ export interface ReadAttachmentContentRequest extends ObservationRequest {
   observationId: ObservationId
   attachmentId: AttachmentId
   minDimension?: number
+  contentRange?: { start: number, end: number }
 }
 
 /**
@@ -108,6 +109,7 @@ export interface ExoIncomingAttachmentContent {
 export interface ExoAttachmentContent {
   attachment: ExoAttachment
   bytes: NodeJS.ReadableStream
+  bytesRange?: { start: number, end: number }
 }
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {

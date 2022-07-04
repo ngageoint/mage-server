@@ -9,8 +9,8 @@ import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
 import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
-import { ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
+import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
 import { BufferWriteable } from '../../utils'
 import { Readable } from 'stream'
@@ -690,10 +690,184 @@ describe.only('observations web controller', function () {
         return true
       }))
     })
+
+    it('TODO: supports localization - uploading localized attachment content, e.g. video or audio recordings?')
+  })
+
+  describe('HEAD /observations/{observationId}/attachments/{attachmentId}', function() {
+    it('TODO: query for the attachment and return the headers based on the attachment meta-data')
+    // TODO: include 'accept-ranges: bytes' header https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
   })
 
   describe('GET /observations/{observationId}/attachments/{attachmentId}', function() {
 
+    let observationId: string
+    let attachmentId: string
+    let attachmentRequestPath: string
+    let attachmentBytes: Buffer
+
+    beforeEach(function() {
+      observationId = uniqid()
+      attachmentId = uniqid()
+      attachmentRequestPath = `${basePath}/events/${mageEvent.id}/observations/${observationId}/attachments/${attachmentId}`
+      attachmentBytes = Buffer.from(Array.from({ length: 10000 }).map(x => uniqid()).join(' | '))
+    })
+
+    it('requests the content for the attachment in the request path', async function() {
+
+      const content: ExoAttachmentContent = {
+        attachment: {
+          id: attachmentId,
+          observationFormId: uniqid(),
+          fieldName: 'field1',
+          contentStored: true,
+          oriented: true,
+          contentType: 'image/jpeg',
+          name: 'funny meme.jpg',
+          size: attachmentBytes.length
+        },
+        bytes: Readable.from(attachmentBytes)
+      }
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.success(content))
+      const res = await client.get(attachmentRequestPath)
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.equal(content.attachment.contentType)
+      expect(res.headers).to.have.property('content-length', String(attachmentBytes.length))
+      expect(res.body).to.deep.equal(attachmentBytes)
+      app.received(1).readAttachmentContent(Arg.all())
+      app.received(1).readAttachmentContent(Arg.is(x => {
+        expect(x).to.deep.include({
+          attachmentId,
+          observationId,
+        })
+        expect(x.minDimension).to.be.undefined
+        expect(x.contentRange).to.be.undefined
+        return true
+      }))
+    })
+
+    it('gets the specified minimum thumbnail dimension', async function() {
+
+      const content: ExoAttachmentContent = {
+        attachment: {
+          id: attachmentId,
+          observationFormId: uniqid(),
+          fieldName: 'field1',
+          contentStored: true,
+          oriented: true,
+          contentType: 'image/jpeg',
+          name: 'funny meme.jpg',
+          size: attachmentBytes.length
+        },
+        bytes: Readable.from(attachmentBytes)
+      }
+      const minDimension = 320
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.success(content))
+      const res = await client.get(`${attachmentRequestPath}?size=${minDimension}`)
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.equal(content.attachment.contentType)
+      expect(res.headers).to.have.property('content-length', String(attachmentBytes.length))
+      expect(res.body).to.deep.equal(attachmentBytes)
+      app.received(1).readAttachmentContent(Arg.all())
+      app.received(1).readAttachmentContent(Arg.is(x => {
+        expect(x).to.deep.include({
+          attachmentId,
+          observationId,
+          minDimension,
+        })
+        expect(x.contentRange).to.be.undefined
+        return true
+      }))
+    })
+
+    it('passes the requested content range to the app layer', async function() {
+
+      const content: ExoAttachmentContent = {
+        attachment: {
+          id: attachmentId,
+          observationFormId: uniqid(),
+          fieldName: 'field1',
+          contentStored: true,
+          oriented: true,
+          contentType: 'image/jpeg',
+          name: 'funny meme.jpg',
+          size: attachmentBytes.length
+        },
+        bytes: Readable.from(attachmentBytes.slice(100, 200)),
+        bytesRange: { start: 100, end: 199 }
+      }
+      const contentRange = { start: 100, end: 199 }
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.success(content))
+      const res = await client.get(attachmentRequestPath)
+        .set('range', 'bytes=100-199')
+
+      expect(res.status).to.equal(206)
+      expect(res.type).to.equal(content.attachment.contentType)
+      expect(res.headers).to.have.property('content-length', String(100))
+      expect(res.headers).to.have.property('content-range', `bytes 100-199/${content.attachment.size}`)
+      expect(res.body).to.deep.equal(attachmentBytes.slice(100, 200))
+      app.received(1).readAttachmentContent(Arg.all())
+      app.received(1).readAttachmentContent(Arg.is(x => {
+        expect(x).to.deep.include({
+          attachmentId,
+          observationId,
+          contentRange,
+        })
+        return true
+      }))
+    })
+
+    it('returns 403 without permission', async function() {
+
+      const denied = permissionDenied('read attachment content', 'bernie')
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(denied))
+      const res = await client.get(attachmentRequestPath)
+
+      expect(res.status).to.equal(403)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal({ message: 'permission denied: read attachment content' })
+      app.received(1).readAttachmentContent(Arg.all())
+    })
+
+    it('returns 404 if the attachment does not exist', async function() {
+
+      const notFound = entityNotFound(attachmentId, 'Attachment')
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
+      const res = await client.get(attachmentRequestPath)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal({ message: notFound.message })
+      app.received(1).readAttachmentContent(Arg.all())
+    })
+
+    it('returns 404 if the attachment content does not exist', async function() {
+
+      const notFound = entityNotFound(attachmentId, 'Attachment content')
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
+      const res = await client.get(attachmentRequestPath)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal({ message: notFound.message })
+      app.received(1).readAttachmentContent(Arg.all())
+    })
+
+    it('returns 404 if the observation does not exist', async function() {
+
+      const notFound = entityNotFound(observationId, 'Observation')
+      app.readAttachmentContent(Arg.all()).resolves(AppResponse.error(notFound))
+      const res = await client.get(attachmentRequestPath)
+
+      expect(res.status).to.equal(404)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal({ message: notFound.message })
+      app.received(1).readAttachmentContent(Arg.all())
+    })
+
+    it('TODO: supports localization?')
   })
 })
 

@@ -1,6 +1,6 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ReadAttachmentContent, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
 import { AttachmentStore, EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
@@ -51,6 +51,10 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
   routes.route('/:observationId/attachments/:attachmentId')
     .put(
       (req, res, next) => {
+        /*
+        encapsulate the busboy init in a middleware so the request can
+        fail-fast when busboy throws a validation error
+        */
         try {
           req.attachmentUpload = busboy({
             headers: req.headers,
@@ -58,6 +62,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
           })
         }
         catch (err) {
+          console.error('error initializing attachment upload\n', req.params, '\nheaders:\n', req.headers, '\n', err)
           return res.status(400).json({ message: err instanceof Error ? err.message : String(err) })
         }
         next()
@@ -118,7 +123,35 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
         )
       }
     )
+    .get(async (req, res, next) => {
+      const minDimension = parseInt(String(req.query.size), 10) || undefined
+      const contentRange = req.headers.range ?
+        req.headers.range.replace(/bytes=/i, '').split('-').map(x => parseInt(x, 10)).filter(x => typeof x === 'number' && !Number.isNaN(x)) : []
 
+      const appReq: ReadAttachmentContentRequest = createAppRequest(req, {
+        observationId: req.params.observationId,
+        attachmentId: req.params.attachmentId,
+        minDimension,
+        contentRange: contentRange.length === 2 ? { start: contentRange[0], end: contentRange[1] } : undefined
+      })
+      const appRes = await app.readAttachmentContent(appReq)
+      if (appRes.error) {
+        return next(appRes.error)
+      }
+      const content = appRes.success
+      if (!content) {
+        return res.status(500).json({ message: 'unknown application response' })
+      }
+      const { bytesRange } = content
+      const headers = {
+        'content-type': String(content.attachment.contentType),
+        'content-length': String(bytesRange ? bytesRange.end - bytesRange.start + 1 : content.attachment.size!)
+      } as any
+      if (bytesRange) {
+        headers['content-range'] = `bytes ${bytesRange.start}-${bytesRange.end}/${content.attachment.size || '*'}`
+      }
+      return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
+    })
   routes.route('/:observationId')
     .put(async (req, res, next) => {
       const body = req.body

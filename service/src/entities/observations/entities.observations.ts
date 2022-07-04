@@ -848,8 +848,8 @@ export interface AttachmentStore {
    * can specify an optional zero-based range of bytes to read from the
    * content, which will return a read stream limited the specified range.
    * Note that the end index of the range is inclusive, as is the case with
-   * Node's streams API, as opposed to typeical array and sring operations, for
-   * which the end index is typically exclusive.
+   * Node's streams API, as opposed to array and string operations, for
+   * which the end index is usually exclusive.
    * @param attachmentId
    * @param observation
    * @param range
