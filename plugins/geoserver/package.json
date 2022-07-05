@@ -10,10 +10,10 @@
   "author": {
     "name": "NGA"
   },
-  "contributors": {
+  "contributors": [{
     "name": "Billy Newman",
     "email": "newmanw10@gmail.com"
-  },
+  }],
   "homepage": "https://www1.nga.mil",
   "engines": {
     "node": ">= 0.8.0",
@@ -22,7 +22,7 @@
   "dependencies": {
     "express": "4.10.6",
     "http-proxy-middleware": "0.17.3",
-    "mongoose": "4.8.5",
+    "mongoose": "5.13.14",
     "request": "2.79.0",
     "xmlbuilder": "8.2.2"
   },
