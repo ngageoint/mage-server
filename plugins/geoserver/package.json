@@ -10,10 +10,12 @@
   "author": {
     "name": "NGA"
   },
-  "contributors": [{
-    "name": "Billy Newman",
-    "email": "newmanw10@gmail.com"
-  }],
+  "contributors": [
+    {
+      "name": "Billy Newman",
+      "email": "newmanw10@gmail.com"
+    }
+  ],
   "homepage": "https://www1.nga.mil",
   "engines": {
     "node": ">= 0.8.0",
