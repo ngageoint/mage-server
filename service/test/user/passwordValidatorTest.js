@@ -514,7 +514,7 @@ describe("Password Validator Tests", function () {
       .chain('populate')
       .chain('populate')
       .chain('exec')
-      .resolves({});
+      .yields(null, {});
 
     sinon.mock(TokenModel)
       .expects('remove')
@@ -577,7 +577,7 @@ describe("Password Validator Tests", function () {
       .withArgs({ authenticationId: authentication._id })
       .chain('populate')
       .chain('exec')
-      .resolves(user)
+      .yields(null, user)
 
     sinon.mock(TokenModel)
       .expects('remove')

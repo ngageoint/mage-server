@@ -94,18 +94,14 @@ LocalSchema.pre('save', function (next) {
 
   async.waterfall([
     function (done) {
-      User.getUserByAuthenticationId(authentication._id).then(user => {
-        done(null, user);
-      }).catch(err => {
-        done(err);
+      User.getUserByAuthenticationId(authentication._id, function (err, user) {
+        done(err, user);
       });
     },
     function (user, done) {
       if (user) {
         Token.removeTokensForUser(user, function (err) {
-          if (err) return done(err);
-
-          done();
+          done(err);
         });
       } else {
         done();
