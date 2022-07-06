@@ -1,6 +1,6 @@
-import { EntityNotFoundError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
+import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -33,7 +33,24 @@ export interface SaveObservationRequest extends ObservationRequest {
   observation: ExoObservationMod
 }
 
-// TODO: add other model json transformation here
+export interface StoreAttachmentContent {
+  (req: StoreAttachmentContentRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
+}
+export interface StoreAttachmentContentRequest extends ObservationRequest {
+  observationId: ObservationId
+  attachmentId: AttachmentId
+  content: ExoIncomingAttachmentContent
+}
+
+export interface ReadAttachmentContent {
+  (req: ReadAttachmentContentRequest): Promise<AppResponse<ExoAttachmentContent, PermissionDeniedError | EntityNotFoundError | InfrastructureError>>
+}
+export interface ReadAttachmentContentRequest extends ObservationRequest {
+  observationId: ObservationId
+  attachmentId: AttachmentId
+  minDimension?: number
+  contentRange?: { start: number, end: number }
+}
 
 /**
  * ExoObservation refers to the view of observations that app clients receive
@@ -65,7 +82,6 @@ export type ExoObservationPropertiesMod = Omit<ObservationFeatureProperties, 'fo
   forms: ExoFormEntryMod[]
 }
 
-
 export type ExoFormEntryMod =
   & Partial<Pick<FormEntry, 'id'>>
   & Pick<FormEntry, 'formId'>
@@ -84,9 +100,21 @@ export enum AttachmentModAction {
   Delete = 'delete',
 }
 
+export interface ExoIncomingAttachmentContent {
+  bytes: StagedAttachmentContentRef | NodeJS.ReadableStream
+  name: string
+  mediaType: string
+}
+
+export interface ExoAttachmentContent {
+  attachment: ExoAttachment
+  bytes: NodeJS.ReadableStream
+  bytesRange?: { start: number, end: number }
+}
+
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
   const { states, ...attrs } = copyObservationAttrs(from)
-  const attachments = attrs.attachments.map(exoAttachmentFor)
+  const attachments = attrs.attachments.map(x => exoAttachmentFor(x))
   users = users || {}
   return {
     ...attrs,
@@ -103,6 +131,27 @@ export function exoObservationFor(from: ObservationAttrs, users?: { creator?: Us
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
   const { thumbnails, contentLocator, ...exo } = from
   return { ...exo, contentStored: !!from.contentLocator }
+}
+
+export function exoAttachmentForThumbnail(replacementThumbnailIndex: number, base: Attachment): ExoAttachment {
+  const exoBase = exoAttachmentFor(base)
+  const thumbnails = base.thumbnails
+  const replacementThumb = thumbnails[replacementThumbnailIndex] || ({} as Partial<Thumbnail>)
+  return {
+    ...exoBase,
+    contentType: replacementThumb.contentType,
+    size: replacementThumb.size,
+    width: replacementThumb.width,
+    height: replacementThumb.height,
+  }
+}
+
+export function exoAttachmentForThumbnailDimension(targetDimension: number, attachment: Attachment): ExoAttachment {
+  const thumbPos = thumbnailIndexForTargetDimension(targetDimension, attachment)
+  if (typeof thumbPos === 'number') {
+    return exoAttachmentForThumbnail(thumbPos, attachment)
+  }
+  return exoAttachmentFor(attachment)
 }
 
 export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {
@@ -134,4 +183,6 @@ export interface ObservationPermissionService {
    * Update permission applies when updating an existing observation.
    */
   ensureUpdateObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
+  ensureStoreAttachmentContentPermission(context: ObservationRequestContext, observation: Observation, attachmentId: AttachmentId): Promise<null | PermissionDeniedError>
+  ensureReadObservationPermission(context: ObservationRequestContext): Promise<null | PermissionDeniedError>
 }

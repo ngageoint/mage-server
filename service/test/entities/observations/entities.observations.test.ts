@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationError, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationError, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension } from '../../../lib/entities/observations/entities.observations'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -2029,6 +2029,35 @@ describe('observation entities', function() {
 
     describe('removing form entries', function() {
 
+    })
+  })
+
+  describe('attachments', function() {
+
+    describe('selecting a thumbnail representation', function() {
+
+      it('selects the thumbnail with the smallest minimum dimension greater than the target dimension', function() {
+
+        const att: Attachment = {
+          id: uniqid(),
+          observationFormId: uniqid(),
+          fieldName: 'field1',
+          oriented: false,
+          thumbnails: [
+            { minDimension: 220, contentLocator: uniqid() },
+            { minDimension: 60, contentLocator: uniqid() },
+            { minDimension: 340, contentLocator: uniqid() },
+            { minDimension: 100, contentLocator: uniqid() },
+          ]
+        }
+
+        expect(thumbnailIndexForTargetDimension(24, att)).to.equal(1)
+        expect(thumbnailIndexForTargetDimension(76, att)).to.equal(3)
+        expect(thumbnailIndexForTargetDimension(100, att)).to.equal(3)
+        expect(thumbnailIndexForTargetDimension(200, att)).to.equal(0)
+        expect(thumbnailIndexForTargetDimension(339, att)).to.equal(2)
+        expect(thumbnailIndexForTargetDimension(400, att)).to.be.undefined
+      })
     })
   })
 })

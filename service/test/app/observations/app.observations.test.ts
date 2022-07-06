@@ -2,13 +2,16 @@ import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
-import { AllocateObservationId, SaveObservation } from '../../../lib/app.impl/observations/app.impl.observations'
+import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentCreateAttrs, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, removeAttachment, removeFormEntry } from '../../../lib/entities/observations/entities.observations'
-import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
+import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
+import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
 import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
+import { pipeline, Readable } from 'stream'
+import util from 'util'
+import { BufferWriteable } from '../../utils'
 
 describe('observations use case interactions', function() {
 
@@ -319,6 +322,54 @@ describe('observations use case interactions', function() {
       expect(exo.attachments[0].contentStored).to.be.false
       expect(exo.attachments[1].contentStored).to.be.true
       expect(exo.attachments[2].contentStored).to.be.false
+    })
+
+    it('overrides attachment attributes with given thumbnail attributes', async function() {
+
+      const att: Required<Attachment> = {
+        id: uniqid(),
+        observationFormId: uniqid(),
+        fieldName: 'field1',
+        contentLocator: uniqid(),
+        contentType: 'image/png',
+        width: 900,
+        height: 1200,
+        lastModified: new Date(),
+        name: 'rainbow.png',
+        oriented: false,
+        size: 9879870,
+        thumbnails: [
+          { minDimension: 200, contentLocator: void(0), size: 2000, contentType: 'image/jpeg', width: 200, height: 300, name: 'rainbow@200.jpg' },
+          { minDimension: 300, contentLocator: void(0), size: 3000, contentType: 'image/jpeg', width: 300, height: 400, name: 'rainbow@300.jpg' },
+          { minDimension: 400, contentLocator: void(0), size: 4000, contentType: 'image/jpeg', width: 400, height: 500, name: 'rainbow@400.jpg' },
+        ]
+      }
+
+      expect(api.exoAttachmentForThumbnail(0, att)).to.deep.equal({
+        ...api.exoAttachmentFor(att),
+        size: 2000,
+        width: 200,
+        height: 300,
+        contentType: 'image/jpeg'
+      })
+      expect(api.exoAttachmentForThumbnail(1, att)).to.deep.equal({
+        ...api.exoAttachmentFor(att),
+        size: 3000,
+        width: 300,
+        height: 400,
+        contentType: 'image/jpeg'
+      })
+      expect(api.exoAttachmentForThumbnail(2, att)).to.deep.equal({
+        ...api.exoAttachmentFor(att),
+        size: 4000,
+        width: 400,
+        height: 500,
+        contentType: 'image/jpeg'
+      })
+
+      const notStored: Attachment = { ...copyAttachmentAttrs(att), contentLocator: undefined }
+      notStored.thumbnails[0].contentLocator = uniqid()
+      expect(api.exoAttachmentForThumbnail(0, notStored)).to.have.property('contentStored', false)
     })
   })
 
@@ -1098,21 +1149,20 @@ describe('observations use case interactions', function() {
 
       it('removes attachments', async function() {
 
-        const obsAfter =
-          removeAttachment(
-            Observation.assignTo(obsBefore, {
-              ...copyObservationAttrs(obsBefore),
-              properties: {
-                timestamp: obsBefore.timestamp,
-                forms: [
-                  {
-                    ...obsBefore.formEntries[0],
-                    field1: 'mod field 1'
-                  }
-                ]
-              }
-            }) as Observation,
-            obsBefore.attachments[0].id) as Observation
+        const obsAfter = removeAttachment(
+          Observation.assignTo(obsBefore, {
+            ...copyObservationAttrs(obsBefore),
+            properties: {
+              timestamp: obsBefore.timestamp,
+              forms: [
+                {
+                  ...obsBefore.formEntries[0],
+                  field1: 'mod field 1'
+                }
+              ]
+            }
+          }) as Observation,
+          obsBefore.attachments[0].id) as Observation
         const obsMod: api.ExoObservationMod = _.omit({
           ...copyObservationAttrs(obsBefore),
           properties: {
@@ -1305,12 +1355,673 @@ describe('observations use case interactions', function() {
 
   describe('saving attachment content', function() {
 
-    it.skip('TODO: checks permissions', async function() {
-      expect.fail('todo')
+    let storeAttachmentContent: api.StoreAttachmentContent
+    let store: SubstituteOf<AttachmentStore>
+    let obs: Observation
+
+    beforeEach(function() {
+      const permittedUser = context.userId
+      permissions.ensureStoreAttachmentContentPermission(Arg.all()).mimicks(async context => {
+        if (context.userId === permittedUser) {
+          return null
+        }
+        return permissionDenied('update observation', context.userId)
+      })
+      store = Sub.for<AttachmentStore>()
+      mageEvent = new MageEvent({
+        ...copyMageEventAttrs(mageEvent),
+        forms: [
+          {
+            id: 1,
+            name: 'Save Attachment Content',
+            archived: false,
+            color: '#12ab34',
+            fields: [
+              {
+                id: 1,
+                name: 'description',
+                title: 'Description',
+                type: FormFieldType.Text,
+                required: false,
+              },
+              {
+                id: 2,
+                name: 'attachments',
+                title: 'Attachments',
+                type: FormFieldType.Attachment,
+                required: false,
+              }
+            ],
+            userFields: []
+          }
+        ]
+      })
+      const baseObsAttrs: ObservationAttrs = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: [
+            { id: 'formEntry1', formId: mageEvent.forms[0].id, description: `something interesting at ${new Date().toISOString()}` }
+          ]
+        },
+        states: [],
+        favoriteUserIds: [],
+        attachments: []
+      }
+      baseObsAttrs.attachments = [
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry1',
+          fieldName: 'attachments',
+          name: 'store test 1.jpg',
+          contentType: 'image/jpeg',
+          size: 12345,
+          oriented: false,
+          thumbnails: [],
+          contentLocator: uniqid()
+        },
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry1',
+          fieldName: 'attachments',
+          name: 'store test 2.jpg',
+          contentType: 'image/jpeg',
+          size: 23456,
+          oriented: false,
+          thumbnails: [],
+        }
+      ]
+      obs = Observation.evaluate(baseObsAttrs, mageEvent)
+      storeAttachmentContent = StoreAttachmentContent(permissions, store)
+
+      expect(obs.validation.hasErrors).to.be.false
     })
 
-    it.skip('TODO: saves the attachment content to the attachment store', async function() {
-      expect.fail('todo')
+    it('checks permission to store the attachment', async function() {
+
+      const attachment = obs.attachments[0]
+      const forbiddenUser = uniqid()
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      context.userId = forbiddenUser
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const denied = res.error as PermissionDeniedError
+
+      expect(res.success).to.be.null
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
+      expect(denied.data.permission).to.equal('update observation')
+      expect(denied.data.subject).to.equal(forbiddenUser)
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+      permissions.received(1).ensureStoreAttachmentContentPermission(Arg.all())
+      permissions.received(1).ensureStoreAttachmentContentPermission(context, obs, obs.attachments[0].id)
+    })
+
+    it('saves the attachment content to the attachment store', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const attachmentId = obs.attachments[0].id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        content,
+      }
+      const attachmentPatch: AttachmentContentPatchAttrs = Object.freeze({ contentLocator: uniqid(), size: 887766 })
+      const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(equalToObservationIgnoringDates(obs)), attachmentId, attachmentPatch)
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('saves previously staged content to the attachment store', async function() {
+
+      const attachment = obs.attachments[0]
+      const stagedRef = new StagedAttachmentContentRef(uniqid())
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes: stagedRef,
+      }
+      const attachmentId = obs.attachments[0].id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        content,
+      }
+      const attachmentPatch: AttachmentContentPatchAttrs = { contentLocator: uniqid(), size: 223344 }
+      const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(stagedRef, req.attachmentId, obs).resolves(attachmentPatch)
+      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(afterStore))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(stagedRef, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(stagedRef, attachmentId, obs)
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
+      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachmentContentInfo(obs, attachmentId, attachmentPatch)
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('does not save the observation if the attachment store did not return a patch', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const attachmentId = attachment.id
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(bytes, req.attachmentId, obs).resolves(null)
+      const res = await storeAttachmentContent(req)
+
+      expect(res.error).to.be.null
+      expect(res.success).to.deep.equal(api.exoObservationFor(obs))
+      store.received(1).saveContent(Arg.all())
+      store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
+      store.received(1).saveContent(bytes, attachmentId, obs)
+      obsRepo.didNotReceive().patchAttachmentContentInfo(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if storing the content failed', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      store.saveContent(Arg.all()).resolves(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, 'the imaginary storage failed'))
+      const res = await storeAttachmentContent(req)
+      const err = res.error as InfrastructureError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrInfrastructure)
+      expect(err.message).to.contain('the imaginary storage failed')
+      store.received(1).saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if the observation does not exist', async function() {
+
+      const bytes = Sub.for<NodeJS.ReadableStream>()
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: uniqid(),
+        attachmentId: uniqid(),
+        content: { bytes, name: 'fail.jpg', mediaType: 'image/jpeg' },
+      }
+      obsRepo.findById(Arg.all()).resolves(null)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.observationId)
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if the attachment does not exist on the observation', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: 'wut',
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if the request content name does not match', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: 'img_123.wut',
+        mediaType: attachment.contentType!,
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+
+    it('fails if the request media type does not match', async function() {
+
+      const attachment = obs.attachments[0]
+      const bytesBuffer = Buffer.from('photo of something')
+      const bytes: NodeJS.ReadableStream = Readable.from(bytesBuffer)
+      const content: api.ExoIncomingAttachmentContent = {
+        name: attachment.name!,
+        mediaType: 'image/wut',
+        bytes,
+      }
+      const req: api.StoreAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: attachment.id,
+        content,
+      }
+      obsRepo.findById(obs.id).resolves(obs)
+      const res = await storeAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+      store.didNotReceive().saveContent(Arg.all())
+      obsRepo.didNotReceive().save(Arg.all())
+    })
+  })
+
+  describe('reading attachment content', function() {
+
+    let obs: Observation
+    let store: SubstituteOf<AttachmentStore>
+    let readAttachmentContent: api.ReadAttachmentContent
+
+    beforeEach(function() {
+      store = Sub.for<AttachmentStore>()
+      const permittedUser = context.userId
+      permissions.ensureReadObservationPermission(Arg.all()).mimicks(async context => {
+        if (context.userId === permittedUser) {
+          return null
+        }
+        return permissionDenied('read observation', context.userId)
+      })
+      store = Sub.for<AttachmentStore>()
+      mageEvent = new MageEvent({
+        ...copyMageEventAttrs(mageEvent),
+        forms: [
+          {
+            id: 1,
+            name: 'Save Attachment Content',
+            archived: false,
+            color: '#12ab34',
+            fields: [
+              {
+                id: 1,
+                name: 'description',
+                title: 'Description',
+                type: FormFieldType.Text,
+                required: false,
+              },
+              {
+                id: 2,
+                name: 'attachments',
+                title: 'Attachments',
+                type: FormFieldType.Attachment,
+                required: false,
+              }
+            ],
+            userFields: []
+          }
+        ]
+      })
+      const baseObsAttrs: ObservationAttrs = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 55, 66 ] },
+        properties: {
+          timestamp: new Date(),
+          forms: [
+            { id: 'formEntry1', formId: mageEvent.forms[0].id, description: `something interesting at ${new Date().toISOString()}` },
+            { id: 'formEntry2', formId: mageEvent.forms[0].id }
+          ]
+        },
+        states: [],
+        favoriteUserIds: [],
+        attachments: []
+      }
+      baseObsAttrs.attachments = [
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry1',
+          fieldName: 'attachments',
+          name: 'store test 1.jpg',
+          contentType: 'image/jpeg',
+          size: 12345,
+          oriented: false,
+          thumbnails: [],
+          contentLocator: uniqid()
+        },
+        {
+          id: uniqid(),
+          observationFormId: 'formEntry2',
+          fieldName: 'attachments',
+          name: 'store test 2.jpg',
+          contentType: 'image/jpeg',
+          size: 23456,
+          oriented: false,
+          thumbnails: [],
+        }
+      ]
+      obs = Observation.evaluate(baseObsAttrs, mageEvent)
+      readAttachmentContent = ReadAttachmentContent(permissions, store)
+
+      expect(obs.validation.hasErrors).to.be.false
+    })
+
+    it('checks permission', async function() {
+
+      const forbiddenUser = uniqid()
+      const observationId = uniqid()
+      const attachmentId = uniqid()
+      context.userId = forbiddenUser
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId,
+        attachmentId,
+      }
+      const res = await readAttachmentContent(req)
+      const denied = res.error as PermissionDeniedError
+
+      expect(res.success).to.be.null
+      expect(denied).to.be.instanceOf(MageError)
+      expect(denied.code).to.equal(ErrPermissionDenied)
+      expect(denied.data.permission).to.equal('read observation')
+      expect(denied.data.subject).to.equal(forbiddenUser)
+      obsRepo.didNotReceive().findById(Arg.all())
+      store.didNotReceive().readContent(Arg.all())
+      store.didNotReceive().readThumbnailContent(Arg.all())
+    })
+
+    it('fails if the observation does not exist', async function() {
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: uniqid(),
+        attachmentId: uniqid(),
+      }
+      obsRepo.findById(Arg.all()).resolves(null)
+      const res = await readAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.observationId)
+      expect(err.data.entityType).to.equal('Observation')
+    })
+
+    it('fails if the attachment does not exist on the observation', async function() {
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: uniqid(),
+      }
+      obsRepo.findById(Arg.all()).resolves(obs)
+      const res = await readAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('Attachment')
+    })
+
+    it('fails if the content does not exist in the attachment store', async function() {
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[1].id,
+      }
+      obsRepo.findById(Arg.all()).resolves(obs)
+      store.readContent(Arg.all()).resolves(null)
+      const res = await readAttachmentContent(req)
+      const err = res.error as EntityNotFoundError
+
+      expect(res.success).to.be.null
+      expect(err).to.be.instanceOf(MageError)
+      expect(err.code).to.equal(ErrEntityNotFound)
+      expect(err.data.entityId).to.equal(req.attachmentId)
+      expect(err.data.entityType).to.equal('AttachmentContent')
+      store.received(1).readContent(Arg.all())
+      store.received(1).readContent(req.attachmentId, obs, undefined)
+    })
+
+    it('returns the attachment meta-data and its full content stream', async function() {
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+      }
+      const contentBytes = Buffer.from(Array.from({ length: 100 }).map(_ => uniqid()).join('+'))
+      obsRepo.findById(Arg.all()).resolves(obs)
+      store.readContent(Arg.all()).resolves(Readable.from(contentBytes))
+      const res = await readAttachmentContent(req)
+      const resContent = res.success as api.ExoAttachmentContent
+      const resStream = new BufferWriteable()
+      await util.promisify(pipeline)(resContent.bytes, resStream)
+
+      expect(res.error).to.be.null
+      expect(resContent.attachment).to.deep.equal(api.exoAttachmentFor(obs.attachments[0]))
+      expect(resStream.bytes).to.deep.equal(contentBytes)
+      store.received(1).readContent(Arg.all())
+      store.received(1).readContent(req.attachmentId, obs, undefined)
+    })
+
+    it('reads a range of the attachment content', async function() {
+
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        contentRange: { start: 120, end: 239 }
+      }
+      const contentBytes = Buffer.from(Array.from({ length: 100 }).map(_ => uniqid()).join('+'))
+      obsRepo.findById(Arg.all()).resolves(obs)
+      store.readContent(Arg.all()).resolves(Readable.from(contentBytes.slice(120, 240)))
+      const res = await readAttachmentContent(req)
+      const resContent = res.success as api.ExoAttachmentContent
+      const resStream = new BufferWriteable()
+      await util.promisify(pipeline)(resContent.bytes, resStream)
+
+      expect(res.error).to.be.null
+      expect(resContent.attachment).to.deep.equal(api.exoAttachmentFor(obs.attachments[0]))
+      expect(resContent.bytesRange).to.deep.equal({ start: 120, end: 239 })
+      expect(resStream.bytes).to.deep.equal(contentBytes.slice(120, 240))
+      store.received(1).readContent(Arg.all())
+      store.received(1).readContent(req.attachmentId, obs, Arg.deepEquals({ ...req.contentRange! }))
+    })
+
+    it('reads the thumbnail content for the requested minimum dimension', async function() {
+
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 200,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@200`,
+        size: 1000
+      }) as Observation
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 400,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@400`,
+        size: 2000
+      }) as Observation
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 600,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@600`,
+        size: 3000
+      }) as Observation
+      const contentBytes = Buffer.from(Array.from({ length: obs.attachments[1].size! }).map((_, index) => index % 10).join())
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        minDimension: 260
+      }
+      obsRepo.findById(Arg.all()).resolves(obs)
+      store.readThumbnailContent(Arg.all()).resolves(Readable.from(contentBytes))
+      const res = await readAttachmentContent(req)
+      const resContent = res.success as api.ExoAttachmentContent
+      const resStream = new BufferWriteable()
+      await util.promisify(pipeline)(resContent.bytes, resStream)
+
+      expect(res.error).to.be.null
+      expect(resContent.attachment).to.deep.equal(api.exoAttachmentForThumbnail(1, obs.attachments[0]))
+      expect(resContent.bytesRange).to.be.undefined
+      expect(resStream.bytes).to.deep.equal(contentBytes)
+      store.didNotReceive().readContent(Arg.all())
+      store.received(1).readThumbnailContent(Arg.all())
+      store.received(1).readThumbnailContent(400, req.attachmentId, obs)
+    })
+
+    it('reads the full content content if the store does not have the thumbnail content', async function() {
+
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 200,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@200`,
+        size: 1000
+      }) as Observation
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 400,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@400`,
+        size: 2000
+      }) as Observation
+      obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
+        minDimension: 600,
+        contentLocator: uniqid(),
+        contentType: 'image/jpeg',
+        name: `${obs.attachments[0].name}@600`,
+        size: 3000
+      }) as Observation
+      const contentBytes = Buffer.from(Array.from({ length: obs.attachments[1].size! }).map((_, index) => index % 10).join())
+      const req: api.ReadAttachmentContentRequest = {
+        context,
+        observationId: obs.id,
+        attachmentId: obs.attachments[0].id,
+        minDimension: 260
+      }
+      obsRepo.findById(Arg.all()).resolves(obs)
+      store.readThumbnailContent(Arg.all()).resolves(null)
+      store.readContent(Arg.all()).resolves(Readable.from(contentBytes))
+      const res = await readAttachmentContent(req)
+      const resContent = res.success as api.ExoAttachmentContent
+      const resStream = new BufferWriteable()
+      await util.promisify(pipeline)(resContent.bytes, resStream)
+
+      expect(res.error).to.be.null
+      expect(resContent.attachment).to.deep.equal(api.exoAttachmentFor(obs.attachments[0]))
+      expect(resContent.bytesRange).to.be.undefined
+      expect(resStream.bytes).to.deep.equal(contentBytes)
+      store.received(1).readThumbnailContent(Arg.all())
+      store.received(1).readThumbnailContent(400, req.attachmentId, obs)
+      store.received(1).readContent(Arg.all())
+      store.received(1).readContent(req.attachmentId, obs, undefined)
     })
   })
 })
@@ -1324,10 +2035,6 @@ function equalToObservationIgnoringDates(expected: ObservationAttrs, message?: s
     expect(actualWithoutDates).to.deep.equal(expectedWithoutDates, message)
     return true
   }
-}
-
-function not<Arg>(predicate: (actual: Arg) => boolean): (actual: Arg) => boolean {
-  return actual => !predicate(actual)
 }
 
 function validObservation(): (actual: Observation) => boolean {

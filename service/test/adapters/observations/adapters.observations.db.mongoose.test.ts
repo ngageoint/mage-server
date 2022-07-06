@@ -7,11 +7,10 @@ import { MongooseObservationRepository } from '../../../lib/adapters/observation
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
 import { MageEventDocument } from '../../../src/models/event'
-import TeamModelModule = require('../../../lib/models/team')
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, AttachmentId, copyAttachmentAttrs, validationResultMessage, AttachmentNotFoundError } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -442,5 +441,135 @@ describe('mongoose observation repository', function() {
     })
 
     it('retains ids for existing entities')
+  })
+
+  describe('updating attachment content meta-data', function() {
+
+    let obs: Observation
+
+    beforeEach(async function() {
+      const id = await repo.allocateObservationId()
+      const formEntryId = (await repo.nextFormEntryIds())[0]
+      const attrs = observationStub(id, event.id)
+      const attachmentIds = await repo.nextAttachmentIds(3)
+      attrs.properties.forms = [
+        { id: formEntryId, formId: event.forms[0].id, field1: 'makes it valid' }
+      ]
+      attrs.attachments = [
+        {
+          id: attachmentIds[0],
+          observationFormId: formEntryId,
+          fieldName: 'field3',
+          oriented: false,
+          name: 'photo1.jpg',
+          contentType: 'image/jpeg',
+          size: 1234,
+          thumbnails: []
+        },
+        {
+          id: attachmentIds[1],
+          observationFormId: formEntryId,
+          fieldName: 'field3',
+          oriented: false,
+          name: 'photo2.jpg',
+          contentType: 'image/jpeg',
+          size: 1345,
+          thumbnails: []
+        },
+        {
+          id: attachmentIds[2],
+          observationFormId: formEntryId,
+          fieldName: 'field3',
+          oriented: false,
+          name: 'photo3.jpg',
+          contentType: 'image/jpeg',
+          size: 1456,
+          thumbnails: []
+        },
+      ]
+      obs = Observation.evaluate(attrs, event)
+      obs = await repo.save(obs) as Observation
+
+      expect(obs).to.be.instanceOf(Observation)
+      expect(obs.validation.hasErrors).to.be.false
+    })
+
+    it('saves the content meta-data for the given attachment id', async function() {
+
+      const contentInfo: AttachmentContentPatchAttrs = {
+        size: 674523,
+        contentLocator: `${obs.id}:`
+      }
+      const updated = await repo.patchAttachmentContentInfo(obs, obs.attachments[0].id, contentInfo) as Observation
+      const fetched = await repo.findById(obs.id) as Observation
+
+      expect(updated).to.be.instanceOf(Observation)
+      expect(_.omit(updated.attachments[0], 'lastModified')).to.deep.equal(_.omit({
+        ...copyAttachmentAttrs(obs.attachments[0]),
+        ...contentInfo
+      }, 'lastModified'))
+      expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
+    })
+
+    it('does not overwrite changes of concurrent update', async function() {
+
+      const contentInfo1: AttachmentContentPatchAttrs = {
+        size: 111111,
+        contentLocator: `${obs.id}:${obs.attachments[0].id}`
+      }
+      const contentInfo2: AttachmentContentPatchAttrs = {
+        size: 222222,
+        contentLocator: `${obs.id}:${obs.attachments[1].id}`
+      }
+      const contentInfo3: AttachmentContentPatchAttrs = {
+        size: 333333,
+        contentLocator: `${obs.id}:${obs.attachments[2].id}`
+      }
+      const results = await Promise.all([
+        repo.patchAttachmentContentInfo(obs, obs.attachments[0].id, contentInfo1),
+        repo.patchAttachmentContentInfo(obs, obs.attachments[1].id, contentInfo2),
+        repo.patchAttachmentContentInfo(obs, obs.attachments[2].id, contentInfo3),
+      ])
+      const fetched = await repo.findById(obs.id) as Observation
+
+      expect(fetched).to.be.instanceOf(Observation)
+      expect(fetched.attachments[0]).to.deep.include(contentInfo1)
+      expect(fetched.attachments[1]).to.deep.include(contentInfo2)
+      expect(fetched.attachments[2]).to.deep.include(contentInfo3)
+    })
+
+    it('returns null if the observation does not exist', async function() {
+
+      const contentInfo: AttachmentContentPatchAttrs = {
+        size: 111111,
+        contentLocator: `${obs.id}:${obs.attachments[0].id}`
+      }
+      const unsavedId = await repo.allocateObservationId()
+      const phantom = Observation.evaluate({
+        ...copyObservationAttrs(obs),
+        id: unsavedId
+      }, obs.mageEvent)
+      const updated = await repo.patchAttachmentContentInfo(phantom, phantom.attachments[0].id, contentInfo)
+      const fetched = await repo.findById(unsavedId)
+      const all = await repo.findAll()
+
+      expect(updated).to.be.null
+      expect(fetched).to.be.null
+      expect(all).to.have.length(1)
+      expect(copyObservationAttrs(all[0])).to.deep.equal(copyObservationAttrs(obs))
+    })
+
+    it('returns an error if the attachment id does not exist on the observation', async function() {
+
+      const contentInfo: AttachmentContentPatchAttrs = {
+        size: 111111,
+        contentLocator: `${obs.id}:${obs.attachments[0].id}`
+      }
+      const updated = await repo.patchAttachmentContentInfo(obs, mongoose.Types.ObjectId().toHexString(), contentInfo)
+      const fetched = await repo.findById(obs.id)
+
+      expect(updated).to.be.instanceOf(AttachmentNotFoundError)
+      expect(copyObservationAttrs(fetched as Observation)).to.deep.equal(copyObservationAttrs(obs))
+    })
   })
 })
