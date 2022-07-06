@@ -1,7 +1,7 @@
 module.exports = function(app, security) {
   const fs = require('fs-extra'),
     path = require('path'),
-    request = require('request'),
+    request = require('superagent'),
     WMSCapabilities = require('wms-capabilities'),
     DOMParser = require('xmldom').DOMParser,
     Event = require('../models/event'),
@@ -489,19 +489,16 @@ module.exports = function(app, security) {
       .catch(err => next(err));
   });
 
-  app.post('/api/layers/wms/getcapabilities', function(req, res) {
-    request.get({ url: req.body.url + '?SERVICE=WMS&REQUEST=GetCapabilities', gzip: true }, function(
-      err,
-      response,
-      body,
-    ) {
-      if (err) {
-        return res.sendStatus(400);
-      }
-
-      const json = new WMSCapabilities(body, DOMParser).toJSON();
-      res.json(json);
-    });
+  app.post('/api/layers/wms/getcapabilities', async (req, res) => {
+    try {
+      const wmsRes = await request.get(`${req.body.url}?SERVICE=WMS&REQUEST=GetCapabilities`);
+      const capabilities = new WMSCapabilities(wmsRes.text, DOMParser).toJSON();
+      res.json(capabilities);
+    }
+    catch (err) {
+      console.error('error from getcapabilities request:', err);
+      res.json(400, { message: String(err) });
+    }
   });
 
   app.delete('/api/layers/:layerId', access.authorize('DELETE_LAYER'), function(req, res, next) {
