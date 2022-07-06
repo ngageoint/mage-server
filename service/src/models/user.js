@@ -204,11 +204,11 @@ exports.getUserById = function (id, callback) {
 };
 
 exports.getUserByUsername = function (username, callback) {
-  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
+  User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId'}).populate({ path: 'authenticationConfigurationId' }).exec(callback);
 };
 
 exports.getUserByAuthenticationId = function (id) {
-  return User.findOne({ authenticationId: id }).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec();
+  return User.findOne({ authenticationId: id }).populate({ path: 'authenticationId'}).populate({ path: 'authenticationConfigurationId' }).exec();
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {

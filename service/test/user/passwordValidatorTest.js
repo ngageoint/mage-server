@@ -466,7 +466,7 @@ describe("Password Validator Tests", function () {
     expect(validationStatus.valid).to.be.false;
   });
 
-  xit('Should truncate password history', async function () {
+  it('Should truncate password history', async function () {
     // Need to remove previously loaded model from monogose
     // as proxyquire will skip cache and reload.
     delete mongoose.connection.models['local'];
@@ -487,7 +487,7 @@ describe("Password Validator Tests", function () {
 
     const proxyquire = require('proxyquire');
     proxyquire('../../lib/models/authentication', {
-      '../pbkdf2': function () {
+      '../utilities/pbkdf2': function () {
         return {
           hashPassword: hasherStub
         }
