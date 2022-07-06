@@ -13,7 +13,7 @@ import { pipeline, Readable } from 'stream'
 import util from 'util'
 import { BufferWriteable } from '../../utils'
 
-describe.only('observations use case interactions', function() {
+describe('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
@@ -1261,11 +1261,11 @@ describe.only('observations use case interactions', function() {
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
-      it('TODO: removes attachment content for removed attachments', async function() {
+      it.skip('TODO: removes attachment content for removed attachments', async function() {
         expect.fail('todo')
       })
 
-      it('TODO: removes attachment content for removed form entries', async function() {
+      it.skip('TODO: removes attachment content for removed form entries', async function() {
         expect.fail('todo')
       })
 

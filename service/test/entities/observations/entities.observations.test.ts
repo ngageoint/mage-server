@@ -2032,7 +2032,7 @@ describe('observation entities', function() {
     })
   })
 
-  describe.only('attachments', function() {
+  describe('attachments', function() {
 
     describe('selecting a thumbnail representation', function() {
 
