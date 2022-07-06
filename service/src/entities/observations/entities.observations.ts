@@ -106,7 +106,7 @@ export interface Attachment {
    * as MAGE transitions to cloud-native infrastructure, one can more easily
    * envision swapping some sort of cloud-based BLOB storage service for the
    * legacy local file system storage.  Renaming the old `relativePath`
-   * property to `contentLocator` is an attempt allow for saving a lookup key
+   * property to `contentLocator` is an attempt to allow for saving a lookup key
    * that does not necessarily imply an underlying file system as the storage
    * layer.  Implementations of the abstract {@link AttachmentStore} interface
    * would assign their own lookup key to this property, although the intention
@@ -680,6 +680,24 @@ export function putAttachmentThumbnailForMinDimension(observation: Observation, 
   return patchAttachment(observation, attachmentId, { thumbnails: thumbnailsPatch })
 }
 
+/**
+ * Return the index of the thumbnail on the given attachment that best satisfies
+ * the given target dimension.  That will be the thumbnail with the smallest
+ * {@link Attachment.minDimension} greater than the target dimension.
+ */
+export function thumbnailIndexForTargetDimension(targetDimension: number, attachment: Attachment): number | undefined {
+  if (attachment.thumbnails.length === 0) {
+    return void(0)
+  }
+  return attachment.thumbnails.reduce<number | undefined>((best, candidate, index) => {
+    if (candidate.minDimension >= targetDimension &&
+      (best === undefined || candidate.minDimension < attachment.thumbnails[best].minDimension)) {
+      return index
+    }
+    return best
+  }, void(0))
+}
+
 export class AttachmentAddError extends Error {
 
   static invalidNewAttachment(invalidErr: AttachmentValidationError): AttachmentAddError {
@@ -695,23 +713,6 @@ export class AttachmentNotFoundError extends Error {
   constructor(readonly attachmentId: AttachmentId) {
     super(`Attachment ID ${attachmentId} does not exist.`)
   }
-}
-
-/**
- * Return the index of the thumbnail in the given attachment's thumbnail array
- * that best satisfies the given target size.  This is essentially the
- * thumbnail with the smallest minimum dimension greater than or equal to the
- * requested target size.
- * @param targetSize
- */
-export function indexOfThumbnailForTargetSize(targetSize: number, attachment: Attachment): number | undefined {
-  const orderedThumbs = attachment.thumbnails.slice().sort((a, b) => a.minDimension - b.minDimension)
-  const pos = orderedThumbs.findIndex(thumbnail => {
-    return (thumbnail.minDimension < Number(attachment.height) || !attachment.height) &&
-      (thumbnail.minDimension < Number(attachment.width) || !attachment.width) &&
-      thumbnail.minDimension >= targetSize
-  })
-  return pos >= 0 ? pos : undefined
 }
 
 /**
@@ -825,22 +826,16 @@ export interface AttachmentStore {
    * {@link Attachment.contentLocator | content locator} to the attachment after
    * a successful save, and/or changes the size of the attachment to the actual
    * number of bytes writen, return a {@link AttachmentContentPatchAttrs patch}
-   * to {@link EventScopedObservationRepository.patchAttachmentContentInfo update} the attachment  new observation instance with the
-   * {@link patchAttachment | patched} attachment.  Return `null` if the save
-   * succeeded and no change to the attachment was necessary.  Return an
-   * {@link AttachmentStoreError} if the save failed.
-   * @param content
-   * @param attachmentId
-   * @param observation
+   * to {@link EventScopedObservationRepository.patchAttachmentContentInfo update}
+   * the attachment  new observation instance with the {@link patchAttachment | patched}
+   * attachment.  Return `null` if the save succeeded and no change to the
+   * attachment was necessary.  Return an {@link AttachmentStoreError} if the
+   * save failed.
    */
   saveContent(content: NodeJS.ReadableStream | StagedAttachmentContentRef, attachmentId: AttachmentId, observation: Observation): Promise<null | AttachmentContentPatchAttrs | AttachmentStoreError>
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
-   * @param content
-   * @param minDimension
-   * @param attachmentId
-   * @param observation
    */
   saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
   /**
@@ -849,13 +844,12 @@ export interface AttachmentStore {
    * content, which will return a read stream limited the specified range.
    * Note that the end index of the range is inclusive, as is the case with
    * Node's streams API, as opposed to array and string operations, for
-   * which the end index is usually exclusive.
-   * @param attachmentId
-   * @param observation
-   * @param range
+   * which the end index is usually exclusive.  Return `null` if not content
+   * exists for the given attachment.  Return an `AttachmentStoreError` if
+   * an error occurred reading from the underlying storage.
    */
-  readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | AttachmentStoreError>
-  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError>
+  readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | null | AttachmentStoreError>
+  readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | null | AttachmentStoreError>
   /**
    * Delete the content for the given attachment ID, including any thumbnails.
    * If the attachment and/or thumbnails had content locators, return a new

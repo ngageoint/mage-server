@@ -1,6 +1,6 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
@@ -114,7 +114,7 @@ export interface ExoAttachmentContent {
 
 export function exoObservationFor(from: ObservationAttrs, users?: { creator?: User | null, importantFlagger?: User | null }): ExoObservation {
   const { states, ...attrs } = copyObservationAttrs(from)
-  const attachments = attrs.attachments.map(exoAttachmentFor)
+  const attachments = attrs.attachments.map(x => exoAttachmentFor(x))
   users = users || {}
   return {
     ...attrs,
@@ -131,6 +131,27 @@ export function exoObservationFor(from: ObservationAttrs, users?: { creator?: Us
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
   const { thumbnails, contentLocator, ...exo } = from
   return { ...exo, contentStored: !!from.contentLocator }
+}
+
+export function exoAttachmentForThumbnail(replacementThumbnailIndex: number, base: Attachment): ExoAttachment {
+  const exoBase = exoAttachmentFor(base)
+  const thumbnails = base.thumbnails
+  const replacementThumb = thumbnails[replacementThumbnailIndex] || ({} as Partial<Thumbnail>)
+  return {
+    ...exoBase,
+    contentType: replacementThumb.contentType,
+    size: replacementThumb.size,
+    width: replacementThumb.width,
+    height: replacementThumb.height,
+  }
+}
+
+export function exoAttachmentForThumbnailDimension(targetDimension: number, attachment: Attachment): ExoAttachment {
+  const thumbPos = thumbnailIndexForTargetDimension(targetDimension, attachment)
+  if (typeof thumbPos === 'number') {
+    return exoAttachmentForThumbnail(thumbPos, attachment)
+  }
+  return exoAttachmentFor(attachment)
 }
 
 export function exoObservationUserLiteFor(from: User | null | undefined): ExoObservationUserLite | undefined {

@@ -3,7 +3,7 @@ import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
@@ -99,7 +99,45 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
     if (denied) {
       return AppResponse.error(denied)
     }
-    throw new Error('unimplemented')
+    const repo = req.context.observationRepository
+    const obs = await repo.findById(req.observationId)
+    if (!obs) {
+      return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
+    }
+    const attachment = await obs.attachmentFor(req.attachmentId)
+    if (!attachment) {
+      return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
+    }
+    const contentRange = typeof req.contentRange?.start === 'number' && typeof req.contentRange.end === 'number' ?
+      { start: req.contentRange.start, end: req.contentRange.end } : void(0)
+    let contentStream: NodeJS.ReadableStream | null | AttachmentStoreError = null
+    let exoAttachment: api.ExoAttachment = api.exoAttachmentFor(attachment)
+    if (typeof req.minDimension === 'number') {
+      const thumbIndex =  thumbnailIndexForTargetDimension(req.minDimension, attachment)
+      const thumb = attachment.thumbnails[thumbIndex || -1]
+      if (thumb) {
+        contentStream = await attachmentStore.readThumbnailContent(thumb.minDimension, attachment.id, obs)
+        exoAttachment = api.exoAttachmentForThumbnail(thumbIndex!, attachment)
+      }
+      if (!contentStream) {
+        contentStream = await attachmentStore.readContent(attachment.id, obs)
+        exoAttachment = api.exoAttachmentFor(attachment)
+      }
+    }
+    else {
+      contentStream = await attachmentStore.readContent(attachment.id, obs, contentRange)
+    }
+    if (!contentStream) {
+      return AppResponse.error(entityNotFound(req.attachmentId, 'AttachmentContent'))
+    }
+    if (contentStream instanceof AttachmentStoreError) {
+      return AppResponse.error(infrastructureError(contentStream.message))
+    }
+    return AppResponse.success({
+      attachment: exoAttachment,
+      bytes: contentStream,
+      bytesRange: typeof req.minDimension === 'number' ? void(0) : contentRange
+    })
   }
 }
 
