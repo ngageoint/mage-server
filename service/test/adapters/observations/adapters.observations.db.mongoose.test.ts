@@ -44,7 +44,7 @@ function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, .
   return omitUndefinedValues(_.omit(x, keys))
 }
 
-describe.only('mongoose observation repository', function() {
+describe('mongoose observation repository', function() {
 
   let model: ObservationModel
   let repo: MongooseObservationRepository
@@ -444,7 +444,7 @@ describe.only('mongoose observation repository', function() {
     it('retains ids for existing entities')
   })
 
-  describe.only('updating individual attachments', function() {
+  describe('updating individual attachments', function() {
 
     let obs: Observation
 
