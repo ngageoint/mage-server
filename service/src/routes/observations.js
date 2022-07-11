@@ -15,7 +15,6 @@ module.exports = function(app, security) {
     , turfCentroid = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
-    , { defaultHandler: upload } = require('../upload')
     , FileType = require('file-type')
     , passport = security.authentication.passport
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
@@ -443,96 +442,6 @@ module.exports = function(app, security) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
         res.status(201).json(state);
-      });
-    }
-  );
-
-  app.put(
-    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    passport.authenticate('bearer'),
-    /*
-    though checking create permission to add an attachment to an observation is
-    counterintuitive, the reason is because a mage client has a requirement
-    that their users can create observations as well as add attachments, but
-    cannot update the observation meta-data.  therefore, this checks create
-    permission to that users can create observations, as well send the
-    attachment content for the created observation.  before multi-form and
-    attachments-as-form-fields, submitting an attachment with meta-data was a
-    single request.  now, the client must send the attachment content after
-    saving the attachment meta-data within the observation form entries.
-    */
-    validateObservationCreateAccess(false),
-    upload.single('attachment'),
-    validateAttachmentFile,
-    function (req, res, next) {
-      if (!req.file) {
-        return res.status(400).send('no attachment');
-      }
-
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function (err, attachment) {
-        if (err) return next(err);
-
-        if (!attachment) return res.sendStatus(404);
-
-        req.observation.attachments = [attachment];
-        const response = observationXform.transform(req.observation, transformOptions(req)).attachments[0]
-        return res.json(response);
-      });
-    }
-  );
-
-  app.get(
-    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    passport.authenticate('bearer'),
-    validateObservationReadAccess,
-    function(req, res, next) {
-      new api.Attachment(req.event, req.observation).getById(req.params.attachmentId, {size: req.query.size}, function(err, attachment) {
-        if (err) return next(err);
-
-        if (!attachment || !attachment.path) return res.sendStatus(404);
-
-        let stream;
-        if (req.headers.range) {
-          const attachmentRangeEnd = attachment.size > 0 ? attachment.size - 1 : 0;
-          const range = req.headers.range;
-          const rangeParts = range.replace(/bytes=/, "").split("-");
-          const rangeStart = parseInt(rangeParts[0], 10);
-          const rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachmentRangeEnd;
-          const contentLength = (rangeEnd - rangeStart) + 1;
-
-          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
-          stream.on('open', function() {
-            res.writeHead(206, {
-              'Content-Range': 'bytes ' + rangeStart + '-' + rangeEnd + '/' + attachment.size,
-              'Accept-Ranges': 'bytes',
-              'Content-Length': contentLength,
-              'Content-Type': attachment.contentType
-            });
-
-            stream.pipe(res);
-          });
-
-          stream.on('error', function(err) {
-            log.error('error streaming attachment', err);
-            return res.sendStatus(404);
-          });
-        } else {
-          stream = fs.createReadStream(attachment.path);
-
-          stream.on('open', function() {
-            res.writeHead(200, {
-              'Content-Length': attachment.size,
-              'Content-Type': attachment.contentType
-            });
-
-            stream.pipe(res);
-          });
-
-          stream.on('error', function(err) {
-            log.error('error streaming attachment', err);
-            return res.sendStatus(404);
-          });
-        }
       });
     }
   );

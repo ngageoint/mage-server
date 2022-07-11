@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
   }
 });
 
-function Upload(limits = {}): any {
+function Upload(limits: multer.Options['limits'] = {}) {
   return multer({
     storage, limits
   });

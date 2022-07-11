@@ -50,8 +50,9 @@ import { MageEventDocument } from './models/event'
 import { parseAcceptLanguageHeader } from './entities/entities.i18n'
 import { ObservationRoutes, ObservationWebAppRequestFactory } from './adapters/observations/adapters.observations.controllers.web'
 import { UserWithRole } from './permissions/permissions.role-based.base'
-import { EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
+import { AttachmentStore, EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
+import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adpaters.observations.attachment_store.file_system'
 
 
 export interface MageService {
@@ -220,6 +221,8 @@ type AppLayer = {
   observations: {
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
+    storeAttachmentContent: observationsApi.StoreAttachmentContent
+    readAttachmentContent: observationsApi.ReadAttachmentContent
   },
   feeds: {
     jsonSchemaService: JsonSchemaService
@@ -276,7 +279,8 @@ type Repositories = {
     eventRepo: MageEventRepository
   },
   observations: {
-    obsRepoFactory: ObservationRepositoryForEvent
+    obsRepoFactory: ObservationRepositoryForEvent,
+    attachmentStore: AttachmentStore
   }
   feeds: {
     serviceTypeRepo: FeedServiceTypeRepository,
@@ -311,6 +315,10 @@ async function initRepositories(models: DatabaseModels, config: BootConfig): Pro
     new FileSystemIconContentStore(),
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
+  const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
+  if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
+    throw attachmentStore
+  }
   return {
     feeds: {
       serviceTypeRepo, serviceRepo, feedRepo
@@ -319,7 +327,8 @@ async function initRepositories(models: DatabaseModels, config: BootConfig): Pro
       eventRepo
     },
     observations: {
-      obsRepoFactory: createObservationRepositoryFactory(eventRepo)
+      obsRepoFactory: createObservationRepositoryFactory(eventRepo),
+      attachmentStore
     },
     icons: {
       staticIconRepo
@@ -370,7 +379,9 @@ async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['
   const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(eventPermissions.defaultEventPermissionsService)
   return {
     allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
-    saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo)
+    saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo),
+    storeAttachmentContent: observationsImpl.StoreAttachmentContent(obsPermissionsService, repos.observations.attachmentStore),
+    readAttachmentContent: observationsImpl.ReadAttachmentContent(obsPermissionsService, repos.observations.attachmentStore)
   }
 }
 
@@ -470,7 +481,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     }
     return { ...params, context }
   }
-  const observationsRoutes = ObservationRoutes(app.observations, observationRequestFactory)
+  const observationsRoutes = ObservationRoutes(app.observations, repos.observations.attachmentStore, observationRequestFactory)
   webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
     bearerAuth,
     ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),

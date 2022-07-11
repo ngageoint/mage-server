@@ -7,6 +7,8 @@ on:
     tags:
       - 'releases/*'
       - 'prereleases/*'
+  workflow_dispatch:
+
 
 name: Build MAGE Server and Optionally Release
 
