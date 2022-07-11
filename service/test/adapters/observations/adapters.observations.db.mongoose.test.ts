@@ -10,10 +10,11 @@ import { MageEventDocument } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, AttachmentId, copyAttachmentAttrs, validationResultMessage, AttachmentNotFoundError } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
+import uniqid from 'uniqid'
 
 function observationStub(id: ObservationId, eventId: MageEventId): ObservationAttrs {
   const now = Date.now()
@@ -43,7 +44,7 @@ function omitKeysAndUndefinedValues<T extends object, K extends keyof T>(x: T, .
   return omitUndefinedValues(_.omit(x, keys))
 }
 
-describe('mongoose observation repository', function() {
+describe.only('mongoose observation repository', function() {
 
   let model: ObservationModel
   let repo: MongooseObservationRepository
@@ -443,7 +444,7 @@ describe('mongoose observation repository', function() {
     it('retains ids for existing entities')
   })
 
-  describe('updating attachment content meta-data', function() {
+  describe.only('updating individual attachments', function() {
 
     let obs: Observation
 
@@ -498,15 +499,57 @@ describe('mongoose observation repository', function() {
 
       const contentInfo: AttachmentContentPatchAttrs = {
         size: 674523,
-        contentLocator: `${obs.id}:`
+        contentLocator: `${obs.id}:${obs.attachments[0].id}`
       }
-      const updated = await repo.patchAttachmentContentInfo(obs, obs.attachments[0].id, contentInfo) as Observation
+      const updated = await repo.patchAttachment(obs, obs.attachments[0].id, contentInfo) as Observation
       const fetched = await repo.findById(obs.id) as Observation
 
       expect(updated).to.be.instanceOf(Observation)
       expect(_.omit(updated.attachments[0], 'lastModified')).to.deep.equal(_.omit({
         ...copyAttachmentAttrs(obs.attachments[0]),
         ...contentInfo
+      }, 'lastModified'))
+      expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
+    })
+
+    it('updates all attributes', async function() {
+
+      const patch: Required<AttachmentPatchAttrs> = {
+        size: 674523,
+        contentLocator: `${obs.id}:${obs.attachments[0].id}`,
+        contentType: 'image/png',
+        width: 450,
+        height: 800,
+        name: 'patched.png',
+        oriented: true,
+        thumbnails: [{ minDimension: 80, contentLocator: uniqid(), contentType: 'image/jpeg' }]
+      }
+      const updated = await repo.patchAttachment(obs, obs.attachments[0].id, patch) as Observation
+      const fetched = await repo.findById(obs.id) as Observation
+
+      expect(updated).to.be.instanceOf(Observation)
+      expect(_.omit(updated.attachments[0], 'lastModified')).to.deep.equal(_.omit(copyAttachmentAttrs({
+        ...copyAttachmentAttrs(obs.attachments[0]),
+        ...patch
+      }), 'lastModified'))
+      expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
+    })
+
+    it('unsets keys with undefined values', async function() {
+
+      const patch: AttachmentPatchAttrs = {
+        size: undefined,
+        name: undefined,
+        contentType: undefined,
+      }
+      const updated = await repo.patchAttachment(obs, obs.attachments[0].id, patch) as Observation
+      const fetched = await repo.findById(obs.id) as Observation
+
+      expect(updated).to.be.instanceOf(Observation)
+      expect(updated.attachments[0]).to.not.have.keys('size', 'name', 'contentType')
+      expect(_.omit(updated.attachments[0], 'lastModified')).to.deep.equal(_.omit({
+        ...copyAttachmentAttrs(obs.attachments[0]),
+        ...patch
       }, 'lastModified'))
       expect(copyObservationAttrs(fetched)).to.deep.equal(copyObservationAttrs(updated))
     })
@@ -525,10 +568,10 @@ describe('mongoose observation repository', function() {
         size: 333333,
         contentLocator: `${obs.id}:${obs.attachments[2].id}`
       }
-      const results = await Promise.all([
-        repo.patchAttachmentContentInfo(obs, obs.attachments[0].id, contentInfo1),
-        repo.patchAttachmentContentInfo(obs, obs.attachments[1].id, contentInfo2),
-        repo.patchAttachmentContentInfo(obs, obs.attachments[2].id, contentInfo3),
+      await Promise.all([
+        repo.patchAttachment(obs, obs.attachments[0].id, contentInfo1),
+        repo.patchAttachment(obs, obs.attachments[1].id, contentInfo2),
+        repo.patchAttachment(obs, obs.attachments[2].id, contentInfo3),
       ])
       const fetched = await repo.findById(obs.id) as Observation
 
@@ -549,7 +592,7 @@ describe('mongoose observation repository', function() {
         ...copyObservationAttrs(obs),
         id: unsavedId
       }, obs.mageEvent)
-      const updated = await repo.patchAttachmentContentInfo(phantom, phantom.attachments[0].id, contentInfo)
+      const updated = await repo.patchAttachment(phantom, phantom.attachments[0].id, contentInfo)
       const fetched = await repo.findById(unsavedId)
       const all = await repo.findAll()
 
@@ -565,7 +608,7 @@ describe('mongoose observation repository', function() {
         size: 111111,
         contentLocator: `${obs.id}:${obs.attachments[0].id}`
       }
-      const updated = await repo.patchAttachmentContentInfo(obs, mongoose.Types.ObjectId().toHexString(), contentInfo)
+      const updated = await repo.patchAttachment(obs, mongoose.Types.ObjectId().toHexString(), contentInfo)
       const fetched = await repo.findById(obs.id)
 
       expect(updated).to.be.instanceOf(AttachmentNotFoundError)

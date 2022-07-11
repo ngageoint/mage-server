@@ -1,5 +1,5 @@
 import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
-import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
@@ -89,8 +89,8 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     throw new Error('unimplemented')
   }
 
-  async patchAttachmentContentInfo(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {
-    const patchedObs = patchAttachment(observation, attachmentId, contentInfo)
+  async patchAttachment(observation: Observation, attachmentId: AttachmentId, patch: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {
+    const patchedObs = patchAttachment(observation, attachmentId, patch)
     if (!(patchedObs instanceof Observation)) {
       return patchedObs
     }
