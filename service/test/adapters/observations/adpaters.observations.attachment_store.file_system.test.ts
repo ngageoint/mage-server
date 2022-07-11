@@ -4,7 +4,7 @@ import path from 'path'
 import stream, { Readable } from 'stream'
 import util from 'util'
 import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
-import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
@@ -28,7 +28,7 @@ function contentLocatorOfThumbnail(minDimension: number, att: AttachmentId, obs:
 const baseDirPath = path.resolve(`${__filename}.data`)
 const pendingDirPath = path.resolve(baseDirPath, 'pending')
 
-describe('file system attachment store', function() {
+describe.only('file system attachment store', function() {
 
   let store: FileSystemAttachmentStore
   let obs: Observation
@@ -384,19 +384,22 @@ describe('file system attachment store', function() {
 
         it('saves thumbnails for a given size', async function() {
 
-          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
-          const content240 = stream.Readable.from(Buffer.from('thumb 240'))
-          const result120 = await store.saveThumbnailContent(content120, 120, att.id, obs)
-          const result240 = await store.saveThumbnailContent(content240, 240, att.id, obs)
-          const thumb120Path = `${contentBaseAbsPath}-120`
-          const thumb240Path = `${contentBaseAbsPath}-240`
+          const content120 = Buffer.from('photo thumb at 120')
+          const content240 = Buffer.from('photo thumb at 240')
+          const thumb120: Thumbnail = { minDimension: 120, contentLocator: uniqid(), name: 'thumb120.jpg', size: content120.length }
+          const thumb240: Thumbnail = { minDimension: 240, contentLocator: uniqid(), name: 'thumb240.jpg', size: content240.length }
+          obs = patchAttachment(obs, att.id, { thumbnails: [ thumb120, thumb240 ]}) as Observation
+          const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs)
+          const result240 = await store.saveThumbnailContent(Readable.from(content240), 240, att.id, obs)
+          const thumb120Path = path.join(baseDirPath, thumb120.contentLocator!)
+          const thumb240Path = path.join(baseDirPath, thumb240.contentLocator!)
           const saved120 = fs.readFileSync(thumb120Path)
           const saved240 = fs.readFileSync(thumb240Path)
 
-          expect(result120).to.be.instanceOf(Observation)
-          expect(saved120.toString()).to.equal('thumb 120')
-          expect(result240).to.be.instanceOf(Observation)
-          expect(saved240.toString()).to.equal('thumb 240')
+          expect(result120).to.be.null
+          expect(saved120.toString()).to.equal('photo thumb at 120')
+          expect(result240).to.be.null
+          expect(saved240.toString()).to.equal('photo thumb at 240')
         })
 
         it('assigns a content locator and size to a thumbnail without a content locator and size', async function() {
@@ -404,14 +407,14 @@ describe('file system attachment store', function() {
           const attBefore = copyAttachmentAttrs(att)
           const thumb120Before = attBefore.thumbnails.find(x => x.minDimension === 120)
           const content120 = Buffer.from('thumb 120')
-          const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs) as Observation
-          const attAfter = copyAttachmentAttrs(result120.attachmentFor(att.id) as Attachment)
-          const thumb120After = attAfter.thumbnails.find(x => x.minDimension === 120) as Thumbnail
+          const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs) as ThumbnailContentPatchAttrs
 
-          expect(result120).to.be.instanceOf(Observation)
-          expect(result120).to.not.equal(obs)
+          expect(result120).to.deep.equal({
+            ...thumb120Before,
+            contentLocator: `${contentBaseRelPath}-120`,
+            size: content120.length
+          })
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
-          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
         })
 
         it('uses the content locator if present', async function() {
@@ -429,14 +432,25 @@ describe('file system attachment store', function() {
         it('updates the thumbnail size if necessary', async function() {
 
           const contentLocator = uniqid()
-          const content120 = Buffer.from('thumb 120 located')
-          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 240, contentLocator }) as Observation
-          const result120 = await store.saveThumbnailContent(Readable.from(content120), 240, att.id, obs) as Observation
-          const readContent120 = fs.readFileSync(path.join(baseDirPath, contentLocator))
+          const content = Buffer.from('thumb 240 sized')
+          obs = putAttachmentThumbnailForMinDimension(obs, att.id, { minDimension: 240, contentLocator, width: 240, height: 320 }) as Observation
+          const result = await store.saveThumbnailContent(Readable.from(content), 240, att.id, obs) as ThumbnailContentPatchAttrs
+          const readContent = fs.readFileSync(path.join(baseDirPath, contentLocator))
 
-          expect(result120).to.be.instanceOf(Observation)
-          expect(result120.attachments[0].thumbnails[1]).to.deep.equal({ ...obs.attachments[0].thumbnails[1], size: content120.length })
-          expect(readContent120.toString()).to.equal('thumb 120 located')
+          expect(result).to.deep.equal(copyThumbnailAttrs({
+            minDimension: 240,
+            contentLocator,
+            width: 240,
+            height: 320,
+            size: content.length,
+          }))
+          expect(obs.attachmentFor(att.id)?.thumbnails[1], 'should not mutate input').to.deep.equal(copyThumbnailAttrs({
+            minDimension: 240,
+            contentLocator,
+            width: 240,
+            height: 320,
+          }))
+          expect(readContent.toString()).to.equal('thumb 240 sized')
         })
       })
 
@@ -444,23 +458,26 @@ describe('file system attachment store', function() {
 
         it('saves a thumbnail for a given size', async function() {
 
-          const content120 = stream.Readable.from(Buffer.from('thumb 120'))
-          const content240 = stream.Readable.from(Buffer.from('thumb 240'))
+          const content120 = Buffer.from('photo thumb at 120')
+          const content240 = Buffer.from('photo thumb at 240')
+          const thumb120: Thumbnail = { minDimension: 120, contentLocator: uniqid(), name: 'thumb120.jpg', size: content120.length }
+          const thumb240: Thumbnail = { minDimension: 240, contentLocator: uniqid(), name: 'thumb240.jpg', size: content240.length }
+          obs = patchAttachment(obs, att.id, { thumbnails: [ thumb120, thumb240 ]}) as Observation
           const pending120 = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content120, pending120.tempLocation)
+          await util.promisify(stream.pipeline)(Readable.from(content120), pending120.tempLocation)
           const pending240 = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(content240, pending240.tempLocation)
-          const save120 = await store.saveThumbnailContent(pending120, 120, att.id, obs)
-          const save240 = await store.saveThumbnailContent(pending240, 240, att.id, obs)
-          const thumb120Path = `${contentBaseAbsPath}-120`
-          const thumb240Path = `${contentBaseAbsPath}-240`
+          await util.promisify(stream.pipeline)(Readable.from(content240), pending240.tempLocation)
+          const patch120 = await store.saveThumbnailContent(pending120, 120, att.id, obs)
+          const patch240 = await store.saveThumbnailContent(pending240, 240, att.id, obs)
+          const thumb120Path = path.join(baseDirPath, thumb120.contentLocator!)
+          const thumb240Path = path.join(baseDirPath, thumb240.contentLocator!)
           const saved120 = fs.readFileSync(thumb120Path)
           const saved240 = fs.readFileSync(thumb240Path)
 
-          expect(save120).to.be.instanceOf(Observation)
-          expect(saved120.toString()).to.equal('thumb 120')
-          expect(save240).to.be.instanceOf(Observation)
-          expect(saved240.toString()).to.equal('thumb 240')
+          expect(patch120).to.be.null
+          expect(saved120.toString()).to.equal('photo thumb at 120')
+          expect(patch240).to.be.null
+          expect(saved240.toString()).to.equal('photo thumb at 240')
         })
 
         it('assigns a content locator and size to a thumbnail without a content locator and size', async function() {
@@ -469,15 +486,11 @@ describe('file system attachment store', function() {
           const thumb120Before = attBefore.thumbnails.find(x => x.minDimension === 120)
           const content120 = Buffer.from('thumb 120')
           const pending120 = await store.stagePendingContent()
-          await util.promisify(stream.pipeline)(stream.Readable.from(content120), pending120.tempLocation)
-          const result120 = await store.saveThumbnailContent(pending120, 120, att.id, obs) as Observation
-          const attAfter = copyAttachmentAttrs(result120.attachmentFor(att.id) as Attachment)
-          const thumb120After = attAfter.thumbnails.find(x => x.minDimension === 120) as Thumbnail
+          await util.promisify(stream.pipeline)(Readable.from(content120), pending120.tempLocation)
+          const result120 = await store.saveThumbnailContent(pending120, 120, att.id, obs) as ThumbnailContentPatchAttrs
 
-          expect(result120).to.be.instanceOf(Observation)
-          expect(result120).to.not.equal(obs)
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
-          expect(thumb120After).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
+          expect(result120).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
         })
 
         it('uses the content locator if present', async function() {
@@ -602,10 +615,12 @@ describe('file system attachment store', function() {
         ]
       }) as Observation
       att = obs.attachmentFor(att.id)!
-      const patch = await store.saveContent(stream.Readable.from(attContent), att.id, obs) as AttachmentContentPatchAttrs
+      const patch = await store.saveContent(Readable.from(attContent), att.id, obs) as AttachmentContentPatchAttrs
       savedObs = patchAttachment(obs, att.id, patch) as Observation
-      savedObs = await store.saveThumbnailContent(stream.Readable.from(thumb100Content), 100, att.id, savedObs) as Observation
-      savedObs = await store.saveThumbnailContent(stream.Readable.from(thumb300Content), 300, att.id, savedObs) as Observation
+      const thumb1Patch = await store.saveThumbnailContent(Readable.from(thumb100Content), 100, att.id, savedObs) as ThumbnailContentPatchAttrs
+      const thumb2Patch = await store.saveThumbnailContent(Readable.from(thumb300Content), 300, att.id, savedObs) as ThumbnailContentPatchAttrs
+      savedObs = putAttachmentThumbnailForMinDimension(savedObs, att.id, thumb1Patch) as Observation
+      savedObs = putAttachmentThumbnailForMinDimension(savedObs, att.id, thumb2Patch) as Observation
       savedAtt = savedObs.attachmentFor(att.id) as Attachment
       savedThumb100 = savedAtt.thumbnails.find(x => x.minDimension === 100) as Thumbnail
       savedThumb300 = savedAtt.thumbnails.find(x => x.minDimension === 300) as Thumbnail

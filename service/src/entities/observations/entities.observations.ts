@@ -573,6 +573,7 @@ export function removeFormEntry(observation: Observation, formEntryId: FormEntry
 export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 export type AttachmentContentPatchAttrs = Required<Pick<Attachment, 'contentLocator' | 'size'>>
+export type ThumbnailContentPatchAttrs = Required<Pick<Thumbnail, 'contentLocator' | 'size'>> & Thumbnail
 
 /**
  * Add the given attachment to the given observation.  Return a new observation
@@ -836,8 +837,12 @@ export interface AttachmentStore {
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
+   * If the `contentLocator` or the `size` of the stored thumbnail content is
+   * different than what is on the input thumbnail meta-data, return thumbnail
+   * attributes suitable to pass to {@link putAttachmentThumbnailForMinDimension}
+   * to update the observation with the new attachment thumbnail.
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the
