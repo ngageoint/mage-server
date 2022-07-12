@@ -764,7 +764,7 @@ export class AttachmentNotFoundError extends Error {
    * method should essentially use {@link patchAttachment} to perform the
    * patch for the resulting attachment.
    */
-  patchAttachment(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
+  patchAttachment(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
   /**
    * Because attachments reference a form entry by its ID, an API to generate
    * form entry IDs is necessary.
