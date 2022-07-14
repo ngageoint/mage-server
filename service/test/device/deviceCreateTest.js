@@ -102,7 +102,14 @@ describe("device create tests", function () {
       type: 'local',
       name: 'local',
       settings: {}
-    })
+    });
+
+    const auth = new AuthenticationModel.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      authenticationConfigurationId: authConfig
+    });
 
     const user = new UserModel({
       _id: userId,
@@ -110,12 +117,7 @@ describe("device create tests", function () {
       displayName: 'Unregistered Device Test',
       roleId: mongoose.Types.ObjectId(),
       active: true,
-      authenticationId: new AuthenticationModel.Local({
-        _id: mongoose.Types.ObjectId(),
-        type: 'local',
-        password: 'password',
-        authenticationConfigurationId: authConfig
-      })
+      authenticationId: auth
     });
 
     const reqDevice = {
@@ -135,7 +137,7 @@ describe("device create tests", function () {
       .expects('getConfiguration')
       .resolves(authConfig);
 
-    sinon.mock(user.authentication)
+    sinon.mock(auth)
       .expects('validatePassword').withArgs('test')
       .yields(null, true);
 
@@ -144,7 +146,7 @@ describe("device create tests", function () {
       .expects('getUserByUsername').withArgs(user.username)
       .yields(null, user);
     mockUserOps
-      .expects('validLogin').withArgs(user)
+      .expects('validLogin')
       .resolves(user);
 
     const mockDeviceOps = sinon.mock(DeviceModel);
@@ -183,6 +185,13 @@ describe("device create tests", function () {
       settings: {}
     });
 
+    const auth = new AuthenticationModel.Local({
+      _id: mongoose.Types.ObjectId(),
+      type: 'local',
+      password: 'password',
+      authenticationConfigurationId: authConfig
+    });
+
     const userId = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: userId,
@@ -190,15 +199,10 @@ describe("device create tests", function () {
       displayName: 'test',
       active: true,
       roleId: mongoose.Types.ObjectId(),
-      authenticationId: new AuthenticationModel.Local({
-        _id: mongoose.Types.ObjectId(),
-        type: 'local',
-        password: 'password',
-        authenticationConfigurationId: authConfig
-      })
+      authenticationId: auth
     });
 
-    sinon.mock(mockUser.authentication)
+    sinon.mock(auth)
       .expects('validatePassword')
       .yields(null, true);
 
@@ -211,9 +215,9 @@ describe("device create tests", function () {
       .withArgs('test')
       .yields(null, mockUser);
 
-    sinon.mock(mockUser.authentication)
+    sinon.mock(auth)
       .expects('save')
-      .resolves(mockUser.authentication);
+      .resolves(auth);
 
     const reqDevice = {
       username: 'test',
