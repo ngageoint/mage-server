@@ -24,7 +24,8 @@ function createToken(userId, permissions) {
       populate: function(field, callback) {
         callback(null, mockUser);
       }
-    }
+    },
+    user: mockUser
   };
 
   return token;

@@ -3,28 +3,23 @@ const request = require('supertest')
   , chai = require('chai')
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-
-require('sinon-mongoose');
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , TokenModel = require('../../lib/models/token')
+  , DeviceOperations = require('../../lib/models/device')
+  , DeviceModel = DeviceOperations.Model
+  , UserOperations = require('../../lib/models/user')
+  , UserModel = UserOperations.Model
+  , Authentication = require('../../lib/models/authentication')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 const expect = chai.expect;
 const should = chai.should();
-
-const DeviceOperations = require('../../lib/models/device');
-const DeviceModel = DeviceOperations.Model;
-
-const UserOperations = require('../../lib/models/user');
-const UserModel = UserOperations.Model;
-
-const Authentication = require('../../lib/models/authentication');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("device create tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -51,10 +46,8 @@ describe("device create tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate')
-      .chain('exec')
+      .expects('getToken')
+      .withArgs('12345')
       .yields(null, createToken(userId, [permission]));
   }
 
@@ -294,11 +287,11 @@ describe("device create tests", function () {
         }
       }));
 
-      const mockDeviceModel = sinon.mock(DeviceModel);
-      mockDeviceModel
-        .expects('findOneAndUpdate').withArgs({ uid: unregisteredDevice.uid })
-        .chain('exec')
-        .resolves(unregisteredDevice);
+    const mockDeviceModel = sinon.mock(DeviceModel);
+    mockDeviceModel
+      .expects('findOneAndUpdate').withArgs({ uid: unregisteredDevice.uid })
+      .chain('exec')
+      .resolves(unregisteredDevice);
 
     const device = await DeviceOperations.createDevice(unregisteredDevice);
     chai.assert(device.registered === false, 'Settings should auto-register device');
@@ -322,11 +315,11 @@ describe("device create tests", function () {
         }
       }));
 
-      const mockDeviceModel = sinon.mock(DeviceModel);
-      mockDeviceModel
-        .expects('findOneAndUpdate').withArgs({ uid: registeredDevice.uid })
-        .chain('exec')
-        .resolves(registeredDevice);
+    const mockDeviceModel = sinon.mock(DeviceModel);
+    mockDeviceModel
+      .expects('findOneAndUpdate').withArgs({ uid: registeredDevice.uid })
+      .chain('exec')
+      .resolves(registeredDevice);
 
     const device = await DeviceOperations.createDevice(new DeviceModel({
       uid: 'test',
