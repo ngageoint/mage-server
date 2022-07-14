@@ -1,4 +1,6 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
@@ -8,7 +10,7 @@ var request = require('supertest')
 require('sinon-mongoose');
 
 require('../../lib/models/device');
-var DeviceModel = mongoose.model('Device');
+const DeviceModel = mongoose.model('Device');
 
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
@@ -40,7 +42,7 @@ describe("device read tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -69,7 +71,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var devices = res.body;
+        const devices = res.body;
         should.exist(devices);
       })
       .end(done);
@@ -78,7 +80,7 @@ describe("device read tests", function() {
   it("should get devices and populate user", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    var mockDevices = [{
+    const mockDevices = [{
       uid: '123'
     },{
       uid: '456'
@@ -107,7 +109,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var devices = res.body;
+        const devices = res.body;
         should.exist(devices);
       })
       .end(done);
@@ -134,7 +136,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var devices = res.body;
+        const devices = res.body;
         should.exist(devices);
       })
       .end(done);
@@ -161,7 +163,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var devices = res.body;
+        const devices = res.body;
         should.exist(devices);
       })
       .end(done);
@@ -185,7 +187,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var device = res.body;
+        const device = res.body;
         should.exist(device);
         device.should.have.property('uid').that.equals('123');
       })
@@ -207,7 +209,7 @@ describe("device read tests", function() {
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
-        var body = res.body;
+        const body = res.body;
         should.exist(body);
         body.should.have.property('count').that.equals(2);
       })
