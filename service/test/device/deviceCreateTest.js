@@ -184,7 +184,6 @@ describe("device create tests", function () {
   it("should skip create unregistered device if exists", function (done) {
     mockTokenWithPermission('NO_PERMISSION');
 
-    const deviceId = mongoose.Types.ObjectId();
     const uid = mongoose.Types.ObjectId();
 
     const userId = mongoose.Types.ObjectId();
@@ -272,8 +271,7 @@ describe("device create tests", function () {
       })
       .expect(400)
       .expect(function (res) {
-        console.log('res', res.text);
-        // res.text.should.equal("missing required param 'uid'");
+        res.text.should.equal("missing required param 'uid'");
       })
       .end(done);
   });
