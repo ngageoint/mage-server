@@ -1,5 +1,5 @@
 import { MageEventAttrs, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, patchAttachment, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, PendingAttachmentContentId, EventScopedObservationRepository } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, patchAttachment, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, StagedAttachmentContentId, EventScopedObservationRepository, AttachmentStoreError, ThumbnailContentPatchAttrs, thumbnailIndexForTargetDimension, putAttachmentThumbnailForMinDimension } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import path from 'path'
 
@@ -156,20 +156,25 @@ function checkObservationThen(update: (o: Observation) => Promise<Observation | 
   }
 }
 
-async function orientAttachmentImage (
+export async function orientAttachmentImage (
   observation: Observation,
   attachmentId: AttachmentId,
   imageService: ImageService,
   observationRepo: EventScopedObservationRepository,
   attachmentStore: AttachmentStore
-) {
+): Promise<Observation | Error> {
   const attachment = observation.attachmentFor(attachmentId)
   if (!attachment) {
     return new Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`)
   }
   const content = await attachmentStore.readContent(attachmentId, observation)
+  if (!content) {
+    const message = `content not found for attachment ${attachmentId} observation ${observation.id}`
+    console.error(message)
+    return new Error(message)
+  }
   if (content instanceof Error) {
-    console.error(`error reading content of image attachment ${attachmentId}`, content)
+    console.error(`error reading content of image attachment ${attachmentId} observation ${observation.id}`, content)
     return content
   }
   const pending = await attachmentStore.stagePendingContent()
@@ -177,70 +182,94 @@ async function orientAttachmentImage (
   if (oriented instanceof Error) {
     return oriented
   }
+  const storeResult = await attachmentStore.saveContent(pending, attachment.id, observation)
+  if (storeResult instanceof AttachmentStoreError) {
+    console.error(`error saving pending oriented content ${pending.id} for attachment ${attachmentId} on observation ${observation.id}:`, storeResult)
+    return storeResult
+  }
   const patch: AttachmentPatchAttrs = {
     oriented: true,
     contentType: oriented.mediaType,
     size: oriented.sizeInBytes,
     ...oriented.dimensions,
+    ...storeResult,
   }
-  let updatedObservation = patchAttachment(observation, attachment.id, patch)
-  if (updatedObservation instanceof Observation) {
-    updatedObservation = await observationRepo.save(updatedObservation)
+  const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, patch) as Observation
+  if (!updatedObservation) {
+    const err = new Error(`observation ${observation.id} did not exist after orienting attachment ${attachmentId}`)
+    console.error(err)
+    return err
   }
-  else {
+  else if (updatedObservation instanceof Error) {
     console.error(`error updating oriented attachment ${attachment.id} on observation ${observation.id}:`, updatedObservation)
     return updatedObservation
-  }
-  const contentError = await attachmentStore.saveContent(pending.id, attachment.id, updatedObservation)
-  if (contentError) {
-    console.error(`error saving pending oriented content ${pending.id} for attachment ${attachmentId} on observation ${observation.id}:`, contentError)
-    return contentError
   }
   return updatedObservation
 }
 
-async function thumbnailAttachmentImage(
+export async function thumbnailAttachmentImage(
   observation: Observation, attachmentId: AttachmentId, thumbnailSizes: number[],
   imageService: ImageService, observationRepo: EventScopedObservationRepository, attachmentStore: AttachmentStore): Promise<Error | Observation> {
   const attachment = observation.attachmentFor(attachmentId)
   if (!attachment) {
-    const message = `attachment ${attachmentId} does not exist on observation ${observation.id}`
-    console.error(message)
-    return new Error(message)
+    const err = new Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`)
+    console.error(err)
+    return err
   }
-  const results = await thumbnailSizes.reduce((chain, thumbnailSize) => {
-    return chain.then(async results => {
-      const result = await generateAndStageThumbnail(thumbnailSize, attachment, observation, imageService, attachmentStore)
-      return [ ...results, result ]
-    })
-  }, Promise.resolve([] as Array<Error | StagedThumbnail>))
-  const stagedThumbnails = Array.from(results).filter(result => !(results instanceof Error)) as StagedThumbnail[]
-  const attachmentPatch: AttachmentPatchAttrs = {
-    thumbnails: stagedThumbnails.map(x => x.thumbnail)
+  /*
+  TODO: this thumbnail meta-data and content saving sequence is pretty awkward,
+  having to add thumbnails to an observation to pass to the content store,
+  which returns updates for the thumbnails that the client then must apply to
+  the observation to patch the attachment in the database.  these APIs could
+  use some modification to be more convenient and intuitive.
+  */
+  const thumbResults = (await Promise.all(thumbnailSizes.map(thumbnailSize => {
+    return generateAndStageThumbnail(thumbnailSize, attachment, observation, imageService, attachmentStore)
+  }))).filter(x => !(x instanceof Error)) as StagedThumbnail[]
+  let obsWithThumbs = thumbResults.reduce((obsWithThumbs, thumbResult) => {
+    if (thumbResult instanceof Error) {
+      return obsWithThumbs
+    }
+    return putAttachmentThumbnailForMinDimension(obsWithThumbs, attachmentId, thumbResult.thumbnail) as Observation
+  }, observation)
+  const storedThumbs = await Promise.all(thumbResults.map(stagedThumb => {
+    return attachmentStore.saveThumbnailContent(stagedThumb.pendingContentId, stagedThumb.thumbnail.minDimension, attachmentId, obsWithThumbs)
+  }))
+  obsWithThumbs = storedThumbs.reduce((obsWithThumbs, storedThumb) => {
+    if (storedThumb instanceof Error || !storedThumb) {
+      return obsWithThumbs
+    }
+    return putAttachmentThumbnailForMinDimension(obsWithThumbs, attachmentId, storedThumb) as Observation
+  }, obsWithThumbs)
+  const storedThumbPatch: AttachmentPatchAttrs = { thumbnails: obsWithThumbs.attachmentFor(attachmentId)!.thumbnails }
+  const savedObsWithThumbs = await observationRepo.patchAttachment(observation, attachmentId, storedThumbPatch)
+  if (!(savedObsWithThumbs instanceof Observation)) {
+    if (!savedObsWithThumbs) {
+      return new Error(`observation ${observation.id} did not exist after thumbnail operation on attachment ${attachment.id}`)
+    }
   }
-  // TODO: check for save errors
-  const updatedObservation = patchAttachment(observation, attachmentId, attachmentPatch) as Observation
-  const saved = await observationRepo.save(updatedObservation)
-  for (const stagedThumbnail of stagedThumbnails) {
-    await attachmentStore.saveThumbnailContent(stagedThumbnail.pendingContentId, stagedThumbnail.thumbnail.minDimension, attachmentId, saved)
-  }
-  return saved
+  return savedObsWithThumbs
 }
 
 type StagedThumbnail = {
   thumbnail: Thumbnail,
-  pendingContentId: PendingAttachmentContentId
+  pendingContentId: StagedAttachmentContentId
 }
 
 async function generateAndStageThumbnail(thumbnailSize: number, attachment: Attachment, observation: Observation, imageService: ImageService, attachmentStore: AttachmentStore): Promise<Error | StagedThumbnail> {
   const attachmentId = attachment.id
   const attachmentName = attachment.name || ''
   const attachmentExt = path.extname(attachmentName)
-  const attachmentBareName = attachmentName.slice(0, attachmentExt.length - attachmentExt.length) || attachmentId
+  const attachmentBareName = attachmentName.slice(0, attachmentName.length - attachmentExt.length) || attachmentId
   const content = await attachmentStore.readContent(attachmentId, observation)
   if (content instanceof Error) {
-    const message = `error reading content for observation ${observation.id}, attachment ${attachmentId}: ${content}`
+    const message = `error reading content for attachment ${attachmentId}, observation ${observation.id}: ${content}`
     console.error(message, content)
+    return new Error(message)
+  }
+  if (content === null) {
+    const message = `content not found for attachment ${attachmentId}, observation ${observation.id}`
+    console.error(message)
     return new Error(message)
   }
   const source = imageContentForAttachment(attachment, content)
@@ -251,10 +280,11 @@ async function generateAndStageThumbnail(thumbnailSize: number, attachment: Atta
     console.error(message, thumbInfo)
     return new Error(message)
   }
+  const thumbnail: Thumbnail = attachment.thumbnails.find(x => x.minDimension === thumbnailSize) || { minDimension: thumbnailSize }
   return {
     thumbnail: {
+      ...thumbnail,
       name: `${attachmentBareName}-${thumbnailSize}${attachmentExt}`,
-      minDimension: thumbnailSize,
       contentType: thumbInfo.mediaType,
       width: thumbInfo.dimensions.width,
       height: thumbInfo.dimensions.height,
