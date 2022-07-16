@@ -435,11 +435,8 @@ describe('processing interval', () => {
     ]
     const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findAttachments').and.resolveTo(asyncIterableOf(unprocessedAttachments))
     observationRepos.forEach((repo, eventId) => {
-      repo.findById.and.callFake(id => {
-        const observations = eventObservations.get(eventId)
-        return Promise.resolve(observations?.find(x => x.id === id) || null)
-      })
-      repo.save.and.callFake(o => Promise.resolve(o))
+      repo.findById.and.callFake(async id => eventObservations.get(eventId)?.find(x => x.id === id) || null)
+      repo.patchAttachment.and.callFake(async o => o)
     })
     imageService.autoOrient.and.resolveTo({
       mediaType: 'image/png',
@@ -451,10 +448,8 @@ describe('processing interval', () => {
       sizeInBytes: 30000,
       dimensions: { width: minDimension, height: Math.round(minDimension * 1.3) },
     }))
-    const stagedContent: StagedAttachmentContent = {
-      id: 'staged attachment',
-      tempLocation: new BufferWriteable()
-    }
+    const stagedContent = new StagedAttachmentContent('staged attachment', new BufferWriteable())
+    attachmentStore.readContent.and.resolveTo(stream.Readable.from(Buffer.from('original content')))
     attachmentStore.stagePendingContent.and.resolveTo(stagedContent)
     attachmentStore.saveContent.and.resolveTo(null)
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
