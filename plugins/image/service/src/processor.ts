@@ -194,7 +194,7 @@ export async function orientAttachmentImage (
     ...oriented.dimensions,
     ...storeResult,
   }
-  const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, patch) as Observation
+  const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, patch)
   if (!updatedObservation) {
     const err = new Error(`observation ${observation.id} did not exist after orienting attachment ${attachmentId}`)
     console.error(err)

@@ -172,7 +172,7 @@ describe('processing interval', () => {
     imageService = jasmine.createSpyObj<ImageService>('imageService', [ 'autoOrient', 'scaleToDimension' ])
   })
 
-  fdescribe('orient phase', () => {
+  describe('orient phase', () => {
 
     it('orients the attachment image and patches the attachment', async () => {
 
@@ -227,7 +227,7 @@ describe('processing interval', () => {
     it('does not patch the attachment if saving content failed')
   })
 
-  fdescribe('thumbnail phase', () => {
+  describe('thumbnail phase', () => {
 
     it('generates the specified thumbnails and patches the attachment once', async () => {
 
@@ -579,24 +579,25 @@ describe('processing interval', () => {
       }
     }
     const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findAttachments').and.resolveTo(failNextIfCurrentNotProcessed)
+    attachmentStore.readContent.and.resolveTo(stream.Readable.from(Buffer.from(new Date().toISOString())))
     attachmentStore.stagePendingContent.and.callFake(async () => ({
       tempLocation: new BufferWriteable(),
       id: failNextIfCurrentNotProcessed.current!.attachmentId
     }))
     imageService.autoOrient.and.callFake(async (source: ImageContent, dest: NodeJS.WritableStream) => {
-      failNextIfCurrentNotProcessed.processCurrent()
       return await Promise.resolve<Required<ImageDescriptor>>({
         mediaType: `image/png`,
         dimensions: { width: 100 * (failNextIfCurrentNotProcessed.cursor + 1), height: 120 * (failNextIfCurrentNotProcessed.cursor + 1) },
         sizeInBytes: 1000 * (failNextIfCurrentNotProcessed.cursor + 1)
       })
     })
+    imageService.scaleToDimension.and.callFake(async minDimension => {
+      failNextIfCurrentNotProcessed.processCurrent()
+      return { mediaType: 'image/jpeg', sizeInBytes: minDimension * 1000, dimensions: { width: minDimension, height: minDimension * 1.5 }}
+    })
     observationRepos.forEach((repo, eventId) => {
-      repo.findById.and.callFake(async id => {
-        const observations = eventObservations.get(eventId)
-        return await Promise.resolve(observations?.find(x => x.id === id) || null)
-      })
-      repo.save.and.callFake(async o => await Promise.resolve(o))
+      repo.findById.and.callFake(async id => eventObservations.get(eventId)!.find(x => x.id === id) || null)
+      repo.patchAttachment.and.callFake(async (obs) => eventObservations.get(obs.eventId)!.find(x => x.id === obs.id)!)
     })
     attachmentStore.saveContent.and.resolveTo(null)
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
