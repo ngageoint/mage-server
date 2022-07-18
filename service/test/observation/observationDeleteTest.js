@@ -5,6 +5,7 @@ const request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
   , TeamModel = require('../../lib/models/team')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
@@ -12,9 +13,6 @@ const request = require('supertest')
 
 
 require('sinon-mongoose');
-
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
 
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
@@ -61,15 +59,15 @@ describe("observation delete tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const ObservationModel = observationModel({
@@ -123,16 +121,16 @@ describe("observation delete tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
     mockEvent.acl[userId] = 'MANAGER';
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const ObservationModel = observationModel({
@@ -186,15 +184,15 @@ describe("observation delete tests", function () {
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const ObservationModel = observationModel({
@@ -244,14 +242,14 @@ describe("observation delete tests", function () {
   it("should not update observation state if name is missing", function (done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const ObservationModel = observationModel({
@@ -295,15 +293,15 @@ describe("observation delete tests", function () {
   it("should not update observation state if name is not allowed", function (done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const observationId = mongoose.Types.ObjectId();
@@ -349,30 +347,20 @@ describe("observation delete tests", function () {
   it("should not update observation state if name did not change", function (done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
       .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [mongoose.Types.ObjectId()]
-        }]
-      });
 
     const ObservationModel = observationModel({
       _id: 1,

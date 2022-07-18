@@ -5,14 +5,12 @@ const request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
-
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
 
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
@@ -23,7 +21,7 @@ describe("observation important tests", function () {
 
   beforeEach(function () {
 
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -53,10 +51,10 @@ describe("observation important tests", function () {
         userFields: []
       }],
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];

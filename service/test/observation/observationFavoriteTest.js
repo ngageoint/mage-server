@@ -7,16 +7,14 @@ const request = require('supertest')
   , expect = require('chai').expect
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
+  // TODO: require for side-effects smells
+  , EventModel = require('../../lib/models/event')
   , TeamModel = require('../../lib/models/team')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
-
-// TODO: require for side-effects smells
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
 
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
@@ -28,7 +26,7 @@ describe("marking favorite observations", function () {
   const userId = mongoose.Types.ObjectId();
 
   beforeEach(function () {
-    const mockEvent = new EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -57,11 +55,11 @@ describe("marking favorite observations", function () {
         userFields: []
       },
       acl: {}
-    });
+    };
     mockEvent.acl[userId] = 'GUEST';
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];

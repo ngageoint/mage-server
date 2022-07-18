@@ -6,21 +6,18 @@ const request = require('supertest')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
   , TeamModel = require('../../lib/models/team')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
+  , { EventAccessType } = require('../../lib/entities/events/entities.events')
 
 require('sinon-mongoose');
 
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
-
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
-
-const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
-const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("observation read tests", function () {
 
@@ -29,14 +26,14 @@ describe("observation read tests", function () {
   let app;
 
   beforeEach(function () {
-    mockEvent = new EventModel({
+    mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     userId = mongoose.Types.ObjectId()
