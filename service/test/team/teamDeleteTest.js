@@ -4,6 +4,7 @@ const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
@@ -12,9 +13,6 @@ require('sinon-mongoose');
 
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');
-
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
 
 describe("team delete tests", function () {
 
@@ -69,10 +67,10 @@ describe("team delete tests", function () {
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('findById').withArgs(eventId)
-      .yields(null, new EventModel({
+      .expects('getById')
+      .yields(null, {
         name: 'Mock Event'
-      }));
+      });
 
     sinon.mock(mockTeam)
       .expects('remove')
@@ -108,10 +106,10 @@ describe("team delete tests", function () {
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('findById').withArgs(eventId)
-      .yields(null, new EventModel({
+      .expects('getById')
+      .yields(null, {
         name: 'Mock Event'
-      }));
+      });
 
     sinon.mock(mockTeam)
       .expects('remove')
@@ -172,10 +170,10 @@ describe("team delete tests", function () {
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('findById').withArgs(eventId)
-      .yields(null, new EventModel({
+      .expects('getById')
+      .yields(null, {
         name: 'Mock Event'
-      }));
+      });
 
     request(app)
       .delete('/api/teams/' + teamId.toString())
