@@ -1,43 +1,38 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , CappedLocationModel = require('../../lib/models/cappedLocation')
+  , EventModel = require('../../lib/models/event')
+  , TeamModel = require('../../lib/models/team')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
-require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
-
-require('../../lib/models/event');
-var EventModel = mongoose.model('Event');
-
 require('../../lib/models/location');
-var LocationModel = mongoose.model('Location');
-
-require('../../lib/models/cappedLocation');
-var CappedLocationModel = mongoose.model('CappedLocation');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const LocationModel = mongoose.model('Location');
 
 describe("location create tests", function () {
 
   let app;
 
   beforeEach(function () {
-    var mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       teams: [{
         name: 'Team 1'
       }]
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];
@@ -62,24 +57,22 @@ describe("location create tests", function () {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it("should create locations for an event", function (done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    var mockLocations = [{
+    const mockLocations = [{
       "eventId": 1,
       "geometry": {
         "type": "Point",
@@ -105,7 +98,7 @@ describe("location create tests", function () {
       .yields(null, mockLocations);
 
     sinon.mock(CappedLocationModel)
-      .expects('findOneAndUpdate')
+      .expects('addLocations')
       .yields(null, {});
 
     request(app)
@@ -148,10 +141,10 @@ describe("location create tests", function () {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
-    var mockLocations = {
+    const mockLocations = {
       "eventId": 1,
       "geometry": {
         "type": "Point",
@@ -167,7 +160,7 @@ describe("location create tests", function () {
       .yields(null, mockLocations);
 
     sinon.mock(CappedLocationModel)
-      .expects('findOneAndUpdate')
+      .expects('addLocations')
       .yields(null, {});
 
     request(app)
@@ -199,7 +192,7 @@ describe("location create tests", function () {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, []);
 
     request(app)
@@ -225,7 +218,7 @@ describe("location create tests", function () {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     request(app)
@@ -250,7 +243,7 @@ describe("location create tests", function () {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     request(app)
@@ -275,7 +268,7 @@ describe("location create tests", function () {
     mockTokenWithPermission('CREATE_LOCATION');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     request(app)
