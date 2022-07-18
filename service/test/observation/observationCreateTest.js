@@ -5,15 +5,13 @@ const request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
   , TeamModel = require('../../lib/models/team')
   , TokenModel = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
-
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
 
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
@@ -24,7 +22,7 @@ describe.skip("observation create tests", function () {
   let app;
 
   beforeEach(function () {
-    const mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -53,10 +51,10 @@ describe.skip("observation create tests", function () {
         userFields: []
       }
 
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];
@@ -501,7 +499,7 @@ describe.skip("observation create tests", function () {
 
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    const mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -531,10 +529,10 @@ describe.skip("observation create tests", function () {
         userFields: []
       }
 
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
@@ -604,7 +602,7 @@ describe.skip("observation create tests", function () {
 
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    const mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -625,10 +623,10 @@ describe.skip("observation create tests", function () {
         userFields: []
       }
 
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
@@ -712,7 +710,7 @@ describe.skip("observation create tests", function () {
 
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    const mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -735,10 +733,10 @@ describe.skip("observation create tests", function () {
         userFields: []
       }
 
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
@@ -816,7 +814,7 @@ describe.skip("observation create tests", function () {
 
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    const mockEvent = EventModel({
+    const mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -838,10 +836,10 @@ describe.skip("observation create tests", function () {
         userFields: []
       }
 
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
