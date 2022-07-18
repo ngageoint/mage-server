@@ -3,23 +3,17 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , chai = require('chai')
+  , expect = chai.expect
+  , should = chai.should()
   , mongoose = require('mongoose')
-  , MockToken = require('../mockToken');
-
-const expect = chai.expect;
-const should = chai.should();
+  , createToken = require('../mockToken')
+  , TokenModel = require('../../lib/models/token')
+  , DeviceModel = require('../../lib/models/device')
+  , UserModel = require('../../lib/models/user')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
-
-const DeviceOperations = require('../../lib/models/device');
-const DeviceModel = DeviceOperations.Model;
-
-const TokenModel = mongoose.model('Token');
-const UserOperations = require('../../lib/models/user');
-const UserModel = UserOperations.Model;
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("device update tests", function () {
 
@@ -44,12 +38,12 @@ describe("device update tests", function () {
 
     app = require('../../lib/express').app;
 
-    sinon.mock(UserOperations)
+    sinon.mock(UserModel)
       .expects('getUserById').withArgs(userId)
-      .resolves(new UserModel({
+      .resolves({
         _id: userId,
         authenticationId: mongoose.Types.ObjectId()
-      }));
+      });
   });
 
   afterEach(function () {
@@ -58,11 +52,9 @@ describe("device update tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it("should update device", function (done) {
@@ -80,15 +72,9 @@ describe("device update tests", function () {
       userId: userId.toString()
     };
 
-    const registeredDevice = new DeviceModel({
-      ...reqDevice
-    })
-
-    const mockDeviceModel = sinon.mock(DeviceModel);
-    mockDeviceModel
-      .expects('findOneAndUpdate').withArgs({ _id: reqDevice._id })
-      .chain('exec')
-      .resolves(registeredDevice);
+    sinon.mock(DeviceModel)
+      .expects('updateDevice')
+      .resolves(reqDevice);
 
     request(app)
       .put('/api/devices/' + deviceId.toHexString())
@@ -119,15 +105,9 @@ describe("device update tests", function () {
       userId: userId.toString()
     };
 
-    const registeredDevice = new DeviceModel({
-      ...reqDevice
-    })
-
-    const mockDeviceModel = sinon.mock(DeviceModel);
-    mockDeviceModel
-      .expects('findOneAndUpdate').withArgs({ _id: reqDevice._id })
-      .chain('exec')
-      .resolves(registeredDevice);
+    sinon.mock(DeviceModel)
+      .expects('updateDevice')
+      .resolves(reqDevice);
 
     request(app)
       .put('/api/devices/' + deviceId.toHexString())
@@ -145,14 +125,6 @@ describe("device update tests", function () {
 
 
   it("should remove token for unregistered device", async function () {
-
-    /*
-    TODO:
-    this test and others have a lot of ugly deep mocking down to the mongodb
-    driver level.  that level of mocking does not belong in tests of high-level
-    apis and use cases.
-    */
-
     mockTokenWithPermission('UPDATE_DEVICE');
 
     const deviceId = mongoose.Types.ObjectId();
@@ -166,20 +138,14 @@ describe("device update tests", function () {
       userId: userId.toHexString()
     };
 
-    const mockTokenModel = sinon.mock(TokenModel);
-    mockTokenModel
-      .expects('remove').withArgs({ deviceId: deviceId.toHexString() })
+    sinon.mock(TokenModel)
+      .expects('removeToken')
+      .withArgs('12345')
       .yields(null, 1);
 
-    //This allows the middleware of mongoose to execute, thus removing the token
-    sinon.mock(DeviceModel.collection)
-      .expects('findAndModify')
-      .yields(null, {
-        value: {
-          ...reqDevice,
-          _id: deviceId.toHexString()
-        }
-      });
+    sinon.mock(DeviceModel)
+      .expects('updateDevice')
+      .resolves(reqDevice);
 
     const res = await request(app)
       .put('/api/devices/' + deviceId.toHexString())
@@ -187,10 +153,8 @@ describe("device update tests", function () {
       .set('Authorization', 'Bearer 12345')
       .send(reqDevice);
 
-    //TODO due to how we are mocking, the device is not returned from the model to the route.
-    //expect(res.status).to.equal(200);
-    //expect(res.type).to.match(/json/);
-    //should.exist(res.body);
-    mockTokenModel.verify();
+    expect(res.status).to.equal(200);
+    expect(res.type).to.match(/json/);
+    should.exist(res.body);
   });
 });

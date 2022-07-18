@@ -2,22 +2,19 @@ const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , TokenModel = require('../../lib/models/token')
+  , DeviceModel = require('../../lib/models/device')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
 
-require('../../lib/models/device');
-const DeviceModel = mongoose.model('Device');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
-describe("device delete tests", function() {
+describe("device delete tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -36,37 +33,34 @@ describe("device delete tests", function() {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sinon.restore();
   });
 
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
-  it("should delete device", function(done) {
+  it("should delete device", function (done) {
     mockTokenWithPermission('DELETE_DEVICE');
 
     const userId = mongoose.Types.ObjectId();
     const deviceId = mongoose.Types.ObjectId();
     const uid = mongoose.Types.ObjectId();
-    const mockDevice = new DeviceModel({
+    const mockDevice = {
       _id: deviceId.toHexString(),
       uid: uid.toHexString(),
       name: 'Test Device',
       registered: true,
       description: 'Some description',
       userId: userId.toString()
-    });
+    };
     sinon.mock(DeviceModel)
-      .expects('findOneAndDelete')
-      .chain('exec')
+      .expects('deleteDevice')
       .resolves(mockDevice);
 
     request(app)
@@ -75,21 +69,20 @@ describe("device delete tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function(res) {
+      .expect(function (res) {
         const device = res.body;
         should.exist(device);
       })
       .end(done);
   });
 
-  it("should fail to delete device that does not exist", function(done) {
+  it("should fail to delete device that does not exist", function (done) {
     mockTokenWithPermission('DELETE_DEVICE');
 
     const deviceId = mongoose.Types.ObjectId();
 
     sinon.mock(DeviceModel)
-      .expects('findOneAndDelete')
-      .chain('exec')
+      .expects('deleteDevice')
       .resolves(null);
 
     request(app)
