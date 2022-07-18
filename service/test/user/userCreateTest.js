@@ -1,11 +1,14 @@
+'use strict';
+
 const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
-  , MockToken = require('../mockToken')
-  , mongoose = require('mongoose');
-
-require('../../lib/models/token');
-const TokenModel = mongoose.model('Token');
+  , mongoose = require('mongoose')
+  , createToken = require('../mockToken')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , Authentication = require('../../lib/models/authentication');
 
 require('../../lib/models/role');
 const RoleModel = mongoose.model('Role');
@@ -13,14 +16,9 @@ const RoleModel = mongoose.model('Role');
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
-const Authentication = require('../../lib/models/authentication');
-
 const svgCaptcha = require('svg-captcha');
 
 require('sinon-mongoose');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 let app;
 
@@ -73,11 +71,9 @@ describe("user create tests", function () {
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it('should create user as admin', function (done) {

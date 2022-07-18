@@ -26,20 +26,18 @@ const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , expect = require('chai').expect
-  , MockToken = require('../mockToken')
   , mockfs = require('mock-fs')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , createToken = require('../mockToken')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-require('../../lib/models/token');
-const TokenModel = mongoose.model('Token');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("user read tests", function() {
 
@@ -71,11 +69,9 @@ describe("user read tests", function() {
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it('should count users', function(done) {

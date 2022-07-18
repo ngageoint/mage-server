@@ -5,7 +5,12 @@ const request = require('supertest')
   , should = require('chai').should()
   , { expect } = require('chai')
   , MockToken = require('../mockToken')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , Authentication = require('../../lib/models/authentication')
+  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
+  , { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 require('../../lib/models/token');
 const TokenModel = mongoose.model('Token');
@@ -16,14 +21,7 @@ const UserModel = mongoose.model('User');
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-const Authentication = require('../../lib/models/authentication');
-
 require('sinon-mongoose');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
-const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("user update tests", function () {
 
