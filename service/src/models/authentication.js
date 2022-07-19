@@ -52,7 +52,7 @@ LocalSchema.pre('save', function (next) {
 
   async.waterfall([
     function (done) {
-      AuthenticationConfiguration.Model.findById(authentication.authenticationConfigurationId).then(localConfiguration => {
+      AuthenticationConfiguration.getById(authentication.authenticationConfigurationId).then(localConfiguration => {
         done(null, localConfiguration.settings.passwordPolicy);
       }).catch(err => done(err));
     },
