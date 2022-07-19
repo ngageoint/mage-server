@@ -3,16 +3,15 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , chai = require('chai')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , Authentication = require('../../lib/models/authentication')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 
 const expect = chai.expect;
 
-require('../../lib/models/user');
+const UserOperations = require('../../lib/models/user');
 const UserModel = mongoose.model('User');
-
-const Authentication = require('../../lib/models/authentication');
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("device provision tests", function () {
 
@@ -64,17 +63,12 @@ describe("device provision tests", function () {
       })
     });
 
-    sinon.mock(AuthenticationConfiguration.Model)
-      .expects('findOne')
-      .chain('exec')
+    sinon.mock(AuthenticationConfiguration)
+      .expects('getConfiguration')
       .resolves(mockUser.authentication.authenticationConfiguration);
 
-    sinon.mock(UserModel)
-      .expects('findOne')
-      .withArgs({ username: 'test' })
-      .chain('populate', 'roleId')
-      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
-      .chain('exec')
+    sinon.mock(UserOperations)
+      .expects('getUserByUsername')
       .yields(null, mockUser);
 
     sinon.mock(Authentication.Local.prototype)
