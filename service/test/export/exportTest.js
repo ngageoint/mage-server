@@ -1,43 +1,37 @@
+'use strict';
+
 const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , mockfs = require('mock-fs')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token')
-  , path = require('path');
+  , path = require('path')
+  , createToken = require('../mockToken')
+  , DeviceModel = require('../../lib/models/device')
+  , IconModel = require('../../lib/models/icon')
+  , TokenModel = require('../../lib/models/token')
+  , UserModel = require('../../lib/models/user')
+  , ExporterFactory = require('../../lib/export/exporterFactory')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
+  , { EventAccessType } = require('../../lib/entities/events/entities.events');
 
-require('chai').should();
 require('sinon-mongoose');
-
-require('../../lib/models/user');
-const UserModel = mongoose.model('User');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-require('../../lib/models/icon');
-const IconModel = mongoose.model('Icon');
-
-require('../../lib/models/device');
-const DeviceModel = mongoose.model('Device');
 const Observation = require('../../lib/models/observation');
-const { expect } = require('chai')
 const observationModel = Observation.observationModel;
 
 require('../../lib/models/export');
 const ExportModel = mongoose.model('Export');
 
-const exporterFactory = require('../../lib/export/exporterFactory')
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
-const { EventAccessType } = require('../../lib/entities/events/entities.events');
-
 describe("export tests", function () {
 
   let app;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -63,11 +57,9 @@ describe("export tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: '12345' })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission, 'READ_EXPORT']));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission, 'READ_EXPORT']));
   }
 
   const userId = mongoose.Types.ObjectId();
@@ -92,8 +84,7 @@ describe("export tests", function () {
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)
-      .expects('find')
-      .chain('exec')
+      .expects('getUsers')
       .yields(null, [{
         username: 'user3'
       }, {
@@ -101,8 +92,7 @@ describe("export tests", function () {
       }]);
 
     sinon.mock(DeviceModel)
-      .expects('find')
-      .chain('exec')
+      .expects('getDevices')
       .resolves([{
         uid: '3'
       }, {
@@ -145,8 +135,8 @@ describe("export tests", function () {
       exportType: 'kml',
       status: 'Starting',
       options: {
-          eventId: eventId,
-          filter: null
+        eventId: eventId,
+        filter: null
       }
     });
 
@@ -164,12 +154,12 @@ describe("export tests", function () {
       .resolves(exportMeta)
 
     sinon.mock(IconModel)
-      .expects('find')
+      .expects('getAll')
       .yields(null, [{
         relativePath: 'mock/path'
       }]);
 
-    sinon.mock(exporterFactory)
+    sinon.mock(ExporterFactory)
       .expects('createExporter')
       .returns({
         export() {
@@ -201,6 +191,6 @@ describe("export tests", function () {
         res.headers.should.have.property('content-type').that.contains('application/json');
         res.headers.should.have.property('location').that.equals('/api/exports/' + exportMeta._id);
       })
-      .end(() => {});
+      .end(() => { });
   });
 });
