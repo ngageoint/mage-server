@@ -119,6 +119,7 @@ describe("environment", function() {
       expect(options).to.have.property('checkServerIdentity', false);
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.have.property('tlsInsecure', false);
       expect(options).to.not.have.property('user');
     });
 
@@ -157,6 +158,7 @@ describe("environment", function() {
       expect(options).to.have.property('checkServerIdentity', false);
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.have.property('tlsInsecure', false);
       expect(options).to.not.have.property('user');
     });
   });

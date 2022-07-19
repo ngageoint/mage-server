@@ -100,7 +100,10 @@ if (mongoConfig.x509Key) {
     authSource: '$external',
     ssl: true,
     checkServerIdentity: false,
-    auth: { authMechanism: 'MONGODB-X509' }
+    auth: { authMechanism: 'MONGODB-X509' },
+    // Using self-signed certs can cause issues.  If it does, set this to true.
+    // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation
+    tlsInsecure: false
   });
 }
 else if (user && password) {
