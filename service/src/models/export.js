@@ -25,7 +25,7 @@ const ErrorSchema = new Schema({
 });
 
 const ExportSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
   relativePath: { type: String },
   filename: { type: String },
   exportType: { type: String, required: true },

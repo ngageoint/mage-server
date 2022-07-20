@@ -27,7 +27,7 @@ describe('feeds admin permissions migration', function() {
 
   afterEach(async function() {
     const roles = db.collection('roles')
-    await roles.remove({})
+    await roles.deleteMany({})
   })
 
   it('has a migration id', function() {
@@ -53,7 +53,7 @@ describe('feeds admin permissions migration', function() {
         ]
       })
 
-      expect(insert.insertedCount).to.equal(1)
+      expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
         const done = function(err?: any) {
@@ -97,7 +97,7 @@ describe('feeds admin permissions migration', function() {
         ]
       })
 
-      expect(insert.insertedCount).to.equal(1)
+      expect(insert.acknowledged).to.be.true
 
       await new Promise<void>((resolve, reject) => {
         const done = function(err?: any) {

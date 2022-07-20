@@ -1,12 +1,11 @@
 import mongoose from 'mongoose'
-import { describe, it, before, beforeEach, after, afterEach } from 'mocha'
+import { describe, it, before, after, afterEach } from 'mocha'
 import { expect } from 'chai'
 import '../../mongo.test'
 import { mongoTestAfterAllHook, mongoTestBeforeAllHook, MongoTestContext } from '../../mongo.test'
 import { BaseMongooseRepository, pageQuery } from '../../../lib/adapters/base/adapters.base.db.mongoose'
 import Substitute, { Arg } from '@fluffy-spoon/substitute'
 import { PagingParameters } from '../../../src/entities/entities.global'
-import uniqid from 'uniqid'
 import _ from 'lodash'
 
 describe('mongoose adapter layer base', function() {
@@ -195,7 +194,7 @@ describe('mongoose adapter layer base', function() {
 
     it('returns null if the delete id does not exist', async function() {
 
-      const removed = await repo.removeById(mongoose.Types.ObjectId().toHexString())
+      const removed = await repo.removeById(new mongoose.Types.ObjectId().toHexString())
       expect(removed).to.be.null
     })
 
@@ -241,7 +240,7 @@ describe('mongoose adapter layer base', function() {
           noo: 8
         }
         const created = await repo.create(seed)
-        const ids = [ mongoose.Types.ObjectId().toHexString(), created.id, mongoose.Types.ObjectId().toHexString() ]
+        const ids = [ new mongoose.Types.ObjectId().toHexString(), created.id, new mongoose.Types.ObjectId().toHexString() ]
         const found = await repo.findAllByIds(ids)
 
         expect(found).to.deep.equal({
@@ -269,13 +268,13 @@ describe('mongoose adapter layer base', function() {
 
     it('adds paging to a query without total count', async function() {
 
-      const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
+      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         this.count = function(): mongoose.Query<number, BaseDocument> {
           return Promise.reject() as unknown as mongoose.Query<number, BaseDocument>
         }
         return baseQuery
-      } as unknown as (new (...args: any[]) => mongoose.DocumentQuery<unknown, mongoose.Document>)
+      } as unknown as (new (...args: any[]) => mongoose.Query<unknown, mongoose.Document>)
       baseQuery.toConstructor().returns(BaseQuery)
       baseQuery.limit(Arg.any()).returns(baseQuery)
       baseQuery.skip(Arg.any()).returns(baseQuery)
@@ -293,8 +292,8 @@ describe('mongoose adapter layer base', function() {
 
     it('returns the total count if requested', async function() {
 
-      const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
+      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
@@ -302,7 +301,7 @@ describe('mongoose adapter layer base', function() {
             }
           }
         })
-      } as unknown as (new (...args: any[]) => mongoose.DocumentQuery<unknown, mongoose.Document>)
+      } as unknown as (new (...args: any[]) => mongoose.Query<unknown, mongoose.Document>)
       baseQuery.toConstructor().returns(BaseQuery)
       baseQuery.limit(Arg.any()).returns(baseQuery)
       baseQuery.skip(Arg.any()).returns(baseQuery)
@@ -320,8 +319,8 @@ describe('mongoose adapter layer base', function() {
 
     it('includes total count when total count parameter is absent and page index is 0', async function() {
 
-      const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
+      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
@@ -329,7 +328,7 @@ describe('mongoose adapter layer base', function() {
             }
           }
         })
-      } as unknown as (new (...args: any[]) => mongoose.DocumentQuery<unknown, mongoose.Document>)
+      } as unknown as (new (...args: any[]) => mongoose.Query<unknown, mongoose.Document>)
       baseQuery.toConstructor().returns(BaseQuery)
       baseQuery.limit(Arg.any()).returns(baseQuery)
       baseQuery.skip(Arg.any()).returns(baseQuery)
@@ -346,8 +345,8 @@ describe('mongoose adapter layer base', function() {
 
     it('does not include total count when total count parameter is absent and page index is greater than 0', async function() {
 
-      const baseQuery = Substitute.for<mongoose.DocumentQuery<BaseDocument[], BaseDocument>>()
-      const BaseQuery: any = function(this: mongoose.DocumentQuery<BaseDocument[], BaseDocument>): mongoose.DocumentQuery<BaseDocument[], BaseDocument> {
+      const baseQuery = Substitute.for<mongoose.Query<BaseDocument[], BaseDocument>>()
+      const BaseQuery: any = function(this: mongoose.Query<BaseDocument[], BaseDocument>): mongoose.Query<BaseDocument[], BaseDocument> {
         return Object.create(baseQuery, {
           count: {
             get: () => function() {
@@ -355,7 +354,7 @@ describe('mongoose adapter layer base', function() {
             }
           }
         })
-      } as unknown as (new (...args: any[]) => mongoose.DocumentQuery<unknown, mongoose.Document>)
+      } as unknown as (new (...args: any[]) => mongoose.Query<unknown, mongoose.Document>)
       baseQuery.toConstructor().returns(BaseQuery)
       baseQuery.limit(Arg.any()).returns(baseQuery)
       baseQuery.skip(Arg.any()).returns(baseQuery)

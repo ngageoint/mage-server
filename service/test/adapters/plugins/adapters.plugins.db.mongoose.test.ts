@@ -53,7 +53,7 @@ describe('mongoose plugin state repository', function() {
 
     expect(conn.modelNames()).to.deep.equal([ name ])
 
-    const model = conn.model(name)
+    const model: any = conn.model(name)
 
     expect(model).to.equal(repo.model)
     expect(model.collection.name).to.equal(name)

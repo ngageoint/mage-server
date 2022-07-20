@@ -31,7 +31,8 @@ export type FeedServiceDocument = Omit<FeedServiceDescriptor, 'serviceType'> & m
   serviceType: mongoose.Types.ObjectId
 }
 export type FeedServiceModel = Model<FeedServiceDocument>
-export const FeedServiceSchema = new mongoose.Schema<FeedServiceDocument>(
+//TODO pick correct type, was FeedDocument
+export const FeedServiceSchema = new mongoose.Schema<any>(
   {
     serviceType: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedServiceTypeIdentity },
     title: { type: String, required: true },
@@ -57,7 +58,8 @@ export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & 
   icon?: string
 }
 export type FeedModel = Model<FeedDocument>
-export const FeedSchema = new mongoose.Schema<FeedDocument>(
+//TODO pick correct type, was FeedDocument
+export const FeedSchema = new mongoose.Schema<any>(
   {
     _id: { type: String, required: true },
     service: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedService },
