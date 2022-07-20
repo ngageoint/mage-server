@@ -763,6 +763,8 @@ export class AttachmentNotFoundError extends Error {
    * opposed to deeply patching any thumbnails present in the array.  This
    * method should essentially use {@link patchAttachment} to perform the
    * patch for the resulting attachment.
+   *
+   * TODO: Account for patch invalidating the attachment media type.
    */
   patchAttachment(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
   /**

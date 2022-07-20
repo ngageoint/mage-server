@@ -1,25 +1,25 @@
-import Mongoose from 'mongoose'
+import mongoose from 'mongoose'
 import { EnsureJson } from '../../entities/entities.json_types'
 import { PluginStateRepository } from '../../plugins.api'
 
-export type PluginStateDocument<State extends object> = Mongoose.Document & {
+export type PluginStateDocument<State extends object> = mongoose.Document & {
   _id: 'string',
   state: State
 }
 
 const SCHEMA_SPEC = {
-  _id: { type: Mongoose.SchemaTypes.String },
-  state: { type: Mongoose.SchemaTypes.Mixed, default: null }
+  _id: { type: mongoose.SchemaTypes.String },
+  state: { type: mongoose.SchemaTypes.Mixed, default: null }
 }
 
 export class MongoosePluginStateRepository<State extends object> implements PluginStateRepository<State> {
 
-  readonly model: Mongoose.Model<PluginStateDocument<State>>
+  readonly model: mongoose.Model<PluginStateDocument<State>>
 
-  constructor(public readonly pluginId: string, public readonly mongoose: Mongoose.Mongoose) {
+  constructor(public readonly pluginId: string, public readonly mongoose: mongoose.Mongoose) {
     const collectionName = `plugin_state_${pluginId}`
     const modelNames = mongoose.modelNames()
-    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new Mongoose.Schema(SCHEMA_SPEC), collectionName)
+    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new mongoose.Schema(SCHEMA_SPEC), collectionName)
   }
 
   async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
