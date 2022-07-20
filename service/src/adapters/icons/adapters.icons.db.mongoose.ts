@@ -1,7 +1,6 @@
 
 import { URL } from 'url'
 import mongoose from 'mongoose'
-import mongodb from 'mongodb'
 import { EntityIdFactory, pageOf, PageOf, PagingParameters, UrlResolutionError, UrlScheme } from '../../entities/entities.global'
 import { StaticIcon, StaticIconStub, StaticIconId, StaticIconRepository, LocalStaticIconStub, StaticIconReference, StaticIconContentStore, StaticIconImportFetch } from '../../entities/icons/entities.icons'
 import { BaseMongooseRepository, pageQuery } from '../base/adapters.base.db.mongoose'
@@ -221,7 +220,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     tags: true,
     title: true
   }
-  const update: Partial<StaticIconDocument> & mongodb.UpdateQuery<StaticIconDocument> = {}
+  const update: Partial<StaticIconDocument> & mongoose.UpdateQuery<StaticIconDocument> = {}
   const $unset: { [key in keyof StaticIcon]?: true } = {}
   for (const key of Object.keys(writableKeys) as (keyof StaticIconStub)[]) {
     if (key in stub && stub[key] && writableKeys[key]) {
@@ -232,7 +231,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     }
   }
   if (Object.keys($unset).length > 0) {
-    update.$unset = $unset as mongodb.UpdateQuery<StaticIconDocument>['$unset']
+    update.$unset = $unset as mongoose.UpdateQuery<StaticIconDocument>['$unset']
   }
   update.contentHash = stub.contentHash
   update.contentTimestamp = Date.now()

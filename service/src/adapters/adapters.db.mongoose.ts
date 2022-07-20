@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from 'mongoose'
+import mongoose from 'mongoose'
 import { EntityIdFactory } from '../entities/entities.global'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const log = require('winston')
@@ -19,7 +19,7 @@ class RetryConnection {
     readonly uri: string,
     totalRetryTime: number,
     readonly retryInterval: number,
-    readonly options: mongoose.ConnectionOptions,
+    readonly options: mongoose.ConnectOptions,
     readonly resolve: () => any,
     readonly reject: (err: any) => any) {
     this.connectTimeout = Date.now() + totalRetryTime;
@@ -46,7 +46,7 @@ class RetryConnection {
  * there is some circular type reference in the `@types/mongoose` module that
  * causes the compile to fail.
  */
-export const waitForDefaultMongooseConnection = (mongoose: any, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectionOptions): Promise<void> => {
+export const waitForDefaultMongooseConnection = (mongoose: any, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectOptions): Promise<void> => {
   if (mongoose.connection.readyState === mongoose.STATES.connected) {
     return Promise.resolve()
   }
@@ -58,6 +58,6 @@ export const waitForDefaultMongooseConnection = (mongoose: any, uri: string, ret
 
 export const MongoDbObjectIdFactory: EntityIdFactory = {
   async nextId(): Promise<string> {
-    return mongoose.Types.ObjectId().toHexString()
+    return (new mongoose.Types.ObjectId()).toHexString()
   }
 }

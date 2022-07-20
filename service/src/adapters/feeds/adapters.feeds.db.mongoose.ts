@@ -147,7 +147,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
 
   async create(attrs: Partial<Feed>): Promise<Feed> {
     const _id = await this.idFactory.nextId()
-    const service = mongoose.Types.ObjectId(attrs.service)
+    const service = new mongoose.Types.ObjectId(attrs.service)
     const seed = Object.assign(attrs, { _id, service })
     return await super.create(seed)
   }

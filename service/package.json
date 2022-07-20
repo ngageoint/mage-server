@@ -58,7 +58,7 @@
     "mgrs": "^1.0.0",
     "moment": "2.22.2",
     "mongodb-migrations": "0.8.5",
-    "mongoose": "^5.13.14",
+    "mongoose": "^6.4.5",
     "mongoose-beautiful-unique-validation": "7.1.1",
     "multer": "^1.4.2",
     "node-fetch": "^2.6.0",
