@@ -678,64 +678,50 @@ exports.getTeamsInEvent = async function (eventId, options) {
         '$in': [options.access.user._id]
       }
     }];
-
     rolesWithPermission(options.access.permission).forEach(role => {
       const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
     });
-
     query['$or'] = accesses;
   }
   const event = await Event.findOne(query)
-
-  if (event) {
-    const { searchTerm } = options || {}
-    const searchRegex = new RegExp(searchTerm, 'i')
-    const params = searchTerm ? {
-      '$or': [
-        { name: searchRegex },
-        { description: searchRegex }
-      ]
-    } : {}
-
-    // TODO make sure to exclude event teams
-    params._id = { '$in': event.teamIds.toObject() }
-    params.teamEventId = null;
-
-    const populate = {
-      path: 'teamIds'
-    };
-
-    if (options.populate && options.populate.includes('users')) {
-      populate['populate'] = {
-        path: 'userIds',
-      };
-    }
-
-    // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
-    // add _id to sort to ensure consistent ordering
-    const teams = await Team.TeamModel.find(params)
-      .sort('name _id')
-      .populate(populate)
-      .limit(options.pageSize)
-      .skip(options.pageIndex * options.pageSize)
-
-    const page = {
-      pageSize: options.pageSize,
-      pageIndex: options.pageIndex,
-      items: teams
-    }
-
-    const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
-    if (includeTotalCount) {
-      page.totalCount = await Team.TeamModel.count(params);
-    }
-
-    return page;
-  } else {
+  if (!event) {
     return null;
   }
+  const { searchTerm } = options || {}
+  const searchRegex = new RegExp(searchTerm, 'i')
+  const params = searchTerm ? {
+    '$or': [
+      { name: searchRegex },
+      { description: searchRegex }
+    ]
+  } : {}
+  // TODO make sure to exclude event teams
+  params._id = { '$in': event.teamIds.toObject() }
+  params.teamEventId = null;
+  // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
+  // add _id to sort to ensure consistent ordering
+  let teamQuery = Team.TeamModel.find(params).sort('name _id')
+  if (options.populate && options.populate.includes('users')) {
+    teamQuery = teamQuery.populate({ path: 'userIds' })
+  }
+  if (!options.pageSize) {
+    return await teamQuery;
+  }
+  const teams = await teamQuery
+    .limit(options.pageSize)
+    .skip(options.pageIndex * options.pageSize);
+  const page = {
+    pageSize: options.pageSize,
+    pageIndex: options.pageIndex,
+    items: teams
+  };
+  const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
+  if (includeTotalCount) {
+    page.totalCount = await Team.TeamModel.count(params);
+  }
+  return page;
 };
 
 exports.getTeamsNotInEvent = async function (eventId, options) {
@@ -789,7 +775,8 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
     }
 
     return page;
-  } else {
+  }
+  else {
     return null;
   }
 };
