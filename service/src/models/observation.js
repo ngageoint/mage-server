@@ -108,7 +108,7 @@ function transformState(state, observation) {
 }
 
 function transform(observation, ret, options) {
-  if ('function' !== typeof observation.ownerDocument) {
+  if (observation.parent() == observation) {
     ret.id = ret._id;
     delete ret._id;
     delete ret.__v;

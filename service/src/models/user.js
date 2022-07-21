@@ -130,7 +130,7 @@ UserSchema.pre('remove', function (next) {
 
 // eslint-disable-next-line complexity
 const transform = function (user, ret, options) {
-  if ('function' !== typeof user.ownerDocument) {
+  if (user.parent() == user) {
     ret.id = ret._id;
     delete ret._id;
 
@@ -406,7 +406,7 @@ exports.removeRolesForUser = function (user, callback) {
 };
 
 exports.removeRoleFromUsers = function (role, callback) {
-  User.update({ role: role._id }, { roles: undefined }, function (err, number) {
+  User.updateMany({ role: role._id }, { roles: undefined }, function (err, number) {
     callback(err, number);
   });
 };
@@ -437,7 +437,7 @@ exports.removeRecentEventForUsers = function (event, callback) {
     $pull: { recentEventIds: event._id }
   };
 
-  User.update({}, update, { multi: true }, function (err) {
+  User.updateMany({}, update, { }, function (err) {
     callback(err);
   });
 };

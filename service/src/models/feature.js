@@ -16,7 +16,7 @@ var FeatureSchema = new Schema({
 FeatureSchema.index({geometry: "2dsphere"});
 
 function transform(feature, ret) {
-  if ('function' !== typeof feature.ownerDocument) {
+  if (feature.parent() == feature) {
     ret.id = ret._id;
     delete ret._id;
   }

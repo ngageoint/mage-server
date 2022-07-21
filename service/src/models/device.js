@@ -72,7 +72,7 @@ DeviceSchema.pre('findOneAndDelete', function (next) {
 });
 
 function transform(device, ret) {
-  if ('function' !== typeof device.ownerDocument) {
+  if (device.parent() == device) {
     ret.id = ret._id;
     delete ret._id;
 

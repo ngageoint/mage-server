@@ -22,7 +22,7 @@ CappedLocationSchema.index({'locations.properties.timestamp': 1});
 CappedLocationSchema.index({'locations.properties.timestamp': 1, 'eventId': 1});
 
 const transform = function (userLocation, ret) {
-  if ('function' !== typeof userLocation.ownerDocument) {
+  if (userLocation.parent() == userLocation) {
     if (userLocation.populated('userId')) {
       ret.user = userLocation.userId.toObject();
       delete ret.user.icon;

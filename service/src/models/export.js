@@ -49,7 +49,7 @@ const ExportSchema = new Schema({
 ExportSchema.index({ 'expirationDate':  1}, { expireAfterSeconds: 0 });
 
 function transform(exportDocument, ret, options) {
-  if ('function' !== typeof exportDocument.ownerDocument) {
+  if (exportDocument.parent() == exportDocument) {
     ret.id = ret._id;
     delete ret._id;
 

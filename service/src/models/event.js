@@ -184,7 +184,7 @@ function transformForm(form, ret) {
 }
 
 function transform(event, ret, options) {
-  if ('function' !== typeof event.ownerDocument) {
+  if (event.parent() == event) {
     ret.id = ret._id;
     delete ret._id;
     delete ret.collectionName;
@@ -859,7 +859,7 @@ exports.removeLayerFromEvents = function(layer, callback) {
   const update = {
     $pull: {layerIds: layer._id}
   };
-  Event.update({}, update, function(err) {
+  Event.updateMany({}, update, function(err) {
     callback(err);
   });
 };
@@ -868,7 +868,7 @@ exports.removeTeamFromEvents = function(team, callback) {
   const update = {
     $pull: {teamIds: team._id}
   };
-  Event.update({}, update, function(err) {
+  Event.updateMany({}, update, function(err) {
     callback(err);
   });
 };
@@ -924,7 +924,7 @@ exports.removeUserFromAllAcls = function(user, callback) {
   };
   update.$unset['acl.' + user._id.toString()] = true;
 
-  Event.update({}, update, {multi: true, new: true}, callback);
+  Event.updateMany({}, update, {new: true}, callback);
 };
 
 exports.remove = function(event, callback) {

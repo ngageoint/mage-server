@@ -537,5 +537,5 @@ exports.removeUserFromAllAcls = function(user, callback) {
   };
   update.$unset['acl.' + user._id.toString()] = true;
 
-  Team.update({}, update, {multi: true, new: true}, callback);
+  Team.updateMany({}, update, {new: true}, callback);
 };

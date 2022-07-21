@@ -28,7 +28,7 @@ const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryption
 const secureMask = '*****';
 
 const transform = function (config, ret, options) {
-  if ('function' !== typeof config.ownerDocument) {
+  if (config.parent() == config) {
     delete ret.__v;
 
     if (options.whitelist) {

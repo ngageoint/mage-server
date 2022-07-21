@@ -40,7 +40,7 @@ RoleSchema.pre('save', function(next) {
 });
 
 function transform(user, ret) {
-  if ('function' !== typeof user.ownerDocument) {
+  if (user.parent() == user) {
     ret.id = ret._id;
     delete ret._id;
   }
