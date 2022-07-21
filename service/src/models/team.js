@@ -397,7 +397,7 @@ exports.createTeam = function(team, user, callback) {
   };
 
   if (team.users) {
-    create.userIds = team.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
+    create.userIds = team.users.map(function(user) { return new mongoose.Types.ObjectId(user.id); });
   }
 
   create.acl = {};
@@ -443,10 +443,10 @@ exports.getTeamForEvent = function (event) {
 // TODO: should this do something with ACL?
 exports.updateTeam = function(id, update, callback) {
   if (update.users) {
-    update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
+    update.userIds = update.users.map(function(user) { return new mongoose.Types.ObjectId(user.id); });
     Team.findByIdAndUpdate(id, update, {new: true, populate: 'userIds'}, callback);
   } else if (update.userIds) {
-    let objectIds = update.userIds.map(function(id) { return mongoose.Types.ObjectId(id); });
+    let objectIds = update.userIds.map(function(id) { return new mongoose.Types.ObjectId(id); });
     update.userIds = objectIds;
     Team.findByIdAndUpdate(id, update, {new: true}, callback);
   } else {
@@ -463,7 +463,7 @@ exports.deleteTeam = function(team, callback) {
 exports.addUser = function(team, user, callback) {
   var update = {
     $addToSet: {
-      userIds: mongoose.Types.ObjectId(user.id)
+      userIds: new mongoose.Types.ObjectId(user.id)
     }
   };
 
@@ -475,7 +475,7 @@ exports.addUser = function(team, user, callback) {
 exports.removeUser = function(team, user, callback) {
   var update = {
     $pull: {
-      userIds: { $in: [mongoose.Types.ObjectId(user.id)] }
+      userIds: { $in: [new mongoose.Types.ObjectId(user.id)] }
     }
   };
 

@@ -801,7 +801,7 @@ exports.addTeam = function(event, team, callback) {
     function(done) {
       const update = {
         $addToSet: {
-          teamIds: mongoose.Types.ObjectId(team.id)
+          teamIds: new mongoose.Types.ObjectId(team.id)
         }
       };
 
@@ -822,7 +822,7 @@ exports.removeTeam = function(event, team, callback) {
 
   const update = {
     $pull: {
-      teamIds: { $in: [mongoose.Types.ObjectId(team.id)] }
+      teamIds: { $in: [new mongoose.Types.ObjectId(team.id)] }
     }
   };
 

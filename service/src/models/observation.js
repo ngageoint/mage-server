@@ -324,7 +324,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
   let removeAttachments = [];
   const {forms = []} = update.properties || {};
   forms.map(observationForm => {
-      observationForm._id = observationForm._id || mongoose.Types.ObjectId();
+      observationForm._id = observationForm._id || new mongoose.Types.ObjectId();
       delete observationForm.id;
       return observationForm;
     })
@@ -431,8 +431,8 @@ exports.removeDevice = function(device, callback) {
 };
 
 exports.addState = function(event, id, state, callback) {
-  const condition = { _id: mongoose.Types.ObjectId(id), 'states.0.name': { '$ne': state.name } };
-  state._id = mongoose.Types.ObjectId();
+  const condition = { _id: new mongoose.Types.ObjectId(id), 'states.0.name': { '$ne': state.name } };
+  state._id = new mongoose.Types.ObjectId();
   const update = {
     '$push': {
       states: {

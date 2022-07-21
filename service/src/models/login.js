@@ -38,7 +38,7 @@ LoginSchema.set("toJSON", {
 });
 
 function objectIdForDate(date) {
-  return mongoose.Types.ObjectId(Math.floor(date/1000).toString(16) + "0000000000000000");
+  return new mongoose.Types.ObjectId(Math.floor(date/1000).toString(16) + "0000000000000000");
 }
 
 // Creates the Model for the User Schema
@@ -66,12 +66,12 @@ exports.getLogins = function(options, callback) {
 
   if (options.lastLoginId) {
     conditions._id = conditions._id || {};
-    conditions._id.$lt = mongoose.Types.ObjectId(options.lastLoginId);
+    conditions._id.$lt = new mongoose.Types.ObjectId(options.lastLoginId);
   }
 
   if (options.firstLoginId) {
     conditions._id = conditions._id || {};
-    conditions._id.$gt = mongoose.Types.ObjectId(options.firstLoginId);
+    conditions._id.$gt = new mongoose.Types.ObjectId(options.firstLoginId);
   }
 
   var o = {
