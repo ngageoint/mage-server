@@ -20,7 +20,7 @@ describe('feeds admin permissions migration', function() {
 
   let db: Db
   before(function() {
-    db = this.mongo?.conn.db!
+    db = this.mongo?.conn.getClient().db() as Db;
   })
 
   after(mongoTest.mongoTestAfterAllHook())
@@ -39,7 +39,7 @@ describe('feeds admin permissions migration', function() {
     it('adds feeds permissions to the existing admin role', async function() {
 
       const roles = db.collection('roles')
-      const count = await roles.count()
+      const count = await roles.countDocuments()
 
       expect(count).to.equal(0)
 
