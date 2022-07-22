@@ -58,7 +58,7 @@ exports.up = function (done) {
     }
   }
 
-  this.db.collection('settings').findOneAndReplace({ type: 'security' }, null, update, { upsert: true }, done);
+  this.db.collection('settings').findOneAndReplace({ type: 'security' }, update, { upsert: true }, done);
 };
 
 exports.down = function (done) {
