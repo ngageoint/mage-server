@@ -80,7 +80,7 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (attachmentPatch === null) {
       return AppResponse.success(api.exoObservationFor(obsBefore))
     }
-    const obsAfterSave = await obsRepo.patchAttachmentContentInfo(obsBefore, attachmentBefore.id, attachmentPatch)
+    const obsAfterSave = await obsRepo.patchAttachment(obsBefore, attachmentBefore.id, attachmentPatch)
     if (obsAfterSave instanceof Observation) {
       return AppResponse.success(api.exoObservationFor(obsAfterSave))
     }

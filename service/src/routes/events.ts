@@ -14,7 +14,7 @@ import fs from 'fs-extra'
 import { EventAccessType, MageEvent } from '../entities/events/entities.events'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
-import { LineStyle } from '../entities/entities.global'
+import { LineStyle, PagingParameters } from '../entities/entities.global'
 
 declare module 'express-serve-static-core' {
   export interface Request {
@@ -659,17 +659,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
-      const options = {
-        access: req.access,
-        searchTerm: req.query.term,
-        pageSize: parseInt(String(req.query.page_size)) || 2,
-        pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
-      }
-
+      const options = teamQueryOptionsFromRequest(req)
       EventModel.getTeamsInEvent(parseInt(req.params.id), options).then(page => {
-        if (!page) return res.status(404).send('Event not found');
-
+        if (!page) {
+          return res.status(404).send('Event not found');
+        }
         res.json(page);
       }).catch(err => next(err));
     }
@@ -680,17 +674,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     passport.authenticate('bearer'),
     determineReadAccess,
     function (req, res, next) {
-      const options = {
-        access: req.access,
-        searchTerm: req.query.term,
-        pageSize: parseInt(String(req.query.page_size)) || 2,
-        pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
-      }
-
+      const options = teamQueryOptionsFromRequest(req)
       EventModel.getTeamsNotInEvent(parseInt(req.params.id), options).then(page => {
-        if (!page) return res.status(404).send('Event not found');
-
+        if (!page) {
+          return res.status(404).send('Event not found');
+        }
         res.json(page);
       }).catch(err => next(err));
     }
@@ -698,3 +686,24 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 };
 
 export = EventRoutes
+
+function parseIntOrUndefined(input: any): number | undefined {
+  const num = parseInt(String(input))
+  return Number.isNaN(num) ? void(0) : num
+}
+
+function teamQueryOptionsFromRequest(req: express.Request): any {
+  const options = {
+    access: req.access,
+    searchTerm: req.query.term,
+    pageSize: parseIntOrUndefined(req.query.page_size),
+    pageIndex: parseIntOrUndefined(req.query.page),
+    includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined,
+    populate: typeof req.query.populate === 'string' ? req.query.populate.split(",") : []
+  } as Partial<PagingParameters>
+  if (typeof options.pageSize === 'number' || typeof options.pageIndex === 'number') {
+    options.pageSize = options.pageSize || 10
+    options.pageIndex = options.pageIndex || 0
+  }
+  return options
+}

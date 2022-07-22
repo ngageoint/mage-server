@@ -53,6 +53,8 @@ import { UserWithRole } from './permissions/permissions.role-based.base'
 import { AttachmentStore, EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
 import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adpaters.observations.attachment_store.file_system'
+import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
+import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 
 
 export interface MageService {
@@ -118,8 +120,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     throw err
   }
 
-  const models = await initDatabase()
-  const repos = await initRepositories(models, config)
+  const dbLayer = await initDatabase()
+  const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
 
   const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
@@ -132,6 +134,8 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     [ FeedServiceRepositoryToken, repos.feeds.serviceRepo ],
     [ FeedRepositoryToken, repos.feeds.feedRepo ],
     [ MageEventRepositoryToken, repos.events.eventRepo ],
+    [ ObservationRepositoryToken, repos.observations.obsRepoFactory ],
+    [ AttachmentStoreToken, repos.observations.attachmentStore ],
     [ StaticIconRepositoryToken, repos.icons.staticIconRepo ],
     [ UserRepositoryToken, repos.users.userRepo ],
     [ FeedsAppServiceTokens.CreateFeed, appLayer.feeds.createFeed ],
@@ -146,10 +150,13 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
       if (token === PluginStateRepositoryToken) {
         let stateRepo = pluginScopeServices.get(PluginStateRepositoryToken)
         if (!stateRepo) {
-          stateRepo = new MongoosePluginStateRepository(pluginId, models.conn)
+          stateRepo = new MongoosePluginStateRepository(pluginId, mongoose)
           pluginScopeServices.set(PluginStateRepositoryToken, stateRepo)
         }
         return stateRepo
+      }
+      else if (token === MongooseDbConnectionToken) {
+        return dbLayer.connectionFactoryForPlugin(pluginId)
       }
       return globalScopeServices.get(token)
     }
@@ -193,8 +200,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   return service
 }
 
-type DatabaseModels = {
+type DatabaseLayer = {
   conn: mongoose.Connection
+  connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
   feeds: {
     feedServiceTypeIdentity: FeedServiceTypeIdentityModel
     feedService: FeedServiceModel
@@ -246,9 +254,25 @@ type AppLayer = {
   users: UsersAppLayer
 }
 
-async function initDatabase(): Promise<DatabaseModels> {
+async function initDatabase(): Promise<DatabaseLayer> {
   const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo
   const conn = await waitForDefaultMongooseConnection(mongoose, uri, connectTimeout, connectRetryDelay, options).then(() => mongoose.connection)
+  const PluginConnectionFactory = function PluginConnectionFactory(pluginId: string): GetDbConnection {
+    const pluginMongoose = new mongoose.Mongoose()
+    // TODO: add event listeners to plugin connections to log how plugins are using the connection
+    // TODO: bufferCommands probably exists on mongoose 5+ types. 4 supports the option, but the typedefs don't
+    const pluginOptions: mongoose.ConnectOptions & { bufferCommands: boolean } = {
+      ...options,
+      minPoolSize: 5,
+      maxPoolSize: 5,
+      bufferCommands: false,
+      autoIndex: false
+    }
+    return () => {
+      console.info(`get db connection for plugin ${pluginId}`)
+      return waitForDefaultMongooseConnection(pluginMongoose, uri, connectTimeout, connectRetryDelay, pluginOptions).then(() => pluginMongoose.connection)
+    }
+  }
   // TODO: transition legacy model initialization
   // TODO: inject connection to migrations
   // TODO: explore performing migrations without mongoose models because current models may not be compatible with past migrations
@@ -257,6 +281,7 @@ async function initDatabase(): Promise<DatabaseModels> {
   await migrate.runDatabaseMigrations(uri, options)
   return {
     conn,
+    connectionFactoryForPlugin: PluginConnectionFactory,
     feeds: {
       feedServiceTypeIdentity: FeedServiceTypeIdentityModel(conn),
       feedService: FeedServiceModel(conn),
@@ -304,7 +329,7 @@ const jsonSchemaService: JsonSchemaService = {
   }
 }
 
-async function initRepositories(models: DatabaseModels, config: BootConfig): Promise<Repositories> {
+async function initRepositories(models: DatabaseLayer, config: BootConfig): Promise<Repositories> {
   const serviceTypeRepo = new MongooseFeedServiceTypeRepository(models.feeds.feedServiceTypeIdentity)
   const serviceRepo = new MongooseFeedServiceRepository(models.feeds.feedService)
   const feedRepo = new MongooseFeedRepository(models.feeds.feed, new SimpleIdFactory())

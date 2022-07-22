@@ -35,7 +35,7 @@ describe('mongoose plugin state repository', function() {
       promiseLibrary: Promise
     })
     pluginId = uniqid('@test/')
-    repo = new MongoosePluginStateRepository(pluginId, conn)
+    repo = new MongoosePluginStateRepository(pluginId, Mongoose)
   })
 
   afterEach(async function() {
@@ -58,7 +58,7 @@ describe('mongoose plugin state repository', function() {
     expect(model).to.equal(repo.model)
     expect(model.collection.name).to.equal(name)
 
-    const repo2 = new MongoosePluginStateRepository(pluginId, conn)
+    const repo2 = new MongoosePluginStateRepository(pluginId, Mongoose)
 
     expect(repo2.model).to.equal(repo.model)
   })

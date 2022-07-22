@@ -573,6 +573,7 @@ export function removeFormEntry(observation: Observation, formEntryId: FormEntry
 export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 export type AttachmentContentPatchAttrs = Required<Pick<Attachment, 'contentLocator' | 'size'>>
+export type ThumbnailContentPatchAttrs = Required<Pick<Thumbnail, 'contentLocator' | 'size'>> & Thumbnail
 
 /**
  * Add the given attachment to the given observation.  Return a new observation
@@ -609,7 +610,7 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
  * Update the attachment for the given ID with the given patch object.  Keys
  * that are present in the patch whose values are `undefined` will assign
  * `undefined` to the resulting updated attachment.  Keys not present in the
- * patch will have not affect on the resulting updated attachment.
+ * patch will have no affect on the resulting updated attachment.
  * @param observation
  * @param attachmentId
  * @param patch
@@ -742,23 +743,30 @@ export class AttachmentNotFoundError extends Error {
   findLatest(): Promise<ObservationAttrs | null>
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
   /**
-   * Update the specified attachment with the given attributes that {@link AttachmentContentStore.storeAttachmentContent storing}
-   * the content generated.  This persistence function exists alongside the
-   * {@link save} method to prevent concurrent updates from colliding and
-   * overwriting each other.  That situation is common when storing attachment
-   * content because a single client will intiate several parallel content
-   * uploads for multiple attachments.  Each separate content upload could
-   * fetch the same version of the observation from the database, store the
-   * content, then update that version of the observation record.  If using
-   * the whole observation `save()` method to apply the update just for a
-   * single attachment, each save operation would overwrite the changes for the
-   * save operations that came before.  Return the updated `Observation` entity
-   * instance on a successful update.  Return an `AttachmentNotFoundError`
-   * if the given observation did not have an attachment with the given
-   * attachment ID.  Return null if the given observation does not exist in
-   * the database.
+   * Update the specified attachment with the given attributes.  This
+   * persistence function exists alongside the {@link save} method to prevent
+   * concurrent updates from colliding and overwriting each other.  That
+   * situation is common when storing attachment content because a single
+   * client will intiate several parallel content uploads for multiple
+   * attachments.  Each separate content upload could fetch the same version of
+   * the observation from the database, store the content, then update that
+   * version of the observation record.  If using the whole observation `save()`
+   * method to apply the update just for a single attachment, each save
+   * operation would overwrite the changes for the save operations that came
+   * before.  Return the updated `Observation` entity instance on a successful
+   * update.  Return an `AttachmentNotFoundError` if the given observation did
+   * not have an attachment with the given attachment ID.  Return null if the
+   * given observation does not exist in the database.
+   *
+   * Note that this is a shallow patch, so if the patch has the `thumbnails`
+   * key, the method will persist the value of that key to the database, as
+   * opposed to deeply patching any thumbnails present in the array.  This
+   * method should essentially use {@link patchAttachment} to perform the
+   * patch for the resulting attachment.
+   *
+   * TODO: Account for patch invalidating the attachment media type.
    */
-  patchAttachmentContentInfo(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
+  patchAttachment(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null>
   /**
    * Because attachments reference a form entry by its ID, an API to generate
    * form entry IDs is necessary.
@@ -826,7 +834,7 @@ export interface AttachmentStore {
    * {@link Attachment.contentLocator | content locator} to the attachment after
    * a successful save, and/or changes the size of the attachment to the actual
    * number of bytes writen, return a {@link AttachmentContentPatchAttrs patch}
-   * to {@link EventScopedObservationRepository.patchAttachmentContentInfo update}
+   * to {@link EventScopedObservationRepository.patchAttachment update}
    * the attachment  new observation instance with the {@link patchAttachment | patched}
    * attachment.  Return `null` if the save succeeded and no change to the
    * attachment was necessary.  Return an {@link AttachmentStoreError} if the
@@ -836,8 +844,12 @@ export interface AttachmentStore {
   /**
    * Similar to {@link saveContent()}, but for thumbnails of attachments.
    * The store distinguishes thumbnails by their standard minimum dimension.
+   * If the `contentLocator` or the `size` of the stored thumbnail content is
+   * different than what is on the input thumbnail meta-data, return thumbnail
+   * attributes suitable to pass to {@link putAttachmentThumbnailForMinDimension}
+   * to update the observation with the new attachment thumbnail.
    */
-  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<null | ThumbnailContentPatchAttrs | AttachmentStoreError>
   /**
    * Return a read stream of the content for the given attachment.  The client
    * can specify an optional zero-based range of bytes to read from the

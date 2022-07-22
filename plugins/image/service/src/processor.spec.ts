@@ -1,9 +1,11 @@
-import { EventProcessingState, FindUnprocessedImageAttachments, ImageContent, ImageDescriptor, ImagePluginState, ImageService, processImageAttachments, UnprocessedAttachmentReference } from './processor'
+import { EventProcessingState, FindUnprocessedImageAttachments, ImageContent, ImageDescriptor, ImagePluginState, ImageService, orientAttachmentImage, processImageAttachments, thumbnailAttachmentImage, UnprocessedAttachmentReference } from './processor'
 import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent, copyMageEventAttrs } from '@ngageoint/mage.service/lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentId, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationId, PendingAttachmentContent, PendingAttachmentContentId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentPatchAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyObservationAttrs, copyThumbnailAttrs, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationId, patchAttachment, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef, Thumbnail, ThumbnailContentPatchAttrs } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import stream from 'stream'
+import util from 'util'
 import { BufferWriteable } from './util.spec'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
+import _ from 'lodash'
 
 function minutes(x: number): number {
   return 1000 * 60 * x
@@ -57,6 +59,22 @@ function makeObservation(id: ObservationId, eventId: MageEventId, ageInMinutes?:
     },
     attachments: [],
     states: [],
+    favoriteUserIds: [],
+  }
+}
+
+function sameAsObservationWithoutDates(expected: Observation): jasmine.AsymmetricMatcher<Observation> {
+  const { createdAt, lastModified, ...expectedAttrs } = copyObservationAttrs(expected)
+  expectedAttrs.attachments.forEach(x => delete x.lastModified)
+  return {
+    asymmetricMatch(actual: any, matchersUtil: jasmine.MatchersUtil) {
+      const { createdAt, lastModified, ...actualAttrs } = copyObservationAttrs(actual)
+      actualAttrs.attachments.forEach(x => delete x.lastModified)
+      return actual instanceof Observation && matchersUtil.equals(expectedAttrs, actualAttrs)
+    },
+    jasmineToString(prettyPrint): string {
+      return `<an Observation instance equivalent to ${prettyPrint(expectedAttrs)}>`
+    }
   }
 }
 
@@ -93,16 +111,6 @@ function observationWithAttachments(id: ObservationId, event: MageEvent, attachm
     },
     attachments
   }, event)
-}
-
-type AttachmentReadStream = jasmine.SpyObj<NodeJS.ReadableStream & { attachmentId: AttachmentId }>
-function makeAttachmentReadStream(attachmentId: AttachmentId): AttachmentReadStream {
-  return jasmine.createSpyObj<AttachmentReadStream>(`read-${attachmentId}`, [ 'read' ], { attachmentId })
-}
-
-type AttachmentWriteStream = jasmine.SpyObj<NodeJS.WritableStream & { attachmentId: AttachmentId }>
-function makeAttachmentWriteStream(attachmentId: AttachmentId): AttachmentWriteStream {
-  return jasmine.createSpyObj<AttachmentWriteStream>(`write-${attachmentId}`, [ 'write' ], { attachmentId })
 }
 
 const asyncIterableOf = <T>(items: T[]): AsyncIterable<T> => {
@@ -157,11 +165,163 @@ describe('processing interval', () => {
     eventRepo = jasmine.createSpyObj<MageEventRepository>('eventRepo', [ 'findActiveEvents' ])
     eventRepo.findActiveEvents.and.resolveTo(Array.from(allEvents.values()).map(copyMageEventAttrs))
     observationRepos = Array.from(allEvents.values()).reduce((repos, event) => {
-      return repos.set(event.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepo-${event.id}`, [ 'findById', 'save' ]))
+      return repos.set(event.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepo-${event.id}`, [ 'findById', 'patchAttachment', 'save' ]))
     }, new Map())
     attachmentStore = jasmine.createSpyObj<AttachmentStore>('attachmentStore',
       [ 'readContent', 'saveContent', 'readThumbnailContent', 'saveThumbnailContent', 'stagePendingContent' ])
     imageService = jasmine.createSpyObj<ImageService>('imageService', [ 'autoOrient', 'scaleToDimension' ])
+  })
+
+  describe('orient phase', () => {
+
+    it('orients the attachment image and patches the attachment', async () => {
+
+      const att: Attachment = Object.freeze({
+        id: '1.123.1',
+        observationFormId: 'form1',
+        fieldName: 'field1',
+        oriented: false,
+        thumbnails: [],
+        contentType: 'image/jpeg',
+        name: 'test1.jpeg',
+        size: 320000,
+        contentLocator: String(Date.now())
+      })
+      const originalContent = Buffer.from('sniugnep fo otohp')
+      const originalConstentStream = stream.Readable.from(originalContent)
+      const stagedContent = new StagedAttachmentContent('stage1', new BufferWriteable())
+      const obsBefore: Observation = observationWithAttachments('1.123', event1, [ att ])
+      const obsStored: Observation = patchAttachment(obsBefore, att.id, { size: 321321, width: 1000, height: 1200, oriented: true }) as Observation
+      const attStored = obsStored.attachmentFor(att.id) as Attachment
+      const obsRepo = observationRepos.get(event1.id)!
+      obsRepo.patchAttachment.and.resolveTo(obsStored)
+      attachmentStore.readContent.and.resolveTo(originalConstentStream)
+      attachmentStore.stagePendingContent.and.resolveTo(stagedContent)
+      attachmentStore.saveContent.and.resolveTo({ size: 321321, contentLocator: att.contentLocator! })
+      imageService.autoOrient.and.callFake(async (source, dest) => {
+        const oriented = new BufferWriteable()
+        await util.promisify(stream.pipeline)(source.bytes, oriented)
+        await util.promisify(stream.pipeline)(stream.Readable.from(oriented.content.reverse()), dest)
+        return {
+          mediaType: 'image/jpeg',
+          sizeInBytes: 321321,
+          dimensions: { width: 1000, height: 1200 },
+        }
+      })
+      const oriented = await orientAttachmentImage(obsBefore, att.id, imageService, obsRepo, attachmentStore) as Observation
+      const orientedContent = stagedContent.tempLocation as BufferWriteable
+
+      expect(oriented).toBeInstanceOf(Observation)
+      expect(oriented.attachments).toEqual([
+        { ...att, lastModified: attStored.lastModified, size: 321321, width: 1000, height: 1200, oriented: true, contentLocator: att.contentLocator! }
+      ])
+      expect(orientedContent.content).toEqual(Buffer.from('photo of penguins'))
+      expect(obsRepo.patchAttachment).toHaveBeenCalledOnceWith(
+        obsBefore, att.id, { oriented: true, size: 321321, width: 1000, height: 1200, contentType: 'image/jpeg', contentLocator: att.contentLocator! })
+      expect(imageService.autoOrient).toHaveBeenCalledOnceWith(jasmine.objectContaining({ bytes: originalConstentStream }), stagedContent.tempLocation)
+      expect(attachmentStore.saveContent).toHaveBeenCalledOnceWith(stagedContent, att.id, obsBefore)
+      expect(obsRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('patches the attachment even if saving content did not change attachment meta-data')
+    it('does not patch the attachment if saving content failed')
+  })
+
+  describe('thumbnail phase', () => {
+
+    it('generates the specified thumbnails and patches the attachment once', async () => {
+
+      const att: Attachment = Object.freeze({
+        id: '1.456.1',
+        observationFormId: 'form1',
+        fieldName: 'field1',
+        contentType: 'image/png',
+        name: 'test1.jpg',
+        size: 987789,
+        width: 1200,
+        height: 1600,
+        oriented: true,
+        contentLocator: String(Date.now()),
+        thumbnails: [],
+      })
+      class ExpectedThumb {
+        readonly stagedContent: StagedAttachmentContent
+        constructor(readonly metaData: Thumbnail, stagedContentId: StagedAttachmentContentId) {
+          this.stagedContent = new StagedAttachmentContent(stagedContentId, new BufferWriteable())
+        }
+        get stagedContentBytes() { return (this.stagedContent.tempLocation as BufferWriteable).content }
+      }
+      const salt = String(Date.now())
+      const expectedThumbs = new Map<number, ExpectedThumb>()
+        .set(60, new ExpectedThumb(
+          { minDimension: 60, size: 6000, width: 60, height: 80, name: 'test1-60.jpg', contentType: 'image/jpeg', contentLocator: `${att.contentLocator}-60` },
+          `${salt}-staged-60`))
+        .set(120, new ExpectedThumb(
+          { minDimension: 120, size: 12000, width: 120, height: 160, name: 'test1-120.jpg', contentType: 'image/jpeg', contentLocator: `${att.contentLocator}-120` },
+          `${salt}-staged-120`))
+        .set(240, new ExpectedThumb(
+          { minDimension: 240, size: 24000, width: 240, height: 320, name: 'test1-240.jpg', contentType: 'image/jpeg', contentLocator: `${att.contentLocator}-240` },
+          `${salt}-staged-240`))
+      const obsRepo = observationRepos.get(event1.id)!
+      const obsBefore: Observation = observationWithAttachments('1.123', event1, [ att ])
+      const obsStaged: Observation = patchAttachment(obsBefore, att.id,
+        { thumbnails: Array.from(expectedThumbs.values()).map(x => _.omit(copyThumbnailAttrs(x.metaData), 'contentLocator')) }) as Observation
+      const attachmentContent = Buffer.from('big majestic mountains')
+      const stagedContentStack = [ expectedThumbs.get(240)?.stagedContent, expectedThumbs.get(120)?.stagedContent, expectedThumbs.get(60)?.stagedContent ]
+      attachmentStore.readContent.and.callFake(async _ => stream.Readable.from(attachmentContent))
+      attachmentStore.stagePendingContent.and.callFake(async () => stagedContentStack.pop()!)
+      attachmentStore.saveThumbnailContent.and.callFake(async (content, minDimension) => {
+        return expectedThumbs.get(minDimension)!.metaData as ThumbnailContentPatchAttrs
+      })
+      imageService.scaleToDimension.and.callFake(async (minDimension, source, dest) => {
+        const sourceStream = new BufferWriteable()
+        await util.promisify(stream.pipeline)(source.bytes, sourceStream)
+        const thumbContent = Buffer.from(`${sourceStream.content.toString()} @${minDimension}`)
+        await util.promisify(stream.pipeline)(stream.Readable.from(thumbContent), dest)
+        return {
+          dimensions: { width: minDimension, height: minDimension * 4 / 3 },
+          mediaType: 'image/jpeg',
+          sizeInBytes: minDimension * 100
+        }
+      })
+      obsRepo.patchAttachment.and.callFake(async (obs, attId, patch) => {
+        return patchAttachment(obs, attId, patch) as Observation
+      })
+      const obsActual = await thumbnailAttachmentImage(obsBefore, att.id, [ 60, 120, 240 ], imageService, obsRepo, attachmentStore) as Observation
+
+      expect(copyObservationAttrs(obsActual)).toEqual(
+        {
+          ...copyObservationAttrs(obsBefore),
+          lastModified: jasmine.any(Date),
+          attachments: [
+            { ...att, lastModified: jasmine.any(Date), thumbnails: Array.from(expectedThumbs.values()).map(x => x.metaData) }
+          ]
+        }
+      )
+      expect(expectedThumbs.get(60)?.stagedContentBytes.toString()).toEqual('big majestic mountains @60')
+      expect(expectedThumbs.get(120)?.stagedContentBytes.toString()).toEqual('big majestic mountains @120')
+      expect(expectedThumbs.get(240)?.stagedContentBytes.toString()).toEqual('big majestic mountains @240')
+      expect(obsRepo.patchAttachment).toHaveBeenCalledOnceWith(obsBefore, att.id, {
+        thumbnails: Array.from(expectedThumbs.values()).map(x => x.metaData)
+      })
+      expect(attachmentStore.stagePendingContent).toHaveBeenCalledTimes(3)
+      expect(attachmentStore.readContent).toHaveBeenCalledTimes(3)
+      expect(attachmentStore.readContent.calls.argsFor(0)).toEqual([ att.id, obsBefore ])
+      expect(attachmentStore.readContent.calls.argsFor(1)).toEqual([ att.id, obsBefore ])
+      expect(attachmentStore.readContent.calls.argsFor(2)).toEqual([ att.id, obsBefore ])
+      expect(imageService.scaleToDimension).toHaveBeenCalledTimes(3)
+      expect(imageService.scaleToDimension).toHaveBeenCalledWith(60, jasmine.anything(), jasmine.anything())
+      expect(imageService.scaleToDimension).toHaveBeenCalledWith(120, jasmine.anything(), jasmine.anything())
+      expect(imageService.scaleToDimension).toHaveBeenCalledWith(240, jasmine.anything(), jasmine.anything())
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledTimes(3)
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(60)?.stagedContent.id, 60, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(120)?.stagedContent.id, 120, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveThumbnailContent).toHaveBeenCalledWith(expectedThumbs.get(240)?.stagedContent.id, 240, att.id, sameAsObservationWithoutDates(obsStaged))
+      expect(attachmentStore.saveContent).not.toHaveBeenCalled()
+      expect(obsRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('does not destroy existing thumbnail meta-data during update')
   })
 
   it('queries for attachments based on last latest process time of each event and start time of interval', async () => {
@@ -275,11 +435,8 @@ describe('processing interval', () => {
     ]
     const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findAttachments').and.resolveTo(asyncIterableOf(unprocessedAttachments))
     observationRepos.forEach((repo, eventId) => {
-      repo.findById.and.callFake(id => {
-        const observations = eventObservations.get(eventId)
-        return Promise.resolve(observations?.find(x => x.id === id) || null)
-      })
-      repo.save.and.callFake(o => Promise.resolve(o))
+      repo.findById.and.callFake(async id => eventObservations.get(eventId)?.find(x => x.id === id) || null)
+      repo.patchAttachment.and.callFake(async o => o)
     })
     imageService.autoOrient.and.resolveTo({
       mediaType: 'image/png',
@@ -291,7 +448,9 @@ describe('processing interval', () => {
       sizeInBytes: 30000,
       dimensions: { width: minDimension, height: Math.round(minDimension * 1.3) },
     }))
-    attachmentStore.stagePendingContent.and.resolveTo({ tempLocation: makeAttachmentWriteStream('temp'), id: 'staged attachment' })
+    const stagedContent = new StagedAttachmentContent('staged attachment', new BufferWriteable())
+    attachmentStore.readContent.and.resolveTo(stream.Readable.from(Buffer.from('original content')))
+    attachmentStore.stagePendingContent.and.resolveTo(stagedContent)
     attachmentStore.saveContent.and.resolveTo(null)
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
     const processedEventStates = await processImageAttachments(pluginState, eventProcessingStates,
@@ -312,9 +471,9 @@ describe('processing interval', () => {
     ].map(x => [ x.event.id, x ]))
     const pluginState: ImagePluginState = {
       enabled: true,
-      intervalBatchSize: 1000,
       intervalSeconds: 60,
-      thumbnailSizes: []
+      intervalBatchSize: 1000,
+      thumbnailSizes: [ 60, 120 ]
     }
     const eventObservations = new Map<MageEventId, Observation[]>()
       .set(1, [
@@ -415,24 +574,25 @@ describe('processing interval', () => {
       }
     }
     const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findAttachments').and.resolveTo(failNextIfCurrentNotProcessed)
+    attachmentStore.readContent.and.resolveTo(stream.Readable.from(Buffer.from(new Date().toISOString())))
     attachmentStore.stagePendingContent.and.callFake(async () => ({
-      tempLocation: {} as any,
+      tempLocation: new BufferWriteable(),
       id: failNextIfCurrentNotProcessed.current!.attachmentId
     }))
-    imageService.autoOrient.and.callFake((source: ImageContent, dest: AttachmentWriteStream) => {
-      failNextIfCurrentNotProcessed.processCurrent()
-      return Promise.resolve<Required<ImageDescriptor>>({
+    imageService.autoOrient.and.callFake(async (source: ImageContent, dest: NodeJS.WritableStream) => {
+      return await Promise.resolve<Required<ImageDescriptor>>({
         mediaType: `image/png`,
-        dimensions: { width: 120, height: 120 },
-        sizeInBytes: 1000
+        dimensions: { width: 100 * (failNextIfCurrentNotProcessed.cursor + 1), height: 120 * (failNextIfCurrentNotProcessed.cursor + 1) },
+        sizeInBytes: 1000 * (failNextIfCurrentNotProcessed.cursor + 1)
       })
     })
+    imageService.scaleToDimension.and.callFake(async minDimension => {
+      failNextIfCurrentNotProcessed.processCurrent()
+      return { mediaType: 'image/jpeg', sizeInBytes: minDimension * 1000, dimensions: { width: minDimension, height: minDimension * 1.5 }}
+    })
     observationRepos.forEach((repo, eventId) => {
-      repo.findById.and.callFake(id => {
-        const observations = eventObservations.get(eventId)
-        return Promise.resolve(observations?.find(x => x.id === id) || null)
-      })
-      repo.save.and.callFake(o => Promise.resolve(o))
+      repo.findById.and.callFake(async id => eventObservations.get(eventId)!.find(x => x.id === id) || null)
+      repo.patchAttachment.and.callFake(async (obs) => eventObservations.get(obs.eventId)!.find(x => x.id === obs.id)!)
     })
     attachmentStore.saveContent.and.resolveTo(null)
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
@@ -444,112 +604,6 @@ describe('processing interval', () => {
     for (const a of unprocessedAttachments) {
       expect(a.processed).toBe(true)
     }
-  })
-
-  it('generates the configured thumbnails of the oriented image', async () => {
-
-    const pluginState: ImagePluginState = {
-      enabled: true,
-      intervalBatchSize: 1,
-      intervalSeconds: 1000,
-      thumbnailSizes: [ 50, 100 ]
-    }
-    const attachment: Required<Attachment> = {
-      id: '1.1000.1',
-      observationFormId: 'form1',
-      fieldName: 'field1',
-      lastModified: new Date(minutesAgo(5)),
-      name: 'test.png',
-      contentType: 'image/png',
-      width: 1000,
-      height: 500,
-      size: 10000,
-      oriented: false,
-      thumbnails: []
-    }
-    const orientedDimensions = Object.freeze({ width: attachment.height!, height: attachment.width! })
-    const thumbDimensions = {
-      [50]: Object.freeze({ width: 50, height: 100 }),
-      [100]: Object.freeze({ width: 100, height: 200 })
-    }
-    const observation = observationWithAttachments('1.1000', event1, [
-      attachment,
-      {
-        id: '1.1000.2',
-        observationFormId: 'form1',
-        fieldName: 'field1',
-        lastModified: new Date(),
-        contentType: 'audio/mp4',
-        oriented: false,
-        thumbnails: []
-      }
-    ])
-    const unprocessed: UnprocessedAttachmentReference = {
-      attachmentId: attachment.id,
-      observationId: observation.id,
-      eventId: 1,
-    }
-    const unorientedBytes = Buffer.from('happy little tree')
-    const orientedBytes = Buffer.from('HAPPY LITTLE TREE')
-    const thumbBytes = {
-      50: Buffer.from('thumb 50'),
-      100: Buffer.from('thumb 100')
-    }
-
-    const observationRepo = observationRepos.get(unprocessed.eventId)!
-    const observations = new Map<ObservationId, Observation>().set(observation.id, observation)
-    observationRepo.findById.and.callFake(async id => observations.get(id) || null)
-    observationRepo.save.and.callFake(x => {
-      observations.set(x.id, x)
-      return Promise.resolve(x)
-    })
-    const attachmentStore = new BufferAttachmentStore()
-    attachmentStore.attachmentContent.set(AttachmentContentKey(attachment.id, observation.id), unorientedBytes)
-    imageService.autoOrient.and.callFake((source, dest) => {
-      return new Promise(resolve => {
-        stream.Readable.from(orientedBytes).pipe(dest).on('finish', () => {
-          resolve({
-            mediaType: attachment.contentType!,
-            dimensions: orientedDimensions,
-            sizeInBytes: attachment.size!
-          })
-        })
-      })
-    })
-    const thumbnailSources = new Map<number, Buffer>()
-    imageService.scaleToDimension.and.callFake(async (minDimension, source, dest) => {
-      let sourceBytes = Buffer.alloc(0)
-      for await (const chunk of source.bytes) {
-        sourceBytes = Buffer.concat([ sourceBytes, chunk as Buffer ])
-      }
-      thumbnailSources.set(minDimension, sourceBytes)
-      return new Promise(resolve => {
-        const thumbnailBytes = thumbBytes[minDimension as keyof typeof thumbBytes]
-        stream.Readable.from(thumbnailBytes).pipe(dest).on('finish', () => {
-          resolve({
-            dimensions: thumbDimensions[minDimension as keyof typeof thumbDimensions],
-            mediaType: attachment.contentType!,
-            sizeInBytes: attachment.size! * (minDimension / orientedDimensions.width)!
-          })
-        })
-      })
-    })
-    const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findUnprocessedAttachments')
-      .and.resolveTo(asyncIterableOf([ unprocessed ]))
-
-    await processImageAttachments(pluginState, new Map(), findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore)
-
-    expect(imageService.autoOrient).toHaveBeenCalledTimes(1)
-    expect(imageService.scaleToDimension).toHaveBeenCalledTimes(2)
-    expect(imageService.scaleToDimension).toHaveBeenCalledWith(50, jasmine.anything(), jasmine.anything())
-    expect(imageService.scaleToDimension).toHaveBeenCalledWith(100, jasmine.anything(), jasmine.anything())
-    expect(Array.from(thumbnailSources.keys())).toEqual([ 50, 100 ])
-    expect(thumbnailSources.get(50)).toEqual(orientedBytes)
-    expect(thumbnailSources.get(100)).toEqual(orientedBytes)
-    expect(attachmentStore.attachmentContent.get(AttachmentContentKey(unprocessed.attachmentId, observation.id))).toEqual(orientedBytes)
-    expect(attachmentStore.thumbnailContent.get(ThumbnailContentKey(50, unprocessed.attachmentId, observation.id))).toEqual(thumbBytes[50])
-    expect(attachmentStore.thumbnailContent.get(ThumbnailContentKey(100, unprocessed.attachmentId, observation.id))).toEqual(thumbBytes[100])
-    expect(observationRepo.save).toHaveBeenCalledTimes(2)
   })
 
   it('does not generate thumbnails if orient fails')
@@ -577,10 +631,10 @@ class BufferAttachmentStore implements AttachmentStore {
   readonly thumbnailContent = new Map<ThumbnailContentKey, Buffer>()
   private nextPendingId = 1
 
-  async stagePendingContent(): Promise<PendingAttachmentContent> {
+  async stagePendingContent(): Promise<StagedAttachmentContent> {
     const id = `pending::${this.nextPendingId++}`
     const tempLocation = new BufferWriteable()
-    const pending: PendingAttachmentContent = {
+    const pending: StagedAttachmentContent = {
       id,
       tempLocation: tempLocation.on('finish', () => {
         this.pendingContent.set(id, tempLocation.content)
@@ -589,31 +643,42 @@ class BufferAttachmentStore implements AttachmentStore {
     this.pendingContent.set(id, Buffer.alloc(0))
     return pending
   }
-  async saveContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, attachmentId: string, observation: Observation): Promise<AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound> | null> {
-    if (typeof content === 'string') {
-      const pendingBytes = this.pendingContent.get(content)
-      if (pendingBytes) {
-        const key = AttachmentContentKey(attachmentId, observation.id)
-        this.pendingContent.delete(content)
-        this.attachmentContent.set(key, pendingBytes)
-        return null
-      }
+  async saveContent(content: NodeJS.ReadableStream | StagedAttachmentContent, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | AttachmentContentPatchAttrs | null> {
+    if (typeof content !== 'string') {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
     }
-    return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
-  }
-  async saveThumbnailContent(content: NodeJS.ReadableStream | PendingAttachmentContentId, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError<AttachmentStoreErrorCode.InvalidAttachmentId | AttachmentStoreErrorCode.ContentNotFound> | null> {
-    if (typeof content === 'string') {
-      const pendingBytes = this.pendingContent.get(content)
-      if (pendingBytes) {
-        const key = ThumbnailContentKey(minDimension, attachmentId, observation.id)
-        this.pendingContent.delete(content)
-        this.thumbnailContent.set(key, pendingBytes)
-        return null
-      }
+    const att = observation.attachmentFor(attachmentId)
+    if (!att) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId)
     }
-    return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
+    const pendingBytes = this.pendingContent.get(content)
+    if (!pendingBytes) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, `pending content not found: ${content}`)
+    }
+    const key = AttachmentContentKey(attachmentId, observation.id)
+    this.pendingContent.delete(content)
+    this.attachmentContent.set(key, pendingBytes)
+    return { contentLocator: key, size: pendingBytes.length }
   }
-  async readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode>> {
+  async saveThumbnailContent(content: NodeJS.ReadableStream | StagedAttachmentContentId, minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | ThumbnailContentPatchAttrs | null> {
+    if (typeof content !== 'string') {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, 'this store supports saving only staged content')
+    }
+    const att = observation.attachmentFor(attachmentId)
+    if (!att) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.InvalidAttachmentId)
+    }
+    const pendingBytes = this.pendingContent.get(content)
+    if (!pendingBytes) {
+      return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound, `pending content not found: ${content}`)
+    }
+    const thumb = att.thumbnails.find(x => x.minDimension === minDimension)
+    const key = ThumbnailContentKey(minDimension, attachmentId, observation.id)
+    this.pendingContent.delete(content)
+    this.thumbnailContent.set(key, pendingBytes)
+    return { ...thumb, minDimension, contentLocator: key, size: pendingBytes.length }
+  }
+  async readContent(attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
     const key = AttachmentContentKey(attachmentId, observation.id)
     const bytes = this.attachmentContent.get(key)
     if (bytes) {
@@ -621,7 +686,7 @@ class BufferAttachmentStore implements AttachmentStore {
     }
     return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound)
   }
-  async readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError<AttachmentStoreErrorCode>> {
+  async readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
     const key = ThumbnailContentKey(minDimension, attachmentId, observation.id)
     const bytes = this.thumbnailContent.get(key)
     if (bytes) {
@@ -629,10 +694,10 @@ class BufferAttachmentStore implements AttachmentStore {
     }
     return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound)
   }
-  deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError<AttachmentStoreErrorCode> | null> {
+  deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
     throw new Error('Method not implemented.')
   }
-  deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError<AttachmentStoreErrorCode> | null> {
+  deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
     throw new Error('Method not implemented.')
   }
 }
