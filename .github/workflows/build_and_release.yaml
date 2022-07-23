@@ -100,6 +100,13 @@ jobs:
           npm run build
       - name: pack nga-msi
         run: npm pack ./plugins/nga-msi
+      - name: build plugin image.service
+        run: |
+          cd plugins/image/service
+          npm ci
+          npm run build
+      - name: pack plugin image.service
+        run: npm pack ./plugins/image/service
       - name: upload packages
         uses: actions/upload-artifact@v2
         with:
@@ -144,6 +151,31 @@ jobs:
           npm run ci:test
       # TODO: restore coveralls test coverage report - see buildAndTest.yml
 
+  # build_image_plugin:
+  #   name: build image plugin
+  #   needs: [ config, test_service ]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v2
+  #     - name: setup node
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: ${{ needs.config.outputs.node_versions-latest }}
+  #         cache: npm
+  #         cache-dependency-path: |
+  #           service/package-lock.json
+  #           plugins/image/service/package-lock.json
+  #     - name: download service packages
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: mage_service_packages
+
+  # build_msi_plugin:
+  #   name: build nga-msi plugin
+  #   needs: [ config, test_service ]
+  #   runs-on: ubuntu-latest
+
   build_web-app:
     name: build mage web app
     needs: config
@@ -154,6 +186,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v2
         with:
+          # TODO: angular 9 build does not run on node > 14
           node-version: 14
           cache: npm
           cache-dependency-path: web-app/package-lock.json
