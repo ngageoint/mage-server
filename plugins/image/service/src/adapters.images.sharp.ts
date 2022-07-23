@@ -51,7 +51,7 @@ class ImageOperation {
   }
 }
 
-export const SharpImageService: () => ImageService = () => {
+export function SharpImageService(): ImageService {
   return {
     autoOrient(source: ImageContent, dest: NodeJS.WritableStream): Promise<Required<ImageDescriptor> | Error> {
       const orient = sharp().rotate()

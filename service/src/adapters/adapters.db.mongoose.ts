@@ -26,7 +26,8 @@ class RetryConnection {
   }
 
   attemptConnection(): Promise<mongoose.Mongoose> {
-    return mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
+    log.debug(`attempting new mongodb connection to`, this.uri)
+    return this.mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
   }
 
   onConnectionError(err: any): void {
@@ -41,13 +42,10 @@ class RetryConnection {
   }
 }
 
-/**
- * The `any` type on mongoose argument should really be `mongoose.Mongoose`, but
- * there is some circular type reference in the `@types/mongoose` module that
- * causes the compile to fail.
- */
-export const waitForDefaultMongooseConnection = (mongoose: any, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectionOptions): Promise<void> => {
-  if (mongoose.connection.readyState === mongoose.STATES.connected) {
+export const waitForDefaultMongooseConnection = (mongoose: Mongoose, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectionOptions): Promise<void> => {
+  log.debug(`wait for default mongoose connection:`, uri)
+  if (mongoose.connection.readyState === mongoose.STATES.connected || mongoose.connection.readyState === mongoose.STATES.connecting) {
+    log.debug(`already connected to`, uri)
     return Promise.resolve()
   }
   return new Promise<void>((resolve, reject) => {
