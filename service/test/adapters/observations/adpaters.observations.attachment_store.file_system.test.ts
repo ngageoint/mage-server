@@ -10,19 +10,27 @@ import { FormFieldType } from '../../../lib/entities/events/entities.events.form
 import uniqid from 'uniqid'
 import _ from 'lodash'
 import { BufferWriteable } from '../../utils'
+import mime from 'mime-types'
 
-function contentLocatorOfAttachment(att: AttachmentId, obs: Observation): string {
+function contentLocatorOfAttachment(attId: AttachmentId, obs: Observation): string {
+  const att = obs.attachmentFor(attId)
+  if (!att) {
+    throw new Error(`no attachment ${attId} on observation ${obs.id}`)
+  }
+  const ext = mime.extension(att.contentType || '')
   return path.join(
     `event-${obs.eventId}`,
     String(obs.createdAt.getUTCFullYear()),
     String(obs.createdAt.getUTCMonth() + 1).padStart(2, '0'),
     String(obs.createdAt.getUTCDate()).padStart(2, '0'),
     obs.id,
-    att)
+    attId + (ext ? `.${ext}` : ''))
 }
 
-function contentLocatorOfThumbnail(minDimension: number, att: AttachmentId, obs: Observation): string {
-  return `${contentLocatorOfAttachment(att, obs)}-${minDimension}`
+function contentLocatorOfThumbnail(minDimension: number, attId: AttachmentId, obs: Observation): string {
+  const attLocator = contentLocatorOfAttachment(attId, obs)
+  const parts = path.parse(attLocator)
+  return path.join(parts.dir, `${parts.name}-${minDimension}${parts.ext}`)
 }
 
 const baseDirPath = path.resolve(`${__filename}.data`)
@@ -87,7 +95,8 @@ describe('file system attachment store', function() {
           observationFormId: 'entry1',
           oriented: false,
           thumbnails: [],
-          name: 'attachment_store.test',
+          name: 'attachment_store.mp4',
+          contentType: 'video/mp4'
         }
       ]
     }
@@ -146,7 +155,6 @@ describe('file system attachment store', function() {
     let contentBaseAbsPath: string
 
     beforeEach(function() {
-
       contentBaseRelPath = contentLocatorOfAttachment(att.id, obs)
       contentBaseAbsPath = path.join(baseDirPath, contentBaseRelPath)
     })
@@ -408,10 +416,10 @@ describe('file system attachment store', function() {
           const thumb120Before = attBefore.thumbnails.find(x => x.minDimension === 120)
           const content120 = Buffer.from('thumb 120')
           const result120 = await store.saveThumbnailContent(Readable.from(content120), 120, att.id, obs) as ThumbnailContentPatchAttrs
-
+          const pathParts = path.parse(contentBaseRelPath)
           expect(result120).to.deep.equal({
             ...thumb120Before,
-            contentLocator: `${contentBaseRelPath}-120`,
+            contentLocator: path.join(pathParts.dir, `${pathParts.name}-120${pathParts.ext}`),
             size: content120.length
           })
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
@@ -488,9 +496,14 @@ describe('file system attachment store', function() {
           const pending120 = await store.stagePendingContent()
           await util.promisify(stream.pipeline)(Readable.from(content120), pending120.tempLocation)
           const result120 = await store.saveThumbnailContent(pending120, 120, att.id, obs) as ThumbnailContentPatchAttrs
+          const pathParts = path.parse(contentBaseRelPath)
 
           expect(thumb120Before).to.deep.equal(copyThumbnailAttrs({ minDimension: 120 }))
-          expect(result120).to.deep.equal({ ...thumb120Before, contentLocator: `${contentBaseRelPath}-120`, size: content120.length })
+          expect(result120).to.deep.equal({
+            ...thumb120Before,
+            size: content120.length,
+            contentLocator: path.join(pathParts.dir, `${pathParts.name}-120${pathParts.ext}`)
+          })
         })
 
         it('uses the content locator if present', async function() {

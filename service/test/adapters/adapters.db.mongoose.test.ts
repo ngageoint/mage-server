@@ -10,7 +10,7 @@ chai.use(sinonChai)
 
 const mocks = sinon.createSandbox()
 
-describe.only('wait for mongoose connection utility', function() {
+describe('wait for mongoose connection utility', function() {
 
   const retryDelay = 2000
   const connectTimeout = 2 * 60 * 1000
