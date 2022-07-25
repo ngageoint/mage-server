@@ -157,10 +157,6 @@ describe.skip("observation create tests", function () {
       .expects('save')
       .resolves(mockObservation);
 
-    sinon.mock(mockObservation)
-      .expects('execPopulate')
-      .resolves(mockObservation);
-
     request(app)
       .put('/api/events/1/observations/' + observationId.toString())
       .set('Accept', 'application/json')

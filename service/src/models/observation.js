@@ -380,9 +380,7 @@ exports.updateObservation = function(event, observationId, update, callback) {
     })
     .then(observation => {
       return observation
-        .populate({ path: 'userId', select: 'displayName' })
-        .populate({ path: 'important.userId', select: 'displayName' })
-        .execPopulate();
+        .populate([{ path: 'userId', select: 'displayName' }, { path: 'important.userId', select: 'displayName' }]);
     })
     .then(observation => {
       callback(null, observation);
