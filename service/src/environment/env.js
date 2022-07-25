@@ -39,7 +39,8 @@ const appEnv = cfenv.getAppEnv({
           plan: 'unlimited',
           credentials: {
             url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
-            poolSize: parseInt(process.env.MAGE_MONGO_POOL_SIZE) || 5,
+            minPoolSize: parseInt(process.env.MAGE_MONGO_MIN_POOL_SIZE) || 5,
+            maxPoolSize: parseInt(process.env.MAGE_MONGO_MAX_POOL_SIZE) || 5,
             replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
@@ -82,7 +83,8 @@ const environment = {
     connectTimeout: parseInt(process.env.MAGE_MONGO_CONN_TIMEOUT) * 1000 || 300000,
     connectRetryDelay: parseInt(process.env.MAGE_MONGO_CONN_RETRY_DELAY) * 1000 || 5000,
     options: {
-      poolSize: mongoConfig.poolSize,
+      minPoolSize: mongoConfig.minPoolSize,
+      maxPoolSize: mongoConfig.maxPoolSize,
       replicaSet: mongoConfig.replicaSet,
       ssl: mongoSsl
     }

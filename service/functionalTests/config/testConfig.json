@@ -29,7 +29,8 @@
       "host": "localhost",
       "port": 27017,
       "db": "magedb",
-      "poolSize": 5
+      "minPoolSize": 5,
+      "maxPoolSize": 5
     },
     "locationServices": {
       "enabled": true,

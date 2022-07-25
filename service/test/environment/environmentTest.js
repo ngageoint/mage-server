@@ -45,7 +45,8 @@ describe("environment", function() {
     expect(mongo).to.have.property('connectRetryDelay', 5000);
     expect(mongo).to.have.property('connectTimeout', 300000);
     const options = mongo.options;
-    expect(options).to.have.property('poolSize', 5);
+    expect(options).to.have.property('minPoolSize', 5);
+    expect(options).to.have.property('maxPoolSize', 5);
     expect(options).to.have.property('ssl', false);
     expect(options).to.not.have.property('auth');
   });
@@ -65,7 +66,8 @@ describe("environment", function() {
         MAGE_MONGO_SSL: 'true',
         MAGE_MONGO_USER: 'mage_test',
         MAGE_MONGO_PASSWORD: 'test_mage',
-        MAGE_MONGO_POOL_SIZE: '87',
+        MAGE_MONGO_MIN_POOL_SIZE: '87',
+        MAGE_MONGO_MAX_POOL_SIZE: '87',
         MAGE_MONGO_CONN_TIMEOUT: '12345',
         MAGE_MONGO_CONN_RETRY_DELAY: '15'
       });
@@ -82,7 +84,8 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 15000);
       expect(mongo).to.have.property('connectTimeout', 12345000);
       const options = mongo.options;
-      expect(options).to.have.property('poolSize', 87);
+      expect(options).to.have.property('minPoolSize', 87);
+      expect(options).to.have.property('maxPoolSize', 87);
       expect(options).to.have.property('ssl', true);
       expect(options).to.have.deep.property('auth', { "user": "mage_test", "password": "test_mage" });
     });
@@ -178,7 +181,8 @@ describe("environment", function() {
               url: 'mongodb-cf://db.test.mage:27999/magedb_cf',
               username: 'cloudfoundry',
               password: 'foundrycloud',
-              poolSize: 99
+              minPoolSize: 99,
+              maxPoolSize: 99
             }
           }
         ]
@@ -198,7 +202,8 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectTimeout', 300000);
       const options = mongo.options;
       expect(options).to.have.property('ssl', false);
-      expect(options).to.have.property('poolSize', 99);
+      expect(options).to.have.property('minPoolSize', 99);
+      expect(options).to.have.property('maxPoolSize', 99);
       expect(options).to.have.deep.property('auth', { "user": "cloudfoundry", "password": "foundrycloud" });
     });
   });

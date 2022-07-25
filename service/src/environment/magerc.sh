@@ -29,7 +29,8 @@ export MAGE_MONGO_URL=mongodb://127.0.0.1:27017/magedb
 # whether to use secure, TLS sockets to connect to mongo
 export MAGE_MONGO_SSL=false
 # the size of MAGE's mongodb connection pool
-export MAGE_MONGO_POOL_SIZE=5
+export MAGE_MONGO_MIN_POOL_SIZE=5
+export MAGE_MONGO_MAX_POOL_SIZE=5
 # the user name MAGE uses to authenticate to mongodb
 export MAGE_MONGO_USER=
 # the password MAGE uses to authenticate to mongodb
