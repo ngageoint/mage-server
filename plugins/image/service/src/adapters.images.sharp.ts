@@ -51,16 +51,20 @@ class ImageOperation {
   }
 }
 
+const defaultOptions: sharp.SharpOptions & { failOn: 'none' | 'truncated' | 'error' | 'warning' } = {
+  failOn: 'error'
+}
+
 export function SharpImageService(): ImageService {
   return {
     autoOrient(source: ImageContent, dest: NodeJS.WritableStream): Promise<Required<ImageDescriptor> | Error> {
-      const orient = sharp().rotate()
+      const orient = sharp(defaultOptions).rotate()
       return ImageOperation.apply(orient).to(source.bytes, dest)
     },
     scaleToDimension(minDimension: number, source: ImageContent, dest: NodeJS.WritableStream): Promise<Required<ImageDescriptor> | Error> {
       const { width, height } = source.dimensions || { width: 0, height: 0 }
       const targetDimensions = width < height ? { width: minDimension } : { height: minDimension }
-      const scale = sharp().resize(targetDimensions)
+      const scale = sharp(defaultOptions).resize(targetDimensions)
       return ImageOperation.apply(scale).to(source.bytes, dest)
     }
   }
