@@ -221,12 +221,12 @@ exports.createDevice = function (device) {
   };
 
   log.info(`creating new device ${device.uid} for user ${device.userId}`);
-  const options = { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true };
+  const options = { new: true, upsert: true, runValidators: true };
   return Device.findOneAndUpdate({ uid: device.uid }, update, options).exec();
 };
 
 exports.updateDevice = function (id, update) {
-  const options =  { new: true, setDefaultsOnInsert: true, runValidators: true };
+  const options =  { new: true, runValidators: true };
   return Device.findOneAndUpdate({ _id: id }, update, options).exec();
 };
 
