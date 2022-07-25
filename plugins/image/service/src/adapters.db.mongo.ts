@@ -45,13 +45,20 @@ async function * eventStatesWithCollectionNames(conn: mongoose.Connection, event
 }
 
 function createAggregationPipeline(eventState: EventProcessingState, lastModifiedAfter: number | null, lastModifiedBefore: number | null): object[] {
-  const match: any = { $match: { 'attachments.oriented': false, 'attachments.contentType': /^image/ }}
+  const match: any = { $match: {
+    'attachments.oriented': false,
+    'attachments.contentType': /^image/,
+    $or: [
+      { 'states.0.name': { $eq: 'active' }},
+      { 'states.0.name': { $exists: false }}
+    ]
+  }}
   lastModifiedAfter = typeof lastModifiedAfter === 'number' ? lastModifiedAfter : eventState.latestAttachmentProcessedTimestamp
   const lastModified = { $gte: new Date(lastModifiedAfter) } as any
   if (lastModifiedBefore) {
     lastModified.$lte = new Date(lastModifiedBefore)
   }
-  match.$match.lastModified = lastModified
+  match.$match = { lastModified, ...match.$match }
   /*
   TODO: how does mongo driver account for nondeterministic key order in this sort document?
   BSON keys are ordered, but JSON key order in Node/V8 is not guaranteed.
