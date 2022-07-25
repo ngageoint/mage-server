@@ -31,9 +31,7 @@ describe('mongoose plugin state repository', function() {
 
   beforeEach(async function() {
     //mongoose = new Mongoose.Mongoose()
-    conn = await Mongoose.createConnection(uri, {
-      promiseLibrary: Promise
-    })
+    conn = await Mongoose.createConnection(uri).asPromise()
     pluginId = uniqid('@test/')
     repo = new MongoosePluginStateRepository(pluginId, Mongoose)
   })
