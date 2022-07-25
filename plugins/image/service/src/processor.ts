@@ -112,10 +112,10 @@ export async function processImageAttachments(
       if (attachmentLastModified > eventLatestModified) {
         eventLatestModifiedTimes.set(unprocessed.eventId, attachmentLastModified)
       }
-      console.info(`processed attachment ${attachmentId} ${attachment?.name || '<unnamed>'} on observation ${observationId}`)
+      console.info(`processed attachment ${attachment?.name || '<unnamed>'}`, unprocessed)
     }
     else {
-      console.error(`error processing attachment ${unprocessed.attachmentId} on observation ${unprocessed.observationId}:`, original, '\n', processed)
+      console.error(`error processing attachment`, unprocessed, '\n-- process result:', processed)
     }
     processedCount++
   }
