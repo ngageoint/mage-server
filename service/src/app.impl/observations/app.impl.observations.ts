@@ -80,7 +80,7 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     if (attachmentPatch === null) {
       return AppResponse.success(api.exoObservationFor(obsBefore))
     }
-    const obsAfterSave = await obsRepo.patchAttachmentContentInfo(obsBefore, attachmentBefore.id, attachmentPatch)
+    const obsAfterSave = await obsRepo.patchAttachment(obsBefore, attachmentBefore.id, attachmentPatch)
     if (obsAfterSave instanceof Observation) {
       return AppResponse.success(api.exoObservationFor(obsAfterSave))
     }
@@ -114,7 +114,7 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
     let exoAttachment: api.ExoAttachment = api.exoAttachmentFor(attachment)
     if (typeof req.minDimension === 'number') {
       const thumbIndex =  thumbnailIndexForTargetDimension(req.minDimension, attachment)
-      const thumb = attachment.thumbnails[thumbIndex || -1]
+      const thumb = attachment.thumbnails[Number(thumbIndex)]
       if (thumb) {
         contentStream = await attachmentStore.readThumbnailContent(thumb.minDimension, attachment.id, obs)
         exoAttachment = api.exoAttachmentForThumbnail(thumbIndex!, attachment)

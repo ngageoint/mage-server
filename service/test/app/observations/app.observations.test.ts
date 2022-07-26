@@ -1496,7 +1496,7 @@ describe('observations use case interactions', function() {
       const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
       store.saveContent(bytes, req.attachmentId, obs).resolves(attachmentPatch)
-      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
+      obsRepo.patchAttachment(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
@@ -1504,9 +1504,9 @@ describe('observations use case interactions', function() {
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(bytes, attachmentId, obs)
-      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
-      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
-      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(equalToObservationIgnoringDates(obs)), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachment(Arg.all())
+      obsRepo.received(1).patchAttachment(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachment(Arg.is(equalToObservationIgnoringDates(obs)), attachmentId, attachmentPatch)
       obsRepo.didNotReceive().save(Arg.all())
     })
 
@@ -1530,7 +1530,7 @@ describe('observations use case interactions', function() {
       const afterStore = patchAttachment(obs, attachmentId, attachmentPatch) as Observation
       obsRepo.findById(obs.id).resolves(obs)
       store.saveContent(stagedRef, req.attachmentId, obs).resolves(attachmentPatch)
-      obsRepo.patchAttachmentContentInfo(Arg.all()).resolves(afterStore)
+      obsRepo.patchAttachment(Arg.all()).resolves(afterStore)
       const res = await storeAttachmentContent(req)
 
       expect(res.error).to.be.null
@@ -1538,9 +1538,9 @@ describe('observations use case interactions', function() {
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(stagedRef, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(stagedRef, attachmentId, obs)
-      obsRepo.received(1).patchAttachmentContentInfo(Arg.all())
-      obsRepo.received(1).patchAttachmentContentInfo(Arg.is(validObservation()), attachmentId, attachmentPatch)
-      obsRepo.received(1).patchAttachmentContentInfo(obs, attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachment(Arg.all())
+      obsRepo.received(1).patchAttachment(Arg.is(validObservation()), attachmentId, attachmentPatch)
+      obsRepo.received(1).patchAttachment(obs, attachmentId, attachmentPatch)
       obsRepo.didNotReceive().save(Arg.all())
     })
 
@@ -1570,7 +1570,7 @@ describe('observations use case interactions', function() {
       store.received(1).saveContent(Arg.all())
       store.received(1).saveContent(bytes, attachmentId, Arg.is(validObservation()))
       store.received(1).saveContent(bytes, attachmentId, obs)
-      obsRepo.didNotReceive().patchAttachmentContentInfo(Arg.all())
+      obsRepo.didNotReceive().patchAttachment(Arg.all())
       obsRepo.didNotReceive().save(Arg.all())
     })
 

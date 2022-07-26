@@ -127,7 +127,6 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       const minDimension = parseInt(String(req.query.size), 10) || undefined
       const contentRange = req.headers.range ?
         req.headers.range.replace(/bytes=/i, '').split('-').map(x => parseInt(x, 10)).filter(x => typeof x === 'number' && !Number.isNaN(x)) : []
-
       const appReq: ReadAttachmentContentRequest = createAppRequest(req, {
         observationId: req.params.observationId,
         attachmentId: req.params.attachmentId,
@@ -152,6 +151,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       }
       return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
     })
+
   routes.route('/:observationId')
     .put(async (req, res, next) => {
       const body = req.body

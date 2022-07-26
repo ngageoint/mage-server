@@ -1,5 +1,5 @@
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
+import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
@@ -33,7 +33,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     }
     let dbId
     try {
-      dbId = mongoose.Types.ObjectId(observation.id)
+      dbId = new mongoose.Types.ObjectId(observation.id)
     }
     catch (err) {
       return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
@@ -53,7 +53,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      beforeDoc = beforeDoc.set(docSeed) as legacy.ObservationDocument
+      beforeDoc = beforeDoc.set(docSeed) as any
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
@@ -62,9 +62,12 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
-    const savedAttrs = this.entityForDocument(savedDoc)
-    const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
+    let saved:any = null;
+    if (beforeDoc) {
+      const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
+      const savedAttrs = this.entityForDocument(savedDoc)
+      saved = Observation.evaluate(savedAttrs, observation.mageEvent)
+    }
     return saved
   }
 
@@ -89,14 +92,14 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     throw new Error('unimplemented')
   }
 
-  async patchAttachmentContentInfo(observation: Observation, attachmentId: AttachmentId, contentInfo: AttachmentContentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {
-    const patchedObs = patchAttachment(observation, attachmentId, contentInfo)
+  async patchAttachment(observation: Observation, attachmentId: AttachmentId, patch: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {
+    const patchedObs = patchAttachment(observation, attachmentId, patch)
     if (!(patchedObs instanceof Observation)) {
       return patchedObs
     }
     const attachment = attachmentDocSeedForEntity(patchedObs.attachmentFor(attachmentId) as Attachment)
     const doc = await this.model.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: mongoose.Types.ObjectId(attachmentId) } } },
+      { _id: new mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: new mongoose.Types.ObjectId(attachmentId) } } },
       { $set: { 'attachments.$': attachment } },
       { new: true })
     if (doc) {
@@ -106,11 +109,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
-    return Array.from({ length: count }).map(_ => mongoose.Types.ObjectId().toHexString())
+    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
   }
 
   async nextAttachmentIds(count: number = 1): Promise<AttachmentId[]> {
-    return Array.from({ length: count }).map(_ => mongoose.Types.ObjectId().toHexString())
+    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
   }
 }
 
@@ -176,7 +179,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
       description: docImportant.description
     }
   }
-  return void(0)
+  return void (0)
 }
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
@@ -228,9 +231,9 @@ function formEntryForDoc(doc: legacy.ObservationDocumentFormEntry): FormEntry {
 function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _id: number | mongoose.Types.ObjectId, [other: string]: any } {
   const { id, ...withoutId } = attrs as any
   withoutId._id =
-    typeof id === 'string' ? mongoose.Types.ObjectId(id)
-    : typeof id === 'number' ? id
-    : mongoose.Types.ObjectId()
+    typeof id === 'string' ? new mongoose.Types.ObjectId(id)
+      : typeof id === 'number' ? id
+        : new mongoose.Types.ObjectId()
   return withoutId
 }
 
@@ -244,7 +247,7 @@ function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttr
 
 function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
   return {
-    _id: mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId(),
     relativePath: attrs.contentLocator,
     minDimension: attrs.minDimension,
     name: attrs.name,

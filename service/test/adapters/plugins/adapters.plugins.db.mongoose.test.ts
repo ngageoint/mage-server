@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import { MongoosePluginStateRepository } from '../../../lib/adapters/plugins/adapters.plugins.db.mongoose'
+import { MongoosePluginStateRepository, PluginStateDocument } from '../../../lib/adapters/plugins/adapters.plugins.db.mongoose'
 import Mongoose from 'mongoose'
 import uniqid from 'uniqid'
 import _ from 'lodash'
@@ -19,8 +19,7 @@ describe('mongoose plugin state repository', function() {
 
   let mongo: MongoMemoryServer
   let uri: string
- // let mongoose: Mongoose.Mongoose
-  let conn: Mongoose.Connection
+  let mongoose: Mongoose.Mongoose
   let repo: MongoosePluginStateRepository<TestState>
   let pluginId: string
 
@@ -30,17 +29,16 @@ describe('mongoose plugin state repository', function() {
   })
 
   beforeEach(async function() {
-    //mongoose = new Mongoose.Mongoose()
-    conn = await Mongoose.createConnection(uri, {
+    mongoose = new Mongoose.Mongoose()
+    await mongoose.connect(uri, {
       promiseLibrary: Promise
     })
     pluginId = uniqid('@test/')
-    repo = new MongoosePluginStateRepository(pluginId, conn)
+    repo = new MongoosePluginStateRepository(pluginId, mongoose)
   })
 
   afterEach(async function() {
     await repo.model.remove({})
-    await conn.close()
   })
 
   after(async function() {
@@ -51,14 +49,14 @@ describe('mongoose plugin state repository', function() {
 
     const name = `plugin_state_${pluginId}`
 
-    expect(conn.modelNames()).to.deep.equal([ name ])
+    expect(mongoose.modelNames()).to.deep.equal([ name ])
 
-    const model = conn.model(name)
+    const model = mongoose.model(name)
 
     expect(model).to.equal(repo.model)
     expect(model.collection.name).to.equal(name)
 
-    const repo2 = new MongoosePluginStateRepository(pluginId, conn)
+    const repo2 = new MongoosePluginStateRepository(pluginId, mongoose)
 
     expect(repo2.model).to.equal(repo.model)
   })
