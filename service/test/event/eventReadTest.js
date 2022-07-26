@@ -42,7 +42,7 @@ describe("event read tests", function () {
       .expects('appendToConfig')
       .resolves(config);
 
-    userId = mongoose.Types.ObjectId();
+    userId = new mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
   });
 
@@ -126,17 +126,20 @@ describe("event read tests", function () {
 
     const eventId = 1;
 
+    const team1 = new TeamModel({
+      _id: new mongoose.Types.ObjectId(),
+      name: 'Team 1',
+      userIds: [userId]
+    });
+
     const mockEvent1 = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
-      teamIds: [],
+      teamIds: [team1],
       acl: {
         1: 'NONE'
       }
     });
-    mockEvent1.teamIds[0] = {
-      userIds: [userId]
-    };
 
     const mockEvent2 = new EventModel({
       _id: eventId,
@@ -151,7 +154,7 @@ describe("event read tests", function () {
     sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
-      .yields(null);
+      .yields(null, [mockEvent1, mockEvent2]);
 
     request(app)
       .get('/api/events?populate=false')
