@@ -129,7 +129,8 @@ describe("event read tests", function () {
     const team1 = new TeamModel({
       _id: new mongoose.Types.ObjectId(),
       name: 'Team 1',
-      userIds: [userId]
+      userIds: [userId],
+      acl: {}
     });
 
     const mockEvent1 = new EventModel({
