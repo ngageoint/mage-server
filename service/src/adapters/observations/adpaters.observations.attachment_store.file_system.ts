@@ -4,6 +4,7 @@ import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
 import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs } from '../../entities/observations/entities.observations'
+import mime from 'mime-types'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -202,13 +203,14 @@ function relativeWritePathForAttachment(attachment: Attachment, observation: Obs
     return attachment.contentLocator
   }
   const created = observation.createdAt
+  const ext = mime.extension(attachment.contentType || '')
   const baseDirPath = path.join(
     `event-${observation.eventId}`,
     String(created.getUTCFullYear()),
     String(created.getUTCMonth() + 1).padStart(2, '0'),
     String(created.getUTCDate()).padStart(2, '0'),
     observation.id,
-    attachment.id)
+    attachment.id + (ext ? `.${ext}` : ''))
   return baseDirPath
 }
 
@@ -229,7 +231,8 @@ function relativeWritePathForThumbnail(thumbnail: Thumbnail, attachment: Attachm
     return thumbnail.contentLocator
   }
   const basePath = relativeWritePathForAttachment(attachment, observation)
-  return `${basePath}-${thumbnail.minDimension}`
+  const pathParts = path.parse(basePath)
+  return path.join(pathParts.dir, `${pathParts.name}-${thumbnail.minDimension}${pathParts.ext}`)
 }
 
 function relativeReadPathForThumbnail(thumbnail: Thumbnail, attachment: Attachment, observation: Observation): string {

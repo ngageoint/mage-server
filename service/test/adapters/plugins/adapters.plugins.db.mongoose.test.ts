@@ -24,7 +24,7 @@ describe('mongoose plugin state repository', function() {
 
   before(async function() {
     mongo = await MongoMemoryServer.create()
-    conn = await mongoose.createConnection(mongo.getUri()).asPromise()
+    conn = await mongoose.createConnection(mongo.getUri())
   })
 
   beforeEach(async function() {

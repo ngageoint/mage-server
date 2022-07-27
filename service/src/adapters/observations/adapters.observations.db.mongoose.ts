@@ -53,7 +53,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      beforeDoc = beforeDoc.set(docSeed) as any;
+      beforeDoc = beforeDoc.set(docSeed) as any
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
@@ -62,16 +62,12 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    let saved = null;
+    let saved:any = null;
     if (beforeDoc) {
       const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
       const savedAttrs = this.entityForDocument(savedDoc)
       saved = Observation.evaluate(savedAttrs, observation.mageEvent)
-    } else {
-      //TODO figure out how to handle this
-      saved = new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservation)
     }
-
     return saved
   }
 
@@ -183,7 +179,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
       description: docImportant.description
     }
   }
-  return void(0)
+  return void (0)
 }
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
@@ -236,8 +232,8 @@ function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _
   const { id, ...withoutId } = attrs as any
   withoutId._id =
     typeof id === 'string' ? new mongoose.Types.ObjectId(id)
-    : typeof id === 'number' ? id
-    : new mongoose.Types.ObjectId()
+      : typeof id === 'number' ? id
+        : new mongoose.Types.ObjectId()
   return withoutId
 }
 

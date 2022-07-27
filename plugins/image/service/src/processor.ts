@@ -1,5 +1,5 @@
 import { MageEventAttrs, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, patchAttachment, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, StagedAttachmentContentId, EventScopedObservationRepository, AttachmentStoreError, ThumbnailContentPatchAttrs, thumbnailIndexForTargetDimension, putAttachmentThumbnailForMinDimension } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, StagedAttachmentContentId, EventScopedObservationRepository, AttachmentStoreError, putAttachmentThumbnailForMinDimension, StagedAttachmentContent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import path from 'path'
 
@@ -44,65 +44,39 @@ export interface ImagePluginState {
 export const defaultImagePluginConfig: ImagePluginState = Object.freeze({
   enabled: false,
   intervalSeconds: 60,
-  intervalBatchSize: 100,
+  intervalBatchSize: 10,
   autoOrient: true,
   thumbnailSizes: [ 150, 320, 800, 1024, 2048 ],
 })
 
-export const initFromSavedState = async (stateRepo: PluginStateRepository<ImagePluginState>) => {
-  const state = await stateRepo.get()
-
+export const initFromSavedState = async (
+  stateRepo: PluginStateRepository<ImagePluginState>,
+  eventRepo: MageEventRepository,
+  obsRepoForEvent: ObservationRepositoryForEvent,
+  attachmentStore: AttachmentStore,
+  attachmentQuery: FindUnprocessedImageAttachments,
+  imageService: ImageService,
+) => {
+  let state = await stateRepo.get()
+  if (!state) {
+    state = await stateRepo.put(defaultImagePluginConfig)
+  }
+  console.info(`init with state`, state)
+  async function process(states?: Map<MageEventId, EventProcessingState>) {
+    const nextStates = await processImageAttachments(state!, states || null, attachmentQuery, imageService, eventRepo, obsRepoForEvent, attachmentStore)
+    setTimeout(process, state!.intervalSeconds * 1000, nextStates)
+  }
+  setTimeout(process)
+  // TODO: return an app object that routes can use to set new state
 }
 
-export interface ImagePluginController {
-  setState(config: ImagePluginState): Promise<void>
+export interface ImagePluginApp {
+  applyState(config: ImagePluginState): Promise<void>
 }
-
-
-
-
-// function start() {
-//   // start worker
-//   var worker = child.fork(__dirname + '/process');
-
-//   worker.on('error', function(err) {
-//     log.error('********************** image plugin error **************************', err);
-//     worker.kill();
-//     start();
-//   });
-
-//   worker.on('exit', function(exitCode) {
-//     log.warn('********************** image plugin exit, code **********************', exitCode);
-//     if (exitCode !== 0) {
-//       start();
-//     }
-//   });
-
-//   worker.on('uncaughtException', function(err) {
-//     log.error('*************************** image plugin uncaught exception *******************', err);
-//     worker.kill();
-//     start();
-//   });
-
-//   process.on('exit', function(err) {
-//     log.warn('***************** image plugin parent process exit, killing ********************', err);
-//     worker.kill();
-//   });
-// }
 
 export type EventProcessingState = {
   event: MageEventAttrs,
   latestAttachmentProcessedTimestamp: number
-}
-
-function syncProcessingStatesFromAllEvents(allEvents: MageEventAttrs[], states: Map<MageEventId, EventProcessingState> | null | undefined): Map<MageEventId, EventProcessingState> {
-  states = states || new Map()
-  const newStates = new Map<MageEventId, EventProcessingState>()
-  for (const event of allEvents) {
-    const state = states.get(event.id) || { event, latestAttachmentProcessedTimestamp: 0 }
-    newStates.set(event.id, state)
-  }
-  return newStates
 }
 
 export async function processImageAttachments(
@@ -114,13 +88,16 @@ export async function processImageAttachments(
   observationRepoForEvent: ObservationRepositoryForEvent,
   attachmentStore: AttachmentStore,
 ): Promise<Map<MageEventId, EventProcessingState>> {
+  console.info('processing image attachments ...')
   const startTime = Date.now()
   const allEvents = await eventRepo.findActiveEvents()
   eventProcessingStates = syncProcessingStatesFromAllEvents(allEvents, eventProcessingStates)
   const eventLatestModifiedTimes = new Map<MageEventId, number>()
   const unprocessedAttachments = await findUnprocessedAttachments(Array.from(eventProcessingStates.values()), null, startTime, pluginState.intervalBatchSize)
+  let processedCount = 0
   for await (const unprocessed of unprocessedAttachments) {
     // TODO: check results for errors
+    console.info(`processing attachment`, unprocessed)
     const { observationId, attachmentId } = unprocessed
     const observationRepo = await observationRepoForEvent(unprocessed.eventId)
     const orient = async (observation: Observation) => orientAttachmentImage(observation, attachmentId, imageService, observationRepo, attachmentStore)
@@ -131,29 +108,21 @@ export async function processImageAttachments(
     if (original instanceof Observation && processed instanceof Observation) {
       const eventLatestModified = eventLatestModifiedTimes.get(unprocessed.eventId) || 0
       const attachment = original.attachmentFor(attachmentId)
-      const attachmentLastModified = attachment?.lastModified?.getTime() || 0
+      const attachmentLastModified = attachment?.lastModified?.getTime() || original.lastModified.getTime()
       if (attachmentLastModified > eventLatestModified) {
         eventLatestModifiedTimes.set(unprocessed.eventId, attachmentLastModified)
       }
+      console.info(`processed attachment ${attachmentId} ${attachment?.name || '<unnamed>'} on observation ${observationId}`)
     }
     else {
       console.error(`error processing attachment ${unprocessed.attachmentId} on observation ${unprocessed.observationId}:`, original, '\n', processed)
     }
+    processedCount++
   }
+  console.info(`finished image attachment processing interval - ${processedCount} attachments`)
   return new Map<MageEventId, EventProcessingState>(Array.from(eventProcessingStates.entries(), ([ eventId, state ]) => {
     return [ eventId, { event: state.event, latestAttachmentProcessedTimestamp: eventLatestModifiedTimes.get(eventId) || 0 } ]
   }))
-}
-
-type ObservationUpdateResult = [ original: Observation | Error | null, updated: Observation | Error | null ]
-function checkObservationThen(update: (o: Observation) => Promise<Observation | Error | null>): (target: Observation | Error | null | ObservationUpdateResult) => Promise<ObservationUpdateResult> {
-  return async target => {
-    const [ original, updated ] = Array.isArray(target) ? target : [ target, target ]
-    if (updated instanceof Observation) {
-      return await update(updated).then(result => [ original, result ])
-    }
-    return [ original, updated ]
-  }
 }
 
 export async function orientAttachmentImage (
@@ -233,7 +202,7 @@ export async function thumbnailAttachmentImage(
     return putAttachmentThumbnailForMinDimension(obsWithThumbs, attachmentId, thumbResult.thumbnail) as Observation
   }, observation)
   const storedThumbs = await Promise.all(thumbResults.map(stagedThumb => {
-    return attachmentStore.saveThumbnailContent(stagedThumb.pendingContentId, stagedThumb.thumbnail.minDimension, attachmentId, obsWithThumbs)
+    return attachmentStore.saveThumbnailContent(stagedThumb.pendingContent, stagedThumb.thumbnail.minDimension, attachmentId, obsWithThumbs)
   }))
   obsWithThumbs = storedThumbs.reduce((obsWithThumbs, storedThumb) => {
     if (storedThumb instanceof Error || !storedThumb) {
@@ -251,9 +220,30 @@ export async function thumbnailAttachmentImage(
   return savedObsWithThumbs
 }
 
+function syncProcessingStatesFromAllEvents(allEvents: MageEventAttrs[], states: Map<MageEventId, EventProcessingState> | null | undefined): Map<MageEventId, EventProcessingState> {
+  states = states || new Map()
+  const newStates = new Map<MageEventId, EventProcessingState>()
+  for (const event of allEvents) {
+    const state = states.get(event.id) || { event, latestAttachmentProcessedTimestamp: 0 }
+    newStates.set(event.id, state)
+  }
+  return newStates
+}
+
+type ObservationUpdateResult = [ original: Observation | Error | null, updated: Observation | Error | null ]
+function checkObservationThen(update: (o: Observation) => Promise<Observation | Error | null>): (target: Observation | Error | null | ObservationUpdateResult) => Promise<ObservationUpdateResult> {
+  return async target => {
+    const [ original, updated ] = Array.isArray(target) ? target : [ target, target ]
+    if (updated instanceof Observation) {
+      return await update(updated).then(result => [ original, result ])
+    }
+    return [ original, updated ]
+  }
+}
+
 type StagedThumbnail = {
   thumbnail: Thumbnail,
-  pendingContentId: StagedAttachmentContentId
+  pendingContent: StagedAttachmentContent
 }
 
 async function generateAndStageThumbnail(thumbnailSize: number, attachment: Attachment, observation: Observation, imageService: ImageService, attachmentStore: AttachmentStore): Promise<Error | StagedThumbnail> {
@@ -290,7 +280,7 @@ async function generateAndStageThumbnail(thumbnailSize: number, attachment: Atta
       height: thumbInfo.dimensions.height,
       size: thumbInfo.sizeInBytes
     },
-    pendingContentId: pendingContent.id
+    pendingContent
   }
 }
 

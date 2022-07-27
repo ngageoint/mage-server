@@ -10,7 +10,7 @@ chai.use(sinonChai)
 
 const mocks = sinon.createSandbox()
 
-describe('waitForMongooseConnection', function() {
+describe('wait for mongoose connection utility', function() {
 
   const retryDelay = 2000
   const connectTimeout = 2 * 60 * 1000
@@ -23,7 +23,7 @@ describe('waitForMongooseConnection', function() {
   let connectStub: sinon.SinonStub<Parameters<ConnectMethod>, ReturnType<ConnectMethod>>
 
   beforeEach(function() {
-    connectStub = mocks.stub(mongoose, 'connect')
+    connectStub = mocks.stub(mongooseInstance, 'connect')
   })
 
   afterEach(function() {
@@ -43,7 +43,7 @@ describe('waitForMongooseConnection', function() {
       })
       return firstConnect
     })
-    connectStub.onSecondCall().resolves(mongoose)
+    connectStub.onSecondCall().resolves(mongooseInstance)
     const connectTimeoutRejection = mocks.spy()
 
     return waitForConnection()
@@ -57,7 +57,7 @@ describe('waitForMongooseConnection', function() {
 
   it('resolves when the connection succeeds', function() {
 
-    connectStub.onFirstCall().resolves(mongoose)
+    connectStub.onFirstCall().resolves(mongooseInstance)
     return waitForConnection()
   })
 
