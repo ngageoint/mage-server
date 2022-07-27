@@ -22,6 +22,7 @@ export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
     mediaType: { type: String, required: false },
     sizePixels: {
       type: {
+        _id: false,
         width: { type: Number, required: true },
         height: { type: Number, required: true }
       },
