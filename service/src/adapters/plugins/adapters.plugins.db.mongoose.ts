@@ -22,9 +22,9 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
     this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new mongoose.Schema(SCHEMA_SPEC), collectionName)
   }
 
-  async put(state: any): Promise<EnsureJson<State>> {
-    const updated = await this.model.findOneAndUpdate({ _id: this.pluginId }, { state }, { new: true, upsert: true }).exec()
-    return updated.toJSON().state as any
+  async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
+    const updated = await this.model.findByIdAndUpdate(this.pluginId, { state }, { new: true, upsert: true, setDefaultsOnInsert: false })
+    return updated.toJSON().state
   }
 
   async patch(state: Partial<EnsureJson<State>>): Promise<EnsureJson<State>> {
@@ -38,12 +38,12 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
       }
       return update
     }, {} as any)
-    const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true })
-    return patched.toJSON().state as any
+    const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true, setDefaultsOnInsert: false })
+    return patched.toJSON().state
   }
 
   async get(): Promise<EnsureJson<State> | null> {
     const doc = await this.model.findById(this.pluginId)
-    return doc?.toJSON().state as any || null 
+    return doc?.toJSON().state || null
   }
 }
