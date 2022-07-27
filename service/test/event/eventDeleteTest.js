@@ -17,7 +17,7 @@ require('sinon-mongoose');
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');
 
-require('../../lib/models/event');
+const EventOperations = require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
 describe('deleting events', function () {
@@ -138,21 +138,9 @@ describe('deleting events', function () {
     });
     mockEvent.acl[userId] = 'OWNER';
 
-    sinon.mock(EventModel)
-      .expects('findById')
-      .twice()
-      .onFirstCall()
-      .yields(null, mockEvent)
-      .onSecondCall()
-      .yields(null, null);
-
-    sinon.mock(EventModel.collection)
-      .expects('deleteOne')
-      .yields(null);
-
-    sinon.mock(mongoose.connection.db)
-      .expects('dropCollection')
-      .yields(null);
+    sinon.mock(EventOperations)
+      .expects('getById')
+      .yields(null, mockEvent);
 
     sinon.mock(IconModel)
       .expects('getIcon')
@@ -162,13 +150,6 @@ describe('deleting events', function () {
       .expects('remove')
       .yields(null);
 
-    const teamId = mongoose.Types.ObjectId();
-    const mockTeam = new TeamModel({
-      _id: teamId,
-      name: 'Mock Team',
-      teamEventId: 1
-    });
-
     sinon.mock(UserModel)
       .expects('removeRecentEventForUsers')
       .yields(null);
@@ -177,20 +158,7 @@ describe('deleting events', function () {
       '/var/lib/mage': {}
     });
 
-    sinon.mock(TeamModel)
-      .expects('find')
-      .chain('populate')
-      .chain('exec')
-      .yields(null, [mockTeam]);
-
-    const removeTeamsFromEventExpectation = sinon.mock(EventModel)
-      .expects('update')
-      .withArgs({}, { $pull: { teamIds: teamId } })
-      .yields(null, [mockTeam]);
-
-    const removeTeamExpectation = sinon.mock(TeamModel.collection)
-      .expects('deleteOne')
-      .yields(null);
+    sinon.stub(mockEvent, 'remove').callsFake(function (){});
 
     request(app)
       .delete('/api/events/' + eventId)
@@ -198,9 +166,6 @@ describe('deleting events', function () {
       .set('Authorization', 'Bearer 12345')
       .expect(204)
       .end(function (err) {
-        removeTeamExpectation.verify();
-        removeTeamsFromEventExpectation.verify();
-
         mockfs.restore();
         done(err);
       });
