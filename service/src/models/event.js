@@ -501,7 +501,7 @@ exports.update = function(id, event, options, callback) {
     });
   }
 
-  Event.findByIdAndUpdate(id, update, {new: true, runValidators: true, context: 'query'}, function(err, updatedEvent) {
+  Event.findByIdAndUpdate(id, update, {new: true, runValidators: true}, function(err, updatedEvent) {
     if (err) {
       return callback(err);
     }
