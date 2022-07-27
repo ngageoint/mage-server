@@ -53,7 +53,6 @@ describe('mongoose observation repository', function() {
   let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventDocument>
 
   beforeEach('initialize model', async function() {
-
     const MageEventModel = legacyEvent.Model as any
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
@@ -128,7 +127,8 @@ describe('mongoose observation repository', function() {
   })
 
   afterEach(async function() {
-    await model.ensureIndexes()
+    //TODO the index alread exists
+    //await model.ensureIndexes()
     // should run all the middleware to drop the observation collection
     await eventDoc.remove()
     await repo.idModel.remove({})

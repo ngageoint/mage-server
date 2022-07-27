@@ -105,7 +105,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     const doc = await this.model.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: new mongoose.Types.ObjectId(attachmentId) } } },
       { $set: { 'attachments.$': attachment } },
-      { new: true })
+      { new: true, setDefaultsOnInsert: false })
     if (doc) {
       return Observation.evaluate(this.entityForDocument(doc), observation.mageEvent)
     }
