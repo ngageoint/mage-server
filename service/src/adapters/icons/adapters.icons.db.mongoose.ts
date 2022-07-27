@@ -240,6 +240,6 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
       update.contentTimestamp = stub.contentTimestamp
     }
   }
-  const updated = await this.model.findByIdAndUpdate(registered.id, update, { new: true })
+  const updated = await this.model.findByIdAndUpdate(registered.id, update, { new: true, setDefaultsOnInsert: false })
   return updated!
 }
