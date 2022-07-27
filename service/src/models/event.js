@@ -55,7 +55,7 @@ function validateColor(color) {
 }
 
 const FormSchema = new Schema({
-  _id: { type: Number, required: true, unique: true, sparse: true },
+  _id: { type: Number, required: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
   default: { type: Boolean, default: false },
