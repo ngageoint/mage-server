@@ -130,48 +130,46 @@ UserSchema.pre('remove', function (next) {
 
 // eslint-disable-next-line complexity
 const transform = function (user, ret, options) {
-  if (user.parent() == user) {
-    ret.id = ret._id;
-    delete ret._id;
+  ret.id = ret._id;
+  delete ret._id;
 
-    delete ret.avatar;
-    if (ret.icon) { // TODO remove if check, icon is always there
-      delete ret.icon.relativePath;
+  delete ret.avatar;
+  if (ret.icon) { // TODO remove if check, icon is always there
+    delete ret.icon.relativePath;
+  }
+
+  if (user.populated('roleId')) {
+    ret.role = ret.roleId;
+    delete ret.roleId;
+  }
+
+  if (user.populated('authenticationId')) {
+    ret.authentication = ret.authenticationId || {};
+    delete ret.authentication.password;
+    delete ret.authenticationId;
+
+    if (user.authentication.populated('authenticationConfigurationId')) {
+      ret.authentication.authenticationConfiguration = ret.authentication.authenticationConfigurationId;
+      //TODO remove settings?
+      /*const keys = Object.keys(ret.authentication.authenticationConfigurationId);
+      keys.forEach(key => {
+        if (key !== 'settings') {
+          ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
+        }
+      });*/
+      delete ret.authentication.authenticationConfigurationId;
     }
 
-    if (user.populated('roleId')) {
-      ret.role = ret.roleId;
-      delete ret.roleId;
-    }
+  }
 
-    if (user.populated('authenticationId')) {
-      ret.authentication = ret.authenticationId || {};
-      delete ret.authentication.password;
-      delete ret.authenticationId;
+  if (user.avatar && user.avatar.relativePath) {
+    // TODO, don't really like this, need a better way to set user resource, route
+    ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
+  }
 
-      if (user.authentication.populated('authenticationConfigurationId')) {
-        ret.authentication.authenticationConfiguration = ret.authentication.authenticationConfigurationId;
-        //TODO remove settings?
-        /*const keys = Object.keys(ret.authentication.authenticationConfigurationId);
-        keys.forEach(key => {
-          if (key !== 'settings') {
-            ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
-          }
-        });*/
-        delete ret.authentication.authenticationConfigurationId;
-      }
-
-    }
-
-    if (user.avatar && user.avatar.relativePath) {
-      // TODO, don't really like this, need a better way to set user resource, route
-      ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
-    }
-
-    if (user.icon && user.icon.relativePath) {
-      // TODO, don't really like this, need a better way to set user resource, route
-      ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
-    }
+  if (user.icon && user.icon.relativePath) {
+    // TODO, don't really like this, need a better way to set user resource, route
+    ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
   }
 };
 
@@ -261,7 +259,7 @@ exports.getUsers = async function (options, callback) {
 
   let baseQuery = User.find(conditions).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } });
 
-  if(options.lean) {
+  if (options.lean) {
     baseQuery = baseQuery.lean();
   }
 
@@ -437,7 +435,7 @@ exports.removeRecentEventForUsers = function (event, callback) {
     $pull: { recentEventIds: event._id }
   };
 
-  User.updateMany({}, update, { }, function (err) {
+  User.updateMany({}, update, {}, function (err) {
     callback(err);
   });
 };

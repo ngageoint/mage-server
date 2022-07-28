@@ -15,16 +15,16 @@ const Schema = mongoose.Schema;
 
 const OptionSchema = new Schema({
   id: { type: Number, required: true },
-  title: {type: String, required: false, default: ''},
+  title: { type: String, required: false, default: '' },
   value: { type: Number, required: true },
   blank: { type: Boolean, required: false }
-},{
+}, {
   _id: false
 });
 
 const FieldSchema = new Schema({
   id: { type: Number, required: true },
-  archived: { type: Boolean, required: false},
+  archived: { type: Boolean, required: false },
   title: { type: String, required: true },
   type: { type: String, required: true, enum: ['attachment', 'textfield', 'numberfield', 'email', 'password', 'radio', 'dropdown', 'multiselectdropdown', 'date', 'geometry', 'textarea', 'checkbox', 'hidden'] },
   value: { type: Schema.Types.Mixed, required: false },
@@ -34,7 +34,7 @@ const FieldSchema = new Schema({
   allowedAttachmentTypes: [{ type: String, required: false, enum: ['image', 'video', 'audio'] }],
   min: { type: Number, required: false },
   max: { type: Number, required: false }
-},{
+}, {
   _id: false
 });
 
@@ -44,7 +44,7 @@ function hasAtLeastOneField(fields) {
 
 function fieldNamesAreUnique(fields) {
   const names = new Set();
-  const hasDuplicates = fields.some(function(field) {
+  const hasDuplicates = fields.some(function (field) {
     return names.size === names.add(field.name).size;
   });
   return !hasDuplicates;
@@ -96,7 +96,7 @@ const EventSchema = new Schema({
     }
   },
   acl: {}
-},{
+}, {
   autoIndex: false,
   minimize: false,
   versionKey: false,
@@ -104,8 +104,8 @@ const EventSchema = new Schema({
 });
 
 EventSchema.virtual('id')
-  .get(function() { return this._id })
-  .set(function(x) { this._id = Number(x) })
+  .get(function () { return this._id })
+  .set(function (x) { this._id = Number(x) })
 
 EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
@@ -116,10 +116,10 @@ FormSchema.path('color').validate(validateColor, 'Form color must be valid hex s
 function validateTeamIds(eventId, teamIds, next) {
   if (!teamIds || !teamIds.length) return next();
 
-  Team.getTeams({teamIds: teamIds}, function(err, teams) {
+  Team.getTeams({ teamIds: teamIds }, function (err, teams) {
     if (err) return next(err);
 
-    const containsInvalidTeam = teams.some(function(team) {
+    const containsInvalidTeam = teams.some(function (team) {
       return team.teamEventId && team.teamEventId !== eventId;
     });
     if (containsInvalidTeam) {
@@ -136,7 +136,7 @@ function populateUserFields(event, callback) {
   new api.Form(event).populateUserFields(callback);
 }
 
-EventSchema.pre('init', function(event) {
+EventSchema.pre('init', function (event) {
   /**
   TODO: This is not ideal.  If one uses a query like EventModel.findById(1).populate('teamIds'),
   chaining the populate step onto the query builder, Mongoose does not seem to
@@ -149,29 +149,29 @@ EventSchema.pre('init', function(event) {
   instance during the pre-init hook's execution.
   */
   if (event.forms) {
-    populateUserFields(event, function() {
+    populateUserFields(event, function () {
     });
   }
 });
 
-EventSchema.pre('remove', function(next) {
+EventSchema.pre('remove', function (next) {
   dropObservationCollection(this, next)
 });
 
-EventSchema.post('remove', function(event) {
+EventSchema.post('remove', function (event) {
   if (event.populated('teamIds')) {
     event.depopulate('teamIds');
   }
 
-  Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
+  Team.getTeams({ teamIds: event.teamIds }, function (err, teams) {
     if (err) log.error('Could not get teams for deleted event ' + event.name, err);
 
-    const teamEvents = teams.filter(function(team) {
+    const teamEvents = teams.filter(function (team) {
       return team.teamEventId && team.teamEventId === event._id;
     });
 
     if (teamEvents && teamEvents.length) {
-      Team.deleteTeam(teamEvents[0], function(err) {
+      Team.deleteTeam(teamEvents[0], function (err) {
         if (err) log.error('Could not delete team for event ' + event.name);
       });
     }
@@ -184,46 +184,44 @@ function transformForm(form, ret) {
 }
 
 function transform(event, ret, options) {
-  if (event.parent() == event) {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.collectionName;
+  ret.id = ret._id;
+  delete ret._id;
+  delete ret.collectionName;
 
-    if (event.populated('teamIds')) {
-      ret.teams = ret.teamIds;
-      delete ret.teamIds;
-    }
+  if (event.populated('teamIds')) {
+    ret.teams = ret.teamIds;
+    delete ret.teamIds;
+  }
 
-    if (event.populated('layerIds')) {
-      ret.layers = ret.layerIds;
-      delete ret.layerIds;
-    }
+  if (event.populated('layerIds')) {
+    ret.layers = ret.layerIds;
+    delete ret.layerIds;
+  }
 
-    // if read only permissions in event acl, only return users acl
-    if (options.access) {
-      const roleOfUserOnEvent = ret.acl[options.access.user._id];
-      const rolesThatCanModify = rolesWithPermission('update').concat(rolesWithPermission('delete'));
-      if (!roleOfUserOnEvent || rolesThatCanModify.indexOf(roleOfUserOnEvent) === -1) {
-        const acl = {};
-        acl[options.access.user._id] = ret.acl[options.access.user._id];
-        ret.acl = acl;
-      }
+  // if read only permissions in event acl, only return users acl
+  if (options.access) {
+    const roleOfUserOnEvent = ret.acl[options.access.user._id];
+    const rolesThatCanModify = rolesWithPermission('update').concat(rolesWithPermission('delete'));
+    if (!roleOfUserOnEvent || rolesThatCanModify.indexOf(roleOfUserOnEvent) === -1) {
+      const acl = {};
+      acl[options.access.user._id] = ret.acl[options.access.user._id];
+      ret.acl = acl;
     }
+  }
 
-    for (const userId in ret.acl) {
-      ret.acl[userId] = {
-        role: ret.acl[userId],
-        permissions: EventRolePermissions[ret.acl[userId]]
-      };
-    }
+  for (const userId in ret.acl) {
+    ret.acl[userId] = {
+      role: ret.acl[userId],
+      permissions: EventRolePermissions[ret.acl[userId]]
+    };
+  }
 
-    // TODO: this should be done at query time
-    // make sure only projected fields are returned
-    if (options.projection) {
-      const projection = convertProjection(options.projection);
-      projection.id = true; // always keep id
-      whitelist.project(ret, projection);
-    }
+  // TODO: this should be done at query time
+  // make sure only projected fields are returned
+  if (options.projection) {
+    const projection = convertProjection(options.projection);
+    projection.id = true; // always keep id
+    whitelist.project(ret, projection);
   }
 }
 
@@ -268,19 +266,19 @@ function convertProjection(field, keys, projection) {
 
 // TODO look at filtering this in query, not after
 function filterEventsByUserId(events, userId, callback) {
-  Event.populate(events, 'teamIds', function(err, events) {
+  Event.populate(events, 'teamIds', function (err, events) {
     if (err) return callback(err);
 
-    const filteredEvents = events.filter(function(event) {
+    const filteredEvents = events.filter(function (event) {
       // Check if user has read access to the event based on
       // being on a team that is in the event
-      if (event.teamIds.some(function(team) { return team.userIds.indexOf(userId) !== -1; })) {
+      if (event.teamIds.some(function (team) { return team.userIds.indexOf(userId) !== -1; })) {
         return true;
       }
 
       // Check if user has read access to the event based on
       // being in the events access control list
-      if (event.acl[userId] && rolesWithPermission('read').some(function(role) { return role === event.acl[userId]; })) {
+      if (event.acl[userId] && rolesWithPermission('read').some(function (role) { return role === event.acl[userId]; })) {
         return true;
       }
 
@@ -291,7 +289,7 @@ function filterEventsByUserId(events, userId, callback) {
   });
 }
 
-exports.count = function(options, callback) {
+exports.count = function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -300,7 +298,7 @@ exports.count = function(options, callback) {
   const conditions = {};
   if (options.access) {
     const accesses = [];
-    rolesWithPermission(options.access.permission).forEach(function(role) {
+    rolesWithPermission(options.access.permission).forEach(function (role) {
       const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
@@ -308,12 +306,12 @@ exports.count = function(options, callback) {
     conditions['$or'] = accesses;
   }
 
-  Event.count(conditions, function(err, count) {
+  Event.count(conditions, function (err, count) {
     callback(err, count);
   });
 };
 
-exports.getEvents = function(options, callback) {
+exports.getEvents = function (options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -322,7 +320,7 @@ exports.getEvents = function(options, callback) {
   const query = {};
   const filter = options.filter || {};
   if (filter.complete === true) query.complete = true;
-  if (filter.complete === false) query.complete = {$ne: true};
+  if (filter.complete === false) query.complete = { $ne: true };
 
   let projection = {};
   if (options.projection) {
@@ -340,8 +338,8 @@ exports.getEvents = function(options, callback) {
 
     // First filter out events user cannot access
     if (options.access && options.access.user) {
-      filters.push(function(done) {
-        filterEventsByUserId(events, options.access.user._id, function(err, filteredEvents) {
+      filters.push(function (done) {
+        filterEventsByUserId(events, options.access.user._id, function (err, filteredEvents) {
           if (err) return done(err);
 
           events = filteredEvents;
@@ -352,8 +350,8 @@ exports.getEvents = function(options, callback) {
 
     // Filter again if filtering based on particular user
     if (options.filter && options.filter.userId) {
-      filters.push(function(done) {
-        filterEventsByUserId(events, options.filter.userId, function(err, filteredEvents) {
+      filters.push(function (done) {
+        filterEventsByUserId(events, options.filter.userId, function (err, filteredEvents) {
           if (err) return done(err);
 
           events = filteredEvents;
@@ -362,11 +360,11 @@ exports.getEvents = function(options, callback) {
       });
     }
 
-    async.series(filters, function(err) {
+    async.series(filters, function (err) {
       if (err) return callback(err);
 
       if (options.populate) {
-        Event.populate(events, [{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
+        Event.populate(events, [{ path: 'teamIds' }, { path: 'layerIds' }], function (err, events) {
           callback(err, events);
         });
       } else {
@@ -376,7 +374,7 @@ exports.getEvents = function(options, callback) {
   });
 };
 
-exports.getById = function(id, options, callback) {
+exports.getById = function (id, options, callback) {
 
   if (typeof options === 'function') {
     callback = options;
@@ -390,8 +388,8 @@ exports.getById = function(id, options, callback) {
     const filters = [];
     // First filter out events user my not have access to
     if (options.access && options.access.userId) {
-      filters.push(function(done) {
-        filterEventsByUserId([event], options.access.userId, function(err, events) {
+      filters.push(function (done) {
+        filterEventsByUserId([event], options.access.userId, function (err, events) {
           if (err) return done(err);
           event = events.length === 1 ? events[0] : null;
           done();
@@ -399,11 +397,11 @@ exports.getById = function(id, options, callback) {
       });
     }
 
-    async.series(filters, function(err) {
+    async.series(filters, function (err) {
       if (err) return callback(err);
 
       if (options.populate) {
-        event.populate([{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
+        event.populate([{ path: 'teamIds' }, { path: 'layerIds' }], function (err, events) {
           callback(err, events);
         });
       } else {
@@ -420,7 +418,7 @@ exports.filterEventsByUserId = filterEventsByUserId;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
-  mongoose.connection.db.createCollection(event.collectionName, function(err) {
+  mongoose.connection.db.createCollection(event.collectionName, function (err) {
     if (err) {
       log.error(err);
       return;
@@ -432,7 +430,7 @@ function createObservationCollection(event) {
 
 function dropObservationCollection(event, callback) {
   log.info("Dropping observation collection: " + event.collectionName);
-  mongoose.connection.db.dropCollection(event.collectionName, function(err) {
+  mongoose.connection.db.dropCollection(event.collectionName, function (err) {
     if (!err) {
       log.info('Dropped observation collection ' + event.collectionName);
     }
@@ -440,21 +438,21 @@ function dropObservationCollection(event, callback) {
   });
 }
 
-exports.create = function(event, user, callback) {
+exports.create = function (event, user, callback) {
   async.waterfall([
-    function(done) {
+    function (done) {
       Counter.getNext('event')
         .then(id => done(null, id))
         .catch(err => done(err));
     },
-    function(id, done) {
+    function (id, done) {
       event._id = id;
       event.collectionName = 'observations' + id;
 
       event.acl = {};
       event.acl[user._id.toString()] = 'OWNER';
 
-      Event.create(event, function(err, newEvent) {
+      Event.create(event, function (err, newEvent) {
         if (err) return done(err);
 
         createObservationCollection(newEvent);
@@ -462,18 +460,18 @@ exports.create = function(event, user, callback) {
         done(null, newEvent);
       });
     },
-    function(event, done) {
-      Team.createTeamForEvent(event, user, function(err) {
+    function (event, done) {
+      Team.createTeamForEvent(event, user, function (err) {
         if (err) {
           // could not create the team for this event, remove the event and error out
-          event.remove(function() {
+          event.remove(function () {
             done(err);
           });
         }
         done(err, event);
       });
     }
-  ], function(err, newEvent) {
+  ], function (err, newEvent) {
     if (err) {
       return callback(err);
     }
@@ -481,13 +479,13 @@ exports.create = function(event, user, callback) {
   });
 };
 
-exports.update = function(id, event, options, callback) {
+exports.update = function (id, event, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
-  const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function(o, k) {
+  const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function (o, k) {
     if (event.hasOwnProperty(k)) {
       o[k] = event[k];
     }
@@ -496,12 +494,12 @@ exports.update = function(id, event, options, callback) {
 
   // preserve form ids
   if (event.forms) {
-    event.forms.forEach(function(form) {
+    event.forms.forEach(function (form) {
       form._id = form.id;
     });
   }
 
-  Event.findByIdAndUpdate(id, update, {new: true, runValidators: true}, function(err, updatedEvent) {
+  Event.findByIdAndUpdate(id, update, { new: true, runValidators: true }, function (err, updatedEvent) {
     if (err) {
       return callback(err);
     }
@@ -509,19 +507,19 @@ exports.update = function(id, event, options, callback) {
   });
 };
 
-exports.addForm = function(eventId, form, callback) {
+exports.addForm = function (eventId, form, callback) {
   Counter.getNext('form')
     .then(id => {
       form._id = id;
 
       const update = {
-        $push: {forms: form}
+        $push: { forms: form }
       };
 
-      Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
+      Event.findByIdAndUpdate(eventId, update, { new: true, runValidators: true }, function (err, event) {
         if (err) return callback(err);
 
-        const forms = event.forms.filter(function(f) {
+        const forms = event.forms.filter(function (f) {
           return f._id === form._id;
         });
 
@@ -531,8 +529,8 @@ exports.addForm = function(eventId, form, callback) {
     .catch(err => callback(err));
 };
 
-exports.updateForm = function(event, form, callback) {
-  new Form(form).validate(function(err) {
+exports.updateForm = function (event, form, callback) {
+  new Form(form).validate(function (err) {
     if (err) return callback(err);
 
     const update = {
@@ -541,10 +539,10 @@ exports.updateForm = function(event, form, callback) {
       }
     };
 
-    Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
+    Event.findOneAndUpdate({ 'forms._id': form._id }, update, { new: true, runValidators: true }, function (err, event) {
       if (err) return callback(err);
 
-      const forms = event.forms.filter(function(f) {
+      const forms = event.forms.filter(function (f) {
         return f._id === form._id;
       });
 
@@ -780,12 +778,12 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
   }
 };
 
-exports.addTeam = function(event, team, callback) {
+exports.addTeam = function (event, team, callback) {
   async.series([
-    function(done) {
+    function (done) {
       validateTeamIds(event._id, [team.id], done);
     },
-    function(done) {
+    function (done) {
       const update = {
         $addToSet: {
           teamIds: new mongoose.Types.ObjectId(team.id)
@@ -794,13 +792,13 @@ exports.addTeam = function(event, team, callback) {
 
       Event.findByIdAndUpdate(event._id, update, done);
     }
-  ], function(err, results) {
+  ], function (err, results) {
     callback(err, results[1]);
   });
 
 };
 
-exports.removeTeam = function(event, team, callback) {
+exports.removeTeam = function (event, team, callback) {
   if (event._id === team.teamEventId) {
     const err = new Error("Cannot remove an events team, event '" + event.name);
     err.status = 405;
@@ -813,54 +811,54 @@ exports.removeTeam = function(event, team, callback) {
     }
   };
 
-  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+  Event.findByIdAndUpdate(event._id, update, function (err, event) {
     callback(err, event);
   });
 };
 
-exports.addLayer = function(event, layer, callback) {
+exports.addLayer = function (event, layer, callback) {
   const update = {
     $addToSet: {
       layerIds: layer.id
     }
   };
 
-  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+  Event.findByIdAndUpdate(event._id, update, function (err, event) {
     callback(err, event);
   });
 };
 
-exports.removeLayer = function(event, layer, callback) {
+exports.removeLayer = function (event, layer, callback) {
   const update = {
     $pull: {
       layerIds: { $in: [layer.id] }
     }
   };
 
-  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+  Event.findByIdAndUpdate(event._id, update, function (err, event) {
     callback(err, event);
   });
 };
 
-exports.removeLayerFromEvents = function(layer, callback) {
+exports.removeLayerFromEvents = function (layer, callback) {
   const update = {
-    $pull: {layerIds: layer._id}
+    $pull: { layerIds: layer._id }
   };
-  Event.updateMany({}, update, function(err) {
+  Event.updateMany({}, update, function (err) {
     callback(err);
   });
 };
 
-exports.removeTeamFromEvents = function(team, callback) {
+exports.removeTeamFromEvents = function (team, callback) {
   const update = {
-    $pull: {teamIds: team._id}
+    $pull: { teamIds: team._id }
   };
-  Event.updateMany({}, update, function(err) {
+  Event.updateMany({}, update, function (err) {
     callback(err);
   });
 };
 
-exports.updateUserInAcl = function(eventId, userId, role, callback) {
+exports.updateUserInAcl = function (eventId, userId, role, callback) {
   // validate userId
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     const err = new Error('Invalid userId');
@@ -878,49 +876,49 @@ exports.updateUserInAcl = function(eventId, userId, role, callback) {
   const update = {};
   update['acl.' + userId] = role;
 
-  Event.findOneAndUpdate({_id: eventId}, update, {new: true, runValidators: true}, function(err, event) {
+  Event.findOneAndUpdate({ _id: eventId }, update, { new: true, runValidators: true }, function (err, event) {
     if (err) return callback(err);
 
     // The team that belongs to this event should have the same acl as the event
-    Team.updateUserInAclForEventTeam(eventId, userId, role, function(err) {
+    Team.updateUserInAclForEventTeam(eventId, userId, role, function (err) {
       callback(err, event);
     });
   });
 };
 
 
-exports.removeUserFromAcl = function(eventId, userId, callback) {
+exports.removeUserFromAcl = function (eventId, userId, callback) {
   const update = {
     $unset: {}
   };
   update.$unset['acl.' + userId] = true;
 
-  Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
+  Event.findByIdAndUpdate(eventId, update, { new: true, runValidators: true }, function (err, event) {
     if (err) return callback(err);
 
     // The team that belongs to this event should have the same acl as the event
-    Team.removeUserFromAclForEventTeam(eventId, userId, function(err) {
+    Team.removeUserFromAclForEventTeam(eventId, userId, function (err) {
       callback(err, event);
     });
   });
 };
 
-exports.removeUserFromAllAcls = function(user, callback) {
+exports.removeUserFromAllAcls = function (user, callback) {
   const update = {
     $unset: {}
   };
   update.$unset['acl.' + user._id.toString()] = true;
 
-  Event.updateMany({}, update, {new: true}, callback);
+  Event.updateMany({}, update, { new: true }, callback);
 };
 
-exports.remove = function(event, callback) {
-  event.remove(function(err) {
+exports.remove = function (event, callback) {
+  event.remove(function (err) {
     return callback(err);
   });
 };
 
-exports.getUsers = function(eventId, callback) {
+exports.getUsers = function (eventId, callback) {
   const populate = {
     path: 'teamIds',
     populate: {
@@ -928,7 +926,7 @@ exports.getUsers = function(eventId, callback) {
     }
   };
 
-  Event.findById(eventId).populate(populate).exec(function(err, event) {
+  Event.findById(eventId).populate(populate).exec(function (err, event) {
     if (err) return callback(err);
 
     if (!event) {
@@ -937,7 +935,7 @@ exports.getUsers = function(eventId, callback) {
       return callback(err);
     }
 
-    const users = event.teamIds.reduce(function(users, team) {
+    const users = event.teamIds.reduce(function (users, team) {
       return users.concat(team.userIds);
     }, []);
 
@@ -945,7 +943,7 @@ exports.getUsers = function(eventId, callback) {
   });
 };
 
-exports.getTeams = function(eventId, options, callback) {
+exports.getTeams = function (eventId, options, callback) {
   const projection = {
     teamIds: 1
   };
@@ -960,7 +958,7 @@ exports.getTeams = function(eventId, options, callback) {
     };
   }
 
-  Event.findById(eventId, projection).populate(populate).exec(function(err, event) {
+  Event.findById(eventId, projection).populate(populate).exec(function (err, event) {
     if (err) return callback(err);
 
     if (!event) {

@@ -30,13 +30,13 @@ DeviceSchema.path('userId').validate(async function (userId) {
 
   try {
     const user = await User.getUserById(userId);
-    if(!user) {
+    if (!user) {
       isValid = false;
-    } 
-  } catch(err) {
+    }
+  } catch (err) {
     isValid = false;
   }
- 
+
   return isValid;
 }, 'Invalid POC user, user does not exist');
 
@@ -72,14 +72,12 @@ DeviceSchema.pre('findOneAndDelete', function (next) {
 });
 
 function transform(device, ret) {
-  if (device.parent() == device) {
-    ret.id = ret._id;
-    delete ret._id;
+  ret.id = ret._id;
+  delete ret._id;
 
-    if (device.populated('userId')) {
-      ret.user = ret.userId;
-      delete ret.userId;
-    }
+  if (device.populated('userId')) {
+    ret.user = ret.userId;
+    delete ret.userId;
   }
 }
 
@@ -113,13 +111,13 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
 };
 
 exports.getDevices = function (options = {}) {
-  const {filter = {}, expand = {}} = options;
+  const { filter = {}, expand = {} } = options;
 
   const conditions = createQueryConditions(filter);
 
   let query = Device.find(conditions);
 
-  if(options.lean) {
+  if (options.lean) {
     query = query.lean();
   }
 
@@ -141,7 +139,7 @@ exports.getDevices = function (options = {}) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    let countQuery =  null;
+    let countQuery = null;
     if (!isUserQuery) {
       countQuery = Device.find(conditions);
     }
@@ -226,10 +224,10 @@ exports.createDevice = function (device) {
 };
 
 exports.updateDevice = function (id, update) {
-  const options =  { new: true, runValidators: true };
+  const options = { new: true, runValidators: true };
   return Device.findOneAndUpdate({ _id: id }, update, options).exec();
 };
 
 exports.deleteDevice = function (id) {
-  return Device.findOneAndDelete({_id: id}).exec();
+  return Device.findOneAndDelete({ _id: id }).exec();
 };

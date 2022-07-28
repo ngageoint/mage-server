@@ -6,30 +6,28 @@ var Schema = mongoose.Schema;
 var LoginSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   deviceId: { type: Schema.Types.ObjectId, ref: 'Device' }
-},{
+}, {
   versionKey: false
 });
 
-LoginSchema.index({userId: 1});
-LoginSchema.index({deviceId: 1});
-LoginSchema.index({userId: 1, deviceId: 1});
-LoginSchema.index({_id: 1, userId: 1, deviceId: 1});
+LoginSchema.index({ userId: 1 });
+LoginSchema.index({ deviceId: 1 });
+LoginSchema.index({ userId: 1, deviceId: 1 });
+LoginSchema.index({ _id: 1, userId: 1, deviceId: 1 });
 
 function transform(login, ret) {
-  if (login.parent() == login) {
-    ret.id = ret._id;
-    ret.timestamp = ret._id.getTimestamp();
-    delete ret._id;
+  ret.id = ret._id;
+  ret.timestamp = ret._id.getTimestamp();
+  delete ret._id;
 
-    if (login.populated('userId')) {
-      ret.user = ret.userId;
-      delete ret.userId;
-    }
+  if (login.populated('userId')) {
+    ret.user = ret.userId;
+    delete ret.userId;
+  }
 
-    if (login.populated('deviceId')) {
-      ret.device = ret.deviceId;
-      delete ret.deviceId;
-    }
+  if (login.populated('deviceId')) {
+    ret.device = ret.deviceId;
+    delete ret.deviceId;
   }
 }
 
@@ -38,13 +36,13 @@ LoginSchema.set("toJSON", {
 });
 
 function objectIdForDate(date) {
-  return new mongoose.Types.ObjectId(Math.floor(date/1000).toString(16) + "0000000000000000");
+  return new mongoose.Types.ObjectId(Math.floor(date / 1000).toString(16) + "0000000000000000");
 }
 
 // Creates the Model for the User Schema
 var Login = mongoose.model('Login', LoginSchema);
 
-exports.getLogins = function(options, callback) {
+exports.getLogins = function (options, callback) {
   var conditions = {};
   var filter = options.filter || {};
 
@@ -57,7 +55,7 @@ exports.getLogins = function(options, callback) {
   }
 
   if (filter.startDate) {
-    conditions._id = {$gte: objectIdForDate(filter.startDate)};
+    conditions._id = { $gte: objectIdForDate(filter.startDate) };
   }
   if (filter.endDate) {
     conditions._id = conditions._id || {};
@@ -81,12 +79,12 @@ exports.getLogins = function(options, callback) {
     }
   };
 
-  Login.find(conditions, null, o).populate([{path: 'userId'}, {path: 'deviceId'}]).exec(function (err, logins) {
+  Login.find(conditions, null, o).populate([{ path: 'userId' }, { path: 'deviceId' }]).exec(function (err, logins) {
     callback(err, options.firstLoginId ? logins.reverse() : logins);
   });
 };
 
-exports.createLogin = function(user, device, callback) {
+exports.createLogin = function (user, device, callback) {
   const create = {
     userId: user._id
   }
@@ -95,15 +93,15 @@ exports.createLogin = function(user, device, callback) {
     create.deviceId = device._id
   }
 
-  Login.create(create, function(err, login) {
+  Login.create(create, function (err, login) {
     if (err) return callback(err);
 
     callback(null, login);
   });
 };
 
-exports.removeLoginsForUser = function(user, callback) {
-  Login.remove({userId: user._id}, function(err) {
+exports.removeLoginsForUser = function (user, callback) {
+  Login.remove({ userId: user._id }, function (err) {
     callback(err);
   });
 };

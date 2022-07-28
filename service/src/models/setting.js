@@ -13,10 +13,8 @@ const SettingSchema = new Schema({
 });
 
 function transform(setting, ret) {
-  if (setting.parent() == setting) {
-    ret.id = ret._id;
-    delete ret._id;
-  }
+  ret.id = ret._id;
+  delete ret._id;
 }
 
 SettingSchema.set("toJSON", {
