@@ -34,14 +34,20 @@ GeoPackage.prototype.export = async function (streamable) {
     const filePath = await this.createGeoPackageFile();
     const gp = await GeoPackageAPI.GeoPackageAPI.create(filePath);
     await this.createUserTable(gp);
-    await this.addFormDataToGeoPackage(gp);
-    await this.createFormAttributeTables(gp);
-    await this.createObservationTable(gp);
-    await this.createObservationFeatureTableStyles(gp);
-    await this.createUserFeatureTableStyles(gp);
-    await this.addObservationsToGeoPackage(gp);
-    await this.addLocationsToGeoPackage(gp);
     await this.addUsersToUsersTable(gp);
+    await this.createUserFeatureTableStyles(gp);
+
+    if (this._filter.exportObservations) {
+      await this.addFormDataToGeoPackage(gp);
+      await this.createFormAttributeTables(gp);
+      await this.createObservationTable(gp);
+      await this.createObservationFeatureTableStyles(gp);
+      await this.addObservationsToGeoPackage(gp);
+    }
+
+    if (this._filter.exportLocations) {
+      await this.addLocationsToGeoPackage(gp);
+    }
 
     log.info('GeoPackage created');
     archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
@@ -172,10 +178,13 @@ GeoPackage.prototype.addUsersToUsersTable = async function (geopackage) {
           userId: userId
         }
       };
+
       const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
+
       await new Promise(function (resolve, reject) {
         fs.readFile(path.join(environment.userBaseDirectory, userId, 'icon'), function (err, iconBuffer) {
-          if (err) return reject(err);
+          if (err) return resolve();
+
           const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
           const iconRow = featureTableStyles.getIconDao().newRow();
           iconRow.data = iconBuffer;
@@ -527,18 +536,20 @@ GeoPackage.prototype.addAttachments = async function (geopackage, attachments, o
   for (let i = 0; i < attachments.length; i++) {
     const attachment = attachments[i];
 
-    await new Promise(function (resolve, reject) {
-      fs.readFile(path.join(attachmentBase, attachment.relativePath), async (err, dataBuffer) => {
-        if (err) return reject(err);
-        const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType, {
-          name: attachment.name,
-          size: attachment.size
-        });
+    if (attachment.relativePath) {
+      await new Promise(function (resolve, reject) {
+        fs.readFile(path.join(attachmentBase, attachment.relativePath), async (err, dataBuffer) => {
+          if (err) return reject(err);
+          const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType, {
+            name: attachment.name,
+            size: attachment.size
+          });
 
-        await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
-        resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
+          await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
+          resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
+        });
       });
-    });
+    }
   }
 }
 
