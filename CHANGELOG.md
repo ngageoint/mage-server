@@ -14,7 +14,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
-* Fix geopackage export if observation is missing deviceId or userId
+* Geopackage export will skip adding userId or deviceId if missing from observation.
+* KML will skip export of attachments missing relativePath property.
 
 ## [6.1.0](https://github.com/ngageoint/mage-server/releases/tag/6.1.0)
 
