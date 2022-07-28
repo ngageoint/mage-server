@@ -9,6 +9,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
+## [6.1.1](https://github.com/ngageoint/mage-server/releases/tag/6.1.1)
+
+##### Features
+
+##### Bug Fixes
+* Fix geopackage export if observation is missing deviceId or userId
+
 ## [6.1.0](https://github.com/ngageoint/mage-server/releases/tag/6.1.0)
 
 ##### Features
