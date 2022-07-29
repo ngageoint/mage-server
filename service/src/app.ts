@@ -55,6 +55,7 @@ import { createObservationRepositoryFactory } from './adapters/observations/adap
 import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adpaters.observations.attachment_store.file_system'
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
+import { EventEmitter } from 'events'
 
 
 export interface MageService {
@@ -329,6 +330,11 @@ const jsonSchemaService: JsonSchemaService = {
   }
 }
 
+const domainEvents = new EventEmitter({ captureRejections: true })
+  .on('error', err => {
+    console.error('uncaught error in domain event handler:', err)
+  })
+
 async function initRepositories(models: DatabaseLayer, config: BootConfig): Promise<Repositories> {
   const serviceTypeRepo = new MongooseFeedServiceTypeRepository(models.feeds.feedServiceTypeIdentity)
   const serviceRepo = new MongooseFeedServiceRepository(models.feeds.feedService)
@@ -352,7 +358,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
       eventRepo
     },
     observations: {
-      obsRepoFactory: createObservationRepositoryFactory(eventRepo),
+      obsRepoFactory: createObservationRepositoryFactory(eventRepo, domainEvents),
       attachmentStore
     },
     icons: {

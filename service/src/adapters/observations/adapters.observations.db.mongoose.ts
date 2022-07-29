@@ -6,6 +6,7 @@ import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
 import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
+import { EventEmitter } from 'events'
 
 export type ObservationIdDocument = mongoose.Document
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
@@ -15,7 +16,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   readonly eventScope: MageEventId
   readonly idModel: ObservationIdModel
 
-  constructor(eventDoc: Pick<MageEventDocument, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>) {
+  constructor(eventDoc: Pick<MageEventDocument, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
     // TODO: do not bind to the default mongoose instance and connection
     super(legacy.observationModel(eventDoc), { docToEntity: createDocumentMapping(eventDoc.id) })
     this.eventScope = eventDoc.id
@@ -65,6 +66,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
+    for (const e of observation.pendingEvents) {
+      this.domainEvents.emit(e.type, e)
+    }
     return saved
   }
 
@@ -114,7 +118,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 }
 
-export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventRepository): ObservationRepositoryForEvent => {
+export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventRepository, domainEvents: EventEmitter): ObservationRepositoryForEvent => {
   return async (eventId: MageEventId): Promise<EventScopedObservationRepository> => {
     const event = await eventRepo.model.findById(eventId)
     if (event) {
@@ -122,7 +126,8 @@ export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventR
         { id: eventId, collectionName: event.collectionName },
         async mageEventId => {
           return await eventRepo.findById(mageEventId)
-        })
+        },
+        domainEvents)
     }
     const err = new Error(`unexpected error: event not found for id ${event}`)
     console.error(err)

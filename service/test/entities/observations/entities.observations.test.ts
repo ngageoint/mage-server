@@ -1333,8 +1333,6 @@ describe('observation entities', function() {
             removedAttachments: [ copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0]) ]
           }
         ])
-        // TODO: attachment removed event
-        // TODO: leave multiple pending events intact after removing mulitple attachments
       })
 
       it('can make an invalid observation valid', function() {

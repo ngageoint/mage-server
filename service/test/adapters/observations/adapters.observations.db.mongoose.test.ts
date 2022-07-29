@@ -10,11 +10,13 @@ import { MageEventDocument } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
 import uniqid from 'uniqid'
+import EventEmitter from 'events'
+import Substitute, { Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 
 function observationStub(id: ObservationId, eventId: MageEventId): ObservationAttrs {
   const now = Date.now()
@@ -51,6 +53,7 @@ describe('mongoose observation repository', function() {
   let eventDoc: MageEventDocument
   let event: MageEvent
   let createEvent: (attrs: MageEventCreateAttrs & Partial<MageEventAttrs>) => Promise<MageEventDocument>
+  let domainEvents: SubstituteOf<EventEmitter>
 
   beforeEach('initialize model', async function() {
 
@@ -119,8 +122,9 @@ describe('mongoose observation repository', function() {
       ],
       userFields: []
     })
+    domainEvents = Substitute.for<EventEmitter>()
     model = legacy.observationModel(eventDoc)
-    repo = new MongooseObservationRepository(eventDoc, eventRepo.findById.bind(eventRepo))
+    repo = new MongooseObservationRepository(eventDoc, eventRepo.findById.bind(eventRepo), domainEvents)
     event = new MageEvent(eventRepo.entityForDocument(eventDoc))
 
     expect(eventDoc._id).to.be.a('number')
@@ -614,6 +618,107 @@ describe('mongoose observation repository', function() {
 
       expect(updated).to.be.instanceOf(AttachmentNotFoundError)
       expect(copyObservationAttrs(fetched as Observation)).to.deep.equal(copyObservationAttrs(obs))
+    })
+  })
+
+  describe('dispatching domain events', function() {
+
+    let obs: Observation
+
+    beforeEach(async function() {
+      const id = await repo.allocateObservationId()
+      const formId = await repo.nextFormEntryIds().then(x => x[0])
+      const attachmentIds = await repo.nextAttachmentIds(3)
+      const beforeAttrs = observationStub(id, event.id)
+      beforeAttrs.properties.forms = [
+        {
+          id: formId,
+          formId: event.forms[0].id,
+          field1: 'make valid'
+        }
+      ]
+      beforeAttrs.attachments = [
+        {
+          id: attachmentIds.pop()!,
+          observationFormId: formId,
+          fieldName: 'field3',
+          contentType: 'image/jpeg',
+          oriented: false,
+          thumbnails: [],
+        },
+        {
+          id: attachmentIds.pop()!,
+          observationFormId: formId,
+          fieldName: 'field3',
+          contentType: 'image/jpeg',
+          oriented: false,
+          thumbnails: [],
+        },
+        {
+          id: attachmentIds.pop()!,
+          observationFormId: formId,
+          fieldName: 'field3',
+          contentType: 'image/jpeg',
+          oriented: false,
+          thumbnails: [],
+        },
+      ]
+      obs = Observation.evaluate(beforeAttrs, event)
+
+      expect(obs.validation.hasErrors, validationResultMessage(obs.validation)).to.be.false
+
+      obs = await repo.save(obs) as Observation
+    })
+
+    it('dispatches pending events on the observation after the observation saves', async function() {
+
+      /*
+      TODO: should there a mechanism to ensure domain events cannot be
+      dispatched more than once after an observation has been saved?
+      Observation instances are immutable so
+      */
+
+      const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
+      const saved = await repo.save(mod) as Observation
+
+      expect(mod.pendingEvents).to.have.length(1)
+      expect(saved.pendingEvents).to.deep.equal([])
+      domainEvents.received(1).emit(Arg.all())
+      domainEvents.received(1).emit(mod.pendingEvents[0].type, mod.pendingEvents[0])
+    })
+
+    it('does not dispatch events if the observation is invalid', async function() {
+
+      const mod = Observation.assignTo(obs, {
+        ...copyObservationAttrs(obs),
+        attachments: [
+          {
+            ...obs.attachments[0],
+            fieldName: 'wut'
+          }
+        ]
+      }) as Observation
+      const saved = await repo.save(mod)
+
+      expect(mod.validation.hasErrors).to.be.true
+      expect(mod.pendingEvents.length).to.be.greaterThan(0)
+      expect(saved).to.be.instanceOf(ObservationRepositoryError)
+      domainEvents.didNotReceive().emit(Arg.all())
+    })
+
+    it('does not dispatch events if there was a database saving the observation', async function() {
+
+      let mod = Observation.evaluate({
+        ...copyObservationAttrs(obs),
+        id: mongoose.Types.ObjectId().toHexString()
+      }, event)
+      mod = removeAttachment(mod, mod.attachments[0].id) as Observation
+      const saved = await repo.save(mod)
+
+      expect(mod.validation.hasErrors).to.be.false
+      expect(mod.pendingEvents.length).to.be.greaterThan(0)
+      expect(saved).to.be.instanceOf(ObservationRepositoryError)
+      domainEvents.didNotReceive().emit(Arg.all())
     })
   })
 })
