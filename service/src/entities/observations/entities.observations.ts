@@ -196,8 +196,6 @@ export function copyImportantFlagAttrs(from: ObservationImportantFlag): Observat
   }
 }
 
-const ObservationConstructionToken = Symbol('ObservationConstructor')
-
 /**
  * The intention of this class is to provide a mutation model for observation
  * updates.  While `ObservationAttrs` is more just raw the keys and values of
@@ -216,9 +214,7 @@ export class Observation implements Readonly<ObservationAttrs> {
    * @param mageEvent
    */
   static evaluate(attrs: ObservationAttrs, mageEvent: MageEvent): Observation {
-    attrs = copyObservationAttrs(attrs)
-    const validation = validateObservation(attrs, mageEvent)
-    return new Observation(ObservationConstructionToken, attrs, mageEvent, validation)
+    return createObservation(attrs, mageEvent)
   }
 
   /**
@@ -245,7 +241,14 @@ export class Observation implements Readonly<ObservationAttrs> {
       createdAt: new Date(target.createdAt),
       lastModified: new Date()
     }
-    return Observation.evaluate(update, target.mageEvent)
+    const updateAttachments = update.attachments.reduce((updateAttachments, att) => {
+      return updateAttachments.set(att.id, att)
+    }, new Map<AttachmentId, Attachment>())
+    const removedAttachments = target.attachments.filter(x =>!updateAttachments.has(x.id))
+    // TODO: whatever other mods generate events that matter
+    const updateEvents = removedAttachments.length ? [ AttachmentsRemovedDomainEvent(target.id, removedAttachments) ] : [] as ObservationDomainEvent[]
+    const pendingEvents = mergePendingDomainEvents(target, updateEvents)
+    return createObservation(update, target.mageEvent, pendingEvents)
   }
 
   #validation: ObservationValidationResult
@@ -275,6 +278,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly geometry: Readonly<Geometry>
   readonly properties: Readonly<ObservationFeatureProperties>
   readonly attachments: readonly Attachment[]
+  readonly pendingEvents: readonly ObservationDomainEvent[]
 
   constructor(...args: unknown[]) {
     if (args[0] !== ObservationConstructionToken) {
@@ -306,6 +310,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.#formEntriesById = new Map(this.properties.forms.map(x => [ x.id, x ]))
     this.#attachmentsById = new Map(this.attachments.map(x => [ x.id, x ]))
     this.#validation = args[3] as ObservationValidationResult
+    this.pendingEvents = (args[4] || []) as ObservationDomainEvent[]
   }
 
   get validation(): ObservationValidationResult {
@@ -338,6 +343,22 @@ export class Observation implements Readonly<ObservationAttrs> {
     return attachmentsForField(fieldName, formEntryId, this)
   }
 }
+
+export enum ObservationDomainEventType {
+  AttachmentsRemoved = 'Observation.AttachmentsRemoved',
+}
+
+export type ObservationDomainEvent = {
+  readonly type: ObservationDomainEventType
+  readonly observationId: ObservationId
+} & (
+  | {
+    type: ObservationDomainEventType.AttachmentsRemoved
+    readonly removedAttachments: readonly Readonly<Attachment>[]
+  }
+)
+
+export type AttachmentsRemovedDomainEvent = Extract<ObservationDomainEvent, { type: ObservationDomainEventType.AttachmentsRemoved }>
 
 export interface ObservationValidationResult {
   readonly hasErrors: boolean
@@ -720,7 +741,7 @@ export class AttachmentNotFoundError extends Error {
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
  */
- export interface EventScopedObservationRepository {
+export interface EventScopedObservationRepository {
   readonly eventScope: MageEventId
   allocateObservationId(): Promise<ObservationId>
   /**
@@ -906,6 +927,14 @@ export enum AttachmentStoreErrorCode {
    * some I/O operation.
    */
   StorageError = 'AttachmentStoreError.StorageError'
+}
+
+const ObservationConstructionToken = Symbol('ObservationConstructor')
+
+function createObservation(attrs: ObservationAttrs, mageEvent: MageEvent, pendingEvents?: readonly ObservationDomainEvent[]): Observation {
+  attrs = copyObservationAttrs(attrs)
+  const validation = validateObservation(attrs, mageEvent)
+  return new Observation(ObservationConstructionToken, attrs, mageEvent, validation, pendingEvents)
 }
 
 function validateObservationCoreAttrs(validation: ObservationValidationContext): ObservationValidationContext {
@@ -1194,3 +1223,29 @@ class ObservationValidationContext {
     })
   }
 }
+
+function AttachmentsRemovedDomainEvent(observationId: ObservationId, removedAttachments: Attachment[]): AttachmentsRemovedDomainEvent {
+  return Object.freeze<AttachmentsRemovedDomainEvent>({
+    type: ObservationDomainEventType.AttachmentsRemoved,
+    observationId,
+    removedAttachments: Object.freeze(removedAttachments)
+  })
+}
+
+function mergePendingDomainEvents(from: Observation, nextEvents: ObservationDomainEvent[]): ObservationDomainEvent[] {
+  const removedAttachments = [] as Readonly<Attachment>[]
+  const merged = [ ...from.pendingEvents, ...nextEvents ].reduce((merged, e) => {
+    if (e.type === ObservationDomainEventType.AttachmentsRemoved) {
+      removedAttachments.push(...e.removedAttachments)
+      return merged
+    }
+    else {
+      return [ ...merged, e ]
+    }
+  }, [] as ObservationDomainEvent[])
+  if (removedAttachments.length) {
+    merged.push(AttachmentsRemovedDomainEvent(from.id, removedAttachments))
+  }
+  return merged
+}
+

@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension, ObservationDomainEventType } from '../../../lib/entities/observations/entities.observations'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -1265,8 +1265,76 @@ describe('observation entities', function() {
         // TODO: attachment updated event
       })
 
-      it('removes attachments', function() {
+      it('removes attachments with domain events', function() {
+
+        const beforeLastModified = Date.now() - 1000 * 60 * 60
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.properties.forms = [
+          {
+            id: 'attachments',
+            formId: form1.id
+          }
+        ]
+        beforeAttrs.attachments = [
+          {
+            id: 'a1',
+            fieldName: 'field2',
+            observationFormId: 'attachments',
+            lastModified: new Date(beforeLastModified),
+            oriented: false,
+            name: 'test1.mp4',
+            contentType: 'audio/mp4',
+            size: 12345,
+            thumbnails: []
+          },
+          {
+            id: 'a2',
+            fieldName: 'field2',
+            observationFormId: 'attachments',
+            lastModified: new Date(beforeLastModified),
+            oriented: false,
+            name: 'test1.mp4',
+            contentType: 'image/jpeg',
+            size: 657687,
+            thumbnails: []
+          },
+        ]
+        const afterAttrs1 = copyObservationAttrs(beforeAttrs)
+        afterAttrs1.attachments = [ copyAttachmentAttrs(beforeAttrs.attachments[0]) ]
+        const afterAttrs2 = copyObservationAttrs(beforeAttrs)
+        afterAttrs2.attachments = []
+        const before = Observation.evaluate(beforeAttrs, mageEvent)
+        const after1 = Observation.assignTo(before, afterAttrs1) as Observation
+        const after2 = Observation.assignTo(after1, afterAttrs2) as Observation
+
+        const beforeUnchanged = _.omit(before, 'lastModified', 'attachments', 'pendingEvents')
+        const after1Unchanged = _.omit(after1, 'lastModified', 'attachments', 'pendingEvents')
+        const after2Unchanged = _.omit(after2, 'lastModified', 'attachments', 'pendingEvents')
+        expect(after1Unchanged).to.deep.equal(beforeUnchanged)
+        expect(after2Unchanged).to.deep.equal(beforeUnchanged)
+        expect(before.lastModified.getTime()).to.equal(beforeLastModified)
+        expect(after1.validation.hasErrors).to.be.false
+        expect(after1.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
+        expect(after1.attachments).to.deep.equal([ copyAttachmentAttrs(before.attachments[0]) ])
+        expect(after1.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            observationId: before.id,
+            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]) ]
+          }
+        ])
+        expect(after2.validation.hasErrors).to.be.false
+        expect(after2.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
+        expect(after2.attachments).to.deep.equal([])
+        expect(after2.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            observationId: before.id,
+            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0]) ]
+          }
+        ])
         // TODO: attachment removed event
+        // TODO: leave multiple pending events intact after removing mulitple attachments
       })
 
       it('can make an invalid observation valid', function() {
