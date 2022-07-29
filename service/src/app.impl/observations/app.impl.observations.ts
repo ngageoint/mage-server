@@ -143,7 +143,7 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
 
 /**
  * TODO:
- * Much of this logic should move to resolve added and removed form entries and
+ * Much of this logic to resolve added and removed form entries and
  * attachments should move to {@link Observation.assignTo()} so that method can
  * generate appropriate domain events, but that will require some API changes
  * in the entity layer, i.e., some alternative to the pre-generated ID
