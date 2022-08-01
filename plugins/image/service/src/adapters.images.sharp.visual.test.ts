@@ -35,4 +35,13 @@ void(async function() {
     const dest = fs.createWriteStream(destPath)
     await service.scaleToDimension(thumbSize, source, dest)
   }
+
+  const corruptedBytes = fs.readFileSync(path.join(imageBasePath, 'corrupted.jpeg'))
+  const corruptedSource: ImageContent = {
+    mediaType: 'image/jpeg',
+    bytes: stream.Readable.from(corruptedBytes)
+  }
+  const corruptedDestPath = path.join(destBasePath, 'corrupted.oriented.jpeg')
+  const corruptedDest = fs.createWriteStream(corruptedDestPath)
+  await service.autoOrient(corruptedSource, corruptedDest)
 })()
