@@ -2,6 +2,7 @@ import { SharpImageService } from './adapters.images.sharp'
 import { ImageContent } from './processor'
 import fs from 'fs'
 import path from 'path'
+import stream from 'stream'
 import sharp from 'sharp'
 import Jimp from 'jimp'
 import { BufferWriteable } from './util.spec'
@@ -165,6 +166,23 @@ describe('sharp image service', () => {
       expect(scaled.sizeInBytes).toEqual(dest.content.length)
       expect(Math.abs(scaled.sizeInBytes - expectedPixels.length)).toBeLessThanOrEqual(1000)
       expect(percentDifferent).toBeLessThan(2)
+    })
+  })
+
+  describe('corrupted image tolerance', () => {
+
+    it('allows loading this test image found on a demo server', async () => {
+
+      const service = SharpImageService()
+      const corruptedBytes = fs.readFileSync(path.join(imageBasePath, 'corrupted.jpeg'))
+      const corruptedSource: ImageContent = {
+        mediaType: 'image/jpeg',
+        bytes: stream.Readable.from(corruptedBytes)
+      }
+      const corruptedDest = new BufferWriteable()
+      const err = await service.autoOrient(corruptedSource, corruptedDest)
+
+      expect(err).not.toBeInstanceOf(Error)
     })
   })
 })
