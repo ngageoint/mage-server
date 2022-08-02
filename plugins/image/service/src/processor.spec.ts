@@ -694,7 +694,7 @@ class BufferAttachmentStore implements AttachmentStore {
     }
     return new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound)
   }
-  deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
+  deleteContent(attachment: Attachment, observation: Observation): Promise<AttachmentStoreError | AttachmentPatchAttrs | null> {
     throw new Error('Method not implemented.')
   }
   deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
