@@ -67,7 +67,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     for (const e of observation.pendingEvents) {
-      this.domainEvents.emit(e.type, e)
+      this.domainEvents.emit(e.type, Object.freeze({ ...e, observation: saved }))
     }
     return saved
   }

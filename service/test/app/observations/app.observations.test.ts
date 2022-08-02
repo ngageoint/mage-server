@@ -2,9 +2,9 @@ import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
-import { AllocateObservationId, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
+import { AllocateObservationId, registerDeleteRemovedAttachmentsHandler, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -12,6 +12,7 @@ import { User, UserId, UserRepository } from '../../../lib/entities/users/entiti
 import { pipeline, Readable } from 'stream'
 import util from 'util'
 import { BufferWriteable } from '../../utils'
+import EventEmitter from 'events'
 
 describe('observations use case interactions', function() {
 
@@ -1976,7 +1977,7 @@ describe('observations use case interactions', function() {
       store.received(1).readThumbnailContent(400, req.attachmentId, obs)
     })
 
-    it('reads the full content content if the store does not have the thumbnail content', async function() {
+    it('reads the full content if the store does not have the thumbnail content', async function() {
 
       obs = putAttachmentThumbnailForMinDimension(obs, obs.attachments[0].id, {
         minDimension: 200,
@@ -2022,6 +2023,187 @@ describe('observations use case interactions', function() {
       store.received(1).readThumbnailContent(400, req.attachmentId, obs)
       store.received(1).readContent(Arg.all())
       store.received(1).readContent(req.attachmentId, obs, undefined)
+    })
+  })
+
+  describe('handling removed attachments', function() {
+
+    class DeleteAttachmentContent {
+
+      readonly promise: Promise<any>
+      private resolve: ((result: any) => any) | undefined = undefined
+      private reject: ((err?: any) => void) | undefined = undefined
+
+      constructor() {
+        this.promise = new Promise((resolve, reject) => {
+          this.resolve = resolve
+          this.reject = reject
+        })
+      }
+
+      resolvePromise(): Promise<any> {
+        this.resolve!(null)
+        return this.promise
+      }
+
+      rejectPromise(err: Error): Promise<any> {
+        this.reject!(err)
+        return this.promise
+      }
+    }
+    let attachmentStore: SubstituteOf<AttachmentStore>
+
+    beforeEach(function() {
+      attachmentStore = Sub.for<AttachmentStore>()
+      mageEvent = new MageEvent({
+        ...copyMageEventAttrs(mageEvent),
+        forms: [
+          {
+            id: 135,
+            name: 'Remove Attachments Test',
+            color: '#ab1234',
+            archived: false,
+            userFields: [],
+            fields: [
+              {
+                id: 1,
+                name: 'attachments',
+                title: 'Remove Attachments',
+                required: false,
+                type: FormFieldType.Attachment,
+              }
+            ]
+          }
+        ]
+      })
+    })
+
+    it('schedules a task to delete attachment content upon a removed attachments event', async function() {
+
+      let observation = Observation.evaluate({
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 15, 27 ] },
+        properties: {
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+          forms: [
+            { id: uniqid(), formId: 135 }
+          ]
+        },
+        states: [],
+        favoriteUserIds: [],
+        attachments: [],
+      }, mageEvent)
+      observation = addAttachment(observation, 'not_removed', 'attachments', observation.formEntries[0].id, {
+        oriented: false,
+        thumbnails: [],
+        name: 'not_removed.jpg',
+        contentLocator: uniqid()
+      }) as Observation
+      const removed1: Attachment = {
+        id: 'remove1',
+        observationFormId: observation.properties.forms[0].id,
+        fieldName: 'attachments',
+        oriented: false,
+        thumbnails: [],
+        contentLocator: uniqid()
+      }
+      const removed2: Attachment = {
+        id: 'removed2',
+        observationFormId: observation.properties.forms[0].id,
+        fieldName: 'attachments',
+        oriented: false,
+        thumbnails: [],
+        contentLocator: uniqid()
+      }
+      const deletes = [] as DeleteAttachmentContent[]
+      attachmentStore.deleteContent(Arg.all()).mimicks((att, obs) => {
+        const del = new DeleteAttachmentContent()
+        deletes.push(del)
+        return del.promise.then(_ => null)
+      })
+      const domainEvents = new EventEmitter()
+      registerDeleteRemovedAttachmentsHandler(domainEvents, attachmentStore)
+      domainEvents.emit(ObservationDomainEventType.AttachmentsRemoved, Object.freeze<ObservationEmitted<AttachmentsRemovedDomainEvent>>({
+        type: ObservationDomainEventType.AttachmentsRemoved,
+        observation,
+        removedAttachments: Object.freeze([ removed1, removed2 ])
+      }))
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(deletes).to.have.length(2)
+      attachmentStore.received(2).deleteContent(Arg.all())
+      attachmentStore.received(1).deleteContent(removed1, observation)
+      attachmentStore.received(1).deleteContent(removed2, observation)
+
+      await Promise.all(deletes.map(x => x.resolvePromise()))
+    })
+
+    it('swallows rejections', async function() {
+
+      let observation = Observation.evaluate({
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 15, 27 ] },
+        properties: {
+          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5),
+          forms: [
+            { id: uniqid(), formId: 135 }
+          ]
+        },
+        states: [],
+        favoriteUserIds: [],
+        attachments: [],
+      }, mageEvent)
+      observation = addAttachment(observation, 'not_removed', 'attachments', observation.formEntries[0].id, {
+        oriented: false,
+        thumbnails: [],
+        name: 'not_removed.jpg',
+        contentLocator: uniqid()
+      }) as Observation
+      const removed1: Attachment = {
+        id: 'remove1',
+        observationFormId: observation.properties.forms[0].id,
+        fieldName: 'attachments',
+        oriented: false,
+        thumbnails: [],
+        contentLocator: uniqid()
+      }
+      const removed2: Attachment = {
+        id: 'removed2',
+        observationFormId: observation.properties.forms[0].id,
+        fieldName: 'attachments',
+        oriented: false,
+        thumbnails: [],
+        contentLocator: uniqid()
+      }
+      const deletes = [] as DeleteAttachmentContent[]
+      attachmentStore.deleteContent(Arg.all()).mimicks(async (att, obs) => {
+        deletes.push(new DeleteAttachmentContent())
+        return deletes[deletes.length - 1].promise
+      })
+      const domainEvents = new EventEmitter()
+      registerDeleteRemovedAttachmentsHandler(domainEvents, attachmentStore)
+      domainEvents.emit(ObservationDomainEventType.AttachmentsRemoved, Object.freeze<ObservationEmitted<AttachmentsRemovedDomainEvent>>({
+        type: ObservationDomainEventType.AttachmentsRemoved,
+        observation,
+        removedAttachments: Object.freeze([ removed1, removed2 ])
+      }))
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(deletes).to.have.length(2)
+      attachmentStore.received(2).deleteContent(Arg.all())
+      attachmentStore.received(1).deleteContent(removed1, observation)
+      attachmentStore.received(1).deleteContent(removed2, observation)
+
+      deletes[0].rejectPromise(new Error('catch me')).catch(err => 'caught')
+      await deletes[1].resolvePromise()
     })
   })
 })

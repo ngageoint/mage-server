@@ -10,7 +10,7 @@ import { MageEventDocument } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -675,7 +675,9 @@ describe('mongoose observation repository', function() {
       /*
       TODO: should there a mechanism to ensure domain events cannot be
       dispatched more than once after an observation has been saved?
-      Observation instances are immutable so
+      Observation instances are immutable so the instance given to the save
+      method could be saved again, which would dispatch events again.  not
+      sure how functionally-programmed systems handle that.
       */
 
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
@@ -684,7 +686,38 @@ describe('mongoose observation repository', function() {
       expect(mod.pendingEvents).to.have.length(1)
       expect(saved.pendingEvents).to.deep.equal([])
       domainEvents.received(1).emit(Arg.all())
-      domainEvents.received(1).emit(mod.pendingEvents[0].type, mod.pendingEvents[0])
+      domainEvents.received(1).emit(
+        mod.pendingEvents[0].type,
+        Arg.deepEquals({ ...mod.pendingEvents[0], observation: saved })
+      )
+    })
+
+    it('emits readonly events', async function() {
+
+      const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
+      const receivedEvents = [] as ObservationEmitted<PendingObservationDomainEvent>[]
+      const realDomainEvents = new EventEmitter()
+      domainEvents.on(Arg.all()).mimicks(realDomainEvents.on.bind(realDomainEvents))
+      domainEvents.emit(Arg.all()).mimicks(realDomainEvents.emit.bind(realDomainEvents))
+      domainEvents.on(ObservationDomainEventType.AttachmentsRemoved, e => {
+        receivedEvents.push(e)
+      })
+      const saved = await repo.save(mod) as Observation
+
+      expect(saved.pendingEvents).to.be.empty
+      expect(receivedEvents.length).to.equal(1)
+      const receivedEvent = receivedEvents[0] as ObservationEmitted<AttachmentsRemovedDomainEvent>
+      const removedAttachments = receivedEvent.removedAttachments
+      const receivedEventUntyped = receivedEvent as any
+      expect(() => {
+        receivedEventUntyped.type = 'wut'
+        receivedEventUntyped.observation = mod
+        receivedEventUntyped.removedAttachments = []
+      }).to.throw
+      expect(receivedEvent.type).to.equal(ObservationDomainEventType.AttachmentsRemoved)
+      expect(receivedEvent.observation).to.equal(saved)
+      expect(removedAttachments.length).to.equal(1)
+      expect(receivedEvent.removedAttachments).to.equal(removedAttachments)
     })
 
     it('does not dispatch events if the observation is invalid', async function() {

@@ -1168,18 +1168,19 @@ describe('observation entities', function() {
             field1: 'form entry 2 after'
           }
         ])
+        expect(after.pendingEvents).to.deep.equal([])
       })
 
       it.skip('removes child attachments of removed form entries', function() {
         /*
         TODO: better to just let the observation become invalid if assigning
         attrs with removed form enties and orphaned attachments?  but then is
-        Observation.assignTo() really worth antyhing?
+        Observation.assignTo() really worth anything?
         */
       })
 
       it.skip('TODO: adds attachments', function() {
-        // TODO: attachment added event
+        // TODO: attachment added event?
       })
 
       it('updates attachments', function() {
@@ -1319,7 +1320,6 @@ describe('observation entities', function() {
         expect(after1.pendingEvents).to.deep.equal([
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
-            observationId: before.id,
             removedAttachments: [ copyAttachmentAttrs(before.attachments[1]) ]
           }
         ])
@@ -1329,7 +1329,6 @@ describe('observation entities', function() {
         expect(after2.pendingEvents).to.deep.equal([
           {
             type: ObservationDomainEventType.AttachmentsRemoved,
-            observationId: before.id,
             removedAttachments: [ copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0]) ]
           }
         ])
@@ -1380,9 +1379,7 @@ describe('observation entities', function() {
         expect(after.validation.hasErrors).to.be.false
       })
 
-      it.skip('fails if the observation id does not match', function() {
-
-      })
+      it.skip('TODO: fails if the observation id does not match', function() { })
 
       it('fails if the event id does not match', function() {
 
@@ -1396,9 +1393,44 @@ describe('observation entities', function() {
         expect(after.reason).to.equal(ObservationUpdateErrorReason.EventId)
       })
 
-      it.skip('fails if the device id does not match', function() {
+      it('adds an attachments removed event for removed attachments', function() {
 
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.properties.forms = [
+          {
+            id: 'formEntry1',
+            formId: form1.id,
+          },
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+          }
+        ]
+        beforeAttrs.attachments = [
+          { id: 'a1', observationFormId: 'formEntry1', fieldName: 'field2', name: 'remove1.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+          { id: 'a2', observationFormId: 'formEntry2', fieldName: 'field2', name: 'keep.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+          { id: 'a3', observationFormId: 'formEntry1', fieldName: 'field2', name: 'remove2.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+        ]
+        const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
+        const afterAttrs = copyObservationAttrs(beforeAttrs)
+        afterAttrs.properties.forms = [ beforeAttrs.properties.forms[1] ]
+        afterAttrs.attachments = [ beforeAttrs.attachments[1] ]
+        const after = Observation.assignTo(before, afterAttrs) as Observation
+
+        expect(before.validation.hasErrors).to.be.false
+        expect(after.validation.hasErrors).to.be.false
+        expect(after.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            removedAttachments: [
+              copyAttachmentAttrs(beforeAttrs.attachments[0]),
+              copyAttachmentAttrs(beforeAttrs.attachments[2])
+            ]
+          }
+        ])
       })
+
+      it.skip('TODO: fails if the device id does not match', function() { })
     })
 
     describe('form entries', function() {

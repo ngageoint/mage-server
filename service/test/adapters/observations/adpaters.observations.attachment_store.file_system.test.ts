@@ -4,7 +4,7 @@ import path from 'path'
 import stream, { Readable } from 'stream'
 import util from 'util'
 import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
-import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, removeAttachment, AttachmentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
@@ -650,25 +650,22 @@ describe('file system attachment store', function() {
 
       it('deletes attachment content', async function() {
 
-        const result = await store.deleteContent(att.id, savedObs) as Observation
+        const result = await store.deleteContent(savedAtt, savedObs) as AttachmentPatchAttrs
 
-        expect(result).to.be.instanceOf(Observation)
-        expect(result.attachmentFor(att.id)).to.exist
-        expect(result.attachmentFor(att.id)?.contentLocator).to.be.undefined
+        expect(result.contentLocator).to.be.undefined
         expect(fs.existsSync(attContentPath)).to.be.false
       })
 
       it('deletes thumbnail content for the attachment', async function() {
 
-        const result = await store.deleteContent(att.id, savedObs) as Observation
-        const resultAtt = result.attachmentFor(att.id) as Attachment
+        const result = await store.deleteContent(savedAtt, savedObs) as AttachmentPatchAttrs
 
-        expect(result).to.be.instanceOf(Observation)
-        expect(resultAtt.thumbnails.length).to.equal(2)
-        expect(resultAtt.thumbnails).to.deep.equal(att.thumbnails)
-        for (const thumb of resultAtt.thumbnails) {
-          expect(thumb.contentLocator).to.be.undefined
-        }
+        expect(result.thumbnails?.length).to.equal(savedAtt.thumbnails.length)
+        savedAtt.thumbnails.forEach((thumb, pos) => {
+          const thumbPatch = copyThumbnailAttrs(result.thumbnails![pos])
+          expect(thumbPatch.contentLocator).to.be.undefined
+          expect(_.omit(copyThumbnailAttrs(thumb), 'contentLocator')).to.deep.include(_.omit(thumbPatch, 'contentLocator'))
+        })
       })
 
       it('deletes the presumed path if the attachment does not have a content locator', async function() {
@@ -690,12 +687,21 @@ describe('file system attachment store', function() {
         expect(obs.attachmentFor(att.id)?.thumbnails[0]).to.have.property('contentLocator', undefined)
         expect(obs.attachmentFor(att.id)?.thumbnails[1]).to.have.property('contentLocator', undefined)
 
-        const result = await store.deleteContent(att.id, obs)
+        const result = await store.deleteContent(att, obs)
 
         expect(result).to.be.null
         expect(fs.existsSync(impliedPath)).to.be.false
         expect(fs.existsSync(impliedThumb100Path)).to.be.false
         expect(fs.existsSync(impliedThumb300Path)).to.be.false
+      })
+
+      it('returns null when the attachment is already removed the observation', async function() {
+
+        savedObs = removeAttachment(savedObs, att.id) as Observation
+        const result = await store.deleteContent(att, savedObs) as AttachmentContentPatchAttrs
+
+        expect(result).to.be.null
+        expect(fs.existsSync(attContentPath)).to.be.false
       })
     })
 
@@ -727,7 +733,7 @@ describe('file system attachment store', function() {
           { minDimension: 300, contentLocator: thumb300RelPath }
         ]
       }) as Observation
-      const result = await store.deleteContent(att.id, attackObs)
+      const result = await store.deleteContent(att, attackObs)
 
       expect(result).to.be.instanceOf(AttachmentStoreError)
       expect(fs.readFileSync(preservePath).toString()).to.equal('very valuable')

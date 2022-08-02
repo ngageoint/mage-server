@@ -330,7 +330,7 @@ const jsonSchemaService: JsonSchemaService = {
   }
 }
 
-const domainEvents = new EventEmitter({ captureRejections: true })
+const DomainEvents = new EventEmitter({ captureRejections: true })
   .on('error', err => {
     console.error('uncaught error in domain event handler:', err)
   })
@@ -358,7 +358,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
       eventRepo
     },
     observations: {
-      obsRepoFactory: createObservationRepositoryFactory(eventRepo, domainEvents),
+      obsRepoFactory: createObservationRepositoryFactory(eventRepo, DomainEvents),
       attachmentStore
     },
     icons: {
@@ -408,6 +408,7 @@ async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['
   const eventPermissions = await import('./permissions/permissions.events')
   const obsPermissions = await import('./permissions/permissions.observations')
   const obsPermissionsService = new obsPermissions.ObservationPermissionsServiceImpl(eventPermissions.defaultEventPermissionsService)
+  observationsImpl.registerDeleteRemovedAttachmentsHandler(DomainEvents, repos.observations.attachmentStore)
   return {
     allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
     saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo),
