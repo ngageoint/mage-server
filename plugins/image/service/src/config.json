@@ -1,8 +1,0 @@
-{
-  "enable": false,
-  "image": {
-    "orient": true,
-    "thumbSizes": [150, 320, 800, 1024, 2048],
-    "interval": 60
-  }
-}
