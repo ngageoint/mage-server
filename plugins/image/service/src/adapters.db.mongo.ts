@@ -20,7 +20,7 @@ export function FindUnprocessedAttachments(getDbConn: GetDbConnection): FindUnpr
           const collection = conn.collection(eventState.collectionName)
           const cursor = await collection.aggregate<UnprocessedAttachmentReference>(queryStages)
           for await (const doc of cursor) {
-            yield { eventId: eventState.event.id, observationId: doc.observationId.toHexString(), attachmentId: doc.attachmentId.toHexString() }
+            yield { eventId: eventState.event.id, observationId: doc.observationId, attachmentId: doc.attachmentId }
             if (--remainingCount === 0) {
               console.info(`reached unprocessed attachment limit ${limit}; cancelling query iteration`)
               return await cursor.close().then(_ => eventStateCursor.return!(null)).then(_ => null)
