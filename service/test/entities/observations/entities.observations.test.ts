@@ -1,4 +1,4 @@
-import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentValidationErrorReason, copyObservationAttrs, FieldConstraintKey, FormEntry, AttachmentCreateAttrs, Observation, ObservationAttrs, patchAttachment, MinFormsConstraint, MaxFormsConstraint, validateObservation, AttachmentAddError, ObservationUpdateError, ObservationUpdateErrorReason, validationResultMessage, FormEntryValidationErrorReason, Thumbnail, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, removeAttachment, copyAttachmentAttrs, removeFormEntry, thumbnailIndexForTargetDimension, ObservationDomainEventType } from '../../../lib/entities/observations/entities.observations'
 import { copyMageEventAttrs, MageEvent, MageEventAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
 import { AttachmentPresentationType, AttachmentMediaTypes, Form, FormField, FormFieldChoice, FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import { expect } from 'chai'
@@ -1168,18 +1168,19 @@ describe('observation entities', function() {
             field1: 'form entry 2 after'
           }
         ])
+        expect(after.pendingEvents).to.deep.equal([])
       })
 
       it.skip('removes child attachments of removed form entries', function() {
         /*
         TODO: better to just let the observation become invalid if assigning
         attrs with removed form enties and orphaned attachments?  but then is
-        Observation.assignTo() really worth antyhing?
+        Observation.assignTo() really worth anything?
         */
       })
 
       it.skip('TODO: adds attachments', function() {
-        // TODO: attachment added event
+        // TODO: attachment added event?
       })
 
       it('updates attachments', function() {
@@ -1265,8 +1266,72 @@ describe('observation entities', function() {
         // TODO: attachment updated event
       })
 
-      it('removes attachments', function() {
-        // TODO: attachment removed event
+      it('removes attachments with domain events', function() {
+
+        const beforeLastModified = Date.now() - 1000 * 60 * 60
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.properties.forms = [
+          {
+            id: 'attachments',
+            formId: form1.id
+          }
+        ]
+        beforeAttrs.attachments = [
+          {
+            id: 'a1',
+            fieldName: 'field2',
+            observationFormId: 'attachments',
+            lastModified: new Date(beforeLastModified),
+            oriented: false,
+            name: 'test1.mp4',
+            contentType: 'audio/mp4',
+            size: 12345,
+            thumbnails: []
+          },
+          {
+            id: 'a2',
+            fieldName: 'field2',
+            observationFormId: 'attachments',
+            lastModified: new Date(beforeLastModified),
+            oriented: false,
+            name: 'test1.mp4',
+            contentType: 'image/jpeg',
+            size: 657687,
+            thumbnails: []
+          },
+        ]
+        const afterAttrs1 = copyObservationAttrs(beforeAttrs)
+        afterAttrs1.attachments = [ copyAttachmentAttrs(beforeAttrs.attachments[0]) ]
+        const afterAttrs2 = copyObservationAttrs(beforeAttrs)
+        afterAttrs2.attachments = []
+        const before = Observation.evaluate(beforeAttrs, mageEvent)
+        const after1 = Observation.assignTo(before, afterAttrs1) as Observation
+        const after2 = Observation.assignTo(after1, afterAttrs2) as Observation
+
+        const beforeUnchanged = _.omit(before, 'lastModified', 'attachments', 'pendingEvents')
+        const after1Unchanged = _.omit(after1, 'lastModified', 'attachments', 'pendingEvents')
+        const after2Unchanged = _.omit(after2, 'lastModified', 'attachments', 'pendingEvents')
+        expect(after1Unchanged).to.deep.equal(beforeUnchanged)
+        expect(after2Unchanged).to.deep.equal(beforeUnchanged)
+        expect(before.lastModified.getTime()).to.equal(beforeLastModified)
+        expect(after1.validation.hasErrors).to.be.false
+        expect(after1.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
+        expect(after1.attachments).to.deep.equal([ copyAttachmentAttrs(before.attachments[0]) ])
+        expect(after1.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]) ]
+          }
+        ])
+        expect(after2.validation.hasErrors).to.be.false
+        expect(after2.lastModified.getTime()).to.be.closeTo(Date.now(), 150)
+        expect(after2.attachments).to.deep.equal([])
+        expect(after2.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            removedAttachments: [ copyAttachmentAttrs(before.attachments[1]), copyAttachmentAttrs(before.attachments[0]) ]
+          }
+        ])
       })
 
       it('can make an invalid observation valid', function() {
@@ -1314,9 +1379,7 @@ describe('observation entities', function() {
         expect(after.validation.hasErrors).to.be.false
       })
 
-      it.skip('fails if the observation id does not match', function() {
-
-      })
+      it.skip('TODO: fails if the observation id does not match', function() { })
 
       it('fails if the event id does not match', function() {
 
@@ -1330,9 +1393,44 @@ describe('observation entities', function() {
         expect(after.reason).to.equal(ObservationUpdateErrorReason.EventId)
       })
 
-      it.skip('fails if the device id does not match', function() {
+      it('adds an attachments removed event for removed attachments', function() {
 
+        const beforeAttrs = makeObservationAttrs(mageEvent)
+        beforeAttrs.properties.forms = [
+          {
+            id: 'formEntry1',
+            formId: form1.id,
+          },
+          {
+            id: 'formEntry2',
+            formId: form1.id,
+          }
+        ]
+        beforeAttrs.attachments = [
+          { id: 'a1', observationFormId: 'formEntry1', fieldName: 'field2', name: 'remove1.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+          { id: 'a2', observationFormId: 'formEntry2', fieldName: 'field2', name: 'keep.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+          { id: 'a3', observationFormId: 'formEntry1', fieldName: 'field2', name: 'remove2.mp3', contentType: 'audio/mp4', oriented: false, thumbnails: [] },
+        ]
+        const before: Observation = Observation.evaluate(beforeAttrs, mageEvent)
+        const afterAttrs = copyObservationAttrs(beforeAttrs)
+        afterAttrs.properties.forms = [ beforeAttrs.properties.forms[1] ]
+        afterAttrs.attachments = [ beforeAttrs.attachments[1] ]
+        const after = Observation.assignTo(before, afterAttrs) as Observation
+
+        expect(before.validation.hasErrors).to.be.false
+        expect(after.validation.hasErrors).to.be.false
+        expect(after.pendingEvents).to.deep.equal([
+          {
+            type: ObservationDomainEventType.AttachmentsRemoved,
+            removedAttachments: [
+              copyAttachmentAttrs(beforeAttrs.attachments[0]),
+              copyAttachmentAttrs(beforeAttrs.attachments[2])
+            ]
+          }
+        ])
       })
+
+      it.skip('TODO: fails if the device id does not match', function() { })
     })
 
     describe('form entries', function() {

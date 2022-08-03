@@ -1,9 +1,10 @@
+import EventEmitter from 'events'
 import { entityNotFound, infrastructureError, invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
@@ -141,9 +142,23 @@ export function ReadAttachmentContent(permissionService: api.ObservationPermissi
   }
 }
 
+export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitter, attachmentStore: AttachmentStore): void {
+  domainEvents.on(ObservationDomainEventType.AttachmentsRemoved, (e: ObservationEmitted<AttachmentsRemovedDomainEvent>) => {
+    setTimeout(async () => {
+      const attachments = e.removedAttachments
+      for (const att of attachments) {
+        console.info(`deleting removed attachment content ${att.id} from observation ${e.observation.id}`)
+        attachmentStore.deleteContent(att, e.observation).catch(err => {
+          console.error(`error deleting content of attachment ${att.id} on observation ${e.observation.id}:`, err)
+        })
+      }
+    })
+  })
+}
+
 /**
  * TODO:
- * Much of this logic should move to resolve added and removed form entries and
+ * Much of this logic to resolve added and removed form entries and
  * attachments should move to {@link Observation.assignTo()} so that method can
  * generate appropriate domain events, but that will require some API changes
  * in the entity layer, i.e., some alternative to the pre-generated ID

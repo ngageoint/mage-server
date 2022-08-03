@@ -196,8 +196,6 @@ export function copyImportantFlagAttrs(from: ObservationImportantFlag): Observat
   }
 }
 
-const ObservationConstructionToken = Symbol('ObservationConstructor')
-
 /**
  * The intention of this class is to provide a mutation model for observation
  * updates.  While `ObservationAttrs` is more just raw the keys and values of
@@ -216,9 +214,7 @@ export class Observation implements Readonly<ObservationAttrs> {
    * @param mageEvent
    */
   static evaluate(attrs: ObservationAttrs, mageEvent: MageEvent): Observation {
-    attrs = copyObservationAttrs(attrs)
-    const validation = validateObservation(attrs, mageEvent)
-    return new Observation(ObservationConstructionToken, attrs, mageEvent, validation)
+    return createObservation(attrs, mageEvent)
   }
 
   /**
@@ -245,7 +241,14 @@ export class Observation implements Readonly<ObservationAttrs> {
       createdAt: new Date(target.createdAt),
       lastModified: new Date()
     }
-    return Observation.evaluate(update, target.mageEvent)
+    const updateAttachments = update.attachments.reduce((updateAttachments, att) => {
+      return updateAttachments.set(att.id, att)
+    }, new Map<AttachmentId, Attachment>())
+    const removedAttachments = target.attachments.filter(x =>!updateAttachments.has(x.id))
+    // TODO: whatever other mods generate events that matter
+    const updateEvents = removedAttachments.length ? [ AttachmentsRemovedDomainEvent(target, removedAttachments) ] : [] as PendingObservationDomainEvent[]
+    const pendingEvents = mergePendingDomainEvents(target, updateEvents)
+    return createObservation(update, target.mageEvent, pendingEvents)
   }
 
   #validation: ObservationValidationResult
@@ -275,6 +278,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly geometry: Readonly<Geometry>
   readonly properties: Readonly<ObservationFeatureProperties>
   readonly attachments: readonly Attachment[]
+  readonly pendingEvents: readonly PendingObservationDomainEvent[]
 
   constructor(...args: unknown[]) {
     if (args[0] !== ObservationConstructionToken) {
@@ -306,6 +310,7 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.#formEntriesById = new Map(this.properties.forms.map(x => [ x.id, x ]))
     this.#attachmentsById = new Map(this.attachments.map(x => [ x.id, x ]))
     this.#validation = args[3] as ObservationValidationResult
+    this.pendingEvents = (args[4] || []) as PendingObservationDomainEvent[]
   }
 
   get validation(): ObservationValidationResult {
@@ -338,6 +343,50 @@ export class Observation implements Readonly<ObservationAttrs> {
     return attachmentsForField(fieldName, formEntryId, this)
   }
 }
+
+export enum ObservationDomainEventType {
+  AttachmentsRemoved = 'Observation.AttachmentsRemoved',
+}
+
+/**
+ * A pending domain event waits for dispatch in the {@link Observation.pendingEvents | pending events}
+ * on the observation instance that generated the event.  To avoid a circular
+ * reference, pending events do not have a member for the observation instance
+ * that generated them.
+ */
+export type PendingObservationDomainEvent = {
+  readonly type: ObservationDomainEventType
+} & (
+  | {
+    type: ObservationDomainEventType.AttachmentsRemoved
+    readonly removedAttachments: readonly Readonly<Attachment>[]
+  }
+)
+
+// export type ObservationDomainEvent = PendingObservationDomainEvent & {
+
+//   readonly observation: Observation
+// }
+
+/**
+ * This type simply adds the subject observation instance to the {@link PendingObservationDomainEvent}
+ * so listeners of the event will have the observation that generated the
+ * event when received.
+ */
+export type ObservationEmitted<Pending extends PendingObservationDomainEvent> = Pending & {
+  /**
+   * For now, this value is the snapshot of the observation just after the save
+   * operation that initiated domain event dispatch.  Hence, this observation
+   * will have no pending events and reflects the state of the observation
+   * after the mutations that created the domain events.  That understanding
+   * could change if more domain event requirements present themselves, but
+   * this is sufficient for the, at this time, singular domain event that
+   * supports attachment removal.
+   */
+  readonly observation: Observation
+}
+
+export type AttachmentsRemovedDomainEvent = Extract<PendingObservationDomainEvent, { type: ObservationDomainEventType.AttachmentsRemoved }>
 
 export interface ObservationValidationResult {
   readonly hasErrors: boolean
@@ -720,7 +769,7 @@ export class AttachmentNotFoundError extends Error {
  * This repository provides persistence operations for `Observation` entities
  * within the scope of one MAGE event.
  */
- export interface EventScopedObservationRepository {
+export interface EventScopedObservationRepository {
   readonly eventScope: MageEventId
   allocateObservationId(): Promise<ObservationId>
   /**
@@ -833,7 +882,7 @@ export interface AttachmentStore {
    * location for the specified attachment.  If the store assigns a new
    * {@link Attachment.contentLocator | content locator} to the attachment after
    * a successful save, and/or changes the size of the attachment to the actual
-   * number of bytes writen, return a {@link AttachmentContentPatchAttrs patch}
+   * number of bytes written, return a {@link AttachmentContentPatchAttrs patch}
    * to {@link EventScopedObservationRepository.patchAttachment update}
    * the attachment  new observation instance with the {@link patchAttachment | patched}
    * attachment.  Return `null` if the save succeeded and no change to the
@@ -863,14 +912,14 @@ export interface AttachmentStore {
   readContent(attachmentId: AttachmentId, observation: Observation, range?: { start: number, end?: number }): Promise<NodeJS.ReadableStream | null | AttachmentStoreError>
   readThumbnailContent(minDimension: number, attachmentId: AttachmentId, observation: Observation): Promise<NodeJS.ReadableStream | null | AttachmentStoreError>
   /**
-   * Delete the content for the given attachment ID, including any thumbnails.
-   * If the attachment and/or thumbnails had content locators, return a new
-   * observation instance with content locators removed from the attachments
-   * and thumbnails.  Return an error if the attachment ID does not exist on
-   * the given observation, if the attachment content was missing, or some
-   * other error occurred deleting the content from the underlying store.
+   * Delete the given attachment's content, including thumbnail content.  If
+   * the attachment no longer exists on the given observation, return null upon
+   * success.  If the attachment still exists on the observation, return
+   * {@link AttachmentContentPatchAttrs patch} attributes that reflect the
+   * missing content to {@link EventScopedObservationRepository.patchAttachment update}
+   * the attachment.
    */
-  deleteContent(attachmentId: AttachmentId, observation: Observation): Promise<null | Observation | AttachmentStoreError>
+  deleteContent(attachment: Attachment, observation: Observation): Promise<null | AttachmentPatchAttrs | AttachmentStoreError>
 }
 
 export class AttachmentStoreError extends Error {
@@ -906,6 +955,14 @@ export enum AttachmentStoreErrorCode {
    * some I/O operation.
    */
   StorageError = 'AttachmentStoreError.StorageError'
+}
+
+const ObservationConstructionToken = Symbol('ObservationConstructor')
+
+function createObservation(attrs: ObservationAttrs, mageEvent: MageEvent, pendingEvents?: readonly PendingObservationDomainEvent[]): Observation {
+  attrs = copyObservationAttrs(attrs)
+  const validation = validateObservation(attrs, mageEvent)
+  return new Observation(ObservationConstructionToken, attrs, mageEvent, validation, pendingEvents)
 }
 
 function validateObservationCoreAttrs(validation: ObservationValidationContext): ObservationValidationContext {
@@ -1194,3 +1251,28 @@ class ObservationValidationContext {
     })
   }
 }
+
+function AttachmentsRemovedDomainEvent(observation: Observation, removedAttachments: Attachment[]): AttachmentsRemovedDomainEvent {
+  return Object.freeze<AttachmentsRemovedDomainEvent>({
+    type: ObservationDomainEventType.AttachmentsRemoved,
+    removedAttachments: Object.freeze(removedAttachments)
+  })
+}
+
+function mergePendingDomainEvents(from: Observation, nextEvents: PendingObservationDomainEvent[]): PendingObservationDomainEvent[] {
+  const removedAttachments = [] as Readonly<Attachment>[]
+  const merged = [ ...from.pendingEvents, ...nextEvents ].reduce((merged, e) => {
+    if (e.type === ObservationDomainEventType.AttachmentsRemoved) {
+      removedAttachments.push(...e.removedAttachments)
+      return merged
+    }
+    else {
+      return [ ...merged, e ]
+    }
+  }, [] as PendingObservationDomainEvent[])
+  if (removedAttachments.length) {
+    merged.push(AttachmentsRemovedDomainEvent(from, removedAttachments))
+  }
+  return merged
+}
+

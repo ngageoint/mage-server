@@ -3,7 +3,7 @@ import path from 'path'
 import stream from 'stream'
 import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, AttachmentPatchAttrs } from '../../entities/observations/entities.observations'
 import mime from 'mime-types'
 
 export class FileSystemAttachmentStore implements AttachmentStore {
@@ -87,11 +87,8 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     return fs.createReadStream(contentPath)
   }
 
-  async deleteContent(attachmentId: string, observation: Observation): Promise<AttachmentStoreError | Observation | null> {
-    const attachment = observation.attachmentFor(attachmentId)
-    if (!attachment) {
-      return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
-    }
+  async deleteContent(attachment: Attachment, observation: Observation): Promise<AttachmentStoreError | AttachmentPatchAttrs | null> {
+    const attachmentOnObservation = observation.attachmentFor(attachment.id)
     const thumbnails = attachment.thumbnails
     const contentRelPath = relativeReadPathForAttachment(attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
@@ -103,7 +100,8 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     }
     const err = await rm(contentPath).then(() => null, err => err)
     if (err) {
-      const message = `error deleting content for attachment ${attachmentId} on observation ${observation.id}`
+      // TODO: maybe instead move on and try to delete thumbnails too
+      const message = `error deleting content for attachment ${attachment} on observation ${observation.id}`
       console.error(message, err)
       return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `${message}: ${String(err)}`)
     }
@@ -113,7 +111,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
       return rm(thumbPath).then(
         () => ({ thumb, success: true }),
         err => {
-          console.error(`error deleting thumbnail ${thumb.minDimension} for attachment ${attachmentId} on observation ${observation.id} @ ${thumbPath}`, err)
+          console.error(`error deleting thumbnail ${thumb.minDimension} for attachment ${attachment} on observation ${observation.id} @ ${thumbPath}`, err)
           return { thumb, success: false }
         })
     }))
@@ -128,8 +126,8 @@ export class FileSystemAttachmentStore implements AttachmentStore {
       }
       return thumbUpdate
     }, { isNecessary: false, thumbnails: [] as Thumbnail[] })
-    if (attachment.contentLocator || thumbUpdate.isNecessary) {
-      return patchAttachment(observation, attachmentId, { contentLocator: undefined, thumbnails: thumbUpdate.thumbnails }) as Observation
+    if (attachmentOnObservation && (attachment.contentLocator || thumbUpdate.isNecessary)) {
+      return { contentLocator: undefined, thumbnails: thumbUpdate.thumbnails }
     }
     return null
   }
