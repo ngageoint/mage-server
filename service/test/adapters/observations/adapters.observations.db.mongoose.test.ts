@@ -131,6 +131,11 @@ describe('mongoose observation repository', function() {
   })
 
   afterEach(async function() {
+    try {
+      await model.ensureIndexes()
+    } catch(err) {
+      //don't care
+    }
     // should run all the middleware to drop the observation collection
     await eventDoc.remove()
     await repo.idModel.remove({})
