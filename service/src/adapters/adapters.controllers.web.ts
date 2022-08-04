@@ -12,6 +12,7 @@ export interface WebAppRequestFactory<Req extends AppRequest = AppRequest> {
  * a `403` response for {@link ErrPermissionDenied}.
  */
 export const mageAppErrorHandler: express.ErrorRequestHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any  => {
+  console.error(new Date().toISOString(), '- error processing request', req.method, req.path, err)
   if (!(err instanceof MageError)) {
     return next(err)
   }
@@ -36,6 +37,7 @@ export const mageAppErrorHandler: express.ErrorRequestHandler = (err: any, req: 
  * replace them need to send errors in this structure.
  */
 export const compatibilityMageAppErrorHandler: express.ErrorRequestHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction): any  => {
+  console.error(new Date().toISOString(), '- error processing request', req.method, req.path, err)
   if (!(err instanceof MageError)) {
     return next(err)
   }

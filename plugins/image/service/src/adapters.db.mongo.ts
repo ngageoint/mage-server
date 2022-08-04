@@ -2,14 +2,14 @@ import mongoose from 'mongoose'
 import { GetDbConnection } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { EventProcessingState, FindUnprocessedImageAttachments, UnprocessedAttachmentReference } from './processor'
 
-export function FindUnprocessedAttachments(getDbConn: GetDbConnection): FindUnprocessedImageAttachments {
+export function FindUnprocessedAttachments(getDbConn: GetDbConnection, console: Console): FindUnprocessedImageAttachments {
   return async (eventProcessingStates: EventProcessingState[], lastModifiedAfter: number | null, lastModifiedBefore: number | null, limit: number | null): Promise<AsyncIterable<UnprocessedAttachmentReference>> => {
     return {
       [Symbol.asyncIterator]: async function * () {
         limit = Number(limit)
         let remainingCount = limit > 0 ? limit : Number.POSITIVE_INFINITY
         const conn = await getDbConn()
-        const eventStateCursor = eventStatesWithCollectionNames(conn, eventProcessingStates)
+        const eventStateCursor = eventStatesWithCollectionNames(conn, eventProcessingStates, console)
         for await (const eventState of eventStateCursor) {
           const eventId = eventState.event.id
           const queryStages = createAggregationPipeline(eventState, lastModifiedAfter, lastModifiedBefore)
@@ -32,7 +32,7 @@ export function FindUnprocessedAttachments(getDbConn: GetDbConnection): FindUnpr
   }
 }
 
-async function * eventStatesWithCollectionNames(conn: mongoose.Connection, eventStates: Iterable<EventProcessingState>): AsyncIterableIterator<EventProcessingState & { collectionName: string }> {
+async function * eventStatesWithCollectionNames(conn: mongoose.Connection, eventStates: Iterable<EventProcessingState>, console: Console): AsyncIterableIterator<EventProcessingState & { collectionName: string }> {
   for (const eventState of eventStates) {
     const found = await conn.collection('events').findOne<{ collectionName: string } | null>({ _id: eventState.event.id })
     if (found) {
