@@ -87,7 +87,7 @@ describe("environment", function() {
       expect(options).to.have.property('minPoolSize', 87);
       expect(options).to.have.property('maxPoolSize', 87);
       expect(options).to.have.property('ssl', true);
-      expect(options).to.have.deep.property('auth', { "user": "mage_test", "password": "test_mage" });
+      expect(options).to.have.deep.property('auth', { "username": "mage_test", "password": "test_mage" });
     });
 
     it("prefers x509 authentication when present", function() {
@@ -123,7 +123,7 @@ describe("environment", function() {
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
       expect(options).to.have.property('tlsInsecure', false);
-      expect(options).to.not.have.property('user');
+      expect(options).to.not.have.property('username');
     });
 
     it("uses x509 environment values when present", function() {
@@ -204,7 +204,7 @@ describe("environment", function() {
       expect(options).to.have.property('ssl', false);
       expect(options).to.have.property('minPoolSize', 99);
       expect(options).to.have.property('maxPoolSize', 99);
-      expect(options).to.have.deep.property('auth', { "user": "cloudfoundry", "password": "foundrycloud" });
+      expect(options).to.have.deep.property('auth', { "username": "cloudfoundry", "password": "foundrycloud" });
     });
   });
 });
