@@ -1806,7 +1806,7 @@ describe('feeds use case interactions', function () {
           }
         ]
         feeds = [
-          Object.freeze({
+          Object.freeze<Feed>({
             id: uniqid(),
             title: 'Politics',
             service: services[0].service.id,
@@ -1815,12 +1815,12 @@ describe('feeds use case interactions', function () {
             itemsHaveSpatialDimension: false,
             variableParamsSchema: {
               properties: {
-                search: { type: 'string' as const }
+                search: { type: 'string' }
               },
               title: 'Save Me'
             }
           }),
-          Object.freeze({
+          Object.freeze<Feed>({
             id: uniqid(),
             title: 'Sports',
             service: services[1].service.id,
