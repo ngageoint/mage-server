@@ -25,7 +25,9 @@ describe('feeds repositories', function() {
   })
 
   beforeEach(async function() {
-    conn = await mongoose.createConnection(uri).asPromise()
+    conn = await mongoose.createConnection(uri, {
+      promiseLibrary: Promise
+    })
   })
 
   afterEach(async function() {
@@ -287,7 +289,10 @@ describe('feeds repositories', function() {
             testCoverage: 0.999
           },
           variableParamsSchema: {
-            title: 'Save Me'
+            type: 'object',
+            properties: {
+              newerThanSeconds: { type: 'number' }
+            }
           },
           mapStyle: {
             stroke: 'aabbcc',
@@ -297,7 +302,8 @@ describe('feeds repositories', function() {
             icon: { id: uniqid() }
           },
           itemPropertiesSchema: {
-            title: 'Save Me'
+            title: 'Save Me',
+            type: 'object'
           },
           localization: {
             'x-test': { title: 'Test Title' }
@@ -333,7 +339,9 @@ describe('feeds repositories', function() {
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
             itemPropertiesSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              }
             },
             icon: { id: uniqid() },
             mapStyle: {
@@ -342,7 +350,9 @@ describe('feeds repositories', function() {
             updateFrequencySeconds: 60,
             constantParams: { [uniqid()]: true },
             variableParamsSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              },
             },
             localization: {
               'x-derp': {
@@ -362,7 +372,9 @@ describe('feeds repositories', function() {
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
             itemPropertiesSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              }
             },
             icon: { id: uniqid() },
             mapStyle: {
@@ -371,7 +383,9 @@ describe('feeds repositories', function() {
             updateFrequencySeconds: origAttrs.updateFrequencySeconds + 10,
             constantParams: { [uniqid()]: true },
             variableParamsSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              }
             },
             localization: {
               'x-derp-ner': { title: 'Title in Derp Ner' }
@@ -400,7 +414,9 @@ describe('feeds repositories', function() {
             itemSecondaryProperty: uniqid(),
             itemTemporalProperty: uniqid(),
             itemPropertiesSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              }
             },
             icon: { id: uniqid() },
             mapStyle: {
@@ -409,7 +425,9 @@ describe('feeds repositories', function() {
             updateFrequencySeconds: 60,
             constantParams: { [uniqid()]: true },
             variableParamsSchema: {
-              title: 'Save Me'
+              properties: {
+                [uniqid()]: { type: 'string' }
+              }
             },
             localization: {
               'x-hurr': { summary: 'Summary in hurr' }

@@ -1757,6 +1757,7 @@ describe('feeds use case interactions', function () {
                 },
                 updateFrequencySeconds: 5 * 60,
                 itemPropertiesSchema: {
+                  type: 'object',
                   title: 'Topic 1 Item Properties'
                 },
                 localization: {
@@ -1793,6 +1794,7 @@ describe('feeds use case interactions', function () {
                 },
                 updateFrequencySeconds: 15 * 60,
                 itemPropertiesSchema: {
+                  type: 'object',
                   title: 'Topic 2 Item Properties'
                 },
                 localization: {
@@ -1812,6 +1814,9 @@ describe('feeds use case interactions', function () {
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: false,
             variableParamsSchema: {
+              properties: {
+                search: { type: 'string' }
+              },
               title: 'Save Me'
             }
           }),
