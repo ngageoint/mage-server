@@ -208,7 +208,7 @@ describe('processing interval', () => {
           dimensions: { width: 1000, height: 1200 },
         }
       })
-      const oriented = await orientAttachmentImage(obsBefore, att.id, imageService, obsRepo, attachmentStore) as Observation
+      const oriented = await orientAttachmentImage(obsBefore, att.id, imageService, obsRepo, attachmentStore, console) as Observation
       const orientedContent = stagedContent.tempLocation as BufferWriteable
 
       expect(oriented).toBeInstanceOf(Observation)
@@ -287,7 +287,7 @@ describe('processing interval', () => {
       obsRepo.patchAttachment.and.callFake(async (obs, attId, patch) => {
         return patchAttachment(obs, attId, patch) as Observation
       })
-      const obsActual = await thumbnailAttachmentImage(obsBefore, att.id, [ 60, 120, 240 ], imageService, obsRepo, attachmentStore) as Observation
+      const obsActual = await thumbnailAttachmentImage(obsBefore, att.id, [ 60, 120, 240 ], imageService, obsRepo, attachmentStore, console) as Observation
 
       expect(copyObservationAttrs(obsActual)).toEqual(
         {
@@ -338,7 +338,7 @@ describe('processing interval', () => {
     }
     const findUnprocessedAttachments = jasmine.createSpy<FindUnprocessedImageAttachments>('findAttachments').and.resolveTo(asyncIterableOf([]))
     await processImageAttachments(pluginState, eventProcessingStates,
-      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore)
+      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore, console)
 
     expect(findUnprocessedAttachments).toHaveBeenCalledOnceWith(
       Array.from(eventProcessingStates.values()), null, closeToNow(), pluginState.intervalBatchSize)
@@ -454,7 +454,7 @@ describe('processing interval', () => {
     attachmentStore.saveContent.and.resolveTo(null)
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
     const processedEventStates = await processImageAttachments(pluginState, eventProcessingStates,
-      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore)
+      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore, console)
 
     expect(processedEventStates.size).toEqual(2)
     expect(processedEventStates.get(1)?.event).toEqual(copyMageEventAttrs(event1))
@@ -598,7 +598,7 @@ describe('processing interval', () => {
     attachmentStore.saveThumbnailContent.and.resolveTo(null)
 
     await processImageAttachments(pluginState, eventProcessingStates,
-      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore)
+      findUnprocessedAttachments, imageService, eventRepo, observationRepoForEvent, attachmentStore, console)
 
     expect(imageService.autoOrient).toHaveBeenCalledTimes(unprocessedAttachments.length)
     for (const a of unprocessedAttachments) {
