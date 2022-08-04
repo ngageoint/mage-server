@@ -272,7 +272,7 @@ describe('feeds repositories', function() {
 
         const nextId = `feed:test:${Date.now()}`
         idFactory.nextId().resolves(nextId)
-        const createAttrs: Required<FeedCreateAttrs> = Object.freeze({
+        const createAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
           id: 'not this one',
           service: (new mongoose.Types.ObjectId()).toHexString(),
           topic: uniqid(),
@@ -327,7 +327,7 @@ describe('feeds repositories', function() {
 
         it('replaces properties', async function() {
 
-          const origAttrs: Required<FeedCreateAttrs> = Object.freeze({
+          const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),
@@ -360,7 +360,7 @@ describe('feeds repositories', function() {
               }
             }
           })
-          const updatedAttrs: Required<Feed> = Object.freeze({
+          const updatedAttrs: Required<Feed> = Object.freeze<Required<Feed>>({
             id: origAttrs.id,
             service: origAttrs.service,
             topic: origAttrs.topic,
@@ -402,7 +402,7 @@ describe('feeds repositories', function() {
 
         it('removes keys omitted from update', async function() {
 
-          const origAttrs: Required<FeedCreateAttrs> = Object.freeze({
+          const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
             id: uniqid(),
             service: (new mongoose.Types.ObjectId()).toHexString(),
             topic: uniqid(),

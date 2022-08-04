@@ -1739,7 +1739,7 @@ describe('feeds use case interactions', function () {
               config: { url: 'https://test.service1', secret: uniqid() },
             }),
             topics: [
-              Object.freeze({
+              Object.freeze<Required<FeedTopic>>({
                 id: uniqid(),
                 title: 'News 1 Politics',
                 summary: 'News on politics 1',
@@ -1776,7 +1776,7 @@ describe('feeds use case interactions', function () {
               config: { url: 'https://test.service2' },
             }),
             topics: [
-              Object.freeze({
+              Object.freeze<Required<FeedTopic>>({
                 id: uniqid(),
                 title: 'News 2 Sports',
                 summary: 'News on sports 2',
@@ -1815,7 +1815,7 @@ describe('feeds use case interactions', function () {
             itemsHaveSpatialDimension: false,
             variableParamsSchema: {
               properties: {
-                search: { type: 'string' }
+                search: { type: 'string' as const }
               },
               title: 'Save Me'
             }
