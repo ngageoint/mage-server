@@ -27,7 +27,6 @@ class RetryConnection {
 
   attemptConnection(): Promise<mongoose.Mongoose> {
     log.debug(`attempting new mongodb connection to`, this.uri)
-    log.debug('TODO REMOVE IN PRODUCTION ', JSON.stringify(this.options))
     return this.mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
   }
 
