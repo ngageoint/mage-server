@@ -28,6 +28,7 @@
     "@ngageoint/mage.service": "../service",
     "@ngageoint/mage.web-app": "../web-app/dist/app",
     "@ngageoint/mage.random": "../plugins/random",
-    "@ngageoint/mage.nga-msi": "../plugins/nga-msi"
+    "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
+    "@ngageoint/mage.image.service": "../plugins/image/service"
   }
 }
