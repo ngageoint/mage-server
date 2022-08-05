@@ -110,7 +110,7 @@ if (mongoConfig.x509Key) {
 }
 else if (user && password) {
   environment.mongo.options.auth = {
-    username: user, password: password
+    user: user, password: password
   };
 }
 
