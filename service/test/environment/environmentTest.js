@@ -123,7 +123,7 @@ describe("environment", function() {
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
       expect(options).to.have.property('tlsInsecure', false);
-      expect(options).to.not.have.property('username');
+      expect(options).to.not.have.property('user');
     });
 
     it("uses x509 environment values when present", function() {
@@ -162,7 +162,7 @@ describe("environment", function() {
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
       expect(options).to.have.property('tlsInsecure', false);
-      expect(options).to.not.have.property('username');
+      expect(options).to.not.have.property('user');
     });
   });
 
@@ -179,8 +179,8 @@ describe("environment", function() {
             name: 'MongoInstance',
             credentials: {
               url: 'mongodb-cf://db.test.mage:27999/magedb_cf',
-              username: 'cloudfoundry',
-              password: 'foundrycloud',
+              user: 'cloudfoundry',
+              pass: 'foundrycloud',
               minPoolSize: 99,
               maxPoolSize: 99
             }

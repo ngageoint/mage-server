@@ -42,8 +42,8 @@ const appEnv = cfenv.getAppEnv({
             minPoolSize: parseInt(process.env.MAGE_MONGO_MIN_POOL_SIZE) || 5,
             maxPoolSize: parseInt(process.env.MAGE_MONGO_MAX_POOL_SIZE) || 5,
             replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
-            username: process.env.MAGE_MONGO_USER,
-            password: process.env.MAGE_MONGO_PASSWORD,
+            user: process.env.MAGE_MONGO_USER,
+            pass: process.env.MAGE_MONGO_PASSWORD,
             ssl: process.env.MAGE_MONGO_SSL,
             x509Key: x509Key || null,
             x509Cert: x509Cert || null,
@@ -92,7 +92,7 @@ const environment = {
 };
 
 const user = mongoConfig.user || mongoConfig.username;
-const password = mongoConfig.password;
+const password = mongoConfig.pass || mongoConfig.password;
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
     sslKey: mongoConfig.x509Key,
