@@ -151,6 +151,10 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       }
       return content.bytes.pipe(res.writeHead(bytesRange ? 206 : 200, headers))
     })
+    .delete(async (req, res, next) => {
+      // TODO: this should go away when ios app is fixed to stop sending delete requests
+      res.sendStatus(204)
+    })
 
   routes.route('/:observationId')
     .put(async (req, res, next) => {
