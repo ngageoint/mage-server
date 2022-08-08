@@ -33,7 +33,8 @@ module.exports = {
     plugins: {
       servicePlugins: [
         '@ngageoint/mage.nga-msi',
-        '@ngageoint/mage.random'
+        '@ngageoint/mage.random',
+        '@ngageoint/mage.image.service',
       ],
       webUIPlugins: [
       ],
