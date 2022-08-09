@@ -110,12 +110,14 @@ if (mongoConfig.x509Key) {
   });
 }
 else if (user && password) {
-  environment.mongo.options.auth = {
-    username: user, password: password
-  };
   Object.assign(environment.mongo.options, {
     user: user,
-    pass: password
+    pass: password,
+    auth: {
+      username: user, password: password
+    },
+    authSource: process.env.MAGE_MONGO_CRED_DB_NAME || 'admin',
+    authMechanism: mongodb.AuthMechanism.MONGODB_SCRAM_SHA1,
   });
 }
 
