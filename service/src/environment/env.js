@@ -101,7 +101,7 @@ if (mongoConfig.x509Key) {
     sslCert: mongoConfig.x509Cert,
     sslCA: mongoConfig.x509CaCert,
     authSource: '$external',
-    tls: true,
+    ssl: true,
     checkServerIdentity: false,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
