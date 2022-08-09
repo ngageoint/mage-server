@@ -1,4 +1,5 @@
-const path = require('path')
+const mongodb = require('mongodb')
+  , path = require('path')
   , cfenv = require('cfenv');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
@@ -102,7 +103,7 @@ if (mongoConfig.x509Key) {
     authSource: '$external',
     ssl: true,
     checkServerIdentity: false,
-    auth: { authMechanism: 'MONGODB-X509' },
+    authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
     // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation
     tlsInsecure: false
@@ -112,6 +113,10 @@ else if (user && password) {
   environment.mongo.options.auth = {
     username: user, password: password
   };
+  Object.assign(environment.mongo.options, {
+    user: user,
+    pass: password
+  });
 }
 
 module.exports = environment;
