@@ -101,7 +101,7 @@ if (mongoConfig.x509Key) {
     sslCert: mongoConfig.x509Cert,
     sslCA: mongoConfig.x509CaCert,
     authSource: '$external',
-    ssl: true,
+    tls: true,
     checkServerIdentity: false,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
@@ -111,12 +111,16 @@ if (mongoConfig.x509Key) {
 }
 else if (user && password) {
   Object.assign(environment.mongo.options, {
+    //These user/pass propereties are needed for AWS mongo version 4.2.x
     user: user,
     pass: password,
+    //This is how username and password should be passed
     auth: {
-      username: user, password: password
+      username: user, 
+      password: password
     },
     authSource: process.env.MAGE_MONGO_CRED_DB_NAME || 'admin',
+    //TODO we need to move to at least SHA256
     authMechanism: mongodb.AuthMechanism.MONGODB_SCRAM_SHA1,
   });
 }
