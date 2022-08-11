@@ -55,4 +55,5 @@ export MAGE_MONGO_X509_CA_CERT_FILE=
 export MAGE_MONGO_CONN_TIMEOUT=300
 # seconds between attempts to connect to mongodb
 export MAGE_MONGO_CONN_RETRY_DELAY=5
-
+# Using self-signed certs can cause issues.  If it does, set this to true.
+export MAGE_MONGO_TLS_INSECURE=false

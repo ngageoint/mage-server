@@ -61,7 +61,7 @@ if (appEnv.isLocal) {
 }
 
 const mongoConfig = appEnv.getServiceCreds('MongoInstance');
-const mongoSsl = String(mongoConfig.ssl).toLowerCase() in { "true":0, "yes":0, "enabled":0 };
+const mongoSsl = String(mongoConfig.ssl).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
 
 const environment = {
   address: process.env.MAGE_ADDRESS || '0.0.0.0',
@@ -94,6 +94,10 @@ const environment = {
 
 const user = mongoConfig.user || mongoConfig.username;
 const password = mongoConfig.pass || mongoConfig.password;
+let tlsInsecure = false;
+if (process.env.MAGE_MONGO_TLS_INSECURE) {
+  tlsInsecure = process.env.MAGE_MONGO_TLS_INSECURE == 'true';
+}
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
     sslKey: mongoConfig.x509Key,
@@ -106,7 +110,7 @@ if (mongoConfig.x509Key) {
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
     // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation
-    tlsInsecure: false
+    tlsInsecure: tlsInsecure
   });
 }
 else if (user && password) {
@@ -116,7 +120,7 @@ else if (user && password) {
     pass: password,
     //This is how username and password should be passed
     auth: {
-      username: user, 
+      username: user,
       password: password
     },
     authSource: process.env.MAGE_MONGO_CRED_DB_NAME || 'admin',
