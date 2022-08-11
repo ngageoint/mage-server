@@ -96,7 +96,7 @@ const user = mongoConfig.user || mongoConfig.username;
 const password = mongoConfig.pass || mongoConfig.password;
 let tlsInsecure = false;
 if (process.env.MAGE_MONGO_TLS_INSECURE) {
-  tlsInsecure = process.env.MAGE_MONGO_TLS_INSECURE == 'true';
+  tlsInsecure = String(process.env.MAGE_MONGO_TLS_INSECURE).toLowerCase() in { "true": true, "yes": true, "enabled": true };
 }
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
