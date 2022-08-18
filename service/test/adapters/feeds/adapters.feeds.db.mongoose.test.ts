@@ -201,7 +201,8 @@ describe('feeds repositories', function() {
     let repo: FeedServiceRepository
 
     beforeEach(function() {
-      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection)
+      //TODO fix this cast
+      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
       repo = new MongooseFeedServiceRepository(model)
     })
 
@@ -257,7 +258,8 @@ describe('feeds repositories', function() {
     let idFactory: SubstituteOf<EntityIdFactory>
 
     beforeEach(function() {
-      model = conn.model(FeedsModels.Feed, FeedSchema, collection)
+      //TODO fix this cast
+      model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
     })

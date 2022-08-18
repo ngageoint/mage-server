@@ -50,7 +50,8 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     }
   })
 export function FeedServiceModel(conn: mongoose.Connection, collection?: string): FeedServiceModel {
-  return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services')
+  //TODO fix this cast
+  return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services') as any
 }
 
 export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & {
@@ -93,7 +94,8 @@ export const FeedSchema = new mongoose.Schema<any>(
     }
   })
 export function FeedModel(conn: mongoose.Connection, collection?: string): FeedModel {
-  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds')
+  //TODO fix this cast
+  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds') as any
 }
 
 export class MongooseFeedServiceTypeRepository implements FeedServiceTypeRepository {

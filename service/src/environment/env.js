@@ -12,7 +12,6 @@ if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT 
   // which i think is undesirable behavior.
   process.env.MAGE_PORT = '4242';
 }
-
 let x509Key = process.env.MAGE_MONGO_X509_KEY;
 let x509Cert = process.env.MAGE_MONGO_X509_CERT;
 let x509CaCert = process.env.MAGE_MONGO_X509_CA_CERT;
@@ -20,16 +19,20 @@ const x509KeyPath = process.env.MAGE_MONGO_X509_KEY_FILE;
 const x509CertPath = process.env.MAGE_MONGO_X509_CERT_FILE;
 const x509CaCertPath = process.env.MAGE_MONGO_X509_CA_CERT_FILE;
 if (x509Key) {
-  x509Key = Buffer.from(x509Key);
+  //TODO not sure this is supported anymore in mongoose 6.x
+  x509Key = Buffer.from(x509Key); 
   x509Cert = Buffer.from(x509Cert);
   x509CaCert = Buffer.from(x509CaCert);
 }
 else if (x509KeyPath) {
   const fs = require('fs');
-  x509Key = fs.readFileSync(x509KeyPath);
-  x509Cert = fs.readFileSync(x509CertPath);
-  x509CaCert = fs.readFileSync(x509CaCertPath);
+  x509Key = x509KeyPath; 
+  if(fs.existsSync(x509CertPath)) {
+    x509Cert = x509CertPath;
+  }
+  x509CaCert =x509CaCertPath;
 }
+
 
 const appEnv = cfenv.getAppEnv({
   vcap: {
@@ -100,13 +103,19 @@ if (process.env.MAGE_MONGO_TLS_INSECURE) {
 }
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
-    sslKey: mongoConfig.x509Key,
+    /*sslKey: mongoConfig.x509Key,
     sslPass: password,
     sslCert: mongoConfig.x509Cert,
-    sslCA: mongoConfig.x509CaCert,
+    sslCA: mongoConfig.x509CaCert,*/
+    //TODO this works with server.pem only...not seperate key and cert files for some reason
+    tlsCertificateKeyFile: mongoConfig.x509Key,
+    tlsCertificateKeyFilePassword: password,
+    tlsCertificateFile: mongoConfig.x509Cert,
+    tlsCAFile: mongoConfig.x509CaCert,
     authSource: '$external',
-    ssl: true,
-    checkServerIdentity: false,
+    tls: true,
+    //ssl: true,
+    //checkServerIdentity: false,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
     // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation

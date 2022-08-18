@@ -39,7 +39,7 @@ const passwordPolicy = {
   passwordHistoryCountEnabled: false
 };
 
-exports.up = function (done) {
+exports.up = async function (done) {
   log.info('Setting default password policy');
 
   if (config.api.authenticationStrategies && config.api.authenticationStrategies['local']) {
@@ -49,16 +49,20 @@ exports.up = function (done) {
     }
   }
 
-  const update = {
+  let update = {
     $rename: {
       'settings.accountLock': 'settings.local.accountLock'
-    },
+    }
+  }
+
+  await this.db.collection('settings').findOneAndUpdate({ type: 'security' }, update, { upsert: true });
+  update = {
     $set: {
       'settings.local.passwordPolicy': passwordPolicy,
     }
   }
-
-  this.db.collection('settings').findOneAndReplace({ type: 'security' }, update, { upsert: true }, done);
+  await this.db.collection('settings').findOneAndUpdate({ type: 'security' }, update, { upsert: true });
+  done();
 };
 
 exports.down = function (done) {
