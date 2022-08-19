@@ -103,19 +103,12 @@ if (process.env.MAGE_MONGO_TLS_INSECURE) {
 }
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
-    /*sslKey: mongoConfig.x509Key,
-    sslPass: password,
-    sslCert: mongoConfig.x509Cert,
-    sslCA: mongoConfig.x509CaCert,*/
-    //TODO this works with server.pem only...not seperate key and cert files for some reason
     tlsCertificateKeyFile: mongoConfig.x509Key,
     tlsCertificateKeyFilePassword: password,
     tlsCertificateFile: mongoConfig.x509Cert,
     tlsCAFile: mongoConfig.x509CaCert,
     authSource: '$external',
     tls: true,
-    //ssl: true,
-    //checkServerIdentity: false,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
     // Using self-signed certs can cause issues.  If it does, set this to true.
     // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation
