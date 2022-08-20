@@ -99,6 +99,7 @@ class AuthenticationInitializer {
           authenticationApiAppender.append(config.api).then(api => {
             res.json({
               token: token.token,
+              mt: token.token,
               expirationDate: token.expirationDate,
               user: userTransformer.transform(req.user, { path: req.getRoot() }),
               device: req.provisionedDevice,
