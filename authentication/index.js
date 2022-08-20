@@ -101,6 +101,7 @@ class AuthenticationInitializer {
               token: token.token,
               mt: token.token,
               expirationDate: token.expirationDate,
+              mte: token.expirationDate,
               user: userTransformer.transform(req.user, { path: req.getRoot() }),
               device: req.provisionedDevice,
               api: api
