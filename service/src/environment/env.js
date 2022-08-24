@@ -90,7 +90,8 @@ const environment = {
       minPoolSize: mongoConfig.minPoolSize,
       maxPoolSize: mongoConfig.maxPoolSize,
       replicaSet: mongoConfig.replicaSet,
-      ssl: mongoSsl
+      ssl: mongoSsl,
+      tls: mongoSsl
     }
   }
 };
@@ -108,10 +109,7 @@ if (mongoConfig.x509Key) {
     cert: mongoConfig.x509Cert,
     ca: mongoConfig.x509CaCert,
     authSource: '$external',
-    tls: true,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
-    // Using self-signed certs can cause issues.  If it does, set this to true.
-    // https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation
     tlsInsecure: tlsInsecure
   });
 }

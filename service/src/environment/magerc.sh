@@ -55,5 +55,8 @@ export MAGE_MONGO_X509_CA_CERT_FILE=
 export MAGE_MONGO_CONN_TIMEOUT=300
 # seconds between attempts to connect to mongodb
 export MAGE_MONGO_CONN_RETRY_DELAY=5
-# Using self-signed certs can cause issues.  If it does, set this to true.
+# Using self-signed certs can cause issues.  If it does, set this to true. 
+# (https://mongoosejs.com/docs/migrating_to_5.html#strict-ssl-validation).
 export MAGE_MONGO_TLS_INSECURE=false
+# Name of the db that contains the credentials
+export MAGE_MONGO_CRED_DB_NAME=
