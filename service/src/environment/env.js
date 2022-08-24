@@ -1,6 +1,7 @@
 const mongodb = require('mongodb')
   , path = require('path')
-  , cfenv = require('cfenv');
+  , cfenv = require('cfenv')
+  , log = require('winston');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
   // bit of whitebox to cfenv lib here, because it provides no
@@ -19,18 +20,17 @@ const x509KeyPath = process.env.MAGE_MONGO_X509_KEY_FILE;
 const x509CertPath = process.env.MAGE_MONGO_X509_CERT_FILE;
 const x509CaCertPath = process.env.MAGE_MONGO_X509_CA_CERT_FILE;
 if (x509Key) {
-  //TODO not sure this is supported anymore in mongoose 6.x
   x509Key = Buffer.from(x509Key);
   x509Cert = Buffer.from(x509Cert);
   x509CaCert = Buffer.from(x509CaCert);
 }
 else if (x509KeyPath) {
   const fs = require('fs');
-  x509Key = x509KeyPath;
+  x509Key = fs.readFileSync(x509KeyPath);
   if (fs.existsSync(x509CertPath)) {
-    x509Cert = x509CertPath;
+    x509Cert = fs.readFileSync(x509CertPath);
   }
-  x509CaCert = x509CaCertPath;
+  x509CaCert = fs.readFileSync(x509CaCertPath);
 }
 
 
@@ -103,10 +103,10 @@ if (process.env.MAGE_MONGO_TLS_INSECURE) {
 }
 if (mongoConfig.x509Key) {
   Object.assign(environment.mongo.options, {
-    tlsCertificateKeyFile: mongoConfig.x509Key,
-    tlsCertificateKeyFilePassword: password,
-    tlsCertificateFile: mongoConfig.x509Cert,
-    tlsCAFile: mongoConfig.x509CaCert,
+    key: mongoConfig.x509Key,
+    passphrase: password,
+    cert: mongoConfig.x509Cert,
+    ca: mongoConfig.x509CaCert,
     authSource: '$external',
     tls: true,
     authMechanism: mongodb.AuthMechanism.MONGODB_X509,
