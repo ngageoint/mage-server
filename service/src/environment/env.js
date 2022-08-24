@@ -20,17 +20,17 @@ const x509CertPath = process.env.MAGE_MONGO_X509_CERT_FILE;
 const x509CaCertPath = process.env.MAGE_MONGO_X509_CA_CERT_FILE;
 if (x509Key) {
   //TODO not sure this is supported anymore in mongoose 6.x
-  x509Key = Buffer.from(x509Key); 
+  x509Key = Buffer.from(x509Key);
   x509Cert = Buffer.from(x509Cert);
   x509CaCert = Buffer.from(x509CaCert);
 }
 else if (x509KeyPath) {
   const fs = require('fs');
-  x509Key = x509KeyPath; 
-  if(fs.existsSync(x509CertPath)) {
+  x509Key = x509KeyPath;
+  if (fs.existsSync(x509CertPath)) {
     x509Cert = x509CertPath;
   }
-  x509CaCert =x509CaCertPath;
+  x509CaCert = x509CaCertPath;
 }
 
 
