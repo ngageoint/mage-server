@@ -3,7 +3,7 @@ import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, 
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import path from 'path'
 
-export interface ImagePluginState {
+export interface ImagePluginConfig {
   /**
    * When true, the plugin will process images.  When false, the plugin will
    * idly contemplate its existence.
@@ -27,44 +27,120 @@ export interface ImagePluginState {
    * The plugin scales the lesser of the image's width or height to the target
    * thumbnail size, and scales the greater dimension to the same ratio as the
    * lesser dimension.  The plugin will not scale images when the original
-   * image is smaller than the thumbnail size.  An empty array to disable
+   * image is smaller than the thumbnail size.  An empty array disables
    * thumbnails.
    */
   thumbnailSizes: number[]
 }
 
-export const defaultImagePluginConfig: ImagePluginState = Object.freeze({
-  enabled: false,
+export const defaultImagePluginConfig = Object.freeze<Required<ImagePluginConfig>>({
+  enabled: true,
   intervalSeconds: 60,
   intervalBatchSize: 10,
-  autoOrient: true,
   thumbnailSizes: [ 150, 320, 800, 1024, 2048 ],
 })
 
-export const initFromSavedState = async (
-  stateRepo: PluginStateRepository<ImagePluginState>,
+/**
+ * Create the image plugin app controller.
+ *
+ * {@link defaultImagePluginConfig | default configuration}.
+ * @param stateRepo
+ * @param eventRepo
+ * @param obsRepoForEvent
+ * @param attachmentStore
+ * @param attachmentQuery
+ * @param imageService
+ * @param console
+ * @returns
+ */
+export const createImagePluginControl = async (
+  stateRepo: PluginStateRepository<ImagePluginConfig>,
   eventRepo: MageEventRepository,
   obsRepoForEvent: ObservationRepositoryForEvent,
   attachmentStore: AttachmentStore,
   attachmentQuery: FindUnprocessedImageAttachments,
   imageService: ImageService,
   console: Console,
-) => {
-  let state = await stateRepo.get()
-  if (!state) {
-    state = await stateRepo.put(defaultImagePluginConfig)
+): Promise<ImagePluginControl> => {
+  const processing = {
+    nextStates: new Map<MageEventId, EventProcessingState>(),
+    nextTimeout: undefined as NodeJS.Timeout | undefined,
+    runningInterval: Promise.resolve(),
+    stopped: true
   }
-  console.info(`init with state`, state)
-  async function process(states?: Map<MageEventId, EventProcessingState>) {
-    const nextStates = await processImageAttachments(state!, states || null, attachmentQuery, imageService, eventRepo, obsRepoForEvent, attachmentStore, console)
-    setTimeout(process, state!.intervalSeconds * 1000, nextStates)
+  async function safeGetConfig(): Promise<ImagePluginConfig> {
+    return await stateRepo.get().then(x => !!x ? x : stateRepo.put(defaultImagePluginConfig))
   }
-  setTimeout(process)
-  // TODO: return an app object that routes can use to set new state
+  async function processAndScheduleNext(): Promise<void> {
+    if (processing.stopped) {
+      return
+    }
+    const config = await safeGetConfig()
+    if (!config.enabled) {
+      return
+    }
+    return await processImageAttachments(config!, processing.nextStates || null, attachmentQuery, imageService, eventRepo, obsRepoForEvent, attachmentStore, console)
+      .then(
+        eventStates => {
+          processing.nextStates = eventStates
+          processing.nextTimeout = setTimeout(() => {
+            processing.runningInterval = processAndScheduleNext()
+          }, config.intervalSeconds * 1000)
+        },
+        err => {
+          console.error('error during processing interval', err)
+        }
+      )
+  }
+  function start(): void {
+    if (!processing.stopped) {
+      return
+    }
+    processing.stopped = false
+    processing.runningInterval = processAndScheduleNext()
+  }
+  async function stop(): Promise<void> {
+    processing.stopped = true
+    clearTimeout(processing.nextTimeout)
+    await processing.runningInterval
+  }
+  const control: ImagePluginControl = {
+    async getConfig(): Promise<ImagePluginConfig> {
+      const config = await stateRepo.get()
+      return config!
+    },
+    async applyConfig(configPatch: Partial<ImagePluginConfig>): Promise<ImagePluginConfig> {
+      const current = await safeGetConfig()
+      const next = Object.keys(defaultImagePluginConfig).reduce((config: Partial<ImagePluginConfig>, key: string) => {
+        const configKey = key as keyof ImagePluginConfig
+        const value = configPatch[configKey] === void(0) ? current[configKey] : configPatch[configKey]
+        return { ...config, [configKey]: value }
+      }, {} as Partial<ImagePluginConfig>) as ImagePluginConfig
+      const saved = await stateRepo.put(next)
+      stop().then(start)
+      return saved
+    },
+    start,
+    stop
+  }
+  return control
 }
 
-export interface ImagePluginApp {
-  applyState(config: ImagePluginState): Promise<void>
+export interface ImagePluginControl {
+  getConfig(): Promise<ImagePluginConfig>
+  applyConfig(configPatch: Partial<ImagePluginConfig>): Promise<ImagePluginConfig>
+  /**
+   * Begin automatic attachment processing at the interval current configuration
+   * {@link ImagePluginConfig.intervalSeconds | defines}.  If there is no saved
+   * configuration, save the {@link defaultImagePluginConfig default}
+   * configuration first.
+   */
+  start(): void
+  /**
+   * Cancel the recurring processing intervals and wait for the current
+   * interval to finish.
+   */
+  stop(): Promise<void>
 }
 
 export type EventProcessingState = {
@@ -73,7 +149,7 @@ export type EventProcessingState = {
 }
 
 export async function processImageAttachments(
-  pluginState: ImagePluginState,
+  pluginState: ImagePluginConfig,
   eventProcessingStates: Map<MageEventId, EventProcessingState> | null,
   findUnprocessedAttachments: FindUnprocessedImageAttachments,
   imageService: ImageService,
