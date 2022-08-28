@@ -13,6 +13,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * GeoPackage exports now have contents bounds set correctly (was previously set to the entire world).
 * Memory improvements for exports (all types).
 
+## [6.1.1](https://github.com/ngageoint/mage-server/releases/tag/6.1.1)
+
+##### Features
+
+##### Bug Fixes
+* Geopackage export will skip adding userId or deviceId if missing from observation.
+* KML will skip export of attachments missing relativePath property.
+
 ## [6.1.0](https://github.com/ngageoint/mage-server/releases/tag/6.1.0)
 
 ##### Features
