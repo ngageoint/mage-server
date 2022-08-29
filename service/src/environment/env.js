@@ -47,10 +47,11 @@ const appEnv = cfenv.getAppEnv({
             replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
-            ssl: process.env.MAGE_MONGO_SSL,
+            tls: process.env.MAGE_MONGO_SSL || null,
             x509Key: x509Key || null,
             x509Cert: x509Cert || null,
-            x509CaCert: x509CaCert || null
+            x509CaCert: x509CaCert || null,
+            tlsInsecure: process.env.MAGE_MONGO_TLS_INSECURE || null
           }
         }
       ]
@@ -63,7 +64,6 @@ if (appEnv.isLocal) {
 }
 
 const mongoConfig = appEnv.getServiceCreds('MongoInstance');
-const mongoSsl = String(mongoConfig.ssl).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
 
 const environment = {
   address: process.env.MAGE_ADDRESS || '0.0.0.0',
@@ -88,21 +88,20 @@ const environment = {
     options: {
       minPoolSize: mongoConfig.minPoolSize,
       maxPoolSize: mongoConfig.maxPoolSize,
-      replicaSet: mongoConfig.replicaSet,
-      ssl: mongoSsl,
-      tls: mongoSsl
+      replicaSet: mongoConfig.replicaSet
     }
   }
 };
 
 const user = mongoConfig.user || mongoConfig.username;
 const password = mongoConfig.pass || mongoConfig.password;
-let tlsInsecure = false;
-if (process.env.MAGE_MONGO_TLS_INSECURE) {
-  tlsInsecure = String(process.env.MAGE_MONGO_TLS_INSECURE).toLowerCase() in { "true": true, "yes": true, "enabled": true };
-}
+
 if (mongoConfig.x509Key) {
+  const mongoTls = String(mongoConfig.tls).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
+  const tlsInsecure = String(mongoConfig.tlsInsecure).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
+
   Object.assign(environment.mongo.options, {
+    tls: mongoTls,
     key: mongoConfig.x509Key,
     passphrase: password,
     cert: mongoConfig.x509Cert,

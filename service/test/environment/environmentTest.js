@@ -109,7 +109,7 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.have.property('ssl', true);
+      expect(options).to.not.have.property('tls');
       expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
       expect(options.sslCA.toString()).to.equal('TEST CA CERTIFICATE');
       expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
@@ -120,7 +120,7 @@ describe("environment", function() {
       expect(options).to.have.property('checkServerIdentity', false);
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
-      expect(options).to.have.property('tlsInsecure', false);
+      expect(options).to.not.have.property('tlsInsecure');
       expect(options).to.not.have.property('user');
     });
 
@@ -148,7 +148,7 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.have.property('ssl', true);
+      expect(options).to.have.property('tls', true);
       expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
       expect(options.sslCA.toString()).to.equal('ENV CA CERT');
       expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
@@ -199,7 +199,8 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectRetryDelay', 5000);
       expect(mongo).to.have.property('connectTimeout', 300000);
       const options = mongo.options;
-      expect(options).to.have.property('ssl', false);
+      expect(options).to.not.have.property('tls');
+      expect(options).to.not.have.property('tlsInsecure');
       expect(options).to.have.property('minPoolSize', 99);
       expect(options).to.have.property('maxPoolSize', 99);
       expect(options).to.have.deep.property('auth', { "username": "cloudfoundry", "password": "foundrycloud" });
