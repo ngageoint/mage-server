@@ -114,10 +114,6 @@ if (mongoConfig.x509Key) {
 }
 else if (user && password) {
   Object.assign(environment.mongo.options, {
-    //These user/pass propereties are needed for AWS mongo version 4.2.x
-    user: user,
-    pass: password,
-    //This is how username and password should be passed
     auth: {
       username: user,
       password: password
