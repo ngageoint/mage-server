@@ -5,13 +5,37 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ---
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
+##### Breaking Changes
+* MAGE now requires Node.js >= 14. Node <= 12 is end-of-life.  Node >= 16 is recommended.
+  See https://nodejs.org/en/about/releases/.
+
 ##### Features
-* Contact info can now be provided to users when they receive an error.
+* External data feeds - integrate relevant data from external sources on your MAGE map and list views.
+* Configurable admin contact - you can now configure the admin contact information the MAGE apps present to users when an error occurs.
+* New architecture with dependency injection and plugin APIs
+* TypeScript
 
 ##### Bug Fixes
-* Minor UI fixes for the export dialog.
-* GeoPackage exports now have contents bounds set correctly (was previously set to the entire world).
-* Memory improvements for exports (all types).
+* Minor UI fixes for the export dialog
+* GeoPackage exports now set contents bounds correctly; previously the
+  export set the bounds to the entire world.
+* Memory improvements for all export types
+* Removed reference to deprecated `request` package and corresponding missing
+  reference bug in production build.
+* Fixed bug that left orphaned attachment entries on observations after removing
+  individual attachments or form entries.
+* Fixed bug that skipped deleting all attachment files when removing individual
+  attachments or form entries.
+* Fixed layer permissions bug that prevented non-admin event participants from
+  accessing layers.
+
+## [6.1.1](https://github.com/ngageoint/mage-server/releases/tag/6.1.1)
+
+##### Features
+
+##### Bug Fixes
+* GeoPackage export will skip adding user ID or device ID if missing from observation.
+* KML will skip export of attachments missing relativePath property.
 
 ## [6.1.0](https://github.com/ngageoint/mage-server/releases/tag/6.1.0)
 
@@ -20,8 +44,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Administrators can now allow for any attachment types, or restrict to image, video or audio.
 
 ##### Bug Fixes
-* Textarea in observation form is resizeable.
-* User and team paging api update, fixes team and event size limitation.
+* Text area form fields in observation forms are resizable.
+* User and team paging API update to fix team and event size limitation.
 
 ## [6.0.2](https://github.com/ngageoint/mage-server/releases/tag/6.0.2)
 

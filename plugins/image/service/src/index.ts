@@ -4,7 +4,7 @@ import { ObservationRepositoryToken, AttachmentStoreToken } from '@ngageoint/mag
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
-import { initFromSavedState } from './processor'
+import { ImagePluginConfig, createImagePluginControl } from './processor'
 import express from 'express'
 import { FindUnprocessedAttachments } from './adapters.db.mongo'
 import { SharpImageService } from './adapters.images.sharp'
@@ -51,18 +51,41 @@ const imagePluginHooks: InitPluginHook<typeof InjectedServices> = {
     const { stateRepo, eventRepo, obsRepoForEvent, attachmentStore, getDbConn } = services
     const queryAttachments = FindUnprocessedAttachments(getDbConn, console)
     const imageService = SharpImageService()
-    initFromSavedState(stateRepo, eventRepo, obsRepoForEvent, attachmentStore, queryAttachments, imageService, console)
+    const control = await createImagePluginControl(stateRepo, eventRepo, obsRepoForEvent, attachmentStore, queryAttachments, imageService, console)
     return {
       webRoutes(requestContext: GetAppRequestContext): express.Router {
         // TODO: add api routes to save image processing settings
-        return express.Router()
+        const routes = express.Router()
+          .use(express.json())
           .use(async (req, res, next) => {
             const context = requestContext(req)
             const user = context.requestingPrincipal()
             if (!user.role.permissions.find(x => x === SettingPermission.UPDATE_SETTINGS)) {
               return res.status(403).json({ message: 'unauthorized' })
             }
+            next()
           })
+        routes.route('/config')
+          .get(async (req, res, next) => {
+            const config = await control.getConfig()
+            res.json(config)
+          })
+          .put(async (req, res, next) => {
+            const bodyConfig = req.body as any
+            const configPatch: Partial<ImagePluginConfig> = {
+              enabled: typeof bodyConfig.enabled === 'boolean' ? bodyConfig.enabled : undefined,
+              intervalBatchSize: typeof bodyConfig.intervalBatchSize === 'number' ? bodyConfig.intervalBatchSize : undefined,
+              intervalSeconds: typeof bodyConfig.intervalSeconds === 'number' ? bodyConfig.intervalSeconds : undefined,
+              thumbnailSizes: Array.isArray(bodyConfig.thumbnailSizes) ?
+                bodyConfig.thumbnailSizes.reduce((sizes: number[], size: any) => {
+                  return typeof size === 'number' ? [ ...sizes, size ] : sizes
+                }, [] as number[])
+                : []
+            }
+            const config = await control.applyConfig(configPatch)
+            res.json(config)
+          })
+        return routes
       }
     }
   }

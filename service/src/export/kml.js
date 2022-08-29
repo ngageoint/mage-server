@@ -75,7 +75,9 @@ Kml.prototype.streamObservations = function (stream, archive, done) {
       stream.write(writer.generateObservationPlacemark(observation, this._event));
 
       if (observation.attachments) {
-        observation.attachments.forEach(attachment => {
+        observation.attachments
+          .filter(attachment => !!attachment.relativePath)
+          .forEach(attachment => {
           archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
         });
       }
