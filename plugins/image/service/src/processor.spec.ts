@@ -1,4 +1,4 @@
-import { EventProcessingState, FindUnprocessedImageAttachments, ImageContent, ImageDescriptor, ImagePluginState, ImageService, orientAttachmentImage, processImageAttachments, thumbnailAttachmentImage, UnprocessedAttachmentReference } from './processor'
+import { EventProcessingState, FindUnprocessedImageAttachments, ImageContent, ImageDescriptor, ImagePluginConfig, ImageService, createImagePluginControl, orientAttachmentImage, processImageAttachments, thumbnailAttachmentImage, UnprocessedAttachmentReference, ImagePluginControl, defaultImagePluginConfig } from './processor'
 import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent, copyMageEventAttrs } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentPatchAttrs, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyObservationAttrs, copyThumbnailAttrs, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationId, patchAttachment, StagedAttachmentContent, StagedAttachmentContentId, StagedAttachmentContentRef, Thumbnail, ThumbnailContentPatchAttrs } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import stream from 'stream'
@@ -6,6 +6,7 @@ import util from 'util'
 import { BufferWriteable } from './util.spec'
 import { FormFieldType } from '@ngageoint/mage.service/lib/entities/events/entities.events.forms'
 import _ from 'lodash'
+import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 
 function minutes(x: number): number {
   return 1000 * 60 * x
@@ -324,13 +325,178 @@ describe('processing interval', () => {
     it('does not destroy existing thumbnail meta-data during update')
   })
 
+  describe('automated processing', () => {
+
+    class TestPluginStateRepository implements PluginStateRepository<ImagePluginConfig> {
+      state: ImagePluginConfig | null = null
+      async get(): Promise<ImagePluginConfig | null> {
+        return this.state
+      }
+      async put(x: ImagePluginConfig): Promise<ImagePluginConfig> {
+        this.state = { ...x }
+        return this.state
+      }
+      async patch(state: Partial<ImagePluginConfig>): Promise<ImagePluginConfig> {
+        throw new Error('unimplemented')
+      }
+    }
+    let stateRepo: TestPluginStateRepository
+    let attachmentQuery: jasmine.Spy<FindUnprocessedImageAttachments>
+    let clock: jasmine.Clock
+
+    beforeEach(async () => {
+      stateRepo = new TestPluginStateRepository()
+      attachmentQuery = jasmine.createSpy('attachmentQuery')
+      clock = jasmine.clock().install()
+    })
+
+    afterEach(() => {
+      clock.uninstall()
+    })
+
+    describe('plugin control', () => {
+
+      describe('stopping', () => {
+
+        it('waits for the current processing interval to finish then stops', async () => {
+
+          stateRepo.state = { ...defaultImagePluginConfig, intervalSeconds: 10 }
+          const clockTickMillis = stateRepo.state.intervalSeconds * 1000 + 1
+          attachmentQuery.and.resolveTo(asyncIterableOf([]))
+          const plugin = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
+          plugin.start()
+          clock.tick(clockTickMillis)
+          await plugin.stop()
+          clock.tick(clockTickMillis)
+          clock.tick(clockTickMillis)
+          await new Promise(resolve => {
+            setTimeout(resolve)
+            clock.tick(clockTickMillis)
+          })
+
+          expect(attachmentQuery).toHaveBeenCalledTimes(1)
+        })
+      })
+
+      it('begins processing for the default configuration when no saved configuration exists', async () => {
+
+        const clockTickMillis = defaultImagePluginConfig.intervalSeconds * 1000 + 1
+        attachmentQuery.and.resolveTo(asyncIterableOf([]))
+        const plugin = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
+        plugin.start()
+        clock.tick(clockTickMillis)
+        await plugin.stop()
+        clock.tick(clockTickMillis)
+        clock.tick(clockTickMillis)
+        await new Promise(resolve => {
+          setTimeout(resolve)
+          clock.tick(clockTickMillis)
+        })
+
+        expect(stateRepo.state).toEqual({ ...defaultImagePluginConfig })
+        expect(attachmentQuery).toHaveBeenCalledTimes(1)
+      })
+
+      it('begins processing for the saved config', async () => {
+
+        const config: ImagePluginConfig = {
+          ...defaultImagePluginConfig,
+          intervalSeconds: defaultImagePluginConfig.intervalSeconds * 2
+        }
+        stateRepo.state = config
+        attachmentQuery.and.resolveTo(asyncIterableOf([]))
+        const plugin = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
+        plugin.start()
+        clock.tick(defaultImagePluginConfig.intervalSeconds * 1000 + 1)
+
+        expect(attachmentQuery).not.toHaveBeenCalled()
+
+        clock.tick(defaultImagePluginConfig.intervalSeconds * 1000)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(1)
+
+        clock.tick(defaultImagePluginConfig.intervalSeconds * 1000 + 1)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(1)
+
+        await plugin.stop()
+        clock.tick(config.intervalSeconds * 1000)
+        await someRunLoops()
+        clock.tick(config.intervalSeconds * 1000)
+        await someRunLoops()
+
+        expect(stateRepo.state).toEqual({ ...config })
+        expect(attachmentQuery).toHaveBeenCalledTimes(1)
+      })
+
+      it('fetches the plugin config from the plugin state repo', async () => {
+
+        const app = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
+        const config: ImagePluginConfig = {
+          enabled: false,
+          intervalBatchSize: 10,
+          intervalSeconds: 100,
+          thumbnailSizes: []
+        }
+        stateRepo.state = config
+        const fetched = await app.getConfig()
+
+        expect(fetched).toEqual({ ...config })
+      })
+
+      it('saves a new configuration and restarts automatic processing', async () => {
+
+        attachmentQuery.and.resolveTo(asyncIterableOf([]))
+        const plugin = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
+        plugin.start()
+        clock.tick(defaultImagePluginConfig.intervalSeconds * 1000)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(1)
+
+        attachmentQuery.and.returnValue(new Promise(resolve => {
+          setTimeout(() => resolve(asyncIterableOf([])), defaultImagePluginConfig.intervalSeconds * 1000 + 100)
+        }))
+        clock.tick(defaultImagePluginConfig.intervalSeconds * 1000)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(2)
+
+        const configMod: ImagePluginConfig = {
+          ...defaultImagePluginConfig,
+          intervalSeconds: defaultImagePluginConfig.intervalSeconds * 2
+        }
+        plugin.applyConfig(configMod)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(2)
+
+        clock.tick(100)
+        await someRunLoops()
+
+        expect(attachmentQuery).toHaveBeenCalledTimes(3)
+
+        await plugin.stop()
+        clock.tick(configMod.intervalSeconds * 1000)
+        await someRunLoops()
+        clock.tick(configMod.intervalSeconds * 1000)
+        await someRunLoops()
+
+        expect(stateRepo.state).toEqual({ ...configMod })
+        expect(attachmentQuery).toHaveBeenCalledTimes(3)
+      })
+    })
+  })
+
   it('queries for attachments based on last latest process time of each event and start time of interval', async () => {
 
     const eventProcessingStates = new Map<MageEventId, EventProcessingState>([
       { event: allEvents.get(1)!, latestAttachmentProcessedTimestamp: Date.now() - 1000 * 60 * 5 },
       { event: allEvents.get(2)!, latestAttachmentProcessedTimestamp: Date.now() - 1000 * 60 * 2 }
     ].map(x => [ x.event.id, x ]))
-    const pluginState: ImagePluginState = {
+    const pluginState: ImagePluginConfig = {
       enabled: true,
       intervalBatchSize: 1000,
       intervalSeconds: 60,
@@ -350,7 +516,7 @@ describe('processing interval', () => {
       { event: copyMageEventAttrs(event1), latestAttachmentProcessedTimestamp: minutesAgo(5) },
       { event: copyMageEventAttrs(event2), latestAttachmentProcessedTimestamp: minutesAgo(4) },
     ].map(x => [ x.event.id, x ]))
-    const pluginState: ImagePluginState = {
+    const pluginState: ImagePluginConfig = {
       enabled: true,
       intervalBatchSize: 1000,
       intervalSeconds: 60,
@@ -469,7 +635,7 @@ describe('processing interval', () => {
       { event: copyMageEventAttrs(event1), latestAttachmentProcessedTimestamp: Date.now() - 1000 * 60 * 5 },
       { event: copyMageEventAttrs(event2), latestAttachmentProcessedTimestamp: Date.now() - 1000 * 60 * 2 },
     ].map(x => [ x.event.id, x ]))
-    const pluginState: ImagePluginState = {
+    const pluginState: ImagePluginConfig = {
       enabled: true,
       intervalSeconds: 60,
       intervalBatchSize: 1000,
@@ -700,4 +866,20 @@ class BufferAttachmentStore implements AttachmentStore {
   deleteThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<AttachmentStoreError | null> {
     throw new Error('Method not implemented.')
   }
+}
+
+/**
+ * Let the main run loop process the microtask queue for a bit.  This is about
+ * as dirty and reliable as a thread sleep, but blackbox testing repeating
+ * timeout intervals is hard, so deal with it (•_•) ( •_•)>⌐■-■ (⌐■_■)
+ * @param count
+ * @returns
+ */
+function someRunLoops(count: number = 100): Promise<void> {
+  return new Promise(function waitRemaining(resolve: () => any, reject: (err: any) => any, remaining: number = count) {
+    if (remaining === 0) {
+      return resolve()
+    }
+    process.nextTick(() => waitRemaining(resolve, reject, remaining - 1))
+  })
 }
