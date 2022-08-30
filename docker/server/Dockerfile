@@ -1,17 +1,14 @@
-FROM node:14.17.5
-
-ARG MAGE_VERSION=6.1.1
+FROM node:16.17.0-slim
 
 LABEL author="NGA"
 
+WORKDIR /root/building
+
 RUN apt-get update && apt-get -y install \
-        sudo \
-        git \
-        unzip \
-        curl \
-        graphicsmagick \
-        build-essential libjpeg-dev libsdl-pango-dev libcairo-dev libgif-dev \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    git \
+    sudo \
+    unzip
 
 RUN groupadd -r mage \
     && useradd -m -r -s /bin/bash -g mage mage \
@@ -19,21 +16,23 @@ RUN groupadd -r mage \
     && chown mage:mage /var/lib/mage
 
 USER mage
-
-ENV MAGE_HOME /home/mage/mage-server-${MAGE_VERSION}
-WORKDIR /home/mage
-
-RUN curl -L "https://github.com/ngageoint/mage-server/archive/${MAGE_VERSION}.zip" -o mage-server.zip \
-    && unzip mage-server.zip
-
+ENV MAGE_HOME /home/mage/instance
 WORKDIR ${MAGE_HOME}
-RUN rm -rf node_modules && \
-    mkdir node_modules && \
-    npm install && \
-    npm run build-web
+# add other plugin tarballs below
+COPY \
+    ./ngageoint-mage.service-*.tgz \
+    ./ngageoint-mage.web-app-*.tgz \
+    ./ngageoint-mage.image.service-*.tgz \
+    ./ngageoint-mage.nga-msi-*.tgz \
+    ./
+RUN ls -l && npm i --omit=dev ngageoint-mage.service-*.tgz \
+    && npm i --omit=dev ngageoint-mage.web-app-*.tgz \
+    && npm i --omit=dev ngageoint-mage.image.service-*.tgz \
+    && npm i --omit=dev ngageoint-mage.nga-msi-*.tgz \
+    && rm *.tgz \
+    && ln -s ./node_modules/.bin/mage.service
 
 VOLUME /var/lib/mage
-
 EXPOSE 4242
 
-ENTRYPOINT ["node", "./app.js"]
+ENTRYPOINT [ "./mage.service", "--plugin", "@ngageoint/mage.image.service", "--plugin", "@ngageoint/mage.nga-msi" ]
