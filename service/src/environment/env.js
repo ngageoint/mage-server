@@ -1,6 +1,7 @@
 const mongodb = require('mongodb')
   , path = require('path')
-  , cfenv = require('cfenv');
+  , cfenv = require('cfenv')
+  , log = require('winston');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
   // bit of whitebox to cfenv lib here, because it provides no
@@ -32,6 +33,26 @@ else if (x509KeyPath) {
   x509CaCert = fs.readFileSync(x509CaCertPath);
 }
 
+//DEPRECATED: Remove in next release.
+if (process.env.MAGE_MONGO_POOL_SIZE) {
+  log.warn('[DEPRECATED] The env variable MAGE_MONGO_POOL_SIZE is DEPRECATED. Please use MAGE_MONGO_MIN_POOL_SIZE and MAGE_MONGO_MAX_POOL_SIZE instead.');
+}
+
+let minMongoPoolSize = 5;
+if (process.env.MAGE_MONGO_MIN_POOL_SIZE) {
+  minMongoPoolSize = parseInt(process.env.MAGE_MONGO_MIN_POOL_SIZE);
+} else if (process.env.MAGE_MONGO_POOL_SIZE) {
+  //DEPRECATED: Remove in next release.
+  minMongoPoolSize = parseInt(process.env.MAGE_MONGO_POOL_SIZE);
+}
+
+let maxMongoPoolSize = 5;
+if (process.env.MAGE_MONGO_MAX_POOL_SIZE) {
+  maxMongoPoolSize = parseInt(process.env.MAGE_MONGO_MAX_POOL_SIZE);
+} else if (process.env.MAGE_MONGO_POOL_SIZE) {
+  //DEPRECATED: Remove in next release.
+  maxMongoPoolSize = parseInt(process.env.MAGE_MONGO_POOL_SIZE);
+}
 
 const appEnv = cfenv.getAppEnv({
   vcap: {
@@ -42,8 +63,8 @@ const appEnv = cfenv.getAppEnv({
           plan: 'unlimited',
           credentials: {
             url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
-            minPoolSize: parseInt(process.env.MAGE_MONGO_MIN_POOL_SIZE) || 5,
-            maxPoolSize: parseInt(process.env.MAGE_MONGO_MAX_POOL_SIZE) || 5,
+            minPoolSize: minMongoPoolSize,
+            maxPoolSize: maxMongoPoolSize,
             replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
