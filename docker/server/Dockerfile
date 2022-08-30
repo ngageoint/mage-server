@@ -1,16 +1,20 @@
-FROM node:14.17.5
-
-ARG MAGE_VERSION=6.1.1
+FROM node:16.17.0-slim
 
 LABEL author="NGA"
 
+WORKDIR /root/building
+
 RUN apt-get update && apt-get -y install \
-        sudo \
-        git \
-        unzip \
-        curl \
-        graphicsmagick \
-        build-essential libjpeg-dev libsdl-pango-dev libcairo-dev libgif-dev \
+    curl \
+    git \
+    sudo \
+    unzip
+
+RUN echo "installing github cli ..." \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update && apt install gh -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r mage \
@@ -20,20 +24,26 @@ RUN groupadd -r mage \
 
 USER mage
 
-ENV MAGE_HOME /home/mage/mage-server-${MAGE_VERSION}
-WORKDIR /home/mage
+ENV MAGE_HOME /home/mage/instance
+WORKDIR /home/mage/instance
 
-RUN curl -L "https://github.com/ngageoint/mage-server/archive/${MAGE_VERSION}.zip" -o mage-server.zip \
-    && unzip mage-server.zip
+ARG MAGE_VERSION=6.2.0
+ARG MAGE_RELEASE_TAG=releases/${MAGE_VERSION}
+ARG GITHUB_TOKEN
+RUN gh release --repo ngageoint/mage-server download ${MAGE_RELEASE_TAG} \
+    && npm i --omit=dev ngageoint-mage.service-*.tgz \
+    && npm i --omit=dev ngageoint-mage.web-app-*.tgz \
+    && npm i --omit=dev ngageoint-mage.image.service-*.tgz \
+    && npm i --omit=dev ngageoint-mage.nga-msi-*.tgz \
+    && rm *.tgz \
+    && ln -s ./node_modules/.bin/mage.service
 
+USER root
+RUN apt remove -y gh && rm -rf /var/lib/apt/lists/*
+
+USER mage
 WORKDIR ${MAGE_HOME}
-RUN rm -rf node_modules && \
-    mkdir node_modules && \
-    npm install && \
-    npm run build-web
-
 VOLUME /var/lib/mage
-
 EXPOSE 4242
 
-ENTRYPOINT ["node", "./app.js"]
+ENTRYPOINT [ "./mage.service", "--plugin", "@ngageoint/mage.image.service", "--plugin", "@ngageoint/mage.nga-msi" ]
