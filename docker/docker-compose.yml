@@ -3,11 +3,11 @@ version: "3.4"
 services:
 
   mage-db:
-    image: mongo:3.6-jessie
+    image: mongo:4.2
     volumes:
       - ./database/data:/data/mage
       - ./database/log:/var/log/mongodb
-    command: [mongod, --dbpath, /data/mage, --logpath, /var/log/mongodb/mongod.log, --smallfiles]
+    command: [ mongod, --dbpath, /data/mage, --logpath, /var/log/mongodb/mongod.log ]
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:
@@ -16,17 +16,16 @@ services:
       - mage.net
 
   mage-server:
-    depends_on: [mage-db]
-    image: "mage-server:${MAGE_VERSION:-6.1.1}"
+    depends_on: [ mage-db ]
+    image: "mage-server:${MAGE_VERSION:-6.2.0}"
     # image: "mage-server:debug"
     build:
       context: ./server
       # dockerfile: Dockerfile-debug
       args:
-        MAGE_VERSION: "${MAGE_VERSION:-6.1.1}"
+        MAGE_VERSION: "${MAGE_VERSION:-6.2.0}"
     volumes:
       - ./server/resources:/var/lib/mage
-      - ..:/home/mage/mage-server
     # Comment the ports block to disallow connections directly to the node
     # server when running the mage-web-proxy below.
     ports:
