@@ -27,6 +27,10 @@ class RetryConnection {
 
   attemptConnection(): Promise<mongoose.Mongoose> {
     log.debug(`attempting new mongodb connection to`, this.uri)
+    if (this.options.authMechanism) {
+      log.info('connecting to mongodb using auth mechanism ' + this.options.authMechanism)
+    }
+
     return this.mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
   }
 
