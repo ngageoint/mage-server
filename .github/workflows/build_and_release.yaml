@@ -212,7 +212,7 @@ jobs:
   create_release_stub:
     # so the matrix job does not race to create the release
     name: release - create empty release
-    needs: [ config, build_service, build_web-app ]
+    needs: [ config, test_service, build_web-app ]
     runs-on: ubuntu-latest
     steps:
       - name: main
