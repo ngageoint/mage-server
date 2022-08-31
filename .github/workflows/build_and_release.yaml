@@ -7,8 +7,6 @@ on:
     tags:
       - 'releases/*'
       - 'prereleases/*'
-  workflow_dispatch:
-
 
 name: Build MAGE Server and Optionally Release
 
@@ -75,7 +73,7 @@ jobs:
     steps:
       - name: install native dev libs
         run: |
-          sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          sudo apt-get install build-essential
       - name: checkout
         uses: actions/checkout@v2
       - name: setup node
@@ -251,8 +249,10 @@ jobs:
           npm publish $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
-          npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
-          npm publish $(ls -1 ngageoint-mage.image.service-*.tgz)
+          check_version=$(npm pkg --prefix plugins/image/service get version | tr -d '"')
+          [[ -z $(npm view @ngageoint/mage.image.service@${check_version}) ]] && npm publish $(ls -1 ngageoint-mage.image.service-*.tgz)
+          check_version=$(npm pkg --prefix plugins/nga-msi get version | tr -d '"')
+          [[ -z $(npm view @ngageoint/mage.nga-msi@${check_version}) ]] && npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
       - name: add package tarballs to release
         uses: softprops/action-gh-release@v1
         with:
