@@ -29,6 +29,8 @@ class RetryConnection {
     log.debug(`attempting new mongodb connection to`, this.uri)
     if (this.options.authMechanism) {
       log.info('connecting to mongodb using auth mechanism ' + this.options.authMechanism)
+    } else {
+      log.info('connecting to mongodb without authentication');
     }
 
     return this.mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
