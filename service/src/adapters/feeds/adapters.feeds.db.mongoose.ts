@@ -19,18 +19,21 @@ export type FeedServiceTypeIdentity = Pick<FeedServiceType, 'pluginServiceTypeId
 }
 export type FeedServiceTypeIdentityDocument = FeedServiceTypeIdentity & mongoose.Document
 export type FeedServiceTypeIdentityModel = Model<FeedServiceTypeIdentityDocument>
-export const FeedServiceTypeIdentitySchema = new mongoose.Schema<FeedServiceTypeIdentityDocument>({
+//TODO remove cast to any
+export const FeedServiceTypeIdentitySchema = new mongoose.Schema<any>({
   pluginServiceTypeId: { type: String, required: true },
   moduleName: { type: String, required: true }
 })
 export function FeedServiceTypeIdentityModel(conn: mongoose.Connection, collection?: string): FeedServiceTypeIdentityModel {
-  return conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types')
+  //TODO remove cast to any
+  return conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types') as any
 }
 
 export type FeedServiceDocument = Omit<FeedServiceDescriptor, 'serviceType'> & mongoose.Document & {
   serviceType: mongoose.Types.ObjectId
 }
 export type FeedServiceModel = Model<FeedServiceDocument>
+//TODO remove cast to any
 export const FeedServiceSchema = new mongoose.Schema<any>(
   {
     serviceType: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedServiceTypeIdentity },
@@ -49,7 +52,7 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     }
   })
 export function FeedServiceModel(conn: mongoose.Connection, collection?: string): FeedServiceModel {
-  //TODO fix cast
+  //TODO remove cast to any
   return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services') as any
 }
 
@@ -58,6 +61,7 @@ export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & 
   icon?: string
 }
 export type FeedModel = Model<FeedDocument>
+//TODO remove cast to any
 export const FeedSchema = new mongoose.Schema<any>(
   {
     _id: { type: String, required: true },
@@ -92,7 +96,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     }
   })
 export function FeedModel(conn: mongoose.Connection, collection?: string): FeedModel {
-  //TODO fix cast
+  //TODO remove cast to any
   return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds') as any
 }
 
@@ -175,7 +179,7 @@ export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument,
     return await super.update({ ...explicit, id: feed.id })
   }
 
-  //TODO fix cast; should be Feed[]
+  //TODO change any to Feed
   async findFeedsForService(service: FeedServiceId): Promise<any[]> {
     const docs = await this.model.find({ service })
     return docs.map(x => x.toJSON())

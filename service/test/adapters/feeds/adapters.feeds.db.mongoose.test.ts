@@ -45,7 +45,8 @@ describe('feeds repositories', function() {
     let repo: MongooseFeedServiceTypeRepository
 
     beforeEach(async function() {
-      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection)
+      //TODO remove cast to any
+      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection) as any
       repo = new MongooseFeedServiceTypeRepository(model)
     })
 
@@ -201,7 +202,7 @@ describe('feeds repositories', function() {
     let repo: FeedServiceRepository
 
     beforeEach(function() {
-      //TODO fix this cast
+      //TODO remove cast to any
       model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
       repo = new MongooseFeedServiceRepository(model)
     })
@@ -258,7 +259,7 @@ describe('feeds repositories', function() {
     let idFactory: SubstituteOf<EntityIdFactory>
 
     beforeEach(function() {
-      //TODO fix this cast
+      //TODO remove cast to any
       model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
