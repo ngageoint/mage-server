@@ -6,12 +6,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Breaking Changes
-* MAGE now requires Node.js >= 14. Node <= 12 is end-of-life.  Node >= 16 is recommended.
-  See https://nodejs.org/en/about/releases/.
+* MAGE now requires Node.js >= 14. Node <= 12 is end-of-life.  Node >= 16 is
+  recommended.  See https://nodejs.org/en/about/releases/.
 
 ##### Features
-* External data feeds - integrate relevant data from external sources on your MAGE map and list views.
-* Configurable admin contact - you can now configure the admin contact information the MAGE apps present to users when an error occurs.
+* External data feeds - Integrate relevant data from external sources on your
+  MAGE map and list views.
+* Configurable admin contact - Admins can now configure the admin contact
+  information the MAGE apps present to users when an error occurs.
 * New architecture with dependency injection and plugin APIs
 * TypeScript
 
@@ -19,15 +21,15 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Minor UI fixes for the export dialog
 * GeoPackage exports now set contents bounds correctly; previously the
   export set the bounds to the entire world.
-* Memory improvements for all export types
+* Improved memory consumption for all export types to avoid out-of-memory errors.
 * Removed reference to deprecated `request` package and corresponding missing
   reference bug in production build.
-* Fixed bug that left orphaned attachment entries on observations after removing
-  individual attachments or form entries.
-* Fixed bug that skipped deleting all attachment files when removing individual
-  attachments or form entries.
-* Fixed layer permissions bug that prevented non-admin event participants from
-  accessing layers.
+* Removing attachments from observations by individual field or form entry did
+  not remove attachment meta-data from the observation attachments list.
+* Removing attachments from observations by individual field or form entry did
+  not remove the associated attachment files from the file system.
+* Layer permissions bug prevented non-admin event participants from accessing
+  layers.
 
 ## [6.1.1](https://github.com/ngageoint/mage-server/releases/tag/6.1.1)
 
