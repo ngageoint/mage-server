@@ -1866,7 +1866,7 @@ describe('observation entities', function() {
           expect(mod.attachments.length).to.equal(1)
           expect(mod.attachments[0]).to.deep.include(patch)
           expect(mod.attachments[0].lastModified?.getTime()).to.be.closeTo(Date.now(), 100)
-          expect(mod.lastModified.getTime()).to.equal(mod.attachments[0].lastModified?.getTime())
+          expect(mod.lastModified.getTime()).to.be.closeTo(Date.now(), 100)
         })
 
         it('TODO: patches the last attachment')
