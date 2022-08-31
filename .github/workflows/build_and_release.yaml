@@ -232,6 +232,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
+      - name: install json
+        run: npm i -g json
       - name: download service packages
         uses: actions/download-artifact@v2
         with:
@@ -249,10 +251,10 @@ jobs:
           npm publish $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
-          check_version=$(npm pkg --prefix ./plugins/image/service get version | tr -d '"')
+          check_version=$(tar xzOf ngageoint-mage.image.service-*.tgz package/package.json | json version)
           echo "checking @ngageoint/mage.image.service@${check_version}"
           [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.image.service-*.tgz)
-          check_version=$(npm pkg --prefix ./plugins/nga-msi get version | tr -d '"')
+          check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
           echo "checking @ngageoint/mage.nga-msi@${check_version}"
           [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
       - name: add package tarballs to release
