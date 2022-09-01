@@ -23,6 +23,8 @@ on:
         required: false
 
 jobs:
+  config:
+    uses: ./.github/workflows/config.yaml
   check_release_version:
     runs-on: ubuntu-latest
     steps:
@@ -49,8 +51,7 @@ jobs:
     needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.web-app.yaml
   create_release:
-    # so the matrix job does not race to create the release
-    name: release - create empty release
+    name: create release
     needs: [ build_and_test-service, build_and_test-web-app ]
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +74,7 @@ jobs:
             package.json
             ngageoint-mage.*.tgz
   publish_packages:
-    name:  release - add npm package tarballs
+    name:  publish packages
     needs: [ config, create_release ]
     runs-on: ubuntu-latest
     steps:
