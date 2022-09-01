@@ -69,9 +69,15 @@ jobs:
 
   create_release:
     name: create release
-    needs: [ build_and_test-service, build_and_test-web-app ]
+    needs: [ config, build_and_test-service, build_and_test-web-app ]
     runs-on: ubuntu-latest
     steps:
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+      - name: install json util
+        run: npm i -g json
       - name: download service packages
         uses: actions/download-artifact@v2
         with:
@@ -112,7 +118,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
-      - name: install json
+      - name: install json util
         run: npm i -g json
       - name: download service packages
         uses: actions/download-artifact@v2
