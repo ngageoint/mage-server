@@ -1,0 +1,126 @@
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version you want to assign to the release
+        type: string
+        required: true
+      is_draft:
+        description: Whether to mark this a draft release
+        type: boolean
+        required: false
+        default: false
+      is_prerelease:
+        description: Whether this is a prerelease
+        type: boolean
+        required: false
+        default: true
+      tag_target_ref:
+        description: The branch or commit hash that gets the release tag
+        type: string
+        required: false
+
+jobs:
+  check_release_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: install json util
+        run: npm i -g json
+      - name: check project
+        run: |
+          [[ $(json version < ./package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check service
+        run: |
+          [[ $(json version < ./service/package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check web-app
+        run: |
+          [[ $(json version < ./web-app/package.json) = ${{ inputs.version }} ]] || exit 1
+      - name: check web-core-lib
+        run: |
+          [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
+  build_and_test-service:
+    needs: [ check_release_version ]
+    uses: ./.github/workflows/build_test.service.yaml
+  build_and_test-web-app:
+    needs: [ check_release_version ]
+    uses: ./.github/workflows/build_test.web-app.yaml
+  create_release:
+    # so the matrix job does not race to create the release
+    name: release - create empty release
+    needs: [ build_and_test-service, build_and_test-web-app ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: download service packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: download web-app packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_web-app_packages
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ inputs.version }}
+          prerelease: ${{ inputs.is_prerelease }}
+          draft: ${{ inputs.is_draft }}
+          tag_name: ${{ inputs.version }}
+          files: |
+            package.json
+            ngageoint-mage.*.tgz
+  publish_packages:
+    name:  release - add npm package tarballs
+    needs: [ config, create_release ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+      - name: install json
+        run: npm i -g json
+      - name: download service packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: download web-app packages
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_web-app_packages
+      - name: publish to gitlab
+        env:
+          NPM_CONFIG_USERCONFIG: "${{ runner.temp }}/gitlab.npmrc"
+        run: |
+          npm config set @ngageoint:registry https://gitlab.gs.mil/api/v4/projects/14746/packages/npm/
+          npm config set -- '//gitlab.gs.mil/api/v4/projects/14746/packages/npm/:_authToken' ${{ secrets.GITLAB_PACKAGE_REGISTRY_TOKEN }}
+          npm publish $(ls -1 ngageoint-mage.service-*.tgz)
+          npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
+          npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
+          check_version=$(tar xzOf ngageoint-mage.image.service-*.tgz package/package.json | json version)
+          echo "checking @ngageoint/mage.image.service@${check_version}"
+          [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.image.service-*.tgz)
+          check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
+          echo "checking @ngageoint/mage.nga-msi@${check_version}"
+          [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
+      - name: generate instance package.json
+        run: |
+          (
+          printf '{ "name": "mage.instance", "version": "%s" }\n' ${{ inputs.version }} &&
+          printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi --plugin @ngageoint/mage.image.service" }}\n' &&
+          printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.nga-msi": "./%s" }}\n' $(ls -1 *mage.nga-msi*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.image.service": "./%s" }}\n' $(ls -l *mage.image.service*.tgz)
+          ) | json --deep-merge > package.json
+          echo "instance package.json"
+          cat package.json
+      - name: add release artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.config.outputs.release-name }}
+          files: |
+            package.json
+            ngageoint-mage.*.tgz
+
