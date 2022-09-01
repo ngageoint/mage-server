@@ -26,6 +26,8 @@ on:
   #   branches:
   #     - release/*
   #     - prerelease/*
+  # TODO: possibly use release event to perform the release process
+  # release:
 
 jobs:
   config:
