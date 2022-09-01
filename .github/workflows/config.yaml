@@ -4,11 +4,16 @@ name: build configuration
 on:
   workflow_call:
     outputs:
-      node_versions-all: ${{ jobs.main.outputs.node_versions-all }}
-      node_versions-all-json: ${{ jobs.main.outputs.node_versions-.all-json }}
-      node_versions-latest: ${{ jobs.main.outputs.node_versions-latest }}
-      node_versions-pre_latest: ${{ jobs.main.outputs.node_versions-pre_latest }}
-      node_versions-pre_latest-json: ${{ jobs.main.outputs.node_versions-pre_latest-json }}
+      node_versions-all:
+        value: ${{ jobs.main.outputs.node_versions-all }}
+      node_versions-all-json:
+        value: ${{ jobs.main.outputs.node_versions-.all-json }}
+      node_versions-latest:
+        value: ${{ jobs.main.outputs.node_versions-latest }}
+      node_versions-pre_latest:
+        value: ${{ jobs.main.outputs.node_versions-pre_latest }}
+      node_versions-pre_latest-json:
+        value: ${{ jobs.main.outputs.node_versions-pre_latest-json }}
 
 env:
   MAGE_NODE_VERSIONS: 14 16
