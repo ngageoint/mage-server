@@ -1,29 +1,34 @@
-Master [![Build Status Master Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=master)](https://travis-ci.org/ngageoint/mage-server/branches)
-Develop [![Build Status Develop Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=develop)](https://travis-ci.org/ngageoint/mage-server/branches)
+# MAGE Web Service & Web App
 
-# MAGE server & Web client
+The **M**obile **A**wareness **G**EOINT **E**nvironment, or [MAGE](https://ngageoint.github.io/MAGE) platform, provides
+mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the MAGE
+client apps use to submit and fetch MAGE data, as well as the browser-based web app.  The MAGE web app provides user
+interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the primary
+administrative UI to manage the MAGE server settings, access control, events, data collection forms, etc.
 
-The **M**obile **A**wareness **G**EOINT **E**nvironment, or MAGE, provides mobile situational awareness capabilities. The MAGE web client can be accessed over the internet and is optimized for desktop and mobile web browsers.  The MAGE web client allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
-
-MAGE is very customizable and can be tailored for your situation, including custom forms, avatars, and icons.
-
-MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The government has "unlimited rights" and is releasing this software to increase the impact of government investments by providing developers with the opportunity to take things in new directions. The software use, modification, and distribution rights are stipulated within the Apache license.
-
-The server supports the [MAGE Android](https://github.com/ngageoint/mage-android) and [MAGE iOS](https://github.com/ngageoint/mage-ios) mobile clients.
+MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The
+government has "unlimited rights" and is releasing this software to increase the impact of government investments by
+providing developers with the opportunity to take things in new directions. The software use, modification, and
+distribution rights are stipulated within the [Apache license](LICENSE).
 
 ## Architecture
 
+## Technology stack
+
 MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN stack are as follows:
-* [MongoDB](https://www.mongodb.com/), a NoSQL database;
-* [Express.js](http://expressjs.com/), a web applications framework;
-* [AngularJS](https://angularjs.org/), a JavaScript MVC framework for web apps;
-* [Node.js](https://nodejs.org/), a software platform for scalable server-side and networking applications.
+* [MongoDB](https://www.mongodb.com/) - a NoSQL JSON document database
+* [Express.js](http://expressjs.com/) - a web server framework for Node to handle ReST API requests
+* [Angular](https://angular.io/) - a JavaScript MVC framework for web app front-ends
+* [Node.js](https://nodejs.org/) - a software platform for scalable server-side and networking applications.
 
-## API & documentation
+## ReST API Documentation
 
-The MAGE ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  MAGE [swagger API docs](docs/openapi.yaml) are served out from [*/api_docs*](http://localhost:4242/api_docs).
-
-If you want to explore the interactive documentation there is a link from the About page in the MAGE web client.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful trying POST/PUT/DELETE operations that modify data.
+The MAGE ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  A MAGE server instance includes
+a [Swagger UI](https://swagger.io/tools/swagger-ui/) page that renders a web app from the MAGE [OpenAPI document](service/src/docs/openapi.yaml).
+The Swagger UI page is handy for testing the ReST API operations individually.  The _About_ page in the MAGE web app has
+a link to the Swagger UI.  After logging in to the web app, the Swagger UI will automatically use the authentication
+token from your login to authenticate ReST API requests.  Be mindful that the SwaggerUI is interacting with your
+server's data, so use caution when trying POST/PUT/DELETE operations that mutate data.
 
 ### Code generation
 
