@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - service/**
+      - .github/**
 
 jobs:
   config:
