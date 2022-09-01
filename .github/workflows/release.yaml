@@ -33,6 +33,7 @@ jobs:
   config:
     uses: ./.github/workflows/config.yaml
   check_release_version:
+    needs: [ config ]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -40,7 +41,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ jobs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
       - name: install json util
         run: npm i -g json
       - name: check project
