@@ -33,7 +33,6 @@ jobs:
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test
-        if: ${{ needs.config.outputs.tests_enabled }}
         run: npm run --prefix web-app ci:test
       - name: pack
         run: |

@@ -63,7 +63,6 @@ jobs:
   test:
     name: test mage service
     needs: [ config, build ]
-    if: ${{ needs.config.outputs.tests_enabled }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
