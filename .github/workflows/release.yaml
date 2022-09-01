@@ -21,6 +21,11 @@ on:
         description: The branch or commit hash that gets the release tag
         type: string
         required: false
+  # TODO: possibly use release branches to perform the release process
+  # push:
+  #   branches:
+  #     - release/*
+  #     - prerelease/*
 
 jobs:
   config:
@@ -30,6 +35,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ jobs.config.outputs.node_versions-latest }}
       - name: install json util
         run: npm i -g json
       - name: check project
@@ -79,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
       - name: install json
