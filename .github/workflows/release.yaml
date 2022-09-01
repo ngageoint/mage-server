@@ -30,8 +30,10 @@ on:
   # release:
 
 jobs:
+
   config:
     uses: ./.github/workflows/config.yaml
+
   check_release_version:
     needs: [ config ]
     runs-on: ubuntu-latest
@@ -56,12 +58,15 @@ jobs:
       - name: check web-core-lib
         run: |
           [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
+
   build_and_test-service:
     needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.service.yaml
+
   build_and_test-web-app:
     needs: [ check_release_version ]
     uses: ./.github/workflows/build_test.web-app.yaml
+
   create_release:
     name: create release
     needs: [ build_and_test-service, build_and_test-web-app ]
@@ -75,6 +80,18 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: mage_web-app_packages
+      - name: generate instance package.json
+        run: |
+          (
+          printf '{ "name": "mage.instance", "version": "%s" }\n' ${{ inputs.version }} &&
+          printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi --plugin @ngageoint/mage.image.service" }}\n' &&
+          printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.nga-msi": "./%s" }}\n' $(ls -1 *mage.nga-msi*.tgz) &&
+          printf '{ "dependencies": { "@ngageoint/mage.image.service": "./%s" }}\n' $(ls -l *mage.image.service*.tgz)
+          ) | json --deep-merge > package.json
+          echo "instance package.json"
+          cat package.json
       - name: create release
         uses: softprops/action-gh-release@v1
         with:
@@ -85,6 +102,7 @@ jobs:
           files: |
             package.json
             ngageoint-mage.*.tgz
+
   publish_packages:
     name:  publish packages
     needs: [ config, create_release ]
@@ -119,23 +137,3 @@ jobs:
           check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
           echo "checking @ngageoint/mage.nga-msi@${check_version}"
           [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
-      - name: generate instance package.json
-        run: |
-          (
-          printf '{ "name": "mage.instance", "version": "%s" }\n' ${{ inputs.version }} &&
-          printf '{ "scripts": { "start": "mage.service --plugin @ngageoint/mage.nga-msi --plugin @ngageoint/mage.image.service" }}\n' &&
-          printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
-          printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz) &&
-          printf '{ "dependencies": { "@ngageoint/mage.nga-msi": "./%s" }}\n' $(ls -1 *mage.nga-msi*.tgz) &&
-          printf '{ "dependencies": { "@ngageoint/mage.image.service": "./%s" }}\n' $(ls -l *mage.image.service*.tgz)
-          ) | json --deep-merge > package.json
-          echo "instance package.json"
-          cat package.json
-      - name: add release artifacts
-        uses: softprops/action-gh-release@v1
-        with:
-          name: ${{ needs.config.outputs.release-name }}
-          files: |
-            package.json
-            ngageoint-mage.*.tgz
-
