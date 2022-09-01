@@ -6,7 +6,7 @@ on:
       node_versions-all:
         value: ${{ jobs.main.outputs.node_versions-all }}
       node_versions-all-json:
-        value: ${{ jobs.main.outputs.node_versions-.all-json }}
+        value: ${{ jobs.main.outputs.node_versions-all-json }}
       node_versions-latest:
         value: ${{ jobs.main.outputs.node_versions-latest }}
       node_versions-pre_latest:
