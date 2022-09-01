@@ -14,6 +14,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
   MAGE map and list views.
 * Configurable admin contact - Admins can now configure the admin contact
   information the MAGE apps present to users when an error occurs.
+* Hooks for localization support based on `accept-language` HTTP header
 * New architecture with dependency injection and plugin APIs
 * TypeScript
 
