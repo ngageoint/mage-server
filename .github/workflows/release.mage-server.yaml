@@ -1,3 +1,5 @@
+name: release mage server
+
 on:
   workflow_dispatch:
     inputs:
