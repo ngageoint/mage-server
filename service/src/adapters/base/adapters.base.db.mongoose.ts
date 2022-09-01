@@ -109,7 +109,8 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
 }
 
 export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingParameters): Promise<{ totalCount: number | null, query: mongoose.Query<RT, DT> }> => {
-  const BaseQuery = query.toConstructor()
+  //TODO had to use any to construct
+  const BaseQuery: any = query.toConstructor()
   const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
   const includeTotalCount = typeof paging.includeTotalCount === 'boolean' ? paging.includeTotalCount : paging.pageIndex === 0
   if (includeTotalCount) {
