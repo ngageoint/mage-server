@@ -1,0 +1,95 @@
+name: build and test service
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - service/**
+
+jobs:
+  config:
+    uses: ./.github/workflows/config.yaml
+  build:
+    name: build mage service
+    needs: config
+    runs-on: ubuntu-latest
+    steps:
+      - name: install system libs
+        run: |
+          sudo apt-get install build-essential
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          cache: npm
+          cache-dependency-path: |
+            service/package-lock.json
+            plugins/nga-msi/package-lock.json
+            plugins/image/service/package-lock.json
+      - name: build service
+        run: |
+          cd service
+          npm ci
+          npm run build
+      - name: pack service
+        run: npm pack ./service
+      - name: build plugin nga-msi
+        run: |
+          cd plugins/nga-msi
+          npm ci
+          npm run build
+          npm test
+      - name: pack nga-msi
+        run: npm pack ./plugins/nga-msi
+      - name: build plugin image.service
+        run: |
+          cd plugins/image/service
+          npm ci
+          npm run build
+          npm test
+      - name: pack plugin image.service
+        run: npm pack ./plugins/image/service
+      - name: upload packages
+        uses: actions/upload-artifact@v2
+        with:
+          name: mage_service_packages
+          path: |
+            ngageoint-mage.*.tgz
+
+  test:
+    name: test mage service
+    needs: [ config, build ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            service/package-lock.json
+      - name: install service dependencies
+        run: |
+          npm ci --prefix service
+      - name: download service package
+        uses: actions/download-artifact@v2
+        with:
+          name: mage_service_packages
+      - name: extract service lib
+        run: |
+          tar xzf $(ls -1 ngageoint-mage.service-*.tgz) package/lib
+          mv package/lib ./service
+          rmdir package
+      - name: test service with node ${{ matrix.node }}
+        run: |
+          cd service
+          npm run ci:test
+      # TODO: restore coveralls test coverage report - see buildAndTest.yml
