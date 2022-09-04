@@ -52,6 +52,7 @@ const imagePluginHooks: InitPluginHook<typeof InjectedServices> = {
     const queryAttachments = FindUnprocessedAttachments(getDbConn, console)
     const imageService = SharpImageService()
     const control = await createImagePluginControl(stateRepo, eventRepo, obsRepoForEvent, attachmentStore, queryAttachments, imageService, console)
+    control.start()
     return {
       webRoutes(requestContext: GetAppRequestContext): express.Router {
         // TODO: add api routes to save image processing settings
