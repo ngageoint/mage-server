@@ -63,7 +63,7 @@ const authentication = AuthenticationInitializer.initialize(app, passport, provi
 
 // Configure routes
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
-require('./routes')(app, { authentication: authentication });
+require('./routes')(app, { authentication });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use(function(err, req, res, next) { // Express requires a 4 parameter function callback, dont' remove unused next parameter

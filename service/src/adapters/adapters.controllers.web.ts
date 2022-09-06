@@ -1,5 +1,5 @@
 import express from 'express'
-import { ErrEntityNotFound, ErrInvalidInput, ErrPermissionDenied, MageError, PermissionDeniedError } from '../app.api/app.api.errors'
+import { ErrEntityNotFound, ErrInfrastructure, ErrInvalidInput, ErrPermissionDenied, MageError, PermissionDeniedError } from '../app.api/app.api.errors'
 import { AppRequest } from '../app.api/app.api.global'
 
 export interface WebAppRequestFactory<Req extends AppRequest = AppRequest> {
@@ -23,6 +23,8 @@ export const mageAppErrorHandler: express.ErrorRequestHandler = (err: any, req: 
       return res.status(404).json(err.message)
     case ErrInvalidInput:
       return res.status(400).json(err.message)
+    case ErrInfrastructure:
+      return res.status(500).json(err.message)
   }
   next(err)
 }
@@ -48,6 +50,8 @@ export const compatibilityMageAppErrorHandler: express.ErrorRequestHandler = (er
       return res.status(404).json({ message: err.message })
     case ErrInvalidInput:
       return res.status(400).json({ message: err.message })
+    case ErrInfrastructure:
+      return res.status(500).json({ message: err.message })
   }
   next(err)
 }
