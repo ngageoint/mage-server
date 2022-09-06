@@ -1,13 +1,13 @@
 import { AppRequest, AppResponse, Descriptor, AppRequestContext, KnownErrorsOf } from '../app.api.global'
 import { FeedService, FeedTopic, FeedContent, FeedId, FeedServiceTypeId, FeedServiceId, Feed, FeedServiceType, FeedContentParams, FeedCreateMinimal, FeedUpdateMinimal, FeedCreateAttrs } from '../../entities/feeds/entities.feeds'
 import { Json, JsonObject } from '../../entities/entities.json_types'
-import { PermissionDeniedError, EntityNotFoundError, InvalidInputError } from '../app.api.errors'
+import { PermissionDeniedError, EntityNotFoundError, InvalidInputError, InfrastructureError } from '../app.api.errors'
 import { StaticIconReference } from '../../entities/icons/entities.icons'
 import { URL } from 'url'
 
 
 export interface ListFeedServiceTypes {
-  (req: AppRequest): Promise<AppResponse<FeedServiceTypeDescriptor[], PermissionDeniedError>>
+  (req: AppRequest): Promise<AppResponse<FeedServiceTypeDescriptor[], PermissionDeniedError | InfrastructureError>>
 }
 
 export interface PreviewTopicsRequest extends AppRequest {
@@ -16,7 +16,7 @@ export interface PreviewTopicsRequest extends AppRequest {
 }
 
 export interface PreviewTopics {
-  (req: PreviewTopicsRequest): Promise<AppResponse<FeedTopic[], PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
+  (req: PreviewTopicsRequest): Promise<AppResponse<FeedTopic[], PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
 
 export interface CreateFeedServiceRequest extends AppRequest {
@@ -57,7 +57,7 @@ export interface ListServiceTopicsRequest extends AppRequest {
 }
 
 export interface ListServiceTopics {
-  (req: ListServiceTopicsRequest): Promise<AppResponse<FeedTopic[], PermissionDeniedError | EntityNotFoundError>>
+  (req: ListServiceTopicsRequest): Promise<AppResponse<FeedTopic[], PermissionDeniedError | EntityNotFoundError | InfrastructureError>>
 }
 
 export type FeedCreateMinimalAcceptingStringUrls = Omit<FeedCreateMinimal, 'icon' | 'mapStyle'> & {
@@ -80,11 +80,11 @@ export interface FeedPreview {
 }
 
 export interface PreviewFeed {
-  (req: PreviewFeedRequest): Promise<AppResponse<FeedPreview, KnownErrorsOf<CreateFeed>>>
+  (req: PreviewFeedRequest): Promise<AppResponse<FeedPreview, KnownErrorsOf<CreateFeed> | InfrastructureError>>
 }
 
 export interface CreateFeed {
-  (req: CreateFeedRequest): Promise<AppResponse<FeedExpanded, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
+  (req: CreateFeedRequest): Promise<AppResponse<FeedExpanded, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
 
 export interface ListAllFeeds {
@@ -120,7 +120,7 @@ export interface UpdateFeedRequest extends AppRequest {
 }
 
 export interface UpdateFeed {
-  (req: UpdateFeedRequest): Promise<AppResponse<FeedExpanded, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
+  (req: UpdateFeedRequest): Promise<AppResponse<FeedExpanded, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
 
 export interface DeleteFeedRequest extends AppRequest {
@@ -137,7 +137,7 @@ export interface FetchFeedContentRequest extends AppRequest {
 }
 
 export interface FetchFeedContent {
-  (req: FetchFeedContentRequest): Promise<AppResponse<FeedContent, PermissionDeniedError | EntityNotFoundError | InvalidInputError>>
+  (req: FetchFeedContentRequest): Promise<AppResponse<FeedContent, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }
 
 export interface FeedServiceTypeDescriptor extends Descriptor<'FeedServiceType'>, Pick<FeedServiceType, 'id' | 'title' | 'summary' | 'pluginServiceTypeId'> {
