@@ -673,7 +673,7 @@ describe('mongoose observation repository', function() {
       obs = await repo.save(obs) as Observation
     })
 
-    xit('dispatches pending events on the observation after the observation saves', async function() {
+    it('dispatches pending events on the observation after the observation saves', async function() {
 
       /*
       TODO: should there a mechanism to ensure domain events cannot be
@@ -695,7 +695,7 @@ describe('mongoose observation repository', function() {
       )
     })
 
-    xit('emits readonly events', async function() {
+    it('emits readonly events', async function() {
 
       const mod = removeAttachment(obs, obs.attachments[1].id) as Observation
       const receivedEvents = [] as ObservationEmitted<PendingObservationDomainEvent>[]
