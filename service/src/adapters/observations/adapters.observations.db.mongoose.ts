@@ -63,11 +63,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    let saved:any = null;
-    if (beforeDoc) {
-      const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
-      const savedAttrs = this.entityForDocument(savedDoc)
-      saved = Observation.evaluate(savedAttrs, observation.mageEvent)
+    const savedDoc = await beforeDoc!.save() as legacy.ObservationDocument
+    const savedAttrs = this.entityForDocument(savedDoc)
+    const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
+    for (const e of observation.pendingEvents) {
+      this.domainEvents.emit(e.type, Object.freeze({ ...e, observation: saved }))
     }
     return saved
   }
