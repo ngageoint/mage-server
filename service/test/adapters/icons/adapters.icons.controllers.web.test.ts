@@ -294,7 +294,7 @@ describe('icons web controller', function() {
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`StaticIcon not found: ${iconId}`)
+      expect(res.body).to.deep.equal({ message: `StaticIcon not found: ${iconId}` })
     })
   })
 

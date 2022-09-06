@@ -79,7 +79,7 @@ export function FeedsRoutes(appLayer: FeedsAppLayer, createAppRequest: WebAppReq
         return res.status(201).json(appRes.success)
       }
       if (appRes.error?.code === ErrEntityNotFound) {
-        return res.status(400).json('service type not found')
+        return res.status(400).json({ message: 'service type not found' })
       }
       next(appRes.error)
     })

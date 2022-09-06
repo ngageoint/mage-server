@@ -230,21 +230,23 @@ describe('event feeds web controller', function () {
       eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
 
-    it('fails with 400 if the feed is not assigned to the event', async function () {
+    it('fails with 404 if the feed is not assigned to the event', async function () {
+
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
         event: event.id,
         feed: feedId
       }
       eventFeedsApp.removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
-        .resolves(AppResponse.error(entityNotFound(event, 'MageEvent')))
+        .resolves(AppResponse.error(entityNotFound(event, 'MageEvent.feedIds')))
       const res = await client.delete(`${rootPath}/${event.id}/feeds/${feedId}`)
 
-      expect(res.status).to.equal(400)
+      expect(res.status).to.equal(404)
       eventFeedsApp.received(1).removeFeedFromEvent(Arg.is(x => _.isMatch(x, appReqParams)))
     })
 
     it('fails with 404 if the event does not exist', async function () {
+
       const feedId = uniqid()
       const badEventId = 1234567890;
 
@@ -256,6 +258,7 @@ describe('event feeds web controller', function () {
     })
 
     it('fails with 403 without permission', async function () {
+
       const feedId = uniqid()
       const appReqParams: Omit<RemoveFeedFromEventRequest, 'context'> = {
         event: event.id,
