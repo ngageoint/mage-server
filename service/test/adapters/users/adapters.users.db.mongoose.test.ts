@@ -15,7 +15,8 @@ describe('users mongoose repository', function() {
   let repo: MongooseUserRepository
 
   before(async function() {
-    model = legacy.Model as mongoose.Model<UserDocument>
+    //TODO remove cast to and, was mongoose.Model<UserDocument>
+    model = legacy.Model as any
     repo = new MongooseUserRepository(model)
   })
 
