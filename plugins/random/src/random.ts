@@ -2,6 +2,7 @@
 import { FeedServiceType, FeedServiceConnection, FeedServiceTypeId, FeedTopic, FeedServiceInfo, InvalidServiceConfigError, FeedTopicId, FeedsError, ErrInvalidServiceConfig, FeedServiceTypeUnregistered, FeedTopicContent } from "@ngageoint/mage.service/lib/entities/feeds/entities.feeds"
 import { Json, JSONSchema4, JsonObject } from '@ngageoint/mage.service/lib/entities/entities.json_types'
 import * as Random from './topics/random'
+import * as Errors from './topics/errors'
 import { URL } from 'url'
 import querystring from 'querystring'
 import { Feature } from "geojson"
@@ -39,7 +40,8 @@ export class RandomServiceType implements FeedServiceType {
 }
 
 const topics: Map<string, RandomTopicModule> = new Map<FeedTopicId, RandomTopicModule>([
-  [ Random.topicDescriptor.id, Random ]
+  [ Random.topicDescriptor.id, Random ],
+  [ Errors.topicDescriptor.id, Errors ]
 ])
 
 export class RandomConnection implements FeedServiceConnection {
