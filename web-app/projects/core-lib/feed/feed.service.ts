@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Feature } from 'geojson'
 import { BehaviorSubject, Observable, Subject } from 'rxjs'
+import { map } from 'rxjs/operators'
 import { Feed, FeedContent, FeedExpanded, FeedPost, FeedPreview, FeedTopic, Service, ServiceType, StyledFeature } from './feed.model'
 
 
@@ -114,18 +115,17 @@ export class FeedService {
   }
 
   fetchFeedItems(event: any, feed: Feed): Observable<FeedContent> {
-    const subject = new Subject<FeedContent>()
     const feedItems = this._feedItems.get(feed.id)
-    this.http.post<FeedContent>(`/api/events/${event.id}/feeds/${feed.id}/content`, {}).subscribe(content => {
-      const features = content.items.features
-      features.map((feature: StyledFeature) => {
-        feature.id = String(feature.id)
-        feature.properties = feature.properties || {}
-        return feature
+    return this.http.post<FeedContent>(`/api/events/${event.id}/feeds/${feed.id}/content`, {}).pipe(
+      map(content => {
+        const features = content.items.features
+        features.forEach((feature: StyledFeature) => {
+          feature.id = String(feature.id)
+          feature.properties = feature.properties || {}
+        })
+        feedItems.next(features)
+        return content
       })
-      subject.next(content)
-      feedItems.next(features)
-    })
-    return subject
+    )
   }
 }

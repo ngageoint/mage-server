@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import { FeedServiceType, FeedTopic, FeedServiceTypeRepository, FeedServiceRepository, FeedServiceId, FeedServiceCreateAttrs, FeedsError, ErrInvalidServiceConfig, FeedService, FeedServiceConnection, RegisteredFeedServiceType, Feed, FeedCreateMinimal, FeedCreateUnresolved, FeedRepository, FeedId, FeedContent, FeedUpdateMinimal, FeedCreateAttrs } from '../../../lib/entities/feeds/entities.feeds'
 import { ListFeedServiceTypes, CreateFeedService, ListServiceTopics, PreviewTopics, ListFeedServices, PreviewFeed, CreateFeed, ListAllFeeds, FetchFeedContent, GetFeed, UpdateFeed, DeleteFeed, GetFeedService, DeleteFeedService, ListServiceFeeds } from '../../../lib/app.impl/feeds/app.impl.feeds'
-import { MageError, EntityNotFoundError, PermissionDeniedError, ErrPermissionDenied, permissionDenied, ErrInvalidInput, ErrEntityNotFound, InvalidInputError, PermissionDeniedErrorData, KeyPathError } from '../../../lib/app.api/app.api.errors'
+import { MageError, EntityNotFoundError, PermissionDeniedError, ErrPermissionDenied, permissionDenied, ErrInvalidInput, ErrEntityNotFound, InvalidInputError, PermissionDeniedErrorData, KeyPathError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { UserId } from '../../../lib/entities/users/entities.users'
 import { FeedsPermissionService, ListServiceTopicsRequest, FeedServiceTypeDescriptor, PreviewTopicsRequest, FeedPreview, FetchFeedContentRequest, FeedExpanded, GetFeedRequest, UpdateFeedRequest, DeleteFeedRequest, CreateFeedServiceRequest, GetFeedServiceRequest, DeleteFeedServiceRequest, ListServiceFeedsRequest, PreviewFeedRequest, CreateFeedRequest } from '../../../lib/app.api/feeds/app.api.feeds'
 import uniqid from 'uniqid'
@@ -2443,6 +2443,7 @@ describe('feeds use case interactions', function () {
     })
 
     it('validates the parameters', async function () {
+
       const expectedContent: FeedContent = {
         feed: feed.id,
         topic: feed.topic,
@@ -2565,6 +2566,72 @@ describe('feeds use case interactions', function () {
         _.omit(extraPropertiesContent.items.features[0].properties, 'wut'),
         _.omit(extraPropertiesContent.items.features[1].properties, 'wait')
       ])
+    })
+
+    it('catches errors fetching topics from the feed service', async function() {
+
+      const conn = Sub.for<FeedServiceConnection>()
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
+      conn.fetchAvailableTopics().throws(new Error('fiddlesticks'))
+      conn.fetchTopicContent(Arg.any(), Arg.any()).resolves({
+        topic: feed.topic,
+        items: { type: 'FeatureCollection', features: [] }
+      })
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: feed.id })
+      const res = await app.fetchFeedContent(req)
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
+    })
+
+    it('catches rejections fetching topics from the feed service', async function() {
+
+      const conn = Sub.for<FeedServiceConnection>()
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
+      conn.fetchAvailableTopics().rejects(new Error('hog spit'))
+      conn.fetchTopicContent(Arg.any(), Arg.any()).resolves({
+        topic: feed.topic,
+        items: { type: 'FeatureCollection', features: [] }
+      })
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: feed.id })
+      const res = await app.fetchFeedContent(req)
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
+    })
+
+    it('catches errors fetching content from the feed service', async function() {
+
+      const conn = Sub.for<FeedServiceConnection>()
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
+      conn.fetchAvailableTopics().resolves([
+        { id: feed.topic } as FeedTopic
+      ])
+      conn.fetchTopicContent(Arg.any(), Arg.any()).throws(new Error('jimmy-jacked'))
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: feed.id })
+      const res = await app.fetchFeedContent(req)
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
+    })
+
+    it('catches rejections fetching content from the feed service', async function() {
+
+      const conn = Sub.for<FeedServiceConnection>()
+      serviceType.createConnection(Arg.deepEquals(service.config), Arg.any()).resolves(conn)
+      conn.fetchAvailableTopics().resolves([
+        { id: feed.topic } as FeedTopic
+      ])
+      conn.fetchTopicContent(Arg.any(), Arg.any()).rejects(new Error('bacon bits'))
+      const req: FetchFeedContentRequest = requestBy(adminPrincipal, { feed: feed.id })
+      const res = await app.fetchFeedContent(req)
+
+      expect(res.success).to.be.null
+      expect(res.error).to.be.instanceOf(MageError)
+      expect(res.error?.code).to.equal(ErrInfrastructure)
     })
   })
 })
