@@ -54,6 +54,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
+      //TODO remove any, was as legacy.ObservationDocument
       beforeDoc = beforeDoc.set(docSeed) as any
     }
     else {

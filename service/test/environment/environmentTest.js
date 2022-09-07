@@ -52,7 +52,7 @@ describe("environment", function() {
 
   describe("in default runtime", function() {
 
-    xit('loads values from env vars', function() {
+    it('loads values from env vars', function() {
 
       Object.assign(process.env, {
         MAGE_ADDRESS: '64.32.16.8',
@@ -88,7 +88,7 @@ describe("environment", function() {
       expect(options).to.have.deep.property('auth', { "username": "mage_test", "password": "test_mage" });
     });
 
-    xit("prefers x509 authentication when present", function() {
+    it("prefers x509 authentication when present", function() {
 
       const keyFile = path.resolve(__dirname, 'test.key.pem');
       const certFile = path.resolve(__dirname, 'test.crt.pem');
@@ -109,22 +109,19 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.not.have.property('tls');
-      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
-      expect(options.sslCA.toString()).to.equal('TEST CA CERTIFICATE');
-      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
-      expect(options.sslKey.toString()).to.equal('TEST PRIVATE KEY');
-      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
-      expect(options.sslCert.toString()).to.equal('TEST PUBLIC CERTIFICATE');
-      expect(options).to.have.property('sslPass', 'test_key_pass');
-      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('ca').that.is.instanceOf(Buffer);
+      expect(options.ca.toString()).to.equal('TEST CA CERTIFICATE');
+      expect(options).to.have.property('key').that.is.instanceOf(Buffer);
+      expect(options.key.toString()).to.equal('TEST PRIVATE KEY');
+      expect(options).to.have.property('cert').that.is.instanceOf(Buffer);
+      expect(options.cert.toString()).to.equal('TEST PUBLIC CERTIFICATE');
+      expect(options).to.have.property('passphrase', 'test_key_pass');
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
-      expect(options).to.not.have.property('tlsInsecure');
       expect(options).to.not.have.property('user');
     });
 
-    xit("uses x509 environment values when present", function() {
+    it("uses x509 environment values when present", function() {
 
       const keyFile = path.resolve(__dirname, 'test.key.pem');
       const certFile = path.resolve(__dirname, 'test.crt.pem');
@@ -148,18 +145,15 @@ describe("environment", function() {
       const options = mongo.options;
 
       expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
-      expect(options).to.have.property('tls', true);
-      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
-      expect(options.sslCA.toString()).to.equal('ENV CA CERT');
-      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
-      expect(options.sslKey.toString()).to.equal('ENV KEY');
-      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
-      expect(options.sslCert.toString()).to.equal('ENV CERT');
-      expect(options).to.have.property('sslPass', 'test_key_pass');
-      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('ca').that.is.instanceOf(Buffer);
+      expect(options.ca.toString()).to.equal('ENV CA CERT');
+      expect(options).to.have.property('key').that.is.instanceOf(Buffer);
+      expect(options.key.toString()).to.equal('ENV KEY');
+      expect(options).to.have.property('cert').that.is.instanceOf(Buffer);
+      expect(options.cert.toString()).to.equal('ENV CERT');
+      expect(options).to.have.property('passphrase', 'test_key_pass');
       expect(options).to.have.property('authSource', '$external');
       expect(options).to.have.deep.property('authMechanism', 'MONGODB-X509');
-      expect(options).to.have.property('tlsInsecure', false);
       expect(options).to.not.have.property('user');
     });
   });
@@ -200,7 +194,6 @@ describe("environment", function() {
       expect(mongo).to.have.property('connectTimeout', 300000);
       const options = mongo.options;
       expect(options).to.not.have.property('tls');
-      expect(options).to.not.have.property('tlsInsecure');
       expect(options).to.have.property('minPoolSize', 99);
       expect(options).to.have.property('maxPoolSize', 99);
       expect(options).to.have.deep.property('auth', { "username": "cloudfoundry", "password": "foundrycloud" });

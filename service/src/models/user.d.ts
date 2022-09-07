@@ -21,7 +21,7 @@ export interface UserDocument extends mongoose.Document {
   recentEventIds: number[]
   createdAt: Date
   lastUpdated: Date
-  toJSON(): any
+  toJSON(): UserJson
 }
 
 

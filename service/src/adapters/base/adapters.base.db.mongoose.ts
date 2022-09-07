@@ -71,7 +71,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
     return doc ? this.entityForDocument(doc) : null as any
   }
 
-  async findAllByIds<ID>(ids: any[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
+  async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: Attrs | null } : ID extends number ? { [id: number]: Attrs | null } : never> {
     if (!ids.length) {
       return {} as any
     }

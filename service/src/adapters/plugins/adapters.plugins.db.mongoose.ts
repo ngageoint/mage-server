@@ -14,6 +14,7 @@ const SCHEMA_SPEC = {
 
 export class MongoosePluginStateRepository<State extends object> implements PluginStateRepository<State> {
 
+  //TODO remove cast to any, was mongoose.Model<PluginStateDocument<State>>
   readonly model: mongoose.Model<any>
 
   constructor(public readonly pluginId: string, public readonly mongoose: mongoose.Mongoose) {

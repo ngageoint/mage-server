@@ -21,6 +21,7 @@ describe('event mongoose repository', function() {
 
   beforeEach('initialize model', async function() {
 
+    //TODO remove cast to any, was mongoose.Model<MageEventDocument>
     model = legacy.Model as any
     repo = new MongooseMageEventRepository(model)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {

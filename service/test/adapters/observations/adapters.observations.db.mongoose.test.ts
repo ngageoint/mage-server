@@ -56,6 +56,7 @@ describe('mongoose observation repository', function() {
   let domainEvents: SubstituteOf<EventEmitter>
 
   beforeEach('initialize model', async function() {
+    //TODO remove cast to any, was mongoose.Model<MageEventDocument>
     const MageEventModel = legacyEvent.Model as any
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
