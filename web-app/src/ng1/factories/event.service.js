@@ -1,6 +1,8 @@
-const _ = require('underscore')
-  , angular = require('angular')
-  , moment = require('moment');
+const _ = require('underscore');
+const angular = require('angular');
+const moment = require('moment');
+const { of } = require('rxjs');
+const { catchError, finalize, tap } = require('rxjs/operators');
 
 module.exports = EventService;
 
@@ -15,7 +17,7 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
   const eventsById = {};
   let pollingTimeout = null;
   let feedPollTimeout = null;
-  let feedSync = {};
+  let feedSyncStates = {};
 
   const filterServiceListener = {
     onFilterChanged: function(filter) {
@@ -508,9 +510,10 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
       }, event);
 
       eventsById[event.id].feedsById = _.indexBy(feeds, 'id');
-      feedSync = feeds.map(feed => {
+      feedSyncStates = feeds.map(feed => {
         return {
-          id: feed.id
+          id: feed.id,
+          lastSync: 0
         }
       });
 
@@ -634,63 +637,61 @@ function EventService($rootScope, $q, $timeout, $http, $httpParamSerializer, Obs
 
   function getNextFeed(event) {
     const now = Date.now();
-    const feeds = _.sortBy(feedSync, feed => { return feed.lastSync });
-    const feed = feeds.find(localFeed => {
-      if (!localFeed.lastSync) return true;
-
-      const feed = eventsById[event.id].feedsById[localFeed.id]
-
-      if ((now - localFeed.lastSync) > (feed.updateFrequencySeconds * 1000)) {
+    const feedsInSyncPriorityOrder = _.sortBy(feedSyncStates, feed => { return feed.lastSync });
+    const nextFeed = feedsInSyncPriorityOrder.find(syncState => {
+      if (!syncState.lastSync) {
+        return true;
+      }
+      const feed = eventsById[event.id].feedsById[syncState.id];
+      if ((now - syncState.lastSync) > (feed.updateFrequencySeconds * 1000)) {
         return true;
       }
     }) || {};
-
-    return eventsById[event.id].feedsById[feed.id];
+    return eventsById[event.id].feedsById[nextFeed.id];
   }
 
   function getFeedFetchDelay(event) {
     const now = Date.now();
-
-    const delays = feedSync.map(localFeed => {
-      const feed = eventsById[event.id].feedsById[localFeed.id]
-
-      if (!localFeed.lastSync) return 0;
-
-      const elapsed = (now - localFeed.lastSync) / 1000;
-      if (elapsed > feed.updateFrequencySeconds) {
-        return 5
-      } else {
-        return feed.updateFrequencySeconds - elapsed
+    const delays = feedSyncStates.map(syncState => {
+      const feed = eventsById[event.id].feedsById[syncState.id]
+      if (!syncState.lastSync) {
+        return 0;
       }
+      const elapsed = now - syncState.lastSync;
+      const frequencyMillis = feed.updateFrequencySeconds * 1000;
+      return frequencyMillis - elapsed;
     });
-
-    return Math.min(...delays);
+    return Math.max(1000, Math.min(...delays));
   }
 
   function pollFeeds() {
     const event = FilterService.getEvent();
-
     const feed = getNextFeed(event);
+    const scheduleNextPoll = () => {
+      const delayMillis = getFeedFetchDelay(event);
+      feedPollTimeout = $timeout(pollFeeds, delayMillis);
+    };
     if (!feed) {
-      feedPollTimeout = $timeout(function () {
-        pollFeeds();
-      }, getFeedFetchDelay(event) * 1000);
-
-      return;
+      return scheduleNextPoll();
     }
-
-    FeedService.fetchFeedItems(event, feed).subscribe(content => {
-      // TODO is this really created or updated, maybe just create as empty when,
-      // feeds come back
-      feedItemsChanged({
-        updated: [{ feed, items: content.items.features}]
-      }, event);
-
-      feedSync.find(f => f.id === feed.id).lastSync = Date.now();
-
-      feedPollTimeout = $timeout(function () {
-        pollFeeds();
-      }, getFeedFetchDelay(event) * 1000);
-    });
+    FeedService.fetchFeedItems(event, feed).pipe(
+      tap(content => {
+        // TODO is this really created or updated, maybe just create as empty when,
+        // feeds come back
+        feedItemsChanged({
+          updated: [{ feed, items: content.items.features}]
+        }, event);
+      }),
+      catchError((err) => {
+        // TODO: add error handling
+        console.error(`error fetching feed content for feed ${feed.id}, ${feed.title}`, err);
+        return of();
+      }),
+      finalize(() => {
+        const state = feedSyncStates.find(f => f.id === feed.id);
+        state.lastSync = Date.now();
+        scheduleNextPoll();
+      })
+    ).subscribe();
   }
 }

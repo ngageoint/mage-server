@@ -3,7 +3,7 @@ import { URL } from 'url'
 import express from 'express'
 import { ErrEntityNotFound } from '../../app.api/app.api.errors'
 import { GetStaticIcon, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, ListStaticIcons, ListStaticIconsRequest } from '../../app.api/icons/app.api.icons'
-import { mageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { PagingParameters } from '../../entities/entities.global'
 import { StaticIcon } from '../../entities/icons/entities.icons'
 
@@ -117,7 +117,7 @@ export function StaticIconRoutes(appLayer: StaticIconsAppLayer, createAppRequest
       }
     )
 
-  routes.use(mageAppErrorHandler)
+  routes.use(compatibilityMageAppErrorHandler)
 
   return routes
 }

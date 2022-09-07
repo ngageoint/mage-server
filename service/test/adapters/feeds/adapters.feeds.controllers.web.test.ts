@@ -114,7 +114,7 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('permission denied: list service types')
+      expect(res.body).to.deep.equal({ message: 'permission denied: list service types' })
     })
   })
 
@@ -167,7 +167,7 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('permission denied: preview topics')
+      expect(res.body).to.deep.equal({ message: 'permission denied: preview topics' })
     })
 
     it('fails with 404 if the service type does not exist', async function () {
@@ -181,7 +181,7 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('feed service type not found: nga-msi')
+      expect(res.body).to.deep.equal({ message: 'feed service type not found: nga-msi' })
     })
 
     it('fails with 400 if the service config is invalid', async function () {
@@ -195,7 +195,7 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('bad service config\n  serviceConfig: unexpected null')
+      expect(res.body).to.deep.equal({ message: 'bad service config\n  serviceConfig: unexpected null' })
     })
   })
 
@@ -241,7 +241,7 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('permission denied: create service')
+      expect(res.body).to.deep.equal({ message: 'permission denied: create service' })
     })
 
     it('fails with 400 if the request is invalid', async function () {
@@ -259,10 +259,10 @@ describe('feeds web controller', function () {
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`
+      expect(res.body).to.deep.equal({ message: `
 invalid service config
   config > url: url is invalid`
-        .trim())
+        .trim() })
       appLayer.received(1).createService(Arg.any())
     })
 
@@ -279,7 +279,7 @@ invalid service config
 
       expect(res.status).to.equal(400)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('service type not found')
+      expect(res.body).to.deep.equal({ message: 'service type not found' })
       appLayer.received(1).createService(Arg.any())
     })
 
@@ -298,10 +298,10 @@ invalid service config
 
         expect(res.status).to.equal(400)
         expect(res.type).to.match(jsonMimeType)
-        expect(res.body).to.equal(`
+        expect(res.body).to.deep.equal({ message: `
 invalid request
   serviceType: missing
-          `.trim())
+          `.trim() })
         appLayer.didNotReceive().createService(Arg.any())
       })
 
@@ -318,10 +318,10 @@ invalid request
 
         expect(res.status).to.equal(400)
         expect(res.type).to.match(jsonMimeType)
-        expect(res.body).to.equal(`
+        expect(res.body).to.deep.equal({ message: `
 invalid request
   title: missing`
-          .trim())
+          .trim() })
         appLayer.didNotReceive().createService(Arg.any())
       })
 
@@ -396,7 +396,7 @@ invalid request
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('permission denied: list services')
+      expect(res.body).to.deep.equal({ message: 'permission denied: list services' })
     })
   })
 
@@ -439,7 +439,7 @@ invalid request
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`feed service not found: ${service}`)
+      expect(res.body).to.deep.equal({ message: `feed service not found: ${service}` })
       appLayer.received(1).getService(Arg.any())
     })
 
@@ -453,7 +453,7 @@ invalid request
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`permission denied: get service`)
+      expect(res.body).to.deep.equal({ message: `permission denied: get service` })
       appLayer.received(1).getService(Arg.any())
     })
   })
@@ -482,7 +482,7 @@ invalid request
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`feed service not found: ${service}`)
+      expect(res.body).to.deep.equal({ message: `feed service not found: ${service}` })
       appLayer.received(1).deleteService(Arg.any())
     })
 
@@ -496,7 +496,7 @@ invalid request
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`permission denied: delete service`)
+      expect(res.body).to.deep.equal({ message: `permission denied: delete service` })
       appLayer.received(1).deleteService(Arg.any())
     })
   })
@@ -551,7 +551,7 @@ invalid request
       const res = await client.get(`${rootPath}/services/${service}/topics`)
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`FeedService not found: ${service}`)
+      expect(res.body).to.deep.equal({ message: `FeedService not found: ${service}` })
     })
 
     it('fails with 403 without permission', async function () {
@@ -565,7 +565,7 @@ invalid request
       const res = await client.get(`${rootPath}/services/${service}/topics`)
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal(`permission denied: list topics`)
+      expect(res.body).to.deep.equal({ message: `permission denied: list topics` })
     })
   })
 
@@ -1385,7 +1385,7 @@ invalid request
 
       expect(res.status).to.equal(404)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('feed service not found: 404')
+      expect(res.body).to.deep.equal({ message: 'feed service not found: 404' })
     })
 
     it('returns 403 without permission', async function () {
@@ -1395,7 +1395,7 @@ invalid request
 
       expect(res.status).to.equal(403)
       expect(res.type).to.match(jsonMimeType)
-      expect(res.body).to.equal('permission denied: list feeds')
+      expect(res.body).to.deep.equal({ message: 'permission denied: list feeds' })
     })
   })
 
@@ -1521,6 +1521,7 @@ invalid request
     })
 
     it('fails with 404 if the service does not exist', async function () {
+
       const feedId = uniqid()
       const feed: FeedExpanded = {
         id: feedId,
@@ -1561,6 +1562,7 @@ invalid request
     })
 
     it('fails with 404 if the topic does not exist', async function () {
+
       const feedId = uniqid()
       const feed: FeedExpanded = {
         id: feedId,
@@ -1601,6 +1603,7 @@ invalid request
     })
 
     it('fails with 404 if the service type does not exist', async function () {
+
       const feedId = uniqid()
       const feed: FeedExpanded = {
         id: feedId,

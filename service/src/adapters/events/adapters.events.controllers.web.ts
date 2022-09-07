@@ -2,8 +2,7 @@ import express from 'express'
 import { MageEventRepository, MageEventId } from '../../entities/events/entities.events'
 import { AddFeedToEvent, ListEventFeeds, AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEvent, RemoveFeedFromEventRequest } from '../../app.api/events/app.api.events'
 import { FetchFeedContent, FetchFeedContentRequest } from '../../app.api/feeds/app.api.feeds'
-import { WebAppRequestFactory } from '../adapters.controllers.web'
-import { MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError } from '../../app.api/app.api.errors'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 
 export type EventFeedsApp = {
   eventRepo: MageEventRepository
@@ -80,21 +79,6 @@ export function EventFeedsRoutes(eventFeeds: EventFeedsApp, createAppRequest: We
       return next(appRes.error)
     })
 
-  const errorHandler: express.ErrorRequestHandler = (err, req, res, next) => {
-    if (!(err instanceof MageError)) {
-      next(err)
-    }
-    const mageErr = err as MageError<symbol, any>
-    if (mageErr.code === ErrPermissionDenied) {
-      return res.status(403).json(mageErr);
-    }
-    if (mageErr.code === ErrEntityNotFound) {
-      const enf = mageErr as EntityNotFoundError
-      return res.status(400).json(`invalid ${enf.data.entityType} id: ${enf.data.entityId}`)
-    }
-    return next(err)
-  }
-  routes.use(errorHandler)
-
+  routes.use(compatibilityMageAppErrorHandler)
   return routes
 }

@@ -2,7 +2,7 @@ import { URL } from 'url'
 import { FeedServiceTypeRepository, FeedServiceRepository, FeedTopic, FeedService, InvalidServiceConfigError, FeedContent, Feed, FeedTopicId, FeedServiceConnection, FeedRepository, FeedCreateUnresolved, FeedCreateMinimal, FeedServiceType, FeedServiceId, FeedCreateAttrs, MapStyle, retainSchemaPropertiesInFeatures, FeedsError, InvalidFeedAttrsError } from '../../entities/feeds/entities.feeds';
 import * as api from '../../app.api/feeds/app.api.feeds'
 import { AppRequest, KnownErrorsOf, withPermission, AppResponse } from '../../app.api/app.api.global'
-import { PermissionDeniedError, EntityNotFoundError, InvalidInputError, entityNotFound, invalidInput, MageError, KeyPathError } from '../../app.api/app.api.errors'
+import { PermissionDeniedError, EntityNotFoundError, InvalidInputError, entityNotFound, invalidInput, MageError, KeyPathError, infrastructureError, InfrastructureError } from '../../app.api/app.api.errors'
 import { FeedServiceTypeDescriptor } from '../../app.api/feeds/app.api.feeds'
 import { JsonSchemaService, JsonValidator } from '../../entities/entities.json_types'
 import { MageEventRepository } from '../../entities/events/entities.events'
@@ -27,7 +27,7 @@ export function PreviewTopics(permissionService: api.FeedsPermissionService, rep
   return function previewTopics(req: api.PreviewTopicsRequest): ReturnType<api.PreviewTopics> {
     return withPermission<FeedTopic[], KnownErrorsOf<api.PreviewTopics>>(
       permissionService.ensureCreateServicePermissionFor(req.context),
-      async (): Promise<FeedTopic[] | PermissionDeniedError | EntityNotFoundError | InvalidInputError> => {
+      async (): Promise<FeedTopic[] | PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError> => {
         const serviceType = await repo.findById(req.serviceType)
         if (!serviceType) {
           return entityNotFound(req.serviceType, 'FeedServiceType')
@@ -36,8 +36,14 @@ export function PreviewTopics(permissionService: api.FeedsPermissionService, rep
         if (invalid) {
           return invalidInputServiceConfig(invalid, 'serviceConfig')
         }
-        const conn = await serviceType.createConnection(req.serviceConfig, { locale: req.context.locale() })
-        return await conn.fetchAvailableTopics()
+        try {
+          const conn = await serviceType.createConnection(req.serviceConfig, { locale: req.context.locale() })
+          return await conn.fetchAvailableTopics()
+        }
+        catch (err) {
+          console.error(`error fetching topics from ${serviceType.pluginServiceTypeId} service`, err)
+        }
+        return infrastructureError('error fetching topics from feed service')
       }
     )
   }
@@ -147,9 +153,15 @@ export function ListServiceTopics(permissionService: api.FeedsPermissionService,
     }
     return await withPermission<FeedTopic[], KnownErrorsOf<api.ListServiceTopics>>(
       permissionService.ensureListTopicsPermissionFor(req.context, service.id),
-      async (): Promise<FeedTopic[] | EntityNotFoundError> => {
-        const conn = await serviceType.createConnection(service.config, { locale: req.context.locale() })
-        return await conn.fetchAvailableTopics()
+      async (): Promise<FeedTopic[] | EntityNotFoundError | InfrastructureError> => {
+        try {
+          const conn = await serviceType.createConnection(service.config, { locale: req.context.locale() })
+          return await conn.fetchAvailableTopics()
+        }
+        catch (err) {
+          console.error(`error fetching topics from ${serviceType.pluginServiceTypeId} service`, err)
+        }
+        return infrastructureError('error fetching topics from feed service')
       }
     )
   }
@@ -170,7 +182,7 @@ type ContentFetchContext = {
 }
 
 interface WithContentFetchContext<R> {
-  then(createFeedOp: (context: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | R>
+  then(createFeedOp: (context: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | InfrastructureError | R>
 }
 
 interface FetchContextParams {
@@ -224,13 +236,19 @@ async function buildFetchContext(services: ContentFetchDependencies, fetchContex
 
 function withFetchContext<R>(deps: ContentFetchDependencies, fetchContextParams: FetchContextParams): WithContentFetchContext<R> {
   return {
-    then(operation: (fetchContext: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | R> {
-      return async (): Promise<EntityNotFoundError | InvalidInputError | R> => {
-        const fetchContext = await buildFetchContext(deps, fetchContextParams)
-        if (fetchContext instanceof MageError) {
-          return fetchContext
+    then(operation: (fetchContext: ContentFetchContext) => Promise<R>): () => Promise<EntityNotFoundError | InvalidInputError | InfrastructureError | R> {
+      return async (): Promise<EntityNotFoundError | InvalidInputError | InfrastructureError | R> => {
+        try {
+          const fetchContext = await buildFetchContext(deps, fetchContextParams)
+          if (fetchContext instanceof MageError) {
+            return fetchContext
+          }
+          return await operation(fetchContext)
         }
-        return await operation(fetchContext)
+        catch (err) {
+          console.error(`error executing feed operation`, err)
+        }
+        return infrastructureError('error executing feed operation')
       }
     }
   }
@@ -387,8 +405,8 @@ export function CreateFeed(permissionService: api.FeedsPermissionService, servic
     const reqFeed = req.feed
     return await withPermission<api.FeedExpanded, KnownErrorsOf<api.CreateFeed>>(
       permissionService.ensureCreateFeedPermissionFor(req.context, reqFeed.service),
-      withFetchContext<api.FeedExpanded | InvalidInputError>({ serviceRepo, serviceTypeRepo, jsonSchemaService }, reqFeed)
-        .then(async (context: ContentFetchContext): Promise<api.FeedExpanded | InvalidInputError> => {
+      withFetchContext<api.FeedExpanded | InvalidInputError | InfrastructureError>({ serviceRepo, serviceTypeRepo, jsonSchemaService }, reqFeed)
+        .then(async (context: ContentFetchContext): Promise<api.FeedExpanded | InvalidInputError | InfrastructureError> => {
           const feedResolved = await resolveFeedCreate(context.topic, reqFeed, iconRepo, StaticIconImportFetch.EagerAwait)
           if (feedResolved instanceof FeedsError) {
             return invalidInput(feedResolved.message)
@@ -512,20 +530,26 @@ export function FetchFeedContent(permissionService: api.FeedsPermissionService, 
   return async function fetchFeedContent(req: api.FetchFeedContentRequest): ReturnType<api.FetchFeedContent> {
     return await withPermission<FeedContent, KnownErrorsOf<api.FetchFeedContent>>(
       permissionService.ensureFetchFeedContentPermissionFor(req.context, req.feed),
-      async (): Promise<FeedContent | EntityNotFoundError | InvalidInputError> => {
+      async (): Promise<FeedContent | EntityNotFoundError | InvalidInputError | InfrastructureError> => {
         const feed = await feedRepo.findById(req.feed)
         if (!feed) {
           return entityNotFound(req.feed, 'Feed')
         }
-        const fetch = await buildFetchContext({ serviceTypeRepo, serviceRepo, jsonSchemaService }, feed)
-        if (fetch instanceof MageError) {
-          return fetch
+        try {
+          const fetch = await buildFetchContext({ serviceTypeRepo, serviceRepo, jsonSchemaService }, feed)
+          if (fetch instanceof MageError) {
+            return fetch
+          }
+          const conn = fetch.conn
+          let params = req.variableParams || {}
+          params = Object.assign(params, feed.constantParams || {})
+          const content = await conn.fetchTopicContent(feed.topic, params)
+          return { ...content, feed: feed.id, variableParams: req.variableParams }
         }
-        const conn = fetch.conn
-        let params = req.variableParams || {}
-        params = Object.assign(params, feed.constantParams || {})
-        const content = await conn.fetchTopicContent(feed.topic, params)
-        return { ...content, feed: feed.id, variableParams: req.variableParams }
+        catch (err) {
+          console.error(`error fetching content for feed ${feed.id}, ${feed.title}`, err)
+        }
+        return infrastructureError('error fetching feed content')
       }
     )
   }

@@ -10,7 +10,7 @@ declare global {
 import express from 'express'
 import { ListFeedServiceTypes, ListServiceTopics, CreateFeedService, ListFeedServices, PreviewTopics, PreviewTopicsRequest, CreateFeed, CreateFeedRequest, ListServiceTopicsRequest, ListAllFeeds, PreviewFeedRequest, PreviewFeed, GetFeed, UpdateFeed, UpdateFeedRequest, DeleteFeed, DeleteFeedRequest, ListServiceFeeds, ListServiceFeedsRequest, DeleteFeedService, GetFeedService } from '../../app.api/feeds/app.api.feeds'
 import { invalidInput, ErrEntityNotFound } from '../../app.api/app.api.errors'
-import { mageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 import { FeedServiceId, FeedTopicId } from '../../entities/feeds/entities.feeds'
 
 export interface FeedsAppLayer {
@@ -79,7 +79,7 @@ export function FeedsRoutes(appLayer: FeedsAppLayer, createAppRequest: WebAppReq
         return res.status(201).json(appRes.success)
       }
       if (appRes.error?.code === ErrEntityNotFound) {
-        return res.status(400).json('service type not found')
+        return res.status(400).json({ message: 'service type not found' })
       }
       next(appRes.error)
     })
@@ -256,7 +256,7 @@ export function FeedsRoutes(appLayer: FeedsAppLayer, createAppRequest: WebAppReq
       return next(appRes.error)
     })
 
-  routes.use(mageAppErrorHandler)
+  routes.use(compatibilityMageAppErrorHandler)
 
   return routes
 }
