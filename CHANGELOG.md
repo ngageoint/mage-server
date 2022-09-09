@@ -4,7 +4,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
+##### Features
+##### Bug Fixes
 
+## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
 * MAGE now requires Node.js >= 14. Node <= 12 is end-of-life.  Node >= 16 is
   recommended.  See https://nodejs.org/en/about/releases/.
