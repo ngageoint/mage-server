@@ -9,9 +9,16 @@ const mageCmd = new Command('mage');
 mageCmd.version(magePackage.version);
 
 const optConfigDesc =
-  `A JSON document or path to a JSON file with the full MAGE configuration, e.g.
+  `A JSON document or path to a JSON file or path to a Node module whose export is a MAGE configuration object, e.g.,
   ${JSON.stringify({
-
+    mage: {
+      address: '0.0.0.0',
+      port: 4242,
+      attachmentDir: '/mage/data/attachments',
+      mongo: {
+        poolSize: 2
+      }
+    }
   }, null, 2).replace(/\n/g, '\n  ')}
 
 Further individual command line parameters will override those in the configuration document.
@@ -60,7 +67,8 @@ const options = [
   new Option('--mongo.x509-ca-cert-file <string>').env('MAGE_MONGO_X509_CA_CERT_FILE'),
   new Option('-P --plugins <string>', optPluginsDesc).env('MAGE_PLUGINS').argParser(parsePluginsJsonFromStringOrModule),
   new Option('--plugin <module_name...>'),
-  new Option('--web-plugin <module_name...>')
+  new Option('--web-plugin <module_name...>'),
+  new Option('--show-config', 'Print the effective configuration and exit without starting the server')
 ]
 
 options.forEach(x => mageCmd.addOption(x))
@@ -70,6 +78,10 @@ mageCmd.parseAsync().then(
     const opts = mageCmd.opts();
     const merged = mergeOptsToConfig(opts);
     tempEnvHack(merged);
+    if (merged.showConfig === true) {
+      console.info(JSON.stringify(merged, null, 2));
+      process.exit(0);
+    }
     const { boot } = require('../lib/app');
     const service = await boot(merged);
     service.open();
@@ -106,12 +118,18 @@ function mergeOptsToConfig(opts) {
     const nestedEntry = dotsToNested(entry);
     return _.merge(optsNested, nestedEntry);
   }, {});
-  const overriddenDefaults = _.mergeWith(optsNested, config, (optValue, configValue) => {
+  console.debug('opts nested', JSON.stringify(optsNested, null, 2))
+  const overriddenDefaults = _.mergeWith({}, config, optsNested, (configValue, optValue, key) => {
+    console.debug('override default', key, optValue, configValue);
     if (!optValue) {
       return configValue;
     }
+    if (typeof configValue === 'object') {
+      // nested object - continue recursive merge
+      return void(0);
+    }
     if (!configValue) {
-      return optValue instanceof DefaultValue ? optValue.value : optValue;
+      return optValue instanceof DefaultValue ? optValue.value : void(0);
     }
     if (optValue instanceof DefaultValue) {
       return configValue;
@@ -199,6 +217,7 @@ function tempEnvHack(config) {
     if (!envVar) {
       return;
     }
+    console.info('check option key for env entry:', configKey)
     const optVal = _.get(config, configKey);
     if (typeof optVal === 'object') {
       return;
@@ -209,6 +228,7 @@ function tempEnvHack(config) {
     if (!optVal) {
       return;
     }
+    console.info('add config key', configKey, '=', optVal, 'to process.env object')
     process.env[envVar] = String(optVal);
   });
 }
