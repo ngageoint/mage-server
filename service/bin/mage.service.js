@@ -118,9 +118,7 @@ function mergeOptsToConfig(opts) {
     const nestedEntry = dotsToNested(entry);
     return _.merge(optsNested, nestedEntry);
   }, {});
-  console.debug('opts nested', JSON.stringify(optsNested, null, 2))
   const overriddenDefaults = _.mergeWith({}, config, optsNested, (configValue, optValue, key) => {
-    console.debug('override default', key, optValue, configValue);
     if (!optValue) {
       return configValue;
     }
@@ -217,7 +215,6 @@ function tempEnvHack(config) {
     if (!envVar) {
       return;
     }
-    console.info('check option key for env entry:', configKey)
     const optVal = _.get(config, configKey);
     if (typeof optVal === 'object') {
       return;
@@ -228,7 +225,6 @@ function tempEnvHack(config) {
     if (!optVal) {
       return;
     }
-    console.info('add config key', configKey, '=', optVal, 'to process.env object')
     process.env[envVar] = String(optVal);
   });
 }
