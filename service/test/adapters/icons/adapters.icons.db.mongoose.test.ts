@@ -42,10 +42,7 @@ describe('static icon mongoose repository', function() {
   })
 
   beforeEach(async function() {
-    conn = await mongoose.createConnection(uri, {
-      useMongoClient: true,
-      promiseLibrary: Promise
-    })
+    conn = await mongoose.createConnection(uri).asPromise()
     model = StaticIconModel(conn, 'test_static_icons')
     idFactory = Sub.for<EntityIdFactory>()
     contentStore = Sub.for<StaticIconContentStore>()

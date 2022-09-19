@@ -39,10 +39,10 @@ exports.up = function(done) {
   async.series([
     createManagerRole.bind(this),
     function(done) {
-      TeamModel.update({}, {$set: {acl: {}}}, {multi: true}, done);
+      TeamModel.updateMany({}, {$set: {acl: {}}}, {}, done);
     },
     function(done) {
-      EventModel.update({}, {$set: {acl: {}}}, {multi: true}, done);
+      EventModel.updateMany({}, {$set: {acl: {}}}, {}, done);
     }
   ], function(err) {
     done(err);

@@ -1,26 +1,22 @@
+'use strict';
+
 const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
-  , MockToken = require('../mockToken')
-  , mongoose = require('mongoose');
-
-require('../../lib/models/token');
-const TokenModel = mongoose.model('Token');
-
-require('../../lib/models/role');
-const RoleModel = mongoose.model('Role');
+  , mongoose = require('mongoose')
+  , createToken = require('../mockToken')
+  , RoleModel = require('../../lib/models/role')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , Authentication = require('../../lib/models/authentication');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
-const Authentication = require('../../lib/models/authentication');
-
 const svgCaptcha = require('svg-captcha');
 
 require('sinon-mongoose');
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 let app;
 
@@ -47,7 +43,7 @@ async function captcha() {
 
 describe("user create tests", function () {
 
-  beforeEach(function() {
+  beforeEach(function () {
     const configs = [];
     const config = {
       name: 'local',
@@ -63,6 +59,12 @@ describe("user create tests", function () {
       .expects('appendToConfig')
       .resolves(config);
 
+    sinon.mock(RoleModel)
+      .expects('getRole')
+      .yields(null, {
+        permissions: ['SOME_PERMISSIONS']
+      });
+
     app = require('../../lib/express').app;
   });
 
@@ -73,11 +75,9 @@ describe("user create tests", function () {
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it('should create user as admin', function (done) {
@@ -221,13 +221,6 @@ describe("user create tests", function () {
 
     let jwt = await captcha();
 
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
-
     const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
@@ -299,13 +292,6 @@ describe("user create tests", function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     let jwt = await captcha();
-
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
 
     const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
@@ -379,13 +365,6 @@ describe("user create tests", function () {
 
     let jwt = await captcha();
 
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
-
     const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
       _id: id,
@@ -458,13 +437,6 @@ describe("user create tests", function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     let jwt = await captcha();
-
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
 
     const id = mongoose.Types.ObjectId();
     const mockUser = new UserModel({
@@ -632,13 +604,6 @@ describe("user create tests", function () {
 
     let jwt = await captcha();
 
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
-
     const authConfig = {
       _id: mongoose.Types.ObjectId(),
       type: 'local',
@@ -681,13 +646,6 @@ describe("user create tests", function () {
   it('should fail to create user with no captcha token', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
-
     await request(app)
       .post('/api/users/signups/verifications')
       .set('Accept', 'application/json')
@@ -705,13 +663,6 @@ describe("user create tests", function () {
 
   it('should fail to create user with invalid captcha token', async function () {
     mockTokenWithPermission('NO_PERMISSIONS');
-
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
 
     await request(app)
       .post('/api/users/signups/verifications')
@@ -733,13 +684,6 @@ describe("user create tests", function () {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     let jwt = await captcha();
-
-    sinon.mock(RoleModel)
-      .expects('findOne')
-      .withArgs({ name: 'USER_ROLE' })
-      .yields(null, new RoleModel({
-        permissions: ['SOME_PERMISSIONS']
-      }));
 
     await request(app)
       .post('/api/users/signups/verifications')

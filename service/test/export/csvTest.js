@@ -6,29 +6,21 @@ const sinon = require('sinon')
   , stream = require('stream')
   , util = require('util')
   , JSZip = require('jszip')
+  , createToken = require('../mockToken')
   , CsvExporter = require('../../lib/export/csv')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , DeviceModel = require('../../lib/models/device')
+  , EventModel = require('../../lib/models/event')
+  , Observation = require('../../lib/models/observation')
+  , TokenModel = require('../../lib/models/token')
+  , UserModel = require('../../lib/models/user');
 
-require('chai').should();
 require('sinon-mongoose');
 
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');
 
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
-
-const Observation = require('../../lib/models/observation');
-
 require('../../lib/models/location');
 const LocationModel = mongoose.model('Location');
-
-const User = require('../../lib/models/user');
-const UserModel = mongoose.model('User');
-
-const Device = require('../../lib/models/device');
-const DeviceModel = mongoose.model('Device');
 
 stream.Writable.prototype.type = function () { };
 stream.Writable.prototype.attachment = function () { };
@@ -58,20 +50,17 @@ describe("csv export tests", function () {
   }
 
   beforeEach(function () {
-    const mockEvent = new EventModel(event);
     sinon.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
+      .expects('getById')
+      .yields(null, event);
 
-    const mockUser = new UserModel(user);
-    sinon.mock(User)
+    sinon.mock(UserModel)
       .expects('getUserById')
-      .resolves(mockUser);
+      .resolves(user);
 
-    const mockDevice = new DeviceModel(device);
-    sinon.mock(Device)
+    sinon.mock(DeviceModel)
       .expects('getDeviceById')
-      .resolves(mockDevice);
+      .resolves(device);
   });
 
   afterEach(function () {
@@ -80,11 +69,9 @@ describe("csv export tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+    .expects('getToken')
+    .withArgs('12345')
+    .yields(null, createToken(userId, [permission]));;
   }
 
   function parseCSV(buffer) {

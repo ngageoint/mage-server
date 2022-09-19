@@ -1,7 +1,7 @@
 "use strict";
 
 const AuthenticationApiAppender = require('../../lib/utilities/authenticationApiAppender.js')
-    , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+    , AuthenticationConfigurationModel = require('../../lib/models/authenticationconfiguration')
     , sinon = require('sinon')
     , expect = require("chai").expect
     , mongoose = require('mongoose');
@@ -26,8 +26,8 @@ describe("Authentication API Appender Tests", function () {
 
         const models = [];
 
-        sinon.mock(AuthenticationConfiguration.Model)
-            .expects('find')
+        sinon.mock(AuthenticationConfigurationModel)
+            .expects('getAllConfigurations')
             .resolves(models);
 
         AuthenticationApiAppender.append(api).then(appendedApi => {
@@ -53,16 +53,17 @@ describe("Authentication API Appender Tests", function () {
 
         const models = [];
 
-        const model0 = new AuthenticationConfiguration.Model({
+        const model0 ={
             _id: mongoose.Types.ObjectId(),
             type: 'local',
             name: 'local',
+            enabled: true,
             settings: {}
-        });
+        };
         models.push(model0);
 
-        sinon.mock(AuthenticationConfiguration.Model)
-            .expects('find')
+        sinon.mock(AuthenticationConfigurationModel)
+            .expects('getAllConfigurations')
             .resolves(models);
 
         AuthenticationApiAppender.append(api).then(appendedApi => {
@@ -90,8 +91,8 @@ describe("Authentication API Appender Tests", function () {
 
         const models = [];
 
-        sinon.mock(AuthenticationConfiguration.Model)
-            .expects('find')
+        sinon.mock(AuthenticationConfigurationModel)
+            .expects('getAllConfigurations')
             .resolves(models);
 
         AuthenticationApiAppender.append(api).then(appendedApi => {
@@ -119,17 +120,17 @@ describe("Authentication API Appender Tests", function () {
 
         const models = [];
 
-        const model0 = new AuthenticationConfiguration.Model({
+        const model0 = {
             _id: mongoose.Types.ObjectId(),
             type: 'local',
             name: 'local',
             enabled: false,
             settings: {}
-        });
+        };
         models.push(model0);
 
-        sinon.mock(AuthenticationConfiguration.Model)
-            .expects('find')
+        sinon.mock(AuthenticationConfigurationModel)
+            .expects('getAllConfigurations')
             .resolves(models);
 
         AuthenticationApiAppender.append(api).then(appendedApi => {

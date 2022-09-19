@@ -59,8 +59,8 @@
     "mgrs": "^1.0.0",
     "mime-types": "^2.1.35",
     "moment": "2.22.2",
-    "mongodb-migrations": "0.8.5",
-    "mongoose": "^4.13.21",
+    "mongodb-migrations": "git+http://github.com/gillandk/mongodb-migrations.git",
+    "mongoose": "^6.5.2",
     "mongoose-beautiful-unique-validation": "7.1.1",
     "multer": "^1.4.2",
     "node-fetch": "^2.6.0",
@@ -104,8 +104,6 @@
     "@types/fs-extra": "^8.0.1",
     "@types/lodash": "^4.14.155",
     "@types/mocha": "^7.0.2",
-    "@types/mongodb": "^3.6.20",
-    "@types/mongoose": "^4.7.56",
     "@types/multer": "^1.4.7",
     "@types/node": "^16.11.26",
     "@types/node-fetch": "^2.5.4",
@@ -131,7 +129,7 @@
     "jszip": "^3.7.1",
     "mocha": "^7.1.1",
     "mock-fs": "4.13.0",
-    "mongodb-memory-server": "^8.2.0",
+    "mongodb-memory-server": "^8.8.0",
     "nock": "^11.7.2",
     "npm-run-all": "^4.1.5",
     "nyc": "^14.1.1",
@@ -188,7 +186,7 @@
   },
   "config": {
     "mongodbMemoryServer": {
-      "version": "4.0.27"
+      "version": "4.4.13"
     }
   },
   "main": "bin/mage.service.js",

@@ -1,7 +1,6 @@
 
 import { URL } from 'url'
 import mongoose from 'mongoose'
-import mongodb from 'mongodb'
 import { EntityIdFactory, pageOf, PageOf, PagingParameters, UrlResolutionError, UrlScheme } from '../../entities/entities.global'
 import { StaticIcon, StaticIconStub, StaticIconId, StaticIconRepository, LocalStaticIconStub, StaticIconReference, StaticIconContentStore, StaticIconImportFetch } from '../../entities/icons/entities.icons'
 import { BaseMongooseRepository, pageQuery } from '../base/adapters.base.db.mongoose'
@@ -11,7 +10,7 @@ export type StaticIconDocument = Omit<StaticIcon, 'sourceUrl'> & mongoose.Docume
 }
 export type StaticIconModel = mongoose.Model<StaticIconDocument>
 export const StaticIconModelName = 'StaticIcon'
-export const StaticIconSchema = new mongoose.Schema(
+export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
   {
     _id: { type: String, required: true },
     sourceUrl: { type: String, required: true, unique: true },
@@ -23,6 +22,7 @@ export const StaticIconSchema = new mongoose.Schema(
     mediaType: { type: String, required: false },
     sizePixels: {
       type: {
+        _id: false,
         width: { type: Number, required: true },
         height: { type: Number, required: true }
       },
@@ -221,7 +221,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     tags: true,
     title: true
   }
-  const update: Partial<StaticIcon> & mongodb.UpdateQuery<StaticIcon> = {}
+  const update: Partial<StaticIconDocument> & mongoose.UpdateQuery<StaticIconDocument> = {}
   const $unset: { [key in keyof StaticIcon]?: true } = {}
   for (const key of Object.keys(writableKeys) as (keyof StaticIconStub)[]) {
     if (key in stub && stub[key] && writableKeys[key]) {
@@ -232,7 +232,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     }
   }
   if (Object.keys($unset).length > 0) {
-    update.$unset = $unset as mongodb.UpdateQuery<StaticIcon>['$unset']
+    update.$unset = $unset as mongoose.UpdateQuery<StaticIconDocument>['$unset']
   }
   update.contentHash = stub.contentHash
   update.contentTimestamp = Date.now()
@@ -241,6 +241,6 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
       update.contentTimestamp = stub.contentTimestamp
     }
   }
-  const updated = await this.model.findByIdAndUpdate(registered.id, update, { new: true })
+  const updated = await this.model.findByIdAndUpdate(registered.id, update, { new: true, setDefaultsOnInsert: false })
   return updated!
 }

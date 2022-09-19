@@ -262,12 +262,12 @@ async function initDatabase(): Promise<DatabaseLayer> {
     const pluginMongoose = new mongoose.Mongoose()
     // TODO: add event listeners to plugin connections to log how plugins are using the connection
     // TODO: bufferCommands probably exists on mongoose 5+ types. 4 supports the option, but the typedefs don't
-    const pluginOptions: mongoose.ConnectionOptions & { bufferCommands: boolean } = {
+    const pluginOptions: mongoose.ConnectOptions & { bufferCommands: boolean } = {
       ...options,
-      // TODO: mongoose 5+ minPoolSize, maxPoolSize
-      poolSize: 5,
+      minPoolSize: 5,
+      maxPoolSize: 5,
       bufferCommands: false,
-      config: { autoIndex: false },
+      autoIndex: false
     }
     return () => {
       console.info(`get db connection for plugin ${pluginId}`)

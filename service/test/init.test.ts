@@ -34,7 +34,6 @@ import mongoose from 'mongoose'
 before('initialize default mongo database', mongoSupport.mongoTestBeforeAllHook({ instance: { dbName: 'mage_test_default' }}))
 before('initialize default mongoose connection', async function() {
   await waitForDefaultMongooseConnection(mongoose, this.mongo!.uri, 1000, 1000, {
-    useMongoClient: true,
     promiseLibrary: Promise
   })
   console.log('default mongoose connection open')

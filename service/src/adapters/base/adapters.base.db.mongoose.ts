@@ -79,7 +79,7 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
       notFound[id] = null
       return notFound
     }, {} as any)
-    const docs = await this.model.find({ _id: { $in: ids }})
+    const docs: D[] = await this.model.find({ _id: { $in: ids }}).exec();
     const found = {} as any
     for (const doc of docs) {
       found[doc.id] = this.entityForDocument(doc)
@@ -108,13 +108,14 @@ export class BaseMongooseRepository<D extends mongoose.Document, M extends mongo
   }
 }
 
-export const pageQuery = <T>(query: mongoose.Query<T>, paging: PagingParameters): Promise<{ totalCount: number | null, query: mongoose.Query<T> }> => {
-  const BaseQuery = query.toConstructor()
-  const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<T>
+export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingParameters): Promise<{ totalCount: number | null, query: mongoose.Query<RT, DT> }> => {
+  //TODO had to use any to construct
+  const BaseQuery: any = query.toConstructor()
+  const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
   const includeTotalCount = typeof paging.includeTotalCount === 'boolean' ? paging.includeTotalCount : paging.pageIndex === 0
   if (includeTotalCount) {
     const countQuery = new BaseQuery().count()
-    return countQuery.then(totalCount => {
+    return countQuery.then((totalCount: number) => {
       return { totalCount, query: pageQuery }
     })
   }
