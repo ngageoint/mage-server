@@ -198,7 +198,7 @@ MAGE will run with the default MongoDB configuration, but feel free to modify th
 ### MAGE database setup
 
 The database patches are Node.js modules in [`<MAGE_ROOT>/migrations`](migrations).  MAGE uses
-[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to apply database migrations.  The MAGE server applies
+[mongodb-migrations](https://github.com/gillandk/mongodb-migrations) to apply database migrations.  The MAGE server applies
 the migrations present in the `migrations` directory automatically every time it starts.  The MAGE server will not accept
 any client requests until all migrations are complete, so clients cannot modify the database while the server is migrating
 the database.
@@ -213,7 +213,7 @@ good idea to avoid corrupting your database.
 #### Custom migrations
 
 You can add your own custom database migrations to the `migrations` directory.  Just make sure they conform to
-[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) requirements.  Be aware that mongodb-migrations
+[mongodb-migrations](https://github.com/gillandk/mongodb-migrations) requirements.  Be aware that mongodb-migrations
 runs the migration scripts in lexical order of the script file names, so name your custom scripts accordingly.
 Also consider that mongodb-migrations ensures that your migrations will only run once during the life of your database,
 so you will need to continuously be sure that any custom migrations are compatible with migrations new releases may
