@@ -3,7 +3,7 @@
 The **M**obile **A**wareness **G**EOINT **E**nvironment, or [MAGE](https://ngageoint.github.io/MAGE) platform, provides
 mobile situational awareness and data collection capabilities.  This project comprises the ReST API web service the MAGE
 client apps use to submit and fetch MAGE data, as well as the browser-based web app.  The MAGE web app provides user
-interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the primary
+interfaces to view and edit MAGE observations similar to the MAGE mobile apps, and additionally provides the
 administrative UI to manage the MAGE server settings, access control, events, data collection forms, etc.
 
 MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The
@@ -11,17 +11,235 @@ government has "unlimited rights" and is releasing this software to increase the
 providing developers with the opportunity to take things in new directions. The software use, modification, and
 distribution rights are stipulated within the [Apache license](LICENSE).
 
-## Architecture
-
 ## Technology stack
 
-MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN stack are as follows:
+MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN
+stack are as follows:
 * [MongoDB](https://www.mongodb.com/) - a NoSQL JSON document database
 * [Express.js](http://expressjs.com/) - a web server framework for Node to handle ReST API requests
 * [Angular](https://angular.io/) - a JavaScript MVC framework for web app front-ends
 * [Node.js](https://nodejs.org/) - a software platform for scalable server-side and networking applications.
 
-## ReST API Documentation
+The MAGE server code is [TypeScript](https://www.typescriptlang.org/) for strong typing, which transpiles to JavaScript
+that runs on Node.js.  At the time of this writing, the transition of legacy JavaScript to TypeScript is still in
+progress.
+
+## Project structure
+
+The MAGE server project is essentially a monorepo with several NPM package components that assemble into a running
+server instance.
+
+### [`service`](./service/)
+
+The `service` directory contains the `@ngageoint/mage.service` package.  This is the backend ReST web service that the
+web and mobile apps consume.
+
+### [`web-app`](./web-app/)
+
+The `web-app` directory contains the `@ngageoint/mage.web-app` package.  The package is the bundled, [Angular](https://angular.io)-based
+web app MAGE client that includes standard user functionality as well as access administrative functions.
+
+### [`core-lib`](./web-app/projects/core-lib/)
+
+The `core-lib` directory is a descendant of the `web-app` directory that contains the `@ngageoint/mage.web-core-lib`
+package.  The package is an Angular library that includes shared elements that both the web app uses, and that web
+plugins can use to add custom UI elements to the web app.
+
+### [`instance`](./instance/)
+
+The `instance` directory is a development instance of the MAGE server whose dependencies are the relative paths to the
+other packages in the project.  This is useful as an example of how to assemble and configure a MAGE server instance,
+as well as to run and test the server during development.
+
+### [`plugins`](./plugins/)
+
+The `plugins` directory contains various plugin packages that the MAGE team maintains as part of the MAGE server open
+source project.  Some of these are automatically bundled with MAGE server releases, and some serve as examples and/or
+development utilities.
+
+## Running a MAGE server
+
+The MAGE server Node.js app is generally intended to run on Unix-like platforms.  The server _should_ run on Windows,
+but be aware some path-separator related bugs may exist
+
+### Install Node.js
+
+The MAGE server is a [Node.js](https://nodejs.org) application, so of course you'll need to install Node on your
+platform of choice.  [Node Version Manager](https://github.com/nvm-sh/nvm) is a nice tool to use for installing and
+managing different versions of Node, as opposed to various package managers.  At the time of this writing, MAGE
+requires Node >= 14.x.
+
+### Install MongoDB
+
+Before running a MAGE server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
+At the time of this writing, MAGE supports MongoDB version 4.x.
+
+### Install MAGE server packages
+
+Starting with release [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0), MAGE server [releases](https://github.com/ngageoint/mage-server/releases) publish NPM package tarballs.  To install and run MAGE, download the tarball artifacts from the desired
+release to an empty directory, such as `mage-server`, and install them with NPM.
+```bash
+npm install --omit dev \
+ngageoint-mage.service-*.tgz \
+ngageoint-mage.web-app-*.tgz \
+ngageoint-mage.image.service-*.tgz \
+ngageoint-mage.nga-msi-*.tgz
+```
+That will yield a `package.json` file that looks something like
+```json
+{
+  "dependencies": {
+    "@ngageoint/mage.image.service": "file:ngageoint-mage.image.service-1.0.0.tgz",
+    "@ngageoint/mage.nga-msi": "file:ngageoint-mage.nga-msi-1.0.1.tgz",
+    "@ngageoint/mage.service": "file:ngageoint-mage.service-6.2.0.tgz",
+    "@ngageoint/mage.web-app": "file:ngageoint-mage.web-app-6.2.0.tgz"
+  }
+}
+```
+as well as a `package-lock.json` file and `node_modules` directory containing all of the MAGE server's dependencies.
+
+### Run `mage.service` script
+
+The `@ngageoint/mage.service` package includes a [`mage.service` [bin script](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#bin) for starting
+the server process.  From the `instance` directory, you can run `npx mage.service --help` to see the configuration
+options.  Because the `mage.service` script uses the [Commander](https://www.npmjs.com/package/commander) library, you
+can set most of the configuration options with environment variables and/or command line switches.  You can also pass
+options from a JSON file or JSON string literal via the `-C (or --config, or MAGE_CONFIG environment variable)` command
+line switch.  The `mage.service` script merges options from command line switches, environment variables, and JSON
+object, in descending order of precedence.  The configuration object must have the form
+```json
+{
+  "mage": {
+    "address": "0.0.0.0",
+    "port": 1234,
+    // etc.
+  }
+}
+```
+The `-C` option can be a path to a `.json` file that contains the configuration object, or a Node JavaScript module
+whose export is a configuration object,
+```javascript
+module.exports = {
+  mage: {
+    // config options ...
+  }
+}
+```
+or a literal JSON value.
+```bash
+mage.service -C /mage/config.json
+# or
+mage.service -C /mage/config.js
+# or
+mage.service -C '{ "mage": { "mongo": { "connTimeout": 5000 }}}'
+```
+To see your full effective configuration, add the `--show-config` switch to the command, and the `mage.service` will
+print the configuration as a JSON string and exit without starting the server.
+```
+<MAGE_*=value...> npx @ngageoint/mage.service <options...> --show-config
+```
+By default, the MAGE server will attempt to create and use a directory at `/var/lib/mage` for storing data and media
+such as videos, photos, and icons.  If the system user account that runs the MAGE server does not have permission to
+create that directory, you must create it before starting the server.  Of course you can change the directories the
+server uses through the script command line switches and/or environment variables.
+
+For convenience, the MAGE server project contains an [environment script](./service/src/environment/magerc.sh) that you
+can copy and customize.  You can configure the MAGE system user account to source the script at login.
+
+The Node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
+[http://localhost:4242](http://localhost:4242) if you are running MAGE locally.
+
+### Running with [Docker](https://www.docker.com/what-docker)
+
+Refer to the [Docker README](docker/README.md) for details on running the MAGE server using Docker.
+
+### Production notes
+
+When running a publicly accessible production server, consider the following points.
+
+#### Configuration location
+
+If all of your MAGE server configuration options come from environment variables, as should be the case with most
+cloud server deployments, you will not need to worry about the location of a configuration file.  If you are using
+a JSON or JavaScript module configuration file, be sure to the store the file in a location outside where you have
+install the MAGE server packages.  For example, if you installed the MAGE server in `/opt/mage`, keep your
+configuration in some non-overlapping directory like `/etc/mage.json`.  That way, if you decide to delete the contents
+of `/opt/mage` and start fresh, your configuration will remain intact.
+
+#### Running with `forever`
+
+Use a tool like [`forever`](https://www.npmjs.com/package/forever) to run the MAGE server process as a daemon in a
+production environment.  `forever` will restart the MAGE server process if it happens to terminate unexpectedly.
+First, you'll need to install `forever`.
+```bash
+npm install -g forever
+```
+To run the MAGE server with `forever`, you can start the server like the following, assuming you are in the directory
+where you have installed the MAGE server packages.
+```bash
+forever start ./node_modules/.bin/mage.service <...options>
+```
+
+#### HTTPS/TLS
+
+When running a MAGE server in a publicly accessible production environment, as with any web application, you should use
+a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGINX](https://nginx.org/) to force
+external connections to use HTTPS and run the MAGE server Node process on a private subnet host.  The MAGE server Node
+application itself does not support HTTPS/TLS connections.
+
+#### Cloud Foundry deployment
+
+MAGE uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
+[environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's
+environment variables are present, they will take precedence over any of their counterparts derived from the
+[magerc.sh](environment/env.js) file.  This pertains mostly to defining the connection to the MongoDB server as a bound service
+in Cloud Foundry, for which Cloud Foundry should supply the connection string and credentials in the `VCAP_SERVICES` value.
+
+### Upgrading MAGE server
+
+Upgrading the MAGE server essentially consists of the same process as [installing for the first time](#install-mage-server-release-packages).
+1. As above, download the package tarballs for the desired version.
+2. Stop your current MAGE server if it is running.
+3. *_[BACK UP YOUR DATABASE](https://docs.mongodb.com/manual/core/backups/)!_* (You already do that regularly, right?)
+5. Start your new MAGE server, which will automatically run any database [migrations](#mage-database-setup) present in
+   the new version.
+
+## Building from source
+
+First, clone the MAGE server GitHub repository, or download a release source tarball and extract the contents to an
+empty directory, such as `mage-server`.  The project has a monorepo structure.  The main packages to build are [`@ngageoint/mage.service`](./service/)
+and [`@ngageoint/mage.web-app`](./web-app/).  There are more optional packages in the [`plugins`](./plugins/)
+directory.  The [`instance`](./instance/) package is an example of assembling all the packages into a running MAGE
+server instance.
+
+First, build the `service` package.
+```bash
+cd service
+npm ci
+npm run build
+```
+Then build the `web-app` package.
+```bash
+cd web-app
+npm ci
+npm run build
+```
+Build optional plugin packages similarly.:
+```bash
+cd plugins/nga-msi
+npm ci
+npm run build
+```
+After building the core packages, install them as dependencies in the `instance` package.
+```bash
+cd instance
+npm i --omit dev ../service ../web-app ../plugins/nga-msi
+```
+The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
+the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
+[workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
+
+## ReST API
 
 The MAGE ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  A MAGE server instance includes
 a [Swagger UI](https://swagger.io/tools/swagger-ui/) page that renders a web app from the MAGE [OpenAPI document](service/src/docs/openapi.yaml).
@@ -32,298 +250,13 @@ server's data, so use caution when trying POST/PUT/DELETE operations that mutate
 
 ### Code generation
 
-Want to use the API to build your own client?  Swagger and many other tools exist to generate client stubs based on the API.  [OpenAPI.Tools](https://openapi.tools/) is a good place to start.
+You can use the MAGE server's OpenAPI document to generate an HTTP client that can consume the API.  Swagger and many other tools exist to generate client stubs based on OpenAPI.  [OpenAPI.Tools](https://openapi.tools/) is a good place to start.
 
-#### Android & iOS
+### Android & iOS client apps
 
-Opensource MAGE [Android](https://github.com/ngageoint/mage-android) and [iOS](https://github.com/ngageoint/mage-ios) clients are available under the Apache License for anyone to use.  Check them out if you are considering mobile platforms.
-
-If you are considering building your own iOS or Android application based on the MAGE API, the [Android SDK](https://github.com/ngageoint/mage-android-sdk) and [iOS SDK](https://github.com/ngageoint/mage-ios-sdk) are already built and tested around the MAGE API.
-
-## Setup infrastructure components
-
-MAGE runs on most *nix operating systems, such as macOS, CentOS, and Ubuntu.  Although not currently supported, MAGE will run on Windows systems with some minor configuration (mainly paths) work.
-
-MAGE depends the following software:
-* [Node.js](https://nodejs.org/) >= 8
-* [MongoDB](https://www.mongodb.org/) >= 3.0
-* [Apache HTTP Server](https://httpd.apache.org/) >= 2.2.15
-* [GraphicsMagick](http://www.graphicsmagick.org/) (optional, but recommended for image rotation and thumbnails) >= 1.3
-
-### Node.js setup
-
-#### Install [Node Version Manager](https://github.com/creationix/nvm)
-
-This will make it simple to install a specific version of NodeJS as well as update to a newer version.
-```bash
-$ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-$ source ~/.bashrc
-```
-
-#### Install [Node.js](https://nodejs.org/) with Node Version Manager
-
-```bash
-$ nvm install --lts
-$ node --version
-```
-
-### MongoDB setup
-
-Install [MongoDB](https://docs.mongodb.com/manual/administration/install-community/) using your favorite package manager.
-
-#### macOS install with homebrew
-
-```bash
-$ brew tap mongodb/brew
-$ brew install mongodb-community@4.4
-$ mongo --version
-```
-
-#### CentOS install with yum
-
-Configure mongo yum repository with your favorite editor
-
-```bash
-$ vi /etc/yum.repos.d/mongodb-org-4.4.repo
-```
-With contents:
-
-```bash
-[mongodb-org-4.4]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/amazon/2/mongodb-org/4.4/x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc
-```
-
-Install from newly created repo:
-
-```bash
-sudo yum install -y mongodb-org
-```
-
-Verify install:
-```bash
-$ mongo --version
-```
-
-#### Ubuntu install with apt
-
-```bash
-$ sudo apt-get install mongodb
-$ mongo --version && mongod --version
-```
-
-For more information check out the mongo CentOS/RHEL install page <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/>
-
-### GraphicsMagick setup
-
-The optional, but recommended, [GraphicsMagick](http://www.graphicsmagick.org/) suite is used to rotate and thumbnail images on the MAGE server.  Many web browsers and mobile devices will not render rotated images based on their exif data.  By thumbnailing images, mobile clients can request smaller images, significantly increasing performance.
-
-Install GraphicsMagick using your favorite package manager.
-
-#### GraphicsMagick install with homebrew
-
-```bash
-$ brew install graphicsmagick
-$ gm version
-```
-
-#### GraphicsMagick install with yum
-
-```bash
-$ yum install GraphicsMagick
-$ gm version
-```
-
-#### Ubuntu install with apt
-
-```bash
-$ sudo apt-get install graphicsmagick
-$ gm version
-```
-
-## Installing and running MAGE
-
-You can install the MAGE server wherever you like. In this example we will install it in `/opt/mage`.
-
-### Grab the latest [release](https://github.com/ngageoint/mage-server/releases)
-
-```bash
-$ mkdir /opt/mage
-$ cd /opt/mage
-$ curl https://codeload.github.com/ngageoint/mage-server/zip/<version> | tar -xf - -C .
-```
-or via Git
-```bash
-$ mkdir /opt/mage
-$ cd /opt/mage
-$ git clone https://github.com/ngageoint/mage-server.git /opt/mage
-```
-
-The rest of the installation steps assume you are in the `<MAGE_ROOT>` directory, .e.g. `/opt/mage`.
-
-### Installing NPM dependencies
-
-You can install all server dependencies by using npm from the `<MAGE_ROOT>` directory:
-```bash
-$ npm install
-```
-
-### MAGE local media directory
-
-By default MAGE will store media attachments (video, images, etc), as well as user and map icons locally on the MAGE server.
-The default base directory for these files is '/var/lib/mage', so you will need to create that.  If you would like to change
-where MAGE stores these files, please see the relevant material in [MAGE Setup](#setting-up-mage-for-local-deployment).
-
-``` bash
-$ mkdir /var/lib/mage
-```
-
-### Starting MongoDB
-
-To start the mongo daemon type the following:
-```bash
-$ mongod --config <filename>
-```
-
-The mongodb configuation file will live in a different place depending on your system:
-* homebrew: `/usr/local/etc/mongod.conf`
-* yum: `/etc/mongod.conf`
-* apt: `/etc/mongodb.conf`
-
-MAGE will run with the default MongoDB configuration, but feel free to modify these settings for your particular deployment.
-
-### MAGE database setup
-
-The database patches are Node.js modules in [`<MAGE_ROOT>/migrations`](migrations).  MAGE uses
-[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to apply database migrations.  The MAGE server applies
-the migrations present in the `migrations` directory automatically every time it starts.  The MAGE server will not accept
-any client requests until all migrations are complete, so clients cannot modify the database while the server is migrating
-the database.
-
-If you need to run database migrations manually, you can type
-```bash
-$ npm run migrate
-```
-from `<MAGE_ROOT>`.  Most of the time this should not be necessary, but if you must, stopping your MAGE server would be a
-good idea to avoid corrupting your database.
-
-#### Custom migrations
-
-You can add your own custom database migrations to the `migrations` directory.  Just make sure they conform to
-[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) requirements.  Be aware that mongodb-migrations
-runs the migration scripts in lexical order of the script file names, so name your custom scripts accordingly.
-Also consider that mongodb-migrations ensures that your migrations will only run once during the life of your database,
-so you will need to continuously be sure that any custom migrations are compatible with migrations new releases may
-introduce when you [upgrade](#upgrading-mage-server).
-
-### MAGE environment settings
-
-MAGE environment configuration is loaded from a Node module, [environment/env.js](environment/env.js).  That module reads
-several environment variables to configure MAGE, and provides sensible defaults for any that are not present.  For
-convenience, MAGE provides a [shell script](environment/magerc.sh) that exports all the MAGE environment variables.  You
-can copy this script to a convenient, persistent location external to `<MAGE_ROOT>` on the machine that runs your MAGE
-server Node process and `source` it to initialize the MAGE server enironment with your settings.  The home directory of
-a user that runs the MAGE server Node process, or `/etc/mage` are good candidates.
-
-### Running the server
-
-At this point you should be able to fire up your MAGE node server
-```bash
-$ node app.js
-```
-If for some reason you've forgotten to [start MongoDB](#starting-mongodb), the MAGE server app will continue trying to
-connect to the database until a [configured timeout](#mage-environment-settings) or a successful connection.
-
-The node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
-[localhost:4242](http://localhost:4242).
-
-### Running with `forever`
-
-The best way to handle critical errors in Node.js is to let the node server crash immediately.  Upon crash the server
-should be restarted.  There are many tools to monitor your node process to ensure its running.  We are currently using
-a simple node script called [forever](https://github.com/foreverjs/forever) to accomplish this.
-
-Use npm (Node Package Manager) to install forever. The `-g` option will install globally in the `/usr/bin` directory.
-```bash
-$ npm install -g forever
-```
-To start forever run:
-```bash
-$ forever start app.js
-```
-
-For a full list of forever commands please refer to the [forever docs](https://github.com/foreverjs/forever/blob/master/README.md).
-
-### Running with [Docker](https://www.docker.com/what-docker)
-
-Refer to the [Docker README](docker/README.md) for details on running the MAGE server using Docker.
-
-#### Cloud Foundry deployment
-
-MAGE uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
-[environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's
-environment variables are present, they will take precendence over any of their counterparts derived from the
-[magerc.sh](environment/env.js) file.  This pertains mostly to defining the connection to the MongoDB server as a bound service
-in Cloud Foundry, for which Cloud Foundry should supply the connection string and credentials in the `VCAP_SERVICES` value.
-
-### Configuring and customizing MAGE
-
-MAGE configuration lies within the config.js file located at the server's root directory.
-
-Configuration:
-* api - configuration parsed by clients for information about this MAGE server, exposed in /api call
-    * name - Human readable MAGE server name
-    * version - Used by MAGE clients to determine compatibility
-        * major - Major server version. Updated when backwards breaking changes are implemented.
-        * minor - Minor server version. Updated when significant feature changes are added that do not break backwards compatibility.
-        * micro - Micro server version. Updated for bug fixes.
-    * provison - device provisioning strategy
-        * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
-* server - Server based configuration.  Not exposed to client
-    * locationServices
-        * userCollectionLocationLimit - user locations are stored in 2 different collections.  This is the limit for the capped locations.
-
-```json
-{
-  "api": {
-    "name": "MAGE (Mobile Awareness GEOINT Environment)",
-    "version": {
-      "major": 5,
-      "minor": 0,
-      "micro": 0
-    },
-    "provision": {
-      "strategy": "uid"
-    }
-  },
-  "server": {
-    "locationServices": {
-      "userCollectionLocationLimit": 100
-    }
-  }
-}
-```
-
-### Upgrading MAGE server
-
-Upgrading the MAGE server essentially consists of the same process as [installing for the first time](#installing-and-running-mage).
-1. As above, download (or `git pull`) the latest release and extract it.
-2. Stop your current MAGE server if it is running.
-3. *_[BACK UP YOUR DATABASE](https://docs.mongodb.com/manual/core/backups/)!!!_* (You already do that regularly, right?)
-4. Copy any [configuration](#configuring-and-customizing-mage) mods to your new MAGE installation.
-5. Start your new MAGE server, which will run any new database [migrations](#mage-database-setup) present in the new baseline.
-
-## Plugins
-
-MAGE plugins are separate node scripts located in the plugins folder.  For more information about MAGE plugins please see the
-[MAGE Plugins README](plugins/README.md).
-
-## Web application
-
-Refer to the [Web Application README](web-app/README.md) for details on building and running the MAGE web application.
+The MAGE team develops [Android](https://github.com/ngageoint/mage-android) and [iOS](https://github.com/ngageoint/mage-ios)
+apps that interact with the ReST API.  The apps are open source and available under the Apache License for anyone to
+use.  Check them out if you are considering mobile capabilities.
 
 ## Pull requests
 
