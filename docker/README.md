@@ -124,11 +124,13 @@ The MAGE Server Docker app consists of three service containers: the MongoDB
 database, the MAGE Node.js app, and the optional nginx TLS reverse proxy.
 
 ### MongoDB
+
 The MongoDB image is the official MongoDB image available from [Docker Hub](https://hub.docker.com/_/mongo/).  The Compose
 file builds that image unmodified, but uses a custom command to launch MongoDB with specific settings.  The Compose file
 runs MongoDB as the service `mage-db`.
 
-### MAGE Server
+### MAGE server
+
 The Compose file references a custom, local [Dockerfile](server/Dockerfile) based on the official [Node.js](https://hub.docker.com/_/node/)
 image to build the MAGE server image.  At build time, the MAGE server Dockerfile
 copies whatever MAGE server package tarballs you supply into the MAGE server
@@ -164,7 +166,8 @@ mage-server              6.2.0-beta.8   34093daa6c4e   2 hours ago    522MB
 Note the same values in the `IMAGE ID` column in the example output, along with
 different `TAG` values.
 
-### HTTPS/TLS Reverse Proxy
+### HTTPS/TLS reverse proxy
+
 Then `mage-web-proxy` service is optional when developing and running on
 localhost, but highly recommended when running MAGE Server on publicly
 accessible servers.  The service in `docker-compose.yml` uses the official
@@ -217,7 +220,8 @@ When running with the reverse proxy and default port settings in the Compose
 file, your server will be available at https://localhost:5443.  If you are
 connecting from a mobile device on the same network.
 
-### Bind Mounts
+### Bind mounts
+
 The Compose file uses [bind mounts](https://docs.docker.com/storage/bind-mounts/)
 for the MongoDB database directory, database log path, and MAGE server
 [resources](../README.md#mage-local-media-directory).  By default, the source
@@ -259,7 +263,8 @@ by uncommenting the `ports` block of the `mage-db` service.  You would then be
 able to connect directly to the MongoDB database using the `mongo` client on
 your host machine to examine or modify the database contents.
 
-### Environment Settings
+### Environment settings
+
 You can configure the MAGE server Docker app using [environment variables](../README.md#mage-environment-settings).
 The Compose file does this by necessity to configure the MongoDB URL for the MAGE server.
 ```yaml
