@@ -4,10 +4,15 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
+
+##### Features
 * Mongoose upgraded to 6.x
 * mongoose-migrations forked and upgraded to mongo 4.x
 * MAGE_MONGO_TLS_INSECURE added as env var to help with possible issues with self-signed certs.  See https://github.com/Automattic/mongoose/issues/9147.
 
+##### Bug fixes
+
+## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
 * MAGE now requires Node.js >= 14. Node <= 12 is end-of-life.  Node >= 16 is
   recommended.  See https://nodejs.org/en/about/releases/.
