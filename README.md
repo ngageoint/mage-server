@@ -101,12 +101,18 @@ as well as a `package-lock.json` file and `node_modules` directory containing al
 ### Run `mage.service` script
 
 The `@ngageoint/mage.service` package includes a [`mage.service` [bin script](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#bin) for starting
-the server process.  From the `instance` directory, you can run `npx mage.service --help` to see the configuration
-options.  Because the `mage.service` script uses the [Commander](https://www.npmjs.com/package/commander) library, you
+the server process.  From the `instance` directory, you can run `npx @ngageoint/mage.service --help` to see the configuration
+options.
+
+#### Configuration merging
+
+Because the `mage.service` script uses the [Commander](https://www.npmjs.com/package/commander) library, you
 can set most of the configuration options with environment variables and/or command line switches.  You can also pass
 options from a JSON file or JSON string literal via the `-C (or --config, or MAGE_CONFIG environment variable)` command
 line switch.  The `mage.service` script merges options from command line switches, environment variables, and JSON
-object, in descending order of precedence.  The configuration object must have the form
+object, in descending order of precedence.  This enables you to have a base configuration file, then override the
+file's entries with environment variables and/or command line switches as desired.  The full configuration object for
+the `-C`/`MAGE_CONFIG` environment variable must have the following form.
 ```json
 {
   "mage": {
