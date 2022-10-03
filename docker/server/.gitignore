@@ -1,2 +1,3 @@
 # ignore npm package tarballs
 /*.tgz
+/package.json
