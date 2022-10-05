@@ -87,10 +87,8 @@ describe('mongoose adapter layer base', function() {
         squee: false,
         noo: 22
       }
-      await Promise.all([
-        repo.create(seed1),
-        repo.create(seed2)
-      ])
+      await repo.create(seed1),
+      await repo.create(seed2)
       const all = await repo.findAll()
 
       expect(all.length).to.equal(2)
