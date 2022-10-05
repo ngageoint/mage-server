@@ -200,7 +200,10 @@ Csv.prototype.flattenObservations = function (observations, archive) {
         rows.push(formRow);
       });
 
-      observation.attachments.forEach((attachment, index) => {
+      observation.attachments.filter(attachment => {
+        return attachment.relativePath
+      })
+      .forEach((attachment, index) => {
         const name = path.basename(attachment.relativePath);
         rows.push({
           id: observation.id,

@@ -90,7 +90,7 @@ GeoJson.prototype.mapObservationProperties = function(observation, archive) {
         let value = observationForm[field.name];
         if (field.type === 'attachment') {
           value = observation.attachments.filter(attachment => {
-            return attachment.fieldName === field.name &&
+            return attachment.relativePath && attachment.fieldName === field.name &&
               attachment.observationFormId.toString() === observationForm._id.toString();
           })
           .map(attachment => {
