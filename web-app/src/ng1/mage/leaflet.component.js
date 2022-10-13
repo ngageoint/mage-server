@@ -6,6 +6,7 @@ import GeoPackageLayers from '../leaflet-extensions/GeoPackageLayers';
 import { default as countries } from './countries-land-10km.geo.json';
 import { LocationState } from '../../app/map/controls/location.component';
 import { ZoomDirection } from '../../app/map/controls/zoom.component';
+import { GARSLayer } from '../leaflet-extensions/grid/gars/GARSLayer';
 
 require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
@@ -67,6 +68,8 @@ class LeafletController {
       worldCopyJump: true,
       editable: true // turn on Leaflet.Editable
     });
+
+    L.GridLayer.addLayer(new GARSLayer());
 
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,
