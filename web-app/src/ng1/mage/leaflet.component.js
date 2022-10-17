@@ -70,8 +70,8 @@ class LeafletController {
     });
 
     const gars = new GARSLayer();
-    gars.addTo(this.map);
     L.GridLayer.extend(gars);
+    gars.addTo(this.map);
 
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,

@@ -65,10 +65,6 @@ export class GARSLayer extends GridLayer {
         const imageData = canvas.createImageData(gridTile.getWidth(), gridTile.getHeight());
 
         for (const grid of zoomGrids.getGrids()) {
-
-            const labeler = grid.getLabeler();
-            const colorWithAlpha = labeler.getColor().getColorWithAlpha();
-
             const lines = grid.getLinesFromGridTile(gridTile);
             if (lines) {
                 TileDraw.drawLines(lines, gridTile, grid, canvas);
@@ -76,7 +72,7 @@ export class GARSLayer extends GridLayer {
 
             const labels = grid.getLabelsFromGridTile(gridTile);
             if (labels) {
-                TileDraw.drawLabels(labels, grid.getLabelBuffer(), gridTile, canvas);
+                TileDraw.drawLabels(labels, gridTile, grid, canvas);
             }
 
         }

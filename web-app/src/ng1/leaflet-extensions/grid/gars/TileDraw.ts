@@ -20,10 +20,10 @@ export class TileDraw {
         for (const line of lines) {
             canvas.beginPath();
             this.addPolyline(tile, canvas, line);
-            canvas.closePath();
-            // TODO figure this out
-            //Paint paint = grid.getLinePaint(line.getGridType());
-            //canvas.drawPath(linePath, paint);
+            //canvas.closePath();
+            // TODO get correct color
+            canvas.strokeStyle = 'black';//grid.getColor(line.getGridType()).getColorHexWithAlpha();
+            canvas.stroke();
         }
     }
 
@@ -31,7 +31,7 @@ export class TileDraw {
      * Add the polyline to the path
      *
      * @param tile tile
-     * @param path line path
+     * @param canvas line path
      * @param line line to draw
      */
     private static addPolyline(tile: GridTile,  canvas: CanvasRenderingContext2D, line: GridLine): void {
@@ -51,13 +51,13 @@ export class TileDraw {
      * Draw the labels on the tile
      *
      * @param labels labels to draw
-     * @param buffer grid zone edge buffer
      * @param tile   tile
+     * @param grid grid 
      * @param canvas draw canvas
      */
-    public static drawLabels(labels: GridLabel[], buffer: number, tile: GridTile, canvas: CanvasRenderingContext2D): void {
+    public static drawLabels(labels: GridLabel[], tile: GridTile, grid: Grid, canvas: CanvasRenderingContext2D): void {
         for (const label of labels) {
-            this.drawLabel(label, buffer, tile, canvas);
+            this.drawLabel(label, tile, grid, canvas);
         }
     }
 
@@ -65,11 +65,11 @@ export class TileDraw {
      * Draw the label
      *
      * @param label  label to draw
-     * @param buffer grid zone edge buffer
      * @param tile   tile
+     * @param grid grid
      * @param canvas draw canvas
      */
-    public static drawLabel(label: GridLabel, buffer: number, tile: GridTile, canvas: CanvasRenderingContext2D): void {
+    public static drawLabel(label: GridLabel, tile: GridTile,  grid: Grid, canvas: CanvasRenderingContext2D): void {
 
         const name = label.getName();
 
@@ -84,7 +84,7 @@ export class TileDraw {
         const pixelRange = label.getBounds().getPixelRangeFromTile(tile);
 
         // Determine the maximum width and height a label in the grid should be
-        const gridPercentage = 1.0 - (2 * buffer);
+        const gridPercentage = 1.0 - (2 * grid.getLabelBuffer());
         const maxWidth = gridPercentage * pixelRange.getWidth();
         const maxHeight = gridPercentage * pixelRange.getHeight();
 
@@ -93,6 +93,8 @@ export class TileDraw {
             const centerPixel = label.getCenter().getPixelFromTile(tile);
             // TODO figure this out
             // canvas.fillText(name, centerPixel.getX() - textBounds.exactCenterX(), centerPixel.getY() - textBounds.exactCenterY());
+            canvas.font = textHeight.toString() + 'px monospace';
+            canvas.fillStyle = grid.getLabeler().getColor().getColorHexWithAlpha();
             canvas.fillText(name, centerPixel.getX(), centerPixel.getY());
         }
     }
