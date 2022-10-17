@@ -94,7 +94,9 @@ export class TileDraw {
             // TODO figure this out
             // canvas.fillText(name, centerPixel.getX() - textBounds.exactCenterX(), centerPixel.getY() - textBounds.exactCenterY());
             canvas.font = textHeight.toString() + 'px monospace';
-            canvas.fillStyle = grid.getLabeler().getColor().getColorHexWithAlpha();
+            canvas.fillStyle = grid.getLabeler().getColor().getColorHex();
+            canvas.textBaseline = 'middle';
+            canvas.textAlign = 'center';
             canvas.fillText(name, centerPixel.getX(), centerPixel.getY());
         }
     }
