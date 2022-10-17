@@ -69,7 +69,9 @@ class LeafletController {
       editable: true // turn on Leaflet.Editable
     });
 
-    L.GridLayer.addLayer(new GARSLayer());
+    const gars = new GARSLayer();
+    gars.addTo(this.map);
+    L.GridLayer.extend(gars);
 
     // Spread out map panes
     // To easily adjust zIndex across all types of layers each feature group,

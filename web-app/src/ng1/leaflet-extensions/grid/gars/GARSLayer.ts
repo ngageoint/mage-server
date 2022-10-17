@@ -36,12 +36,12 @@ export class GARSLayer extends GridLayer {
     }
 
     /**
-    * Draw the tile
-    *
-    * @param x    x coordinate
-    * @param y    y coordinate
-    * @param zoom zoom level
-    * @return bitmap
+     * Draw the tile
+     *
+     * @param x    x coordinate
+     * @param y    y coordinate
+     * @param zoom zoom level
+     * @return bitmap
     */
     public drawTile(tile: HTMLCanvasElement, x: number, y: number, zoom: number): Promise<ImageBitmap | undefined> {
         let bitmap: Promise<ImageBitmap | undefined>;
@@ -52,14 +52,14 @@ export class GARSLayer extends GridLayer {
         return bitmap;
     }
 
-      /**
+    /**
      * Draw the tile
      *
      * @param gridTile  tile
      * @param zoomGrids zoom grids
      * @return bitmap tile
-     */
-       private drawTileFromTile(tile: HTMLCanvasElement, gridTile: GridTile, zoomGrids: ZoomGrids): Promise<ImageBitmap> {
+    */
+    private drawTileFromTile(tile: HTMLCanvasElement, gridTile: GridTile, zoomGrids: ZoomGrids): Promise<ImageBitmap> {
 
         const canvas = tile.getContext('2d');
         const imageData = canvas.createImageData(gridTile.getWidth(), gridTile.getHeight());
@@ -85,24 +85,24 @@ export class GARSLayer extends GridLayer {
     }
 
     /**
-    * Get the Global Area Reference System coordinate for the location in the
-    * zoom level precision
-    *
-    * @param latLng location
-    * @param zoom   zoom level precision
-    * @return GARS coordinate
+     * Get the Global Area Reference System coordinate for the location in the
+     * zoom level precision
+     *
+     * @param latLng location
+     * @param zoom   zoom level precision
+     * @return GARS coordinate
     */
     public getCoordinateWithZoom(latLng: LatLng, zoom: number): string {
         return this.getCoordinate(latLng, this.getPrecision(zoom));
     }
 
     /**
-    * Get the Global Area Reference System coordinate for the location in the
-    * grid type precision
-    *
-    * @param latLng location
-    * @param type   grid type precision
-    * @return GARS coordinate
+     * Get the Global Area Reference System coordinate for the location in the
+     * grid type precision
+     *
+     * @param latLng location
+     * @param type   grid type precision
+     * @return GARS coordinate
     */
     public getCoordinate(latLng: LatLng, type?: GridType): string {
         return this.getGARS(latLng).coordinate(type);
