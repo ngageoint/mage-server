@@ -18,11 +18,12 @@ export class TileDraw {
     public static drawLines(lines: GridLine[], tile: GridTile, grid: Grid, canvas: CanvasRenderingContext2D): void {
 
         for (const line of lines) {
+            canvas.lineWidth = grid.getWidth(line.getGridType());
             canvas.beginPath();
             this.addPolyline(tile, canvas, line);
-            //canvas.closePath();
-            // TODO get correct color
-            canvas.strokeStyle = 'black';//grid.getColor(line.getGridType()).getColorHexWithAlpha();
+            canvas.closePath();
+            const lineColor = grid.getColor(line.getGridType());
+            canvas.strokeStyle = lineColor ? lineColor.getColorHex() : 'black';
             canvas.stroke();
         }
     }
@@ -78,7 +79,7 @@ export class TileDraw {
         // Determine the text bounds
         const textWidth = textMetrics.width;
         //TODO figure this height out
-        const textHeight = textMetrics.fontBoundingBoxAscent + textMetrics.fontBoundingBoxDescent;
+        const textHeight = grid.getLabeler().getTextSize();// textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
 
         // Determine the pixel width and height of the label grid zone to the tile
         const pixelRange = label.getBounds().getPixelRangeFromTile(tile);
