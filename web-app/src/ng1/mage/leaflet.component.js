@@ -6,6 +6,7 @@ import GeoPackageLayers from '../leaflet-extensions/GeoPackageLayers';
 import { default as countries } from './countries-land-10km.geo.json';
 import { LocationState } from '../../app/map/controls/location.component';
 import { ZoomDirection } from '../../app/map/controls/zoom.component';
+import { GARSLayer } from '../leaflet-extensions/grid/gars/GARSLayer';
 
 require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
@@ -273,6 +274,9 @@ class LeafletController {
         case 'geojson':
           this.createGeoJsonLayer(added);
           break;
+        case 'grid':
+          this.createGridLayer(added);
+          break;
       }
     });
 
@@ -445,6 +449,18 @@ class LeafletController {
     });
 
     return geojson;
+  }
+
+  createGridLayer(layerInfo) {
+    const pane = `pane-${layerInfo.id}`;
+    this.map.createPane(pane);
+
+    this.layers[layerInfo.id] = layerInfo;
+    if (layerInfo.id === 'gars') {
+      layerInfo.layer = new GARSLayer();
+      layerInfo.layer.pane = pane;
+    }
+    this.onAddLayer(layerInfo);
   }
 
   onFeaturesChanged({ id, added = [], updated = [], removed = [] }) {

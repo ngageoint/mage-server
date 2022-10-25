@@ -21,7 +21,8 @@ import { Component, ViewChild } from '@angular/core';
     [mageLayers]="mageLayers" 
     [baseLayers]="baseLayers" 
     [tileOverlays]="tileOverlays" 
-    [featureOverlays]="featureOverlays">
+    [featureOverlays]="featureOverlays"
+    [gridOverlays]="gridOverlays">
   </map-layers-panel>`
 })
 class TestHostComponent {
@@ -30,6 +31,7 @@ class TestHostComponent {
   baseLayers= [];
   tileOverlays = [];
   featureOverlays = [];
+  gridOverlays = [];
 
   @ViewChild(LayersComponent) layers: LayersComponent;
 }

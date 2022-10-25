@@ -43,14 +43,15 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     followedFeature: followedFeature
   };
 
-  var delegate = null;
-  var baseLayer = null;
-  var feedLayers = {};
-  var rasterLayers = {};
-  var vectorLayers = {};
-  var listeners = [];
-  var observationsById = {};
-  var usersById = {};
+  let delegate = null;
+  let baseLayer = null;
+  let feedLayers = {};
+  let rasterLayers = {};
+  let vectorLayers = {};
+  let gridLayers = {};
+  let listeners = [];
+  let observationsById = {};
+  let usersById = {};
 
   var layersChangedListener = {
     onLayersChanged: onLayersChanged
@@ -124,6 +125,17 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
       }
     };
     service.createVectorLayer(peopleLayer);
+
+    const garsOverlay = {
+      id: 'gars',
+      name: 'GARS',
+      group: 'grid',
+      type: 'grid',
+      options: {
+        selected: false
+      }
+    }
+    createGridLayer(garsOverlay);
   }
 
   function onLayersChanged(changed, event) {
@@ -287,7 +299,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
     listeners.push(listener);
 
     if (_.isFunction(listener.onLayersChanged)) {
-      const layers = _.values(rasterLayers).concat(_.values(vectorLayers));
+      const layers = _.values(rasterLayers).concat(_.values(vectorLayers)).concat(_.values(gridLayers));
       listener.onLayersChanged({added: layers});
     }
 
@@ -329,6 +341,15 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
 
     layer.featuresById = {};
     vectorLayers[layer.id] = layer;
+  }
+
+  function createGridLayer(layer) {
+    layersChanged({
+      added: [layer]
+    });
+
+    layer.featuresById = {};
+    gridLayers[layer.id] = layer;
   }
 
   function createFeedLayer(layer) {

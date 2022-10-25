@@ -14,6 +14,7 @@ export class LeafletComponent {
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
   public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
 
@@ -46,6 +47,11 @@ export class LeafletComponent {
 
     this.groups['feature'] = {
       offset: LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    };
+
+    this.groups['grid'] = {
+      offset: LeafletComponent.GRID_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
@@ -158,6 +164,8 @@ export class LeafletComponent {
       case 'Imagery':
         return layer.base ? 'base' : 'tile';
       case 'geojson':
+        return layer.group;
+      case 'grid': 
         return layer.group;
     }
   }
