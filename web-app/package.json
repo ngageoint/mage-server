@@ -63,7 +63,7 @@
     "@mat-datetimepicker/core": "3.0.1",
     "@mat-datetimepicker/moment": "3.0.1",
     "@ng-select/ng-select": "4.0.4",
-    "@ngageoint/gars-js": "^0.1.1-beta.10",
+    "@ngageoint/gars-js": "^1.0.0",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
