@@ -132,7 +132,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
       group: 'grid',
       type: 'grid',
       options: {
-        selected: true
+        selected: false
       }
     }
     createGridLayer(garsOverlay);
