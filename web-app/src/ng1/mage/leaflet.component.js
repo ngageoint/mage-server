@@ -129,9 +129,6 @@ class LeafletController {
       this.LocalStorageService
     );
 
-    const garsLayer = new GARSLayer();
-    this.map.addLayer(garsLayer);
-
     this.map.on('baselayerchange', baseLayer => {
       const layer = this.layers[baseLayer.id];
       this.MapService.selectBaseLayer(layer);
@@ -276,6 +273,9 @@ class LeafletController {
           break;
         case 'geojson':
           this.createGeoJsonLayer(added);
+          break;
+        case 'grid':
+          this.createGridLayer(added);
           break;
       }
     });
@@ -449,6 +449,18 @@ class LeafletController {
     });
 
     return geojson;
+  }
+
+  createGridLayer(layerInfo) {
+    const pane = `pane-${layerInfo.id}`;
+    this.map.createPane(pane);
+
+    this.layers[layerInfo.id] = layerInfo;
+    if (layerInfo.id === 'gars') {
+      layerInfo.layer = new GARSLayer();
+      layerInfo.layer.pane = pane;
+    }
+    this.onAddLayer(layerInfo);
   }
 
   onFeaturesChanged({ id, added = [], updated = [], removed = [] }) {

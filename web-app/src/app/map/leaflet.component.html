@@ -10,6 +10,7 @@
       [baseLayers]="groups['base'].layers" 
       [tileOverlays]="groups['tile'].layers" 
       [featureOverlays]="groups['feature'].layers"
+      [gridOverlays]="groups['grid'].layers"
       (onZoom)="zoom($event)"
       (onOpacity)="opacityChanged($event)"
       (onReorder)="reorder($event)">
