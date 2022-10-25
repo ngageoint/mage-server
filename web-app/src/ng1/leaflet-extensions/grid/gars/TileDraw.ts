@@ -13,18 +13,16 @@ export class TileDraw {
      * @param lines  lines to draw
      * @param tile   tile
      * @param grid   grid
-     * @param canvas draw canvas
+     * @param context draw canvas
      */
-    public static drawLines(lines: GridLine[], tile: GridTile, grid: Grid, canvas: CanvasRenderingContext2D): void {
+    public static drawLines(lines: GridLine[], tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
 
         for (const line of lines) {
-            canvas.lineWidth = grid.getWidth(line.getGridType());
-            canvas.beginPath();
-            this.addPolyline(tile, canvas, line);
-            canvas.closePath();
-            const lineColor = grid.getColor(line.getGridType());
-            canvas.strokeStyle = lineColor ? lineColor.getColorHex() : 'black';
-            canvas.stroke();
+            context.beginPath();
+            this.addPolyline(tile, context, line);
+            context.lineWidth = grid.getWidth(line.getGridType());
+            context.strokeStyle = grid.getColor(line.getGridType()).getColorHex();
+            context.stroke();
         }
     }
 
@@ -32,20 +30,20 @@ export class TileDraw {
      * Add the polyline to the path
      *
      * @param tile tile
-     * @param canvas line path
+     * @param context line path
      * @param line line to draw
      */
-    private static addPolyline(tile: GridTile,  canvas: CanvasRenderingContext2D, line: GridLine): void {
+    private static addPolyline(tile: GridTile, context: CanvasRenderingContext2D, line: GridLine): void {
 
         const metersLine = line.toMeters();
         const point1 = metersLine.getPoint1();
         const point2 = metersLine.getPoint2();
 
         const pixel = point1.getPixelFromTile(tile);
-        canvas.moveTo(pixel.getX(), pixel.getY());
+        context.moveTo(pixel.getX(), pixel.getY());
 
         const pixel2 = point2.getPixelFromTile(tile);
-        canvas.lineTo(pixel2.getX(), pixel2.getY());
+        context.lineTo(pixel2.getX(), pixel2.getY());
     }
 
     /**
@@ -54,11 +52,11 @@ export class TileDraw {
      * @param labels labels to draw
      * @param tile   tile
      * @param grid grid 
-     * @param canvas draw canvas
+     * @param context draw canvas
      */
-    public static drawLabels(labels: GridLabel[], tile: GridTile, grid: Grid, canvas: CanvasRenderingContext2D): void {
+    public static drawLabels(labels: GridLabel[], tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
         for (const label of labels) {
-            this.drawLabel(label, tile, grid, canvas);
+            this.drawLabel(label, tile, grid, context);
         }
     }
 
@@ -68,18 +66,22 @@ export class TileDraw {
      * @param label  label to draw
      * @param tile   tile
      * @param grid grid
-     * @param canvas draw canvas
+     * @param context draw canvas
      */
-    public static drawLabel(label: GridLabel, tile: GridTile,  grid: Grid, canvas: CanvasRenderingContext2D): void {
+    public static drawLabel(label: GridLabel, tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
 
         const name = label.getName();
+        //TODO figure this height out
+        const textHeight = 12; //grid.getLabeler().getTextSize();// textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+        context.font = textHeight.toString() + 'px monospace';
+        context.fillStyle = grid.getLabeler().getColor().getColorHex();
+        context.textBaseline = 'middle';
+        context.textAlign = 'center';
 
-        const textMetrics = canvas.measureText(name);
+        const textMetrics = context.measureText(name);
 
         // Determine the text bounds
         const textWidth = textMetrics.width;
-        //TODO figure this height out
-        const textHeight = grid.getLabeler().getTextSize();// textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
 
         // Determine the pixel width and height of the label grid zone to the tile
         const pixelRange = label.getBounds().getPixelRangeFromTile(tile);
@@ -94,11 +96,7 @@ export class TileDraw {
             const centerPixel = label.getCenter().getPixelFromTile(tile);
             // TODO figure this out
             // canvas.fillText(name, centerPixel.getX() - textBounds.exactCenterX(), centerPixel.getY() - textBounds.exactCenterY());
-            canvas.font = textHeight.toString() + 'px monospace';
-            canvas.fillStyle = grid.getLabeler().getColor().getColorHex();
-            canvas.textBaseline = 'middle';
-            canvas.textAlign = 'center';
-            canvas.fillText(name, centerPixel.getX(), centerPixel.getY());
+            context.fillText(name, centerPixel.getX(), centerPixel.getY());
         }
     }
 }

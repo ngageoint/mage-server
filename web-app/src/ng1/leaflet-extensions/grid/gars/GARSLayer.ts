@@ -1,19 +1,21 @@
 import { GARS, Grids, GridType, ZoomGrids } from "@ngageoint/gars-js";
 import { GridTile, Point } from "@ngageoint/grid-js";
-import { LatLng, GridLayer, Coords, DoneCallback, DomUtil, GridLayerOptions } from "leaflet";
+import { LatLng, Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from "leaflet";
 import { TileDraw } from "./TileDraw";
 
 export class GARSLayer extends GridLayer {
 
     private readonly grids: Grids;
 
-    constructor(options?: GridLayerOptions, gridTypes?: GridType[]) {
+    constructor(options?: GridLayerOptions) {
         super(options);
-        this.grids = Grids.create(gridTypes)
+        this.grids = Grids.create()
     }
 
     /** @inheritdoc */
     protected createTile(coords: Coords, done: DoneCallback): HTMLElement {
+        const zoom = coords.z;
+
         // create a <canvas> element for drawing
         const tile = DomUtil.create('canvas', 'leaflet-tile') as HTMLCanvasElement;
 
@@ -22,14 +24,16 @@ export class GARSLayer extends GridLayer {
         tile.width = size.x;
         tile.height = size.y;
 
-        // get a canvas context and draw something on it using coords.x, coords.y and coords.z
-        const ctx = tile.getContext('2d');
+        const context = tile.getContext('2d', { alpha: true });
+        context.clearRect(0, 0, tile.width, tile.height);
 
-        this.drawTile(tile, coords.x, coords.y, this._map.getZoom()).then(bitmap => {
-            done(null, tile);
-        }).catch(err => {
-            done(err);
-        });
+        if (tile.getContext) {
+            this.drawTile(context, tile, coords.x, coords.y, zoom).then(() => {
+                done(null, tile);
+            }).catch(err => {
+                done(err);
+            });
+        }
 
         // return the tile so it can be rendered on screen
         return tile;
@@ -38,18 +42,18 @@ export class GARSLayer extends GridLayer {
     /**
      * Draw the tile
      *
+     * @param tile  tile
      * @param x    x coordinate
      * @param y    y coordinate
      * @param zoom zoom level
      * @return bitmap
     */
-    public drawTile(tile: HTMLCanvasElement, x: number, y: number, zoom: number): Promise<ImageBitmap | undefined> {
-        let bitmap: Promise<ImageBitmap | undefined>;
+    private drawTile(context: CanvasRenderingContext2D, tile: HTMLCanvasElement, x: number, y: number, zoom: number): Promise<void> {
         const zoomGrids = this.grids.getGrids(zoom);
         if (zoomGrids.hasGrids()) {
-            bitmap = this.drawTileFromTile(tile, GridTile.tile(tile.width, tile.height, x, y, zoom), zoomGrids);
+            this.drawTileFromTile(context, GridTile.tile(tile.width, tile.height, x, y, zoom), zoomGrids);
         }
-        return bitmap;
+        return Promise.resolve();
     }
 
     /**
@@ -59,25 +63,18 @@ export class GARSLayer extends GridLayer {
      * @param zoomGrids zoom grids
      * @return bitmap tile
     */
-    private drawTileFromTile(tile: HTMLCanvasElement, gridTile: GridTile, zoomGrids: ZoomGrids): Promise<ImageBitmap> {
-
-        const canvas = tile.getContext('2d');
-        const imageData = canvas.createImageData(gridTile.getWidth(), gridTile.getHeight());
-
+    private drawTileFromTile(context: CanvasRenderingContext2D, gridTile: GridTile, zoomGrids: ZoomGrids): void {
         for (const grid of zoomGrids.getGrids()) {
             const lines = grid.getLinesFromGridTile(gridTile);
             if (lines) {
-                TileDraw.drawLines(lines, gridTile, grid, canvas);
+                TileDraw.drawLines(lines, gridTile, grid, context);
             }
 
             const labels = grid.getLabelsFromGridTile(gridTile);
             if (labels) {
-                TileDraw.drawLabels(labels, gridTile, grid, canvas);
+                TileDraw.drawLabels(labels, gridTile, grid, context);
             }
-
         }
-
-        return createImageBitmap(imageData);
     }
 
     /**
