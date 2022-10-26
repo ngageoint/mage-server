@@ -136,6 +136,17 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
       }
     }
     createGridLayer(garsOverlay);
+
+    const mgrsOverlay = {
+      id: 'mgrs',
+      name: 'MGRS',
+      group: 'grid',
+      type: 'grid',
+      options: {
+        selected: false
+      }
+    }
+    createGridLayer(mgrsOverlay);
   }
 
   function onLayersChanged(changed, event) {
