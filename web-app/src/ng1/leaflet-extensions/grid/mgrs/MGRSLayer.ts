@@ -68,6 +68,7 @@ export class MGRSLayer extends GridLayer {
         const gridRange = GridZones.getGridRange(gridTile.getBounds());
 
         for (const grid of zoomGrids.getGrids()) {
+            gridRange.reset();
             for (const zone of gridRange) {
                 const lines = grid.getLinesFromGridTile(gridTile, zone);
                 if (lines) {

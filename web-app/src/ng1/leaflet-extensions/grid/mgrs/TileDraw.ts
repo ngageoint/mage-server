@@ -19,11 +19,11 @@ export class TileDraw {
         const bounds = zone.getBounds();
         const pixelRange = bounds.getPixelRangeFromTile(tile);
 
-        //context.save();
-        //context.beginPath();
-        //context.rect(bounds.getCentroidLongitude(), bounds.getCentroidLatitude(), pixelRange.getWidth(), pixelRange.getHeight());
-        //context.clip();
-        //context.stroke();
+        context.save();
+    
+        const region = new Path2D();
+        region.rect(pixelRange.getLeft(), pixelRange.getTop(), pixelRange.getWidth(), pixelRange.getHeight());
+        context.clip(region);
 
         for (const line of lines) {
             context.beginPath();
@@ -33,7 +33,7 @@ export class TileDraw {
             context.stroke();
         }
 
-        //context.restore();
+        context.restore();
     }
 
     /**
