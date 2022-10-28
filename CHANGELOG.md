@@ -9,8 +9,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Mongoose upgraded to 6.x
 * mongoose-migrations forked and upgraded to mongo 4.x
 * MAGE_MONGO_TLS_INSECURE added as env var to help with possible issues with self-signed certs.  See https://github.com/Automattic/mongoose/issues/9147.
-* GARS grid overlay
-* MGRS grid overlay
+* [GARS](https://github.com/ngageoint/gars-js) grid overlay
+* [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
 
 ##### Bug fixes
 
