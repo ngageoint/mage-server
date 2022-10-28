@@ -1,7 +1,7 @@
-import { GARS, Grids, GridType, ZoomGrids } from "@ngageoint/gars-js";
-import { GridTile, Point } from "@ngageoint/grid-js";
-import { LatLng, Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from "leaflet";
-import { TileDraw } from "./TileDraw";
+import { Grids, ZoomGrids } from '@ngageoint/gars-js';
+import { GridTile } from '@ngageoint/grid-js';
+import { Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from 'leaflet';
+import { TileDraw } from './TileDraw';
 
 export class GARSLayer extends GridLayer {
 
@@ -12,7 +12,9 @@ export class GARSLayer extends GridLayer {
         this.grids = Grids.create()
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     protected createTile(coords: Coords, done: DoneCallback): HTMLElement {
         const zoom = coords.z;
 
@@ -47,7 +49,7 @@ export class GARSLayer extends GridLayer {
      * @param y    y coordinate
      * @param zoom zoom level
      * @return bitmap
-    */
+     */
     private drawTile(context: CanvasRenderingContext2D, tile: HTMLCanvasElement, x: number, y: number, zoom: number): Promise<void> {
         const zoomGrids = this.grids.getGrids(zoom);
         if (zoomGrids.hasGrids()) {
@@ -62,7 +64,7 @@ export class GARSLayer extends GridLayer {
      * @param gridTile  tile
      * @param zoomGrids zoom grids
      * @return bitmap tile
-    */
+     */
     private drawTileFromTile(context: CanvasRenderingContext2D, gridTile: GridTile, zoomGrids: ZoomGrids): void {
         for (const grid of zoomGrids.getGrids()) {
             const lines = grid.getLinesFromGridTile(gridTile);
@@ -75,51 +77,5 @@ export class GARSLayer extends GridLayer {
                 TileDraw.drawLabels(labels, gridTile, grid, context);
             }
         }
-    }
-
-    /**
-     * Get the Global Area Reference System coordinate for the location in the
-     * zoom level precision
-     *
-     * @param latLng location
-     * @param zoom   zoom level precision
-     * @return GARS coordinate
-    */
-    public getCoordinateWithZoom(latLng: LatLng, zoom: number): string {
-        return this.getCoordinate(latLng, this.getPrecision(zoom));
-    }
-
-    /**
-     * Get the Global Area Reference System coordinate for the location in the
-     * grid type precision
-     *
-     * @param latLng location
-     * @param type   grid type precision
-     * @return GARS coordinate
-    */
-    public getCoordinate(latLng: LatLng, type?: GridType): string {
-        return this.getGARS(latLng).coordinate(type);
-    }
-
-    /**
-     * Get the Global Area Reference System for the location
-     *
-     * @param bounds location
-     * @return GARS
-     */
-    public getGARS(bounds: LatLng): GARS {
-        const boundsDegrees = Point.degrees(bounds.lng, bounds.lat);
-        const gars = GARS.fromPoint(boundsDegrees);
-        return gars;
-    }
-
-    /**
-     * Get the grid precision for the zoom level
-     *
-     * @param zoom zoom level
-     * @return grid type precision
-     */
-    public getPrecision(zoom: number): GridType {
-        return this.grids.getPrecision(zoom);
     }
 }

@@ -1,5 +1,5 @@
-import { Grid, GridLabel, GridLine, GridZone } from "@ngageoint/mgrs-js";
-import { GridTile } from "@ngageoint/grid-js";
+import { Grid, GridLabel, GridLine, GridZone } from '@ngageoint/mgrs-js';
+import { GridTile } from '@ngageoint/grid-js';
 
 /**
  * Tile draw utilities for lines and labels
@@ -20,7 +20,6 @@ export class TileDraw {
         const pixelRange = bounds.getPixelRangeFromTile(tile);
 
         context.save();
-    
         const region = new Path2D();
         region.rect(pixelRange.getLeft(), pixelRange.getTop(), pixelRange.getWidth(), pixelRange.getHeight());
         context.clip(region);
@@ -61,7 +60,7 @@ export class TileDraw {
      *
      * @param labels labels to draw
      * @param tile   tile
-     * @param grid grid 
+     * @param grid grid
      * @param context draw canvas
      */
     public static drawLabels(labels: GridLabel[], tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
@@ -81,8 +80,7 @@ export class TileDraw {
     public static drawLabel(label: GridLabel, tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
 
         const name = label.getName();
-        //TODO figure this height out
-        const textHeight = 12; //grid.getLabeler().getTextSize();// textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+        const textHeight = 12;
         context.font = textHeight.toString() + 'px monospace';
         context.fillStyle = grid.getLabeler().getColor().getColorHex();
         context.textBaseline = 'middle';
@@ -104,8 +102,6 @@ export class TileDraw {
         // If it fits, draw the label in the center of the grid zone
         if (textWidth <= maxWidth && textHeight <= maxHeight) {
             const centerPixel = label.getCenter().getPixelFromTile(tile);
-            // TODO figure this out
-            // canvas.fillText(name, centerPixel.getX() - textBounds.exactCenterX(), centerPixel.getY() - textBounds.exactCenterY());
             context.fillText(name, centerPixel.getX(), centerPixel.getY());
         }
     }

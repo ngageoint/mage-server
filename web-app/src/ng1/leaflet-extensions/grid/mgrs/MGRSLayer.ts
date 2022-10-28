@@ -1,7 +1,7 @@
-import { Grids, GridZones, ZoomGrids } from "@ngageoint/mgrs-js";
-import { GridTile } from "@ngageoint/grid-js";
-import { Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from "leaflet";
-import { TileDraw } from "./TileDraw";
+import { Grids, GridZones, ZoomGrids } from '@ngageoint/mgrs-js';
+import { GridTile } from '@ngageoint/grid-js';
+import { Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from 'leaflet';
+import { TileDraw } from './TileDraw';
 
 export class MGRSLayer extends GridLayer {
 
@@ -12,7 +12,9 @@ export class MGRSLayer extends GridLayer {
         this.grids = Grids.create()
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     protected createTile(coords: Coords, done: DoneCallback): HTMLElement {
         const zoom = coords.z;
 
@@ -47,7 +49,7 @@ export class MGRSLayer extends GridLayer {
      * @param y    y coordinate
      * @param zoom zoom level
      * @return bitmap
-    */
+     */
     private drawTile(context: CanvasRenderingContext2D, tile: HTMLCanvasElement, x: number, y: number, zoom: number): Promise<void> {
         const zoomGrids = this.grids.getGrids(zoom);
         if (zoomGrids.hasGrids()) {
@@ -62,7 +64,7 @@ export class MGRSLayer extends GridLayer {
      * @param gridTile  tile
      * @param zoomGrids zoom grids
      * @return bitmap tile
-    */
+     */
     private drawTileFromTile(context: CanvasRenderingContext2D, gridTile: GridTile, zoomGrids: ZoomGrids): void {
 
         const gridRange = GridZones.getGridRange(gridTile.getBounds());
@@ -74,7 +76,7 @@ export class MGRSLayer extends GridLayer {
                 if (lines) {
                     TileDraw.drawLines(lines, gridTile, grid, zone, context);
                 }
-    
+
                 const labels = grid.getLabelsFromGridTile(gridTile, zone);
                 if (labels) {
                     TileDraw.drawLabels(labels, gridTile, grid, context);
