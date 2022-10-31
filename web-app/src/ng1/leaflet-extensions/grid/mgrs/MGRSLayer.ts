@@ -1,9 +1,9 @@
-import { Grids, ZoomGrids } from '@ngageoint/gars-js';
+import { Grids, GridZones, ZoomGrids } from '@ngageoint/mgrs-js';
 import { GridTile } from '@ngageoint/grid-js';
 import { Coords, DoneCallback, DomUtil, GridLayerOptions, GridLayer } from 'leaflet';
 import { TileDraw } from './TileDraw';
 
-export class GARSLayer extends GridLayer {
+export class MGRSLayer extends GridLayer {
 
     private readonly grids: Grids;
 
@@ -66,15 +66,21 @@ export class GARSLayer extends GridLayer {
      * @return bitmap tile
      */
     private drawTileFromTile(context: CanvasRenderingContext2D, gridTile: GridTile, zoomGrids: ZoomGrids): void {
-        for (const grid of zoomGrids.getGrids()) {
-            const lines = grid.getLinesFromGridTile(gridTile);
-            if (lines) {
-                TileDraw.drawLines(lines, gridTile, grid, context);
-            }
 
-            const labels = grid.getLabelsFromGridTile(gridTile);
-            if (labels) {
-                TileDraw.drawLabels(labels, gridTile, grid, context);
+        const gridRange = GridZones.getGridRange(gridTile.getBounds());
+
+        for (const grid of zoomGrids.getGrids()) {
+            gridRange.reset();
+            for (const zone of gridRange) {
+                const lines = grid.getLinesFromGridTile(gridTile, zone);
+                if (lines) {
+                    TileDraw.drawLines(lines, gridTile, grid, zone, context);
+                }
+
+                const labels = grid.getLabelsFromGridTile(gridTile, zone);
+                if (labels) {
+                    TileDraw.drawLabels(labels, gridTile, grid, context);
+                }
             }
         }
     }

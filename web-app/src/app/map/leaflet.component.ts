@@ -3,6 +3,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
 import { MapService } from '../upgrade/ajs-upgraded-providers';
+import { I } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-leaflet',
@@ -124,6 +125,9 @@ export class LeafletComponent {
   opacityChanged(event: OpacityEvent): void {
     const pane = this.map.getPanes()[event.layer.layer.pane];
     pane.style.opacity = event.opacity;
+    if (event.layer.layer.setOpacity) {
+      event.layer.layer.setOpacity(event.opacity);
+    }
   }
 
   zoom($event: ZoomEvent): void {

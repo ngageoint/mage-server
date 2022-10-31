@@ -1,9 +1,8 @@
-import { Grid, GridLabel, GridLine } from '@ngageoint/gars-js';
+import { Grid, GridLabel, GridLine, GridZone } from '@ngageoint/mgrs-js';
 import { GridTile } from '@ngageoint/grid-js';
 
 /**
  * Tile draw utilities for lines and labels
- *
  */
 export class TileDraw {
 
@@ -15,7 +14,15 @@ export class TileDraw {
      * @param grid   grid
      * @param context draw canvas
      */
-    public static drawLines(lines: GridLine[], tile: GridTile, grid: Grid, context: CanvasRenderingContext2D): void {
+    public static drawLines(lines: GridLine[], tile: GridTile, grid: Grid, zone: GridZone, context: CanvasRenderingContext2D): void {
+
+        const bounds = zone.getBounds();
+        const pixelRange = bounds.getPixelRangeFromTile(tile);
+
+        context.save();
+        const region = new Path2D();
+        region.rect(pixelRange.getLeft(), pixelRange.getTop(), pixelRange.getWidth(), pixelRange.getHeight());
+        context.clip(region);
 
         for (const line of lines) {
             context.beginPath();
@@ -24,6 +31,8 @@ export class TileDraw {
             context.strokeStyle = grid.getColor(line.getGridType()).getColorHex();
             context.stroke();
         }
+
+        context.restore();
     }
 
     /**
