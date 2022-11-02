@@ -74,7 +74,7 @@ describe("event create tests", function () {
 
     sinon.mock(mongoose.connection.db)
       .expects('createCollection')
-      .yields(null);
+      .resolves(null);
 
     const teamId = mongoose.Types.ObjectId();
     const mockTeam = {

@@ -77,7 +77,7 @@ describe('deleting events', function () {
 
     const droppedObservationCollection = sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
-      .yields(null);
+      .resolves(null);
 
     sinon.mock(IconModel)
       .expects('getIcon')
