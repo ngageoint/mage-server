@@ -418,22 +418,19 @@ exports.filterEventsByUserId = filterEventsByUserId;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
-  mongoose.connection.db.createCollection(event.collectionName, function (err) {
-    if (err) {
-      log.error(err);
-      return;
-    }
-
+  mongoose.connection.db.createCollection(event.collectionName).then(() => {
     log.info("Successfully created observation collection for event " + event.name);
-  });
+  }).catch(err => {
+    log.error(err);
+  })
 }
 
 function dropObservationCollection(event, callback) {
   log.info("Dropping observation collection: " + event.collectionName);
-  mongoose.connection.db.dropCollection(event.collectionName, function (err) {
-    if (!err) {
-      log.info('Dropped observation collection ' + event.collectionName);
-    }
+  mongoose.connection.db.dropCollection(event.collectionName).then(() => {
+    log.info('Dropped observation collection ' + event.collectionName);
+    callback();
+  }).catch(err => {
     callback(err);
   });
 }
