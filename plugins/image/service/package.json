@@ -35,8 +35,7 @@
   },
   "peerDependencies": {
     "@ngageoint/mage.service": "^6.2.0-beta",
-    "express": "^4.17.0",
-    "mongoose": "^6.0.0"
+    "express": "^4.17.0"
   },
   "devDependencies": {
     "@types/bson": "^4.0.2",
