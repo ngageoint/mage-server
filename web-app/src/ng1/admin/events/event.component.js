@@ -287,7 +287,7 @@ class AdminEventController {
       this.getTeamsPage();
       this.getNonTeamsPage();
     });
-    
+
   }
 
   removeTeam($event, team) {
@@ -474,9 +474,16 @@ class AdminEventController {
     $event.stopPropagation();
 
     let forms = this.event.forms;
-
     let from = forms.indexOf(form);
     let to = from - 1;
+    if (!this.showArchivedForms) {
+      for (; to >= 0; to--) {
+        if (!forms[to].archived) {
+          break;
+        }
+      }
+    }
+
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();
@@ -486,9 +493,16 @@ class AdminEventController {
     $event.stopPropagation();
 
     let forms = this.event.forms;
-
     let from = forms.indexOf(form);
     let to = from + 1;
+    if (!this.showArchivedForms) {
+      for (; from < forms.length; to++) {
+        if (!forms[to].archived) {
+          break;
+        }
+      }
+    }
+
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();
