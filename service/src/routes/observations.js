@@ -1,6 +1,6 @@
 const { attachmentTypeIsValidForField } = require('../entities/events/entities.events.forms');
 
-module.exports = function(app, security) {
+module.exports = function (app, security) {
 
   const async = require('async')
     , api = require('../api')
@@ -12,7 +12,7 @@ module.exports = function(app, security) {
     , moment = require('moment')
     , Team = require('../models/team')
     , access = require('../access')
-    , turfCentroid = require('@turf/centroid')
+    , { default: turfCentroid } = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , FileType = require('file-type')
@@ -43,7 +43,7 @@ module.exports = function(app, security) {
   }
 
   function validateObservationCreateAccess(validateObservationId) {
-    return function(req, res, next) {
+    return function (req, res, next) {
 
       if (!access.userHasPermission(req.user, 'CREATE_OBSERVATION')) {
         return res.sendStatus(403);
@@ -51,7 +51,7 @@ module.exports = function(app, security) {
 
       var tasks = [];
       if (validateObservationId) {
-        tasks.push(function(done) {
+        tasks.push(function (done) {
           /*
           TODO: this is validating the id from body document, but should it
           validate the id from the url path instead? the path id is the one
@@ -61,8 +61,8 @@ module.exports = function(app, security) {
         });
       }
 
-      tasks.push(function(done) {
-        Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
+      tasks.push(function (done) {
+        Team.teamsForUserInEvent(req.user, req.event, function (err, teams) {
           if (err) return next(err);
 
           if (teams.length === 0) {
@@ -113,7 +113,7 @@ module.exports = function(app, security) {
   }
 
   function authorizeEventAccess(collectionPermission, aclPermission) {
-    return async function(req, res, next) {
+    return async function (req, res, next) {
       if (access.userHasPermission(req.user, collectionPermission)) {
         return next();
       }
@@ -143,7 +143,7 @@ module.exports = function(app, security) {
     var userId = req.observation.userId;
     if (!userId) return next();
 
-    new api.User().getById(userId, function(err, user) {
+    new api.User().getById(userId, function (err, user) {
       if (err) return next(err);
 
       req.observationUser = user;
@@ -157,7 +157,7 @@ module.exports = function(app, security) {
     var secondary;
     if (req.observation.properties.forms.length) {
       var formId = req.observation.properties.forms[0].formId;
-      var formDefinitions = req.event.forms.filter(function(form) {
+      var formDefinitions = req.event.forms.filter(function (form) {
         return form._id === formId;
       });
 
@@ -168,7 +168,7 @@ module.exports = function(app, security) {
       }
     }
 
-    new api.Icon(req.event._id, form._id, primary, secondary).getIcon(function(err, icon) {
+    new api.Icon(req.event._id, form._id, primary, secondary).getIcon(function (err, icon) {
       if (err) return next(err);
 
       req.observationIcon = icon;
@@ -227,7 +227,7 @@ module.exports = function(app, security) {
     if (sort) {
       const columns = {};
       let err = null;
-      sort.split(',').every(function(column) {
+      sort.split(',').every(function (column) {
         const sortParams = column.split('+');
         // Check sort column is in whitelist
         if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
@@ -275,23 +275,27 @@ module.exports = function(app, security) {
       const archive = archiver('zip');
       archive.pipe(res);
 
-      app.render('observation', {
+      res.render('observation', {
         event: req.event,
         formMap: formMap,
         observation: req.observation,
         center: turfCentroid(req.observation).geometry,
         user: req.observationUser
       }, function (err, html) {
-        archive.append(html, { name: req.observation._id + '/index.html' });
+        if (!err) {
+          archive.append(html, { name: req.observation._id + '/index.html' });
 
-        if (req.observationIcon) {
-          const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
-          archive.file(iconPath, { name: req.observation._id + '/media/icon.png' });
+          if (req.observationIcon) {
+            const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
+            archive.file(iconPath, { name: req.observation._id + '/media/icon.png' });
+          }
+
+          req.observation.attachments.forEach(function (attachment) {
+            archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), { name: req.observation._id + '/media/' + attachment.name });
+          });
+        } else {
+          log.warn(err);
         }
-
-        req.observation.attachments.forEach(function (attachment) {
-          archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), { name: req.observation._id + '/media/' + attachment.name });
-        });
 
         archive.finalize();
       });
@@ -305,7 +309,7 @@ module.exports = function(app, security) {
     parseQueryParams,
     function (req, res, next) {
       const options = { fields: req.parameters.fields };
-      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
+      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function (err, observation) {
         if (err) {
           return next(err);
         }
@@ -331,7 +335,7 @@ module.exports = function(app, security) {
         populate: req.parameters.populate
       };
 
-      new api.Observation(req.event).getAll(options, function(err, observations) {
+      new api.Observation(req.event).getAll(options, function (err, observations) {
         if (err) return next(err);
         res.json(observationXform.transform(observations, transformOptions(req)));
       });
@@ -351,7 +355,7 @@ module.exports = function(app, security) {
     */
     validateObservationCreateAccess(false),
     function (req, res, next) {
-      new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
+      new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function (err, updatedObservation) {
         if (err) {
           return next(err);
         }
@@ -371,7 +375,7 @@ module.exports = function(app, security) {
     validateObservationCreateAccess(false),
     function (req, res, next) {
 
-      new api.Observation(req.event).removeFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
+      new api.Observation(req.event).removeFavorite(req.params.observationIdInPath, req.user, function (err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.observationIdInPath + " does not exist");
 
@@ -392,7 +396,7 @@ module.exports = function(app, security) {
         description: req.body.description
       };
 
-      new api.Observation(req.event).addImportant(req.observation._id, important, function(err, updatedObservation) {
+      new api.Observation(req.event).addImportant(req.observation._id, important, function (err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
@@ -408,7 +412,7 @@ module.exports = function(app, security) {
     authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
 
-      new api.Observation(req.event).removeImportant(req.observation._id, function(err, updatedObservation) {
+      new api.Observation(req.event).removeImportant(req.observation._id, function (err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
@@ -422,7 +426,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations/:observationId/states',
     passport.authenticate('bearer'),
     authorizeDeleteAccess,
-    function(req, res) {
+    function (req, res) {
       let state = req.body;
       if (!state) {
         return res.send(400);
@@ -437,7 +441,7 @@ module.exports = function(app, security) {
       if (req.user) {
         state.userId = req.user._id;
       }
-      new api.Observation(req.event).addState(req.observation._id, state, function(err, state) {
+      new api.Observation(req.event).addState(req.observation._id, state, function (err, state) {
         if (err) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
