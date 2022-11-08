@@ -13,6 +13,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
 
 ##### Bug fixes
+* Fix single observation download
 
 ## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
