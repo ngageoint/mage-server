@@ -12,7 +12,7 @@ module.exports = function(app, security) {
     , moment = require('moment')
     , Team = require('../models/team')
     , access = require('../access')
-    , turfCentroid = require('@turf/centroid')
+    , { default: turfCentroid } = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , FileType = require('file-type')
@@ -282,16 +282,20 @@ module.exports = function(app, security) {
         center: turfCentroid(req.observation).geometry,
         user: req.observationUser
       }, function (err, html) {
-        archive.append(html, { name: req.observation._id + '/index.html' });
+        if(!err) {
+          archive.append(html, { name: req.observation._id + '/index.html' });
 
-        if (req.observationIcon) {
-          const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
-          archive.file(iconPath, { name: req.observation._id + '/media/icon.png' });
+          if (req.observationIcon) {
+            const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
+            archive.file(iconPath, { name: req.observation._id + '/media/icon.png' });
+          }
+  
+          req.observation.attachments.forEach(function (attachment) {
+            archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), { name: req.observation._id + '/media/' + attachment.name });
+          });
+        } else {
+          log.warn(err);
         }
-
-        req.observation.attachments.forEach(function (attachment) {
-          archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), { name: req.observation._id + '/media/' + attachment.name });
-        });
 
         archive.finalize();
       });
