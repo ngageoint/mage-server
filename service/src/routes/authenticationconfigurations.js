@@ -13,6 +13,24 @@ module.exports = function (app, security) {
     const passport = security.authentication.passport;
     const blacklist = AuthenticationConfiguration.blacklist;
 
+    async function isAllowed(req, res, next) {
+        if (req.body && req.body.enabled === 'false') {
+            const configs = await AuthenticationConfiguration.getAllConfigurations();
+            let atLeastOneConfigEnabled = false;
+            configs.forEach(config => {
+                if (config.enabled && config._id.toString() !== req.body._id.toString()) {
+                    atLeastOneConfigEnabled = true;
+                }
+            });
+
+            if (!atLeastOneConfigEnabled) {
+                log.error('Cannot disable ' + req.body.title + ', since this would leave no enabled authentications');
+                return res.status(403).send('At least 1 authentication must be enabled');
+            }
+        }
+        return next();
+    }
+
     app.get(
         '/api/authentication/configuration/',
         passport.authenticate('bearer'),
@@ -34,7 +52,7 @@ module.exports = function (app, security) {
                 });
 
                 const promises = [];
-                
+
                 filtered.forEach(config => {
                     promises.push(SecurePropertyAppender.appendToConfig(config));
                 });
@@ -67,6 +85,7 @@ module.exports = function (app, security) {
         '/api/authentication/configuration/:id',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
+        isAllowed,
         function (req, res, next) {
             const updatedConfig = {
                 _id: req.body._id,
@@ -86,7 +105,7 @@ module.exports = function (app, security) {
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
-                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
+                    if (AuthenticationConfiguration.secureMask !== settings[key]) {
                         securityData[key] = settings[key];
                     }
                 } else {
@@ -157,7 +176,7 @@ module.exports = function (app, security) {
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
-                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
+                    if (AuthenticationConfiguration.secureMask !== settings[key]) {
                         securityData[key] = settings[key];
                     }
                 } else {
