@@ -14,17 +14,27 @@ module.exports = function (app, security) {
     const blacklist = AuthenticationConfiguration.blacklist;
 
     async function isAllowed(req, res, next) {
-        if (req.body && req.body.enabled === 'false') {
+        if (req.method === 'DELETE' || req.body && req.body.enabled === 'false') {
+
+            let configToModifyId;
+            let method = 'disable';
+            if (req.method === 'DELETE') {
+                method = 'delete';
+                configToModifyId = req.params.id.toString();
+            } else {
+                configToModifyId = req.body._id.toString();
+            }
+
             const configs = await AuthenticationConfiguration.getAllConfigurations();
             let atLeastOneConfigEnabled = false;
             configs.forEach(config => {
-                if (config.enabled && config._id.toString() !== req.body._id.toString()) {
+                if (config.enabled && config._id.toString() !== configToModifyId) {
                     atLeastOneConfigEnabled = true;
                 }
             });
 
             if (!atLeastOneConfigEnabled) {
-                log.error('Cannot disable ' + req.body.title + ', since this would leave no enabled authentications');
+                log.error('Cannot ' + method + ' ' + configToModifyId + ', since this would leave no enabled authentications');
                 return res.status(403).send('At least 1 authentication must be enabled');
             }
         }
@@ -237,6 +247,7 @@ module.exports = function (app, security) {
         '/api/authentication/configuration/:id',
         passport.authenticate('bearer'),
         access.authorize('UPDATE_AUTH_CONFIG'),
+        isAllowed,
         function (req, res, next) {
 
             Authentication.getAuthenticationsByAuthConfigId(req.params.id)
