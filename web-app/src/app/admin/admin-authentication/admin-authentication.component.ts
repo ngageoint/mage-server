@@ -13,6 +13,7 @@ import { AuthenticationDeleteComponent } from './admin-authentication-delete/adm
 })
 export class AdminAuthenticationComponent implements OnInit, OnChanges {
     @Output() saveComplete = new EventEmitter<boolean>();
+    @Output() deleteComplete = new EventEmitter<boolean>();
     @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
 
@@ -116,9 +117,13 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
             if (result === 'delete') {
                 this.authenticationConfigurationService.getAllConfigurations().then(configs => {
                     this.processUnsortedStrategies(configs.data);
-                }).catch(err => {
+                    this.deleteComplete.emit(true);
+                }).catch((err: any) => {
                     console.error(err);
+                    this.deleteComplete.emit(false);
                 })
+            } else if (result === 'error') {
+                this.deleteComplete.emit(false);
             }
         });
     }

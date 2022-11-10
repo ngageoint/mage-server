@@ -7,7 +7,7 @@
             <mat-tab-group color="primary" mat-stretch-tabs>
                 <mat-tab label="Authentication">
                     <admin-authentication (saveComplete)="onAuthenticationSaved($event)"
-                        (onDirty)="onAuthenticationDirty($event)" [beginSave]="(onSave)">
+                        (onDirty)="onAuthenticationDirty($event)" (deleteComplete)="onAuthenticationDeleted($event)" [beginSave]="(onSave)">
                     </admin-authentication>
                 </mat-tab>
                 <mat-tab label="Banner">
