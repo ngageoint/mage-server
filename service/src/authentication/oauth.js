@@ -124,7 +124,7 @@ function configure(strategy) {
             log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
             return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
          } else {
-            return done(null, user, { access_token: accessToken });
+            return done(null, user);
          }
       });
    }));
