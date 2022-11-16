@@ -124,7 +124,7 @@ function configure(strategy) {
             log.warn(user.authentication.authenticationConfiguration.title + " authentication is not enabled");
             return done(null, user, { message: 'Authentication method is not enabled, please contact a MAGE administrator for assistance.' });
          } else {
-            return done(null, user);
+            return done(null, user, { access_token: accessToken });
          }
       });
    }));
@@ -212,7 +212,7 @@ function initialize(strategy) {
                res.render('oauth', { uri: uri });
             }
          } else {
-            res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+            res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
          }
       }
    );
