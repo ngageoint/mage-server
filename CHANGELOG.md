@@ -251,6 +251,7 @@ from the Google CDN so the MAGE webapp does not need an Internet connection.
 * KML import file browser fixed.
 * Update express default template renderer directory and remove pug specific rendering.
 * Uploaded observation attachments preserve filename property after multer upgrade.
+* Fixing problem with oauth web login.
 
 ## [5.3.0](https://github.com/ngageoint/mage-server/releases/tag/5.3.0)
 
