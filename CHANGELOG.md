@@ -13,8 +13,9 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
 
 ##### Bug fixes
-* Fix single observation download
-* Protect against disabling all authentications 
+* Fix single observation download.
+* Protect against disabling all authentications. 
+* Fixing problem with oauth web login.
 
 ## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
@@ -251,7 +252,6 @@ from the Google CDN so the MAGE webapp does not need an Internet connection.
 * KML import file browser fixed.
 * Update express default template renderer directory and remove pug specific rendering.
 * Uploaded observation attachments preserve filename property after multer upgrade.
-* Fixing problem with oauth web login.
 
 ## [5.3.0](https://github.com/ngageoint/mage-server/releases/tag/5.3.0)
 
