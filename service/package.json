@@ -64,7 +64,6 @@
     "mongoose-beautiful-unique-validation": "7.1.1",
     "multer": "^1.4.2",
     "node-fetch": "^2.6.0",
-    "openid-client": "2.2.1",
     "passport": "0.4.1",
     "passport-anonymous": "1.0.1",
     "passport-http-bearer": "1.0.1",
