@@ -102,7 +102,13 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
         this.saveComplete.emit(true);
       }).catch(err => {
         console.log(err);
-        this.saveComplete.emit(false);
+        this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then((newStrategies: { data: Strategy[]; }) => {
+          this.processUnsortedStrategies(newStrategies.data);
+          this.saveComplete.emit(false);
+        }).catch((err2: any) => {
+          console.log(err2);
+          this.saveComplete.emit(false);
+        });
       });
     }
     this.onStrategyDirty(false);
