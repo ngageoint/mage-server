@@ -16,11 +16,16 @@ module.exports = function (app, security) {
   const lock = new AsyncLock();
   const enabledKey = 'checkAuthEnabled';
 
-  async function isAllowed(configToModifyId) {
+  async function isAllowed(affectedConfig, deleted = false) {
     const configs = await AuthenticationConfiguration.getAllConfigurations();
     let atLeastOneConfigEnabled = false;
     configs.forEach(config => {
-      if (config.enabled && config._id.toString() !== configToModifyId) {
+      if (affectedConfig._id.toString() === config._id.toString()) {
+        if (!deleted && affectedConfig.enabled === config.enabled) {
+          atLeastOneConfigEnabled = true;
+        }
+      }
+      else if (config.enabled) {
         atLeastOneConfigEnabled = true;
       }
     });
@@ -90,7 +95,7 @@ module.exports = function (app, security) {
         textColor: req.body.textColor,
         buttonColor: req.body.buttonColor,
         icon: req.body.icon,
-        enabled: req.body.enabled,
+        enabled: JSON.parse(req.body.enabled),
         settings: {}
       };
 
@@ -109,7 +114,7 @@ module.exports = function (app, security) {
       });
 
       lock.acquire(enabledKey, async function (done) {
-        const allowed = await isAllowed(updatedConfig._id);
+        const allowed = await isAllowed(updatedConfig);
         if (!allowed) {
           log.error('Cannot update ' + updatedConfig.name + ', since this would leave no enabled authentications');
           done();
@@ -173,7 +178,7 @@ module.exports = function (app, security) {
         textColor: req.body.textColor,
         buttonColor: req.body.buttonColor,
         icon: req.body.icon,
-        enabled: req.body.enabled,
+        enabled: JSON.parse(req.body.enabled),
         settings: {}
       };
 
@@ -247,9 +252,10 @@ module.exports = function (app, security) {
     function (req, res, next) {
 
       lock.acquire(enabledKey, async function (done) {
-        const allowed = await isAllowed(req.params.id);
+        const config = await AuthenticationConfiguration.getById(req.params.id);
+        const allowed = await isAllowed(config, true);
         if (!allowed) {
-          log.error('Cannot delete ' + req.params.id + ', since this would leave no enabled authentications');
+          log.error('Cannot delete ' + config.name + ', since this would leave no enabled authentications');
           done();
           return res.status(403).send('At least 1 authentication must be enabled');
         }
