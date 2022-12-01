@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationEditGeometryComponent } from './observation-edit-geometry.component';
 
@@ -6,7 +6,7 @@ describe('ObservationEditGeometryComponent', () => {
   let component: ObservationEditGeometryComponent;
   let fixture: ComponentFixture<ObservationEditGeometryComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationEditGeometryComponent ]
     })

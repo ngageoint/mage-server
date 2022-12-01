@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml.component';
 
@@ -6,7 +6,7 @@ describe('AdminAuthenticationSAMLComponent', () => {
   let component: AdminAuthenticationSAMLComponent;
   let fixture: ComponentFixture<AdminAuthenticationSAMLComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ AdminAuthenticationSAMLComponent ]
     })

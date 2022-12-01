@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core'
 import { Component, ViewChild } from '@angular/core'
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { By } from '@angular/platform-browser'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
@@ -33,7 +33,7 @@ describe('TopicConfigurationComponent', () => {
   let target: AdminFeedEditTopicConfigurationComponent
   let element: HTMLElement
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         MatExpansionModule,

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 import { ObservationDeleteComponent } from './observation-delete.component';
@@ -7,7 +7,7 @@ describe('ObservationDeleteComponent', () => {
   let component: ObservationDeleteComponent;
   let fixture: ComponentFixture<ObservationDeleteComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
       declarations: [ObservationDeleteComponent],

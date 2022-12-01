@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -97,7 +97,7 @@ describe('AdminSettingsComponent', () => {
   let component: AdminSettingsComponent;
   let fixture: ComponentFixture<AdminSettingsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockLocalStorageService = { getToken: (): string => '1' };
     const mockDialogRef = { close: (): void => { } };
     const mockUserService = { myself: { role: { permissions: ['UPDATE_AUTH_CONFIG'] } } };

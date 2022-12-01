@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { By } from '@angular/platform-browser'
 import { of } from 'rxjs'
@@ -27,7 +27,7 @@ describe('StaticIconFormFieldComponent', () => {
   let fixture: ComponentFixture<TestHostComponent>
   let iconService: jasmine.SpyObj<StaticIconService>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
 
     iconService = jasmine.createSpyObj<StaticIconService>('MockStaticIconService', [
       'fetchIconByReference'

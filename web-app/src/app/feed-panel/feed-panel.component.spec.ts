@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { FeedPanelComponent } from './feed-panel.component';
@@ -7,7 +7,7 @@ describe('FeedPanelComponent', () => {
   let component: FeedPanelComponent;
   let fixture: ComponentFixture<FeedPanelComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FeedPanelComponent],
       imports: [MatDialogModule]

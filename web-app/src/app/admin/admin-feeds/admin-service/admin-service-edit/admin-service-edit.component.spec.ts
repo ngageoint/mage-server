@@ -1,7 +1,6 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -32,7 +31,7 @@ describe('AdminServiceEditComponent', () => {
   let component: AdminServiceEditComponent;
   let element: HTMLElement;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         MatExpansionModule,

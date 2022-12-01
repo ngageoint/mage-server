@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Observable, of } from 'rxjs';
@@ -30,7 +30,7 @@ describe('AdminEventFormPreviewComponent', () => {
   let fixture: ComponentFixture<TestHostComponent>
   let dialog: MatDialog
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, MatDialogModule],
       declarations: [AdminEventFormPreviewComponent, TestHostComponent],
@@ -65,7 +65,7 @@ describe('AdminEventFormPreviewComponent', () => {
     expect(dialog.open).toHaveBeenCalled()
   });
 
-  it('should close dialog', async(async () => {
+  it('should close dialog', waitForAsync(async () => {
     spyOn(component.onClose, 'emit')
     spyOn(component.dialog, 'open').and.callThrough()
 

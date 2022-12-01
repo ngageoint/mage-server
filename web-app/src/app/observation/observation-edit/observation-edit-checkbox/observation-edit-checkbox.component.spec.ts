@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core'
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
@@ -33,7 +33,7 @@ describe('ObservationEditCheckboxComponent', () => {
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatCheckboxModule ],
       declarations: [ObservationEditCheckboxComponent, TestHostComponent ]

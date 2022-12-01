@@ -1,5 +1,5 @@
 import { UserSelectComponent } from './user-select.component'
-import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing'
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing'
 import { UserReadService, UserSearchParams } from '../user-read.service'
 import { NgSelectModule } from '@ng-select/ng-select'
 import { User } from '../user.model'
@@ -27,7 +27,7 @@ describe('user select component', () => {
   let fixture: ComponentFixture<TestHostComponent>
   let userService: jasmine.SpyObj<UserReadService>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     userService = jasmine.createSpyObj<UserReadService>('MockUserReadService', [
       'search'
     ])
