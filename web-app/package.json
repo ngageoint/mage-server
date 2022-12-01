@@ -95,7 +95,7 @@
     "md-date-time-picker": "./src/ng1/vendor/md-date-time-picker",
     "mgrs": "1.0.0",
     "moment": "2.22.2",
-    "ngx-color": "5.1.4",
+    "ngx-color": "6.1.0",
     "ngx-mat-select-search": "^3.3.3",
     "ngx-virtual-scroller": "^3.0.3",
     "papaparse": "4.1.4",
