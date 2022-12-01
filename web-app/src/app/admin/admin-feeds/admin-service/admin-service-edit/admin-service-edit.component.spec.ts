@@ -185,15 +185,7 @@ describe('AdminServiceEditComponent', () => {
     });
   });
 
-  /*
-  the following two tests fail with ExpressionChangedAfterItHasBeenCheckedError:
-  Expression has changed after it was checked. i believe this is related to
-  https://github.com/angular/components/issues/16209.  i am hoping this
-  magically works when we upgrade angular/material as well as ajsf, so punting
-  and skipping these tests for now so the ci build succeeds.
-  */
-
-  xit('should set the default value for a configSchema with a string', () => {
+  it('should set the default value for a configSchema with a string', () => {
     const serviceType: ServiceType = {
       pluginServiceTypeId: 'plugin1:type1',
       id: 'serviceTypeId',
@@ -231,7 +223,7 @@ describe('AdminServiceEditComponent', () => {
     expect(component.serviceConfiguration).toEqual(serviceType.configSchema.default);
   });
 
-  xit('should emit serviceCreated', async () => {
+  it('should emit serviceCreated', async () => {
     spyOn(component.serviceCreated, 'emit');
 
     const serviceType: ServiceType = {
