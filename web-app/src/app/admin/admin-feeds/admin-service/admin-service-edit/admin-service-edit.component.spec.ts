@@ -59,7 +59,7 @@ describe('AdminServiceEditComponent', () => {
     hostComponent = fixture.componentInstance;
     component = hostComponent.createServiceComponent;
     element = fixture.nativeElement;
-    httpMock = TestBed.get(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {

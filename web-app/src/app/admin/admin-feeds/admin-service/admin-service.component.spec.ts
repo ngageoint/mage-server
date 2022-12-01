@@ -94,7 +94,7 @@ describe('AdminServiceComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminServiceComponent);
     component = fixture.componentInstance;
-    httpMock = TestBed.get(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
   });
 
