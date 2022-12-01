@@ -136,7 +136,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "ng-packagr": "^10.1.0",
-    "ngx-build-plus": "^9.0.6",
+    "ngx-build-plus": "10.1.1",
     "npm-run-all": "^4.1.5",
     "protractor": "~7.0.0",
     "stylus": "^0.54.8",
