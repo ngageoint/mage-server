@@ -104,7 +104,7 @@
     "select2": "4.0.7",
     "swagger-ui": "3.24.0",
     "systemjs": "^6.10.0",
-    "tslib": "^1.10.0",
+    "tslib": "^2.4.1",
     "ui-select": "0.17.1",
     "underscore": "1.8.3",
     "webfontloader": "1.6.6",
