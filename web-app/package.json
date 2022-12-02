@@ -45,8 +45,8 @@
   },
   "files": [],
   "dependencies": {
-    "@ajsf/core": "^0.8.0",
-    "@ajsf/material": "^0.8.0",
+    "@ajsf/core": "^0.5.1",
+    "@ajsf/material": "^0.5.1",
     "@angular/animations": "~11.2.14",
     "@angular/cdk": "~11.2.13",
     "@angular/common": "~11.2.14",
