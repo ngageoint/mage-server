@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core';
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
@@ -69,7 +69,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
   let fixture: ComponentFixture<TestHostComponent>
   let tickPastDebounce: () => void
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,

@@ -1,12 +1,13 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationEditDateComponent } from './observation-edit-date.component';
 
+/* TODO tests MUST contain at least 1 test
 describe('ObservationEditDateComponent', () => {
   let component: ObservationEditDateComponent;
   let fixture: ComponentFixture<ObservationEditDateComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationEditDateComponent ]
     })
@@ -23,3 +24,4 @@ describe('ObservationEditDateComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
+*/

@@ -7,7 +7,7 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "module": "esnext",
+    "module": "es2020",
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2015",
@@ -21,7 +21,7 @@
     ],
     "paths": {
       "@ngageoint/mage.web-core-lib": [
-        "dist/core-lib",
+        "dist/core-lib"
       ],
       "@ngageoint/mage.web-core-lib/*": [
         "dist/core-lib/*"

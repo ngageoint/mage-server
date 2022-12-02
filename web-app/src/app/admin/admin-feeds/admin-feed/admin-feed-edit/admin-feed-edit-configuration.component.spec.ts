@@ -1,7 +1,7 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatExpansionModule } from '@angular/material/expansion'
@@ -50,7 +50,7 @@ describe('FeedMetaDataComponent', () => {
   let formChanges: FeedMetaDataNullable[]
   let metaDataChanges: FeedMetaData[]
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,

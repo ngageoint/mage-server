@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { StaticIconImgComponent } from './static-icon-img.component';
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
@@ -8,7 +8,7 @@ describe('StaticIconImgComponent', () => {
   let component: StaticIconImgComponent;
   let fixture: ComponentFixture<StaticIconImgComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ StaticIconImgComponent ],
       imports: [

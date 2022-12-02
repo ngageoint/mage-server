@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationViewTextComponent } from './observation-view-text.component';
 
@@ -6,7 +6,7 @@ describe('TextComponent', () => {
   let component: ObservationViewTextComponent;
   let fixture: ComponentFixture<ObservationViewTextComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationViewTextComponent ]
     })

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ZoomComponent, ZoomDirection } from './zoom.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ describe('ZoomComponent', () => {
   let component: ZoomComponent;
   let fixture: ComponentFixture<ZoomComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ MatIconModule, MatButtonModule ],
       declarations: [ ZoomComponent ]
