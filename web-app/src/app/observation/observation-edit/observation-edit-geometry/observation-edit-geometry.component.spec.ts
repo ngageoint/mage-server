@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ObservationEditGeometryComponent } from './observation-edit-geometry.component';
 
+/* TODO tests MUST contain at least 1 test
 describe('ObservationEditGeometryComponent', () => {
   let component: ObservationEditGeometryComponent;
   let fixture: ComponentFixture<ObservationEditGeometryComponent>;
@@ -23,3 +24,4 @@ describe('ObservationEditGeometryComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
+*/

@@ -3,6 +3,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 import { ObservationDeleteComponent } from './observation-delete.component';
 
+/* TODO tests MUST contain at least 1 test
 describe('ObservationDeleteComponent', () => {
   let component: ObservationDeleteComponent;
   let fixture: ComponentFixture<ObservationDeleteComponent>;
@@ -26,3 +27,4 @@ describe('ObservationDeleteComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
+*/
