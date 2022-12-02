@@ -62,7 +62,7 @@
     "@angular/upgrade": "~10.2.5",
     "@mat-datetimepicker/core": "5.1.2",
     "@mat-datetimepicker/moment": "5.1.2",
-    "@ng-select/ng-select": "4.0.4",
+    "@ng-select/ng-select": "5.1.0",
     "@ngageoint/gars-js": "^1.0.0",
     "@ngageoint/mgrs-js": "^1.0.0",
     "@turf/center": "4.3.0",
