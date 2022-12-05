@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 @import "variables.scss";
 
 .user-feed {
@@ -9,7 +9,7 @@
 }
 
 .user-feed-toolbar {
-  color: mat-color($app-primary);
+  color: mat.get-color-from-palette($app-primary);
   background-color: white;
 }
 

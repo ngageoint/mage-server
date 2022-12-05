@@ -8,17 +8,6 @@ import uiRouter from "@uirouter/angularjs";
 import { SwaggerComponent } from "../app/swagger/swagger.component";
 import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static';
 
-import {
-  MatIcon,
-  MatButton,
-  MatToolbar,
-  MatSpinner,
-  MatFormField,
-  MatSidenav,
-  MatSidenavContent,
-  MatSidenavContainer
-} from '@angular/material';
-
 import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
 
 import { ZoomComponent } from '../app/map/controls/zoom.component';
@@ -81,14 +70,6 @@ app
 
 // Downgraded Angular components
 app
-  .directive('matIcon', downgradeComponent({ component: MatIcon }))
-  .directive('matButton', downgradeComponent({ component: MatButton }))
-  .directive('matToolbar', downgradeComponent({ component: MatToolbar }))
-  .directive('matSpinner', downgradeComponent({ component: MatSpinner }))
-  .directive('matFormField', downgradeComponent({ component: MatFormField }))
-  .directive('matSidenav', downgradeComponent({ component: MatSidenav }))
-  .directive('matSidenavContent', downgradeComponent({ component: MatSidenavContent }))
-  .directive('matSidenavContainer', downgradeComponent({ component: MatSidenavContainer }))
   .directive('feedPanel', downgradeComponent({ component: FeedPanelComponent }))
   .directive('observationPopup', downgradeComponent({ component: ObservationPopupComponent }))
   .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
