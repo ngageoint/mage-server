@@ -68,9 +68,9 @@
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
-    "@uirouter/angular": "7.0.0",
-    "@uirouter/angular-hybrid": "^11.0.2",
-    "@uirouter/angularjs": "1.0.24",
+    "@uirouter/angular": "9.1.0",
+    "@uirouter/angular-hybrid": "^13.0.0",
+    "@uirouter/angularjs": "1.0.30",
     "@uirouter/rx": "^1.0.0",
     "angular": "1.5.11",
     "angular-animate": "1.5.11",
@@ -141,7 +141,7 @@
     "stylus": "^0.54.8",
     "ts-node": "~7.0.0",
     "tslint": "~6.1.3",
-    "typescript": "~4.0.8",
+    "typescript": "~4.3.5",
     "webpack": "^4.41.5",
     "webpack-bundle-analyzer": "^3.6.1"
   }
