@@ -61,7 +61,6 @@
     "@angular/router": "~13.3.12",
     "@angular/upgrade": "~13.3.12",
     "@mat-datetimepicker/core": "8.0.0",
-    "@mat-datetimepicker/moment": "8.0.0",
     "@ng-select/ng-select": "8.3.0",
     "@ngageoint/gars-js": "^1.0.0",
     "@ngageoint/mgrs-js": "^1.0.0",
