@@ -96,7 +96,7 @@
     "mgrs": "1.0.0",
     "moment": "2.22.2",
     "ngx-color": "7.3.3",
-    "ngx-mat-select-search": "^4.2.1",
+    "ngx-mat-select-search": "^5.0.0",
     "papaparse": "4.1.4",
     "rxjs": "~6.6.7",
     "select2": "4.0.7",
