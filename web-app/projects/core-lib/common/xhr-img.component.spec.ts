@@ -145,7 +145,7 @@ describe('ImgXhrBlobSrcDirective', () => {
 
     xhr2.flush(blob1)
 
-    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url)
+    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url as any)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledTimes(1)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledWith(blob1)
   })
@@ -164,7 +164,7 @@ describe('ImgXhrBlobSrcDirective', () => {
     const xhr2 = httpTest.expectOne('/test/usurper')
     xhr2.flush(blob2)
 
-    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url)
+    expect(objectUrlService.createObjectURL).not.toHaveBeenCalledWith(xhr1.request.url as any)
     expect(objectUrlService.createObjectURL).toHaveBeenCalledTimes(2)
     expect(objectUrlService.createObjectURL.calls.argsFor(0)).toEqual([ blob1 ])
     expect(objectUrlService.createObjectURL.calls.argsFor(1)).toEqual([ blob2 ])

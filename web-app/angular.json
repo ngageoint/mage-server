@@ -53,7 +53,8 @@
               "src/ng1/vendor/bootstrap/js/bootstrap.min.js",
               "node_modules/systemjs/dist/system.js",
               "node_modules/systemjs/dist/extras/amd.js",
-              "node_modules/systemjs/dist/extras/named-register.js"
+              "node_modules/systemjs/dist/extras/named-register.js",
+              "node_modules/js_cols/dist/js_cols.min.js"
             ],
             "plugin": "~/post_build.js"
           },
@@ -144,19 +145,6 @@
             "codeCoverage": true
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -198,18 +186,6 @@
             "main": "projects/core-lib/src/test.ts",
             "tsConfig": "projects/core-lib/tsconfig.spec.json",
             "karmaConfig": "projects/core-lib/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/core-lib/tsconfig.lib.json",
-              "projects/core-lib/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         }
       }
@@ -324,19 +300,6 @@
               "projects/core-lib-showcase/src/styles.scss"
             ],
             "scripts": []
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/core-lib-showcase/tsconfig.app.json",
-              "projects/core-lib-showcase/tsconfig.spec.json",
-              "projects/core-lib-showcase/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         },
         "e2e": {

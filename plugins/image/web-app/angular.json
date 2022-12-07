@@ -28,18 +28,6 @@
             "tsConfig": "projects/mage-image/tsconfig.spec.json",
             "karmaConfig": "projects/mage-image/karma.conf.js"
           }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/mage-image/tsconfig.lib.json",
-              "projects/mage-image/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
         }
       }
     }
