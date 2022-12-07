@@ -6,11 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Mongoose upgraded to 6.x.
-* mongoose-migrations forked and upgraded to mongo 4.x.
-* MAGE_MONGO_TLS_INSECURE added as env var to help with possible issues with self-signed certs.  See https://github.com/Automattic/mongoose/issues/9147.
+* Support for Mongoose 6.x.
+* [mongodb-migrations](https://github.com/gillandk/mongodb-migrations) support for Mongo 4.x.
+* MAGE_MONGO_TLS_INSECURE added as env var to help with possible issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
 * [GARS](https://github.com/ngageoint/gars-js) grid overlay.
 * [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay.
+* Support for Webpack 5.x.
 
 ##### Bug fixes
 * Fix single observation download.
