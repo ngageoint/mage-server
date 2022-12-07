@@ -28,8 +28,10 @@
   },
   "scripts": {
     "start": "ng serve --configuration development",
-    "build": "npm-run-all build:core-lib build:app",
-    "build:app": "ng build --configuration development",
+    "build": "npm-run-all build:core-lib build:app:dev",
+    "build:prod": "npm-run-all build:core-lib build:app:prod",
+    "build:app:dev": "ng build --configuration development",
+    "build:app:prod": "ng build --configuration production",
     "build:core-lib": "ng build --project=core-lib",
     "ng": "ng",
     "test": "ng test --code-coverage=false --project=app",
