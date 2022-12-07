@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 
@@ -10,8 +10,8 @@ import { ObservationEditAttachmentComponent } from './observation-edit-attachmen
 })
 class TestHostComponent {
   attachments = []
-  formGroup = new FormGroup({
-    attachment: new FormControl([])
+  formGroup = new UntypedFormGroup({
+    attachment: new UntypedFormControl([])
   });
   definition = {
     name: 'attachment'

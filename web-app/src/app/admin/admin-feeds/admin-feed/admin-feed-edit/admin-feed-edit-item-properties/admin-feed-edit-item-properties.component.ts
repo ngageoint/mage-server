@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormArray, FormControl, FormGroup } from '@angular/forms'
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup } from '@angular/forms'
 import * as _ from 'lodash'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -51,7 +51,7 @@ export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
   @Output() cancelled = new EventEmitter<void>();
   @Output() opened = new EventEmitter<void>();
 
-  readonly schemaForm: FormArray = new FormArray([])
+  readonly schemaForm: UntypedFormArray = new UntypedFormArray([])
   readonly changeDebounceInterval = 500
 
   private schemaChangesEnabled = true
@@ -112,7 +112,7 @@ export class AdminFeedEditItemPropertiesComponent implements OnInit, OnChanges {
   }
 }
 
-function syncPropertiesFormToSchemaProperties(form: FormArray, schema: SimpleJsonSchema): FormArray {
+function syncPropertiesFormToSchemaProperties(form: UntypedFormArray, schema: SimpleJsonSchema): UntypedFormArray {
   const properties: SimpleJsonSchemaProperties = schema ? schema.properties || {} : {}
   const propertyKeys: string[] = Object.getOwnPropertyNames(properties).sort()
   const retainedFormKeys: { [key: string]: true } = {}
@@ -141,17 +141,17 @@ function syncPropertiesFormToSchemaProperties(form: FormArray, schema: SimpleJso
   return form
 }
 
-function formGroupForPropertySchema(key: string, schema: SimplePropertyJsonSchema): FormGroup {
+function formGroupForPropertySchema(key: string, schema: SimplePropertyJsonSchema): UntypedFormGroup {
   const controls = {
-    key: new FormControl(key),
-    schema: new FormGroup({
-      type: new FormControl(schema.type),
-      title: new FormControl(schema.title),
-      description: new FormControl(schema.description),
-      format: new FormControl(schema.format)
+    key: new UntypedFormControl(key),
+    schema: new UntypedFormGroup({
+      type: new UntypedFormControl(schema.type),
+      title: new UntypedFormControl(schema.title),
+      description: new UntypedFormControl(schema.description),
+      format: new UntypedFormControl(schema.format)
     })
   }
-  const schemaForm = new FormGroup(controls)
+  const schemaForm = new UntypedFormGroup(controls)
   return schemaForm
 }
 

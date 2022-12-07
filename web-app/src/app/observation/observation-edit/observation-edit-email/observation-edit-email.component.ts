@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 
 interface EmailField {
   title: string,
@@ -14,6 +14,6 @@ interface EmailField {
   styleUrls: ['./observation-edit-email.component.scss']
 })
 export class ObservationEditEmailComponent {
-  @Input() formGroup: FormGroup
+  @Input() formGroup: UntypedFormGroup
   @Input() definition: EmailField
 }

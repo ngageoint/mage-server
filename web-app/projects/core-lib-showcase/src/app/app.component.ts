@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms'
+import { UntypedFormControl } from '@angular/forms'
 import { itemRangeOfPage, PageOf, PagingDataSource } from 'core-lib-src/paging'
 import { User } from 'core-lib-src/user'
 import { of } from 'rxjs'
@@ -12,5 +12,5 @@ import { of } from 'rxjs'
 })
 export class AppComponent {
 
-  userControl = new FormControl(null)
+  userControl = new UntypedFormControl(null)
 }

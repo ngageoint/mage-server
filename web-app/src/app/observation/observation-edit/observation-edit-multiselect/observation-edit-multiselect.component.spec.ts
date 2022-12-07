@@ -7,7 +7,7 @@ import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatFormFieldModule, MatError } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'
 
@@ -17,8 +17,8 @@ import { By } from '@angular/platform-browser'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class TestHostComponent {
-  formGroup = new FormGroup({
-    select: new FormControl()
+  formGroup = new UntypedFormGroup({
+    select: new UntypedFormControl()
   })
 
   definition: any = {

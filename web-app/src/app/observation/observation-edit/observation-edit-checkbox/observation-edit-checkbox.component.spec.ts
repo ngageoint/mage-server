@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser'
@@ -14,8 +14,8 @@ import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.co
   template: `<observation-edit-checkbox [definition]="definition" [formGroup]="formGroup"></observation-edit-checkbox>`
 })
 class TestHostComponent {
-  formGroup = new FormGroup({
-    checkbox: new FormControl(true, Validators.required)
+  formGroup = new UntypedFormGroup({
+    checkbox: new UntypedFormControl(true, Validators.required)
   });
   definition = {
     name: 'checkbox',

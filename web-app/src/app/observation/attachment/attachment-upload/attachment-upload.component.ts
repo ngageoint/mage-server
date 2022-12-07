@@ -1,13 +1,13 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { AttachmentAction } from '../../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { AttachmentService } from '../attachment.service';
 
 export interface FileUpload {
   id: number | string,
   name: string,
-  formControl: FormControl,
+  formControl: UntypedFormControl,
   attachmentId: string,
   action: AttachmentAction,
   file: File,

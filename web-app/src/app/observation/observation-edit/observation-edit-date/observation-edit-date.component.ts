@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
-import { FormGroup, NgModel } from '@angular/forms'
+import { UntypedFormGroup, NgModel } from '@angular/forms'
 import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
 import * as moment from 'moment'
 
@@ -16,7 +16,7 @@ interface DateField {
   styleUrls: ['./observation-edit-date.component.scss']
 })
 export class ObservationEditDateComponent implements OnChanges {
-  @Input() formGroup: FormGroup
+  @Input() formGroup: UntypedFormGroup
   @Input() definition: any
 
   @ViewChild('dateModel') dateModel: NgModel
