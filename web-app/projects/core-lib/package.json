@@ -2,14 +2,14 @@
   "name": "@ngageoint/mage.web-core-lib",
   "version": "6.2.0",
   "peerDependencies": {
-    "@angular/animations": "~13.3.12",
-    "@angular/cdk": "~13.3.9",
-    "@angular/common": "~13.3.12",
-    "@angular/core": "~13.3.12",
-    "@angular/forms": "~13.3.12",
-    "@angular/material": "~13.3.9",
-    "@angular/platform-browser": "~13.3.12",
-    "@ng-select/ng-select": "8.3.0",
+    "@angular/animations": "^14.2.12",
+    "@angular/cdk": "^14.2.7",
+    "@angular/common": "^14.2.12",
+    "@angular/core": "^14.2.12",
+    "@angular/forms": "^14.2.12",
+    "@angular/material": "^14.2.7",
+    "@angular/platform-browser": "^14.2.12",
+    "@ng-select/ng-select": "9.1.0",
     "rxjs": "~6.6.7"
   },
   "dependencies": {
