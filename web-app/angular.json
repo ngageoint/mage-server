@@ -85,6 +85,16 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true
             }
           }
         },
@@ -98,6 +108,9 @@
           "configurations": {
             "production": {
               "browserTarget": "app:build:production"
+            },
+            "development": {
+              "browserTarget": "app:build:development"
             }
           }
         },
@@ -160,6 +173,9 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/core-lib/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/core-lib/tsconfig.lib.dev.json"
             }
           }
         },
@@ -234,6 +250,16 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core-lib-showcase/src/environments/environment.ts",
+                  "with": "projects/core-lib-showcase/src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true
             }
           },
           "defaultConfiguration": ""
@@ -246,6 +272,9 @@
           "configurations": {
             "production": {
               "browserTarget": "core-lib-showcase:build:production"
+            },
+            "development": {
+              "browserTarget": "core-lib-showcase:build:development"
             }
           }
         },
