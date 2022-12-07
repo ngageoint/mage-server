@@ -53,7 +53,8 @@
               "src/ng1/vendor/bootstrap/js/bootstrap.min.js",
               "node_modules/systemjs/dist/system.js",
               "node_modules/systemjs/dist/extras/amd.js",
-              "node_modules/systemjs/dist/extras/named-register.js"
+              "node_modules/systemjs/dist/extras/named-register.js",
+              "node_modules/js_cols/dist/js_cols.min.js"
             ],
             "plugin": "~/post_build.js"
           },
