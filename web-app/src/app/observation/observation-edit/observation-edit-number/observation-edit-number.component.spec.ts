@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
@@ -14,8 +14,8 @@ import { ObservationEditNumberComponent } from './observation-edit-number.compon
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class TestHostComponent {
-  formGroup = new FormGroup({
-    number: new FormControl()
+  formGroup = new UntypedFormGroup({
+    number: new UntypedFormControl()
   })
 
   definition: any = {

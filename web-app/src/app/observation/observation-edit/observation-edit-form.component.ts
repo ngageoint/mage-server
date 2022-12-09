@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, EventEmitter, Input, Output } from '@angular/core'
-import { FormGroup } from '@angular/forms'
+import { UntypedFormGroup } from '@angular/forms'
 
 @Component({
   selector: 'observation-edit-form',
@@ -24,7 +24,7 @@ import { FormGroup } from '@angular/forms'
   ]
 })
 export class ObservationEditFormComponent {
-  @Input() formGroup: FormGroup
+  @Input() formGroup: UntypedFormGroup
   @Input() definition: any
   @Input() geometryStyle: any
   @Input() attachmentUrl: string
@@ -32,7 +32,7 @@ export class ObservationEditFormComponent {
   @Input() deletable = true
   @Input() options: { expand: boolean, deletable: boolean }
 
-  @Output() remove = new EventEmitter<FormGroup>()
+  @Output() remove = new EventEmitter<UntypedFormGroup>()
   @Output() featureEdit = new EventEmitter<any>()
 
   fieldNames: string[]

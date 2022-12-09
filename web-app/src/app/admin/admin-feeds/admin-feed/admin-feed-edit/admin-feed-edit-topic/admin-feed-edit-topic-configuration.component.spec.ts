@@ -95,14 +95,6 @@ describe('TopicConfigurationComponent', () => {
 
   describe('debouncing the change event', () => {
 
-    beforeEach(() => {
-      jasmine.clock().install()
-    })
-
-    afterEach(() => {
-      jasmine.clock().uninstall()
-    })
-
     it('debounces multiple change events', async () => {
 
       fixture.detectChanges()
@@ -114,11 +106,14 @@ describe('TopicConfigurationComponent', () => {
 
       expect(changed).not.toHaveBeenCalled()
 
-      jasmine.clock().tick(target.changeDebounceInterval / 2)
+      fixture.detectChanges()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2));
+
 
       expect(changed).not.toHaveBeenCalled()
 
-      jasmine.clock().tick(target.changeDebounceInterval / 2 + 2)
+      fixture.detectChanges()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2 + 2));
 
       expect(changed).toHaveBeenCalledTimes(1)
       expect(changed).toHaveBeenCalledWith({ derp: 10 })

@@ -1,7 +1,7 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { By } from '@angular/platform-browser'
 import { of } from 'rxjs'
 import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common'
@@ -15,8 +15,8 @@ import { StaticIconFormFieldComponent } from './static-icon-form-field.component
 })
 class TestHostComponent {
 
-  form = new FormGroup({
-    icon: new FormControl(null)
+  form = new UntypedFormGroup({
+    icon: new UntypedFormControl(null)
   })
 }
 

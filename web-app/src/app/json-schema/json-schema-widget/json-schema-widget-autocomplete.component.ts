@@ -1,6 +1,6 @@
 import { buildTitleMap, isArray, JsonSchemaFormService } from '@ajsf/core';
 import { Component, Inject, Input, OnInit, Optional } from '@angular/core';
-import { AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl, UntypedFormControl } from '@angular/forms';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { map, startWith } from 'rxjs/operators';
 })
 
 export class JsonSchemaWidgetAutocompleteComponent implements OnInit {
-  formControl: AbstractControl = new FormControl();
+  formControl: AbstractControl = new UntypedFormControl();
   controlName: string;
   controlValue: any;
   controlDisabled = false;
