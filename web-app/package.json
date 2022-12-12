@@ -126,7 +126,7 @@
     "@types/jasminewd2": "~2.0.10",
     "@types/leaflet": "1.5.4",
     "@types/lodash": "^4.14.168",
-    "@types/node": "^12.11.1",
+    "@types/node": "^18.11.13",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^5.5.0",
     "jasmine-core": "~4.5.0",
