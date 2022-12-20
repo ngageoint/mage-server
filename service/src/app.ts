@@ -52,7 +52,7 @@ import { ObservationRoutes, ObservationWebAppRequestFactory } from './adapters/o
 import { UserWithRole } from './permissions/permissions.role-based.base'
 import { AttachmentStore, EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
-import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adpaters.observations.attachment_store.file_system'
+import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adapters.observations.attachment_store.file_system'
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
