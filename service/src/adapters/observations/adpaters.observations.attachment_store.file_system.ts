@@ -70,21 +70,35 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     }
     const contentRelPath = relativeReadPathForAttachment(attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
-    return fs.createReadStream(contentPath, range)
+    try {
+      const fd = await util.promisify(fs.open)(contentPath, 'r')
+      return fs.createReadStream(contentPath, { ...range, fd })
+    }
+    catch (err) {
+      console.error(`error reading attachment content`, contentPath, err)
+      return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `error reading attachment ${attachmentId} on observation ${observation.id}`)
+    }
   }
 
   async readThumbnailContent(minDimension: number, attachmentId: string, observation: Observation): Promise<NodeJS.ReadableStream | AttachmentStoreError> {
     const attachment = observation.attachmentFor(attachmentId)
     if (!attachment) {
-      return Promise.resolve(AttachmentStoreError.invalidAttachmentId(attachmentId, observation))
+      return AttachmentStoreError.invalidAttachmentId(attachmentId, observation)
     }
     const thumbnail = attachment.thumbnails.find(x => x.minDimension === minDimension)
     if (!thumbnail) {
-      return Promise.resolve(AttachmentStoreError.invalidThumbnailDimension(minDimension, attachmentId, observation))
+      return AttachmentStoreError.invalidThumbnailDimension(minDimension, attachmentId, observation)
     }
     const contentRelPath = relativeReadPathForThumbnail(thumbnail, attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
-    return fs.createReadStream(contentPath)
+    try {
+      const fd = await util.promisify(fs.open)(contentPath, 'r')
+      return fs.createReadStream(contentPath, { fd })
+    }
+    catch (err) {
+      console.error(`error reading attachment thumbnail content`, contentPath, err)
+      return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `error reading thumbnail ${minDimension} of attachment ${attachmentId} on observation ${observation.id}`)
+    }
   }
 
   async deleteContent(attachment: Attachment, observation: Observation): Promise<AttachmentStoreError | AttachmentPatchAttrs | null> {
