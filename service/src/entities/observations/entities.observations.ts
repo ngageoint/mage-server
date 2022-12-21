@@ -991,6 +991,12 @@ function validateObservationFormEntries(validation: ObservationValidationContext
   if (!Array.isArray(observationAttrs.properties.forms)) {
     return validation.addCoreAttrsError('forms', 'The observation requires an array of form entries.')
   }
+  const activeFormEntryCounts = mageEvent.forms.reduce((activeFormCounts, form) => {
+    if (!form.archived) {
+      activeFormCounts.set(form.id, 0)
+    }
+    return activeFormCounts
+  }, new Map<FormId, number>())
   const formEntryIds = new Set<FormEntryId>()
   const formEntryCounts = observationAttrs.properties.forms.reduce((formEntryCounts, formEntry, formEntryPos) => {
     const formEntryError = new FormEntryValidationError(formEntry.id, formEntryPos)
@@ -1000,7 +1006,7 @@ function validateObservationFormEntries(validation: ObservationValidationContext
     formEntryIds.add(formEntry.id)
     const form = mageEvent.formFor(formEntry.formId)
     if (form) {
-      if (!form.archived) {
+      if (activeFormEntryCounts.has(form.id)) {
         formEntryError.formName = form.name
         formEntryCounts.set(form.id, (formEntryCounts.get(form.id) || 0) + 1)
         validateFormFieldEntries(formEntry, form, formEntryError, validation)
@@ -1013,7 +1019,7 @@ function validateObservationFormEntries(validation: ObservationValidationContext
       validation.addFormEntryError(formEntryError)
     }
     return formEntryCounts
-  }, new Map<FormId, number>(mageEvent.forms.map(x => [ x.id, 0 ])))
+  }, activeFormEntryCounts)
   let totalActiveFormEntryCount = 0
   for (const [ formId, formEntryCount ] of formEntryCounts) {
     const form = mageEvent.formFor(formId)!
@@ -1085,7 +1091,7 @@ interface FormFieldValidationContext {
 function FormFieldValidationResult(context: FormFieldValidationContext): fields.SimpleFieldValidationResult<FormFieldValidationError, FormFieldEntry | undefined> {
   return {
     failedBecauseTheEntry(reason: string, constraint: FieldConstraintKey = FieldConstraintKey.Value): FormFieldValidationError {
-      return new FormFieldValidationError({ fieldName: context.field.name, message: `${context.field.name} ${reason}`, constraint: constraint })
+      return new FormFieldValidationError({ fieldName: context.field.name, message: `${context.field.title} ${reason}`, constraint: constraint })
     },
     succeeded(parsed?: FormFieldEntry): typeof parsed { return parsed }
   }
