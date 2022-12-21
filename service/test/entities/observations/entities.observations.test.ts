@@ -27,7 +27,7 @@ function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): Observat
   }
 }
 
-describe.only('observation entities', function() {
+describe('observation entities', function() {
 
   let mageEventAttrs: MageEventAttrs
 
