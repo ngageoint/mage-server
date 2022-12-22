@@ -52,19 +52,19 @@ jobs:
           echo "node versions latest: ${node_versions_latest}"
           echo "node versions pre_latest: ${node_versions_pre_latest}"
           echo "node versions pre_latest json: ${node_versions_pre_latest_json}"
-          echo ::set-output name=all::${node_versions_arr}
-          echo ::set-output name=all-json::${node_versions_json}
-          echo ::set-output name=latest::${node_versions_latest}
-          echo ::set-output name=pre_latest::${node_versions_pre_latest}
-          echo ::set-output name=pre_latest-json::${node_versions_pre_latest_json}
+          echo {all}={${node_versions_arr}} >> $GITHUB_OUTPUT
+          echo {all-json}={${node_versions_json}} >> $GITHUB_OUTPUT
+          echo {latest}={${node_versions_latest}} >> $GITHUB_OUTPUT
+          echo {pre_latest}={${node_versions_pre_latest}} >> $GITHUB_OUTPUT
+          echo {pre_latest-json}={${node_versions_pre_latest_json}} >> $GITHUB_OUTPUT
       - id: release_info
         name: get release info
         run: |
           mage_version=$(echo ${GITHUB_REF_NAME} | sed -E 's/^(pre)?releases\///i')
           [[ -z ${mage_version} ]] && mage_version=${GITHUB_REF}
-          echo ::set-output name=is_release::${{ (github.ref_type == 'tag' && contains(github.ref_name, 'releases/')) || '' }}
-          echo ::set-output name=is_prerelease::${{ startsWith(github.ref_name, 'prereleases/') || '' }}
-          echo ::set-output name=version::${mage_version}
+          echo {is_release}={${{ (github.ref_type == 'tag' && contains(github.ref_name, 'releases/')) || '' }}} >> $GITHUB_OUTPUT
+          echo {is_prerelease}={${{ startsWith(github.ref_name, 'prereleases/') || '' }}} >> $GITHUB_OUTPUT
+          echo {version}={${mage_version}} >> $GITHUB_OUTPUT
 
   build_service:
     name: build mage service
