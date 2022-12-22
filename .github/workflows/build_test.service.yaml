@@ -6,8 +6,8 @@ on:
   push:
     paths:
       - service/**
-      - ./.github/workflows/build_test.service.yaml
-      - ./.github/workflows/config.yaml
+      - .github/workflows/build_test.service.yaml
+      - .github/workflows/config.yaml
 
 jobs:
   config:
