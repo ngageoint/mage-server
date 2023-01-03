@@ -56,7 +56,16 @@
               "node_modules/systemjs/dist/extras/named-register.js",
               "node_modules/js_cols/dist/js_cols.min.js"
             ],
-            "plugin": "~/post_build.js"
+            "plugin": "~/post_build.js",
+            "allowedCommonJsDependencies": [
+              "ajv",
+              "angular",
+              "core-js-pure",
+              "ev-emitter",
+              "focus-trap",
+              "lodash",
+              "traverse"
+            ]
           },
           "configurations": {
             "production": {
