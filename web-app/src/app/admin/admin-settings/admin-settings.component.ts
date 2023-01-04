@@ -125,13 +125,19 @@ export class AdminSettingsComponent implements OnInit {
       const ref = this.dialog.open(AdminSettingsUnsavedComponent);
 
       return ref.afterClosed().toPromise().then(result => {
-        if (result.discard) {
+        let discard = true;
+
+        if(result) {
+          discard = result.discard;
+        }
+
+        if (discard) {
           this.isAuthenticationDirty = false;
           this.isBannerDirty = false;
           this.isDisclaimerDirty = false;
           this.isContactInfoDirty = false;
         }
-        return Promise.resolve(result.discard);
+        return Promise.resolve(discard);
       });
     }
 
