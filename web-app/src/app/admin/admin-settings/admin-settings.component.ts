@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { AdminSettingsUnsavedComponent } from './admin-settings-unsaved/admin-settings-unsaved.component';
 import { TransitionService } from '@uirouter/core';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'admin-settings',
@@ -120,25 +121,22 @@ export class AdminSettingsComponent implements OnInit {
     return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty || this.isContactInfoDirty;
   }
 
-  onUnsavedChanges(): Promise<boolean> {
+  async onUnsavedChanges(): Promise<boolean> {
     if (this.isDirty()) {
       const ref = this.dialog.open(AdminSettingsUnsavedComponent);
 
-      return ref.afterClosed().toPromise().then(result => {
-        let discard = true;
-
-        if(result) {
-          discard = result.discard;
-        }
-
-        if (discard) {
-          this.isAuthenticationDirty = false;
-          this.isBannerDirty = false;
-          this.isDisclaimerDirty = false;
-          this.isContactInfoDirty = false;
-        }
-        return Promise.resolve(discard);
-      });
+      const result_2 = await lastValueFrom(ref.afterClosed());
+      let discard = true;
+      if (result_2) {
+        discard = result_2.discard;
+      }
+      if (discard) {
+        this.isAuthenticationDirty = false;
+        this.isBannerDirty = false;
+        this.isDisclaimerDirty = false;
+        this.isContactInfoDirty = false;
+      }
+      return await Promise.resolve(discard);
     }
 
     return Promise.resolve(true);
