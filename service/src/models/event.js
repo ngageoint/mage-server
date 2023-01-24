@@ -697,9 +697,10 @@ exports.getTeamsInEvent = async function (eventId, options) {
       { description: searchRegex }
     ]
   } : {}
-  // TODO make sure to exclude event teams
   params._id = { '$in': event.teamIds.toObject() }
-  params.teamEventId = null;
+  if (options.omitEventTeams === true) {
+    params.teamEventId = null;
+  }
   // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
   // add _id to sort to ensure consistent ordering
   let teamQuery = Team.TeamModel.find(params).sort('name _id')
@@ -752,9 +753,10 @@ exports.getTeamsNotInEvent = async function (eventId, options) {
         { description: searchRegex }
       ]
     } : {}
-
     params._id = { '$nin': event.teamIds.toObject() }
-    params.teamEventId = null;
+    if (options.omitEventTeams === true) {
+      params.teamEventId = null;
+    }
 
     // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
     // add _id to sort to ensure consistent ordering

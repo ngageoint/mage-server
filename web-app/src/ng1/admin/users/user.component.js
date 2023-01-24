@@ -3,6 +3,10 @@
 import _ from 'underscore';
 import moment from 'moment';
 
+
+const CURRENT_TEAMS_KEY = 'all'
+const CANDIDATE_TEAMS_KEY = 'all.search'
+
 class AdminUserController {
   constructor($uibModal, $state, $stateParams, $q, LocalStorageService, UserService, LoginService, DevicePagingService, Team, TeamPagingService) {
     this.$q = $q;
@@ -33,20 +37,15 @@ class AdminUserController {
     this.firstLogin = null;
     this.showPrevious = false;
     this.showNext = true;
-
     this.deviceStateAndData = this.DevicePagingService.constructDefault();
     this.deviceState = 'all';
     this.loginSearchResults = [];
     this.isSearchingDevices = false;
     this.device = null;
-
-    this.userTeamStateAndData = this.TeamPagingService.constructDefault();
-    this.userTeamState = 'all';
     this.userTeamSearch = '';
-    this.nonUserTeamSearchState = this.userTeamState + '.search';
+    this.userTeamStateAndData = this.TeamPagingService.constructDefault();
+    this.userTeamStateAndData[CANDIDATE_TEAMS_KEY] = this.TeamPagingService.constructDefault()[CURRENT_TEAMS_KEY];
     this.nonUserTeamSearch = '';
-
-
     this.nonUserTeam = null;
     this.nonUserTeamSearchResults = [];
     this.isSearching = false;
@@ -54,17 +53,13 @@ class AdminUserController {
 
   $onInit() {
     this.UserService.getUser(this.$stateParams.userId).then(user => {
-      this.user = user;  
-      const searchClone = JSON.parse(JSON.stringify(this.userTeamStateAndData[this.userTeamState]));
-      this.userTeamStateAndData[this.nonUserTeamSearchState] = searchClone;
-
-      this.userTeamStateAndData[this.userTeamState].teamFilter.in = { userIds: [user.id]};
-      this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.nin = { userIds: [user.id]};
-      delete this.userTeamStateAndData[this.userTeamState].teamFilter.e;
-      delete this.userTeamStateAndData[this.nonUserTeamSearchState].teamFilter.e;
-
+      this.user = user;
+      this.userTeamStateAndData[CURRENT_TEAMS_KEY].searchOptions.with_members = [ user.id ];
+      this.userTeamStateAndData[CURRENT_TEAMS_KEY].searchOptions.omit_event_teams = false
+      this.userTeamStateAndData[CANDIDATE_TEAMS_KEY].searchOptions.without_members = [ user.id ];
+      this.userTeamStateAndData[CANDIDATE_TEAMS_KEY].searchOptions.omit_event_teams = false
       this.TeamPagingService.refresh(this.userTeamStateAndData).then(() => {
-        this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[this.userTeamState]);
+        this.userTeams = this.TeamPagingService.teams(this.userTeamStateAndData[CURRENT_TEAMS_KEY]);
       });
     });
 
@@ -84,27 +79,27 @@ class AdminUserController {
   }
 
   hasNextUserTeam() {
-    return this.TeamPagingService.hasNext(this.userTeamStateAndData[this.userTeamState]);
+    return this.TeamPagingService.hasNext(this.userTeamStateAndData[CURRENT_TEAMS_KEY]);
   }
 
   nextUserTeam() {
-    this.TeamPagingService.next(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+    this.TeamPagingService.next(this.userTeamStateAndData[CURRENT_TEAMS_KEY]).then(teams => {
       this.userTeams = teams;
     });
   }
 
   hasPreviousUserTeam() {
-    return this.TeamPagingService.hasPrevious(this.userTeamStateAndData[this.userTeamState]);
+    return this.TeamPagingService.hasPrevious(this.userTeamStateAndData[CURRENT_TEAMS_KEY]);
   }
 
   previousUserTeam() {
-    this.TeamPagingService.previous(this.userTeamStateAndData[this.userTeamState]).then(teams => {
+    this.TeamPagingService.previous(this.userTeamStateAndData[CURRENT_TEAMS_KEY]).then(teams => {
       this.userTeams = teams;
     });
   }
 
   searchUserTeam() {
-    this.TeamPagingService.search(this.userTeamStateAndData[this.userTeamState], this.userTeamSearch, true).then(teams => {
+    this.TeamPagingService.search(this.userTeamStateAndData[CURRENT_TEAMS_KEY], this.userTeamSearch).then(teams => {
       this.userTeams = teams;
     });
   }
@@ -113,11 +108,7 @@ class AdminUserController {
   searchNonUserTeams(searchString) {
     this.isSearching = true;
 
-    if (searchString == null) {
-      searchString = '.*';
-    }
-
-    return this.TeamPagingService.search(this.userTeamStateAndData[this.nonUserTeamSearchState], searchString, true).then(teams => {
+    return this.TeamPagingService.search(this.userTeamStateAndData[CANDIDATE_TEAMS_KEY], searchString).then(teams => {
       this.nonUserTeamSearchResults = teams;
 
       if(this.nonUserTeamSearchResults.length == 0) {
@@ -128,7 +119,7 @@ class AdminUserController {
       }
 
       this.isSearching = false;
-  
+
       return this.nonUserTeamSearchResults;
     });
   }
@@ -247,7 +238,7 @@ class AdminUserController {
         };
         this.loginSearchResults.push(noDevice);
       }
-  
+
       return this.loginSearchResults;
     });
   }

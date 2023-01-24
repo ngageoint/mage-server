@@ -232,6 +232,7 @@ class AdminEventController {
     this.loadingTeams = true;
     this.Event.getTeams({
       id: this.$stateParams.eventId,
+      omit_event_teams: true,
       page: this.teamsPageIndex,
       page_size: this.teamsPageSize,
       total: true,
@@ -246,6 +247,7 @@ class AdminEventController {
     this.loadingNonTeams = true;
     this.Event.getNonTeams({
       id: this.$stateParams.eventId,
+      omit_event_teams: true,
       page: this.nonTeamsPageIndex,
       page_size: this.nonTeamsPageSize,
       total: true,
@@ -287,7 +289,7 @@ class AdminEventController {
       this.getTeamsPage();
       this.getNonTeamsPage();
     });
-    
+
   }
 
   removeTeam($event, team) {

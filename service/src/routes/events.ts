@@ -696,6 +696,7 @@ function teamQueryOptionsFromRequest(req: express.Request): any {
   const options = {
     access: req.access,
     searchTerm: req.query.term,
+    omitEventTeams: /^true$/i.test(String(req.query.omit_event_teams)),
     pageSize: parseIntOrUndefined(req.query.page_size),
     pageIndex: parseIntOrUndefined(req.query.page),
     includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined,

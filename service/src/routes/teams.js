@@ -60,48 +60,33 @@ module.exports = function(app, security) {
     '/api/teams',
     determineReadAccess,
     function (req, res, next) {
-      var filter = {};
+      const limit = req.query.limit || null;
+      const start = req.query.start || null;
+      const sort = req.query.sort || null;
+      const omitEventTeams = /^true$/i.test(String(req.query.omit_event_teams));
+      const searchTerm = req.query.term || null;
+      const queryParamArray = queryParam => Array.isArray(queryParam) ? queryParam : (typeof queryParam === 'string' ? [ queryParam ] : null);
+      const withMembers = queryParamArray(req.query.with_members);
+      const withoutMembers = queryParamArray(req.query.without_members);
 
-      if (req.query) {
-        for (let [key, value] of Object.entries(req.query)) {
-          if (key == 'populate' || key == 'limit' || key == 'start' || key == 'sort'){
-            continue;
-          }
-          filter[key] = value;
-        }
-      }
-
-      var limit = null;
-      if (req.query.limit) {
-        limit = req.query.limit;
-      }
-
-      var start = null;
-      if (req.query.start) {
-        start = req.query.start;
-      }
-
-      var sort = null;
-      if (req.query.sort) {
-        sort = req.query.sort;
-      }
-
-      Team.getTeams({access: req.access, populate: req.query.populate, filter: filter, limit: limit, start: start, sort: sort}, 
+      Team.getTeams(
+        { access: req.access, populate: req.query.populate, omitEventTeams, limit, start, sort, searchTerm, withMembers, withoutMembers },
         function (err, teams, page) {
-        if (err) return next(err);
-
-        let data = null;
-
-        if (page != null) {
-          data = [pageinfoTransformer.transform(page, req, start, limit)];
-        } else {
-          data = teams.map(function(team) {
-            return team.toObject({access: req.access, path: req.getRoot()});
-          });
+          if (err)  {
+            return next(err);
+          }
+          let data = null;
+          if (page != null) {
+            data = [ pageinfoTransformer.transform(page, req, start, limit) ];
+          }
+          else {
+            data = teams.map(function(team) {
+              return team.toObject({access: req.access, path: req.getRoot()});
+            });
+          }
+          res.json(data);
         }
-
-        res.json(data);
-      });
+      );
     }
   );
 
@@ -185,7 +170,7 @@ module.exports = function(app, security) {
 
       Team.getMembers(req.params.id, options).then(page => {
         if (!page) return res.status(404).send('Team not found');
-        
+
         res.json(page);
       }).catch(err => next(err));
     }
@@ -205,7 +190,7 @@ module.exports = function(app, security) {
 
       Team.getNonMembers(req.params.id, options).then(page => {
         if (!page) return res.status(404).send('Team not found');
-        
+
         res.json(page);
       }).catch(err => next(err))
     }
