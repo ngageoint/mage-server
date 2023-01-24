@@ -36,8 +36,8 @@
             "styles": [
               "src/ng1/vendor/bootstrap/css/bootstrap.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
+              "node_modules/md-date-time-picker/dist/css/mdDateTimePicker.css",
               "src/ng1/vendor/material-design-icons/icons.css",
-              "src/ng1/vendor/md-date-time-picker/dist/css/mdDateTimePicker.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
