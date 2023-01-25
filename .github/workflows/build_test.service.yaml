@@ -55,7 +55,7 @@ jobs:
       - name: pack plugin image.service
         run: npm pack ./plugins/image/service
       - name: upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mage_service_packages
           path: |

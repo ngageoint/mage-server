@@ -40,7 +40,7 @@ jobs:
           npm pack ./web-app/dist/core-lib
           npm pack ./web-app/dist/app
       - name: upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mage_web-app_packages
           path: |
