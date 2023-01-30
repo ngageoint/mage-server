@@ -107,7 +107,7 @@ jobs:
       - name: pack plugin image.service
         run: npm pack ./plugins/image/service
       - name: upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mage_service_packages
           path: |
@@ -135,7 +135,7 @@ jobs:
         run: |
           npm ci --prefix service
       - name: download service package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: extract service lib
@@ -165,7 +165,7 @@ jobs:
   #           service/package-lock.json
   #           plugins/image/service/package-lock.json
   #     - name: download service packages
-  #       uses: actions/download-artifact@v2
+  #       uses: actions/download-artifact@v3
   #       with:
   #         name: mage_service_packages
 
@@ -203,7 +203,7 @@ jobs:
           npm pack ./web-app/dist/core-lib
           npm pack ./web-app/dist/app
       - name: upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mage_web-app_packages
           path: |
@@ -235,11 +235,11 @@ jobs:
       - name: install json
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: download web-app packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_web-app_packages
       # - name: publish to gitlab
@@ -281,11 +281,11 @@ jobs:
   #     - name: install json utility
   #       run: npm i json
   #     - name: download service packages
-  #       uses: actions/download-artifact@v2
+  #       uses: actions/download-artifact@v3
   #       with:
   #         name: mage_service_packages
   #     - name: download web-app packages
-  #       uses: actions/download-artifact@v2
+  #       uses: actions/download-artifact@v3
   #       with:
   #         name: mage_web-app_packages
   #     - name: list artifacts

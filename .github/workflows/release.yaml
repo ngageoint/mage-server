@@ -76,11 +76,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: download web-app packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_web-app_packages
       - name: generate instance package.json
@@ -119,11 +119,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: download web-app packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_web-app_packages
       - name: publish to package registry

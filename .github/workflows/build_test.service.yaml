@@ -82,7 +82,7 @@ jobs:
         run: |
           npm ci --prefix service
       - name: download service package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: extract service lib
