@@ -774,6 +774,35 @@ paths:
                     type: string
                   _id:
                     type: string
+        - in: query
+          name: omit_event_teams
+          description: >
+            Whether to omit the event's implicit team that MAGE automatically
+            creates for adding individual users to an event.
+          schema:
+            type: boolean
+        - in: query
+          name: with_members
+          description: >
+            Return only teams that have the given user IDs as members.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User/properties/id'
+        - in: query
+          name: without_members
+          description: >
+            Return only teams that do not have the given user IDs as members.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User/properties/id'
+        - in: query
+          name: term
+          description: >
+            Return teams whose name or description field contains the given search term.
+          schema:
+            type: string
       responses:
         200:
           description: Success - an array of team documents
@@ -1513,6 +1542,19 @@ paths:
             type: string
             enum:
               - users
+        - in: query
+          name: omit_event_teams
+          description: >
+            Whether to omit the event's implicit team that MAGE automatically
+            creates for adding individual users to an event.
+          schema:
+            type: boolean
+        - in: query
+          name: term
+          description: >
+            Return teams whose name or description contains the given search term.
+          schema:
+            type: string
       responses:
         200:
           description: Success - return an array of team documents.

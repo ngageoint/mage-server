@@ -654,13 +654,25 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     }
   );
 
+  /*
+  TODO: these two routes seem to be more intended for the admin page to search
+  teams to add or remove from an event, but android uses this route to get the
+  teams for the user's current event and check membership before submitting an
+  observation.  maybe instead the server should simply return a view of events
+  to the requesting user with flags indicating what actions the user can
+  perform in the events, rather than the apps having to query for the teams
+  of an event and check if the user is a member of those teams.  that would
+  encapsulate the access control logic in the server and be more straight-
+  forward to the clients.
+  */
+
   app.get(
-    '/api/events/:id/teams',
+    '/api/events/:eventId/teams',
     passport.authenticate('bearer'),
-    determineReadAccess,
+    middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function (req, res, next) {
       const options = teamQueryOptionsFromRequest(req)
-      EventModel.getTeamsInEvent(parseInt(req.params.id), options).then(page => {
+      EventModel.getTeamsInEvent(req.event!.id, options).then(page => {
         if (!page) {
           return res.status(404).send('Event not found');
         }
@@ -669,13 +681,18 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     }
   );
 
+  /*
+  TODO: should any user that can read an event really be able to query for all
+  the teams not in an event?
+  */
+
   app.get(
-    '/api/events/:id/nonTeams',
+    '/api/events/:eventId/nonTeams',
     passport.authenticate('bearer'),
-    determineReadAccess,
+    middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
     function (req, res, next) {
       const options = teamQueryOptionsFromRequest(req)
-      EventModel.getTeamsNotInEvent(parseInt(req.params.id), options).then(page => {
+      EventModel.getTeamsNotInEvent(req.event!.id, options).then(page => {
         if (!page) {
           return res.status(404).send('Event not found');
         }
@@ -694,8 +711,8 @@ function parseIntOrUndefined(input: any): number | undefined {
 
 function teamQueryOptionsFromRequest(req: express.Request): any {
   const options = {
-    access: req.access,
     searchTerm: req.query.term,
+    omitEventTeams: /^true$/i.test(String(req.query.omit_event_teams)),
     pageSize: parseIntOrUndefined(req.query.page_size),
     pageIndex: parseIntOrUndefined(req.query.page),
     includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined,

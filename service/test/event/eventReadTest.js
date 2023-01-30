@@ -315,23 +315,22 @@ describe("event read tests", function() {
   it("should read teams page in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    var eventId = 1;
-    var mockEvent = new EventModel({
+    const eventId = 1;
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
 
-    var eventMock = sinon.mock(EventModel);
+    sinon.mock(EventModel).expects('findById').twice()
+      .onFirstCall().yieldsAsync(null, mockEvent)
+      .onSecondCall().resolves(mockEvent);
 
-    eventMock.expects('findOne')
-      .resolves(mockEvent);
-
-    var mockTeam = new TeamModel({
+    const mockTeam = new TeamModel({
       _id: 1,
       name: 'Mock Team'
     });
 
-    var mockCursor = {
+    const mockCursor = {
       toArray: function (callback) {
         callback(null, [mockTeam]);
       }
@@ -435,31 +434,30 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read teams page in event with team access", function(done) {
+  it("reads teams in event with team access", async function() {
+
     mockTokenWithPermission('');
 
     const eventId = 1;
     const mockTeam = new TeamModel({
       _id: mongoose.Types.ObjectId(),
-      userIds: [userId],
+      userIds: [ userId ],
       acl: {}
     });
     const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
-      teamIds: [],
+      teamIds: [ mockTeam._id ],
       acl: {
         1: 'NONE'
       }
     });
-    mockEvent.teamIds[0] = mockTeam._id;
 
-    const eventMock = sinon.mock(EventModel);
+    sinon.mock(EventModel).expects('findById').twice()
+      .onFirstCall().yieldsAsync(null, mockEvent)
+      .onSecondCall().resolves(mockEvent);
 
-    eventMock.expects('findOne')
-      .resolves(mockEvent);
-
-    var mockCursor = {
+    const mockCursor = {
       toArray: function (callback) {
         callback(null, [mockTeam]);
       }
@@ -478,12 +476,12 @@ describe("event read tests", function() {
       .withArgs(mockEvent, sinon.match.has('_id', userId), MageEventPermission.READ_EVENT_ALL, EventAccessType.Read)
       .resolves(null)
 
-    request(app)
+    const res = await request(app)
       .get('/api/events/1/teams?page=0')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .query({populate: 'users'})
-      .expect(200)
-      .end(done);
+      .query({populate: 'users'});
+
+    expect(res.status).to.equal(200)
   });
 });

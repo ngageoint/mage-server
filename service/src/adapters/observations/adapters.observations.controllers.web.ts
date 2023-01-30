@@ -79,10 +79,12 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
           }
           finishResponse()
         }
+        const { observationId, attachmentId } = req.params
         req.pipe(req.attachmentUpload!
           .on('file', async (fieldName, stream, info) => {
             if (fieldName !== 'attachment') {
               // per busboy docs, drain the file stream and move on
+              console.error(`unexpected file entry '${fieldName}' uploading attachment ${attachmentId} on observation ${observationId}`)
               stream.resume()
               return afterUploadStream(sendInvalidRequestStructure)
             }
@@ -91,7 +93,6 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
               mediaType: info.mimeType,
               name: info.filename,
             }
-            const { observationId, attachmentId } = req.params
             const appReqParams: Omit<StoreAttachmentContentRequest, 'context'> = { observationId, attachmentId, content }
             const appReq: StoreAttachmentContentRequest = createAppRequest(req, appReqParams)
             const appRes = await app.storeAttachmentContent(appReq)
@@ -99,6 +100,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
               const obs = appRes.success
               const attachment = obs.attachments.find(x => x.id === appReq.attachmentId)!
               const attachmentJson = jsonForAttachment(attachment, `${qualifiedBaseUrl(req)}/${observationId}`)
+              console.info(`successfully stored attachment ${attachmentId} on observation ${observationId}`)
               return void(afterUploadStream(() => res.json(attachmentJson)))
             }
             if (appRes.error) {
@@ -114,8 +116,18 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
             */
             stream.resume()
           })
-          .on('filesLimit', () => afterUploadStream(sendInvalidRequestStructure))
-          .on('fieldsLimit', () => afterUploadStream(sendInvalidRequestStructure))
+          .on('field', (fieldName, content, info) => {
+            console.error(`unexpected field ${fieldName} uploading attachment ${attachmentId} on observation ${observationId}`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
+          .on('filesLimit', () => {
+            console.error(`too many file parts in upload request for attachment ${attachmentId} on observation ${observationId}`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
+          .on('fieldsLimit', () => {
+            console.error(`too many field parts in upload request for attachment ${attachmentId} on observation ${observationId}`)
+            afterUploadStream(sendInvalidRequestStructure)
+          })
           .on('close', () => {
             req.attachmentUpload?.emit(afterUploadStreamEvent)
             req.attachmentUpload?.removeAllListeners()

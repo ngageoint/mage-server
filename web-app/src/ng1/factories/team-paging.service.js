@@ -22,8 +22,7 @@ function TeamPagingService(Team, $q) {
         return {
             all: {
                 countFilter: {},
-                teamFilter: { populate: false, limit: 10, sort: { name: 1, _id: 1 }, e: { teamEventId: null} },
-                searchFilter: '',
+                searchOptions: { populate: false, limit: 10, sort: { name: 1, _id: 1 }, omit_event_teams: true, term: '' },
                 teamCount: 0,
                 pageInfo: {}
             }
@@ -31,20 +30,13 @@ function TeamPagingService(Team, $q) {
     }
 
     function refresh(stateAndData) {
-
-        var promises = [];
-
-        for (const [key, value] of Object.entries(stateAndData)) {
-
-            var promise = Team.query(value.teamFilter).$promise.then(page => {
-                stateAndData[key].teamCount = page[0].totalCount;
-                stateAndData[key].pageInfo = page[0];
-                $q.resolve(key);
-            });
-
-            promises.push(promise);
-        }
-
+        const promises = Object.entries(stateAndData).map(([ searchKey, searchState ]) => {
+            return Team.query(searchState.searchOptions).$promise.then(page => {
+                stateAndData[searchKey].teamCount = page[0].totalCount;
+                stateAndData[searchKey].pageInfo = page[0];
+                $q.resolve(searchKey);
+            })
+        });
         return $q.all(promises);
     }
 
@@ -53,14 +45,11 @@ function TeamPagingService(Team, $q) {
     }
 
     function hasNext(data) {
-        var status = false;
-
         if (data.pageInfo && data.pageInfo.links) {
-            status = data.pageInfo.links.next != null &&
+            return data.pageInfo.links.next != null &&
                 data.pageInfo.links.next !== "";
         }
-
-        return status;
+        return false;
     }
 
     function next(data) {
@@ -68,14 +57,11 @@ function TeamPagingService(Team, $q) {
     }
 
     function hasPrevious(data) {
-        var status = false;
-
         if (data.pageInfo && data.pageInfo.links) {
-            status = data.pageInfo.links.prev != null &&
+            return data.pageInfo.links.prev != null &&
                 data.pageInfo.links.prev !== "";
         }
-
-        return status;
+        return false;
     }
 
     function previous(data) {
@@ -83,71 +69,34 @@ function TeamPagingService(Team, $q) {
     }
 
     function move(start, data) {
-        var filter = JSON.parse(JSON.stringify(data.teamFilter));
-        filter.start = start;
-        return $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
+        const searchOptions = { ...data.searchOptions, start };
+        return $q.all({pageInfo: Team.query(searchOptions).$promise }).then(result => {
             data.pageInfo = result.pageInfo[0];
             return $q.resolve(data.pageInfo.items);
         });
     }
 
     function teams(data) {
-        var teams = [];
-
         if (data.pageInfo && data.pageInfo.items) {
-            teams = data.pageInfo.items;
+            return data.pageInfo.items;
         }
-
-        return teams;
+        return [];
     }
 
-    function search(data, teamSearch, nameSearchOnly) {
-
+    function search(data, searchTerm) {
         if (data.pageInfo == null || data.pageInfo.items == null) {
             return $q.resolve([]);
         }
-
-        const previousSearch = data.searchFilter;
-
-        var promise = null;
-
-        if (previousSearch == '' && teamSearch == '') {
-            //Not performing a seach
-            promise = $q.resolve(data.pageInfo.items);
-        } else if (previousSearch != '' && teamSearch == '') {
-            //Clearing out the search
-            data.searchFilter = '';
-            delete data.teamFilter['or'];
-
-            promise = $q.all({pageInfo: Team.query(data.teamFilter).$promise }).then(result => {
-                data.pageInfo = result.pageInfo[0];
-                return $q.resolve(data.pageInfo.items);
-            });
-        } else if (previousSearch == teamSearch) {
-            //Search is being performed, no need to keep searching the same info over and over
-            promise = $q.resolve(data.pageInfo.items);
-        } else {
-            //Perform the server side searching
-            data.searchFilter = teamSearch;
-
-            var filter = data.teamFilter;
-            if(nameSearchOnly) {
-                filter.or = {
-                    name: '.*' + teamSearch + '.*'
-                };
-            } else{
-                filter.or = {
-                    name: '.*' + teamSearch + '.*',
-                    description: '.*' + teamSearch + '.*'
-                };
-            }
-
-            promise = $q.all({pageInfo: Team.query(filter).$promise }).then(result => {
-                data.pageInfo = result.pageInfo[0];
-                return $q.resolve(data.pageInfo.items);
-            });
+        const previousTerm = data.searchOptions.term;
+        if (previousTerm == searchTerm) {
+            // Search is being performed, no need to keep searching the same info over and over
+            return $q.resolve(data.pageInfo.items);
         }
-
-        return promise;
+        // Perform the server side searching
+        data.searchOptions.term = searchTerm;
+        return $q.all({ pageInfo: Team.query(data.searchOptions).$promise }).then(result => {
+            data.pageInfo = result.pageInfo[0];
+            return data.pageInfo.items;
+        });
     }
 }
