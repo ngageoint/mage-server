@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.0",
+  "version": "6.2.1",
   "displayName": "MAGE Service",
   "description": "MAGE is a geospatial situational awareness and data collection platform.  The MAGE Service is the ReST service API that the MAGE client apps use to interact with MAGE data.",
   "keywords": [
@@ -157,7 +157,7 @@
     "build:copy_docs": "cpy --parents --cwd=src 'docs/**/*' ../lib/",
     "build:copy_package": "cpy --rename=dist-package.json package.json lib/",
     "build:copy_types": "cpy --verbose --parents --cwd=src '**/*.d.ts' ../lib/",
-    "build:copy_views": "cpy --parents --cwd=src 'views/**/*' ../lib/",
+    "build:copy_views": "cpy --parents --cwd=src 'views/**/*' ../lib",
     "build:after_compile": "npm-run-all build:copy_assets build:copy_types build:copy_docs build:copy_package build:copy_views",
     "build": "npm-run-all build:compile build:after_compile",
     "test:compile": "tsc -b test",

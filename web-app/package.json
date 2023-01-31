@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@ngageoint/mage.web-app",
-  "version": "6.2.0",
+  "version": "6.2.1",
   "description": "The MAGE web-app is the UI for interacting with the MAGE service in a web browser.",
   "keywords": [
     "NGA",

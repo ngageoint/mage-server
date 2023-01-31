@@ -6,6 +6,7 @@ import { Point } from 'geojson'
 import _ from 'lodash'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
 import uniqid from 'uniqid'
+import e from 'express'
 
 function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): ObservationAttrs {
   const eventId = typeof mageEvent === 'object' ? mageEvent.id : mageEvent
@@ -260,6 +261,59 @@ describe('observation entities', function() {
         const invalid = validateObservation(o, new MageEvent(mageEventAttrs))
 
         expect(invalid.hasErrors).to.equal(true)
+        expect(invalid.formCountErrors).to.have.length(1)
+        expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
+        expect(invalid.formCountErrors[0][1].constraint).to.equal(MaxFormsConstraint)
+      })
+
+      it('does not enforce the min constraint of an archived form', function() {
+
+        mageEventAttrs.minObservationForms = 0
+        mageEventAttrs.forms[0].archived = true
+        mageEventAttrs.forms[0].min = 1
+        let o = makeObservationAttrs(mageEventAttrs.id)
+        o.properties.forms = []
+        let invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors, validationResultMessage(invalid)).to.be.false
+
+        mageEventAttrs.forms[0].min = 2
+        o.properties.forms = [
+          { id: uniqid(), formId: mageEventAttrs.forms[0].id }
+        ]
+        invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors, validationResultMessage(invalid)).to.be.false
+
+        mageEventAttrs.forms[0].archived = false
+        o = makeObservationAttrs(mageEventAttrs.id)
+        invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.be.true
+        expect(invalid.formCountErrors).to.have.length(1)
+        expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
+        expect(invalid.formCountErrors[0][1].constraint).to.equal(MinFormsConstraint)
+      })
+
+      it('does not enforce the max constraint of an archived form', function() {
+
+        mageEventAttrs.minObservationForms = 0
+        mageEventAttrs.maxObservationForms = 10
+        mageEventAttrs.forms[0].archived = true
+        mageEventAttrs.forms[0].max = 1
+        let o = makeObservationAttrs(mageEventAttrs.id)
+        o.properties.forms = [
+          { id: uniqid(), formId: mageEventAttrs.forms[0].id },
+          { id: uniqid(), formId: mageEventAttrs.forms[0].id }
+        ]
+        let invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors, validationResultMessage(invalid)).to.be.false
+
+        mageEventAttrs.forms[0].archived = false
+        invalid = validateObservation(o, new MageEvent(mageEventAttrs))
+
+        expect(invalid.hasErrors).to.be.true
         expect(invalid.formCountErrors).to.have.length(1)
         expect(invalid.formCountErrors[0][0]).to.equal(mageEventAttrs.forms[0].id)
         expect(invalid.formCountErrors[0][1].constraint).to.equal(MaxFormsConstraint)

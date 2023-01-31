@@ -17,10 +17,7 @@ on:
         type: boolean
         required: false
         default: true
-      tag_target_ref:
-        description: The branch or commit hash that gets the release tag
-        type: string
-        required: false
+
   # TODO: possibly use release branches to perform the release process
   # push:
   #   branches:
@@ -79,11 +76,11 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: download web-app packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_web-app_packages
       - name: generate instance package.json
@@ -105,6 +102,7 @@ jobs:
           prerelease: ${{ inputs.is_prerelease }}
           draft: ${{ inputs.is_draft }}
           tag_name: ${{ inputs.version }}
+          target_commitish: ${{ github.sha }}
           files: |
             package.json
             ngageoint-mage.*.tgz
@@ -121,19 +119,21 @@ jobs:
       - name: install json util
         run: npm i -g json
       - name: download service packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: download web-app packages
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_web-app_packages
-      - name: publish to gitlab
+      - name: publish to package registry
         env:
           NPM_CONFIG_USERCONFIG: "${{ runner.temp }}/gitlab.npmrc"
         run: |
-          npm config set @ngageoint:registry https://gitlab.gs.mil/api/v4/projects/14746/packages/npm/
-          npm config set -- '//gitlab.gs.mil/api/v4/projects/14746/packages/npm/:_authToken' ${{ secrets.GITLAB_PACKAGE_REGISTRY_TOKEN }}
+          # npm config set @ngageoint:registry https://gitlab.gs.mil/api/v4/projects/14746/packages/npm/
+          # npm config set -- '//gitlab.gs.mil/api/v4/projects/14746/packages/npm/:_authToken' ${{ secrets.GITLAB_PACKAGE_REGISTRY_TOKEN }}
+          npm config set @ngageoint:registry https://npm.pkg.github.com
+          npm config set -- '//npm.pkg.github.com/:_authToken' ${{ secrets.GITHUB_TOKEN }}
           npm publish $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)

@@ -50,8 +50,8 @@ jobs:
           echo "node versions latest: ${node_versions_latest}"
           echo "node versions pre_latest: ${node_versions_pre_latest}"
           echo "node versions pre_latest json: ${node_versions_pre_latest_json}"
-          echo ::set-output name=all::${node_versions_arr}
-          echo ::set-output name=all-json::${node_versions_json}
-          echo ::set-output name=latest::${node_versions_latest}
-          echo ::set-output name=pre_latest::${node_versions_pre_latest}
-          echo ::set-output name=pre_latest-json::${node_versions_pre_latest_json}
+          echo all=${node_versions_arr} >> $GITHUB_OUTPUT
+          echo all-json=${node_versions_json} >> $GITHUB_OUTPUT
+          echo latest=${node_versions_latest} >> $GITHUB_OUTPUT
+          echo pre_latest=${node_versions_pre_latest} >> $GITHUB_OUTPUT
+          echo pre_latest-json=${node_versions_pre_latest_json} >> $GITHUB_OUTPUT

@@ -307,49 +307,69 @@ exports.getTeams = async function(options, callback) {
     callback = options;
     options = {};
   }
-
-  var filter = options.filter || {};
-
-  var conditions = createQueryConditions(filter);
+  const conditions = {};
   if (options.teamIds) {
-    conditions._id = {
-      $in: options.teamIds
-    };
+    conditions._id = { $in: options.teamIds };
   }
-
-  if (options.userId) {
-    conditions.userIds = {
-      '$in': [options.userId]
-    };
+  const searchTerm = options.searchTerm || ''
+  if (searchTerm.trim()) {
+    const termRegex = new RegExp(searchTerm, 'i')
+    conditions.$or = [
+      { name: termRegex },
+      { description: termRegex }
+    ]
   }
-
+  try {
+    if (options.userId) {
+      conditions.userIds = { $in: [ options.userId ] };
+    }
+    else if (Array.isArray(options.withMembers)) {
+      conditions.userIds = { $in: options.withMembers.map(mongoose.Types.ObjectId) };
+    }
+    else if (Array.isArray(options.withoutMembers)) {
+      conditions.userIds = { $nin: options.withoutMembers.map(mongoose.Types.ObjectId) };
+    }
+  }
+  catch (err) {
+    console.error('error parsing user ids for team query', JSON.stringify(options, null, 2), err);
+    return callback(err, null);
+  }
+  if (options.omitEventTeams === true) {
+    conditions.teamEventId = null;
+  }
   if (options.access) {
-    var accesses = [{
+    const accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
-
     rolesWithPermission(options.access.permission).forEach(function(role) {
-      var access = {};
+      const access = {};
       access['acl.' + options.access.user._id.toString()] = role;
       accesses.push(access);
     });
-
-    conditions['$or'] = accesses;
+    if (Array.isArray(conditions.$or)) {
+      conditions.$and = [
+        { $or: conditions.$or },
+        { $or: accesses }
+      ];
+      delete conditions.$or;
+    }
+    else {
+      conditions.$or = accesses;
+    }
   }
 
-  var baseQuery = Team.find(conditions).sort('_id');
-  if(options.populate == null || options.populate == 'true') {
+  let baseQuery = Team.find(conditions).sort('_id');
+  if (options.populate == null || options.populate == 'true') {
     baseQuery = baseQuery.populate('userIds');
   }
 
-  var isPaging = options.limit != null && options.limit > 0;
+  const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
     const limit = Math.abs(options.limit) || 10;
-    const start = (Math.abs(options.start) || 0);
+    const start = Math.abs(options.start) || 0;
     const page = Math.ceil(start / limit);
-
     const which = {
       pageSize: limit,
       pageIndex: page,
@@ -366,7 +386,6 @@ exports.getTeams = async function(options, callback) {
     } catch (err) {
       callback(err);
     }
-   
   } else {
     baseQuery.exec(function (err, teams) {
       callback(err, teams);
@@ -437,7 +456,7 @@ exports.createTeamForEvent = function(event, user, callback) {
 };
 
 exports.getTeamForEvent = function (event) {
- return Team.findOne({ teamEventId: event._id });
+  return Team.findOne({ teamEventId: event._id });
 };
 
 // TODO: should this do something with ACL?

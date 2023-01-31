@@ -6,6 +6,8 @@ on:
   push:
     paths:
       - service/**
+      - .github/workflows/build_test.service.yaml
+      - .github/workflows/config.yaml
 
 jobs:
   config:
@@ -19,9 +21,9 @@ jobs:
         run: |
           sudo apt-get install build-essential
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
           cache: npm
@@ -53,7 +55,7 @@ jobs:
       - name: pack plugin image.service
         run: npm pack ./plugins/image/service
       - name: upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mage_service_packages
           path: |
@@ -68,9 +70,9 @@ jobs:
         node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -80,7 +82,7 @@ jobs:
         run: |
           npm ci --prefix service
       - name: download service package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: mage_service_packages
       - name: extract service lib

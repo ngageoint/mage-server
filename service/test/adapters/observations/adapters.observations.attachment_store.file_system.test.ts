@@ -3,8 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import stream, { Readable } from 'stream'
 import util from 'util'
-import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adpaters.observations.attachment_store.file_system'
-import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, removeAttachment, AttachmentPatchAttrs } from '../../../lib/entities/observations/entities.observations'
+import { FileSystemAttachmentStore, intializeAttachmentStore } from '../../../lib/adapters/observations/adapters.observations.attachment_store.file_system'
+import { Attachment, AttachmentId, Observation, ObservationAttrs, copyAttachmentAttrs, patchAttachment, putAttachmentThumbnailForMinDimension, copyThumbnailAttrs, Thumbnail, AttachmentStoreError, StagedAttachmentContent, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, removeAttachment, AttachmentPatchAttrs, AttachmentStoreErrorCode } from '../../../lib/entities/observations/entities.observations'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import uniqid from 'uniqid'
@@ -602,6 +602,37 @@ describe('file system attachment store', function() {
       await util.promisify(stream.pipeline)(readStream, readContent)
 
       expect(readContent.bytes.toString()).to.equal('from content locator')
+    })
+
+    it('returns an error and does not throw when the base content does not exist', async function() {
+
+      try {
+        const contentRelPath = contentLocatorOfAttachment(att.id, obs)
+        fs.rmSync(path.join(baseDirPath, contentRelPath))
+        const err = await store.readContent(att.id, obs) as AttachmentStoreError
+
+        expect(err).to.be.instanceOf(AttachmentStoreError)
+        expect(err.errorCode).to.equal(AttachmentStoreErrorCode.StorageError)
+      }
+      catch (err) {
+        expect.fail(`should not throw: ${String(err)}`)
+      }
+    })
+
+
+    it('returns an error and does not throw when thumbnail content does not exist', async function() {
+
+      try {
+        const contentRelPath = contentLocatorOfThumbnail(100, att.id, obs)
+        fs.rmSync(path.join(baseDirPath, contentRelPath))
+        const err = await store.readThumbnailContent(100, att.id, obs) as AttachmentStoreError
+
+        expect(err).to.be.instanceOf(AttachmentStoreError)
+        expect(err.errorCode).to.equal(AttachmentStoreErrorCode.StorageError)
+      }
+      catch (err) {
+        expect.fail(`should not throw: ${String(err)}`)
+      }
     })
   })
 

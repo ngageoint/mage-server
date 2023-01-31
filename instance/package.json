@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.dev-instance",
-  "version": "6.2.0",
+  "version": "6.2.1",
   "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool because the dependencies point to relative directories instead of production packages.  This can however serve as a starting point to create a production MAGE instance package.json.",
   "scripts": {
     "start": "npm run start:dev-env",
@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/ngageoint/mage-server",
   "dependencies": {
-    "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.web-app": "../web-app/dist/app",
-    "@ngageoint/mage.random": "../plugins/random",
+    "@ngageoint/mage.image.service": "../plugins/image/service",
     "@ngageoint/mage.nga-msi": "../plugins/nga-msi",
-    "@ngageoint/mage.image.service": "../plugins/image/service"
+    "@ngageoint/mage.random": "../plugins/random",
+    "@ngageoint/mage.service": "../service",
+    "@ngageoint/mage.web-app": "../web-app/dist/app"
   }
 }

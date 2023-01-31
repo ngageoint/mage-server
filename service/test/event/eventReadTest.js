@@ -323,10 +323,9 @@ describe("event read tests", function () {
       name: 'Mock Event'
     });
 
-    const eventMock = sinon.mock(EventModel);
-
-    eventMock.expects('findOne')
-      .resolves(mockEvent);
+    sinon.mock(EventModel).expects('findById').twice()
+      .onFirstCall().yieldsAsync(null, mockEvent)
+      .onSecondCall().resolves(mockEvent);
 
     const mockTeam = new TeamModel({
       _id: 1,
@@ -437,29 +436,28 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read teams page in event with team access", function (done) {
+  it("reads teams in event with team access", async function() {
+
     mockTokenWithPermission('');
 
     const eventId = 1;
     const mockTeam = new TeamModel({
       _id: mongoose.Types.ObjectId(),
-      userIds: [userId],
+      userIds: [ userId ],
       acl: {}
     });
     const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
-      teamIds: [],
+      teamIds: [ mockTeam._id ],
       acl: {
         1: 'NONE'
       }
     });
-    mockEvent.teamIds[0] = mockTeam._id;
 
-    const eventMock = sinon.mock(EventModel);
-
-    eventMock.expects('findOne')
-      .resolves(mockEvent);
+    sinon.mock(EventModel).expects('findById').twice()
+      .onFirstCall().yieldsAsync(null, mockEvent)
+      .onSecondCall().resolves(mockEvent);
 
     const mockCursor = {
       toArray: function (callback) {
@@ -480,12 +478,12 @@ describe("event read tests", function () {
       .withArgs(mockEvent, sinon.match.has('_id', userId), MageEventPermission.READ_EVENT_ALL, EventAccessType.Read)
       .resolves(null)
 
-    request(app)
+    const res = await request(app)
       .get('/api/events/1/teams?page=0')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .query({ populate: 'users' })
-      .expect(200)
-      .end(done);
+      .query({populate: 'users'});
+
+    expect(res.status).to.equal(200)
   });
 });
