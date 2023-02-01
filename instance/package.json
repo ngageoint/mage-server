@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.dev-instance",
-  "version": "6.2.1",
+  "version": "6.3.0-beta.0",
   "description": "Assemble a MAGE Server deployment from the core service, the web-app, and selected plugins.  This is primarily a development tool because the dependencies point to relative directories instead of production packages.  This can however serve as a starting point to create a production MAGE instance package.json.",
   "scripts": {
     "start": "npm run start:dev-env",
