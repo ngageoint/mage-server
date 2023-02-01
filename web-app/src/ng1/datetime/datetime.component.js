@@ -1,6 +1,6 @@
 var moment = require('moment')
   , MDCTextField = require('material-components-web').textField.MDCTextField
-  , MDDateTimePicker = require('md-date-time-picker');
+  , MDDateTimePicker = require('@ngageoint/md-date-time-picker');
 
 module.exports = {
   template: require('./datetime.component.html'),
