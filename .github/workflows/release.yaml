@@ -132,8 +132,9 @@ jobs:
         run: |
           # npm config set @ngageoint:registry https://gitlab.gs.mil/api/v4/projects/14746/packages/npm/
           # npm config set -- '//gitlab.gs.mil/api/v4/projects/14746/packages/npm/:_authToken' ${{ secrets.GITLAB_PACKAGE_REGISTRY_TOKEN }}
-          npm config set @ngageoint:registry https://npm.pkg.github.com
-          npm config set -- '//npm.pkg.github.com/:_authToken' ${{ secrets.GITHUB_TOKEN }}
+          # npm config set @ngageoint:registry https://npm.pkg.github.com
+          # npm config set -- '//npm.pkg.github.com/:_authToken' ${{ secrets.GITHUB_TOKEN }}
+          npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
