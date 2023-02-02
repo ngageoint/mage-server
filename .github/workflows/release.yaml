@@ -135,12 +135,12 @@ jobs:
           # npm config set @ngageoint:registry https://npm.pkg.github.com
           # npm config set -- '//npm.pkg.github.com/:_authToken' ${{ secrets.GITHUB_TOKEN }}
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
-          npm publish $(ls -1 ngageoint-mage.service-*.tgz)
-          npm publish $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
-          npm publish $(ls -1 ngageoint-mage.web-app-*.tgz)
+          npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz)
+          npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
+          npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz)
           check_version=$(tar xzOf ngageoint-mage.image.service-*.tgz package/package.json | json version)
           echo "checking @ngageoint/mage.image.service@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.image.service-*.tgz)
+          [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.image.service-*.tgz)
           check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
           echo "checking @ngageoint/mage.nga-msi@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish $(ls -1 ngageoint-mage.nga-msi-*.tgz)
+          [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.nga-msi-*.tgz)
