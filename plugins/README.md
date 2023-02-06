@@ -130,7 +130,7 @@ service and open source plugins specify.
 Finally, you can start writing the code for your plugin.  Begin with a module file that exports the main
 `InitPluginHook`.  This will likely be the [main module](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#main)
 of your plugin package.  If you configured TypeScript to transpile from the `src` directory and output to the `lib`
-directory as described above, create the file `src/index.ts`, and add the entry ``"main": "lib/index.js"` to
+directory as described above, create the file `src/index.ts`, and add the entry `"main": "lib/index.js"` to
 `package.json`.  In `src/index.ts`, add the following.
 ```typescript
 export = {
