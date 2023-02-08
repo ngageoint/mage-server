@@ -109,5 +109,5 @@ export default {
 };
 
 function cleanNameOfPlugin(pluginId) {
-  return pluginId.replace(/[^\w-_]/, '-')
+  return pluginId.replace(/(^[^\w+])|([^\w+]$)/, '').replace(/[^\w-_]/g, '-')
 }
