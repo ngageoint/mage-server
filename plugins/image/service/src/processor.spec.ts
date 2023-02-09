@@ -224,6 +224,70 @@ describe('processing interval', () => {
       expect(obsRepo.save).not.toHaveBeenCalled()
     })
 
+    it('marks the attachment oriented if content does not exist', async () => {
+
+      const att: Attachment = Object.freeze({
+        id: '1.123.1',
+        observationFormId: 'form1',
+        fieldName: 'field1',
+        oriented: false,
+        thumbnails: [],
+        contentType: 'image/jpeg',
+        name: 'test1.jpeg',
+        size: 320000,
+        contentLocator: String(Date.now())
+      })
+      const obsBefore: Observation = observationWithAttachments('1.123', event1, [ att ])
+      const obsStored: Observation = patchAttachment(obsBefore, att.id, { oriented: true }) as Observation
+      const attStored = obsStored.attachmentFor(att.id) as Attachment
+      const obsRepo = observationRepos.get(event1.id)!
+      obsRepo.patchAttachment.and.resolveTo(obsStored)
+      attachmentStore.readContent.and.resolveTo(null)
+      const oriented = await orientAttachmentImage(obsBefore, att.id, imageService, obsRepo, attachmentStore, console) as Observation
+
+      expect(oriented).toBeInstanceOf(Observation)
+      expect(oriented.attachments).toEqual([
+        { ...att, oriented: true, lastModified: attStored.lastModified, width: undefined, height: undefined }
+      ])
+      expect(obsRepo.patchAttachment).toHaveBeenCalledOnceWith(
+        obsBefore, att.id, { oriented: true })
+      expect(imageService.autoOrient).not.toHaveBeenCalled()
+      expect(attachmentStore.saveContent).not.toHaveBeenCalled()
+      expect(obsRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('marks the attachment oriented if reading content fails', async () => {
+
+      const att: Attachment = Object.freeze({
+        id: '1.123.1',
+        observationFormId: 'form1',
+        fieldName: 'field1',
+        oriented: false,
+        thumbnails: [],
+        contentType: 'image/jpeg',
+        name: 'test1.jpeg',
+        size: 320000,
+        contentLocator: String(Date.now())
+      })
+      const obsBefore: Observation = observationWithAttachments('1.123', event1, [ att ])
+      const obsStored: Observation = patchAttachment(obsBefore, att.id, { oriented: true }) as Observation
+      const attStored = obsStored.attachmentFor(att.id) as Attachment
+      const obsRepo = observationRepos.get(event1.id)!
+      obsRepo.patchAttachment.and.resolveTo(obsStored)
+      attachmentStore.readContent.and.resolveTo(new AttachmentStoreError(AttachmentStoreErrorCode.ContentNotFound))
+      const oriented = await orientAttachmentImage(obsBefore, att.id, imageService, obsRepo, attachmentStore, console) as Observation
+
+      expect(oriented).toBeInstanceOf(Observation)
+      expect(oriented.attachments).toEqual([
+        { ...att, oriented: true, lastModified: attStored.lastModified, width: undefined, height: undefined }
+      ])
+      expect(obsRepo.patchAttachment).toHaveBeenCalledOnceWith(
+        obsBefore, att.id, { oriented: true })
+      expect(imageService.autoOrient).not.toHaveBeenCalled()
+      expect(attachmentStore.saveContent).not.toHaveBeenCalled()
+      expect(obsRepo.save).not.toHaveBeenCalled()
+    })
+
     it('patches the attachment even if saving content did not change attachment meta-data')
     it('does not patch the attachment if saving content failed')
   })
