@@ -208,14 +208,16 @@ export async function orientAttachmentImage (
     return new Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`)
   }
   const content = await attachmentStore.readContent(attachmentId, observation)
-  if (!content) {
-    const message = `content not found for attachment ${attachmentId} observation ${observation.id}`
-    console.error(message)
-    return new Error(message)
-  }
-  if (content instanceof Error) {
-    console.error(`error reading content of image attachment ${attachmentId} observation ${observation.id}`, content)
-    return content
+  if (!content || content instanceof Error) {
+    console.error(`error reading content of image attachment ${attachmentId} observation ${observation.id}:`, content || 'content not found')
+    const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, { oriented: true })
+    if (updatedObservation instanceof Observation) {
+      return updatedObservation
+    }
+    const errMsg = `error marking attachment ${attachmentId} oriented on observation ${observation.id} after reading content failed:`
+    const errReason = updatedObservation ? String(updatedObservation) : 'observation not found'
+    console.error(errMsg, updatedObservation || errReason)
+    return new Error(`${errMsg} ${errReason}`)
   }
   const pending = await attachmentStore.stagePendingContent()
   const oriented = await imageService.autoOrient(imageContentForAttachment(attachment, content), pending.tempLocation)

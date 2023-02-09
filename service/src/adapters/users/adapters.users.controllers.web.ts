@@ -13,7 +13,7 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
   routes.route('/search')
     .get(async (req, res, next) => {
       const userSearch: UserSearchRequest['userSearch'] = {
-        searchTerm: req.query.term as string | undefined,
+        nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
         includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined

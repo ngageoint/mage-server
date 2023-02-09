@@ -3,7 +3,8 @@
     "context": [
         "/api",
         "/auth",
-        "/plugins"
+        "/plugins",
+        "/ui_plugins"
     ],
     "target": "http://localhost:4242",
     "secure": false
