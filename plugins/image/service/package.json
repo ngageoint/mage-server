@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.image.service",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Orient images attached to MAGE observations according to EXIF meta-data and generate configurable size thumbnails.",
   "main": "lib/index.js",
   "scripts": {
