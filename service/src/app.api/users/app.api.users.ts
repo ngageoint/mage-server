@@ -6,7 +6,7 @@ import { User } from '../../entities/users/entities.users'
 
 export interface UserSearchRequest extends AppRequest {
   userSearch: PagingParameters & {
-    searchTerm?: string | undefined,
+    nameOrContactTerm?: string | undefined,
     active?: boolean | undefined,
     enabled?: boolean | undefined,
   }
