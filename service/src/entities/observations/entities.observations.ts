@@ -115,6 +115,17 @@ export interface Attachment {
    * store implementation may not use `contentLocator` at all.
    */
   contentLocator?: string
+  /**
+   * TODO: this needs to allow a more robust value, such as
+   * `undefined | boolean` or maybe even allow `{ error: string }` so the
+   * image plugin's unprocessed attachment query can easily find attachments
+   * that have not yet been touched vs. attachments whose content could not be
+   * oriented.  admins should also be able to easily query for the faulty
+   * attachments to take corrective action if possible.
+   *
+   * also, because this and the `thumbnails` field are specific to the image
+   * plugin, they should both be moved out of the core domain type.
+   */
   oriented: boolean
   thumbnails: Thumbnail[]
 }
