@@ -1,6 +1,6 @@
 FROM node:14
 
-ARG MAGE_VER=5.4.4.1
+ARG MAGE_VER=5.4.4-hotfix.1
 
 LABEL author="NGA"
 
