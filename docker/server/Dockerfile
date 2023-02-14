@@ -10,6 +10,10 @@ RUN apt-get update && apt-get -y install \
         unzip \
         curl \
         graphicsmagick \
+        libcairo2-dev \
+        libjpeg-dev \
+        libgif-dev \
+        libpango1.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r mage \
