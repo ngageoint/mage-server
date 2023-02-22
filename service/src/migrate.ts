@@ -1,6 +1,6 @@
 
 import path from 'path'
-import * as migrations from 'mongodb-migrations'
+import * as migrations from '@ngageoint/mongodb-migrations'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const log = require('winston')
