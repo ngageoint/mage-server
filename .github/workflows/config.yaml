@@ -15,7 +15,7 @@ on:
         value: ${{ jobs.main.outputs.node_versions-pre_latest-json }}
 
 env:
-  MAGE_NODE_VERSIONS: 14 16
+  MAGE_NODE_VERSIONS: 16 18
 
 jobs:
 
