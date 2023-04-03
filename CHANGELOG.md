@@ -9,6 +9,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
+## [6.1.3](https://github.com/ngageoint/mage-server/releases/tag/6.1.3)
+
+##### Features
+
+##### Bug Fixes
+* New user sign-ups failed when the admin approval setting was disabled and event auto-assignment was configured for new users.
+* Web app incorrectly indicated new accounts required admin approval after sign-up even when the admin approval setting was disabled.
+
 ## [6.1.2](https://github.com/ngageoint/mage-server/releases/tag/6.1.2)
 
 ##### Features
@@ -33,7 +41,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Textarea in observation form is resizeable.
-* User and team paging api update, fixes team and event size limitation. 
+* User and team paging api update, fixes team and event size limitation.
 
 ## [6.0.2](https://github.com/ngageoint/mage-server/releases/tag/6.0.2)
 
@@ -94,7 +102,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 * Export as GeoPackage.
 * New export UI, allowing users to view previous exports.
-* Exports are now done in the background, this will eliminate client timeouts for larger exports. 
+* Exports are now done in the background, this will eliminate client timeouts for larger exports.
 * Minor performance enhancements to existing export types.
 * Adding icons to search results on admin pages.
 
@@ -124,7 +132,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 * Optimize observation and user location responses.  Created new APIs to populate observation and location user information and removed individual calls to get users.
 * Admins can now setup a more robust password policy, see Admin -> Settings -> Local Authentication.
-* First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.). 
+* First 10 results are shown for controls using typeahead feature (e.g. logins, adding users to teams, etc.).
 
 ##### Bug Fixes
 * Multiple users can be added to a team and/or event without refreshing.
@@ -170,10 +178,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## [5.3.5](https://github.com/ngageoint/mage-server/releases/tag/5.3.5)
 
 ##### Features
-* Added administrative settings to enable automatic approval of new user accounts and devices.  If you are using a third party authentication strategy 
-  where user accounts have already been vetted, you can reduce the barrier to entry into MAGE by using this setting to automatically approve user accounts. 
+* Added administrative settings to enable automatic approval of new user accounts and devices.  If you are using a third party authentication strategy
+  where user accounts have already been vetted, you can reduce the barrier to entry into MAGE by using this setting to automatically approve user accounts.
   In addition you can reduce the device admin approval barrier to entry by automatically approving all new devices.  Administrators can still
-  disable devices for any reason, therby removing access to MAGE for that device. 
+  disable devices for any reason, therby removing access to MAGE for that device.
 * Improved map layers panel.  Drag and drop layers to change map z-index, change layer opacity, zoom to layer bounds, and style feature layers.
 * GeoPackage upgrade and optimizations.  Feature tiles are now created server side, reducing load on browser.
 * Observation view/edit header is sticky and will not scroll with content.
