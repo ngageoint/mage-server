@@ -135,13 +135,13 @@ image to build the MAGE server image.  At build time, the MAGE server Dockerfile
 copies whatever MAGE server package tarballs you supply into the MAGE server
 image, which might not match the default version the Compose currently defines.
 If you want the MAGE server image that Compose builds to have a different tag,
-override the `MAGE_VERSION` default value in te Compose file.
+override the `MAGE_VERSION` default value in the Compose file.
 ```bash
-MAGE_VERSION=6.2.0-beta.5 docker compose build
+MAGE_VERSION=6.2.0 docker compose build
 ```
 By way of the
 ```yaml
-image: "mage-server:${MAGE_VERSION:-6.1.1}"
+image: "mage-server:${MAGE_VERSION:-6.1.2}"
 ```
 entry, the Compose file tells Docker to [tag](https://docs.docker.com/get-started/part2/#tag-the-image)
 the `mage-server` image Compose builds with the value of `MAGE_VERSION`.
@@ -160,7 +160,7 @@ you will end up wth one image that has two tags `6.2.0` and `6.3.0-beta.1`.
 $ docker images
 REPOSITORY               TAG            IMAGE ID       CREATED        SIZE
 mage-server              6.2.0          34093daa6c4e   2 hours ago    522MB
-mage-server              6.2.0-beta.8   34093daa6c4e   2 hours ago    522MB
+mage-server              6.3.0-beta.1   34093daa6c4e   2 hours ago    522MB
 ```
 Note the same values in the `IMAGE ID` column in the example output, along with
 different `TAG` values.

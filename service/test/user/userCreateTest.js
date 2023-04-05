@@ -3,16 +3,25 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
+  , expect = require('chai').expect
   , mongoose = require('mongoose')
   , createToken = require('../mockToken')
-  , RoleModel = require('../../lib/models/role')
-  , TokenModel = require('../../lib/models/token')
+  , Token = require('../../lib/models/token')
   , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
   , Authentication = require('../../lib/models/authentication');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
+
+require('../../lib/models/team');
+const TeamModel = mongoose.model('Team');
+
+const Role = require('../../lib/models/role');
+const RoleModel = mongoose.model('Role');
+
+require('../../lib/models/event');
+const EventModel = mongoose.model('Event')
 
 const svgCaptcha = require('svg-captcha');
 
@@ -59,7 +68,7 @@ describe("user create tests", function () {
       .expects('appendToConfig')
       .resolves(config);
 
-    sinon.mock(RoleModel)
+    sinon.mock(Role)
       .expects('getRole')
       .yields(null, {
         permissions: ['SOME_PERMISSIONS']
@@ -74,7 +83,7 @@ describe("user create tests", function () {
 
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sinon.mock(TokenModel)
+    sinon.mock(Token)
       .expects('getToken')
       .withArgs('12345')
       .yields(null, createToken(userId, [permission]));
@@ -431,6 +440,108 @@ describe("user create tests", function () {
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       });
+  });
+
+  it('should create user and default event', async function () {
+    mockTokenWithPermission('NO_PERMISSIONS');
+
+    let jwt = await captcha();
+
+    const mockEvent = new EventModel({
+      _id: 1,
+      name: 'Mock Event',
+      acl: {}
+    });
+
+    sinon.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent)
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeam = new TeamModel({
+      id: teamId,
+      name: 'Mock Team',
+      teamEventId: mockEvent._id
+    });
+
+    const mockTeamModel = sinon.mock(TeamModel);
+    mockTeamModel
+      .expects('findOne')
+      .withArgs({ teamEventId: mockEvent._id })
+      .resolves(mockTeam);
+    mockTeamModel.expects('findByIdAndUpdate')
+      .yields(null, mockTeam)
+
+    sinon.mock(RoleModel)
+      .expects('findOne')
+      .withArgs({ name: 'USER_ROLE' })
+      .yields(null, new RoleModel({
+        permissions: ['SOME_PERMISSIONS']
+      }));
+
+    const userId = mongoose.Types.ObjectId();
+    const mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      password: 'passwordpassword',
+      passwordconfirm: 'passwordpassword',
+      authenticationId: new Authentication.Local({
+        _id: mongoose.Types.ObjectId(),
+        type: 'local',
+        password: 'password',
+        authenticationConfigurationId: new AuthenticationConfiguration.Model({
+          _id: mongoose.Types.ObjectId(),
+          type: 'local',
+          name: 'local',
+          settings: {
+            newUserEvents: [1]
+          }
+        }),
+        security: {}
+      })
+    });
+
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('findOne')
+      .chain('exec')
+      .resolves(mockUser.authentication.authenticationConfiguration);
+
+    sinon.mock(Authentication)
+      .expects('createAuthentication')
+      .resolves(mockUser.authentication);
+
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('populate', 'roleId')
+      .chain('populate', { path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } })
+      .yields(null, mockUser);
+
+    sinon.mock(mockUser)
+      .expects('populate')
+      .yields(null, mockUser);
+
+    sinon.mock(UserModel)
+      .expects('create')
+      .withArgs(sinon.match.has('active', false))
+      .yields(null, mockUser);
+
+    const res = await request(app)
+      .post('/api/users/signups/verifications')
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${jwt}`)
+      .send({
+        displayName: 'test',
+        phone: '000-000-0000',
+        email: 'test@test.com',
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword',
+        captchaText: 'captcha'
+      });
+
+    expect(res.status).to.equal(200);
+    expect(res.type).to.match(/json/);
+    expect(res.body).to.have.property('id', userId.toString())
   });
 
   it('should fail to create user with duplicate username', async function () {

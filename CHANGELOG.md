@@ -48,6 +48,22 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Layer permissions bug prevented non-admin event participants from accessing
   layers.
 
+## [6.1.3](https://github.com/ngageoint/mage-server/releases/tag/6.1.3)
+
+##### Features
+
+##### Bug Fixes
+* New user sign-ups failed when the admin approval setting was disabled and event auto-assignment was configured for new users.
+* Web app incorrectly indicated new accounts required admin approval after sign-up even when the admin approval setting was disabled.
+
+## [6.1.2](https://github.com/ngageoint/mage-server/releases/tag/6.1.2)
+
+##### Features
+
+##### Bug Fixes
+* Geopackage export will skip adding userId or deviceId if missing from observation.
+* All export types will skip export of attachments missing relativePath property.
+
 ## [6.1.1](https://github.com/ngageoint/mage-server/releases/tag/6.1.1)
 
 ##### Features

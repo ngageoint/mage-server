@@ -208,11 +208,14 @@ Csv.prototype.flattenObservation = async function (observation, cache, archive) 
   }
 
   if (observation.attachments) {
-    observation.attachments.forEach((attachment, index) => {
+    observation.attachments.filter(attachment => {
+      // exclude attachments that are pending upload and/or not saved
+      return attachment.relativePath
+    })
+    .forEach((attachment, index) => {
       const name = path.basename(attachment.relativePath);
       properties.attachment = attachment.name;
       properties.attachmentExcelLink = excelLink(name, index);
-
       archive.file(path.join(attachmentBase, attachment.relativePath), { name });
     });
   }
