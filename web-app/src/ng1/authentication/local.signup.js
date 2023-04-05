@@ -1,4 +1,4 @@
-import { textField, linearProgress, snackbar} from 'material-components-web';
+import { textField, linearProgress, snackbar } from 'material-components-web';
 import zxcvbn from 'zxcvbn';
 
 const passwordStrengthMap = {
@@ -53,7 +53,6 @@ class LocalSignupController {
     this.captchaProgess = new linearProgress.MDCLinearProgress(this._$element.find('.mdc-linear-progress')[1]);
     this.captchaProgess.getDefaultFoundation().setDeterminate(false);
     this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
-    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
   getCaptcha() {
@@ -93,12 +92,7 @@ class LocalSignupController {
 
   signupComplete(data) {
     this.account = {};
-    this.onSuccess();
-    if (data && data.active) {
-      this.showStatusMessage("Success", "Your account has been created and is now active.");
-    } else {
-      this.showStatusMessage("Success", "Your account has been created but it is not active.  An administrator needs to activate your account before you can log in.");
-    }
+    this.onSuccess({ account: data });
   }
 
   signupFailed(response) {

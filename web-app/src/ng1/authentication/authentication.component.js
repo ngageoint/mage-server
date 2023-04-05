@@ -6,6 +6,7 @@ class AuthenticationController {
 
     this.action = $stateParams.action;
     this.strategy = $stateParams.strategy;
+    this.boundOnSuccess = this.showSignupSuccess.bind(this);
   }
 
   $onInit() {
@@ -32,8 +33,13 @@ class AuthenticationController {
     this.action = 'about';
   }
 
-  showSignupSuccess() {
-    this.action = 'inactive-account';
+  showSignupSuccess(account) {
+    if (account && account.active) {
+      this.action = 'active-account';
+    }
+    else {
+      this.action = 'inactive-account';
+    }
   }
 
   authorized() {
@@ -48,7 +54,7 @@ class AuthenticationController {
   }
 
   acceptDisclaimer() {
-    this._UserService.acceptDisclaimer(); 
+    this._UserService.acceptDisclaimer();
     this.onSuccess();
   }
 

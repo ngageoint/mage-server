@@ -1,6 +1,6 @@
 var moment = require('moment')
   , MDCTextField = require('material-components-web').textField.MDCTextField
-  , MDDateTimePicker = require('../vendor/md-date-time-picker');
+  , MDDateTimePicker = require('@ngageoint/md-date-time-picker');
 
 module.exports = {
   template: require('./datetime.component.html'),
@@ -19,7 +19,7 @@ function DateTimeController($element, $timeout, LocalStorageService) {
   var dateInputField;
 
   this.timeZone = LocalStorageService.getTimeZoneEdit();
-  
+
   this.$onInit = function() {
     dateInputField = new MDCTextField($element.find('.mdc-text-field')[0]);
 
