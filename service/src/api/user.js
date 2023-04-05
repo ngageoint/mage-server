@@ -166,10 +166,9 @@ User.prototype.create = async function (user, options = {}) {
 
   if (defaultEvents && Array.isArray(defaultEvents)) {
     const addUserToTeam = util.promisify(TeamModel.addUser);
-    const getTeamForEvent = util.promisify(TeamModel.getTeamForEvent);
 
     for (let i = 0; i < defaultEvents.length; i++) {
-      const team = await getTeamForEvent({ _id: defaultEvents[i] });
+      const team = await TeamModel.getTeamForEvent({ _id: defaultEvents[i] });
       if (team) {
         try {
           await addUserToTeam(team, newUser);

@@ -106,7 +106,7 @@
     "papaparse": "4.1.4",
     "rxjs": "~7.6.0",
     "select2": "4.0.7",
-    "swagger-ui": "3.24.0",
+    "swagger-ui": "^3.52.4",
     "systemjs": "^6.10.0",
     "tslib": "^2.0.0",
     "ui-select": "0.17.1",

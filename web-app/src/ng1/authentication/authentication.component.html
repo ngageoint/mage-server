@@ -2,8 +2,8 @@
   <setup api="$ctrl.api" on-setup-complete="$ctrl.authorized(device)"></setup>
 </div>
 <div ng-if="$ctrl.action === 'disclaimer'" class="disclaimer-info-container ng-animatable fade-in">
-  <disclaimer disclaimer="$ctrl.api.disclaimer" 
-    on-accept="$ctrl.acceptDisclaimer()" 
+  <disclaimer disclaimer="$ctrl.api.disclaimer"
+    on-accept="$ctrl.acceptDisclaimer()"
     on-cancel="$ctrl.returnToSignin()"></disclaimer>
 </div>
 <div ng-if="$ctrl.action === 'authorize-device'" class="device-id-container ng-animatable fade-in">
@@ -14,7 +14,7 @@
     <div class="wand-container">
       <img class="mage-wand" src="/assets/images/bluewand.png"/>
     </div>
-    <local-signup strategy="$ctrl.localAuthenticationStrategy" on-cancel="$ctrl.returnToSignin()" on-success="$ctrl.showSignupSuccess()"></local-signup>
+    <local-signup strategy="$ctrl.localAuthenticationStrategy" on-cancel="$ctrl.returnToSignin()" on-success="$ctrl.showSignupSuccess(account)"></local-signup>
   </div>
 </div>
 <div ng-if="$ctrl.action === 'inactive-account'" class="section-container ng-animatable fade-in">
@@ -23,6 +23,17 @@
       <img class="mage-wand" src="/assets/images/bluewand.png"/>
     </div>
     <p>Your account has been created but it is not active. A MAGE administrator needs to activate your account before you can log in.</p>
+    <div class="auth-button-container">
+      <button class="top-gap mdc-button mdc-button--raised return-to-login-button" ng-click="$ctrl.returnToSignin()">Return to Login</button>
+    </div>
+  </div>
+</div>
+<div ng-if="$ctrl.action === 'active-account'" class="section-container ng-animatable fade-in">
+  <div class="signup-container">
+    <div class="wand-container">
+      <img class="mage-wand" src="/assets/images/bluewand.png"/>
+    </div>
+    <p>Your account has been created and is active.</p>
     <div class="auth-button-container">
       <button class="top-gap mdc-button mdc-button--raised return-to-login-button" ng-click="$ctrl.returnToSignin()">Return to Login</button>
     </div>
