@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.web-core-lib",
-  "version": "6.3.0-beta.2",
+  "version": "6.3.0-beta.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/ngageoint/mage-server.git"
