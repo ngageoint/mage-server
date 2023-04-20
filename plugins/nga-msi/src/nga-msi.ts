@@ -21,7 +21,7 @@ export class MsiServiceType implements FeedServiceType {
     type: 'string',
     title: 'URL',
     description: "The base URL of a service that implements NGA's MSI OpenAPI definition",
-    default: 'https://msi.gs.mil/'
+    default: 'https://msi.nga.mil/'
   }
 
   constructor(readonly transport: MsiTransport) { }
