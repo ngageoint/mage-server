@@ -36,16 +36,18 @@ describe("authentication model", function () {
 
     describe('toObject', function() {
 
-      it('redacts password', function() {
+      it('redacts passwords', function() {
 
         const authentication = new Authentication.Local({
           type: 'local',
-          password: 'password',
+          password: 'password now',
+          previousPasswords: [ 'password before' ],
           authenticationConfigurationId: mongoose.Types.ObjectId()
         });
         const authObj = authentication.toObject();
 
-        expect(authObj.password).to.be.undefined
+        expect(authObj).to.not.have.property('password')
+        expect(authObj).to.not.have.property('previousPasswords')
       })
     })
   })

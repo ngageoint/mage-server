@@ -258,7 +258,8 @@ describe("user read tests", function() {
         displayName: 'Test 1',
         authenticationId: new Authentication.Local({
           _id: mongoose.Types.ObjectId(),
-          password: 'hide me 1'
+          password: 'hide me 1',
+          previousPasswords: []
         })
       }),
       new UserModel({
@@ -267,7 +268,8 @@ describe("user read tests", function() {
         displayName: 'Test 2',
         authenticationId: new Authentication.Local({
           _id: mongoose.Types.ObjectId(),
-          password: 'hide me 2'
+          password: 'hide me 2',
+          previousPasswords: [ 'prev 1', 'prev 2' ]
         })
       })
     ];
@@ -286,8 +288,10 @@ describe("user read tests", function() {
     expect(Array.isArray(res.body)).to.be.true;
     expect(res.body[0].authentication.id).to.equal(userDocs[0].authenticationId._id.toHexString());
     expect(res.body[0].authentication).to.not.have.property('password');
+    expect(res.body[0].authentication).to.not.have.property('previousPasswords');
     expect(res.body[1].authentication.id).to.equal(userDocs[1].authenticationId._id.toHexString());
     expect(res.body[1].authentication).to.not.have.property('password');
+    expect(res.body[1].authentication).to.not.have.property('previousPasswords');
   })
 
   it('redacts local auth password when paging all users', async function() {
@@ -299,7 +303,8 @@ describe("user read tests", function() {
         displayName: 'Test 1',
         authenticationId: new Authentication.Local({
           _id: mongoose.Types.ObjectId(),
-          password: 'hide me 1'
+          password: 'hide me 1',
+          previousPasswords: [ 'hide this too' ]
         })
       }),
       new UserModel({
@@ -308,7 +313,8 @@ describe("user read tests", function() {
         displayName: 'Test 2',
         authenticationId: new Authentication.Local({
           _id: mongoose.Types.ObjectId(),
-          password: 'hide me 2'
+          password: 'hide me 2',
+          previousPasswords: [ 'hide prev 1', 'hide prev 2' ]
         })
       })
     ];
@@ -335,6 +341,7 @@ describe("user read tests", function() {
     expect(Array.isArray(res.body.items)).to.be.true;
     expect(res.body.items[0].authentication.id).to.equal(userDocs[0].authenticationId._id.toHexString());
     expect(res.body.items[0].authentication).to.not.have.property('password');
+    expect(res.body.items[0].authentication).to.not.have.property('previousPasswords');
   })
 
 

@@ -58,6 +58,7 @@ const LocalSchema = new Schema(
 function DbLocalAuthenticationToObject(authIn, authOut, options) {
   authOut = DbAuthenticationToObject(authIn, authOut, options)
   delete authOut.password;
+  delete authOut.previousPasswords;
   return authOut;
 }
 
