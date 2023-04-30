@@ -156,7 +156,15 @@ function DbUserToObject(user, userOut, options) {
     delete userOut.roleId;
   }
 
-  if (user.populated('authenticationId') && !!user.authenticationId) {
+  /*
+  TODO: this used to use user.populated('authenticationId'), but when paging
+  and using the cursor(), mongoose was not setting the populated flag on the
+  cursor documents, so this condition was never met and paged user documents
+  erroneously retained the authenticationId key with the populated
+  authentication object.  this occurs in mage server 6.2.x with mongoose 4.x.
+  this might be fixed in mongoose 5+, so revisit on mage server 6.3.x.
+  */
+  if (!!user.authenticationId && typeof user.authenticationId.toObject === 'function') {
     const authPlain = user.authenticationId.toObject({ virtuals: true });
     delete userOut.authenticationId;
     userOut.authentication = authPlain;
