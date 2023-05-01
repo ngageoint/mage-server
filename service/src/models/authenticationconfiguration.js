@@ -5,21 +5,27 @@ const mongoose = require('mongoose');
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
-const AuthenticationConfigurationSchema = new Schema({
-  name: { type: String, required: true },
-  type: { type: String, required: true },
-  title: { type: String, required: false },
-  textColor: { type: String, required: false },
-  buttonColor: { type: String, required: false },
-  icon: { type: Buffer, required: false },
-  enabled: { type: Boolean, default: true },
-  settings: Schema.Types.Mixed
-}, {
-  timestamps: {
-    updatedAt: 'lastUpdated'
+const AuthenticationConfigurationSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    type: { type: String, required: true },
+    title: { type: String, required: false },
+    textColor: { type: String, required: false },
+    buttonColor: { type: String, required: false },
+    icon: { type: Buffer, required: false },
+    enabled: { type: Boolean, default: true },
+    settings: Schema.Types.Mixed
   },
-  versionKey: false
-});
+  {
+    timestamps: {
+      updatedAt: 'lastUpdated'
+    },
+    versionKey: false,
+    toObject: {
+      transform: DbAuthenticationConfigurationToObject
+    }
+  }
+);
 
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
@@ -27,7 +33,7 @@ const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
 const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryptionpvk'];
 const secureMask = '*****';
 
-const transform = function (config, ret, options) {
+function DbAuthenticationConfigurationToObject(config, ret, options) {
   delete ret.__v;
 
   if (options.whitelist) {
@@ -53,12 +59,7 @@ const transform = function (config, ret, options) {
   ret.icon = ret.icon ? ret.icon.toString('base64') : null;
 };
 
-AuthenticationConfigurationSchema.set("toObject", {
-  transform: transform
-});
-
-exports.transform = transform;
-
+exports.transform = DbAuthenticationConfigurationToObject;
 exports.secureMask = secureMask;
 exports.blacklist = blacklist;
 

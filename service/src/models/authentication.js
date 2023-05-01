@@ -10,27 +10,57 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema;
 
-const AuthenticationSchema = new Schema({
-  type: { type: String, required: true },
-  id: { type: String, required: false },
-  authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: false }
-}, {
-  discriminatorKey: 'type',
-  timestamps: {
-    updatedAt: 'lastUpdated'
+const AuthenticationSchema = new Schema(
+  {
+    type: { type: String, required: true },
+    id: { type: String, required: false },
+    authenticationConfigurationId: { type: Schema.Types.ObjectId, ref: 'AuthenticationConfiguration', required: false }
+  },
+  {
+    discriminatorKey: 'type',
+    timestamps: {
+      updatedAt: 'lastUpdated'
+    },
+    toObject: {
+      transform: DbAuthenticationToObject
+    }
   }
-});
+);
 
-const LocalSchema = new Schema({
-  password: { type: String, required: true },
-  previousPasswords: { type: [String], default: [] },
-  security: {
-    locked: { type: Boolean, default: false },
-    lockedUntil: { type: Date },
-    invalidLoginAttempts: { type: Number, default: 0 },
-    numberOfTimesLocked: { type: Number, default: 0 }
+function DbAuthenticationToObject(authIn, authOut, options) {
+  delete authOut._id
+  authOut.id = authIn._id
+  if (authIn.populated('authenticationConfigurationId') && authIn.authenticationConfigurationId) {
+    delete authOut.authenticationConfigurationId;
+    authOut.authenticationConfiguration = authIn.authenticationConfigurationId.toObject(options);
   }
-});
+  return authOut;
+}
+
+const LocalSchema = new Schema(
+  {
+    password: { type: String, required: true },
+    previousPasswords: { type: [String], default: [] },
+    security: {
+      locked: { type: Boolean, default: false },
+      lockedUntil: { type: Date },
+      invalidLoginAttempts: { type: Number, default: 0 },
+      numberOfTimesLocked: { type: Number, default: 0 }
+    }
+  },
+  {
+    toObject: {
+      transform: DbLocalAuthenticationToObject
+    }
+  }
+);
+
+function DbLocalAuthenticationToObject(authIn, authOut, options) {
+  authOut = DbAuthenticationToObject(authIn, authOut, options)
+  delete authOut.password;
+  delete authOut.previousPasswords;
+  return authOut;
+}
 
 const SamlSchema = new Schema({});
 const LdapSchema = new Schema({});
@@ -110,7 +140,6 @@ LocalSchema.pre('save', function (next) {
   ], function (err) {
     return next(err);
   });
-
 });
 
 AuthenticationSchema.virtual('authenticationConfiguration').get(function () {

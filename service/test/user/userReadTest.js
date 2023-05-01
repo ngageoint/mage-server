@@ -22,17 +22,17 @@ the entire codebase lacks any dependency injection.
 
  "use strict";
 
-const request = require('supertest')
-  , sinon = require('sinon')
-  , should = require('chai').should()
-  , expect = require('chai').expect
-  , mockfs = require('mock-fs')
-  , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
+const request = require('supertest');
+const sinon = require('sinon');
+const should = require('chai').should();
+const expect = require('chai').expect;
+const mockfs = require('mock-fs');
+const mongoose = require('mongoose');
+const createToken = require('../mockToken');
+const TokenModel = require('../../lib/models/token');
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const Authentication = require('../../lib/models/authentication');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
@@ -240,7 +240,103 @@ describe("user read tests", function() {
 
     expect(res.status).to.equal(200);
     expect(res.type).to.match(/json/)
+    expect(Array.isArray(res.body)).to.be.true
   });
+
+  it('redacts local auth password when reading all users', async function() {
+
+    const userDocs = [
+      new UserModel({
+        _id: mongoose.Types.ObjectId(),
+        username: 'test1',
+        displayName: 'Test 1',
+        authenticationId: new Authentication.Local({
+          _id: mongoose.Types.ObjectId(),
+          password: 'hide me 1',
+          previousPasswords: []
+        })
+      }),
+      new UserModel({
+        _id: mongoose.Types.ObjectId(),
+        username: 'test2',
+        displayName: 'Test 2',
+        authenticationId: new Authentication.Local({
+          _id: mongoose.Types.ObjectId(),
+          password: 'hide me 2',
+          previousPasswords: [ 'prev 1', 'prev 2' ]
+        })
+      })
+    ];
+    sinon.mock(UserModel)
+      .expects('find')
+      .chain('populate', 'authenticationId')
+      .chain('exec')
+      .yields(null, userDocs);
+    mockTokenWithPermission('READ_USER');
+    const res = await request(app)
+      .get('/api/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(200);
+    expect(Array.isArray(res.body)).to.be.true;
+    expect(res.body[0].authentication.id).to.equal(userDocs[0].authenticationId._id.toHexString());
+    expect(res.body[0].authentication).to.not.have.property('password');
+    expect(res.body[0].authentication).to.not.have.property('previousPasswords');
+    expect(res.body[1].authentication.id).to.equal(userDocs[1].authenticationId._id.toHexString());
+    expect(res.body[1].authentication).to.not.have.property('password');
+    expect(res.body[1].authentication).to.not.have.property('previousPasswords');
+  })
+
+  it('redacts local auth password when paging all users', async function() {
+
+    const userDocs = [
+      new UserModel({
+        _id: mongoose.Types.ObjectId(),
+        username: 'test1',
+        displayName: 'Test 1',
+        authenticationId: new Authentication.Local({
+          _id: mongoose.Types.ObjectId(),
+          password: 'hide me 1',
+          previousPasswords: [ 'hide this too' ]
+        })
+      }),
+      new UserModel({
+        _id: mongoose.Types.ObjectId(),
+        username: 'test2',
+        displayName: 'Test 2',
+        authenticationId: new Authentication.Local({
+          _id: mongoose.Types.ObjectId(),
+          password: 'hide me 2',
+          previousPasswords: [ 'hide prev 1', 'hide prev 2' ]
+        })
+      })
+    ];
+    sinon.mock(UserModel)
+      .expects('find')
+      .chain('populate', 'authenticationId')
+      // TODO: this is a brittle white box hack
+      // these mocks will go away after moving layered architecture
+      .chain('toConstructor')
+      .returns(class {
+        limit() { return this }
+        skip() { return this }
+        count() { return Promise.resolve(userDocs.length) }
+        cursor() { return userDocs }
+      });
+
+    mockTokenWithPermission('READ_USER');
+    const res = await request(app)
+      .get('/api/users?limit=1&start=0')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(200);
+    expect(Array.isArray(res.body.items)).to.be.true;
+    expect(res.body.items[0].authentication.id).to.equal(userDocs[0].authenticationId._id.toHexString());
+    expect(res.body.items[0].authentication).to.not.have.property('password');
+    expect(res.body.items[0].authentication).to.not.have.property('previousPasswords');
+  })
 
 
   it('should get user by id', function(done) {
@@ -273,21 +369,18 @@ describe("user read tests", function() {
       .end(done);
   });
 
-  it('should get myself', function(done) {
+  it('should get myself', async function() {
     mockTokenWithPermission('READ_USER');
 
-    request(app)
+    const res = await request(app)
       .get('/api/users/myself')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var myself = res.body;
-        should.exist(myself);
-        myself.id.should.equal(userId.toString());
-      })
-      .end(done);
+
+    expect(res.status).to.equal(200, res.text);
+    expect(res.type).to.match(/json/);
+    expect(res.body).be.an('object');
+    expect(res.body.id).to.equal(userId.toString());
   });
 
   it('should get user avatar', function(done) {

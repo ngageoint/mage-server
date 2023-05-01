@@ -28,36 +28,45 @@ const PhoneSchema = new Schema({
 });
 
 // Collection to hold users
-const UserSchema = new Schema({
-  username: { type: String, required: true, unique: true },
-  displayName: { type: String, required: true },
-  email: { type: String, required: false },
-  phones: [PhoneSchema],
-  avatar: {
-    contentType: { type: String, required: false },
-    size: { type: Number, required: false },
-    relativePath: { type: String, required: false }
+const UserSchema = new Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    displayName: { type: String, required: true },
+    email: { type: String, required: false },
+    phones: [PhoneSchema],
+    avatar: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
+    icon: {
+      type: { type: String, enum: ['none', 'upload', 'create'], default: 'none' },
+      text: { type: String },
+      color: { type: String },
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
+    active: { type: Boolean, required: true },
+    enabled: { type: Boolean, default: true, required: true },
+    roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
+    status: { type: String, required: false, index: 'sparse' },
+    recentEventIds: [{ type: Number, ref: 'Event' }],
+    authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
   },
-  icon: {
-    type: { type: String, enum: ['none', 'upload', 'create'], default: 'none' },
-    text: { type: String },
-    color: { type: String },
-    contentType: { type: String, required: false },
-    size: { type: Number, required: false },
-    relativePath: { type: String, required: false }
-  },
-  active: { type: Boolean, required: true },
-  enabled: { type: Boolean, default: true, required: true },
-  roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
-  status: { type: String, required: false, index: 'sparse' },
-  recentEventIds: [{ type: Number, ref: 'Event' }],
-  authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
-}, {
-  versionKey: false,
-  timestamps: {
-    updatedAt: 'lastUpdated'
+  {
+    versionKey: false,
+    timestamps: {
+      updatedAt: 'lastUpdated'
+    },
+    toObject: {
+      transform: DbUserToObject
+    },
+    toJSON: {
+      transform: DbUserToObject
+    }
   }
-});
+);
 
 UserSchema.virtual('authentication').get(function () {
   return this.populated('authenticationId') ? this.authenticationId : null;
@@ -129,59 +138,49 @@ UserSchema.pre('remove', function (next) {
 });
 
 // eslint-disable-next-line complexity
-const transform = function (user, ret, options) {
-  ret.id = ret._id;
-  delete ret._id;
+function DbUserToObject(user, userOut, options) {
+  userOut.id = userOut._id;
+  delete userOut._id;
 
-  delete ret.avatar;
-  if (ret.icon) { // TODO remove if check, icon is always there
-    delete ret.icon.relativePath;
+  delete userOut.avatar;
+
+  if (userOut.icon) { // TODO remove if check, icon is always there
+    delete userOut.icon.relativePath;
   }
 
-  if (user.populated('roleId')) {
-    ret.role = ret.roleId;
-    delete ret.roleId;
+  if (user.populated('roleId') && !!user.roleId) {
+    userOut.role = user.roleId.toObject();
+    delete userOut.roleId;
   }
 
-  if (user.populated('authenticationId')) {
-    ret.authentication = ret.authenticationId || {};
-    delete ret.authentication.password;
-    delete ret.authenticationId;
-
-    if (user.authentication.populated('authenticationConfigurationId')) {
-      ret.authentication.authenticationConfiguration = ret.authentication.authenticationConfigurationId;
-      //TODO remove settings?
-      /*const keys = Object.keys(ret.authentication.authenticationConfigurationId);
-      keys.forEach(key => {
-        if (key !== 'settings') {
-          ret.authentication[key] = ret.authentication.authenticationConfigurationId[key];
-        }
-      });*/
-      delete ret.authentication.authenticationConfigurationId;
-    }
-
+  /*
+  TODO: this used to use user.populated('authenticationId'), but when paging
+  and using the cursor(), mongoose was not setting the populated flag on the
+  cursor documents, so this condition was never met and paged user documents
+  erroneously retained the authenticationId key with the populated
+  authentication object.  this occurs in mage server 6.2.x with mongoose 4.x.
+  this might be fixed in mongoose 5+, so revisit on mage server 6.3.x.
+  */
+  if (!!user.authenticationId && typeof user.authenticationId.toObject === 'function') {
+    const authPlain = user.authenticationId.toObject({ virtuals: true });
+    delete userOut.authenticationId;
+    userOut.authentication = authPlain;
   }
 
   if (user.avatar && user.avatar.relativePath) {
     // TODO, don't really like this, need a better way to set user resource, route
-    ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
+    userOut.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
   }
 
   if (user.icon && user.icon.relativePath) {
     // TODO, don't really like this, need a better way to set user resource, route
-    ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
+    userOut.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
   }
+
+  return userOut;
 };
 
-UserSchema.set("toJSON", {
-  transform: transform
-});
-
-UserSchema.set("toObject", {
-  transform: transform
-});
-
-exports.transform = transform;
+exports.transform = DbUserToObject;
 
 // Creates the Model for the User Schema
 const User = mongoose.model('User', UserSchema);
