@@ -6,7 +6,6 @@ import { Point } from 'geojson'
 import _ from 'lodash'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
 import uniqid from 'uniqid'
-import e from 'express'
 
 function makeObservationAttrs(mageEvent: MageEventAttrs | MageEventId): ObservationAttrs {
   const eventId = typeof mageEvent === 'object' ? mageEvent.id : mageEvent
@@ -750,6 +749,48 @@ describe('observation entities', function() {
           const valid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
 
           expect(valid.hasErrors).to.be.false
+        })
+
+        describe('supported image types', function() {
+
+          const supportedImageTypes = [
+            'image/gif',
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+          ]
+          for (const supportedImageType of supportedImageTypes) {
+
+            it(`allows ${supportedImageType}`, function() {
+
+              field.allowedAttachmentTypes = [ AttachmentPresentationType.Image ]
+              const observationAttrs = makeObservationAttrs(mageEventAttrs)
+              observationAttrs.properties.forms = [ formEntry ]
+              attachment1.contentType = supportedImageType
+              observationAttrs.attachments = [ attachment1 ]
+              const valid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
+
+              expect(valid.hasErrors).to.be.false
+            })
+          }
+
+          it('does not allow some other image type', function() {
+
+            field.allowedAttachmentTypes = [ AttachmentPresentationType.Image ]
+            const observationAttrs = makeObservationAttrs(mageEventAttrs)
+            observationAttrs.properties.forms = [ formEntry ]
+            attachment1.contentType = 'image/trash'
+            observationAttrs.attachments = [ attachment1 ]
+            const invalid = validateObservation(observationAttrs, new MageEvent(mageEventAttrs))
+
+            expect(invalid.hasErrors).to.be.true
+            const errs = new Map(invalid.formEntryErrors)
+            expect(errs.size).to.equal(1)
+            const entryErr = errs.get(0)
+            expect(entryErr?.formEntryId).to.equal(formEntry.id)
+            expect(entryErr?.fieldErrors).to.have.all.keys(field.name)
+            expect(entryErr?.fieldErrors.get(field.name)?.constraint).to.equal(FieldConstraintKey.Value)
+          })
         })
 
         it('validates min/max constraints on attachment fields', function() {

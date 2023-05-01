@@ -19,6 +19,7 @@ USER mage
 ENV MAGE_HOME /home/mage/instance
 WORKDIR ${MAGE_HOME}
 # add other plugin tarballs below
+# TODO: this build should change to install from NPM registry now that 6.2.2+ is published there
 COPY \
     ./ngageoint-mage.service-*.tgz \
     ./ngageoint-mage.web-app-*.tgz \

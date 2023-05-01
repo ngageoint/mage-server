@@ -145,7 +145,7 @@ export enum AttachmentPresentationType {
  * designations associated with the {@link content types} that MAGE supports.
  */
 export const AttachmentMediaTypes: { [MediaType in AttachmentPresentationType]: readonly string[] } = Object.freeze({
-  [AttachmentPresentationType.Image]: Object.freeze([ 'image/png', 'image/jpg', 'image/jpeg' ]),
+  [AttachmentPresentationType.Image]: Object.freeze([ 'image/gif', 'image/jpeg', 'image/png', 'image/webp' ]),
   [AttachmentPresentationType.Video]: Object.freeze([ 'video/mp4', 'video/quicktime' ]),
   [AttachmentPresentationType.Audio]: Object.freeze([ 'audio/mp4' ]),
 })
