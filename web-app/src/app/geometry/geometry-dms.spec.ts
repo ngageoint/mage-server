@@ -3,7 +3,7 @@ import { DMS } from './geometry-dms';
 describe('DMS', () => {
   it('should parse the coordinate string to a DMS string', () => {
     expect(DMS.parseToDMSString(null)).toEqual('')
-    
+
     let coordinates = "112230N"
     expect(DMS.parseToDMSString(coordinates)).toEqual("11° 22' 30\" N")
 
@@ -100,13 +100,13 @@ describe('DMS', () => {
 
   it("should split the coordinate string", () => {
     expect(DMS.splitCoordinates(null)).toEqual([])
-    
+
     let coordinates = "112233N 0152144W"
     expect(DMS.splitCoordinates(coordinates)).toEqual(["112233N","0152144W"])
 
     coordinates = "N 11 ° 22'33 \"- W 15 ° 21'44"
     expect(DMS.splitCoordinates(coordinates)).toEqual(["N11°22'33\"","W15°21'44"])
-    
+
     coordinates = "N 11 ° 22'30 \""
     expect(DMS.splitCoordinates(coordinates)).toEqual(["N11°22'30\""])
 
@@ -137,22 +137,22 @@ describe('DMS', () => {
 
   it("should parse the coordinate string", () => {
     expect(DMS.parse(null)).toBeNaN()
-    
+
     let coordinates = "112230N"
     expect(DMS.parse(coordinates)).toEqual(11.375)
-    
+
     coordinates = "112230"
     expect(DMS.parse(coordinates)).toEqual(11.375)
-    
+
     coordinates = "purple"
     expect(DMS.parse(coordinates)).toBeNaN()
-    
+
     coordinates = "N 11 ° 22'30 \""
     expect(DMS.parse(coordinates)).toEqual(11.375)
-    
+
     coordinates = "N 11 ° 22'30.36 \""
     expect(DMS.parse(coordinates)).toEqual(11.375)
-    
+
     coordinates = "N 11 ° 22'30.remove \""
     expect(DMS.parse(coordinates)).toEqual(11.375)
 
@@ -207,7 +207,7 @@ describe('DMS', () => {
     expect(DMS.validateLatitudeFromDMS("11NSNS.1N")).toBeFalsy()
     expect(DMS.validateLatitudeFromDMS("1111NS.1N")).toBeFalsy()
     expect(DMS.validateLatitudeFromDMS("113000NNN")).toBeFalsy()
-    
+
     let validString = "112233N"
     expect(DMS.validateLatitudeFromDMS(validString)).toBeTruthy()
     validString = "002233N"
@@ -312,18 +312,18 @@ describe('DMS', () => {
 
   it("should return a latitude dms string", () => {
     let coordinate = 11.1
-    expect(DMS.latitudeDMSString(coordinate)).toEqual("11° 06' 00\" N")
+    expect(DMS.formatLatitude(coordinate)).toEqual("11° 06' 00\" N")
     coordinate = -11.1
-    expect(DMS.latitudeDMSString(coordinate)).toEqual("11° 06' 00\" S")
+    expect(DMS.formatLatitude(coordinate)).toEqual("11° 06' 00\" S")
   });
 
   it("should return a longitude dms string", () => {
     let coordinate = 11.1
-    expect(DMS.longitudeDMSString(coordinate)).toEqual("11° 06' 00\" E")
+    expect(DMS.formatLongitude(coordinate)).toEqual("11° 06' 00\" E")
     coordinate = -11.1
-    expect(DMS.longitudeDMSString(coordinate)).toEqual("11° 06' 00\" W")
-    
+    expect(DMS.formatLongitude(coordinate)).toEqual("11° 06' 00\" W")
+
     coordinate = 18.077251
-    expect(DMS.longitudeDMSString(coordinate)).toEqual("18° 04' 38\" E")
+    expect(DMS.formatLongitude(coordinate)).toEqual("18° 04' 38\" E")
   });
 });

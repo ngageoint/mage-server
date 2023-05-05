@@ -1,4 +1,3 @@
-import { LatLng } from "leaflet";
 
 export class DMSCoordinate {
     degrees?: number;
@@ -7,6 +6,15 @@ export class DMSCoordinate {
     direction?: string;
 }
 
+/**
+ * Parse latitude and longitude strings in degrees-minutes-seconds format.
+ * The requirements say this class must support parsing the following
+ * coordinate strings.
+ * 1. 112233N 0112244W
+ * 2. N 11 ° 22'33 "- W 11 ° 22'33
+ * 3. 11 ° 22'33 "N - 11 ° 22'33" W
+ * 4. 11° 22'33 N 011° 22'33 W
+ */
 export class DMS {
 
   // takes one coordinate and translates it into a CLLocationDegrees
@@ -126,11 +134,6 @@ export class DMS {
     return split.map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
   }
 
-  // Need to parse the following formats: 
-  // 1. 112233N 0112244W
-  // 2. N 11 ° 22'33 "- W 11 ° 22'33
-  // 3. 11 ° 22'33 "N - 11 ° 22'33" W
-  // 4. 11° 22'33 N 011° 22'33 W
   static parseDMS(coordinate: string, addDirection = false, latitude = false): DMSCoordinate {
     const dmsCoordinate = new DMSCoordinate()
 
@@ -212,7 +215,7 @@ export class DMS {
       }
       dmsCoordinate.minutes = Math.floor(Math.abs(decimal * 60.0))
       // have to do this because 2.3 % 1 == .299999999998 in javascript and not .3
-      const decimalRemainderOfMinutes = DMS.decimalPart(decimal * 60.0)// Number(((decimal * 60.0)+"").split(".")[1])
+      const decimalRemainderOfMinutes = decimalPart(decimal * 60.0)// Number(((decimal * 60.0)+"").split(".")[1])
       const seconds = Math.abs(decimalRemainderOfMinutes * 60.0)
       dmsCoordinate.seconds = Math.round(seconds)
     } else if (decimalSeconds !== null && !isNaN(decimalSeconds)) {
@@ -327,22 +330,22 @@ export class DMS {
     return true
   }
 
-  static parseToDMSString(string: string, addDirection= false, latitude = false): string {
-    if (!string) {
+  static parseToDMSString(input: string, addDirection = false, latitude = false): string {
+    if (!input) {
       return ''
     }
 
-    if (string.length === 0) {
+    if (input.length === 0) {
       return ''
     }
 
-    const parsed = DMS.parseDMS(string, addDirection, latitude)
+    const parsed = DMS.parseDMS(input, addDirection, latitude)
 
     const direction = parsed.direction ? parsed.direction : ''
 
-    let seconds = parsed.seconds !== null && !isNaN(parsed.seconds) ? DMS.zeroPad(parsed.seconds) : ''
-    let minutes = parsed.minutes !== null && !isNaN(parsed.minutes) ? DMS.zeroPad(parsed.minutes) : ''
-    let degrees = parsed.degrees !== null && !isNaN(parsed.degrees) ? '' + parsed.degrees : ''
+    let seconds = parsed.seconds !== null && !isNaN(parsed.seconds) ? zeroPadTwo(parsed.seconds) : ''
+    let minutes = parsed.minutes !== null && !isNaN(parsed.minutes) ? zeroPadTwo(parsed.minutes) : ''
+    let degrees = parsed.degrees !== null && !isNaN(parsed.degrees) ? String(parsed.degrees) : ''
 
     if (degrees.length !== 0) {
       degrees = degrees + '° '
@@ -357,45 +360,41 @@ export class DMS {
     return degrees + minutes + seconds + direction
   }
 
-  static zeroPad(number: number): string {
-    return ('00' + number).slice(-2)
+  static formatLatitude(coordinate: number): string {
+    let degrees = Math.trunc(coordinate)
+    let minutes = Math.floor(Math.abs(decimalPart(coordinate) * 60.0))
+    let seconds = Math.round(Math.abs(decimalPart(decimalPart(coordinate) * 60.0)) * 60.0)
+    if (seconds == 60) {
+      seconds = 0
+      minutes += 1
+    }
+    if (minutes == 60) {
+      degrees += 1
+      minutes = 0
+    }
+    return `${Math.abs(degrees)}° ${zeroPadTwo(minutes)}' ${zeroPadTwo(seconds)}" ${degrees >= 0 ? 'N' : 'S'}`
   }
 
-  static decimalPart(number: number): number {
-    const split = (number+"").split(".")
-    const splitNumber = split.length == 2 ? split[1] : "0"
-    return Number("."+splitNumber)
+  static formatLongitude(coordinate: number): string {
+    let degrees = Math.trunc(coordinate)
+    let minutes = Math.floor(Math.abs(decimalPart(coordinate) * 60.0))
+    let seconds = Math.round(Math.abs(decimalPart(decimalPart(coordinate) * 60.0)) * 60.0)
+    if (seconds == 60) {
+      seconds = 0
+      minutes += 1
+    }
+    if (minutes == 60) {
+      degrees += 1
+      minutes = 0
+    }
+    return `${zeroPadThree(Math.abs(degrees))}° ${zeroPadTwo(minutes)}' ${zeroPadTwo(seconds)}" ${degrees >= 0 ? 'E' : 'W'}`
   }
+}
 
-  static latitudeDMSString(coordinate: number): string {
-    let latDegrees = Math.trunc(coordinate)
-    let latMinutes = Math.floor(Math.abs(DMS.decimalPart(coordinate) * 60.0))
-    let latSeconds = Math.round(Math.abs(DMS.decimalPart(DMS.decimalPart(coordinate) * 60.0)) * 60.0)
-    if (latSeconds == 60) {
-      latSeconds = 0
-      latMinutes += 1
-    }
-    if (latMinutes == 60) {
-      latDegrees += 1
-      latMinutes = 0
-    }
-
-    return `${Math.abs(latDegrees)}° ${DMS.zeroPad(latMinutes)}' ${DMS.zeroPad(latSeconds)}" ${latDegrees >= 0 ? 'N' : 'S'}`
-  }
-
-  static longitudeDMSString(coordinate: number): string {
-    let latDegrees = Math.trunc(coordinate)
-    let latMinutes = Math.floor(Math.abs(DMS.decimalPart(coordinate) * 60.0))
-    let latSeconds = Math.round(Math.abs(DMS.decimalPart(DMS.decimalPart(coordinate) * 60.0)) * 60.0)
-    if (latSeconds == 60) {
-      latSeconds = 0
-      latMinutes += 1
-    }
-    if (latMinutes == 60) {
-      latDegrees += 1
-      latMinutes = 0
-    }
-
-    return `${Math.abs(latDegrees)}° ${DMS.zeroPad(latMinutes)}' ${DMS.zeroPad(latSeconds)}" ${latDegrees >= 0 ? 'E' : 'W'}`
-  }
+function zeroPadTwo(num: number) { return String(num).padStart(2, '0') }
+function zeroPadThree(num: number) { return String(num).padStart(3, '0') }
+function decimalPart(num: number) {
+  const parts = String(num).split('.')
+  const fraction = parts.length == 2 ? parts[1] : '0'
+  return Number(`.${fraction}`)
 }
