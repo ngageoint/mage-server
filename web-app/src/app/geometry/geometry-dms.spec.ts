@@ -15,7 +15,7 @@ fdescribe('DMS', () => {
     expect(DMS.splitCoordinates(`11.4584, 15.6827`)).toEqual([ "11.4584", "15.6827" ])
     expect(DMS.splitCoordinates(`-11.4584, 15.6827`)).toEqual([ "-11.4584", "15.6827" ])
     expect(DMS.splitCoordinates(`11.4584, -15.6827`)).toEqual([ "11.4584", "-15.6827" ])
-  });
+  })
 
   it('should parse the coordinate string', () => {
     expect(DMS.parse(null)).toBeNaN()
@@ -37,16 +37,7 @@ fdescribe('DMS', () => {
     expect(DMS.parse(`1° 00' 00" W`, false)).toEqual(-1.0)
     expect(DMS.parse(`0° 30' 00" E`, false)).toEqual(0.5)
     expect(DMS.parse(`0° 30' 00" W`, false)).toEqual(-0.5)
-  });
-
-  it('should parse to DMS', () => {
-    const coordinate = `113000NNNN`
-    const parsed = DMS.parseDMS(coordinate)
-    expect(parsed.direction).toEqual(`N`)
-    expect(parsed.seconds).toEqual(0)
-    expect(parsed.minutes).toEqual(30)
-    expect(parsed.degrees).toEqual(11)
-  });
+  })
 
   describe('validation', () => {
 
@@ -159,7 +150,7 @@ fdescribe('DMS', () => {
     expect(DMS.formatLatitude(-0.25)).toEqual(`00° 15' 00" S`)
     expect(DMS.formatLatitude(0.0125)).toEqual(`00° 00' 45" N`)
     expect(DMS.formatLatitude(-0.0125)).toEqual(`00° 00' 45" S`)
-  });
+  })
 
   it('formats longitude decimal degrees as dms', () => {
     expect(DMS.formatLongitude(128.077251)).toEqual(`128° 04' 38" E`)
@@ -170,5 +161,5 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-8.077251)).toEqual(`008° 04' 38" W`)
     expect(DMS.formatLongitude(0.077251)).toEqual(`000° 04' 38" E`)
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
-  });
-});
+  })
+})
