@@ -2,110 +2,12 @@ import { DMS } from './geometry-dms';
 
 fdescribe('DMS', () => {
 
-  it('should parse the coordinate string to a DMS string', () => {
-
-    expect(DMS.parseToDMSString(null)).toEqual('')
-
-    let coordinates = `112230N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `112230`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" `)
-
-    coordinates = `30N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`30° N`)
-
-    coordinates = `3030N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`30° 30' N`)
-
-    coordinates = `purple`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`E`)
-
-    coordinates = ``
-    expect(DMS.parseToDMSString(coordinates)).toEqual(``)
-
-    coordinates = `N 11 ° 22'30 `
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `N 11 ° 22'30.36 `
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `112233.99N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 34" N`)
-
-    coordinates = `11.999999N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`12° 00' 00" N`)
-
-    coordinates = `N 11 ° 22'30.remove `
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `11 ° 22'30 "N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `11° 22'30 N`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 22' 30" N`)
-
-    coordinates = `101° 22'30 W`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`101° 22' 30" W`)
-
-    coordinates = `11`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° `)
-
-    coordinates = `11.4584`
-    expect(DMS.parseToDMSString(coordinates, true, true)).toEqual(`11° 27' 30" N`)
-
-    coordinates = `-11.4584`
-    expect(DMS.parseToDMSString(coordinates, true, true)).toEqual(`11° 27' 30" S`)
-
-    coordinates = `11.4584`
-    expect(DMS.parseToDMSString(coordinates, true)).toEqual(`11° 27' 30" E`)
-
-    coordinates = `-11.4584`
-    expect(DMS.parseToDMSString(coordinates, true)).toEqual(`11° 27' 30" W`)
-
-    coordinates = `11.4584`
-    expect(DMS.parseToDMSString(coordinates, true, true)).toEqual(`11° 27' 30" N`)
-
-    coordinates = `-11.4584`
-    expect(DMS.parseToDMSString(coordinates, true, true)).toEqual(`11° 27' 30" S`)
-
-    coordinates = `0151545W`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 15' 45" W`)
-
-    coordinates = `113000W`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 30' 00" W`)
-
-    coordinates = `W 15 ° 15'45`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 15' 45" W`)
-
-    coordinates = `15 ° 15'45" W`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 15' 45" W`)
-
-    coordinates = `015° 15'45 W`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 15' 45" W`)
-
-    coordinates = `15.6827`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 40' 58" `)
-
-    coordinates = `-15.6827`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`15° 40' 58" `)
-
-    coordinates = `15.6827`
-    expect(DMS.parseToDMSString(coordinates, true)).toEqual(`15° 40' 58" E`)
-
-    coordinates = `-15.6827`
-    expect(DMS.parseToDMSString(coordinates, true)).toEqual(`15° 40' 58" W`)
-
-    coordinates = `113000NNNN`
-    expect(DMS.parseToDMSString(coordinates)).toEqual(`11° 30' 00" N`)
-  });
-
   it('should split the coordinate string', () => {
     expect(DMS.splitCoordinates(null)).toEqual([])
     expect(DMS.splitCoordinates(`112233N 0152144W`)).toEqual([ `112233N`, `0152144W` ])
     expect(DMS.splitCoordinates(`N 11 ° 22'33 "- W 15 ° 21'44`)).toEqual([ `N11°22'33"`, `W15°21'44`])
-    expect(DMS.splitCoordinates(`N 11 ° 22'30 `)).toEqual([ `N11°22'30"` ])
-    expect(DMS.splitCoordinates(`11 ° 22'33 "N - 15 ° 21'44" W`)).toEqual([ `11°22'33\"N`, `15°21'44"W` ])
+    expect(DMS.splitCoordinates(`N 11 ° 22'30 `)).toEqual([ `N11°22'30` ])
+    expect(DMS.splitCoordinates(`11 ° 22'33 "N - 15 ° 21'44" W`)).toEqual([ `11°22'33"N`, `15°21'44"W` ])
     expect(DMS.splitCoordinates(`11° 22'33 N 015° 21'44 W`)).toEqual([ "11°22'33N", "015°21'44W" ])
     expect(DMS.splitCoordinates(`11.4584 15.6827`)).toEqual([ "11.4584", "15.6827" ])
     expect(DMS.splitCoordinates(`-11.4584 15.6827`)).toEqual([ "-11.4584", "15.6827" ])
@@ -213,6 +115,7 @@ fdescribe('DMS', () => {
         `104° 40' 05" E`,
         `1800000E`,
         `1800000W`,
+        `002233E`,
       ]
       .forEach(input => {
         it(`validates longitude ${input}`, () => {
@@ -233,7 +136,6 @@ fdescribe('DMS', () => {
         `.123W`,
         `1812233W`,
         `-112233W`,
-        `002233E`,
         `002233N`,
         `1800001E`,
         `1800000.1E`,
@@ -248,18 +150,18 @@ fdescribe('DMS', () => {
     })
   })
 
-  it('formats a latitude as dms', () => {
+  it('formats latitude decimal degrees as dms', () => {
     expect(DMS.formatLatitude(11.1)).toEqual(`11° 06' 00" N`)
     expect(DMS.formatLatitude(-11.1)).toEqual(`11° 06' 00" S`)
     expect(DMS.formatLatitude(1.25)).toEqual(`01° 15' 00" N`)
     expect(DMS.formatLatitude(-1.25)).toEqual(`01° 15' 00" S`)
     expect(DMS.formatLatitude(0.25)).toEqual(`00° 15' 00" N`)
     expect(DMS.formatLatitude(-0.25)).toEqual(`00° 15' 00" S`)
-    expect(DMS.formatLatitude(0.0625)).toEqual(`00° 00' 15" N`)
-    expect(DMS.formatLatitude(-0.0625)).toEqual(`00° 00' 15" S`)
+    expect(DMS.formatLatitude(0.0125)).toEqual(`00° 00' 45" N`)
+    expect(DMS.formatLatitude(-0.0125)).toEqual(`00° 00' 45" S`)
   });
 
-  it('formats a longitude as dms', () => {
+  it('formats longitude decimal degrees as dms', () => {
     expect(DMS.formatLongitude(128.077251)).toEqual(`128° 04' 38" E`)
     expect(DMS.formatLongitude(-128.077251)).toEqual(`128° 04' 38" W`)
     expect(DMS.formatLongitude(18.077251)).toEqual(`018° 04' 38" E`)

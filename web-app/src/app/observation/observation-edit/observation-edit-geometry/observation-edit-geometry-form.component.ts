@@ -191,8 +191,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     if (!(this.dmsLatModel.valid && this.dmsLonModel.valid)) {
       return
     }
-    const lat = DMS.parse(this.dmsForm.lat, true)
-    const lon = DMS.parse(this.dmsForm.lon, false)
+    const lat = DMS.parse(this.dmsForm.lat)
+    const lon = DMS.parse(this.dmsForm.lon)
     let coordinates = [ ...this.feature.geometry.coordinates ]
     if (this.feature.geometry.type === 'Point') {
       coordinates = [ lon, lat ]
@@ -205,6 +205,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         coordinates[0][this.selectedVertexIndex] = [ lon, lat ]
       }
     }
+    ensurePolygonClosed(this.feature, coordinates)
     // Check for polygon for intersections
     if (this.hasIntersections(this.feature, coordinates)) {
       return;
@@ -215,7 +216,6 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
 
   onLatLngChange(): void {
     let coordinates = { ...this.feature.geometry.coordinates }
-
     // copy edit field lat/lng in coordinates at correct index
     if (this.feature.geometry.type === 'Point') {
       coordinates = [this.longitude, this.latitude]
@@ -226,15 +226,10 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
         coordinates[0][this.selectedVertexIndex] = [this.longitude, this.latitude]
       }
     }
-
-    // transform corrdinates to valid GeoJSON
     ensurePolygonClosed(this.feature, coordinates);
-
-    // Check for polygon for intersections
     if (this.hasIntersections(this.feature, coordinates)) {
       return;
     }
-
     this.feature.geometry.coordinates = coordinates;
     this.featureEdit.update(this.feature);
   }

@@ -1,9 +1,27 @@
 
-export class DMSCoordinate {
-    degrees?: number;
-    minutes?: number;
-    seconds?: number;
-    direction?: string;
+class DMSCoordinate {
+
+  degrees?: number;
+  minutes?: number;
+  seconds?: number;
+  direction: HemisphereLabel;
+
+  format(opts: DMSFormatOptions = { hemisphereIndicator: 'label', padDegrees: true }): string {
+    return formatDMS(this, opts)
+  }
+
+  toString() {
+    return this.format()
+  }
+
+  static fromDegrees(deg: number, dimension?: DimensionKey) {
+
+  }
+}
+
+export interface DMSFormatOptions {
+  hemisphereIndicator: 'sign' | 'label'
+  padDegrees: boolean
 }
 
 /**
@@ -58,24 +76,10 @@ export class DMS {
     return NaN
   }
 
-  static firstDirectionIndex(coordinateString): number {
-    const northDirectionIndex = coordinateString.indexOf('N')
-    const southDirectionIndex = coordinateString.indexOf('S')
-    const eastDirectionIndex = coordinateString.indexOf('E')
-    const westDirectionIndex = coordinateString.indexOf('W')
-    const directionIndex = Math.min(northDirectionIndex == -1 ? Number.MAX_VALUE : northDirectionIndex,
-       southDirectionIndex == -1 ? Number.MAX_VALUE : southDirectionIndex,
-       eastDirectionIndex == -1 ? Number.MAX_VALUE : eastDirectionIndex,
-       westDirectionIndex == -1 ? Number.MAX_VALUE : westDirectionIndex)
-    return directionIndex == Number.MAX_VALUE ? -1 : directionIndex
-  }
-
-  static lastDirectionIndex(coordinateString): number {
-    return Math.max(coordinateString.lastIndexOf('N'), coordinateString.lastIndexOf('S'), coordinateString.lastIndexOf('E'), coordinateString.lastIndexOf('W'))
-  }
-
-  // splits the string into possibly two coordinates with all spaces removed
-  // no further normalization takes place
+  /**
+   * Split the given string into possibly two coordinates with all spaces
+   * removed.  No further normalization takes place.
+   */
   static splitCoordinates(coordinates: string): string[] {
     let split: string[] = []
 
@@ -92,7 +96,7 @@ export class DMS {
     }
 
     // check if there are any direction letters
-    const firstDirectionIndex = DMS.firstDirectionIndex(coordinatesToParse)
+    const firstDirectionIndex = indexOfFirstHemisphere(coordinatesToParse)
     const hasDirection = firstDirectionIndex !== -1
 
     // if the string has a direction we can try to split on the dash
@@ -100,7 +104,7 @@ export class DMS {
       return coordinatesToParse.split('-').map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
     } else if (hasDirection) {
       // if the string has a direction but no dash, split on the direction
-      const lastDirectionIndex = DMS.lastDirectionIndex(coordinatesToParse)
+      const lastDirectionIndex = indexOfLastHemisphere(coordinatesToParse)
 
       // the direction will either be at the begining of the string, or the end
       // if the direction is at the begining of the string, use the second index unless there is no second index
@@ -134,18 +138,16 @@ export class DMS {
     return split.map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
   }
 
-  static parseDMS(coordinate: string, addDirection = false, latitude = false): DMSCoordinate {
+  static parseDMS(coordinate: string, latitude = false): DMSCoordinate {
     const dmsCoordinate = new DMSCoordinate()
 
     let coordinateToParse = coordinate.replace(/\r?\n|\r|\s/g, '')
 
-    if (addDirection) {
-      // check if the first character is negative
-      if (coordinateToParse.indexOf('-') === 0) {
-        dmsCoordinate.direction = latitude ? 'S' : 'W'
-      } else {
-        dmsCoordinate.direction = latitude ? 'N' : 'E'
-      }
+    // check if the first character is negative
+    if (coordinateToParse.indexOf('-') === 0) {
+      dmsCoordinate.direction = latitude ? 'S' : 'W'
+    } else {
+      dmsCoordinate.direction = latitude ? 'N' : 'E'
     }
 
     // strip out any non numerics except direction
@@ -157,7 +159,7 @@ export class DMS {
     const lastCharacter = coordinateToParse[coordinateToParse.length - 1]
     if (lastCharacter && isNaN(Number(lastCharacter))) {
       // the last character might be a direction not a number
-      dmsCoordinate.direction = lastCharacter.toUpperCase()
+      dmsCoordinate.direction = lastCharacter.toUpperCase() as HemisphereLabel
       coordinateToParse = coordinateToParse.slice(0, -1)
     }
     if (coordinateToParse.length == 0) {
@@ -167,7 +169,7 @@ export class DMS {
     const firstCharacter = coordinateToParse[0]
     if (firstCharacter && isNaN(Number(firstCharacter))) {
       // the first character might be a direction not a number
-      dmsCoordinate.direction = firstCharacter.toUpperCase()
+      dmsCoordinate.direction = firstCharacter.toUpperCase() as HemisphereLabel
       coordinateToParse = coordinateToParse.substring(1)
     }
 
@@ -330,71 +332,86 @@ export class DMS {
     return true
   }
 
-  static parseToDMSString(input: string, addDirection = false, latitude = false): string {
-    if (!input) {
-      return ''
-    }
-
-    if (input.length === 0) {
-      return ''
-    }
-
-    const parsed = DMS.parseDMS(input, addDirection, latitude)
-
-    const direction = parsed.direction ? parsed.direction : ''
-
-    let seconds = parsed.seconds !== null && !isNaN(parsed.seconds) ? zeroPadTwo(parsed.seconds) : ''
-    let minutes = parsed.minutes !== null && !isNaN(parsed.minutes) ? zeroPadTwo(parsed.minutes) : ''
-    let degrees = parsed.degrees !== null && !isNaN(parsed.degrees) ? String(parsed.degrees) : ''
-
-    if (degrees.length !== 0) {
-      degrees = degrees + '° '
-    }
-    if (minutes.length !== 0) {
-      minutes = minutes + "' "
-    }
-    if (seconds.length !== 0) {
-      seconds = seconds + '" '
-    }
-
-    return degrees + minutes + seconds + direction
+  static formatLatitude(degrees: number): string {
+    return formatDegrees(degrees, DimensionKey.Latitude)
   }
 
-  static formatLatitude(coordinate: number): string {
-    let degrees = Math.trunc(coordinate)
-    let minutes = Math.floor(Math.abs(decimalPart(coordinate) * 60.0))
-    let seconds = Math.round(Math.abs(decimalPart(decimalPart(coordinate) * 60.0)) * 60.0)
-    if (seconds == 60) {
-      seconds = 0
-      minutes += 1
-    }
-    if (minutes == 60) {
-      degrees += 1
-      minutes = 0
-    }
-    return `${Math.abs(degrees)}° ${zeroPadTwo(minutes)}' ${zeroPadTwo(seconds)}" ${degrees >= 0 ? 'N' : 'S'}`
-  }
-
-  static formatLongitude(coordinate: number): string {
-    let degrees = Math.trunc(coordinate)
-    let minutes = Math.floor(Math.abs(decimalPart(coordinate) * 60.0))
-    let seconds = Math.round(Math.abs(decimalPart(decimalPart(coordinate) * 60.0)) * 60.0)
-    if (seconds == 60) {
-      seconds = 0
-      minutes += 1
-    }
-    if (minutes == 60) {
-      degrees += 1
-      minutes = 0
-    }
-    return `${zeroPadThree(Math.abs(degrees))}° ${zeroPadTwo(minutes)}' ${zeroPadTwo(seconds)}" ${degrees >= 0 ? 'E' : 'W'}`
+  static formatLongitude(degrees: number): string {
+    return formatDegrees(degrees, DimensionKey.Longitude)
   }
 }
 
-function zeroPadTwo(num: number) { return String(num).padStart(2, '0') }
-function zeroPadThree(num: number) { return String(num).padStart(3, '0') }
+
+function indexOfFirstHemisphere(coordinateString): number {
+  const northDirectionIndex = coordinateString.indexOf('N')
+  const southDirectionIndex = coordinateString.indexOf('S')
+  const eastDirectionIndex = coordinateString.indexOf('E')
+  const westDirectionIndex = coordinateString.indexOf('W')
+  const directionIndex = Math.min(northDirectionIndex == -1 ? Number.MAX_VALUE : northDirectionIndex,
+     southDirectionIndex == -1 ? Number.MAX_VALUE : southDirectionIndex,
+     eastDirectionIndex == -1 ? Number.MAX_VALUE : eastDirectionIndex,
+     westDirectionIndex == -1 ? Number.MAX_VALUE : westDirectionIndex)
+  return directionIndex == Number.MAX_VALUE ? -1 : directionIndex
+}
+
+function indexOfLastHemisphere(coordinateString): number {
+  return Math.max(coordinateString.lastIndexOf('N'), coordinateString.lastIndexOf('S'), coordinateString.lastIndexOf('E'), coordinateString.lastIndexOf('W'))
+}
+
+function zeroPadStart(num: number, padCount: number) { return num < 0 ? '-' : '' + String(Math.abs(num)).padStart(padCount, '0') }
+
 function decimalPart(num: number) {
   const parts = String(num).split('.')
   const fraction = parts.length == 2 ? parts[1] : '0'
   return Number(`.${fraction}`)
 }
+
+function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { hemisphereIndicator: 'label', padDegrees: true }): string {
+  const deg = coord.degrees || 0
+  const min = coord.minutes || 0
+  const sec = coord.seconds || 0
+  const dim = Dimension.forHemisphere(coord.direction)
+  const degPart = opts.padDegrees !== false ? dim.zeroPadDegrees(deg) : String(deg)
+  return ''
+}
+
+function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string {
+  let wholeDegrees = Math.trunc(Math.abs(decimalDegrees))
+  let minutes = Math.floor(Math.abs(decimalPart(decimalDegrees) * 60.0))
+  let seconds = Math.round(Math.abs(decimalPart(decimalPart(decimalDegrees) * 60.0)) * 60.0)
+  if (seconds == 60) {
+    seconds = 0
+    minutes += 1
+  }
+  if (minutes == 60) {
+    wholeDegrees += 1
+    minutes = 0
+  }
+  const dim = Dimension[dimension]
+  const hemisphere = dim.hemisphereForDegrees(decimalDegrees)
+  return `${dim.zeroPadDegrees(wholeDegrees)}° ${zeroPadStart(minutes, 2)}' ${zeroPadStart(seconds, 2)}" ${hemisphere}`
+}
+
+export enum DimensionKey {
+  Latitude = 'lat',
+  Longitude = 'lon',
+}
+
+const Dimension = {
+  [DimensionKey.Latitude]: {
+    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
+    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 2),
+  },
+  [DimensionKey.Longitude]: {
+    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'W' : 'E') as LongitudeHemisphereLabel,
+    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 3),
+  },
+  keyForHemisphere: (hemi: HemisphereLabel) => hemi === 'E' || hemi === 'W' ? DimensionKey.Longitude : DimensionKey.Latitude,
+  forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
+} as const
+
+type LatitudeHemisphereLabel = 'N' | 'S'
+type LongitudeHemisphereLabel = 'E' | 'W'
+type HemisphereLabel = LatitudeHemisphereLabel | LongitudeHemisphereLabel
+
+
