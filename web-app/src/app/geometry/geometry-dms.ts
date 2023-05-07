@@ -38,29 +38,29 @@ export class DMS {
   /**
    * Parse the given DMS coordinate string and return the value in decimal
    * degrees.  Return `NaN` if parsing fails.
-   * @param coordinate
+   * @param input
    * @param enforceLatitude
    * @returns
    */
-  static parse(coordinate: string, enforceLatitude = false): number {
-    if (!coordinate) {
+  static parse(input: string, dimension: DimensionKey): number {
+    if (!input) {
       return NaN
     }
 
-    const normalized = coordinate.replace(/\r?\n|\r|\s/g, "")
+    const normalized = input.replace(/\r?\n|\r|\s/g, "")
     // check if it is a number and that number could be a valid latitude or longitude
     // could either be a decimal or a whole number representing lat/lng or a DDMMSS.sss number representing degree minutes seconds
     const decimalDegrees = Number(normalized)
     if (!isNaN(decimalDegrees)) {
-      // if either of these are true, parse it as a regular latitude longitude
-      if ((!enforceLatitude && decimalDegrees >= -180.0 && decimalDegrees <= 180.0)
-        || (enforceLatitude && decimalDegrees >= -90.0 && decimalDegrees <= 90.0)) {
+      if (
+        (dimension === DimensionKey.Longitude && decimalDegrees >= -180.0 && decimalDegrees <= 180.0) ||
+        (dimension === DimensionKey.Latitude && decimalDegrees >= -90.0 && decimalDegrees <= 90.0)
+      ) {
           return decimalDegrees
       }
     }
 
-    // try to just parse it as DMS
-    const dms = parseDMS(normalized)
+    const dms = parseDMS(normalized, dimension)
     if (dms.degrees || dms.degrees === 0) {
       let coordinateDegrees = dms.degrees
       if (dms.minutes) {
@@ -160,16 +160,16 @@ export class DMS {
   }
 }
 
-function parseDMS(coordinate: string, latitude = false): DMSCoordinate {
+function parseDMS(coordinate: string, dimKey: DimensionKey): DMSCoordinate {
   const dmsCoordinate = new DMSCoordinate()
-
+  const dim = Dimension[dimKey]
   let coordinateToParse = coordinate.replace(/\r?\n|\r|\s/g, '')
 
   // check if the first character is negative
   if (coordinateToParse.indexOf('-') === 0) {
-    dmsCoordinate.direction = latitude ? 'S' : 'W'
+    dmsCoordinate.direction = dim.hemisphereForDegrees(-1)
   } else {
-    dmsCoordinate.direction = latitude ? 'N' : 'E'
+    dmsCoordinate.direction = dim.hemisphereForDegrees(1)
   }
 
   // strip out any non numerics except direction
@@ -394,7 +394,8 @@ function validateCoordinateFromDMS(dmsCoordinate: string, dimension: DimensionKe
     if (
       (seconds < 0 || seconds > 59) ||
       (dimension === DimensionKey.Latitude && degrees == 90 && (seconds != 0 || decimalSeconds != 0)) ||
-      (dimension === DimensionKey.Longitude && degrees == 180 && (seconds != 0 || decimalSeconds != 0))) {
+      (dimension === DimensionKey.Longitude && degrees == 180 && (seconds != 0 || decimalSeconds != 0))
+    ) {
       return false
     }
   }

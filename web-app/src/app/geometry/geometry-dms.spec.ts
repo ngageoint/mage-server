@@ -1,4 +1,4 @@
-import { DMS } from './geometry-dms';
+import { DimensionKey, DMS } from './geometry-dms';
 
 fdescribe('DMS', () => {
 
@@ -18,25 +18,26 @@ fdescribe('DMS', () => {
   })
 
   it('should parse the coordinate string', () => {
-    expect(DMS.parse(null)).toBeNaN()
-    expect(DMS.parse(`112230N`)).toEqual(11.375)
-    expect(DMS.parse(`N 11 ° 22'30.36 `)).toEqual(11.375)
-    expect(DMS.parse(`N 11 ° 22'30.remove `)).toEqual(11.375)
-    expect(DMS.parse(`11 ° 22'30 "N`)).toEqual(11.375)
-    expect(DMS.parse(`11° 22'30 N`)).toEqual(11.375)
-    expect(DMS.parse(`11.4584`)).toEqual(11.4584)
-    expect(DMS.parse(`-11.4584`)).toEqual(-11.4584)
-    expect(DMS.parse(`0151545W`)).toEqual(-15.2625)
-    expect(DMS.parse(`W 15 ° 15'45`)).toEqual(-15.2625)
-    expect(DMS.parse(`15 ° 15'45" W`)).toEqual(-15.2625)
-    expect(DMS.parse(`015° 15'45 W`)).toEqual(-15.2625)
-    expect(DMS.parse(`15.6827`)).toEqual(15.6827)
-    expect(DMS.parse(`-15.6827`)).toEqual(-15.6827)
-    expect(DMS.parse(`0° 30' 00" S`)).toEqual(-0.5)
-    expect(DMS.parse(`1° 00' 00" E`, false)).toEqual(1.0)
-    expect(DMS.parse(`1° 00' 00" W`, false)).toEqual(-1.0)
-    expect(DMS.parse(`0° 30' 00" E`, false)).toEqual(0.5)
-    expect(DMS.parse(`0° 30' 00" W`, false)).toEqual(-0.5)
+    expect(DMS.parse(null, DimensionKey.Latitude)).toBeNaN()
+    expect(DMS.parse(null, DimensionKey.Longitude)).toBeNaN()
+    expect(DMS.parse(`112230N`, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`N 11 ° 22'30.36 `, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`N 11 ° 22'30.remove `, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`11 ° 22'30 "N`, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`11° 22'30 N`, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`11.4584`, DimensionKey.Latitude)).toEqual(11.4584)
+    expect(DMS.parse(`-11.4584`, DimensionKey.Latitude)).toEqual(-11.4584)
+    expect(DMS.parse(`0151545W`, DimensionKey.Longitude)).toEqual(-15.2625)
+    expect(DMS.parse(`W 15 ° 15'45`, DimensionKey.Longitude)).toEqual(-15.2625)
+    expect(DMS.parse(`15 ° 15'45" W`, DimensionKey.Longitude)).toEqual(-15.2625)
+    expect(DMS.parse(`015° 15'45 W`, DimensionKey.Longitude)).toEqual(-15.2625)
+    expect(DMS.parse(`15.6827`, DimensionKey.Longitude)).toEqual(15.6827)
+    expect(DMS.parse(`-15.6827`, DimensionKey.Longitude)).toEqual(-15.6827)
+    expect(DMS.parse(`0° 30' 00" S`, DimensionKey.Latitude)).toEqual(-0.5)
+    expect(DMS.parse(`1° 00' 00" E`, DimensionKey.Longitude)).toEqual(1.0)
+    expect(DMS.parse(`1° 00' 00" W`, DimensionKey.Longitude)).toEqual(-1.0)
+    expect(DMS.parse(`0° 30' 00" E`, DimensionKey.Longitude)).toEqual(0.5)
+    expect(DMS.parse(`0° 30' 00" W`, DimensionKey.Longitude)).toEqual(-0.5)
   })
 
   describe('validation', () => {

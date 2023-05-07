@@ -2,7 +2,7 @@ import { Component, Directive, EventEmitter, Inject, Input, OnChanges, Output, S
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import mgrs from 'mgrs';
-import { DMS } from 'src/app/geometry/geometry-dms';
+import { DimensionKey, DMS } from 'src/app/geometry/geometry-dms';
 import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { createMask } from '@ngneat/input-mask';
 
@@ -191,8 +191,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges {
     if (!(this.dmsLatModel.valid && this.dmsLonModel.valid)) {
       return
     }
-    const lat = DMS.parse(this.dmsForm.lat)
-    const lon = DMS.parse(this.dmsForm.lon)
+    const lat = DMS.parse(this.dmsForm.lat, DimensionKey.Latitude)
+    const lon = DMS.parse(this.dmsForm.lon, DimensionKey.Longitude)
     let coordinates = [ ...this.feature.geometry.coordinates ]
     if (this.feature.geometry.type === 'Point') {
       coordinates = [ lon, lat ]
