@@ -272,7 +272,7 @@ function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { hemisphereIn
   const deg = coord.degrees || 0
   const min = coord.minutes || 0
   const sec = coord.seconds || 0
-  const dim = Dimension.forHemisphere(coord.direction)
+  const dim = Dimension.forHemisphere(coord.hemisphere)
   const degPart = opts.padDegrees !== false ? dim.zeroPadDegrees(deg) : String(deg)
   return ''
 }
@@ -294,22 +294,24 @@ function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string 
   return `${dim.zeroPadDegrees(wholeDegrees)}° ${zeroPadStart(minutes, 2)}' ${zeroPadStart(seconds, 2)}" ${hemisphere}`
 }
 
-function validateCoordinateFromDMS(dmsCoordinate: string, dimension: DimensionKey): boolean {
-  if (!dmsCoordinate) {
+function validateCoordinateFromDMS(input: string, dimension: DimensionKey): boolean {
+  if (typeof input !== 'string') {
     return false
   }
-  const letters = /^[0-9NSEWnsew. °\'\"]+$/;
-  if (!letters.test(dmsCoordinate)) {
+  input = input.trim()
+  const letters = /^[0-9NSEWnsew. °\'\"]+$/
+  if (!letters.test(input)) {
     return false
   }
 
-  let coordinateToParse = dmsCoordinate.replace(/[^\d.NSEWnsew]/g, '')
+  let coordinateToParse = input.replace(/[^\d.NSEWnsew]/g, '')
 
   // There must be a direction as the last character
   const direction = coordinateToParse[coordinateToParse.length - 1]
   if (!isNaN(Number(direction))) {
     return false
-  } else {
+  }
+  else {
     if (dimension === DimensionKey.Latitude && direction.toUpperCase() !== 'N' && direction.toUpperCase() !== 'S') {
       return false
     }
