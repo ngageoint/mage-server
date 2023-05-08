@@ -27,10 +27,6 @@ class DMSCoordinate {
   toString() {
     return this.format()
   }
-
-  static fromDegrees(deg: number, dimension?: DimensionKey) {
-
-  }
 }
 
 interface DMSFormatOptions {
@@ -69,7 +65,6 @@ export class DMS {
         return decimalDegrees
       }
     }
-
     const dms = parseDMS(inputCondensed)
     return dms.toDecimalDegrees()
   }
@@ -85,12 +80,11 @@ export class DMS {
       return split
     }
 
-    // trim whitespaces from the start and end of the string
     const coordinatesToParse = coordinates.trim().toUpperCase()
 
     // if there is a comma, split on that
     if (coordinatesToParse.includes(',')) {
-      return coordinatesToParse.split(',').map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
+      return coordinatesToParse.split(',').map(splitString => splitString.replace(/\s/g, ''))
     }
 
     // check if there are any direction letters
@@ -99,7 +93,7 @@ export class DMS {
 
     // if the string has a direction we can try to split on the dash
     if (hasDirection && coordinatesToParse.indexOf('-') !== -1) {
-      return coordinatesToParse.split('-').map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
+      return coordinatesToParse.split('-').map(splitString => splitString.replace(/\s/g, ''))
     } else if (hasDirection) {
       // if the string has a direction but no dash, split on the direction
       const lastDirectionIndex = indexOfLastHemisphere(coordinatesToParse)
@@ -136,12 +130,12 @@ export class DMS {
     return split.map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
   }
 
-  static validateLatitudeFromDMS(dmsLat: string): boolean {
-    return validateCoordinateFromDMS(dmsLat, DimensionKey.Latitude)
+  static validateLatitudeFromDMS(input: string): boolean {
+    return validateCoordinateFromDMS(input, DimensionKey.Latitude)
   }
 
-  static validateLongitudeFromDMS(dmsLon: string): boolean {
-    return validateCoordinateFromDMS(dmsLon, DimensionKey.Longitude)
+  static validateLongitudeFromDMS(input: string): boolean {
+    return validateCoordinateFromDMS(input, DimensionKey.Longitude)
   }
 
   static formatLatitude(degrees: number): string {
@@ -294,6 +288,10 @@ function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string 
   return `${dim.zeroPadDegrees(wholeDegrees)}° ${zeroPadStart(minutes, 2)}' ${zeroPadStart(seconds, 2)}" ${hemisphere}`
 }
 
+/*
+TODO: parsing and validation should be using the same logic. this is
+essentially alternate parsing logic with different rules.
+ */
 function validateCoordinateFromDMS(input: string, dimension: DimensionKey): boolean {
   if (typeof input !== 'string') {
     return false
@@ -337,8 +335,8 @@ function validateCoordinateFromDMS(input: string, dimension: DimensionKey): bool
   if (dimension === DimensionKey.Longitude && (coordinateToParse.length < 5 || coordinateToParse.length > 7)) {
       return false
   }
-  let decimalSeconds = 0
 
+  let decimalSeconds = 0
   if (split.length === 2) {
     if (!isNaN(Number(split[1]))) {
       decimalSeconds = Number(split[1])
