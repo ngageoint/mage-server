@@ -21,6 +21,12 @@ fdescribe('DMS', () => {
     expect(DMS.parse(null, DimensionKey.Latitude)).toBeNaN()
     expect(DMS.parse(null, DimensionKey.Longitude)).toBeNaN()
     expect(DMS.parse(`112230N`, DimensionKey.Latitude)).toEqual(11.375)
+    expect(DMS.parse(`12230N`, DimensionKey.Latitude)).toEqual(1.375)
+    expect(DMS.parse(`02230N`, DimensionKey.Latitude)).toEqual(0.375)
+    expect(DMS.parse(`2230N`, DimensionKey.Latitude)).toEqual(22.5)
+    expect(DMS.parse(`215N`, DimensionKey.Latitude)).toEqual(2.25)
+    expect(DMS.parse(`21N`, DimensionKey.Latitude)).toEqual(21)
+    expect(DMS.parse(`2N`, DimensionKey.Latitude)).toEqual(2)
     expect(DMS.parse(`N 11 ° 22'30.36 `, DimensionKey.Latitude)).toEqual(11.375)
     expect(DMS.parse(`N 11 ° 22'30.remove `, DimensionKey.Latitude)).toEqual(11.375)
     expect(DMS.parse(`11 ° 22'30 "N`, DimensionKey.Latitude)).toEqual(11.375)
@@ -46,6 +52,8 @@ fdescribe('DMS', () => {
     describe('valid latitudes', () => {
 
       [
+        `11°22'30"N`,
+        `11 ° 22 ' 30 " N`,
         `112233N`,
         `002233N`,
         `02233N`,
