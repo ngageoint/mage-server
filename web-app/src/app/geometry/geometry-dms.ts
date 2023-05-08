@@ -1,10 +1,24 @@
 
 class DMSCoordinate {
 
-  degrees?: number;
-  minutes?: number;
-  seconds?: number;
-  direction: HemisphereLabel;
+  degrees: number
+  minutes: number
+  seconds: number
+  hemisphere: HemisphereLabel
+
+  toDecimalDegrees() {
+    let result = this.degrees
+    if (this.minutes) {
+      result += this.minutes / 60.0
+    }
+    if (this.seconds) {
+      result += this.seconds / 3600.0
+    }
+    if (this.hemisphere == 'S' || this.hemisphere == 'W') {
+      result *= -1
+    }
+    return result
+  }
 
   format(opts: DMSFormatOptions = { hemisphereIndicator: 'label', padDegrees: true }): string {
     return formatDMS(this, opts)
@@ -19,7 +33,7 @@ class DMSCoordinate {
   }
 }
 
-export interface DMSFormatOptions {
+interface DMSFormatOptions {
   hemisphereIndicator: 'sign' | 'label'
   padDegrees: boolean
 }
@@ -38,47 +52,26 @@ export class DMS {
   /**
    * Parse the given DMS coordinate string and return the value in decimal
    * degrees.  Return `NaN` if parsing fails.
-   * @param input
-   * @param enforceLatitude
-   * @returns
    */
   static parse(input: string, dimension: DimensionKey): number {
     if (!input) {
       return NaN
     }
-
-    const normalized = input.replace(/\r?\n|\r|\s/g, "")
+    const inputCondensed = input.replace(/\s/g, '')
     // check if it is a number and that number could be a valid latitude or longitude
     // could either be a decimal or a whole number representing lat/lng or a DDMMSS.sss number representing degree minutes seconds
-    const decimalDegrees = Number(normalized)
+    const decimalDegrees = Number(inputCondensed)
     if (!isNaN(decimalDegrees)) {
       if (
         (dimension === DimensionKey.Longitude && decimalDegrees >= -180.0 && decimalDegrees <= 180.0) ||
         (dimension === DimensionKey.Latitude && decimalDegrees >= -90.0 && decimalDegrees <= 90.0)
       ) {
-          return decimalDegrees
+        return decimalDegrees
       }
     }
 
-    const dms = parseDMS(normalized, dimension)
-    if (dms.degrees || dms.degrees === 0) {
-      let coordinateDegrees = dms.degrees
-      if (dms.minutes) {
-        coordinateDegrees += dms.minutes / 60.0
-      }
-      if (dms.seconds) {
-        coordinateDegrees += dms.seconds / 3600.0
-      }
-      if (dms.direction) {
-        if (dms.direction == "S" || dms.direction == "W") {
-          coordinateDegrees *= -1
-        }
-      }
-
-      return coordinateDegrees
-    }
-
-    return NaN
+    const dms = parseDMS(inputCondensed)
+    return dms.toDecimalDegrees()
   }
 
   /**
@@ -160,17 +153,9 @@ export class DMS {
   }
 }
 
-function parseDMS(coordinate: string, dimKey: DimensionKey): DMSCoordinate {
+function parseDMS(input: string): DMSCoordinate {
   const dmsCoordinate = new DMSCoordinate()
-  const dim = Dimension[dimKey]
-  let coordinateToParse = coordinate.replace(/\r?\n|\r|\s/g, '')
-
-  // check if the first character is negative
-  if (coordinateToParse.indexOf('-') === 0) {
-    dmsCoordinate.direction = dim.hemisphereForDegrees(-1)
-  } else {
-    dmsCoordinate.direction = dim.hemisphereForDegrees(1)
-  }
+  let coordinateToParse = input.replace(/\s/g, '')
 
   // strip out any non numerics except direction
   coordinateToParse = coordinateToParse.replace(/[^\d.NSEWnsew]/g, '')
@@ -181,7 +166,7 @@ function parseDMS(coordinate: string, dimKey: DimensionKey): DMSCoordinate {
   const lastCharacter = coordinateToParse[coordinateToParse.length - 1]
   if (lastCharacter && isNaN(Number(lastCharacter))) {
     // the last character might be a direction not a number
-    dmsCoordinate.direction = lastCharacter.toUpperCase() as HemisphereLabel
+    dmsCoordinate.hemisphere = lastCharacter.toUpperCase() as HemisphereLabel
     coordinateToParse = coordinateToParse.slice(0, -1)
   }
   if (coordinateToParse.length == 0) {
@@ -191,7 +176,7 @@ function parseDMS(coordinate: string, dimKey: DimensionKey): DMSCoordinate {
   const firstCharacter = coordinateToParse[0]
   if (firstCharacter && isNaN(Number(firstCharacter))) {
     // the first character might be a direction not a number
-    dmsCoordinate.direction = firstCharacter.toUpperCase() as HemisphereLabel
+    dmsCoordinate.hemisphere = firstCharacter.toUpperCase() as HemisphereLabel
     coordinateToParse = coordinateToParse.substring(1)
   }
 
