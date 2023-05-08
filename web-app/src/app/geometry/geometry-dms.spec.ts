@@ -38,6 +38,7 @@ fdescribe('DMS', () => {
     expect(DMS.parse(`1° 00' 00" W`, DimensionKey.Longitude)).toEqual(-1.0)
     expect(DMS.parse(`0° 30' 00" E`, DimensionKey.Longitude)).toEqual(0.5)
     expect(DMS.parse(`0° 30' 00" W`, DimensionKey.Longitude)).toEqual(-0.5)
+    expect(DMS.parse(`xyz0lud°xyz3nur0'xyz0 ada 0xyz"xyzWxyz`, DimensionKey.Longitude)).toEqual(-0.5)
   })
 
   describe('validation', () => {
