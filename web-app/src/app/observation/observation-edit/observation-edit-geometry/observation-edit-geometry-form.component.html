@@ -48,18 +48,16 @@
   </div>
 
   <div [hidden]="coordinateSystem !== 'dms'">
-    <div class="coordinates">
+    <div class="coordinates" [formGroup]="dmsForm">
       <div class="coordinate">
         <mat-form-field appearance="standard">
           <mat-label>Latitude DMS</mat-label>
           <input type="text" placeholder="00° 00' 00&quot; N"
             matInput
-            [disabled]="!feature?.geometry?.coordinates"
+            formControlName="dmsLat"
             [inputMask]="dmsLatMask"
-            [(ngModel)]="dmsForm.lat" (ngModelChange)="onDmsChange()"
-            (paste)="onDmsLatPaste($event)"
+            (paste)="onDmsPaste($event)"
             dmsValidation="latitude"
-            #dmsLatitudeModel="ngModel"
             >
           <mat-error>Invalid DMS latitude</mat-error>
         </mat-form-field>
@@ -69,11 +67,10 @@
           <mat-label>Longitude DMS</mat-label>
           <input type="text" placeholder="000° 00' 00&quot; E"
             matInput
-            [disabled]="!feature?.geometry?.coordinates"
+            formControlName="dmsLon"
             [inputMask]="dmsLonMask"
-            [(ngModel)]="dmsForm.lon" (ngModelChange)="onDmsChange()"
+            (paste)="onDmsPaste($event)"
             dmsValidation="longitude"
-            #dmsLongitudeModel="ngModel"
             >
           <mat-error>Invalid DMS longitude</mat-error>
         </mat-form-field>
