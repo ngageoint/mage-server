@@ -1,12 +1,10 @@
-import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import mgrs from 'mgrs';
-import { DimensionKey, DMS } from 'src/app/geometry/geometry-dms';
-import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers';
-import { createMask } from '@ngneat/input-mask';
-
-const TAG = 'DMS'
+import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
+import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
+import { MatSnackBar } from '@angular/material/snack-bar'
+import mgrs from 'mgrs'
+import { DimensionKey, DMS } from 'src/app/geometry/geometry-dms'
+import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { createMask } from '@ngneat/input-mask'
 
 @Directive({
   selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
@@ -53,7 +51,7 @@ export class DMSValidatorDirective implements Validator {
   }
 }
 
-type CoordinateSystem = 'wgs84' | 'mgrs' | 'dms'
+type CoordinateSystemKey = 'wgs84' | 'mgrs' | 'dms'
 
 @Component({
   selector: 'observation-edit-geometry-form',
@@ -75,7 +73,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 
   selectedShapeType = 'Point'
   coordinateSystem = 'wgs84'
-  coordinateEditSource: CoordinateSystem | null = null
+  coordinateEditSource: CoordinateSystemKey | null = null
   selectedVertexIndex: number
   featureEdit: any
   latitude: number
@@ -114,14 +112,14 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       this.feature = { ...this.feature }
       this.featureEdit = this.mapService.createFeature(this.feature, {
         geometryChanged: geometry => {
-          this.geometryChanged(geometry);
+          this.geometryChanged(geometry)
         },
         vertexClick: vertex => {
-          this.vertexClick(vertex);
+          this.vertexClick(vertex)
         }
       });
       this.selectedVertexIndex = 0;
-      this.updateCoordinates();
+      this.updateCoordinates()
     }
     if (this.feature?.geometry?.coordinates) {
       this.dmsForm.enable()
@@ -133,12 +131,12 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 
   geometryChanged(geometry): void {
     this.feature.geometry = geometry;
-    this.updateCoordinates();
+    this.updateCoordinates()
   }
 
   vertexClick(vertex): void {
     this.selectedVertexIndex = vertex.index;
-    this.updateCoordinates();
+    this.updateCoordinates()
   }
 
   onSave(): void {
@@ -146,28 +144,28 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
       if (this.geometryService.featureHasIntersections(this.feature)) {
         this.snackBar.open('Invalid geometry, polygons cannot intersect.', null, {
           duration: 2000
-        });
-        return;
+        })
+        return
       }
-      this.featureEdit.save();
-      this.save.emit({ feature: this.feature });
+      this.featureEdit.save()
+      this.save.emit({ feature: this.feature })
     } else {
-      this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations');
-      this.featureEdit.cancel();
-      this.save.emit({});
+      this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations')
+      this.featureEdit.cancel()
+      this.save.emit({})
     }
   }
 
   onCancel(): void {
-    this.featureEdit.cancel();
-    this.cancel.emit();
+    this.featureEdit.cancel()
+    this.cancel.emit()
   }
 
-  coordinateSystemChange(coordinateSystem): void {
-    this.localStorageService.setCoordinateSystemEdit(coordinateSystem);
-    this.coordinateSystem = coordinateSystem;
+  coordinateSystemChange(coordinateSystem: CoordinateSystemKey): void {
+    this.localStorageService.setCoordinateSystemEdit(coordinateSystem)
+    this.coordinateSystem = coordinateSystem
     if (coordinateSystem === 'mgrs') {
-      this.mgrs = this.toMgrs(this.feature);
+      this.mgrs = this.toMgrs(this.feature)
     }
   }
 
@@ -260,10 +258,10 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   }
 
   onEditShape(): void {
-    this.featureEdit.update(this.feature);
+    this.featureEdit.update(this.feature)
   }
 
-  editCurrentCoordinates(from: CoordinateSystem, lat: number, lon: number): void {
+  editCurrentCoordinates(from: CoordinateSystemKey, lat: number, lon: number): void {
     this.coordinateEditSource = from
     let coordinates = [ ...this.feature.geometry.coordinates ]
     if (this.feature.geometry.type === 'Point') {
