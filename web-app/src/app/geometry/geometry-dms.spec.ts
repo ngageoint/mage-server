@@ -6,7 +6,6 @@ fdescribe('DMS', () => {
     expect(DMS.splitCoordinates(null)).toEqual([])
     expect(DMS.splitCoordinates(`112233N 0152144W`)).toEqual([ `112233N`, `0152144W` ])
     expect(DMS.splitCoordinates(`N 11 ° 22'33 "- W 15 ° 21'44`)).toEqual([ `N11°22'33"`, `W15°21'44`])
-    expect(DMS.splitCoordinates(`N 11 ° 22'30 `)).toEqual([ `N11°22'30` ])
     expect(DMS.splitCoordinates(`11 ° 22'33 "N - 15 ° 21'44" W`)).toEqual([ `11°22'33"N`, `15°21'44"W` ])
     expect(DMS.splitCoordinates(`11° 22'33 N 015° 21'44 W`)).toEqual([ "11°22'33N", "015°21'44W" ])
     expect(DMS.splitCoordinates(`11.4584 15.6827`)).toEqual([ "11.4584", "15.6827" ])
@@ -15,6 +14,9 @@ fdescribe('DMS', () => {
     expect(DMS.splitCoordinates(`11.4584, 15.6827`)).toEqual([ "11.4584", "15.6827" ])
     expect(DMS.splitCoordinates(`-11.4584, 15.6827`)).toEqual([ "-11.4584", "15.6827" ])
     expect(DMS.splitCoordinates(`11.4584, -15.6827`)).toEqual([ "11.4584", "-15.6827" ])
+    expect(DMS.splitCoordinates(`N 11 ° 22'30 `)).toEqual([ `N11°22'30` ])
+    expect(DMS.splitCoordinates(`N 11°22'30 `)).toEqual([ `N11°22'30` ])
+    expect(DMS.splitCoordinates(`0° 00'48"E`)).toEqual([ `0°00'48"E` ])
   })
 
   it('should parse the coordinate string', () => {
