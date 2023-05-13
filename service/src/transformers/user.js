@@ -1,10 +1,11 @@
+const User = require('../models/user');
+
 function transformUser(user, options) {
-  if (!user) {
-    return null;
-  }
-  return user.toObject ?
-    user.toObject({ path: options.path }) :
-    user;
+  if (!user) return null;
+
+  user = user.toObject ? user.toObject({ path: options.path, transform: User.transform }) : user;
+
+  return user;
 }
 
 function transformUsers(users, options) {

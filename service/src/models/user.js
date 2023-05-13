@@ -148,8 +148,8 @@ function DbUserToObject(user, userOut, options) {
     delete userOut.icon.relativePath;
   }
 
-  if (user.populated('roleId') && !!user.roleId) {
-    userOut.role = user.roleId.toObject();
+  if (user.populated('roleId')) {
+    userOut.role = userOut.roleId;
     delete userOut.roleId;
   }
 
