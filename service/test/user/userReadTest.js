@@ -68,10 +68,12 @@ describe("user read tests", function() {
 
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
+    const token = createToken(userId, [ permission ]);
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .yields(null, token);
+    return token;
   }
 
   it('should count users', function(done) {
@@ -370,7 +372,8 @@ describe("user read tests", function() {
   });
 
   it('should get myself', async function() {
-    mockTokenWithPermission('READ_USER');
+
+    const token = mockTokenWithPermission('READ_USER');
 
     const res = await request(app)
       .get('/api/users/myself')
@@ -381,6 +384,8 @@ describe("user read tests", function() {
     expect(res.type).to.match(/json/);
     expect(res.body).be.an('object');
     expect(res.body.id).to.equal(userId.toString());
+    expect(res.body.role.id).to.equal(token.user.roleId._id.toHexString())
+    expect(res.body.role.permissions).to.deep.equal(token.user.roleId.permissions)
   });
 
   it('should get user avatar', function(done) {

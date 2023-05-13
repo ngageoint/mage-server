@@ -12,7 +12,8 @@ function createToken(userId, permissions) {
     username: 'test',
     active: true,
     roleId: new RoleModel({
-      permissions: permissions
+      _id: mongoose.Types.ObjectId(),
+      permissions,
     })
   });
 

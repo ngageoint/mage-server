@@ -6,13 +6,18 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 // Collection to hold roles
-const RoleSchema = new Schema({
-  name: { type: String, required: true, unique: true },
-  description: { type: String, required: false },
-  permissions: [Schema.Types.String]
-}, {
-  versionKey: false
-});
+const RoleSchema = new Schema(
+  {
+    name: { type: String, required: true, unique: true },
+    description: { type: String, required: false },
+    permissions: [Schema.Types.String]
+  },
+  {
+    versionKey: false,
+    toJSON: { transform },
+    toObject: { transform }
+  }
+);
 
 RoleSchema.pre('remove', function (next) {
   const role = this;
@@ -39,14 +44,10 @@ RoleSchema.pre('save', function (next) {
   next();
 });
 
-function transform(user, ret) {
+function transform(role, ret) {
   ret.id = ret._id;
   delete ret._id;
 }
-
-RoleSchema.set("toJSON", {
-  transform: transform
-});
 
 // Creates the Model for the Role Schema
 const Role = mongoose.model('Role', RoleSchema);
