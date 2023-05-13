@@ -7,6 +7,11 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 ##### Bug Fixes
 
+## [6.2.3](https://github.com/ngageoint/mage-server/releases/tag/6.2.3)
+##### Features
+##### Bug Fixes
+* Fix user role translation
+
 ## [6.2.2](https://github.com/ngageoint/mage-server/releases/tag/6.2.2)
 ##### Features
 * Allow WebP and GIF image attachments on observations.
