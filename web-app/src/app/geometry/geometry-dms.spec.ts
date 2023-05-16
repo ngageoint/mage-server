@@ -1,4 +1,4 @@
-import { DimensionKey, DMS } from './geometry-dms';
+import { DimensionKey, DMS, DMSCoordinate, DMSParseError, HemisphereLabel, parseCoordinates } from './geometry-dms';
 
 fdescribe('DMS', () => {
 
@@ -173,5 +173,261 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-8.077251)).toEqual(`008° 04' 38" W`)
     expect(DMS.formatLongitude(0.077251)).toEqual(`000° 04' 38" E`)
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
+  })
+
+  fdescribe('new parsing', () => {
+
+    const assertParseResult = (inputAndResults: (string | number | DMSCoordinate | typeof DMSParseError)[]) => {
+      const [ input, ...results ] = inputAndResults
+      const parsed = parseCoordinates(String(input))
+      if (results[0] === DMSParseError) {
+        expect(parsed instanceof DMSParseError).toBe(true, `parsing ${input} should produce an error`)
+      }
+      else {
+        expect(parsed).toEqual(results as any, `failed to parse ${input}`)
+      }
+    }
+
+    it(`parses focused input`, () => {
+
+      const parsed = parseCoordinates(`12° 34" 56' N`)
+      console.log('result', parsed)
+      // expect(parsed).toEqual([ new DMSCoordinate(1, 2, 3, 'E') ], String(parsed))
+      expect(parsed instanceof DMSParseError).toBe(true)
+    })
+
+    it('parses a decimal coordinate', () => {
+      [
+        [ '1', 1 ],
+        [ '12', 12 ],
+        [ '123', 123 ],
+        [ '1.123', 1.123 ],
+        [ '  1  ', 1 ],
+        [ '  12  ', 12 ],
+        [ '..123  ', DMSParseError ],
+        [ '..12.345  ', DMSParseError ],
+        [ '12.345.  ', DMSParseError ],
+        [ '12.34.45', DMSParseError ],
+      ]
+      .forEach(assertParseResult)
+    })
+
+    it('parses a signed decimal coordinate', () => {
+      [
+        [ '+1', 1 ],
+        [ '-1', -1 ],
+        [ '+12', 12 ],
+        [ '-12', -12 ],
+        [ '+123', 123 ],
+        [ '-123', -123 ],
+        [ '+1.123', 1.123 ],
+        [ '-1.123', -1.123 ],
+        [ '  +1  ', 1 ],
+        [ '  -1  ', -1 ],
+        [ '  +12  ', 12 ],
+        [ '  -12  ', -12 ],
+        [ '  +123  ', 123 ],
+        [ '  -123  ', -123 ],
+        [ '  +12.345  ', 12.345 ],
+        [ '  -12.345  ', -12.345 ],
+        [ '-12-', DMSParseError ],
+        [ '+12+', DMSParseError ],
+        [ '--12.345', DMSParseError ],
+        [ '++12.345', DMSParseError ],
+        [ '-+12.345', DMSParseError ],
+        [ '+-12.345', DMSParseError ],
+        [ '12.345+', DMSParseError ],
+        [ '12.345-', DMSParseError ],
+        [ '+12.345+', DMSParseError ],
+        [ '-12.345-', DMSParseError ],
+      ]
+      .forEach(assertParseResult)
+    })
+
+    describe('multiple decimal coordinates', () => {
+
+      it('parses white-space-delimited coordinates', () => {
+        [
+          [ '1 2 3', 1, 2, 3 ],
+          [ '  1  2  3  ', 1, 2, 3 ],
+          [ '1.1 2.2 3.3', 1.1, 2.2, 3.3 ],
+          [ '   -1.1 \t 2.2 \n -3.3\r\n', -1.1, 2.2, -3.3 ],
+          [ '   +1.1 \t -2.2 \n 3.3\r\n', 1.1, -2.2, 3.3 ],
+          [ '   1.1 \t +2.2 \n -3.3\n  ', 1.1, 2.2, -3.3 ],
+          [ '   -1.1 \t -2.2 \n -3.3\r\n', -1.1, -2.2, -3.3 ],
+          [ '   -1.1 \t -2.2 \n -3..3\r\n', DMSParseError ],
+          [ '   -1.1 \t --2.2 \n -3.3\r\n', DMSParseError ],
+          [ '   -1.1 \t -2.2 \n + -3.3\r\n', DMSParseError ],
+        ]
+        .forEach(assertParseResult)
+      })
+
+      it('parses dash-delimited coordinates', () => {
+
+      })
+
+      it('parses comma-delimeted coordinates', () => {
+
+      })
+    })
+
+    describe('dms format', () => {
+
+      const assertForEachHemisphere = (inputAndResults: [ string, number, number, number, string ] | [ string, number, number, number ]) => {
+        if (inputAndResults.length === 4) {
+          inputAndResults = [ ...inputAndResults, 'NSEW' ] as [ string, number, number, number, string ]
+        }
+        const [ baseInput, deg, min, sec, hemispheres ] = inputAndResults
+        for (const hemi of hemispheres) {
+          const hemiPrefixInput = `${hemi}${baseInput}`
+          const hemiSuffixInput = `${baseInput}${hemi}`
+          const hemiPrefixParsed = parseCoordinates(hemiPrefixInput)
+          const hemiSuffixParsed = parseCoordinates(hemiSuffixInput)
+          const coord = [ new DMSCoordinate(deg, min, sec, hemi as HemisphereLabel) ]
+          expect(hemiPrefixParsed).toEqual(coord, hemiPrefixInput)
+          expect(hemiSuffixParsed).toEqual(coord, hemiSuffixInput)
+        }
+      }
+      const assertForLatHemispheres = (inputAndResults: [ string, number, number, number ]) => assertForEachHemisphere([ ...inputAndResults, 'NS' ] as [ string, number, number, number, string ])
+      const assertForLonHemispheres = (inputAndResults: [ string, number, number, number ]) => assertForEachHemisphere([ ...inputAndResults, 'EW' ] as [ string, number, number, number, string ])
+
+      describe('with all labeled parts', () => {
+
+        it('parses input with no spaces', () => {
+
+          const baseCoordinates = [
+            [ `0°0'0"`, 0, 0, 0 ],
+            [ `0°0'1"`, 0, 0, 1 ],
+            [ `00°00'00"`, 0, 0, 0 ],
+            [ `12°0'0"`, 12, 0, 0 ],
+            [ `1°2'34"`, 1, 2, 34 ],
+            [ `1°23'45"`, 1, 23, 45 ],
+            [ `12°34'56"`, 12, 34, 56 ],
+            [ `01°02'03"`, 1, 2, 3 ],
+          ]
+          baseCoordinates.forEach(assertForEachHemisphere)
+        })
+
+        it('parses input with spaces around units and digits', () => {
+
+          const baseCoordinates = [
+            [ ` 0  °  0  '  0  "`, 0, 0, 0 ],
+            [ `  0°  0  ' 1  " `, 0, 0, 1 ],
+            [ `  00 °  00 '  00 "`, 0, 0, 0 ],
+            [ ` 12 ° 0 ' 0 " `, 12, 0, 0 ],
+            [ ` 1 ° 2 ' 34 " `, 1, 2, 34 ],
+            [ `1  °  23'45"`, 1, 23, 45 ],
+            [ `12 °  34 '56  "`, 12, 34, 56 ],
+            [ `01  °02  '03"`, 1, 2, 3 ],
+          ]
+          baseCoordinates.forEach(assertForEachHemisphere)
+        })
+      })
+
+      describe('with partial labeled parts', () => {
+
+        it('parses one part', () => {
+
+          const baseCoordinates = [
+            [ `0°`, 0, 0, 0 ],
+            [ `8°`, 8, 0, 0 ],
+            [ `08°`, 8, 0, 0 ],
+            [ `12°`, 12, 0, 0 ],
+            [ `0'`, 0, 0, 0 ],
+            [ `8'`, 0, 8, 0 ],
+            [ `08'`, 0, 8, 0 ],
+            [ `12'`, 0, 12, 0 ],
+            [ `0"`, 0, 0, 0 ],
+            [ `8"`, 0, 0, 8 ],
+            [ `08"`, 0, 0, 8 ],
+            [ `12"`, 0, 0, 12 ],
+          ]
+          baseCoordinates.forEach(assertForEachHemisphere)
+        })
+
+        it('parses two parts', () => {
+
+          const baseCoordinates = [
+            [ `0°0'`, 0, 0, 0 ],
+            [ `0'1"`, 0, 0, 1 ],
+            [ `00° 0'`, 0, 0, 0 ],
+            [ `12° 12"`, 12, 0, 12 ],
+            [ `02 ' 34 "`, 0, 2, 34 ],
+            [ `01° 00"`, 1, 0, 0 ],
+          ]
+          baseCoordinates.forEach(assertForEachHemisphere)
+        })
+      })
+
+      describe('condensed without labels', () => {
+
+        it('parses fully specified digits', () => {
+
+          [
+            [ '0000000', 0, 0, 0 ],
+            [ '0123456', 12, 34, 56 ],
+            [ '0010203', 1, 2, 3 ],
+            [ '1795959', 179, 59, 59 ],
+            [ '1000000', 100, 0, 0 ],
+          ]
+          .forEach(assertForLonHemispheres);
+
+          [
+            [ '000000', 0, 0, 0 ],
+            [ '123456', 12, 34, 56 ],
+            [ '010203', 1, 2, 3 ],
+            [ '795959', 79, 59, 59 ],
+          ]
+          .forEach(assertForLatHemispheres)
+        })
+
+        it('fills partial digits starting from degrees', () => {
+
+
+        })
+      })
+
+      it('does not parse labeled parts out of order', () => {
+
+        const baseCoordinates = [
+          [ `0" 0' 0° W`, DMSParseError ],
+          [ `  0" 1° S`, DMSParseError ],
+          [ `12' 34° 56" E`, DMSParseError ],
+          [ `12° 34" 56' N`, DMSParseError ],
+          [ `15" 15° N`, DMSParseError ],
+          [ `15" 15' S`, DMSParseError ],
+          [ `15E°`, DMSParseError ],
+        ]
+        baseCoordinates.forEach(assertParseResult)
+      })
+
+      it('does not parse parts with repeated units', () => {
+        [
+          [ `15"15"E`, DMSParseError ],
+          [ `15°2°E`, DMSParseError ],
+          [ `15°°E`, DMSParseError ],
+        ]
+        .forEach(assertParseResult)
+      })
+
+      it('does not parse dms with multiple hemispheres', () => {
+        [
+          [ `N N 14°`, DMSParseError ],
+          [ `N 14° S`, DMSParseError ],
+          [ `14° S E`, DMSParseError ],
+        ]
+        .forEach(assertParseResult)
+      })
+
+      it('does not parse dms with signs', () => {
+        [
+          [ `-1°W`, DMSParseError ],
+          [ `E -1°`, DMSParseError ],
+          [ `+12° N`, DMSParseError ],
+          [ `+01" S`, DMSParseError ]
+        ]
+        .forEach(assertParseResult)
+      })
+    })
   })
 })

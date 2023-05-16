@@ -1,10 +1,11 @@
+export class DMSCoordinate {
 
-class DMSCoordinate {
-
-  degrees: number
-  minutes: number
-  seconds: number
-  hemisphere: HemisphereLabel
+  constructor(
+    public degrees: number | null,
+    public minutes: number | null,
+    public seconds: number | null,
+    public hemisphere: HemisphereLabel | null
+  ) { }
 
   toDecimalDegrees() {
     let result = this.degrees
@@ -148,7 +149,7 @@ export class DMS {
 }
 
 function parseDMS(input: string): DMSCoordinate {
-  const dmsCoordinate = new DMSCoordinate()
+  const dmsCoordinate = new DMSCoordinate(null, null, null, null)
   let coordinateToParse = input.replace(/\s/g, '')
 
   // strip out any non numerics except direction
@@ -409,8 +410,289 @@ const Dimension = {
   forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
 } as const
 
-type LatitudeHemisphereLabel = 'N' | 'S'
-type LongitudeHemisphereLabel = 'E' | 'W'
-type HemisphereLabel = LatitudeHemisphereLabel | LongitudeHemisphereLabel
+export type LatitudeHemisphereLabel = 'N' | 'S'
+export type LongitudeHemisphereLabel = 'E' | 'W'
+export type HemisphereLabel = LatitudeHemisphereLabel | LongitudeHemisphereLabel
 
+function Char(c: string) {
+  const is = {
+    get digit() { return /\d/.test(c) },
+    get dot() { return c === '.' },
+    get hemisphere() { return c in { n:1, s:1, e:1, w:1, N:1, S:1, E:1, W:1 } },
+    get space() { return /\s/.test(c) },
+    get sign() { return c === '+' || c === '-' },
+    get unitLabel() { return c in { '°':1, '\'':1, '"':1 } },
+    get degreesLabel() { return c === '°' },
+    get minutesLabel() { return c === "'" },
+    get secondsLabel() { return c === '"' },
+    get endOfInput() { return c === undefined || c === null || c === '' },
+  }
+  return {
+    is,
+    get value() { return c },
+    toString() { return c },
+  }
+}
 
+type Char = ReturnType<typeof Char>
+
+class ParseContext {
+
+  private _pos: number = 0
+  private c: Char = Char(this.input[this.pos])
+
+  coords: (DMSCoordinate | number)[]
+
+  constructor(readonly input: string) {}
+
+  get pos(): number {
+    return this._pos
+  }
+
+  get currentChar(): Char {
+    return this.c
+  }
+
+  get finished(): boolean {
+    return this.pos >= this.input.length
+  }
+
+  get remaining(): boolean {
+    return this.pos < this.input.length
+  }
+
+  advanceCursor(): this {
+    this.c = Char(this.input[++this._pos])
+    return this
+  }
+
+  /**
+   * Return the current character, then advance the cursor to the next
+   * position.  This is short-hand for
+   * ```typescript
+   * const c = ctx.currentChar()
+   * ctx.advanceCursor()
+   * ```
+   */
+  consumeCurrentChar(): Char {
+    const c = this.currentChar
+    this.advanceCursor()
+    return c
+  }
+
+  error(message: string = ''): DMSParseError {
+    return new DMSParseError(this.input, this.pos, message)
+  }
+}
+
+function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
+  input = input.trim()
+  const coords: (number | DMSCoordinate)[] = []
+  const parsing = new ParseContext(input)
+  while (!parsing.finished) {
+    const coord = parseCoordinate(parsing)
+    if (coord instanceof DMSParseError) {
+      return coord
+    }
+    coords.push(coord)
+    skipWhiteSpace(parsing)
+  }
+  return coords
+}
+
+function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSParseError {
+  if (parsing.currentChar.is.hemisphere) {
+    return parseDmsCoordinate(parsing)
+  }
+  else if (parsing.currentChar.is.sign) {
+    return parseDecimal(parsing)
+  }
+  else if (parsing.currentChar.is.digit) {
+    const digits = parseDigits(parsing)
+    if (digits instanceof DMSParseError) {
+      return digits
+    }
+    if (parsing.currentChar.is.dot) {
+      return parseDecimal(parsing, digits)
+    }
+    if (parsing.currentChar.is.space) {
+      skipWhiteSpace(parsing)
+    }
+    if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
+      return parseDmsCoordinate(parsing, digits)
+    }
+    if (parsing.currentChar.is.digit || parsing.finished) {
+      return parseDecimal(parsing, digits)
+    }
+  }
+  return parsing.error()
+}
+
+function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoordinate | DMSParseError {
+  if (digits) {
+    skipWhiteSpace(parsing)
+    if (parsing.currentChar.is.unitLabel) {
+      /*
+      the caller parsed digits, then encountered a unit to trigger the dms rule
+      */
+      const dmsParts = parseLabeledDmsParts(parsing, digits)
+      if (dmsParts instanceof DMSParseError) {
+        return dmsParts
+      }
+      skipWhiteSpace(parsing)
+      if (parsing.currentChar.is.hemisphere) {
+        return new DMSCoordinate(dmsParts.deg, dmsParts.min, dmsParts.sec, parsing.consumeCurrentChar().value as HemisphereLabel)
+      }
+      return parsing.error('expected hemisphere after dms parts')
+    }
+    else if (parsing.currentChar.is.hemisphere) {
+      /*
+      the caller parsed digits, then encountered a hemisphere, so expect
+      unitless compact dms, e.g. 112233N
+      */
+      const hemi = parsing.currentChar.value
+    }
+  }
+  else if (parsing.currentChar.is.hemisphere) {
+    /*
+    the caller encountered a leading hemisphere, so expect either
+    labeled dms or unitless compact dms
+    */
+    const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
+    skipWhiteSpace(parsing)
+    const expectedDigits = parseDigits(parsing)
+    if (expectedDigits instanceof DMSParseError) {
+      return expectedDigits
+    }
+    skipWhiteSpace(parsing)
+    if (parsing.currentChar.is.unitLabel) {
+      const dmsParts = parseLabeledDmsParts(parsing, expectedDigits)
+      if (dmsParts instanceof DMSParseError) {
+        return dmsParts
+      }
+      return new DMSCoordinate(dmsParts.deg, dmsParts.min, dmsParts.sec, hemi)
+    }
+  }
+  return parsing.error()
+}
+
+/**
+ * Parse the rest of the labeled DMS parts after the given digits.  The current
+ * character should be a DMS unit label (°|'|") that indicates the labeled DMS
+ * format.
+ * @param parsing the parse context
+ * @param digits the digits parsed before encountering a unit label
+ * @returns
+ */
+function parseLabeledDmsParts(parsing: ParseContext, digits: string): { deg: number, min: number, sec: number } | DMSParseError {
+  const allUnits = Array.from(`°'"`)
+  const rankOfUnit = { '°': 0, "'": 1, '"': 2 }
+  const dmsParts = { '°': 0, "'": 0, '"': 0 }
+  const exhaustedUnits = {} as { [unit in '°' | "'" | '"']?: any }
+  while (parsing.currentChar.is.unitLabel) {
+    const part = Number(digits)
+    if (isNaN(part)) {
+      return parsing.error(`invalid digits ${digits}`)
+    }
+    const unit = parsing.consumeCurrentChar().value
+    if (unit in exhaustedUnits) {
+      return parsing.error(`dms unit ${unit} out of order`)
+    }
+    allUnits.slice(0, rankOfUnit[unit] + 1).forEach(unit => exhaustedUnits[unit] = 1)
+    dmsParts[unit] = part
+    skipWhiteSpace(parsing)
+    if (parsing.currentChar.is.digit) {
+      const nextDigits = parseDigits(parsing)
+      if (nextDigits instanceof DMSParseError) {
+        return nextDigits
+      }
+      digits = nextDigits
+    }
+    skipWhiteSpace(parsing)
+  }
+  return {
+    deg: dmsParts['°'],
+    min: dmsParts["'"],
+    sec: dmsParts['"'],
+  }
+}
+
+function parseDigits(parsing: ParseContext): string | DMSParseError {
+  if (!parsing.currentChar.is.digit) {
+    return parsing.error('expected a digit')
+  }
+  let digits = parsing.currentChar.value
+  while (parsing.advanceCursor().currentChar.is.digit) {
+    digits += parsing.currentChar.value
+  }
+  return digits
+}
+
+function parseDecimal(parsing: ParseContext, parsedDigits: string = ''): number | DMSParseError {
+  let sign = ''
+  if (parsing.currentChar.is.sign) {
+    if (parsedDigits) {
+      return parsing.error('unexpected sign after digits')
+    }
+    sign = parsing.currentChar.value
+    parsing.advanceCursor()
+  }
+  const whole = parsedDigits ? parsedDigits : parseDigits(parsing)
+  if (whole instanceof DMSParseError) {
+    return whole
+  }
+  if (parsing.currentChar.is.dot) {
+    parsing.advanceCursor()
+    const fraction = parseDigits(parsing)
+    if (fraction instanceof DMSParseError) {
+      return fraction
+    }
+    return Number(`${sign}${whole}.${fraction}`)
+  }
+  return Number(`${sign}${whole}`)
+}
+
+function skipWhiteSpace(parsing: ParseContext): void {
+  while (parsing.currentChar.is.space) {
+    parsing.advanceCursor()
+  }
+}
+
+export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DMSParseError {
+  return start(input)
+}
+
+export class DMSParseError extends Error {
+  constructor(readonly input: string, readonly pos: number, message: string = 'error parsing DMS coordinates') {
+    super(`${message} at position ${pos} of input ${input}`)
+  }
+}
+
+/*
+ peggy grammar (https://peggyjs.org/online.html):
+
+coordinates = first:coordinate others:(_+ @coordinate)* { return [ first, ...others ] }
+
+coordinate = dms_coordinate / decimal
+
+dms_coordinate =
+	hem:hemisphere _* dms:dms_parts { return { dms, hem } }
+    / dms:dms_parts _* hem:hemisphere { return { dms, hem } }
+
+hemisphere = [nsew]i { return text().toUpperCase() }
+
+dms_parts =
+	deg:degrees _* min:minutes _* sec:seconds { return { deg, min, sec } }
+    / min:minutes _* sec:seconds { return { min, sec } }
+    / sec:seconds|1| { return { sec } }
+
+degrees = digits:digit|1..3| _* '°' { return digits.join('') + '°' }
+
+minutes = digits:digit|1..2| _* "'" { return digits.join('') + "'" }
+
+seconds = digits:digit|1..2| _* '"' { return digits.join('') + '"' }
+
+decimal = [-+]? whole:digit|1..3| ('.' fraction:digit+)? { return parseFloat(text()) }
+
+digit = [0-9]
+ */
