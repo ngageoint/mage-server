@@ -180,32 +180,32 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     }
   }
 
-  onDmsPaste(event: ClipboardEvent): void {
+  onDmsPaste(event: ClipboardEvent, dimension: keyof typeof DimensionKey): void {
     // 0° 44'48"N 0° 00'48"E
-    event.preventDefault()
-    event.stopImmediatePropagation()
     const pasted = event.clipboardData.getData('text')
     const maybePair = DMS.splitCoordinates(pasted)
-    if (maybePair.length === 2) {
-      const [ pastedLat, pastedLon ] = maybePair
-      const lat = DMS.parse(pastedLat, DimensionKey.Latitude)
-      const lon = DMS.parse(pastedLon, DimensionKey.Longitude)
-      if (isNaN(lat) || isNaN(lon)) {
-        return
-      }
-      const dmsLat = DMS.formatLatitude(lat)
-      const dmsLon = DMS.formatLongitude(lon)
-      this.dmsForm.setValue({ dmsLat, dmsLon }, { emitEvent: true })
+    if (maybePair.length !== 2) {
+      return
     }
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    const [ pastedLat, pastedLon ] = maybePair
+    const lat = DMS.parse(pastedLat, DimensionKey.Latitude)
+    const lon = DMS.parse(pastedLon, DimensionKey.Longitude)
+    if (isNaN(lat) || isNaN(lon)) {
+      return
+    }
+    const dmsLat = DMS.formatLatitude(lat)
+    const dmsLon = DMS.formatLongitude(lon)
+    this.dmsForm.setValue({ dmsLat, dmsLon }, { emitEvent: true })
   }
 
   onDmsChange({ dmsLat, dmsLon }): void {
-    console.log('dms change', this.dmsForm.value)
     if (this.dmsForm.invalid) {
       return
     }
-    const lat = DMS.parse(dmsLat, DimensionKey.Latitude)
-    const lon = DMS.parse(dmsLon, DimensionKey.Longitude)
+    const lat = dmsLat ? DMS.parse(dmsLat, DimensionKey.Latitude) : this.dmsForm.value.dmsLat
+    const lon = dmsLon ? DMS.parse(dmsLon, DimensionKey.Longitude) : this.dmsForm.value.dmsLon
     this.editCurrentCoordinates('dms', lat, lon)
   }
 
