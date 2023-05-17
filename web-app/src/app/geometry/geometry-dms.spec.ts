@@ -176,7 +176,7 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
   })
 
-  fdescribe('new parsing', () => {
+  fdescribe('parsing', () => {
 
     type InputAndResult = [ string, number, number, number ] | [ string, typeof DMSParseError ]
 
@@ -199,102 +199,105 @@ fdescribe('DMS', () => {
       expect(parsed instanceof DMSParseError).toBe(true)
     })
 
-    it('parses a decimal coordinate', () => {
-      [
-        [ '1', 1 ],
-        [ '12', 12 ],
-        [ '123', 123 ],
-        [ '1.123', 1.123 ],
-        [ '  1  ', 1 ],
-        [ '  12  ', 12 ],
-        [ '..123  ', DMSParseError ],
-        [ '..12.345  ', DMSParseError ],
-        [ '12.345.  ', DMSParseError ],
-        [ '12.34.45', DMSParseError ],
-      ]
-      .forEach(assertParseResult)
-    })
+    describe('decimals', () => {
 
-    it('parses a signed decimal coordinate', () => {
-      [
-        [ '+1', 1 ],
-        [ '-1', -1 ],
-        [ '+12', 12 ],
-        [ '-12', -12 ],
-        [ '+123', 123 ],
-        [ '-123', -123 ],
-        [ '+1.123', 1.123 ],
-        [ '-1.123', -1.123 ],
-        [ '  +1  ', 1 ],
-        [ '  -1  ', -1 ],
-        [ '  +12  ', 12 ],
-        [ '  -12  ', -12 ],
-        [ '  +123  ', 123 ],
-        [ '  -123  ', -123 ],
-        [ '  +12.345  ', 12.345 ],
-        [ '  -12.345  ', -12.345 ],
-        [ '-12-', DMSParseError ],
-        [ '+12+', DMSParseError ],
-        [ '--12.345', DMSParseError ],
-        [ '++12.345', DMSParseError ],
-        [ '-+12.345', DMSParseError ],
-        [ '+-12.345', DMSParseError ],
-        [ '12.345+', DMSParseError ],
-        [ '12.345-', DMSParseError ],
-        [ '+12.345+', DMSParseError ],
-        [ '-12.345-', DMSParseError ],
-      ]
-      .forEach(assertParseResult)
-    })
-
-    describe('multiple decimal coordinates', () => {
-
-      it('parses white-space-delimited coordinates', () => {
+      it('parses a decimal coordinate', () => {
         [
-          [ '1 2 3', 1, 2, 3 ],
-          [ '  1  2  3  ', 1, 2, 3 ],
-          [ '1.1 2.2 3.3', 1.1, 2.2, 3.3 ],
-          [ '   -1.1 \t 2.2 \n -3.3\r\n', -1.1, 2.2, -3.3 ],
-          [ '   +1.1 \t -2.2 \n 3.3\r\n', 1.1, -2.2, 3.3 ],
-          [ '   1.1 \t +2.2 \n -3.3\n  ', 1.1, 2.2, -3.3 ],
-          [ '   -1.1 \t -2.2 \n -3.3\r\n', -1.1, -2.2, -3.3 ],
-          [ '   -1.1 \t -2.2 \n -3..3\r\n', DMSParseError ],
-          [ '   -1.1 \t --2.2 \n -3.3\r\n', DMSParseError ],
-          [ '   -1.1 \t -2.2 \n + -3.3\r\n', DMSParseError ],
+          [ '1', 1 ],
+          [ '12', 12 ],
+          [ '123', 123 ],
+          [ '1.123', 1.123 ],
+          [ '  1  ', 1 ],
+          [ '  12  ', 12 ],
+          [ '..123  ', DMSParseError ],
+          [ '..12.345  ', DMSParseError ],
+          [ '12.345.  ', DMSParseError ],
+          [ '12.34.45', DMSParseError ],
         ]
         .forEach(assertParseResult)
       })
 
-      it('parses dash-delimited coordinates', () => {
+      it('parses a signed decimal coordinate', () => {
         [
-          [ '1- 2 - 3', 1, 2, 3 ],
-          [ '  1 -  2-  3  ', 1, 2, 3 ],
-          [ '1.1 - 2.2 - 3.3', 1.1, 2.2, 3.3 ],
-          [ '   -1.1 - 2.2- -3.3\r\n', -1.1, 2.2, -3.3 ],
-          [ '   +1.1 - -2.2 - 3.3\r\n', 1.1, -2.2, 3.3 ],
-          [ '   1.1 - +2.2- -3.3\n  ', 1.1, 2.2, -3.3 ],
-          [ '   -1.1 - -2.2 - -3.3', -1.1, -2.2, -3.3 ],
-          [ '   -1.1 - -2.2 - -3..3', DMSParseError ],
-          [ '   -1.1 - --2.2 - -3.3', DMSParseError ],
-          [ '   -1.1 -2.2-+ -3.3', DMSParseError ],
+          [ '+1', 1 ],
+          [ '-1', -1 ],
+          [ '+12', 12 ],
+          [ '-12', -12 ],
+          [ '+123', 123 ],
+          [ '-123', -123 ],
+          [ '+1.123', 1.123 ],
+          [ '-1.123', -1.123 ],
+          [ '  +1  ', 1 ],
+          [ '  -1  ', -1 ],
+          [ '  +12  ', 12 ],
+          [ '  -12  ', -12 ],
+          [ '  +123  ', 123 ],
+          [ '  -123  ', -123 ],
+          [ '  +12.345  ', 12.345 ],
+          [ '  -12.345  ', -12.345 ],
+          [ '-12-', DMSParseError ],
+          [ '+12+', DMSParseError ],
+          [ '--12.345', DMSParseError ],
+          [ '++12.345', DMSParseError ],
+          [ '-+12.345', DMSParseError ],
+          [ '+-12.345', DMSParseError ],
+          [ '12.345+', DMSParseError ],
+          [ '12.345-', DMSParseError ],
+          [ '+12.345+', DMSParseError ],
+          [ '-12.345-', DMSParseError ],
         ]
         .forEach(assertParseResult)
       })
 
-      it('parses comma-delimeted coordinates', () => {
-        [
-          [ '1,2,3', 1, 2, 3 ],
-          [ '  1 ,2, 3  ', 1, 2, 3 ],
-          [ '1.1,2.2,3.3', 1.1, 2.2, 3.3 ],
-          [ '   -1.1, 2.2, -3.3', -1.1, 2.2, -3.3 ],
-          [ '   +1.1 , -2.2, 3.3', 1.1, -2.2, 3.3 ],
-          [ '   1.1, +2.2 ,-3.3\n  ', 1.1, 2.2, -3.3 ],
-          [ '   -1.1 , -2.2  , -3.3\r\n', -1.1, -2.2, -3.3 ],
-          [ '   -1.1 ,-2.2, -3..3', DMSParseError ],
-          [ '   -1.1 , --2.2 , -3.3', DMSParseError ],
-          [ '   -1.1, -2.2 , + -3.3', DMSParseError ],
-        ]
-        .forEach(assertParseResult)
+      describe('multiple decimal coordinates', () => {
+
+        it('parses white-space-delimited coordinates', () => {
+          [
+            [ '1 2 3', 1, 2, 3 ],
+            [ '  1  2  3  ', 1, 2, 3 ],
+            [ '1.1 2.2 3.3', 1.1, 2.2, 3.3 ],
+            [ '   -1.1 \t 2.2 \n -3.3\r\n', -1.1, 2.2, -3.3 ],
+            [ '   +1.1 \t -2.2 \n 3.3\r\n', 1.1, -2.2, 3.3 ],
+            [ '   1.1 \t +2.2 \n -3.3\n  ', 1.1, 2.2, -3.3 ],
+            [ '   -1.1 \t -2.2 \n -3.3\r\n', -1.1, -2.2, -3.3 ],
+            [ '   -1.1 \t -2.2 \n -3..3\r\n', DMSParseError ],
+            [ '   -1.1 \t --2.2 \n -3.3\r\n', DMSParseError ],
+            [ '   -1.1 \t -2.2 \n + -3.3\r\n', DMSParseError ],
+          ]
+          .forEach(assertParseResult)
+        })
+
+        it('parses dash-delimited coordinates', () => {
+          [
+            [ '1- 2 - 3', 1, 2, 3 ],
+            [ '  1 -  2-  3  ', 1, 2, 3 ],
+            [ '1.1 - 2.2 - 3.3', 1.1, 2.2, 3.3 ],
+            [ '   -1.1 - 2.2- -3.3\r\n', -1.1, 2.2, -3.3 ],
+            [ '   +1.1 - -2.2 - 3.3\r\n', 1.1, -2.2, 3.3 ],
+            [ '   1.1 - +2.2- -3.3\n  ', 1.1, 2.2, -3.3 ],
+            [ '   -1.1 - -2.2 - -3.3', -1.1, -2.2, -3.3 ],
+            [ '   -1.1 - -2.2 - -3..3', DMSParseError ],
+            [ '   -1.1 - --2.2 - -3.3', DMSParseError ],
+            [ '   -1.1 -2.2-+ -3.3', DMSParseError ],
+          ]
+          .forEach(assertParseResult)
+        })
+
+        it('parses comma-delimeted coordinates', () => {
+          [
+            [ '1,2,3', 1, 2, 3 ],
+            [ '  1 ,2, 3  ', 1, 2, 3 ],
+            [ '1.1,2.2,3.3', 1.1, 2.2, 3.3 ],
+            [ '   -1.1, 2.2, -3.3', -1.1, 2.2, -3.3 ],
+            [ '   +1.1 , -2.2, 3.3', 1.1, -2.2, 3.3 ],
+            [ '   1.1, +2.2 ,-3.3\n  ', 1.1, 2.2, -3.3 ],
+            [ '   -1.1 , -2.2  , -3.3\r\n', -1.1, -2.2, -3.3 ],
+            [ '   -1.1 ,-2.2, -3..3', DMSParseError ],
+            [ '   -1.1 , --2.2 , -3.3', DMSParseError ],
+            [ '   -1.1, -2.2 , + -3.3', DMSParseError ],
+          ]
+          .forEach(assertParseResult)
+        })
       })
     })
 
@@ -638,5 +641,41 @@ fdescribe('DMS', () => {
       })
     })
 
+    describe('multiple mixed coordinates', () => {
+
+      it('parses decimals and dms with mixed delimiting', () => {
+
+        const baseInput = [
+          `179°00'00"E`,
+          `32`,
+          `-102.8292`,
+          `10203N`,
+          `+37.75`,
+          `01059 N`,
+          `13°8'00" W`,
+          `S 123456`,
+          `W 135719`,
+          -102.0,
+        ]
+        const baseExpected = [
+          new DMSCoordinate(179, 0, 0, 'E'),
+          32,
+          -102.8292,
+          new DMSCoordinate(1, 2, 3, 'N'),
+          37.75,
+          new DMSCoordinate(0, 10, 59, 'N'),
+          new DMSCoordinate(13, 8, 0, 'W'),
+          new DMSCoordinate(12, 34, 56, 'S'),
+          new DMSCoordinate(13, 57, 19, 'W'),
+          -102,
+        ]
+        const spaceDelimited = baseInput.join(' ')
+        const commaDelimited = baseInput.join(',')
+        const dashDelimited = baseInput.join(' - ')
+        const allInput = `${spaceDelimited} - ${commaDelimited} ${dashDelimited}`
+        const parsed = parseCoordinates(allInput)
+        expect(parsed).toEqual([ ...baseExpected, ...baseExpected, ...baseExpected ])
+      })
+    })
   })
 })
