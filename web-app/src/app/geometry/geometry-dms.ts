@@ -530,9 +530,7 @@ function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSPar
     if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
       return parseDmsCoordinate(parsing, digits)
     }
-    if (parsing.currentChar.is.digit || parsing.finished) {
-      return parseDecimal(parsing, digits)
-    }
+    return parseDecimal(parsing, digits)
   }
   return parsing.error()
 }
@@ -669,12 +667,8 @@ function parseDigits(parsing: ParseContext): string | DMSParseError {
 
 function parseDecimal(parsing: ParseContext, parsedDigits: string = ''): number | DMSParseError {
   let sign = ''
-  if (parsing.currentChar.is.sign) {
-    if (parsedDigits) {
-      return parsing.error('unexpected sign after digits')
-    }
-    sign = parsing.currentChar.value
-    parsing.advanceCursor()
+  if (parsing.currentChar.is.sign && !parsedDigits) {
+    sign = parsing.consumeCurrentChar().value
   }
   const whole = parsedDigits ? parsedDigits : parseDigits(parsing)
   if (whole instanceof DMSParseError) {
