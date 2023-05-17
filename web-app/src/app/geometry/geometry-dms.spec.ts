@@ -35,6 +35,7 @@ fdescribe('DMS', () => {
     expect(DMS.parse(`11° 22'30 N`, DimensionKey.Latitude)).toEqual(11.375)
     expect(DMS.parse(`11.4584`, DimensionKey.Latitude)).toEqual(11.4584)
     expect(DMS.parse(`-11.4584`, DimensionKey.Latitude)).toEqual(-11.4584)
+    expect(DMS.parse(`- 1 1 . 4 5 8 4`, DimensionKey.Latitude)).toEqual(-11.4585)
     expect(DMS.parse(`0151545W`, DimensionKey.Longitude)).toEqual(-15.2625)
     expect(DMS.parse(`W 15 ° 15'45`, DimensionKey.Longitude)).toEqual(-15.2625)
     expect(DMS.parse(`15 ° 15'45" W`, DimensionKey.Longitude)).toEqual(-15.2625)
@@ -175,7 +176,7 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
   })
 
-  fdescribe('parsing', () => {
+  describe('parsing', () => {
 
     type InputAndResult = [ string, number, number, number ] | [ string, typeof DMSParseError ]
 
