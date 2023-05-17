@@ -502,7 +502,7 @@ function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
     }
     coords.push(coord)
     skipWhiteSpace(parsing)
-    if (parsing.currentChar.value === '-' && parsing.lookAhead().is.space) {
+    if ((parsing.currentChar.value === '-' && parsing.lookAhead().is.space) || parsing.currentChar.value === ',') {
       skipWhiteSpace(parsing.advanceCursor())
     }
   }
@@ -702,8 +702,8 @@ export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DM
 }
 
 export class DMSParseError extends Error {
-  constructor(readonly input: string, readonly pos: number, message: string = 'error parsing DMS coordinates') {
-    super(`${message} at position ${pos} of input ${input}`)
+  constructor(readonly input: string, readonly pos: number, message: string = '') {
+    super(`${message || 'error parsing DMS coordinates'} at position ${pos} of input ${input}`)
   }
 }
 

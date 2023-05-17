@@ -266,11 +266,35 @@ fdescribe('DMS', () => {
       })
 
       it('parses dash-delimited coordinates', () => {
-
+        [
+          [ '1- 2 - 3', 1, 2, 3 ],
+          [ '  1 -  2-  3  ', 1, 2, 3 ],
+          [ '1.1 - 2.2 - 3.3', 1.1, 2.2, 3.3 ],
+          [ '   -1.1 - 2.2- -3.3\r\n', -1.1, 2.2, -3.3 ],
+          [ '   +1.1 - -2.2 - 3.3\r\n', 1.1, -2.2, 3.3 ],
+          [ '   1.1 - +2.2- -3.3\n  ', 1.1, 2.2, -3.3 ],
+          [ '   -1.1 - -2.2 - -3.3', -1.1, -2.2, -3.3 ],
+          [ '   -1.1 - -2.2 - -3..3', DMSParseError ],
+          [ '   -1.1 - --2.2 - -3.3', DMSParseError ],
+          [ '   -1.1 -2.2-+ -3.3', DMSParseError ],
+        ]
+        .forEach(assertParseResult)
       })
 
       it('parses comma-delimeted coordinates', () => {
-
+        [
+          [ '1,2,3', 1, 2, 3 ],
+          [ '  1 ,2, 3  ', 1, 2, 3 ],
+          [ '1.1,2.2,3.3', 1.1, 2.2, 3.3 ],
+          [ '   -1.1, 2.2, -3.3', -1.1, 2.2, -3.3 ],
+          [ '   +1.1 , -2.2, 3.3', 1.1, -2.2, 3.3 ],
+          [ '   1.1, +2.2 ,-3.3\n  ', 1.1, 2.2, -3.3 ],
+          [ '   -1.1 , -2.2  , -3.3\r\n', -1.1, -2.2, -3.3 ],
+          [ '   -1.1 ,-2.2, -3..3', DMSParseError ],
+          [ '   -1.1 , --2.2 , -3.3', DMSParseError ],
+          [ '   -1.1, -2.2 , + -3.3', DMSParseError ],
+        ]
+        .forEach(assertParseResult)
       })
     })
 
@@ -555,6 +579,52 @@ fdescribe('DMS', () => {
               ` W 135719`,
             ]
             .join(' - ')
+          )
+          expect(parsed).toEqual([
+            new DMSCoordinate(1, 2, 3, 'N'),
+            new DMSCoordinate(179, 0, 0, 'E'),
+            new DMSCoordinate(0, 10, 59, 'N'),
+            new DMSCoordinate(1, 38, 0, 'W'),
+            new DMSCoordinate(12, 34, 56, 'S'),
+            new DMSCoordinate(13, 57, 19, 'W'),
+          ])
+        })
+
+        it('parses comma-delimited labeled coordinates', () => {
+
+          const parsed = parseCoordinates(
+            [
+              `1°2'3"N`,
+              `179 °E`,
+              `10' 59 " N`,
+              `001° 38' W`,
+              `S 12° 34 '  56"`,
+              `W 13 ° 57 ' 19"`,
+            ]
+            .join(',')
+          )
+          expect(parsed).toEqual([
+            new DMSCoordinate(1, 2, 3, 'N'),
+            new DMSCoordinate(179, 0, 0, 'E'),
+            new DMSCoordinate(0, 10, 59, 'N'),
+            new DMSCoordinate(1, 38, 0, 'W'),
+            new DMSCoordinate(12, 34, 56, 'S'),
+            new DMSCoordinate(13, 57, 19, 'W'),
+          ])
+        })
+
+        it('parses comma-delimited unlabeled coordinates', () => {
+
+          const parsed = parseCoordinates(
+            [
+              `10203N`,
+              `1790000E`,
+              ` 01059 N`,
+              `0013800 W `,
+              `S 123456 `,
+              ` W 135719`,
+            ]
+            .join(',')
           )
           expect(parsed).toEqual([
             new DMSCoordinate(1, 2, 3, 'N'),
