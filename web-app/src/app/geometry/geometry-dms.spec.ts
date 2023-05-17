@@ -503,6 +503,14 @@ fdescribe('DMS', () => {
           ]
           .forEach(x => assertForLonHemispheres(x as InputAndResult))
         })
+
+        it('yields an error for minutes > 59', () => {
+          fail('todo')
+        })
+
+        it('yields an error for seconds > 59', () => {
+          fail('todo')
+        })
       })
 
       describe('multiple coordinates', () => {
