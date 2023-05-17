@@ -191,7 +191,6 @@ function parseDMS(input: string): DMSCoordinate {
     dmsCoordinate.seconds = Number(coordinateToParse.slice(-2))
     coordinateToParse = coordinateToParse.slice(0, -2)
   }
-
   if (coordinateToParse.length != 0) {
     dmsCoordinate.minutes = Number(coordinateToParse.slice(-2))
     coordinateToParse = coordinateToParse.slice(0, -2)
@@ -401,10 +400,12 @@ const Dimension = {
   [DimensionKey.Latitude]: {
     hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
     zeroPadDegrees: (deg: number) => zeroPadStart(deg, 2),
+    excludes: (deg: number) => deg < -90 || deg > 90,
   },
   [DimensionKey.Longitude]: {
     hemisphereForDegrees: (deg: number) => (deg < 0 ? 'W' : 'E') as LongitudeHemisphereLabel,
     zeroPadDegrees: (deg: number) => zeroPadStart(deg, 3),
+    excludes: (deg: number) => deg < -180 || deg > 180,
   },
   keyForHemisphere: (hemi: HemisphereLabel) => hemi === 'E' || hemi === 'W' ? DimensionKey.Longitude : DimensionKey.Latitude,
   forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
@@ -480,8 +481,9 @@ class ParseContext {
     return c
   }
 
-  error(message: string = ''): DMSParseError {
-    return new DMSParseError(this.input, this.pos, message)
+  error(message: string = '', reason: string | number = ''): DMSParseError {
+    const pos = typeof reason === 'string' ? this.pos - reason.length : reason
+    return new DMSParseError(this.input, pos, message)
   }
 }
 
@@ -530,6 +532,7 @@ function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSPar
 
 function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoordinate | DMSParseError {
   if (digits) {
+    const digitsStart = parsing.pos - digits.length
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel) {
       /*
@@ -541,25 +544,29 @@ function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoor
       }
       skipWhiteSpace(parsing)
       if (parsing.currentChar.is.hemisphere) {
-        return new DMSCoordinate(dmsParts.deg, dmsParts.min, dmsParts.sec, parsing.consumeCurrentChar().value as HemisphereLabel)
+        const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
+        return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
       }
       return parsing.error('expected hemisphere after dms parts')
     }
     else if (parsing.currentChar.is.hemisphere) {
       /*
       the caller parsed digits, then encountered a hemisphere, so expect
-      unitless compact dms, e.g. 112233N
+      unlabeled compact dms, e.g. 112233N
       */
-      const hemi = parsing.currentChar.value
+      const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
+      const dmsParts = parseUnlabeledCompactDmsParts(parsing, digits)
+      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
     }
   }
   else if (parsing.currentChar.is.hemisphere) {
     /*
     the caller encountered a leading hemisphere, so expect either
-    labeled dms or unitless compact dms
+    labeled dms or unlabeled compact dms
     */
     const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
     skipWhiteSpace(parsing)
+    const digitsStart = parsing.pos
     const expectedDigits = parseDigits(parsing)
     if (expectedDigits instanceof DMSParseError) {
       return expectedDigits
@@ -567,13 +574,28 @@ function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoor
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel) {
       const dmsParts = parseLabeledDmsParts(parsing, expectedDigits)
-      if (dmsParts instanceof DMSParseError) {
-        return dmsParts
-      }
-      return new DMSCoordinate(dmsParts.deg, dmsParts.min, dmsParts.sec, hemi)
+      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
+    }
+    else {
+      const dmsParts = parseUnlabeledCompactDmsParts(parsing, expectedDigits)
+      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
     }
   }
   return parsing.error()
+}
+
+type DMSParts = { deg: number, min: number, sec: number }
+
+function dmsCoordOrError(parsing: ParseContext, coordPos: number, which: DMSParts | DMSParseError, hemi: HemisphereLabel): DMSCoordinate | DMSParseError {
+  if (which instanceof DMSParseError) {
+    return which
+  }
+  const coord = new DMSCoordinate(which.deg, which.min, which.sec, hemi)
+  const dim = Dimension.forHemisphere(hemi)
+  if (dim.excludes(coord.toDecimalDegrees())) {
+    return parsing.error('coordinate out of bounds', coordPos)
+  }
+  return new DMSCoordinate(which.deg, which.min, which.sec, hemi)
 }
 
 /**
@@ -615,6 +637,16 @@ function parseLabeledDmsParts(parsing: ParseContext, digits: string): { deg: num
     min: dmsParts["'"],
     sec: dmsParts['"'],
   }
+}
+
+function parseUnlabeledCompactDmsParts(parsing: ParseContext, digits: string): DMSParts | DMSParseError {
+  if (digits.length < 5) {
+    return parsing.error(`expected at least 5 digits for unlabeled condensed dms parts`, digits)
+  }
+  const sec = Number(digits.slice(-2))
+  const min = Number(digits.slice(-4, -2))
+  const deg = Number(digits.slice(0, -4))
+  return { deg, min, sec }
 }
 
 function parseDigits(parsing: ParseContext): string | DMSParseError {
