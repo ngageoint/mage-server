@@ -467,6 +467,10 @@ class ParseContext {
     return this
   }
 
+  lookAhead(): Char {
+    return Char(this.input[this.pos + 1])
+  }
+
   /**
    * Return the current character, then advance the cursor to the next
    * position.  This is short-hand for
@@ -498,6 +502,9 @@ function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
     }
     coords.push(coord)
     skipWhiteSpace(parsing)
+    if (parsing.currentChar.value === '-' && parsing.lookAhead().is.space) {
+      skipWhiteSpace(parsing.advanceCursor())
+    }
   }
   return coords
 }
