@@ -1,4 +1,3 @@
-import { O } from '@angular/cdk/keycodes'
 import { DimensionKey, DMS, DMSCoordinate, DMSParseError, HemisphereLabel, parseCoordinates } from './geometry-dms';
 
 fdescribe('DMS', () => {
@@ -505,11 +504,45 @@ fdescribe('DMS', () => {
         })
 
         it('yields an error for minutes > 59', () => {
-          fail('todo')
+          [
+            [ `0°60'0"`, DMSParseError ],
+            [ `0°59'0"`, 0, 59, 0 ],
+            [ `1°60'59"`, DMSParseError ],
+            [ `1°59'59"`, 1, 59, 59 ],
+            [ `59°590'0"`, DMSParseError ],
+            [ `59°59'0"`, 59, 59, 0 ],
+            [ `06000`, DMSParseError ],
+            [ `05900`, 0, 59, 0 ],
+            [ `596000`, DMSParseError ],
+            [ `595900`, 59, 59, 0 ],
+            [ `596000`, DMSParseError ],
+            [ `595900`, 59, 59, 0 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult));
+
+          [
+            [ `111°60'1"`, DMSParseError ],
+            [ `111°59'1"`, 111, 59, 1 ],
+            [ `111°160'01"`, DMSParseError ],
+            [ `011°16'01"`, 11, 16, 1  ],
+          ]
+          .forEach(x => assertForLonHemispheres(x as InputAndResult))
         })
 
         it('yields an error for seconds > 59', () => {
-          fail('todo')
+          [
+            [ `0°0'60"`, DMSParseError ],
+            [ `0°0'59"`, 0, 0, 59 ],
+            [ `1°59'60"`, DMSParseError ],
+            [ `1°59'59"`, 1, 59, 59 ],
+            [ `59°59'590"`, DMSParseError ],
+            [ `59°59'59"`, 59, 59, 59 ],
+            [ `00060`, DMSParseError ],
+            [ `00059`, 0, 0, 59 ],
+            [ `595960`, DMSParseError ],
+            [ `595959`, 59, 59, 59 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
       })
 

@@ -595,6 +595,12 @@ function dmsCoordOrError(parsing: ParseContext, coordPos: number, which: DMSPart
   if (which instanceof DMSParseError) {
     return which
   }
+  if (which.min > 59) {
+    return parsing.error('minutes must be less than 60', coordPos)
+  }
+  if (which.sec > 59) {
+    return parsing.error('seconds must be less than 60', coordPos)
+  }
   const coord = new DMSCoordinate(which.deg, which.min, which.sec, hemi)
   const dim = Dimension.forHemisphere(hemi)
   if (dim.excludes(coord.toDecimalDegrees())) {
