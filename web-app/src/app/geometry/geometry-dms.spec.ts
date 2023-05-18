@@ -35,7 +35,7 @@ fdescribe('DMS', () => {
     expect(DMS.parse(`11° 22'30 N`, DimensionKey.Latitude)).toEqual(11.375)
     expect(DMS.parse(`11.4584`, DimensionKey.Latitude)).toEqual(11.4584)
     expect(DMS.parse(`-11.4584`, DimensionKey.Latitude)).toEqual(-11.4584)
-    expect(DMS.parse(`- 1 1 . 4 5 8 4`, DimensionKey.Latitude)).toEqual(-11.4585)
+    expect(DMS.parse(`- 1 1 . 4 5 8 4`, DimensionKey.Latitude)).toEqual(-11.4584)
     expect(DMS.parse(`0151545W`, DimensionKey.Longitude)).toEqual(-15.2625)
     expect(DMS.parse(`W 15 ° 15'45`, DimensionKey.Longitude)).toEqual(-15.2625)
     expect(DMS.parse(`15 ° 15'45" W`, DimensionKey.Longitude)).toEqual(-15.2625)
@@ -176,7 +176,7 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
   })
 
-  describe('parsing', () => {
+  fdescribe('parsing', () => {
 
     type InputAndResult = [ string, number, number, number ] | [ string, typeof DMSParseError ]
 
@@ -327,7 +327,6 @@ fdescribe('DMS', () => {
       describe('with all labeled parts', () => {
 
         it('parses input with no spaces', () => {
-
           [
             [ `0°0'0"`, 0, 0, 0 ],
             [ `0°0'1"`, 0, 0, 1 ],
@@ -342,7 +341,6 @@ fdescribe('DMS', () => {
         })
 
         it('parses input with spaces around units and digits', () => {
-
           [
             [ ` 0  °  0  '  0  "`, 0, 0, 0 ],
             [ `  0°  0  ' 1  " `, 0, 0, 1 ],
@@ -352,6 +350,17 @@ fdescribe('DMS', () => {
             [ `1  °  23'45"`, 1, 23, 45 ],
             [ `12 °  34 '56  "`, 12, 34, 56 ],
             [ `01  °02  '03"`, 1, 2, 3 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult))
+        })
+
+        it('accepts fractional seconds', () => {
+          [
+            [ `0°0'0.125"`, 0, 0, 0.125 ],
+            [ `0°0'1.125"`, 0, 0, 1.125 ],
+            [ `12°0'0.777"`, 12, 0, 0.777 ],
+            [ `1°2'34.8"`, 1, 2, 34.8 ],
+            [ `12°34'56.005"`, 12, 34, 56.005 ],
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
@@ -379,7 +388,6 @@ fdescribe('DMS', () => {
         })
 
         it('parses two parts', () => {
-
           [
             [ `0°0'`, 0, 0, 0 ],
             [ `0'1"`, 0, 0, 1 ],
@@ -390,12 +398,22 @@ fdescribe('DMS', () => {
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
+
+        fit('accepts fractional seconds', () => {
+          [
+            [ `1'0.125"`, 0, 1, 0.125 ],
+            [ `0°1.125"`, 0, 0, 1.125 ],
+            [ `0.777"`, 0, 0, 0.777 ],
+            [ `11°34.8"`, 11, 0, 34.8 ],
+            [ `56.005"`, 0, 0, 56.005 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult))
+        })
       })
 
       describe('compact without labels', () => {
 
         it('parses fully specified digits', () => {
-
           [
             [ '0000000', 0, 0, 0 ],
             [ '0123456', 12, 34, 56 ],

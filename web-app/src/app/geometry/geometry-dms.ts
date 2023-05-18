@@ -21,7 +21,7 @@ export class DMSCoordinate {
     return result
   }
 
-  format(opts: DMSFormatOptions = { hemisphereIndicator: 'label', padDegrees: true }): string {
+  format(opts: DMSFormatOptions = { padDegrees: true }): string {
     return formatDMS(this, opts)
   }
 
@@ -31,7 +31,6 @@ export class DMSCoordinate {
 }
 
 interface DMSFormatOptions {
-  hemisphereIndicator: 'sign' | 'label'
   padDegrees: boolean
 }
 
@@ -262,13 +261,13 @@ function decimalPart(num: number) {
   return Number(`.${fraction}`)
 }
 
-function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { hemisphereIndicator: 'label', padDegrees: true }): string {
+function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { padDegrees: true }): string {
   const deg = coord.degrees || 0
   const min = coord.minutes || 0
   const sec = coord.seconds || 0
   const dim = Dimension.forHemisphere(coord.hemisphere)
-  const degPart = opts.padDegrees !== false ? dim.zeroPadDegrees(deg) : String(deg)
-  return ''
+  const degPadded = opts.padDegrees !== false ? dim.zeroPadDegrees(deg) : String(deg)
+  return `${degPadded}° ${zeroPadStart(min, 2)}' ${zeroPadStart(sec, 2)}" ${coord.hemisphere}`
 }
 
 function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string {
@@ -288,107 +287,21 @@ function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string 
   return `${dim.zeroPadDegrees(wholeDegrees)}° ${zeroPadStart(minutes, 2)}' ${zeroPadStart(seconds, 2)}" ${hemisphere}`
 }
 
-/*
-TODO: parsing and validation should be using the same logic. this is
-essentially alternate parsing logic with different rules.
- */
 function validateCoordinateFromDMS(input: string, dimension: DimensionKey): boolean {
-  if (typeof input !== 'string') {
+  if (!input) {
     return false
   }
-  input = input.trim()
-  const letters = /^[0-9NSEWnsew. °\'\"]+$/
-  if (!letters.test(input)) {
+  const parsed = parseCoordinates(input)
+  if (parsed instanceof DMSParseError) {
     return false
   }
-
-  let coordinateToParse = input.replace(/[^\d.NSEWnsew]/g, '')
-
-  // There must be a direction as the last character
-  const direction = coordinateToParse[coordinateToParse.length - 1]
-  if (!isNaN(Number(direction))) {
+  if (parsed.length !== 1) {
     return false
   }
-  else {
-    if (dimension === DimensionKey.Latitude && direction.toUpperCase() !== 'N' && direction.toUpperCase() !== 'S') {
-      return false
-    }
-    if (dimension === DimensionKey.Longitude && direction.toUpperCase() !== 'E' && direction.toUpperCase() !== 'W') {
-      return false
-    }
-    coordinateToParse = coordinateToParse.slice(0, -1)
-  }
-
-  // split the numbers before the decimal seconds
-  const split = coordinateToParse.split('.')
-  if (split.length === 0) {
-    return false
-  }
-
-  coordinateToParse = split[0]
-
-  // there must be either 5 or 6 digits for latitude (1 or 2 degrees, 2 minutes, 2 seconds)
-  // or 5, 6, 7 digits for longitude
-  if (dimension === DimensionKey.Latitude && (coordinateToParse.length < 5 || coordinateToParse.length > 6)) {
-    return false
-  }
-  if (dimension === DimensionKey.Longitude && (coordinateToParse.length < 5 || coordinateToParse.length > 7)) {
-      return false
-  }
-
-  let decimalSeconds = 0
-  if (split.length === 2) {
-    if (!isNaN(Number(split[1]))) {
-      decimalSeconds = Number(split[1])
-    } else {
-      return false
-    }
-  }
-
-  const seconds = Number(coordinateToParse.slice(-2))
-  coordinateToParse = coordinateToParse.slice(0, -2)
-
-  const minutes = Number(coordinateToParse.slice(-2))
-  const degrees = Number(coordinateToParse.slice(0, -2))
-
-  if (!isNaN(degrees)) {
-    if (dimension === DimensionKey.Latitude && (degrees < 0 || degrees > 90)) {
-      return false
-    }
-    if (dimension === DimensionKey.Longitude && (degrees < 0 || degrees > 180)) {
-      return false
-    }
-  } else {
-    return false
-  }
-
-  if (!isNaN(minutes) && !isNaN(degrees)) {
-    if (
-      (minutes < 0 || minutes > 59) ||
-      (dimension === DimensionKey.Latitude && degrees == 90 && minutes != 0) ||
-      (dimension === DimensionKey.Longitude && degrees == 180 && minutes != 0)
-    ) {
-      return false
-    }
-  }
-  else {
-    return false
-  }
-
-  if (!isNaN(seconds) && !isNaN(degrees)) {
-    if (
-      (seconds < 0 || seconds > 59) ||
-      (dimension === DimensionKey.Latitude && degrees == 90 && (seconds != 0 || decimalSeconds != 0)) ||
-      (dimension === DimensionKey.Longitude && degrees == 180 && (seconds != 0 || decimalSeconds != 0))
-    ) {
-      return false
-    }
-  }
-  else {
-    return false
-  }
-
-  return true
+  const coord = parsed[0]
+  return coord instanceof DMSCoordinate ?
+    Dimension.keyForHemisphere(coord.hemisphere) === dimension :
+    Dimension[dimension].includes(coord)
 }
 
 export enum DimensionKey {
@@ -396,16 +309,28 @@ export enum DimensionKey {
   Longitude = 'lon',
 }
 
+function latitudeIncludes(deg: number): boolean {
+  return deg >= -90 && deg <= 90
+}
+
+function longitudeIncludes(deg: number): boolean {
+  return deg >= -180 && deg <= 180
+}
+
 const Dimension = {
   [DimensionKey.Latitude]: {
+    get key() { return DimensionKey.Latitude },
     hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
     zeroPadDegrees: (deg: number) => zeroPadStart(deg, 2),
-    excludes: (deg: number) => deg < -90 || deg > 90,
+    excludes: (deg: number) => !latitudeIncludes(deg),
+    includes: (deg: number) => latitudeIncludes(deg),
   },
   [DimensionKey.Longitude]: {
+    get key() { return DimensionKey.Longitude },
     hemisphereForDegrees: (deg: number) => (deg < 0 ? 'W' : 'E') as LongitudeHemisphereLabel,
     zeroPadDegrees: (deg: number) => zeroPadStart(deg, 3),
-    excludes: (deg: number) => deg < -180 || deg > 180,
+    excludes: (deg: number) => !longitudeIncludes(deg),
+    includes: (deg: number) => longitudeIncludes(deg),
   },
   keyForHemisphere: (hemi: HemisphereLabel) => hemi === 'E' || hemi === 'W' ? DimensionKey.Longitude : DimensionKey.Latitude,
   forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
@@ -423,9 +348,6 @@ function Char(c: string) {
     get space() { return /\s/.test(c) },
     get sign() { return c === '+' || c === '-' },
     get unitLabel() { return c in { '°':1, '\'':1, '"':1 } },
-    get degreesLabel() { return c === '°' },
-    get minutesLabel() { return c === "'" },
-    get secondsLabel() { return c === '"' },
     get endOfInput() { return c === undefined || c === null || c === '' },
   }
   return {
@@ -463,12 +385,17 @@ class ParseContext {
   }
 
   advanceCursor(): this {
-    this.c = Char(this.input[++this._pos])
-    return this
+    return this.moveCursorTo(this.pos + 1)
   }
 
   lookAhead(): Char {
     return Char(this.input[this.pos + 1])
+  }
+
+  moveCursorTo(pos: number): this {
+    this._pos = pos
+    this.c = Char(this.input[this.pos])
+    return this
   }
 
   /**
@@ -485,6 +412,13 @@ class ParseContext {
     return c
   }
 
+  /**
+   * Create a `DMSParseError` with the given message.  The `reason` can be
+   * either the numeric input position of the cause of the error, or the
+   * string of characters consumed from the input that caused the error.
+   * In the latter case, the resulting error's position will be the current
+   * position, less the length of the given reason string.
+   */
   error(message: string = '', reason: string | number = ''): DMSParseError {
     const pos = typeof reason === 'string' ? this.pos - reason.length : reason
     return new DMSParseError(this.input, pos, message)
@@ -517,33 +451,25 @@ function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSPar
     return parseDecimal(parsing)
   }
   else if (parsing.currentChar.is.digit) {
-    const digits = parseDigits(parsing)
-    if (digits instanceof DMSParseError) {
-      return digits
-    }
-    if (parsing.currentChar.is.dot) {
-      return parseDecimal(parsing, digits)
-    }
-    if (parsing.currentChar.is.space) {
-      skipWhiteSpace(parsing)
-    }
+    const digits = parseDigitsWithTrailingFraction(parsing) as string
+    skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
       return parseDmsCoordinate(parsing, digits)
     }
     return parseDecimal(parsing, digits)
   }
-  return parsing.error()
+  return parsing.error('expected hemisphere, sign, or digit')
 }
 
-function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoordinate | DMSParseError {
-  if (digits) {
-    const digitsStart = parsing.pos - digits.length
+function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: string = ''): DMSCoordinate | DMSParseError {
+  if (digitsWithFractionalSeconds) {
+    const digitsStart = parsing.pos - digitsWithFractionalSeconds.length
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel) {
       /*
       the caller parsed digits, then encountered a unit to trigger the dms rule
       */
-      const dmsParts = parseLabeledDmsParts(parsing, digits)
+      const dmsParts = parseLabeledDmsParts(parsing, digitsWithFractionalSeconds)
       if (dmsParts instanceof DMSParseError) {
         return dmsParts
       }
@@ -560,7 +486,7 @@ function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoor
       unlabeled compact dms, e.g. 112233N
       */
       const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
-      const dmsParts = parseUnlabeledCompactDmsParts(parsing, digits)
+      const dmsParts = parseUnlabeledCompactDmsParts(parsing, digitsWithFractionalSeconds)
       return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
     }
   }
@@ -572,7 +498,7 @@ function parseDmsCoordinate(parsing: ParseContext, digits: string = ''): DMSCoor
     const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
     skipWhiteSpace(parsing)
     const digitsStart = parsing.pos
-    const expectedDigits = parseDigits(parsing)
+    const expectedDigits = parseDigitsWithTrailingFraction(parsing)
     if (expectedDigits instanceof DMSParseError) {
       return expectedDigits
     }
@@ -595,10 +521,16 @@ function dmsCoordOrError(parsing: ParseContext, coordPos: number, which: DMSPart
   if (which instanceof DMSParseError) {
     return which
   }
-  if (which.min > 59) {
+  if (which.deg % 1 !== 0) {
+    return parsing.error('degrees part must be a whole positive integer', coordPos)
+  }
+  if (which.min % 1 !== 0) {
+    return parsing.error('minutes must be a whole positive integer', coordPos)
+  }
+  if (which.min >= 60) {
     return parsing.error('minutes must be less than 60', coordPos)
   }
-  if (which.sec > 59) {
+  if (which.sec >= 60) {
     return parsing.error('seconds must be less than 60', coordPos)
   }
   const coord = new DMSCoordinate(which.deg, which.min, which.sec, hemi)
@@ -614,20 +546,20 @@ function dmsCoordOrError(parsing: ParseContext, coordPos: number, which: DMSPart
  * character should be a DMS unit label (°|'|") that indicates the labeled DMS
  * format.
  * @param parsing the parse context
- * @param digits the digits parsed before encountering a unit label
+ * @param digitsWithFractionalSeconds the digits parsed before encountering a unit label
  * @returns
  */
-function parseLabeledDmsParts(parsing: ParseContext, digits: string): { deg: number, min: number, sec: number } | DMSParseError {
+function parseLabeledDmsParts(parsing: ParseContext, digitsWithFractionalSeconds: string): { deg: number, min: number, sec: number } | DMSParseError {
   const allUnits = Array.from(`°'"`)
   const rankOfUnit = { '°': 0, "'": 1, '"': 2 }
   const dmsParts = { '°': 0, "'": 0, '"': 0 }
   const exhaustedUnits = {} as { [unit in '°' | "'" | '"']?: any }
   while (parsing.currentChar.is.unitLabel) {
-    const part = Number(digits)
-    if (isNaN(part)) {
-      return parsing.error(`invalid digits ${digits}`)
-    }
     const unit = parsing.consumeCurrentChar().value
+    const part = Number(digitsWithFractionalSeconds)
+    if (isNaN(part)) {
+      return parsing.error(`invalid digits ${digitsWithFractionalSeconds}`)
+    }
     if (unit in exhaustedUnits) {
       return parsing.error(`dms unit ${unit} out of order`)
     }
@@ -635,11 +567,11 @@ function parseLabeledDmsParts(parsing: ParseContext, digits: string): { deg: num
     dmsParts[unit] = part
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.digit) {
-      const nextDigits = parseDigits(parsing)
+      const nextDigits = parseDigitsWithTrailingFraction(parsing)
       if (nextDigits instanceof DMSParseError) {
         return nextDigits
       }
-      digits = nextDigits
+      digitsWithFractionalSeconds = nextDigits
     }
     skipWhiteSpace(parsing)
   }
@@ -650,13 +582,14 @@ function parseLabeledDmsParts(parsing: ParseContext, digits: string): { deg: num
   }
 }
 
-function parseUnlabeledCompactDmsParts(parsing: ParseContext, digits: string): DMSParts | DMSParseError {
-  if (digits.length < 5) {
-    return parsing.error(`expected at least 5 digits for unlabeled condensed dms parts`, digits)
+function parseUnlabeledCompactDmsParts(parsing: ParseContext, digitsWithFractionalSeconds: string): DMSParts | DMSParseError {
+  const [ whole, frac ] = digitsWithFractionalSeconds.split('.')
+  if (whole.length < 5) {
+    return parsing.error(`expected at least 5 digits for unlabeled condensed dms parts`, digitsWithFractionalSeconds)
   }
-  const sec = Number(digits.slice(-2))
-  const min = Number(digits.slice(-4, -2))
-  const deg = Number(digits.slice(0, -4))
+  const sec = Number(whole.slice(-2) + (frac ? `.${frac}` : ''))
+  const min = Number(whole.slice(-4, -2))
+  const deg = Number(whole.slice(0, -4))
   return { deg, min, sec }
 }
 
@@ -671,24 +604,31 @@ function parseDigits(parsing: ParseContext): string | DMSParseError {
   return digits
 }
 
-function parseDecimal(parsing: ParseContext, parsedDigits: string = ''): number | DMSParseError {
-  let sign = ''
-  if (parsing.currentChar.is.sign && !parsedDigits) {
-    sign = parsing.consumeCurrentChar().value
-  }
-  const whole = parsedDigits ? parsedDigits : parseDigits(parsing)
+function parseDigitsWithTrailingFraction(parsing: ParseContext): string | DMSParseError {
+  const whole = parseDigits(parsing)
   if (whole instanceof DMSParseError) {
     return whole
   }
-  if (parsing.currentChar.is.dot) {
-    parsing.advanceCursor()
-    const fraction = parseDigits(parsing)
-    if (fraction instanceof DMSParseError) {
-      return fraction
-    }
-    return Number(`${sign}${whole}.${fraction}`)
+  if (!parsing.currentChar.is.dot) {
+    return whole
   }
-  return Number(`${sign}${whole}`)
+  const frac = parseDigits(parsing.advanceCursor())
+  if (frac instanceof DMSParseError) {
+    return frac
+  }
+  return `${whole}.${frac}`
+}
+
+function parseDecimal(parsing: ParseContext, digitsWithFraction: string = ''): number | DMSParseError {
+  if (digitsWithFraction) {
+    return Number(digitsWithFraction)
+  }
+  const sign = parsing.currentChar.is.sign ? parsing.consumeCurrentChar().value : ''
+  const digits = parseDigitsWithTrailingFraction(parsing)
+  if (digits instanceof DMSParseError) {
+    return digits
+  }
+  return Number(`${sign}${digits}`)
 }
 
 function skipWhiteSpace(parsing: ParseContext): void {
