@@ -2,7 +2,7 @@ import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, O
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
-import { DimensionKey, DMS } from 'src/app/geometry/geometry-dms'
+import { DimensionKey, DMS, DMSCoordinate, DMSParseError, parseCoordinates } from 'src/app/geometry/geometry-dms'
 import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { createMask } from '@ngneat/input-mask'
 
@@ -183,15 +183,21 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   onDmsPaste(event: ClipboardEvent, dimension: keyof typeof DimensionKey): void {
     // 0° 44'48"N 0° 00'48"E
     const pasted = event.clipboardData.getData('text')
-    const maybePair = DMS.splitCoordinates(pasted)
+    const maybePair = parseCoordinates(pasted)
+    if (maybePair instanceof DMSParseError) {
+      console.error('error parsing pasted coordinates', maybePair)
+      // TODO: warning dialog
+      return
+    }
     if (maybePair.length !== 2) {
+      // TODO: warning dialog
       return
     }
     event.preventDefault()
     event.stopImmediatePropagation()
     const [ pastedLat, pastedLon ] = maybePair
-    const lat = DMS.parse(pastedLat, DimensionKey.Latitude)
-    const lon = DMS.parse(pastedLon, DimensionKey.Longitude)
+    const lat = pastedLat instanceof DMSCoordinate ? pastedLat.toDecimalDegrees() : pastedLat
+    const lon = pastedLon instanceof DMSCoordinate ? pastedLon.toDecimalDegrees() : pastedLon
     if (isNaN(lat) || isNaN(lon)) {
       return
     }

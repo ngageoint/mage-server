@@ -2,23 +2,6 @@ import { DimensionKey, DMS, DMSCoordinate, DMSParseError, HemisphereLabel, parse
 
 fdescribe('DMS', () => {
 
-  it('should split the coordinate string', () => {
-    expect(DMS.splitCoordinates(null)).toEqual([])
-    expect(DMS.splitCoordinates(`112233N 0152144W`)).toEqual([ `112233N`, `0152144W` ])
-    expect(DMS.splitCoordinates(`N 11 ° 22'33 "- W 15 ° 21'44`)).toEqual([ `N11°22'33"`, `W15°21'44`])
-    expect(DMS.splitCoordinates(`11 ° 22'33 "N - 15 ° 21'44" W`)).toEqual([ `11°22'33"N`, `15°21'44"W` ])
-    expect(DMS.splitCoordinates(`11° 22'33 N 015° 21'44 W`)).toEqual([ "11°22'33N", "015°21'44W" ])
-    expect(DMS.splitCoordinates(`11.4584 15.6827`)).toEqual([ "11.4584", "15.6827" ])
-    expect(DMS.splitCoordinates(`-11.4584 15.6827`)).toEqual([ "-11.4584", "15.6827" ])
-    expect(DMS.splitCoordinates(`11.4584 -15.6827`)).toEqual([ "11.4584", "-15.6827" ])
-    expect(DMS.splitCoordinates(`11.4584, 15.6827`)).toEqual([ "11.4584", "15.6827" ])
-    expect(DMS.splitCoordinates(`-11.4584, 15.6827`)).toEqual([ "-11.4584", "15.6827" ])
-    expect(DMS.splitCoordinates(`11.4584, -15.6827`)).toEqual([ "11.4584", "-15.6827" ])
-    expect(DMS.splitCoordinates(`N 11 ° 22'30 `)).toEqual([ `N11°22'30` ])
-    expect(DMS.splitCoordinates(`N 11°22'30 `)).toEqual([ `N11°22'30` ])
-    expect(DMS.splitCoordinates(`0° 00'48"E`)).toEqual([ `0°00'48"E` ])
-  })
-
   it('should parse the coordinate string', () => {
     expect(DMS.parse(null, DimensionKey.Latitude)).toBeNaN()
     expect(DMS.parse(null, DimensionKey.Longitude)).toBeNaN()
@@ -176,7 +159,7 @@ fdescribe('DMS', () => {
     expect(DMS.formatLongitude(-0.077251)).toEqual(`000° 04' 38" W`)
   })
 
-  fdescribe('parsing', () => {
+  describe('parsing', () => {
 
     type InputAndResult = [ string, number, number, number ] | [ string, typeof DMSParseError ]
 
@@ -190,14 +173,6 @@ fdescribe('DMS', () => {
         expect(parsed).toEqual(results as any, `failed to parse ${input}`)
       }
     }
-
-    it(`parses focused input`, () => {
-
-      const parsed = parseCoordinates(`12° 34" 56' N`)
-      console.log('result', parsed)
-      // expect(parsed).toEqual([ new DMSCoordinate(1, 2, 3, 'E') ], String(parsed))
-      expect(parsed instanceof DMSParseError).toBe(true)
-    })
 
     describe('decimals', () => {
 

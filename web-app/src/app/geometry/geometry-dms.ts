@@ -50,84 +50,12 @@ export class DMS {
    * degrees.  Return `NaN` if parsing fails.
    */
   static parse(input: string, dimension: DimensionKey): number {
-    if (!input) {
-      return NaN
+    const coords = parseCoordinates(input)
+    if (Array.isArray(coords) && coords.length === 1) {
+      return coords[0] instanceof DMSCoordinate ? coords[0].toDecimalDegrees() : coords[0]
     }
-    const inputCondensed = input.replace(/\s/g, '')
-    // check if it is a number and that number could be a valid latitude or longitude
-    // could either be a decimal or a whole number representing lat/lng or a DDMMSS.sss number representing degree minutes seconds
-    const decimalDegrees = Number(inputCondensed)
-    if (!isNaN(decimalDegrees)) {
-      if (
-        (dimension === DimensionKey.Longitude && decimalDegrees >= -180.0 && decimalDegrees <= 180.0) ||
-        (dimension === DimensionKey.Latitude && decimalDegrees >= -90.0 && decimalDegrees <= 90.0)
-      ) {
-        return decimalDegrees
-      }
-    }
-    const dms = parseDMS(inputCondensed)
-    return dms.toDecimalDegrees()
-  }
-
-  /**
-   * Split the given string into possibly two coordinates with all spaces
-   * removed.  No further normalization takes place.
-   */
-  static splitCoordinates(coordinates: string): string[] {
-    let split: string[] = []
-
-    if (!coordinates) {
-      return split
-    }
-
-    const coordinatesToParse = coordinates.trim().toUpperCase()
-
-    // if there is a comma, split on that
-    if (coordinatesToParse.includes(',')) {
-      return coordinatesToParse.split(',').map(splitString => splitString.replace(/\s/g, ''))
-    }
-
-    // check if there are any direction letters
-    const firstDirectionIndex = indexOfFirstHemisphere(coordinatesToParse)
-    const hasDirection = firstDirectionIndex !== -1
-
-    // if the string has a direction we can try to split on the dash
-    if (hasDirection && coordinatesToParse.indexOf('-') !== -1) {
-      return coordinatesToParse.split('-').map(splitString => splitString.replace(/\s/g, ''))
-    } else if (hasDirection) {
-      // if the string has a direction but no dash, split on the direction
-      const lastDirectionIndex = indexOfLastHemisphere(coordinatesToParse)
-
-      // the direction will either be at the begining of the string, or the end
-      // if the direction is at the begining of the string, use the second index unless there is no second index
-      // in which case there is only one coordinate
-      if (firstDirectionIndex === 0) {
-        if (lastDirectionIndex !== firstDirectionIndex) {
-          split.push(coordinatesToParse.substring(0,lastDirectionIndex))
-          split.push(coordinatesToParse.substring(lastDirectionIndex))
-        } else {
-          // only one coordinate
-          split.push(coordinatesToParse)
-        }
-      } else if (lastDirectionIndex == coordinatesToParse.length - 1) {
-        // if the last direction index is the end of the string use the first index unless the first and last index are the same
-        if (lastDirectionIndex === firstDirectionIndex) {
-          // only one coordinate
-          split.push(coordinatesToParse)
-        } else {
-          split.push(coordinatesToParse.substring(0, firstDirectionIndex+1))
-          split.push(coordinatesToParse.substring(firstDirectionIndex+1))
-        }
-      }
-    }
-
-    // one last attempt to split.  if there is one white space character split on that
-    const whitespaceSplit = coordinatesToParse.split(/\r?\n|\r|\s/g)
-    if (whitespaceSplit.length <= 2) {
-      split = whitespaceSplit
-    }
-
-    return split.map(splitString => splitString.replace(/\r?\n|\r|\s/g, ''))
+    console.error('error parsing degrees from dms', input, coords)
+    return NaN
   }
 
   static validateLatitudeFromDMS(input: string): boolean {
@@ -145,112 +73,6 @@ export class DMS {
   static formatLongitude(degrees: number): string {
     return formatDegrees(degrees, DimensionKey.Longitude)
   }
-}
-
-function parseDMS(input: string): DMSCoordinate {
-  const dmsCoordinate = new DMSCoordinate(null, null, null, null)
-  let coordinateToParse = input.replace(/\s/g, '')
-
-  // strip out any non numerics except direction
-  coordinateToParse = coordinateToParse.replace(/[^\d.NSEWnsew]/g, '')
-  if (coordinateToParse.length == 0) {
-    return dmsCoordinate
-  }
-
-  const lastCharacter = coordinateToParse[coordinateToParse.length - 1]
-  if (lastCharacter && isNaN(Number(lastCharacter))) {
-    // the last character might be a direction not a number
-    dmsCoordinate.hemisphere = lastCharacter.toUpperCase() as HemisphereLabel
-    coordinateToParse = coordinateToParse.slice(0, -1)
-  }
-  if (coordinateToParse.length == 0) {
-    return dmsCoordinate
-  }
-
-  const firstCharacter = coordinateToParse[0]
-  if (firstCharacter && isNaN(Number(firstCharacter))) {
-    // the first character might be a direction not a number
-    dmsCoordinate.hemisphere = firstCharacter.toUpperCase() as HemisphereLabel
-    coordinateToParse = coordinateToParse.substring(1)
-  }
-
-  // remove all characters except numbers and decimal points
-  coordinateToParse = coordinateToParse.replace(/[^\d.]/g, '')
-
-  // split the numbers before the decimal seconds
-  if (coordinateToParse.length === 0) {
-    return dmsCoordinate
-  }
-  const split = coordinateToParse.split('.')
-
-  coordinateToParse = split[0]
-  const decimalSeconds = split.length == 2 ? Number(split[1]) : null
-
-  if (coordinateToParse.length != 0) {
-    dmsCoordinate.seconds = Number(coordinateToParse.slice(-2))
-    coordinateToParse = coordinateToParse.slice(0, -2)
-  }
-  if (coordinateToParse.length != 0) {
-    dmsCoordinate.minutes = Number(coordinateToParse.slice(-2))
-    coordinateToParse = coordinateToParse.slice(0, -2)
-  }
-  if (coordinateToParse.length != 0) {
-    dmsCoordinate.degrees = Number(coordinateToParse)
-  }
-
-  if (isNaN(dmsCoordinate.degrees)) {
-    if (isNaN(dmsCoordinate.minutes)) {
-      dmsCoordinate.degrees = dmsCoordinate.seconds
-      dmsCoordinate.seconds = null
-    } else {
-      dmsCoordinate.degrees = dmsCoordinate.minutes
-      dmsCoordinate.minutes = dmsCoordinate.seconds
-      dmsCoordinate.seconds = null
-    }
-  }
-
-  if ((dmsCoordinate.minutes == null || isNaN(dmsCoordinate.minutes)) && (dmsCoordinate.seconds == null || isNaN(dmsCoordinate.seconds)) && decimalSeconds !== null) {
-    // this would be the case if a decimal degrees was passed in ie 11.123
-    let decimal = Number('.' + decimalSeconds)
-    if (isNaN(decimal)) {
-      decimal = 0.0
-    }
-    dmsCoordinate.minutes = Math.floor(Math.abs(decimal * 60.0))
-    // have to do this because 2.3 % 1 == .299999999998 in javascript and not .3
-    const decimalRemainderOfMinutes = decimalPart(decimal * 60.0)// Number(((decimal * 60.0)+"").split(".")[1])
-    const seconds = Math.abs(decimalRemainderOfMinutes * 60.0)
-    dmsCoordinate.seconds = Math.round(seconds)
-  } else if (decimalSeconds !== null && !isNaN(decimalSeconds)) {
-    // add the decimal seconds to seconds and round
-    dmsCoordinate.seconds = Math.round(Number(dmsCoordinate.seconds + '.' + decimalSeconds))
-  }
-
-  if (dmsCoordinate.seconds == 60) {
-    dmsCoordinate.minutes = dmsCoordinate.minutes + 1
-    dmsCoordinate.seconds = 0
-  }
-
-  if (dmsCoordinate.minutes == 60) {
-    dmsCoordinate.degrees = dmsCoordinate.degrees + 1
-    dmsCoordinate.minutes = 0
-  }
-  return dmsCoordinate
-}
-
-function indexOfFirstHemisphere(coordinateString): number {
-  const northDirectionIndex = coordinateString.indexOf('N')
-  const southDirectionIndex = coordinateString.indexOf('S')
-  const eastDirectionIndex = coordinateString.indexOf('E')
-  const westDirectionIndex = coordinateString.indexOf('W')
-  const directionIndex = Math.min(northDirectionIndex == -1 ? Number.MAX_VALUE : northDirectionIndex,
-     southDirectionIndex == -1 ? Number.MAX_VALUE : southDirectionIndex,
-     eastDirectionIndex == -1 ? Number.MAX_VALUE : eastDirectionIndex,
-     westDirectionIndex == -1 ? Number.MAX_VALUE : westDirectionIndex)
-  return directionIndex == Number.MAX_VALUE ? -1 : directionIndex
-}
-
-function indexOfLastHemisphere(coordinateString): number {
-  return Math.max(coordinateString.lastIndexOf('N'), coordinateString.lastIndexOf('S'), coordinateString.lastIndexOf('E'), coordinateString.lastIndexOf('W'))
 }
 
 function zeroPadStart(num: number, padCount: number) { return num < 0 ? '-' : '' + String(Math.abs(num)).padStart(padCount, '0') }
@@ -426,7 +248,9 @@ class ParseContext {
 }
 
 function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
-  input = input.trim()
+  if (!input || !(input = input.trim())) {
+    return []
+  }
   const coords: (number | DMSCoordinate)[] = []
   const parsing = new ParseContext(input)
   while (!parsing.finished) {
@@ -451,7 +275,10 @@ function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSPar
     return parseDecimal(parsing)
   }
   else if (parsing.currentChar.is.digit) {
-    const digits = parseDigitsWithTrailingFraction(parsing) as string
+    const digits = parseDigitsWithTrailingFraction(parsing)
+    if (digits instanceof DMSParseError) {
+      return digits
+    }
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
       return parseDmsCoordinate(parsing, digits)
