@@ -399,7 +399,7 @@ fdescribe('DMS', () => {
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
 
-        fit('accepts fractional seconds', () => {
+        it('accepts fractional seconds', () => {
           [
             [ `1'0.125"`, 0, 1, 0.125 ],
             [ `0°1.125"`, 0, 0, 1.125 ],
@@ -439,6 +439,26 @@ fdescribe('DMS', () => {
             [ '32100', 3, 21, 0 ],
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
+        })
+
+        it('accepts fractional seconds', () => {
+
+          [
+            [ '0000000.123', 0, 0, 0.123 ],
+            [ '0123456.007', 12, 34, 56.007 ],
+            [ '0010203.321', 1, 2, 3.321 ],
+            [ '1795959.99', 179, 59, 59.99 ],
+            [ '1000000.000', 100, 0, 0 ],
+          ]
+          .forEach(x => assertForLonHemispheres(x as InputAndResult));
+
+          [
+            [ '000000.25', 0, 0, 0.25 ],
+            [ '123456.005', 12, 34, 56.005 ],
+            [ '010203.0', 1, 2, 3 ],
+            [ '795959.999', 79, 59, 59.999 ],
+          ]
+          .forEach(x => assertForLatHemispheres(x as InputAndResult))
         })
       })
 
