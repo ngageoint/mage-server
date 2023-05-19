@@ -199,6 +199,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     const lat = pastedLat instanceof DMSCoordinate ? pastedLat.toDecimalDegrees() : pastedLat
     const lon = pastedLon instanceof DMSCoordinate ? pastedLon.toDecimalDegrees() : pastedLon
     if (isNaN(lat) || isNaN(lon)) {
+      // TODO: warning dialog
       return
     }
     const dmsLat = DMS.formatLatitude(lat)
@@ -210,8 +211,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     if (this.dmsForm.invalid) {
       return
     }
-    const lat = dmsLat ? DMS.parse(dmsLat, DimensionKey.Latitude) : this.dmsForm.value.dmsLat
-    const lon = dmsLon ? DMS.parse(dmsLon, DimensionKey.Longitude) : this.dmsForm.value.dmsLon
+    const lat = dmsLat ? DMS.parseOne(dmsLat, DimensionKey.Latitude) : this.dmsForm.value.dmsLat
+    const lon = dmsLon ? DMS.parseOne(dmsLon, DimensionKey.Longitude) : this.dmsForm.value.dmsLon
     this.editCurrentCoordinates('dms', lat, lon)
   }
 

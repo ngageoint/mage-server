@@ -49,10 +49,16 @@ export class DMS {
    * Parse the given DMS coordinate string and return the value in decimal
    * degrees.  Return `NaN` if parsing fails.
    */
-  static parse(input: string, dimension: DimensionKey): number {
+  static parseOne(input: string, dimension: DimensionKey): number {
     const coords = parseCoordinates(input)
     if (Array.isArray(coords) && coords.length === 1) {
-      return coords[0] instanceof DMSCoordinate ? coords[0].toDecimalDegrees() : coords[0]
+      const [ coord ] = coords
+      if (typeof coord === 'number') {
+        return coord
+      }
+      if (coord instanceof DMSCoordinate && Dimension.keyForHemisphere(coord.hemisphere) === dimension) {
+        return coord.toDecimalDegrees()
+      }
     }
     console.error('error parsing degrees from dms', input, coords)
     return NaN
