@@ -191,6 +191,7 @@ class ParseContext {
 
   private _pos: number = 0
   private c: Char = Char(this.input[this.pos])
+  private rulePositionStack = [] as number[]
 
   coords: (DMSCoordinate | number)[]
 
@@ -210,6 +211,10 @@ class ParseContext {
 
   get remaining(): boolean {
     return this.pos < this.input.length
+  }
+
+  get ruleStart(): number {
+    return this.rulePositionStack[this.rulePositionStack.length - 1]
   }
 
   advanceCursor(): this {
@@ -240,6 +245,20 @@ class ParseContext {
     return c
   }
 
+  startRule<R>(rule: (parsing: ParseContext, ...args: any[]) => R | DMSParseError, ...args: any): R | DMSParseError {
+    this.rulePositionStack.push(this.pos)
+    const result = rule(this, ...args)
+    if (!(result instanceof DMSParseError)) {
+      this.endRule()
+    }
+    return result
+  }
+
+  endRule(): this {
+    this.rulePositionStack.pop()
+    return this
+  }
+
   /**
    * Create a `DMSParseError` with the given message.  The `reason` can be
    * either the numeric input position of the cause of the error, or the
@@ -248,8 +267,10 @@ class ParseContext {
    * position, less the length of the given reason string.
    */
   error(message: string = '', reason: string | number = ''): DMSParseError {
-    const pos = typeof reason === 'string' ? this.pos - reason.length : reason
-    return new DMSParseError(this.input, pos, message)
+    const ruleStart = this.rulePositionStack.pop() || this.pos
+    const pos = typeof reason === 'string' ? ruleStart - reason.length : reason
+    const inputMarked = this.input.slice(0, pos) + '\u034E' + this.input.slice(pos)
+    return new DMSParseError(inputMarked, pos, message)
   }
 }
 
@@ -259,8 +280,8 @@ function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
   }
   const coords: (number | DMSCoordinate)[] = []
   const parsing = new ParseContext(input)
-  while (!parsing.finished) {
-    const coord = parseCoordinate(parsing)
+  while (parsing.remaining) {
+    const coord = parsing.startRule(parseCoordinate)
     if (coord instanceof DMSParseError) {
       return coord
     }
@@ -281,22 +302,23 @@ function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSPar
     return parseDecimal(parsing)
   }
   else if (parsing.currentChar.is.digit) {
-    const digits = parseDigitsWithTrailingFraction(parsing)
-    if (digits instanceof DMSParseError) {
-      return digits
-    }
-    skipWhiteSpace(parsing)
-    if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
-      return parseDmsCoordinate(parsing, digits)
-    }
-    return parseDecimal(parsing, digits)
+    return parsing.startRule(parsing => {
+      const digits = parseDigitsWithTrailingFraction(parsing)
+      if (digits instanceof DMSParseError) {
+        return digits
+      }
+      skipWhiteSpace(parsing)
+      if (parsing.currentChar.is.unitLabel || parsing.currentChar.is.hemisphere) {
+        return parseDmsCoordinate(parsing, digits)
+      }
+      return parseDecimal(parsing, digits)
+    })
   }
   return parsing.error('expected hemisphere, sign, or digit')
 }
 
 function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: string = ''): DMSCoordinate | DMSParseError {
   if (digitsWithFractionalSeconds) {
-    const digitsStart = parsing.pos - digitsWithFractionalSeconds.length
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel) {
       /*
@@ -309,7 +331,7 @@ function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: 
       skipWhiteSpace(parsing)
       if (parsing.currentChar.is.hemisphere) {
         const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
-        return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
+        return dmsCoordOrError(parsing, dmsParts, hemi)
       }
       return parsing.error('expected hemisphere after dms parts')
     }
@@ -320,7 +342,7 @@ function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: 
       */
       const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
       const dmsParts = parseUnlabeledCompactDmsParts(parsing, digitsWithFractionalSeconds)
-      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
+      return dmsCoordOrError(parsing, dmsParts, hemi)
     }
   }
   else if (parsing.currentChar.is.hemisphere) {
@@ -350,26 +372,26 @@ function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: 
 
 type DMSParts = { deg: number, min: number, sec: number }
 
-function dmsCoordOrError(parsing: ParseContext, coordPos: number, which: DMSParts | DMSParseError, hemi: HemisphereLabel): DMSCoordinate | DMSParseError {
+function dmsCoordOrError(parsing: ParseContext, which: DMSParts | DMSParseError, hemi: HemisphereLabel): DMSCoordinate | DMSParseError {
   if (which instanceof DMSParseError) {
     return which
   }
   if (which.deg % 1 !== 0) {
-    return parsing.error('degrees part must be a whole positive integer', coordPos)
+    return parsing.error(`degrees ${which.deg} must be a whole positive integer`)
   }
   if (which.min % 1 !== 0) {
-    return parsing.error('minutes must be a whole positive integer', coordPos)
+    return parsing.error(`minutes ${which.min} must be a whole positive integer`)
   }
   if (which.min >= 60) {
-    return parsing.error('minutes must be less than 60', coordPos)
+    return parsing.error(`minutes ${which.min} must be less than 60`)
   }
   if (which.sec >= 60) {
-    return parsing.error('seconds must be less than 60', coordPos)
+    return parsing.error(`seconds ${which.sec} must be less than 60`)
   }
   const coord = new DMSCoordinate(which.deg, which.min, which.sec, hemi)
   const dim = Dimension.forHemisphere(hemi)
   if (dim.excludes(coord.toDecimalDegrees())) {
-    return parsing.error('coordinate out of bounds', coordPos)
+    return parsing.error('coordinate out of bounds')
   }
   return new DMSCoordinate(which.deg, which.min, which.sec, hemi)
 }
@@ -464,10 +486,12 @@ function parseDecimal(parsing: ParseContext, digitsWithFraction: string = ''): n
   return Number(`${sign}${digits}`)
 }
 
-function skipWhiteSpace(parsing: ParseContext): void {
+function skipWhiteSpace(parsing: ParseContext): number {
+  const start = parsing.pos
   while (parsing.currentChar.is.space) {
     parsing.advanceCursor()
   }
+  return parsing.pos - start
 }
 
 export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DMSParseError {
