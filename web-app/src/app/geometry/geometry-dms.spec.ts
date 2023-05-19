@@ -48,6 +48,10 @@ fdescribe('DMS', () => {
         `002233.2384S`,
         `900000S`,
         `900000N`,
+        `2N`,
+        `33N`,
+        `233N`,
+        `2233N`,
       ]
       .forEach(input => {
         it(`validates latitude ${input}`, () => {
@@ -68,10 +72,6 @@ fdescribe('DMS', () => {
         `11NSNS.1N`,
         `1111NS.1N`,
         `113000NNN`,
-        `2233N`,
-        `33N`,
-        `2N`,
-        `233N`,
         `N`,
         `.123N`,
         `900001N`,
@@ -103,6 +103,10 @@ fdescribe('DMS', () => {
         `1800000E`,
         `1800000W`,
         `002233E`,
+        `2W`,
+        `33W`,
+        `233W`,
+        `2233W`,
       ]
       .forEach(input => {
         it(`validates longitude ${input}`, () => {
@@ -115,10 +119,6 @@ fdescribe('DMS', () => {
       [
         null,
         ``,
-        `2233W`,
-        `33W`,
-        `2W`,
-        `233W`,
         `W`,
         `.123W`,
         `1812233W`,
@@ -339,6 +339,17 @@ fdescribe('DMS', () => {
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
+
+        it('accepts unlabeled seconds', () => {
+          [
+            [ `0°0'0.125`, 0, 0, 0.125 ],
+            [ `0°0'1.125`, 0, 0, 1.125 ],
+            [ `12°0'0.777`, 12, 0, 0.777 ],
+            [ `1°2'34.8`, 1, 2, 34.8 ],
+            [ `12°34'56.005`, 12, 34, 56.005 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult))
+        })
       })
 
       describe('with partial labeled parts', () => {
@@ -384,6 +395,17 @@ fdescribe('DMS', () => {
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
+
+        it('accepts unlabeled seconds', () => {
+          [
+            [ `1'0.125`, 0, 1, 0.125 ],
+            [ `0°1.125`, 0, 0, 1.125 ],
+            [ `0.777`, 0, 0, 0.777 ],
+            [ `11°34.8`, 11, 0, 34.8 ],
+            [ `56.005`, 0, 0, 56.005 ],
+          ]
+          .forEach(x => assertForEachHemisphere(x as InputAndResult))
+        })
       })
 
       describe('compact without labels', () => {
@@ -412,6 +434,14 @@ fdescribe('DMS', () => {
             [ '00001', 0, 0, 1 ],
             [ '12345', 1, 23, 45 ],
             [ '32100', 3, 21, 0 ],
+            [ '0', 0, 0, 0 ],
+            [ '10', 0, 0, 10 ],
+            [ '100', 0, 1, 0 ],
+            [ '1000', 0, 10, 0 ],
+            [ '1234', 0, 12, 34 ],
+            [ '123', 0, 1, 23 ],
+            [ '12', 0, 0, 12 ],
+            [ '1', 0, 0, 1 ],
           ]
           .forEach(x => assertForEachHemisphere(x as InputAndResult))
         })
@@ -477,20 +507,6 @@ fdescribe('DMS', () => {
           [ `+01" S`, DMSParseError ]
         ]
         .forEach(assertParseResult)
-      })
-
-      it('does not parse unlabeled with less than five digits', () => {
-        [
-          [ '0', DMSParseError ],
-          [ '00', DMSParseError ],
-          [ '000', DMSParseError ],
-          [ '0000', DMSParseError ],
-          [ '1234', DMSParseError ],
-          [ '123', DMSParseError ],
-          [ '12', DMSParseError ],
-          [ '1', DMSParseError ],
-        ]
-        .forEach(x => assertForEachHemisphere(x as InputAndResult))
       })
 
       describe('bounds errors', () => {

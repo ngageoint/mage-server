@@ -352,7 +352,6 @@ function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: 
     */
     const hemi = parsing.consumeCurrentChar().value as HemisphereLabel
     skipWhiteSpace(parsing)
-    const digitsStart = parsing.pos
     const expectedDigits = parseDigitsWithTrailingFraction(parsing)
     if (expectedDigits instanceof DMSParseError) {
       return expectedDigits
@@ -360,11 +359,11 @@ function parseDmsCoordinate(parsing: ParseContext, digitsWithFractionalSeconds: 
     skipWhiteSpace(parsing)
     if (parsing.currentChar.is.unitLabel) {
       const dmsParts = parseLabeledDmsParts(parsing, expectedDigits)
-      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
+      return dmsCoordOrError(parsing, dmsParts, hemi)
     }
     else {
       const dmsParts = parseUnlabeledCompactDmsParts(parsing, expectedDigits)
-      return dmsCoordOrError(parsing, digitsStart, dmsParts, hemi)
+      return dmsCoordOrError(parsing, dmsParts, hemi)
     }
   }
   return parsing.error()
@@ -405,10 +404,11 @@ function dmsCoordOrError(parsing: ParseContext, which: DMSParts | DMSParseError,
  * @returns
  */
 function parseLabeledDmsParts(parsing: ParseContext, digitsWithFractionalSeconds: string): { deg: number, min: number, sec: number } | DMSParseError {
+  type UnitLabel = '°' | "'" | '"'
   const allUnits = Array.from(`°'"`)
   const rankOfUnit = { '°': 0, "'": 1, '"': 2 }
-  const dmsParts = { '°': 0, "'": 0, '"': 0 }
-  const exhaustedUnits = {} as { [unit in '°' | "'" | '"']?: any }
+  const exhaustedUnits = {} as { [U in UnitLabel]?: 1 }
+  const dmsParts = { '°': null, "'": null, '"': null }
   while (parsing.currentChar.is.unitLabel) {
     const unit = parsing.consumeCurrentChar().value
     const part = Number(digitsWithFractionalSeconds)
@@ -421,6 +421,7 @@ function parseLabeledDmsParts(parsing: ParseContext, digitsWithFractionalSeconds
     allUnits.slice(0, rankOfUnit[unit] + 1).forEach(unit => exhaustedUnits[unit] = 1)
     dmsParts[unit] = part
     skipWhiteSpace(parsing)
+    digitsWithFractionalSeconds = '0'
     if (parsing.currentChar.is.digit) {
       const nextDigits = parseDigitsWithTrailingFraction(parsing)
       if (nextDigits instanceof DMSParseError) {
@@ -430,18 +431,26 @@ function parseLabeledDmsParts(parsing: ParseContext, digitsWithFractionalSeconds
     }
     skipWhiteSpace(parsing)
   }
+  if (dmsParts['"'] === null) {
+    if (parsing.finished || parsing.currentChar.is.hemisphere) {
+      /*
+      seconds digits without a label; not sure why anyone does this, but
+      apparently unlabeled seconds is a requirement
+      E 11° 22' 33
+      */
+      const unlabeledSeconds = Number(digitsWithFractionalSeconds)
+      dmsParts['"'] = unlabeledSeconds
+    }
+  }
   return {
-    deg: dmsParts['°'],
-    min: dmsParts["'"],
-    sec: dmsParts['"'],
+    deg: dmsParts['°'] || 0,
+    min: dmsParts["'"] || 0,
+    sec: dmsParts['"'] || 0,
   }
 }
 
 function parseUnlabeledCompactDmsParts(parsing: ParseContext, digitsWithFractionalSeconds: string): DMSParts | DMSParseError {
   const [ whole, frac ] = digitsWithFractionalSeconds.split('.')
-  if (whole.length < 5) {
-    return parsing.error(`expected at least 5 digits for unlabeled condensed dms parts`, digitsWithFractionalSeconds)
-  }
   const sec = Number(whole.slice(-2) + (frac ? `.${frac}` : ''))
   const min = Number(whole.slice(-4, -2))
   const deg = Number(whole.slice(0, -4))
