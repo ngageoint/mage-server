@@ -1,3 +1,32 @@
+
+export enum DimensionKey {
+  Latitude = 'lat',
+  Longitude = 'lon',
+}
+
+export const Dimension = {
+  [DimensionKey.Latitude]: {
+    get key() { return DimensionKey.Latitude },
+    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
+    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 2),
+    excludes: (deg: number) => !latitudeIncludes(deg),
+    includes: (deg: number) => latitudeIncludes(deg),
+  },
+  [DimensionKey.Longitude]: {
+    get key() { return DimensionKey.Longitude },
+    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'W' : 'E') as LongitudeHemisphereLabel,
+    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 3),
+    excludes: (deg: number) => !longitudeIncludes(deg),
+    includes: (deg: number) => longitudeIncludes(deg),
+  },
+  keyForHemisphere: (hemi: HemisphereLabel) => hemi === 'E' || hemi === 'W' ? DimensionKey.Longitude : DimensionKey.Latitude,
+  forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
+} as const
+
+export type LatitudeHemisphereLabel = 'N' | 'S'
+export type LongitudeHemisphereLabel = 'E' | 'W'
+export type HemisphereLabel = LatitudeHemisphereLabel | LongitudeHemisphereLabel
+
 export class DMSCoordinate {
 
   static fromDecimalDegrees(decimalDegrees: number, dimension: DimensionKey): DMSCoordinate | null {
@@ -47,12 +76,10 @@ export class DMSCoordinate {
   }
 }
 
-interface DMSFormatOptions {
-  padDegrees: boolean
-}
 
 /**
  * Parse latitude and longitude strings in degrees-minutes-seconds format.
+ * This function will parse any number of coordinates from the given input.
  * The requirements say this class must support parsing the following
  * coordinate strings.
  * 1. 112233N 0112244W
@@ -60,42 +87,81 @@ interface DMSFormatOptions {
  * 3. 11 ° 22'33 "N - 11 ° 22'33" W
  * 4. 11° 22'33 N 011° 22'33 W
  */
-export class DMS {
+export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DMSParseError {
+  const coords = [] as (DMSCoordinate | number)[]
+  const parsing = generateParsedCoordinates(input)
+  let parsed = parsing.next()
+  while (parsed.done === false) {
+    coords.push(parsed.value)
+    parsed = parsing.next()
+  }
+  if (parsed.value) {
+    return parsed.value
+  }
+  return coords
+}
 
-  /**
-   * Parse the given DMS coordinate string and return the value in decimal
-   * degrees.  Return `NaN` if parsing fails.
-   */
-  static parseOne(input: string, dimension: DimensionKey): number {
-    const coords = parseCoordinates(input)
-    if (Array.isArray(coords) && coords.length === 1) {
-      const [ coord ] = coords
-      if (typeof coord === 'number') {
-        return coord
-      }
-      if (coord instanceof DMSCoordinate && Dimension.keyForHemisphere(coord.hemisphere) === dimension) {
-        return coord.toDecimalDegrees()
-      }
+export function *generateParsedCoordinates(input: string): Generator<DMSCoordinate | number, void | DMSParseError> {
+  if (!input || !(input = input.trim())) {
+    return
+  }
+  const parsing = new ParseContext(input)
+  while (parsing.remaining) {
+    const coord = parsing.startRule(parseCoordinate)
+    if (coord instanceof DMSParseError) {
+      return coord
     }
-    console.error('error parsing degrees from dms', input, coords)
-    return NaN
+    yield coord
+    skipWhiteSpace(parsing)
+    if ((parsing.currentChar.value === '-' && parsing.lookAhead().is.space) || parsing.currentChar.value === ',') {
+      skipWhiteSpace(parsing.advanceCursor())
+    }
   }
+}
 
-  static validateLatitudeFromDMS(input: string): boolean {
-    return validateCoordinateFromDMS(input, DimensionKey.Latitude)
+export class DMSParseError extends Error {
+  constructor(readonly input: string, readonly pos: number, message: string = '') {
+    super(`${message || 'error parsing DMS coordinates'} at position ${pos} of input ${input}`)
   }
+}
 
-  static validateLongitudeFromDMS(input: string): boolean {
-    return validateCoordinateFromDMS(input, DimensionKey.Longitude)
+/**
+ * Parse the given DMS coordinate string and return the value in decimal
+ * degrees.  Return `NaN` if parsing fails.
+ */
+export function parseOne(input: string, dimension?: DimensionKey): number {
+  const coords = parseCoordinates(input)
+  if (Array.isArray(coords) && coords.length === 1) {
+    const [ coord ] = coords
+    if (typeof coord === 'number') {
+      return coord
+    }
+    if (coord instanceof DMSCoordinate && Dimension.keyForHemisphere(coord.hemisphere) === dimension) {
+      return coord.toDecimalDegrees()
+    }
   }
+  console.error('error parsing degrees from dms', input, coords)
+  return NaN
+}
 
-  static formatLatitude(degrees: number): string {
-    return formatDecimalDegreesCoordinate(degrees, DimensionKey.Latitude)
-  }
+export function validateLatitude(input: string): boolean {
+  return validateCoordinateFromDMS(input, DimensionKey.Latitude)
+}
 
-  static formatLongitude(degrees: number): string {
-    return formatDecimalDegreesCoordinate(degrees, DimensionKey.Longitude)
-  }
+export function validateLongitude(input: string): boolean {
+  return validateCoordinateFromDMS(input, DimensionKey.Longitude)
+}
+
+export function formatLatitude(degrees: number): string {
+  return formatDecimalDegreesCoordinate(degrees, DimensionKey.Latitude)
+}
+
+export function formatLongitude(degrees: number): string {
+  return formatDecimalDegreesCoordinate(degrees, DimensionKey.Longitude)
+}
+
+interface DMSFormatOptions {
+  padDegrees: boolean
 }
 
 function zeroPadStart(num: number, padCount: number) { return num < 0 ? '-' : '' + String(Math.abs(num)).padStart(padCount, '0') }
@@ -149,11 +215,6 @@ function validateCoordinateFromDMS(input: string, dimension: DimensionKey): bool
     Dimension[dimension].includes(coord)
 }
 
-export enum DimensionKey {
-  Latitude = 'lat',
-  Longitude = 'lon',
-}
-
 function latitudeIncludes(deg: number): boolean {
   return deg >= -90 && deg <= 90
 }
@@ -161,29 +222,6 @@ function latitudeIncludes(deg: number): boolean {
 function longitudeIncludes(deg: number): boolean {
   return deg >= -180 && deg <= 180
 }
-
-export const Dimension = {
-  [DimensionKey.Latitude]: {
-    get key() { return DimensionKey.Latitude },
-    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
-    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 2),
-    excludes: (deg: number) => !latitudeIncludes(deg),
-    includes: (deg: number) => latitudeIncludes(deg),
-  },
-  [DimensionKey.Longitude]: {
-    get key() { return DimensionKey.Longitude },
-    hemisphereForDegrees: (deg: number) => (deg < 0 ? 'W' : 'E') as LongitudeHemisphereLabel,
-    zeroPadDegrees: (deg: number) => zeroPadStart(deg, 3),
-    excludes: (deg: number) => !longitudeIncludes(deg),
-    includes: (deg: number) => longitudeIncludes(deg),
-  },
-  keyForHemisphere: (hemi: HemisphereLabel) => hemi === 'E' || hemi === 'W' ? DimensionKey.Longitude : DimensionKey.Latitude,
-  forHemisphere: (hemi: HemisphereLabel) => Dimension[Dimension.keyForHemisphere(hemi)],
-} as const
-
-export type LatitudeHemisphereLabel = 'N' | 'S'
-export type LongitudeHemisphereLabel = 'E' | 'W'
-export type HemisphereLabel = LatitudeHemisphereLabel | LongitudeHemisphereLabel
 
 function Char(c: string) {
   const is = {
@@ -498,44 +536,6 @@ function skipWhiteSpace(parsing: ParseContext): number {
     parsing.advanceCursor()
   }
   return parsing.pos - start
-}
-
-export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DMSParseError {
-  const coords = [] as (DMSCoordinate | number)[]
-  const parsing = generateParsedCoordinates(input)
-  let parsed = parsing.next()
-  while (parsed.done === false) {
-    coords.push(parsed.value)
-    parsed = parsing.next()
-  }
-  if (parsed.value) {
-    return parsed.value
-  }
-  return coords
-}
-
-export function *generateParsedCoordinates(input: string): Generator<DMSCoordinate | number, void | DMSParseError> {
-  if (!input || !(input = input.trim())) {
-    return
-  }
-  const parsing = new ParseContext(input)
-  while (parsing.remaining) {
-    const coord = parsing.startRule(parseCoordinate)
-    if (coord instanceof DMSParseError) {
-      return coord
-    }
-    yield coord
-    skipWhiteSpace(parsing)
-    if ((parsing.currentChar.value === '-' && parsing.lookAhead().is.space) || parsing.currentChar.value === ',') {
-      skipWhiteSpace(parsing.advanceCursor())
-    }
-  }
-}
-
-export class DMSParseError extends Error {
-  constructor(readonly input: string, readonly pos: number, message: string = '') {
-    super(`${message || 'error parsing DMS coordinates'} at position ${pos} of input ${input}`)
-  }
 }
 
 /*

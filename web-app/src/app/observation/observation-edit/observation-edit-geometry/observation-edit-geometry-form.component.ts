@@ -2,7 +2,8 @@ import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, O
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
-import { Dimension, DimensionKey, DMS, DMSCoordinate, DMSParseError, generateParsedCoordinates, parseCoordinates } from 'src/app/geometry/geometry-dms'
+import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
+import * as DMS from 'src/app/geometry/geometry-dms'
 import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { createMask } from '@ngneat/input-mask'
 
@@ -37,9 +38,9 @@ export class DMSValidatorDirective implements Validator {
   dmsValidation: 'latitude' | 'longitude'
 
   validate(control: AbstractControl): ValidationErrors | null {
-    if (this.dmsValidation === 'latitude' && DMS.validateLatitudeFromDMS(control.value)) {
+    if (this.dmsValidation === 'latitude' && DMS.validateLatitude(control.value)) {
       return null
-    } else if (this.dmsValidation === 'longitude' && DMS.validateLongitudeFromDMS(control.value)) {
+    } else if (this.dmsValidation === 'longitude' && DMS.validateLongitude(control.value)) {
       return null
     }
     const error: ValidationErrors | null = {
@@ -186,7 +187,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     // parsing leading hemisphere, compact dms, and decimals the same way
     // 0° 44'48"N 0° 00'48"E
     const pasted = event.clipboardData.getData('text')
-    const parse = generateParsedCoordinates(pasted)
+    const parse = DMS.generateParsedCoordinates(pasted)
     let parsing = parse.next()
     const coords = [] as (DMSCoordinate | number)[]
     while (parsing.done === false && coords.length < 2) {

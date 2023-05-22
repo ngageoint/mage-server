@@ -3,7 +3,7 @@ import * as turfCenter from '@turf/center'
 import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
 import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
-import { DMS } from './geometry-dms'
+import * as DMS from './geometry-dms'
 
 @Pipe({
   name: 'geometry'

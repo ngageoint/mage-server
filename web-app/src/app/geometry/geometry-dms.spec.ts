@@ -1,6 +1,7 @@
-import { DimensionKey, DMS, DMSCoordinate, DMSParseError, generateParsedCoordinates, HemisphereLabel, parseCoordinates } from './geometry-dms';
+import { DimensionKey, DMSCoordinate, DMSParseError, generateParsedCoordinates, HemisphereLabel, parseCoordinates } from './geometry-dms';
+import * as DMS from './geometry-dms'
 
-fdescribe('DMS', () => {
+describe('DMS', () => {
 
   it('should parse the coordinate string', () => {
     expect(DMS.parseOne(null, DimensionKey.Latitude)).toBeNaN()
@@ -55,7 +56,7 @@ fdescribe('DMS', () => {
       ]
       .forEach(input => {
         it(`validates latitude ${input}`, () => {
-          expect(DMS.validateLatitudeFromDMS(input)).toBeTruthy()
+          expect(DMS.validateLatitude(input)).toBeTruthy()
         })
       })
     })
@@ -92,7 +93,7 @@ fdescribe('DMS', () => {
       ]
       .forEach(input => {
         it(`invalidates latitude ${input}`, () => {
-          expect(DMS.validateLatitudeFromDMS(input)).toBeFalsy()
+          expect(DMS.validateLatitude(input)).toBeFalsy()
         })
       })
     })
@@ -110,7 +111,7 @@ fdescribe('DMS', () => {
       ]
       .forEach(input => {
         it(`validates longitude ${input}`, () => {
-          expect(DMS.validateLongitudeFromDMS(input)).toBeTruthy()
+          expect(DMS.validateLongitude(input)).toBeTruthy()
         })
       })
     })
@@ -131,7 +132,7 @@ fdescribe('DMS', () => {
       ]
       .forEach(input => {
         it(`invalidates longitude ${input}`, () => {
-          expect(DMS.validateLongitudeFromDMS(input)).toBeFalsy()
+          expect(DMS.validateLongitude(input)).toBeFalsy()
         })
       })
     })
