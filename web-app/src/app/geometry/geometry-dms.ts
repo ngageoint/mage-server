@@ -1,5 +1,22 @@
 export class DMSCoordinate {
 
+  static fromDecimalDegrees(decimalDegrees: number, dimension: DimensionKey): DMSCoordinate | null {
+    let wholeDegrees = Math.trunc(Math.abs(decimalDegrees))
+    let minutes = Math.floor(Math.abs(decimalPart(decimalDegrees) * 60.0))
+    let seconds = Math.round(Math.abs(decimalPart(decimalPart(decimalDegrees) * 60.0)) * 60.0)
+    if (seconds == 60) {
+      seconds = 0
+      minutes += 1
+    }
+    if (minutes == 60) {
+      wholeDegrees += 1
+      minutes = 0
+    }
+    const dim = Dimension[dimension]
+    const hemisphere = dim.hemisphereForDegrees(decimalDegrees)
+    return new DMSCoordinate(wholeDegrees, minutes, seconds, hemisphere)
+  }
+
   constructor(
     public degrees: number | null,
     public minutes: number | null,
@@ -22,7 +39,7 @@ export class DMSCoordinate {
   }
 
   format(opts: DMSFormatOptions = { padDegrees: true }): string {
-    return formatDMS(this, opts)
+    return formatDMSCoordinate(this, opts)
   }
 
   toString() {
@@ -73,11 +90,11 @@ export class DMS {
   }
 
   static formatLatitude(degrees: number): string {
-    return formatDegrees(degrees, DimensionKey.Latitude)
+    return formatDecimalDegreesCoordinate(degrees, DimensionKey.Latitude)
   }
 
   static formatLongitude(degrees: number): string {
-    return formatDegrees(degrees, DimensionKey.Longitude)
+    return formatDecimalDegreesCoordinate(degrees, DimensionKey.Longitude)
   }
 }
 
@@ -89,7 +106,7 @@ function decimalPart(num: number) {
   return Number(`.${fraction}`)
 }
 
-function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { padDegrees: true }): string {
+function formatDMSCoordinate(coord: DMSCoordinate, opts: DMSFormatOptions = { padDegrees: true }): string {
   const deg = coord.degrees || 0
   const min = coord.minutes || 0
   const sec = coord.seconds || 0
@@ -98,7 +115,7 @@ function formatDMS(coord: DMSCoordinate, opts: DMSFormatOptions = { padDegrees: 
   return `${degPadded}° ${zeroPadStart(min, 2)}' ${zeroPadStart(sec, 2)}" ${coord.hemisphere}`
 }
 
-function formatDegrees(decimalDegrees: number, dimension: DimensionKey): string {
+function formatDecimalDegreesCoordinate(decimalDegrees: number, dimension: DimensionKey): string {
   let wholeDegrees = Math.trunc(Math.abs(decimalDegrees))
   let minutes = Math.floor(Math.abs(decimalPart(decimalDegrees) * 60.0))
   let seconds = Math.round(Math.abs(decimalPart(decimalPart(decimalDegrees) * 60.0)) * 60.0)
@@ -145,7 +162,7 @@ function longitudeIncludes(deg: number): boolean {
   return deg >= -180 && deg <= 180
 }
 
-const Dimension = {
+export const Dimension = {
   [DimensionKey.Latitude]: {
     get key() { return DimensionKey.Latitude },
     hemisphereForDegrees: (deg: number) => (deg < 0 ? 'S' : 'N') as LatitudeHemisphereLabel,
@@ -272,26 +289,6 @@ class ParseContext {
     const inputMarked = this.input.slice(0, pos) + '\u034E' + this.input.slice(pos)
     return new DMSParseError(inputMarked, pos, message)
   }
-}
-
-function start(input: string): (number | DMSCoordinate)[] | DMSParseError {
-  if (!input || !(input = input.trim())) {
-    return []
-  }
-  const coords: (number | DMSCoordinate)[] = []
-  const parsing = new ParseContext(input)
-  while (parsing.remaining) {
-    const coord = parsing.startRule(parseCoordinate)
-    if (coord instanceof DMSParseError) {
-      return coord
-    }
-    coords.push(coord)
-    skipWhiteSpace(parsing)
-    if ((parsing.currentChar.value === '-' && parsing.lookAhead().is.space) || parsing.currentChar.value === ',') {
-      skipWhiteSpace(parsing.advanceCursor())
-    }
-  }
-  return coords
 }
 
 function parseCoordinate(parsing: ParseContext): number | DMSCoordinate | DMSParseError {
@@ -504,7 +501,35 @@ function skipWhiteSpace(parsing: ParseContext): number {
 }
 
 export function parseCoordinates(input: string): (DMSCoordinate | number)[] | DMSParseError {
-  return start(input)
+  const coords = [] as (DMSCoordinate | number)[]
+  const parsing = generateParsedCoordinates(input)
+  let parsed = parsing.next()
+  while (parsed.done === false) {
+    coords.push(parsed.value)
+    parsed = parsing.next()
+  }
+  if (parsed.value) {
+    return parsed.value
+  }
+  return coords
+}
+
+export function *generateParsedCoordinates(input: string): Generator<DMSCoordinate | number, void | DMSParseError> {
+  if (!input || !(input = input.trim())) {
+    return
+  }
+  const parsing = new ParseContext(input)
+  while (parsing.remaining) {
+    const coord = parsing.startRule(parseCoordinate)
+    if (coord instanceof DMSParseError) {
+      return coord
+    }
+    yield coord
+    skipWhiteSpace(parsing)
+    if ((parsing.currentChar.value === '-' && parsing.lookAhead().is.space) || parsing.currentChar.value === ',') {
+      skipWhiteSpace(parsing.advanceCursor())
+    }
+  }
 }
 
 export class DMSParseError extends Error {

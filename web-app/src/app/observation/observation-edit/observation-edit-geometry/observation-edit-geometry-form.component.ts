@@ -2,7 +2,7 @@ import { Component, Directive, EventEmitter, Inject, Input, OnChanges, OnInit, O
 import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
-import { DimensionKey, DMS, DMSCoordinate, DMSParseError, parseCoordinates } from 'src/app/geometry/geometry-dms'
+import { Dimension, DimensionKey, DMS, DMSCoordinate, DMSParseError, generateParsedCoordinates, parseCoordinates } from 'src/app/geometry/geometry-dms'
 import { GeometryService, LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { createMask } from '@ngneat/input-mask'
 
@@ -79,9 +79,10 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   latitude: number
   longitude: number
   mgrs: string
+  readonly DMSDimensionKey = DimensionKey
   readonly dmsForm = new FormGroup({
-    dmsLat: new FormControl(''),
-    dmsLon: new FormControl(''),
+    [DimensionKey.Latitude]: new FormControl(''),
+    [DimensionKey.Longitude]: new FormControl(''),
   })
   readonly dmsLatMask = createMask({
     mask: `99° 99' 99" (N|S)`,
@@ -180,39 +181,60 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     }
   }
 
-  onDmsPaste(event: ClipboardEvent, dimension: keyof typeof DimensionKey): void {
+  onDmsPaste(event: ClipboardEvent, dimension: DimensionKey): void {
+    // TODO: make single coordinate paste use the dms parser to ensure properly
+    // parsing leading hemisphere, compact dms, and decimals the same way
     // 0° 44'48"N 0° 00'48"E
     const pasted = event.clipboardData.getData('text')
-    const maybePair = parseCoordinates(pasted)
-    if (maybePair instanceof DMSParseError) {
-      console.error('error parsing pasted coordinates', maybePair)
+    const parse = generateParsedCoordinates(pasted)
+    let parsing = parse.next()
+    const coords = [] as (DMSCoordinate | number)[]
+    while (parsing.done === false && coords.length < 2) {
+      coords.push(parsing.value)
+      parsing = parse.next()
+    }
+    if (parsing.value instanceof DMSParseError) {
+      console.error('error parsing pasted coordinates', parsing.value)
       // TODO: warning dialog
       return
     }
-    if (maybePair.length !== 2) {
-      // TODO: warning dialog
+    if (coords.length === 0) {
       return
     }
     event.preventDefault()
     event.stopImmediatePropagation()
-    const [ pastedLat, pastedLon ] = maybePair
-    const lat = pastedLat instanceof DMSCoordinate ? pastedLat.toDecimalDegrees() : pastedLat
-    const lon = pastedLon instanceof DMSCoordinate ? pastedLon.toDecimalDegrees() : pastedLon
-    if (isNaN(lat) || isNaN(lon)) {
-      // TODO: warning dialog
+    const formValue = { ...this.dmsForm.value }
+    if (coords.length === 1) {
+      const coord = typeof coords[0] === 'number' ? DMSCoordinate.fromDecimalDegrees(coords[0], DimensionKey[dimension]) : coords[0]
+      formValue[dimension] = coord.format()
+      this.dmsForm.setValue(formValue, { emitEvent: true })
       return
     }
-    const dmsLat = DMS.formatLatitude(lat)
-    const dmsLon = DMS.formatLongitude(lon)
-    this.dmsForm.setValue({ dmsLat, dmsLon }, { emitEvent: true })
+    const [ first, second ] = coords.sort((a, b) => a instanceof DMSCoordinate ? -1 : (typeof b === 'number' ? 0 : 1))
+    if (typeof first === 'number') {
+      // must both be numbers - assume latitude first
+      const latDMS = DMSCoordinate.fromDecimalDegrees(first, DimensionKey.Latitude)
+      const lonDMS = DMSCoordinate.fromDecimalDegrees(second as number, DimensionKey.Longitude)
+      formValue[DimensionKey.Latitude] = latDMS.format()
+      formValue[DimensionKey.Longitude] = lonDMS.format()
+      this.dmsForm.setValue(formValue, { emitEvent: true })
+      return
+    }
+    const firstDim = Dimension.keyForHemisphere(first.hemisphere)
+    // use the known hemisphere to infer the other if necessary
+    const secondResolved = typeof second === 'number' ?
+      DMSCoordinate.fromDecimalDegrees(second, firstDim === DimensionKey.Latitude ? DimensionKey.Longitude : DimensionKey.Latitude) :
+      second
+    const secondDim = Dimension.keyForHemisphere(secondResolved.hemisphere)
+    this.dmsForm.setValue({ [firstDim]: first.format(), [secondDim]: secondResolved.format() }, { emitEvent: true })
   }
 
-  onDmsChange({ dmsLat, dmsLon }): void {
+  onDmsChange({ lat: formLat, lon: formLon }): void {
     if (this.dmsForm.invalid) {
       return
     }
-    const lat = dmsLat ? DMS.parseOne(dmsLat, DimensionKey.Latitude) : this.dmsForm.value.dmsLat
-    const lon = dmsLon ? DMS.parseOne(dmsLon, DimensionKey.Longitude) : this.dmsForm.value.dmsLon
+    const lat = formLat ? DMS.parseOne(formLat, DimensionKey.Latitude) : this.dmsForm.value[DimensionKey.Latitude]
+    const lon = formLon ? DMS.parseOne(formLon, DimensionKey.Longitude) : this.dmsForm.value[DimensionKey.Longitude]
     this.editCurrentCoordinates('dms', lat, lon)
   }
 
@@ -254,7 +276,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
         this.latitude = null
         this.longitude = null
         this.mgrs = null
-        this.dmsForm.setValue({ dmsLat: '', dmsLon: '' }, { emitEvent: false })
+        this.dmsForm.setValue({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '' }, { emitEvent: false })
         delete this.feature.geometry.type
         this.featureEdit.cancel()
         break;
@@ -311,8 +333,8 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     }
     if (from !== 'dms') {
       this.dmsForm.setValue({
-        dmsLat: DMS.formatLatitude(this.latitude),
-        dmsLon: DMS.formatLongitude(this.longitude)
+        [DimensionKey.Latitude]: DMS.formatLatitude(this.latitude),
+        [DimensionKey.Longitude]: DMS.formatLongitude(this.longitude)
       }, { emitEvent: false })
     }
   }

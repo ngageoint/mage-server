@@ -54,9 +54,9 @@
           <mat-label>Latitude DMS</mat-label>
           <input type="text" placeholder="00° 00' 00&quot; N"
             matInput
-            formControlName="dmsLat"
+            formControlName="lat"
             [inputMask]="dmsLatMask"
-            (paste)="onDmsPaste($event, 'Latitude')"
+            (paste)="onDmsPaste($event, DMSDimensionKey.Latitude)"
             dmsValidation="latitude"
             >
           <mat-error>Invalid DMS latitude</mat-error>
@@ -67,9 +67,9 @@
           <mat-label>Longitude DMS</mat-label>
           <input type="text" placeholder="000° 00' 00&quot; E"
             matInput
-            formControlName="dmsLon"
+            formControlName="lon"
             [inputMask]="dmsLonMask"
-            (paste)="onDmsPaste($event, 'Longitude')"
+            (paste)="onDmsPaste($event, DMSDimensionKey.Longitude)"
             dmsValidation="longitude"
             >
           <mat-error>Invalid DMS longitude</mat-error>

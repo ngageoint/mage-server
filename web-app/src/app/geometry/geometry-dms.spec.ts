@@ -1,4 +1,4 @@
-import { DimensionKey, DMS, DMSCoordinate, DMSParseError, HemisphereLabel, parseCoordinates } from './geometry-dms';
+import { DimensionKey, DMS, DMSCoordinate, DMSParseError, generateParsedCoordinates, HemisphereLabel, parseCoordinates } from './geometry-dms';
 
 fdescribe('DMS', () => {
 
@@ -745,6 +745,48 @@ fdescribe('DMS', () => {
         const dashDelimited = baseInput.join(' - ')
         const allInput = `${spaceDelimited} - ${commaDelimited} ${dashDelimited}`
         const parsed = parseCoordinates(allInput)
+        expect(parsed).toEqual([ ...baseExpected, ...baseExpected, ...baseExpected ])
+      })
+    })
+
+    describe('generator api', () => {
+
+      it('iterates parts coordinates', () => {
+
+        const baseInput = [
+          `179°00'00"E`,
+          `32`,
+          `-102.8292`,
+          `10203N`,
+          `+37.75`,
+          `01059 N`,
+          `13°8'00" W`,
+          `S 123456`,
+          `W 135719`,
+          -102.0,
+        ]
+        const baseExpected = [
+          new DMSCoordinate(179, 0, 0, 'E'),
+          32,
+          -102.8292,
+          new DMSCoordinate(1, 2, 3, 'N'),
+          37.75,
+          new DMSCoordinate(0, 10, 59, 'N'),
+          new DMSCoordinate(13, 8, 0, 'W'),
+          new DMSCoordinate(12, 34, 56, 'S'),
+          new DMSCoordinate(13, 57, 19, 'W'),
+          -102,
+        ]
+        const spaceDelimited = baseInput.join(' ')
+        const commaDelimited = baseInput.join(',')
+        const dashDelimited = baseInput.join(' - ')
+        const allInput = `${spaceDelimited} - ${commaDelimited} ${dashDelimited}`
+        const parsed = []
+        const parsing = generateParsedCoordinates(allInput)
+        for (const coord of parsing) {
+          parsed.push(coord)
+        }
+
         expect(parsed).toEqual([ ...baseExpected, ...baseExpected, ...baseExpected ])
       })
     })
