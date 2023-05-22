@@ -207,7 +207,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     event.stopImmediatePropagation()
     const formValue = { ...this.dmsForm.value }
     if (coords.length === 1) {
-      const coord = typeof coords[0] === 'number' ? DMSCoordinate.fromDecimalDegrees(coords[0], DimensionKey[dimension]) : coords[0]
+      const coord = typeof coords[0] === 'number' ? DMSCoordinate.fromDecimalDegrees(coords[0], dimension) : coords[0]
       formValue[dimension] = coord.format()
       this.dmsForm.setValue(formValue, { emitEvent: true })
       return
