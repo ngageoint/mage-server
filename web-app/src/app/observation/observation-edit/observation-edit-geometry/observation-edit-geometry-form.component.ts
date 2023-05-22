@@ -196,10 +196,11 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     }
     if (parsing.value instanceof DMSParseError) {
       console.error('error parsing pasted coordinates', parsing.value)
-      // TODO: warning dialog
+      this.snackBar.open(`Invalid DMS coordinate string: ${parsing.value.message}`, null, { duration: 6000 })
       return
     }
     if (coords.length === 0) {
+      this.snackBar.open(`No DMS coordinates found in pasted text.`, null, { duration: 2000 })
       return
     }
     event.preventDefault()
