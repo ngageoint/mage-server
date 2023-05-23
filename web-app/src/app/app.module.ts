@@ -47,6 +47,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 
 import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
 import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
+import { InputMaskModule } from '@ngneat/input-mask'
 
 import { ZoomComponent } from './map/controls/zoom.component';
 import { AddObservationComponent } from './map/controls/add-observation.component';
@@ -333,7 +334,8 @@ import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-
     StaticIconModule,
     AdminBreadcrumbModule,
     MatSlideToggleModule,
-    MatStepperModule
+    MatStepperModule,
+    InputMaskModule.forRoot()
   ],
   providers: [
     mapServiceProvider,

@@ -3,7 +3,7 @@ import * as turfCenter from '@turf/center'
 import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
 import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
-import { DMS } from './geometry-dms'
+import * as DMS from './geometry-dms'
 
 @Pipe({
   name: 'geometry'
@@ -32,7 +32,7 @@ export class GeometryPipe implements PipeTransform {
 
   toDms(value: any): string {
     const coordinates = this.center(value).coordinates
-    return `${DMS.latitudeDMSString(coordinates[1])}, ${DMS.longitudeDMSString(coordinates[0])}`
+    return `${DMS.formatLatitude(coordinates[1])}, ${DMS.formatLongitude(coordinates[0])}`
   }
 
   toWgs84(value: any, format: number): string {

@@ -14,11 +14,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * [GARS](https://github.com/ngageoint/gars-js) grid overlay.
 * [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay.
 
-
 ##### Bug fixes
 * Fix single observation download.
-* Protect against disabling all authentications. 
+* Protect against disabling all authentications.
 * Fixing problem with oauth web login.
+
+## [6.2.4](https://github.com/ngageoint/mage-server/releases/tag/6.2.4)
+#### Features
+* The Degrees-Minutes-Seconds (DMS) location form fields on the Observation Edit view now use an input mask for more natural manual entry.
+#### Bug Fixes
+* The DMS location form allows typing leading zeros in akk the coordinate parts.
+* The DMS form parses both latitude and longitude from pasted text if available.
+* Eliminate inconsistencies between DMS parsing and validation.
 
 ## [6.2.3](https://github.com/ngageoint/mage-server/releases/tag/6.2.3)
 ##### Features
