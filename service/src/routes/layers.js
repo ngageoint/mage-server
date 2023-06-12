@@ -287,7 +287,7 @@ module.exports = function(app, security) {
       GeoPackageUtility.getInstance()
         .tile(req.layer, req.params.tableName, style, tileParams)
         .then(tile => {
-          if (!tile) return res.status(404);
+          if (!tile) return res.sendStatus(404);
           res.contentType('image/png');
           res.send(Buffer.from(tile.split(',')[1], 'base64'))
         })
