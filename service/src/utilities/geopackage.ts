@@ -200,9 +200,9 @@ export class GeoPackageUtility {
       };
     });
 
-    tables.concat(tileTables);
+
     connection.finished();
-    return tables;
+    return tables.concat(tileTables);
   }
 
   public async optimize(path:string, progress?: Function):Promise<boolean> {

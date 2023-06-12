@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ##### Features
 
+## [6.2.6](https://github.com/ngageoint/mage-server/releases/tag/6.2.6)
+#### Features
+#### Bug Fixes
+* Return 404 status reponse for empty geopackage tile generation.
+* Return feature and tile tables from geopackage utility getTables method.
+
 ## [6.2.5](https://github.com/ngageoint/mage-server/releases/tag/6.2.5)
 #### Features
 #### Bug Fixes
