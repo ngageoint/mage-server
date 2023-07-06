@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ##### Features
 
+## [6.2.7](https://github.com/ngageoint/mage-server/releases/tag/6.2.7)
+#### Features
+#### Bug Fixes
+* In Node 18, GeoPackage operations threw an error, `Error: Unable to initialize canvas`.
+The library was updated to version 4.2.4 to resolve the error.
+
 ## [6.2.6](https://github.com/ngageoint/mage-server/releases/tag/6.2.6)
 #### Features
 #### Bug Fixes
