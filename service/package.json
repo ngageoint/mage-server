@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.6",
+  "version": "6.2.8",
   "displayName": "MAGE Service",
   "description": "MAGE is a geospatial situational awareness and data collection platform.  The MAGE Service is the ReST service API that the MAGE client apps use to interact with MAGE data.",
   "keywords": [
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@mapbox/togeojson": "0.16.0",
-    "@ngageoint/geopackage": "^4.1.0",
+    "@ngageoint/geopackage": "^4.2.4",
     "@turf/centroid": "~6.0.0",
     "@turf/kinks": "~6.0.0",
     "@types/geojson": "^7946.0.7",
