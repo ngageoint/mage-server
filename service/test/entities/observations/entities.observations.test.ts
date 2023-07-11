@@ -710,6 +710,69 @@ describe('observation entities', function() {
         expect(invalid.hasErrors).to.be.false
       })
 
+      it('passes when a required numeric field value is zero', function() {
+
+        const form: Form = {
+          id: 0,
+          fields: [
+            {
+              id: 1,
+              name: FormFieldType.Numeric,
+              required: true,
+              title: 'Field 8',
+              type: FormFieldType.Numeric,
+              min: 0,
+              max: 100,
+            },
+          ],
+          archived: false,
+          color: 'green',
+          name: 'form0',
+          userFields: [],
+        }
+        mageEventAttrs = {
+          ...mageEventAttrs,
+          forms: [ form ]
+        }
+        const invalidFormEntryUndef: FormEntry = {
+          id: 'entry0',
+          formId: form.id,
+        }
+        const invalidFormEntryNull: FormEntry = {
+          ...invalidFormEntryUndef,
+          [FormFieldType.Numeric]: null
+        }
+        const validFormEntry: FormEntry = {
+          id: invalidFormEntryUndef.id,
+          formId: form.id,
+          [FormFieldType.Numeric]: 0,
+        }
+        const observationAttrs = makeObservationAttrs(mageEventAttrs.id)
+        const mageEvent = new MageEvent(mageEventAttrs)
+        observationAttrs.properties.forms = [ invalidFormEntryUndef ]
+        let invalid = validateObservation(observationAttrs, mageEvent)
+
+        expect(invalid.formEntryErrors.length).to.equal(1)
+        let formEntryError = new Map(invalid.formEntryErrors).get(0)
+        expect(formEntryError).to.exist
+        expect(formEntryError?.fieldErrors.size).to.equal(1)
+        expect(formEntryError?.fieldErrors).to.have.keys(FormFieldType.Numeric)
+
+        observationAttrs.properties.forms = [ invalidFormEntryNull ]
+        invalid = validateObservation(observationAttrs, mageEvent)
+
+        expect(invalid.formEntryErrors.length).to.equal(1)
+        formEntryError = new Map(invalid.formEntryErrors).get(0)
+        expect(formEntryError).to.exist
+        expect(formEntryError?.fieldErrors.size).to.equal(1)
+        expect(formEntryError?.fieldErrors).to.have.keys(FormFieldType.Numeric)
+
+        observationAttrs.properties.forms = [ validFormEntry ]
+        invalid = validateObservation(observationAttrs, mageEvent)
+
+        expect(invalid.hasErrors).to.be.false
+      })
+
       describe('attachment validation', function() {
 
         let field: FormField
