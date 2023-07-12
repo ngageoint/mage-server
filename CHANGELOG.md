@@ -46,7 +46,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 #### Features
 * The Degrees-Minutes-Seconds (DMS) location form fields on the Observation Edit view now use an input mask for more natural manual entry.
 #### Bug Fixes
-* The DMS location form allows typing leading zeros in akk the coordinate parts.
+* The DMS location form allows typing leading zeros in all the coordinate parts.
 * The DMS form parses both latitude and longitude from pasted text if available.
 * Eliminate inconsistencies between DMS parsing and validation.
 
