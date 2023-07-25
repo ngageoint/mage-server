@@ -25,7 +25,7 @@ const ErrorSchema = new Schema({
 });
 
 const ExportSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   relativePath: { type: String },
   filename: { type: String },
   exportType: { type: String, required: true },
@@ -46,18 +46,20 @@ const ExportSchema = new Schema({
   }
 });
 
-ExportSchema.index({ 'expirationDate': 1 }, { expireAfterSeconds: 0 });
+ExportSchema.index({ 'expirationDate':  1}, { expireAfterSeconds: 0 });
 
 function transform(exportDocument, ret, options) {
-  ret.id = ret._id;
-  delete ret._id;
+  if ('function' !== typeof exportDocument.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
 
-  const path = options.path ? options.path : "";
-  ret.url = [path, ret.id].join("/");
+    const path = options.path ? options.path : "";
+    ret.url = [path, ret.id].join("/");
 
-  if (exportDocument.populated('options.eventId')) {
-    ret.options.event = ret.options.eventId;
-    delete ret.options.eventId;
+    if (exportDocument.populated('options.eventId')) {
+      ret.options.event = ret.options.eventId;
+      delete ret.options.eventId;
+    }
   }
 }
 
@@ -94,7 +96,7 @@ exports.getExportById = function (id, options = {}) {
 };
 
 exports.getExportsByUserId = function (userId, options = {}) {
-  let query = Export.find({ userId: userId });
+  let query = Export.find({userId: userId});
   if (options.populate) {
     query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
   }
@@ -105,7 +107,7 @@ exports.getExportsByUserId = function (userId, options = {}) {
 exports.getExports = function (options = {}) {
   let query = Export.find({});
   if (options.populate) {
-    query = query.populate('userId').populate({ path: 'options.eventId', select: 'name' });
+    query = query.populate('userId').populate({ path: 'options.eventId', select: 'name'});
   }
 
   return query.exec();
@@ -121,7 +123,7 @@ exports.count = function (options) {
 };
 
 exports.updateExport = function (id, exp) {
-  return Export.findByIdAndUpdate(id, exp, { new: true }).exec();
+  return Export.findByIdAndUpdate(id, exp, {new: true}).exec();
 
 };
 

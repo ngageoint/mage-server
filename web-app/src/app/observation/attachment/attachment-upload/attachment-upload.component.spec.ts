@@ -1,5 +1,5 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AttachUploadComponent } from './attachment-upload.component';
 
@@ -7,7 +7,7 @@ describe('AttachUploadComponent', () => {
   let component: AttachUploadComponent;
   let fixture: ComponentFixture<AttachUploadComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       declarations: [AttachUploadComponent]

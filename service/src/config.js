@@ -5,7 +5,6 @@ const version = packageJson.version.split(".");
 module.exports = {
   api: {
     name: packageJson.name,
-    nodeVersion: process.versions.node,
     description: packageJson.description,
     version: {
       major: parseInt(version[0]),

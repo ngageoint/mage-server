@@ -1428,7 +1428,6 @@ describe('observation entities', function() {
 
         const beforeLastModified = Date.now() - 1000 * 60 * 60
         const beforeAttrs = makeObservationAttrs(mageEvent)
-        beforeAttrs.lastModified = new Date(beforeLastModified)
         beforeAttrs.properties.forms = [
           {
             id: 'attachments',

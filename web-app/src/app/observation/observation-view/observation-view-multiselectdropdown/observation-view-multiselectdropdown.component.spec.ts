@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ObservationViewMultiselectdropdownComponent } from './observation-view-multiselectdropdown.component';
 
@@ -6,7 +6,7 @@ describe('ObservationViewMultiselectdropdownComponent', () => {
   let component: ObservationViewMultiselectdropdownComponent;
   let fixture: ComponentFixture<ObservationViewMultiselectdropdownComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationViewMultiselectdropdownComponent ]
     })

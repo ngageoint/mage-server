@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MomentModule } from 'src/app/moment/moment.module';
@@ -9,7 +9,7 @@ describe('FeedItemMapPopupComponent', () => {
   let component: FeedItemMapPopupComponent;
   let fixture: ComponentFixture<FeedItemMapPopupComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         MatIconModule,

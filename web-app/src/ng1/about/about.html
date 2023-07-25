@@ -1,5 +1,5 @@
 <div class="content-flex about-content">
-  <h2>About MAGE Server {{$ctrl.serverVersion.major}}.{{$ctrl.serverVersion.minor}}.{{$ctrl.serverVersion.micro}}</h2>
+  <h2>About {{$ctrl.name}} {{$ctrl.serverVersion.major}}.{{$ctrl.serverVersion.minor}}.{{$ctrl.serverVersion.micro}}</h2>
   <p>
       MAGE is a dynamic, secure, mobile situational awareness and field data collection platform that supports
       low-bandwidth and disconnected users. MAGE can integrate with existing command centers and common operating
@@ -26,10 +26,7 @@
   <h2 class="top-gap-l">API</h2>
   <p>Browse and try the MAGE API live with <a ui-sref="swagger">Swagger UI.</a></p>
   <p><strong>Important:</strong> Swagger interactive documentation will modify MAGE data via API calls; please be careful with <strong>POST/PUT/DELETE</strong> operations.</p>
-  <h2 class="top-gap-l">System</h2>
-  <ul>
-    <li>Node Version: {{$ctrl.nodeVersion}}</li>
-  </ul>
+
   <h2 class="top-gap-l">Acknowledgements</h2>
   <div class="row bottom-gap-l">
     <div class="col-md-6">
@@ -39,7 +36,7 @@
     </div>
     <div class="col-md-6">
       <h4>Iconography</h4>
-      <p>The icons used throughout the app come from <a href="https://github.com/FortAwesome/Font-Awesome" target="_blank">Font Awesome</a></p>
+      <p>The icons used throughout the app come from <a href="http://fortawesome.github.io/Font-Awesome/" target="_blank">Font Awesome</a></p>
     </div>
   </div>
 </div>

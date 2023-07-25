@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 
 interface TextareaField {
   title: string,
@@ -13,6 +13,6 @@ interface TextareaField {
   styleUrls: ['./observation-edit-textarea.component.scss']
 })
 export class ObservationEditTextareaComponent {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: TextareaField
 }

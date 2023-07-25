@@ -127,7 +127,7 @@ export class GeoPackageUtility {
 
   private constructor() {
     const pathToGeoPackageModule = path.resolve(path.dirname(require.resolve('@ngageoint/geopackage/package.json')))
-    setCanvasKitWasmLocateFile((file: any) => `${pathToGeoPackageModule}/dist/canvaskit/${file}`);
+    setCanvasKitWasmLocateFile(file => `${pathToGeoPackageModule}/dist/canvaskit/${file}`);
   }
 
   public static getInstance() : GeoPackageUtility {
@@ -291,7 +291,7 @@ export class GeoPackageUtility {
   //   return GeoPackageAPI.getVectorTileProtobuf(geopackage, table.name, x, y, z);
   // }
 
-  public async getClosestFeatures(layers: any[], lat: number, lng: number, {x, y, z}: {x: number, y: number, z: number}): Promise<Feature[]> {
+  public async getClosestFeatures(layers: any[], lat: number, lng: number, {x, y, z}: {x: number, y: number, z: number}) {
     const closestFeatures = [];
 
     for (let i = 0; i < layers.length; i++) {

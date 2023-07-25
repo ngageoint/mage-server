@@ -102,10 +102,9 @@ describe('event permissions service', function() {
         id: 'team2',
         userIds: [ 'user3', 'user4', 'user5' ]
       } as Team
-      //TODO remove cast to any, was MageEventDocument
       const eventDoc = new MageEventModel({
         _id: 2,
-      }) as any
+      }) as MageEventDocument
       const eventAttrs: MageEventAttrs = { id: 2 } as MageEventAttrs
       eventRepo.findTeamsInEvent(Arg.is((x: any) => Number(x.id) === 2)).resolves([ team1, team2 ])
       const eventDocParticipation = await eventPermissions.userIsParticipantInEvent(eventDoc, 'user4')
@@ -125,10 +124,9 @@ describe('event permissions service', function() {
         id: 'team2',
         userIds: [ 'user3', 'user4', 'user5' ]
       } as Team
-      //TODO remove cast to any, was MageEventDocument
       const eventDoc = new MageEventModel({
         _id: 2,
-      }) as any
+      }) as MageEventDocument
       const eventAttrs: MageEventAttrs = { id: 2 } as MageEventAttrs
       eventRepo.findTeamsInEvent(Arg.is((x: any) => Number(x.id) === 2)).resolves([ team1, team2 ])
       const eventDocParticipation = await eventPermissions.userIsParticipantInEvent(eventDoc, 'user6')

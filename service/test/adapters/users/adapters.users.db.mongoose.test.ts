@@ -15,8 +15,7 @@ describe('users mongoose repository', function() {
   let repo: MongooseUserRepository
 
   before(async function() {
-    //TODO remove cast to and, was mongoose.Model<UserDocument>
-    model = legacy.Model as any
+    model = legacy.Model as mongoose.Model<UserDocument>
     repo = new MongooseUserRepository(model)
   })
 
@@ -29,15 +28,15 @@ describe('users mongoose repository', function() {
     it('transforms object ids to strings', async function() {
 
       const stub: Partial<User> = {
-        id: (new mongoose.Types.ObjectId()).toHexString(),
+        id: mongoose.Types.ObjectId().toHexString(),
         username: 'doc2entity',
         displayName: 'Doc 2 Entity',
-        roleId: (new mongoose.Types.ObjectId()).toHexString(),
-        authenticationId: (new mongoose.Types.ObjectId()).toHexString(),
+        roleId: mongoose.Types.ObjectId().toHexString(),
+        authenticationId: mongoose.Types.ObjectId().toHexString(),
         active: true,
         enabled: true,
       }
-      const doc = await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
+      const doc = await model.create({ ...stub, _id: mongoose.Types.ObjectId(stub.id) })
       const entity = repo.entityForDocument(doc)
 
       expect(entity).to.deep.include(stub)
@@ -46,15 +45,15 @@ describe('users mongoose repository', function() {
     it('retains js dates', async function() {
 
       const stub: Partial<User> = {
-        id: (new mongoose.Types.ObjectId()).toHexString(),
+        id: mongoose.Types.ObjectId().toHexString(),
         username: 'doc2entity',
         displayName: 'Doc 2 Entity',
-        roleId: (new mongoose.Types.ObjectId()).toHexString(),
-        authenticationId: (new mongoose.Types.ObjectId()).toHexString(),
+        roleId: mongoose.Types.ObjectId().toHexString(),
+        authenticationId: mongoose.Types.ObjectId().toHexString(),
         active: true,
         enabled: true,
       }
-      const doc = await model.create({ ...stub, _id: new mongoose.Types.ObjectId(stub.id) })
+      const doc = await model.create({ ...stub, _id: mongoose.Types.ObjectId(stub.id) })
       const entity = repo.entityForDocument(doc)
 
       expect(entity.createdAt).to.be.instanceOf(Date)
@@ -64,8 +63,8 @@ describe('users mongoose repository', function() {
 
   describe('finding users', function() {
 
-    const authenticationId = (new mongoose.Types.ObjectId()).toHexString()
-    const roleId = (new mongoose.Types.ObjectId()).toHexString()
+    const authenticationId = mongoose.Types.ObjectId().toHexString()
+    const roleId = mongoose.Types.ObjectId().toHexString()
     let allUsers: User[]
 
     before(async function() {
@@ -84,7 +83,7 @@ describe('users mongoose repository', function() {
         }
       })
       const docs = await model.insertMany(users.slice())
-      allUsers = docs.map(repo.entityForDocument as any).sort((a: any, b: any) => a.displayName.localeCompare(b.displayName)) as User[]
+      allUsers = docs.map(repo.entityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
     })
 
     after(async function() {
@@ -139,7 +138,7 @@ describe('users mongoose repository', function() {
     it('sorts on display name ascending consistently', async function() {
 
       const mockModel: SubstituteOf<mongoose.Model<UserDocument>> = Sub.for<mongoose.Model<UserDocument>>()
-      const mockQuery = Sub.for<mongoose.Query<UserDocument[], UserDocument>>()
+      const mockQuery = Sub.for<mongoose.DocumentQuery<UserDocument[], UserDocument>>()
       mockModel.find(Arg.all()).returns(mockQuery)
       mockQuery.sort(Arg.all()).returns(mockQuery)
       mockQuery.toConstructor().returns(function() { return mockQuery } as any)
@@ -169,7 +168,7 @@ describe('users mongoose repository', function() {
 
       const userStubs: Partial<User>[] = [
         {
-          id: (new mongoose.Types.ObjectId()).toHexString(),
+          id: mongoose.Types.ObjectId().toHexString(),
           username: 'bim',
           displayName: 'Bam Blor',
           email: 'tip@top.nop',
@@ -183,7 +182,7 @@ describe('users mongoose repository', function() {
           roleId,
         },
         {
-          id: (new mongoose.Types.ObjectId()).toHexString(),
+          id: mongoose.Types.ObjectId().toHexString(),
           username: 'flim',
           displayName: 'Flam Flor',
           email: 'dorp@top.nop',
@@ -200,7 +199,7 @@ describe('users mongoose repository', function() {
 
       beforeEach(async function() {
 
-        const docs = await model.create(userStubs.map(x => ({ ...x, _id: new mongoose.Types.ObjectId(x.id) })))
+        const docs = await model.create(userStubs.map(x => ({ ...x, _id: mongoose.Types.ObjectId(x.id) })))
         users = docs.map(repo.entityForDocument).sort((a, b) => a.displayName.localeCompare(b.displayName))
 
         userStubs.forEach((stub, pos) => {

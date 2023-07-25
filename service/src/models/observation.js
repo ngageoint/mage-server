@@ -24,45 +24,45 @@ const ThumbnailSchema = new Schema({
   size: { type: Number, required: false },
   name: { type: String, required: false },
   width: { type: Number, required: false },
-  height: { type: Number, required: false },
+  height: { type: Number, required: false},
   relativePath: { type: String, required: false },
-}, {
+},{
   strict: false
 });
 
 const AttachmentSchema = new Schema({
   observationFormId: { type: Schema.Types.ObjectId, required: true },
   fieldName: { type: String, required: true },
-  lastModified: { type: Date, required: false },
+  lastModified: {type: Date, required: false},
   contentType: { type: String, required: false },
   size: { type: Number, required: false },
   name: { type: String, required: false },
   relativePath: { type: String, required: false },
   width: { type: Number, required: false },
   height: { type: Number, required: false },
-  oriented: { type: Boolean, required: true, default: false },
+  oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
-}, {
+},{
   strict: false
 });
 
 // Creates the Schema for the Attachments object
 const ObservationSchema = new Schema({
-  type: { type: String, enum: ['Feature'], required: true },
-  lastModified: { type: Date, required: false },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true },
-  deviceId: { type: Schema.Types.ObjectId, required: false, sparse: true },
+  type: { type: String, enum: ['Feature'], required: true},
+  lastModified: {type: Date, required: false},
+  userId: {type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true},
+  deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
   states: [StateSchema],
   important: {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
-    timestamp: { type: Date, required: false },
-    description: { type: String, required: false }
+    userId: {type: Schema.Types.ObjectId, ref: 'User', required: false},
+    timestamp: {type: Date, required: false},
+    description: {type: String, required: false}
   },
-  favoriteUserIds: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-}, {
+  favoriteUserIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
+},{
   strict: false,
   timestamps: {
     createdAt: 'createdAt',
@@ -108,48 +108,50 @@ function transformState(state, observation) {
 }
 
 function transform(observation, ret, options) {
-  ret.id = ret._id;
-  delete ret._id;
-  delete ret.__v;
+  if ('function' !== typeof observation.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
 
-  if (options.event) {
-    ret.eventId = options.event._id;
-  }
+    if (options.event) {
+      ret.eventId = options.event._id;
+    }
 
-  const path = options.path ? options.path : "";
-  ret.url = [path, observation.id].join("/");
+    const path = options.path ? options.path : "";
+    ret.url = [path, observation.id].join("/");
 
-  if (observation.states && observation.states.length) {
-    ret.state = transformState(ret.states[0], ret);
-    delete ret.states;
-  }
+    if (observation.states && observation.states.length) {
+      ret.state = transformState(ret.states[0], ret);
+      delete ret.states;
+    }
 
-  if (observation.properties && observation.properties.forms) {
-    ret.properties.forms = ret.properties.forms.map(observationForm => {
-      observationForm.id = observationForm._id;
-      delete observationForm._id;
-      return observationForm;
-    });
-  }
+    if (observation.properties && observation.properties.forms) {
+      ret.properties.forms = ret.properties.forms.map(observationForm => {
+        observationForm.id = observationForm._id;
+        delete observationForm._id;
+        return observationForm;
+      });
+    }
 
-  if (observation.attachments) {
-    ret.attachments = ret.attachments.map(function (attachment) {
-      return transformAttachment(attachment, ret);
-    });
-  }
+    if (observation.attachments) {
+      ret.attachments = ret.attachments.map(function (attachment) {
+        return transformAttachment(attachment, ret);
+      });
+    }
 
-  const populatedUserId = observation.populated('userId');
-  if (populatedUserId) {
-    ret.user = ret.userId;
-    // TODO Update mobile clients to handle observation.userId or observation.user.id
-    // Leave userId as mobile clients depend on it for observation create/update,
-    ret.userId = populatedUserId;
-  }
+    const populatedUserId = observation.populated('userId');
+    if (populatedUserId) {
+      ret.user = ret.userId;
+      // TODO Update mobile clients to handle observation.userId or observation.user.id
+      // Leave userId as mobile clients depend on it for observation create/update,
+      ret.userId =  populatedUserId;
+    }
 
-  const populatedImportantUserId = observation.populated('important.userId')
-  if (populatedImportantUserId && ret.important) {
-    ret.important.user = ret.important.userId
-    delete ret.important.userId;
+    const populatedImportantUserId = observation.populated('important.userId')
+    if (populatedImportantUserId && ret.important) {
+      ret.important.user = ret.important.userId
+      delete ret.important.userId;
+    }
   }
 }
 
@@ -192,12 +194,12 @@ function parseFields(fields) {
     if (fields.type === undefined) fields.type = true; // default is to return type if not specified
 
     if (state) {
-      fields.states = { $slice: 1 };
+      fields.states = {$slice: 1};
     }
 
     return fields;
   } else {
-    return { states: { $slice: 1 } };
+    return { states: {$slice: 1}};
   }
 }
 
@@ -216,7 +218,7 @@ function observationModel(event) {
 
 exports.observationModel = observationModel;
 
-exports.getObservations = function (event, o, callback) {
+exports.getObservations = function(event, o, callback) {
   const conditions = {};
 
   const filter = o.filter || {};
@@ -260,7 +262,7 @@ exports.getObservations = function (event, o, callback) {
   }
 
   if (filter.important) {
-    conditions['important'] = { $exists: true };
+    conditions['important'] = {$exists: true};
   }
 
   const options = {};
@@ -270,63 +272,62 @@ exports.getObservations = function (event, o, callback) {
 
   const fields = parseFields(o.fields);
   if (filter.attachments === true) {
-    fields.attachments = { $slice: 0 };
+    fields.attachments = {$slice: 0};
   }
 
   let query = observationModel(event).find(conditions, fields, options);
 
-  if (o.lean) {
-    query = query.lean();
+  if(o.lean) {
+     query = query.lean();
   }
 
   if (o.populate) {
     query = query
       .populate({
         path: 'userId',
-        select: 'displayName'
-      })
+        select: 'displayName' })
       .populate({
         path: 'important.userId',
         select: 'displayName'
       });
   }
 
-  if (o.stream) {
+  if(o.stream) {
     return query.cursor();
   } else {
     query.exec(callback);
   }
 };
 
-exports.createObservationId = function (callback) {
+exports.createObservationId = function(callback) {
   ObservationId.create({}, callback);
 };
 
-exports.getObservationId = function (id, callback) {
-  ObservationId.findById(id, function (err, doc) {
+exports.getObservationId = function(id, callback) {
+  ObservationId.findById(id, function(err, doc) {
     callback(err, doc ? doc._id : null);
   });
 };
 
-exports.getLatestObservation = function (event, callback) {
-  observationModel(event).findOne({}, { lastModified: true }, { sort: { "lastModified": -1 }, limit: 1 }, callback);
+exports.getLatestObservation = function(event, callback) {
+  observationModel(event).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, callback);
 };
 
-exports.getObservationById = function (event, observationId, options, callback) {
+exports.getObservationById = function(event, observationId, options, callback) {
   const fields = parseFields(options.fields);
 
   observationModel(event).findById(observationId, fields, callback);
 };
 
-exports.updateObservation = function (event, observationId, update, callback) {
+exports.updateObservation = function(event, observationId, update, callback) {
   let addAttachments = [];
   let removeAttachments = [];
-  const { forms = [] } = update.properties || {};
+  const {forms = []} = update.properties || {};
   forms.map(observationForm => {
-    observationForm._id = observationForm._id || new mongoose.Types.ObjectId();
-    delete observationForm.id;
-    return observationForm;
-  })
+      observationForm._id = observationForm._id || mongoose.Types.ObjectId();
+      delete observationForm.id;
+      return observationForm;
+    })
     .forEach(formEntry => {
       // TODO: move to app or web layer
       const formDefinition = event.forms.find(form => form._id === formEntry.formId);
@@ -347,13 +348,13 @@ exports.updateObservation = function (event, observationId, update, callback) {
 
           removeAttachments = removeAttachments.concat(attachments
             .filter(attachment => attachment.action === 'delete')
-            .map(attachment => attachment.id)
+            .map(attachment => attachment.id )
           );
 
           delete formEntry[fieldName]
         }
       });
-    });
+  });
 
   const ObservationModel = observationModel(event);
   ObservationModel.findById(observationId)
@@ -379,7 +380,9 @@ exports.updateObservation = function (event, observationId, update, callback) {
     })
     .then(observation => {
       return observation
-        .populate([{ path: 'userId', select: 'displayName' }, { path: 'important.userId', select: 'displayName' }]);
+        .populate({ path: 'userId', select: 'displayName' })
+        .populate({ path: 'important.userId', select: 'displayName' })
+        .execPopulate();
     })
     .then(observation => {
       callback(null, observation);
@@ -387,49 +390,49 @@ exports.updateObservation = function (event, observationId, update, callback) {
     .catch(err => callback(err));
 };
 
-exports.removeObservation = function (event, observationId, callback) {
+exports.removeObservation = function(event, observationId, callback) {
   observationModel(event).findByIdAndRemove(observationId, callback);
 };
 
-exports.removeUser = function (user, callback) {
+exports.removeUser = function(user, callback) {
   const condition = { userId: user._id };
   const update = { '$unset': { userId: true } };
   const options = { multi: true };
 
-  Event.getEvents({}, function (err, events) {
-    async.each(events, function (event, done) {
-      observationModel(event).update(condition, update, options, function (err, numberAffected) {
+  Event.getEvents({}, function(err, events) {
+    async.each(events, function(event, done) {
+      observationModel(event).update(condition, update, options, function(err, numberAffected) {
         log.info('Remove deleted user from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },
-      function (err) {
-        callback(err);
-      });
+    function(err){
+      callback(err);
+    });
   });
 };
 
-exports.removeDevice = function (device, callback) {
+exports.removeDevice = function(device, callback) {
   const condition = { deviceId: device._id };
   const update = { '$unset': { deviceId: true } };
   const options = { multi: true };
 
-  Event.getEvents(function (err, events) {
-    async.each(events, function (event, done) {
-      observationModel(event).update(condition, update, options, function (err, numberAffected) {
+  Event.getEvents(function(err, events) {
+    async.each(events, function(event, done) {
+      observationModel(event).update(condition, update, options, function(err, numberAffected) {
         log.info('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },
-      function (err) {
-        callback(err);
-      });
+    function(err){
+      callback(err);
+    });
   });
 };
 
-exports.addState = function (event, id, state, callback) {
-  const condition = { _id: new mongoose.Types.ObjectId(id), 'states.0.name': { '$ne': state.name } };
-  state._id = new mongoose.Types.ObjectId();
+exports.addState = function(event, id, state, callback) {
+  const condition = { _id: mongoose.Types.ObjectId(id), 'states.0.name': { '$ne': state.name } };
+  state._id = mongoose.Types.ObjectId();
   const update = {
     '$push': {
       states: {
@@ -439,19 +442,19 @@ exports.addState = function (event, id, state, callback) {
     }
   };
 
-  observationModel(event).update(condition, update, { upsert: false }, function (err) {
+  observationModel(event).update(condition, update, {upsert: false}, function(err) {
     callback(err, state);
   });
 };
 
-exports.addFavorite = function (event, observationId, user, callback) {
+exports.addFavorite = function(event, observationId, user, callback) {
   const update = {
     $addToSet: {
       favoriteUserIds: user._id
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(observationId, update, {new: true}, callback);
 };
 
 exports.removeFavorite = function (event, observationId, user, callback) {
@@ -461,11 +464,11 @@ exports.removeFavorite = function (event, observationId, user, callback) {
     }
   };
 
-  observationModel(event).findByIdAndUpdate(observationId, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(observationId, update, {new: true}, callback);
 };
 
-exports.addImportant = function (event, observationId, important, callback) {
-  const update = { important };
+exports.addImportant = function(event, observationId, important, callback) {
+  const update = { important};
 
   observationModel(event)
     .findByIdAndUpdate(observationId, update, { new: true })
@@ -474,17 +477,17 @@ exports.addImportant = function (event, observationId, important, callback) {
     .exec(callback);
 }
 
-exports.removeImportant = function (event, id, callback) {
+exports.removeImportant = function(event, id, callback) {
   const update = {
     '$unset': {
       important: 1
     }
   };
 
-  observationModel(event).findByIdAndUpdate(id, update, { new: true }, callback);
+  observationModel(event).findByIdAndUpdate(id, update, {new: true}, callback);
 };
 
-exports.getAttachment = function (event, observationId, attachmentId, callback) {
+exports.getAttachment = function(event, observationId, attachmentId, callback) {
   const condition = {
     _id: observationId,
     'attachments._id': attachmentId,
@@ -500,7 +503,7 @@ exports.getAttachment = function (event, observationId, attachmentId, callback) 
  * TODO: [OBS-NEXT] this can potentially be deleted if removing the api/attachment module,
  * which is the only reference to this function
  */
-exports.addAttachment = function (event, observationId, attachmentId, file, callback) {
+exports.addAttachment = function(event, observationId, attachmentId, file, callback) {
   const condition = {
     _id: observationId,
     attachments: {
@@ -517,7 +520,7 @@ exports.addAttachment = function (event, observationId, attachmentId, file, call
     'attachments.$.relativePath': file.relativePath
   }
 
-  observationModel(event).findOneAndUpdate(condition, update, { new: true }, function (err, observation) {
+  observationModel(event).findOneAndUpdate(condition, update, {new: true}, function(err, observation) {
     if (err || !observation) return callback(err);
 
     const attachment = observation.attachments.find(attachment => attachment._id.toString() === attachmentId);
@@ -525,13 +528,13 @@ exports.addAttachment = function (event, observationId, attachmentId, file, call
   });
 };
 
-exports.removeAttachment = function (event, observationId, attachmentId, callback) {
+exports.removeAttachment = function(event, observationId, attachmentId, callback) {
   const update = { $pull: { attachments: { _id: attachmentId } } };
   observationModel(event).findByIdAndUpdate(observationId, update, callback);
 };
 
-exports.addAttachmentThumbnail = function (event, observationId, attachmentId, thumbnail, callback) {
-  const condition = { _id: observationId, 'attachments._id': attachmentId };
-  const update = { '$push': { 'attachments.$.thumbnails': thumbnail } };
+exports.addAttachmentThumbnail = function(event, observationId, attachmentId, thumbnail, callback) {
+  const condition = {_id: observationId, 'attachments._id': attachmentId};
+  const update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
   observationModel(event).update(condition, update, callback);
 };

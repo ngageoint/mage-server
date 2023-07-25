@@ -32,15 +32,21 @@ async function link(authenticationCollection, authenticationConfigurationsCollec
     });
 }
 
-exports.up = async function (done) {
+exports.up = function (done) {
     log.info('Linking authentications to their authentication configuration');
 
-    const authenticationCollection = await this.db.collection('authentications');
-    const authenticationConfigurationsCollection = await this.db.collection('authenticationconfigurations')
-    link(authenticationCollection, authenticationConfigurationsCollection).then(() => {
-        done();
-    }).catch(err => {
-        done(err);
+    this.db.collection('authentications', { strict: true }, (err, authenticationCollection) => {
+        if (err) return done(err);
+
+        this.db.collection('authenticationconfigurations', { strict: true }, (err, authenticationConfigurationsCollection) => {
+            if (err) return done(err);
+
+            link(authenticationCollection, authenticationConfigurationsCollection).then(() => {
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        });
     });
 };
 

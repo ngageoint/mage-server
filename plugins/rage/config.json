@@ -9,7 +9,6 @@
 	"interval": 60,
   "mongodb": {
 	  "url": "mongodb://localhost/magedb",
-	  "minPoolSize": 1,
-	  "maxPoolSize": 1
+	  "poolSize": 1
 	}
 }

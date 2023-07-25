@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ObservationListComponent } from './observation-list.component';
 
-/* TODO test MUST contain at least 1 test
 describe('ObservationListComponent', () => {
   let component: ObservationListComponent;
   let fixture: ComponentFixture<ObservationListComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationListComponent ]
     })
@@ -24,4 +23,3 @@ describe('ObservationListComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

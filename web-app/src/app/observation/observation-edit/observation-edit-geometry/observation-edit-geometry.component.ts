@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
-import { UntypedFormGroup } from '@angular/forms'
+import { FormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
 
@@ -9,7 +9,7 @@ import { LocalStorageService } from 'src/app/upgrade/ajs-upgraded-providers'
   styleUrls: ['./observation-edit-geometry.component.scss']
 })
 export class ObservationEditGeometryComponent implements OnChanges {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: any
 
   @Input() featureId: string

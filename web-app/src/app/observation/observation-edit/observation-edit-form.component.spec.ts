@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { UntypedFormGroup } from '@angular/forms';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormGroup } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ObservationEditFormComponent } from './observation-edit-form.component';
@@ -11,7 +11,7 @@ import { ObservationEditFormComponent } from './observation-edit-form.component'
 })
 class TestHostComponent {
 
-  formGroup = new UntypedFormGroup({})
+  formGroup = new FormGroup({})
   definition = {
     name: 'TestForm',
     fields: []
@@ -29,7 +29,7 @@ describe('ObservationEditFormComponent', () => {
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
       declarations: [ ObservationEditFormComponent, TestHostComponent ]

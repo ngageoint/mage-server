@@ -1,7 +1,7 @@
-'use strict';
+const { expect } = require('chai');
+const ExporterFactory = require('../../lib/export/exporterFactory');
 
-const { expect } = require('chai')
-    , ExporterFactory = require('../../lib/export/exporterFactory');
+require('chai').should();
 
 describe("exporter factory", function () {
 

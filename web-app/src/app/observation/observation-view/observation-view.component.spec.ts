@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { ObservationViewComponent } from './observation-view.component';
 
-/* TODO test MUST contain at least 1 test
 describe('ObservationViewComponent', () => {
   let component: ObservationViewComponent;
   let fixture: ComponentFixture<ObservationViewComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
       declarations: [ObservationViewComponent]
@@ -26,4 +25,3 @@ describe('ObservationViewComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

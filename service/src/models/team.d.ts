@@ -16,7 +16,7 @@ export function count(options: any, callback: any): void;
 export function getTeams(options: any, callback: any): void;
 export function createTeam(team: any, user: any, callback: any): void;
 export function createTeamForEvent(event: any, user: any, callback: any): void;
-export function getTeamForEvent(event: any): mongoose.Query<mongoose.Document | null, mongoose.Document>;
+export function getTeamForEvent(event: any): mongoose.DocumentQuery<mongoose.Document | null, mongoose.Document>;
 export function updateTeam(id: any, update: any, callback: any): void;
 export function deleteTeam(team: any, callback: any): void;
 export function addUser(team: any, user: any, callback: any): void;

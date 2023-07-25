@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatSelectModule } from '@angular/material/select'
@@ -35,7 +35,7 @@ describe('ChooseServiceTopicComponent', () => {
   let serviceSelected: jasmine.Spy
   let topicSelected: jasmine.Spy
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,

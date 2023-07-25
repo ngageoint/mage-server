@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, getTestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, getTestBed, tick, fakeAsync } from '@angular/core/testing';
 
 import { SearchComponent, SearchState } from './search.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +19,7 @@ describe('SearchComponent', () => {
   let injector: TestBed;
   let service: NominatimService;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, MatIconModule, MatButtonModule, HttpClientTestingModule, MatInputModule, MatProgressSpinnerModule, MatListModule, MatCardModule],
       declarations: [ SearchComponent ],

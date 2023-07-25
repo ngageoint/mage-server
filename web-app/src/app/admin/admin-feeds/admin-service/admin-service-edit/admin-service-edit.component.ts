@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { Service, ServiceType, FeedService } from '@ngageoint/mage.web-core-lib/feed';
 
@@ -22,7 +22,7 @@ export class AdminServiceEditComponent implements OnInit, OnChanges {
   selectedServiceType: ServiceType;
   serviceFormReady = false;
   formOptions: any;
-  searchControl: UntypedFormControl = new UntypedFormControl();
+  searchControl: FormControl = new FormControl();
   serviceTypes: Array<ServiceType>;
   services: Array<Service>;
 

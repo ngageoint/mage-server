@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapClipComponent } from './clip.component';
 
-/* TODO test MUST include at least 1 test
 describe('MapClipComponent', () => {
   let component: MapClipComponent;
   let fixture: ComponentFixture<MapClipComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [MapClipComponent]
     })
@@ -24,4 +23,3 @@ describe('MapClipComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

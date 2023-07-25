@@ -4,24 +4,26 @@ const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , { expect } = require('chai')
-  , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
-  , Authentication = require('../../lib/models/authentication')
-  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
-  , { EventAccessType } = require('../../lib/entities/events/entities.events');
+  , MockToken = require('../mockToken')
+  , mongoose = require('mongoose');
 
-const TokenOperations = require('../../lib/models/token');
+require('../../lib/models/token');
 const TokenModel = mongoose.model('Token');
 
-const UserOperations = require('../../lib/models/user');
+const User = require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
-const EventOperations = require('../../lib/models/event');
+require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
+const Authentication = require('../../lib/models/authentication');
+
 require('sinon-mongoose');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("user update tests", function () {
 
@@ -53,9 +55,12 @@ describe("user update tests", function () {
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     const permissions = Array.isArray(permission) ? permission : [permission];
-    sinon.mock(TokenOperations)
-      .expects('getToken')
-      .yields(null, createToken(userId, permissions));
+    sinon.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({ token: "12345" })
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, permissions));
   }
 
   it('should update myself', function (done) {
@@ -284,9 +289,12 @@ describe("user update tests", function () {
   });
 
   it('should update user role with UPDATE_USER_ROLE', function (done) {
-    sinon.mock(TokenOperations)
-      .expects('getToken')
-      .yields(null, createToken(userId, ['UPDATE_USER', 'UPDATE_USER_ROLE']));
+    sinon.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({ token: "12345" })
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, ['UPDATE_USER', 'UPDATE_USER_ROLE']));
 
     const id = mongoose.Types.ObjectId();
     const roleId = mongoose.Types.ObjectId();
@@ -304,7 +312,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser')
       .withArgs(sinon.match.has('roleId', roleId))
       .yields(null, mockUser);
@@ -355,7 +363,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser')
       .withArgs(sinon.match.has('authentication', sinon.match.has('password', 'passwordpassword')))
       .yields(null, mockUser);
@@ -435,7 +443,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser').never();
 
     request(app)
@@ -476,7 +484,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser')
       .withArgs(sinon.match.has('roleId', undefined))
       .yields(null, mockUser);
@@ -522,7 +530,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser')
       .withArgs(sinon.match({ active: true }))
       .yields(null, mockUser);
@@ -556,7 +564,7 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    sinon.mock(UserOperations)
+    sinon.mock(User)
       .expects('updateUser')
       .withArgs(sinon.match({ enabled: false }))
       .yields(null, mockUser);
@@ -601,7 +609,7 @@ describe("user update tests", function () {
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
-      .expects('updateOne')
+      .expects('update')
       .yields(null, {});
 
     sinon.mock(UserModel.collection)
@@ -656,7 +664,7 @@ describe("user update tests", function () {
       .resolves(mockUser);
 
     sinon.mock(UserModel.collection)
-      .expects('updateOne')
+      .expects('update')
       .yields(null, {});
 
     sinon.mock(UserModel.collection)
@@ -944,13 +952,17 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    const mockEvent = {
+    const mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event'
-    };
+    });
 
-    sinon.mock(EventOperations)
-      .expects('getById')
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)
@@ -1014,8 +1026,12 @@ describe("user update tests", function () {
       acl: eventAcl
     });
 
-    sinon.mock(EventOperations)
-      .expects('getById')
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)
@@ -1062,8 +1078,12 @@ describe("user update tests", function () {
       acl: eventAcl
     });
 
-    sinon.mock(EventOperations)
-      .expects('getById')
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)
@@ -1102,14 +1122,16 @@ describe("user update tests", function () {
       .chain('populate', 'authenticationId')
       .resolves(mockUser);
 
-    const mockEvent1 = {
+    const mockEvent1 = new EventModel({
       _id: 1,
       name: 'Mock Event 12345',
       acl: {}
-    };
+    });
 
-    sinon.mock(EventOperations)
-      .expects('getById')
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
       .yields(null, mockEvent1);
 
     sinon.mock(eventPermissions)
@@ -1160,8 +1182,12 @@ describe("user update tests", function () {
       acl: {}
     });
 
-    sinon.mock(EventOperations)
-      .expects('getById')
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
       .yields(null, mockEvent);
 
     sinon.mock(UserModel)

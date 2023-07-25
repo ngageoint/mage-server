@@ -4,20 +4,22 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
-  type: { type: String, required: true },
+  type: {type: String, required: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed
-}, {
+},{
   strict: false,
   versionKey: false,
   minimize: false
 });
 
-FeatureSchema.index({ geometry: "2dsphere" });
+FeatureSchema.index({geometry: "2dsphere"});
 
 function transform(feature, ret) {
-  ret.id = ret._id;
-  delete ret._id;
+  if ('function' !== typeof feature.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+  }
 }
 
 FeatureSchema.set("toJSON", {
@@ -40,11 +42,11 @@ function featureModel(layer) {
 
 exports.featureModel = featureModel;
 
-exports.getFeatures = function (layer) {
+exports.getFeatures = function(layer) {
   return featureModel(layer).find({}).exec();
 };
 
-exports.createFeatures = function (layer, features) {
+exports.createFeatures = function(layer, features) {
   features.forEach(feature => feature.properties = feature.properties || {});
   return featureModel(layer).create(features);
 };

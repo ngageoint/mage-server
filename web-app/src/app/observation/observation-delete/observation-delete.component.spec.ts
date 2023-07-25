@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 import { ObservationDeleteComponent } from './observation-delete.component';
 
-/* TODO tests MUST contain at least 1 test
 describe('ObservationDeleteComponent', () => {
   let component: ObservationDeleteComponent;
   let fixture: ComponentFixture<ObservationDeleteComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
       declarations: [ObservationDeleteComponent],
@@ -27,4 +26,3 @@ describe('ObservationDeleteComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

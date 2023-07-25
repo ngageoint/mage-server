@@ -1739,7 +1739,7 @@ describe('feeds use case interactions', function () {
               config: { url: 'https://test.service1', secret: uniqid() },
             }),
             topics: [
-              Object.freeze<Required<FeedTopic>>({
+              Object.freeze({
                 id: uniqid(),
                 title: 'News 1 Politics',
                 summary: 'News on politics 1',
@@ -1776,7 +1776,7 @@ describe('feeds use case interactions', function () {
               config: { url: 'https://test.service2' },
             }),
             topics: [
-              Object.freeze<Required<FeedTopic>>({
+              Object.freeze({
                 id: uniqid(),
                 title: 'News 2 Sports',
                 summary: 'News on sports 2',
@@ -1806,7 +1806,7 @@ describe('feeds use case interactions', function () {
           }
         ]
         feeds = [
-          Object.freeze<Feed>({
+          Object.freeze({
             id: uniqid(),
             title: 'Politics',
             service: services[0].service.id,
@@ -1816,11 +1816,10 @@ describe('feeds use case interactions', function () {
             variableParamsSchema: {
               properties: {
                 search: { type: 'string' }
-              },
-              title: 'Save Me'
+              }
             }
           }),
-          Object.freeze<Feed>({
+          Object.freeze({
             id: uniqid(),
             title: 'Sports',
             service: services[1].service.id,

@@ -68,6 +68,7 @@ You can use [`docker-compose logs <service>`](https://docs.docker.com/engine/ref
 $ docker compose logs mage-server
 mage-server_1  | 2018-04-26T23:30:30.684Z - info: Starting MAGE Server ...
 mage-server_1  | 2018-04-26T23:30:31.403Z - info: setting up provision uid
+mage-server_1  | (node:1) DeprecationWarning: Mongoose: mpromise (mongoose's default promise library) is deprecated, plug in your own promise library instead: http://mongoosejs.com/docs/promises.html
 mage-server_1  | 2018-04-26T23:30:31.861Z - info: Using '/var/lib/mage/attachments' as base directory for feature attachments.
 mage-server_1  | 2018-04-26T23:30:31.861Z - info: Using '/var/lib/mage/icons' as base directory for MAGE icons.
 # etc., etc.

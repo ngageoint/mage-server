@@ -1,7 +1,7 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing'
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
 import { Component } from '@angular/core'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatExpansionModule } from '@angular/material/expansion'
@@ -46,10 +46,11 @@ describe('FeedMetaDataComponent', () => {
   let host: TestFeedMetaDataHostComponent
   let target: AdminFeedEditConfigurationComponent
   let fixture: ComponentFixture<TestFeedMetaDataHostComponent>
+  let tickPastDebounce: () => void
   let formChanges: FeedMetaDataNullable[]
   let metaDataChanges: FeedMetaData[]
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -72,6 +73,7 @@ describe('FeedMetaDataComponent', () => {
   }))
 
   beforeEach(() => {
+    jasmine.clock().install()
     fixture = TestBed.createComponent(TestFeedMetaDataHostComponent)
     host = fixture.componentInstance
     target = fixture.debugElement.query(By.directive(AdminFeedEditConfigurationComponent)).references['target']
@@ -79,12 +81,19 @@ describe('FeedMetaDataComponent', () => {
     debounceTime = target.changeDebounceInterval
     formChanges = []
     metaDataChanges = []
+    tickPastDebounce = () => {
+      jasmine.clock().tick(debounceTime + 50)
+    }
     target.feedMetaDataForm.valueChanges.subscribe(formValue => {
       formChanges.push(formValue)
     })
     target.feedMetaDataChanged.subscribe(metaData => {
       metaDataChanges.push(metaData)
     })
+  })
+
+  afterEach(() => {
+    jasmine.clock().uninstall()
   })
 
   it('should create', () => {
@@ -146,14 +155,14 @@ describe('FeedMetaDataComponent', () => {
     })
   })
 
-  it('emits a debounced event when the form value changes from input', async () => {
+  it('emits a debounced event when the form value changes from input', () => {
 
     const input = fixture.debugElement.query(x => x.attributes.formControlName === 'title').nativeElement as HTMLInputElement
     input.value = 'Test'
     const event = new Event('input')
     input.dispatchEvent(event)
-    fixture.detectChanges();
-    await new Promise(resolve => setTimeout(resolve, debounceTime / 2));
+
+    jasmine.clock().tick(debounceTime / 2)
 
     expect(formChanges).toEqual([
       {
@@ -163,8 +172,7 @@ describe('FeedMetaDataComponent', () => {
     ])
     expect(metaDataChanges).toEqual([])
 
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(formChanges).toEqual([
       {
@@ -179,7 +187,7 @@ describe('FeedMetaDataComponent', () => {
     ])
   })
 
-  it('emits changed meta-data building on previous meta-data with changed form values', async () => {
+  it('emits changed meta-data building on previous meta-data with changed form values', () => {
 
     const topic: FeedTopic = { id: 'topic1', title: 'Topic 1', summary: 'Topic 1 summary' }
     const initFeedMetaData: FeedMetaData = {
@@ -199,8 +207,7 @@ describe('FeedMetaDataComponent', () => {
 
     titleInput.value = 'Feed 1 Mod'
     titleInput.dispatchEvent(new Event('input'))
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaData).toEqual({
       ...initFeedMetaData,
@@ -215,8 +222,7 @@ describe('FeedMetaDataComponent', () => {
 
     itemSecondaryPropertyInput.value = 'addedSecondary'
     itemSecondaryPropertyInput.dispatchEvent(new Event('input'))
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaData).toEqual({
       ...initFeedMetaData,
@@ -237,8 +243,7 @@ describe('FeedMetaDataComponent', () => {
 
     itemTemporalPropertyInput.value = ''
     itemTemporalPropertyInput.dispatchEvent(new Event('input'))
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaData).toEqual({
       ..._.omit(initFeedMetaData, 'itemTemporalProperty'),
@@ -265,7 +270,7 @@ describe('FeedMetaDataComponent', () => {
     ])
   })
 
-  it('does not include values for changed controls when value is empty', async () => {
+  it('does not include values for changed controls when value is empty', () => {
 
     const topic: FeedTopic = {
       id: 'topic1',
@@ -291,8 +296,7 @@ describe('FeedMetaDataComponent', () => {
     summaryInput.value = 'Feed summary'
     summaryInput.dispatchEvent(new Event('input'))
 
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(formChanges).toEqual([
       {
@@ -335,7 +339,7 @@ describe('FeedMetaDataComponent', () => {
     expect(metaDataChanges).toEqual([])
   })
 
-  it('updates the form when the feed meta-data changes without emitting change event', async () => {
+  it('updates the form when the feed meta-data changes without emitting change event', () => {
 
     const feedMetaData: Required<FeedMetaData> = Object.freeze({
       title: 'Test',
@@ -368,7 +372,7 @@ describe('FeedMetaDataComponent', () => {
 
     host.feedMetaData = feedMetaDataMod
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData(feedMetaDataMod))
     expect(target.feedMetaData).toEqual(feedMetaDataMod)
@@ -376,7 +380,7 @@ describe('FeedMetaDataComponent', () => {
     expect(metaDataChanges).toEqual([])
   })
 
-  it('populates form from feed meta-data merged with topic meta-data without emitting change preferring feed meta-data values', async () => {
+  it('populates form from feed meta-data merged with topic meta-data without emitting change preferring feed meta-data values', () => {
 
     const topic: FeedTopic = Object.freeze({
       id: 'topic1',
@@ -397,14 +401,14 @@ describe('FeedMetaDataComponent', () => {
 
     host.topic = topic
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.topic).toEqual(topic)
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData(topic))
 
     host.feedMetaData = feedMetaData
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData({
       title: feedMetaData.title,
@@ -420,7 +424,7 @@ describe('FeedMetaDataComponent', () => {
     expect(metaDataChanges).toEqual([])
   })
 
-  it('does not populate form fields from topic or previous meta-data after user clears form values', async () => {
+  it('does not populate form fields from topic or previous meta-data after user clears form values', () => {
 
     const topic: FeedTopic = Object.freeze({
       id: 'topic1',
@@ -443,7 +447,7 @@ describe('FeedMetaDataComponent', () => {
     host.topic = topic
     host.feedMetaData = feedMetaData
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.topic).toEqual(topic)
     expect(target.feedMetaData).toEqual(feedMetaData)
@@ -463,8 +467,7 @@ describe('FeedMetaDataComponent', () => {
     const input = fixture.debugElement.query(x => x.attributes.formControlName === 'itemSecondaryProperty').nativeElement as HTMLInputElement
     input.value = ''
     input.dispatchEvent(new Event('input'))
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
     host.feedMetaData = target.feedMetaData
     fixture.detectChanges()
 
@@ -489,14 +492,14 @@ describe('FeedMetaDataComponent', () => {
     })
   })
 
-  it('resets form from topic and sets feed meta-data to null without emitting change when topic changes and feed meta-data does not change', async () => {
+  it('resets form from topic and sets feed meta-data to null without emitting change when topic changes and feed meta-data does not change', () => {
 
     const topic1 = Object.freeze({ id: 'topic1', title: 'Topic 1' })
     const topic2 = Object.freeze({ id: 'topic2', title: 'Topic 2' })
 
     host.topic = topic1
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData(topic1))
     expect(target.feedMetaDataForm.pristine).toEqual(true)
@@ -514,8 +517,7 @@ describe('FeedMetaDataComponent', () => {
     expect(target.feedMetaData).toBeNull()
     expect(metaDataChanges).toEqual([])
 
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaDataForm.pristine).toEqual(false)
     expect(target.feedMetaDataForm.dirty).toEqual(true)
@@ -526,7 +528,7 @@ describe('FeedMetaDataComponent', () => {
 
     host.topic = topic2
     fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaDataForm.pristine).toEqual(true)
     expect(target.feedMetaDataForm.dirty).toEqual(false)
@@ -540,14 +542,13 @@ describe('FeedMetaDataComponent', () => {
     ])
   })
 
-  it('parses update frequency as a number', async () => {
+  it('parses update frequency as a number', () => {
 
     const input = fixture.debugElement.query(x => x.attributes.formControlName === 'updateFrequencySeconds').nativeElement as HTMLInputElement
     input.value = '111'
     const event = new Event('input')
     input.dispatchEvent(event)
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(formChanges).toEqual([
       {
@@ -567,7 +568,7 @@ describe('FeedMetaDataComponent', () => {
     ])
   })
 
-  describe('boolean checkbox behavior to avoid using indeterminate checkboxes', async () => {
+  describe('boolean checkbox behavior to avoid using indeterminate checkboxes', () => {
 
     const nullNonCheckboxKeys: Omit<FeedMetaDataNullable, FeedMetaDataBooleanKeys> = Object.freeze({
       title: null,
@@ -579,7 +580,7 @@ describe('FeedMetaDataComponent', () => {
       updateFrequencySeconds: null
     })
 
-    it('parses boolean form values as booleans', async () => {
+    it('parses boolean form values as booleans', () => {
 
       let observedMetaData: FeedMetaData | null = null
       target.feedMetaDataChanged.subscribe(metaData => {
@@ -593,8 +594,7 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveIdentityCheck.checked = true
       itemsHaveIdentityCheck.dispatchEvent(new Event('click'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       expect(observedMetaData).toEqual({
         itemsHaveIdentity: true
@@ -607,8 +607,7 @@ describe('FeedMetaDataComponent', () => {
       itemsHaveSpatialDimensionCheck.checked = true
       itemsHaveSpatialDimensionCheck.dispatchEvent(new Event('click'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       expect(observedMetaData).toEqual({
         itemsHaveIdentity: true,
@@ -642,7 +641,7 @@ describe('FeedMetaDataComponent', () => {
       }
     })
 
-    it('does not set boolean checkboxes from topic meta-data when present in feed meta-data', async () => {
+    it('does not set boolean checkboxes from topic meta-data when present in feed meta-data', () => {
 
       const topicMetaData: Required<Pick<FeedMetaData, FeedMetaDataBooleanKeys>> = {
         itemsHaveIdentity: true,
@@ -660,7 +659,7 @@ describe('FeedMetaDataComponent', () => {
       }
       host.feedMetaData = feedMetaData
       fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       let expectedFormValue: FeedMetaDataNullable = {
         ...nullNonCheckboxKeys,
@@ -720,7 +719,7 @@ describe('FeedMetaDataComponent', () => {
       }
     })
 
-    it('includes checkbox values in the meta-data only if dirty when not in topic', async () => {
+    it('includes checkbox values in the meta-data only if dirty when not in topic', () => {
 
       host.topic = {
         id: 'topic1',
@@ -746,8 +745,7 @@ describe('FeedMetaDataComponent', () => {
       const input = fixture.debugElement.query(x => x.attributes.formControlName === 'summary').nativeElement as HTMLInputElement
       input.value = 'No Checkboxes'
       input.dispatchEvent(new Event('input'))
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       expect(metaDataChanges).toEqual([
         { title: topicMetaData.title, summary: 'No Checkboxes' }
@@ -770,8 +768,7 @@ describe('FeedMetaDataComponent', () => {
         .nativeElement as HTMLInputElement
       checkbox.checked = true
       checkbox.dispatchEvent(new Event('click'))
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       expect(metaDataChanges).toEqual([
         { title: topicMetaData.title, summary: 'No Checkboxes' },
@@ -783,8 +780,7 @@ describe('FeedMetaDataComponent', () => {
 
       checkbox.checked = false
       checkbox.dispatchEvent(new Event('click'))
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       expect(metaDataChanges).toEqual([
         { title: topicMetaData.title, summary: 'No Checkboxes' },
@@ -797,7 +793,7 @@ describe('FeedMetaDataComponent', () => {
     })
   })
 
-  it('resets the form to topic meta-data when feed meta-data changes to null', async () => {
+  it('resets the form to topic meta-data when feed meta-data changes to null', () => {
 
     host.topic = { id: 'topic1', title: 'Topic 1' }
     fixture.detectChanges()
@@ -814,8 +810,7 @@ describe('FeedMetaDataComponent', () => {
     expect(target.feedMetaDataForm.value).toEqual(formValueForMetaData({ title: 'Dirty' }))
     expect(target.feedMetaData).toEqual(null)
 
-    fixture.detectChanges()
-    await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+    tickPastDebounce()
 
     expect(target.feedMetaData).toEqual({ title: 'Dirty' })
 
@@ -841,7 +836,7 @@ describe('FeedMetaDataComponent', () => {
 
   describe('accepting the meta-data', () => {
 
-    it('emits feed meta-data with value from changed non-empty inputs merged with original feed meta-data', async () => {
+    it('emits feed meta-data with value from changed non-empty inputs merged with original feed meta-data', () => {
 
       const topic: FeedTopic = {
         id: 'topic1',
@@ -876,8 +871,7 @@ describe('FeedMetaDataComponent', () => {
       const itemSecondaryPropertyInput = fixture.debugElement.query(x => x.attributes.formControlName === 'itemSecondaryProperty').nativeElement as HTMLInputElement
       itemSecondaryPropertyInput.value = ''
       itemSecondaryPropertyInput.dispatchEvent(new Event('input'))
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
 
       const acceptButton = fixture.debugElement.queryAll(By.css('button')).find(x => x.nativeNode.textContent === host.acceptButtonText).nativeElement as HTMLButtonElement
       acceptButton.dispatchEvent(new Event('click'))
@@ -918,7 +912,7 @@ describe('FeedMetaDataComponent', () => {
       expect(accepted).toEqual([ null ])
     })
 
-    it('emits the correct meta-data if accepted before debounce', async () => {
+    it('emits the correct meta-data if accepted before debounce', () => {
 
       const topic: FeedTopic = {
         id: 'topic1',
@@ -943,8 +937,7 @@ describe('FeedMetaDataComponent', () => {
       itemSecondaryPropertyInput.value = 'prop3'
       itemSecondaryPropertyInput.dispatchEvent(new Event('input'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime / 2));
+      jasmine.clock().tick(debounceTime / 2)
 
       const acceptButton = fixture.debugElement.queryAll(By.css('button')).find(x => x.nativeNode.textContent === host.acceptButtonText).nativeElement as HTMLButtonElement
       acceptButton.dispatchEvent(new Event('click'))
@@ -963,7 +956,7 @@ describe('FeedMetaDataComponent', () => {
       })
     })
 
-    it('emits empty meta-data if all values were cleared', async () => {
+    it('emits empty meta-data if all values were cleared', () => {
 
       const topic: FeedTopic = {
         id: 'topic1',
@@ -993,22 +986,19 @@ describe('FeedMetaDataComponent', () => {
       input.value = ''
       input.dispatchEvent(new Event('input'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime / 10));
+      jasmine.clock().tick(debounceTime / 10)
 
       input = fixture.debugElement.query(x => x.attributes.formControlName === 'itemPrimaryProperty').nativeElement as HTMLInputElement
       input.value = ''
       input.dispatchEvent(new Event('input'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime / 10));
+      jasmine.clock().tick(debounceTime / 10)
 
       input = fixture.debugElement.query(x => x.attributes.formControlName === 'updateFrequencySeconds').nativeElement as HTMLInputElement
       input.value = ''
       input.dispatchEvent(new Event('input'))
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, debounceTime + 50));
+      tickPastDebounce()
       target.onAccepted()
 
       expect(target.feedMetaDataForm.value).toEqual({

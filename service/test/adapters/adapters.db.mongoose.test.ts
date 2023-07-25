@@ -3,7 +3,7 @@
 import chai, { expect } from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
-import mongoose, { Mongoose } from 'mongoose'
+import mongoose, { Mongoose, MongooseThenable } from 'mongoose'
 import { waitForDefaultMongooseConnection } from '../../lib/adapters/adapters.db.mongoose'
 
 chai.use(sinonChai)
@@ -70,7 +70,7 @@ describe('wait for mongoose connection utility', function() {
       })
       return new Promise<Mongoose>((resolve, reject) => {
         reject('first connect rejection')
-      })
+      }) as unknown as MongooseThenable
     })
     connectStub.onSecondCall().rejects('second connect rejection')
 

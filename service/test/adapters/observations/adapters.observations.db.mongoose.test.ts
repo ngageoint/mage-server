@@ -56,14 +56,14 @@ describe('mongoose observation repository', function() {
   let domainEvents: SubstituteOf<EventEmitter>
 
   beforeEach('initialize model', async function() {
-    //TODO remove cast to any, was mongoose.Model<MageEventDocument>
-    const MageEventModel = legacyEvent.Model as any
+
+    const MageEventModel = legacyEvent.Model as mongoose.Model<MageEventDocument>
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
         legacyEvent.create(
           attrs as MageEventCreateAttrs,
-          { _id: new mongoose.Types.ObjectId() },
+          { _id: mongoose.Types.ObjectId() },
           (err: any | null, event?: MageEventDocument) => {
             if (event) {
               return resolve(event)
@@ -76,7 +76,7 @@ describe('mongoose observation repository', function() {
         // the implicitly created team id in the teamIds list, presumably
         // because it's done in middleware |:$
         // TODO: fix the above
-        return MageEventModel.findById(createdWithoutTeamId._id).then((withTeamId: any) => {
+        return MageEventModel.findById(createdWithoutTeamId._id).then(withTeamId => {
           if (withTeamId) {
             return withTeamId
           }
@@ -132,11 +132,7 @@ describe('mongoose observation repository', function() {
   })
 
   afterEach(async function() {
-    try {
-      await model.ensureIndexes()
-    } catch(err) {
-      //don't care
-    }
+    await model.ensureIndexes()
     // should run all the middleware to drop the observation collection
     await eventDoc.remove()
     await repo.idModel.remove({})
@@ -147,7 +143,7 @@ describe('mongoose observation repository', function() {
     it('adds an observation id to the collection and returns it', async function() {
 
       const id = await repo.allocateObservationId()
-      const parsed = new mongoose.Types.ObjectId(id)
+      const parsed = mongoose.Types.ObjectId(id)
       const found = await repo.idModel.findById(id)
       const idCount = await repo.idModel.count({})
 
@@ -164,7 +160,7 @@ describe('mongoose observation repository', function() {
 
       it('fails if the observation is new and the id is not in the id collection', async function() {
 
-        const id = new mongoose.Types.ObjectId()
+        const id = mongoose.Types.ObjectId()
         const stub = observationStub(id.toHexString(), event.id)
         const observation = Observation.evaluate(stub, event)
         const err = await repo.save(observation) as ObservationRepositoryError
@@ -241,12 +237,12 @@ describe('mongoose observation repository', function() {
         ]
         attrs.states = [
           {
-            id: (new mongoose.Types.ObjectId()).toHexString(),
+            id: mongoose.Types.ObjectId().toHexString(),
             name: 'active',
-            userId: (new mongoose.Types.ObjectId()).toHexString()
+            userId: mongoose.Types.ObjectId().toHexString()
           },
           {
-            id: (new mongoose.Types.ObjectId()).toHexString(),
+            id: mongoose.Types.ObjectId().toHexString(),
             name: 'archived',
             userId: undefined
           }
@@ -254,7 +250,7 @@ describe('mongoose observation repository', function() {
         attrs.important = {
           timestamp: new Date(),
           description: 'look at me',
-          userId: (new mongoose.Types.ObjectId()).toHexString(),
+          userId: mongoose.Types.ObjectId().toHexString(),
         }
         const observation = Observation.evaluate(attrs, event)
 
@@ -293,7 +289,7 @@ describe('mongoose observation repository', function() {
           }
         ]
         origAttrs.states = [
-          { id: (new mongoose.Types.ObjectId()).toHexString(), name: 'active', userId: (new mongoose.Types.ObjectId()).toHexString() }
+          { id: mongoose.Types.ObjectId().toHexString(), name: 'active', userId: mongoose.Types.ObjectId().toHexString() }
         ]
         origAttrs.properties.forms = [
           {
@@ -351,7 +347,7 @@ describe('mongoose observation repository', function() {
         expect(savedAttrs.states[0].id).to.be.a('string')
         expect(savedAttrs.states[0].name).to.equal('archived')
         expect(savedAttrs.states[0].userId).to.be.undefined
-        expect(() => new mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
+        expect(() => mongoose.Types.ObjectId(savedAttrs.states[0].id as string)).not.to.throw()
         expect(savedAttrs.states[0].id).not.to.equal(orig.states[0].id)
         expect(savedAttrs.lastModified.getTime()).to.be.greaterThanOrEqual(orig.lastModified.getTime())
         expect(count).to.equal(1)
@@ -413,7 +409,7 @@ describe('mongoose observation repository', function() {
         {
           id: PendingEntityId,
           name: 'archived',
-          userId: (new mongoose.Types.ObjectId()).toHexString()
+          userId: mongoose.Types.ObjectId().toHexString()
         }
       ]
       const state1 = Observation.evaluate(state1Stub, event)
@@ -424,7 +420,7 @@ describe('mongoose observation repository', function() {
         {
           id: PendingEntityId,
           name: 'active',
-          userId: (new mongoose.Types.ObjectId()).toHexString()
+          userId: mongoose.Types.ObjectId().toHexString()
         },
         state1Saved.states[0],
       ]
@@ -437,14 +433,14 @@ describe('mongoose observation repository', function() {
         name: 'archived',
         userId: state1Stub.states[0].userId
       })
-      expect(() => new mongoose.Types.ObjectId(state1Saved.states[0].id as string).toHexString()).not.to.throw()
+      expect(() => mongoose.Types.ObjectId(state1Saved.states[0].id as string).toHexString()).not.to.throw()
       expect(copyObservationAttrs(state1Found)).to.deep.equal(copyObservationAttrs(state1Saved))
       expect(state2Saved.states).to.have.length(2)
       expect(state2Saved.states[0]).to.deep.include({
         name: 'active',
         userId: state2Stub.states[0].userId
       })
-      expect(() => new mongoose.Types.ObjectId(state2Saved.states[0].id as string).toHexString()).not.to.throw()
+      expect(() => mongoose.Types.ObjectId(state2Saved.states[0].id as string).toHexString()).not.to.throw()
       expect(copyObservationAttrs(state2Found)).to.deep.equal(copyObservationAttrs(state2Saved))
       expect(state2Saved.states[1]).to.deep.equal(state1Saved.states[0])
       expect(state2Saved.states[0].id).not.to.equal(state2Saved.states[1].id)
@@ -617,7 +613,7 @@ describe('mongoose observation repository', function() {
         size: 111111,
         contentLocator: `${obs.id}:${obs.attachments[0].id}`
       }
-      const updated = await repo.patchAttachment(obs, (new mongoose.Types.ObjectId()).toHexString(), contentInfo)
+      const updated = await repo.patchAttachment(obs, mongoose.Types.ObjectId().toHexString(), contentInfo)
       const fetched = await repo.findById(obs.id)
 
       expect(updated).to.be.instanceOf(AttachmentNotFoundError)
@@ -747,7 +743,7 @@ describe('mongoose observation repository', function() {
 
       let mod = Observation.evaluate({
         ...copyObservationAttrs(obs),
-        id: (new mongoose.Types.ObjectId()).toHexString()
+        id: mongoose.Types.ObjectId().toHexString()
       }, event)
       mod = removeAttachment(mod, mod.attachments[0].id) as Observation
       const saved = await repo.save(mod)

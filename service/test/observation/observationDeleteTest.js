@@ -1,27 +1,29 @@
-'use strict';
-
-const request = require('supertest')
+var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , EventModel = require('../../lib/models/event')
-  , TeamModel = require('../../lib/models/team')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
-const Observation = require('../../lib/models/observation');
-const observationModel = Observation.observationModel;
+require('../../lib/models/team');
+var TeamModel = mongoose.model('Team');
 
-describe("observation delete tests", function () {
+require('../../lib/models/event');
+var EventModel = mongoose.model('Event');
+
+var Observation = require('../../lib/models/observation');
+var observationModel = Observation.observationModel;
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+
+describe("observation delete tests", function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -40,43 +42,45 @@ describe("observation delete tests", function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update observation state to archived with UPDATE_EVENT role", function (done) {
+  it("should update observation state to archived with UPDATE_EVENT role", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
     sinon.mock(TeamModel)
-      .expects('teamsForUserInEvent')
+      .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
 
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
-    const ObservationModel = observationModel({
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -106,40 +110,40 @@ describe("observation delete tests", function () {
         name: 'archive'
       })
       .expect(201)
-      .expect(function (res) {
-        const state = res.body;
+      .expect(function(res) {
+        var state = res.body;
         should.exist(state);
         state.should.have.property('name').and.equal('archive');
       })
       .end(done);
   });
 
-  it("should update observation state to archived with acl update role", function (done) {
+  it("should update observation state to archived with acl update role", function(done) {
     mockTokenWithPermission('');
 
     sinon.mock(TeamModel)
-      .expects('teamsForUserInEvent')
+      .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
     mockEvent.acl[userId] = 'MANAGER';
 
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
-    const ObservationModel = observationModel({
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -169,39 +173,39 @@ describe("observation delete tests", function () {
         name: 'archive'
       })
       .expect(201)
-      .expect(function (res) {
-        const state = res.body;
+      .expect(function(res) {
+        var state = res.body;
         should.exist(state);
         state.should.have.property('name').and.equal('archive');
       })
       .end(done);
   });
 
-  it("should update observation state to archived if observation owner", function (done) {
+  it("should update observation state to archived if observation owner", function(done) {
     mockTokenWithPermission('');
 
     sinon.mock(TeamModel)
-      .expects('teamsForUserInEvent')
+      .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Mock Event',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
 
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
-    const ObservationModel = observationModel({
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -231,35 +235,35 @@ describe("observation delete tests", function () {
         name: 'archive'
       })
       .expect(201)
-      .expect(function (res) {
-        const state = res.body;
+      .expect(function(res) {
+        var state = res.body;
         should.exist(state);
         state.should.have.property('name').and.equal('archive');
       })
       .end(done);
   });
 
-  it("should not update observation state if name is missing", function (done) {
+  it("should not update observation state if name is missing", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
-    const ObservationModel = observationModel({
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -284,35 +288,35 @@ describe("observation delete tests", function () {
       .send({
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal('name required');
       })
       .end(done);
   });
 
-  it("should not update observation state if name is not allowed", function (done) {
+  it("should not update observation state if name is not allowed", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
 
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
-    const observationId = mongoose.Types.ObjectId();
+    var observationId = mongoose.Types.ObjectId();
 
-    const ObservationModel = observationModel({
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
 
-    const mockObservation = new ObservationModel({
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -338,38 +342,48 @@ describe("observation delete tests", function () {
         name: 'foo'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal("state name must be one of 'active', 'complete', 'archive'");
       })
       .end(done);
   });
 
-  it("should not update observation state if name did not change", function (done) {
+  it("should not update observation state if name did not change", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
-    const mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    };
+    });
 
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, mockEvent);
 
     sinon.mock(TeamModel)
-      .expects('teamsForUserInEvent')
+      .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    const ObservationModel = observationModel({
+    sinon.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [mongoose.Types.ObjectId()]
+        }]
+      });
+
+    var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
 
-    const observationId = mongoose.Types.ObjectId();
-    const mockObservation = new ObservationModel({
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -399,7 +413,7 @@ describe("observation delete tests", function () {
         name: 'archive'
       })
       .expect(400)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal("state is already 'archive'");
       })
       .end(done);

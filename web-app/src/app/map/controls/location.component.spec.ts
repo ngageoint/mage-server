@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationComponent, LocationState } from './location.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +10,7 @@ describe('LocationComponent', () => {
   let component: LocationComponent;
   let fixture: ComponentFixture<LocationComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [MatIconModule, MatButtonModule, MatTooltipModule],
       declarations: [ LocationComponent ]

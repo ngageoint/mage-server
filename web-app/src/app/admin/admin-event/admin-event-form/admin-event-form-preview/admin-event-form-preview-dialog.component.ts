@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
@@ -11,19 +11,19 @@ export class AdminEventFormPreviewDialogComponent implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) public formDefinition: any) { }
 
-  formGroup: UntypedFormGroup
+  formGroup: FormGroup
 
   ngOnInit(): void {
-    this.formGroup = new UntypedFormGroup({
-      id: new UntypedFormControl(0),
-      formId: new UntypedFormControl(0)
+    this.formGroup = new FormGroup({
+      id: new FormControl(0),
+      formId: new FormControl(0)
     });
 
     this.formDefinition.fields
       .filter(field => !field.archived)
       .sort((a, b) => a.id - b.id)
       .forEach(field => {
-        const fieldControl = new UntypedFormControl(field.value, field.required ? Validators.required : null);
+        const fieldControl = new FormControl(field.value, field.required ? Validators.required : null);
         this.formGroup.addControl(field.name, fieldControl);
       })
   }

@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatCardModule } from '@angular/material/card'
@@ -50,7 +50,7 @@ describe('FeedEditComponent', () => {
   let mockEditService: MockFeedEditService
   let mockFeedService: jasmine.SpyObj<FeedService>
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     mockEditService = {
       state$: new BehaviorSubject<FeedEditState>(freshEditState()),
       newFeed: jasmine.createSpy<FeedEditService['newFeed']>(),

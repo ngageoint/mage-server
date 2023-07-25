@@ -26,6 +26,7 @@ describe('feeds repositories', function() {
 
   beforeEach(async function() {
     conn = await mongoose.createConnection(uri, {
+      useMongoClient: true,
       promiseLibrary: Promise
     })
   })
@@ -45,8 +46,7 @@ describe('feeds repositories', function() {
     let repo: MongooseFeedServiceTypeRepository
 
     beforeEach(async function() {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection) as any
+      model = conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection)
       repo = new MongooseFeedServiceTypeRepository(model)
     })
 
@@ -110,7 +110,7 @@ describe('feeds repositories', function() {
       expect(registered.id).to.be.a('string')
       expect(read.length).to.equal(1)
       expect(read[0]).to.deep.include({
-        _id: new mongoose.Types.ObjectId(registered.id),
+        _id: mongoose.Types.ObjectId(registered.id),
         id: registered.id,
         pluginServiceTypeId: serviceType.pluginServiceTypeId,
         moduleName: serviceType.moduleName
@@ -202,8 +202,7 @@ describe('feeds repositories', function() {
     let repo: FeedServiceRepository
 
     beforeEach(function() {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection) as any
+      model = conn.model(FeedsModels.FeedService, FeedServiceSchema, collection)
       repo = new MongooseFeedServiceRepository(model)
     })
 
@@ -217,7 +216,7 @@ describe('feeds repositories', function() {
 
     it('returns service type id as string', async function() {
       const stub: FeedServiceCreateAttrs = {
-        serviceType: (new mongoose.Types.ObjectId()).toHexString(),
+        serviceType: mongoose.Types.ObjectId().toHexString(),
         title: 'No Object IDs',
         summary: 'Testing',
         config: { url: 'https://some.api.com' }
@@ -236,7 +235,7 @@ describe('feeds repositories', function() {
     it('omits version key from json', async function() {
 
       const stub: FeedServiceCreateAttrs = {
-        serviceType: (new mongoose.Types.ObjectId()).toHexString(),
+        serviceType: mongoose.Types.ObjectId().toHexString(),
         title: 'No Version Keys',
         summary: 'Testing',
         config: { url: 'https://some.api.com' }
@@ -259,8 +258,7 @@ describe('feeds repositories', function() {
     let idFactory: SubstituteOf<EntityIdFactory>
 
     beforeEach(function() {
-      //TODO remove cast to any
-      model = conn.model(FeedsModels.Feed, FeedSchema, collection) as any
+      model = conn.model(FeedsModels.Feed, FeedSchema, collection)
       idFactory = Sub.for<EntityIdFactory>()
       repo = new MongooseFeedRepository(model, idFactory)
     })
@@ -275,9 +273,9 @@ describe('feeds repositories', function() {
 
         const nextId = `feed:test:${Date.now()}`
         idFactory.nextId().resolves(nextId)
-        const createAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
+        const createAttrs: Required<FeedCreateAttrs> = Object.freeze({
           id: 'not this one',
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: uniqid(),
           title: uniqid(),
           summary: 'everything is required',
@@ -330,9 +328,9 @@ describe('feeds repositories', function() {
 
         it('replaces properties', async function() {
 
-          const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
+          const origAttrs: Required<FeedCreateAttrs> = Object.freeze({
             id: uniqid(),
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             summary: uniqid(),
@@ -363,7 +361,7 @@ describe('feeds repositories', function() {
               }
             }
           })
-          const updatedAttrs: Required<Feed> = Object.freeze<Required<Feed>>({
+          const updatedAttrs: Required<Feed> = Object.freeze({
             id: origAttrs.id,
             service: origAttrs.service,
             topic: origAttrs.topic,
@@ -405,9 +403,9 @@ describe('feeds repositories', function() {
 
         it('removes keys omitted from update', async function() {
 
-          const origAttrs: Required<FeedCreateAttrs> = Object.freeze<Required<FeedCreateAttrs>>({
+          const origAttrs: Required<FeedCreateAttrs> = Object.freeze({
             id: uniqid(),
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             summary: uniqid(),
@@ -457,7 +455,7 @@ describe('feeds repositories', function() {
 
           const origAttrs: Feed = Object.freeze({
             id: uniqid(),
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             itemsHaveIdentity: true,
@@ -465,7 +463,7 @@ describe('feeds repositories', function() {
           })
           const updatedAttrs: Feed = Object.freeze({
             id: origAttrs.id,
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: uniqid(),
             itemsHaveIdentity: true,
@@ -492,7 +490,7 @@ describe('feeds repositories', function() {
         const feedStubs: FeedCreateAttrs[] = [
           {
             id: '1',
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Feed 1',
             constantParams: {
@@ -503,7 +501,7 @@ describe('feeds repositories', function() {
           },
           {
             id: '2',
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Feed 2',
             summary: 'The second one',
@@ -541,21 +539,21 @@ describe('feeds repositories', function() {
         const feeds: Feed[] = []
         idFactory.nextId().resolves('0', '1', '2')
         feeds.push(await repo.create({
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: 'topic0',
           title: 'Feed 0',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
         }))
         feeds.push(await repo.create({
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: 'topic1',
           title: 'Feed 1',
           itemsHaveIdentity: true,
           itemsHaveSpatialDimension: true,
         }))
         feeds.push(await repo.create({
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: 'topic2',
           title: 'Feed 2',
           itemsHaveIdentity: true,
@@ -572,7 +570,7 @@ describe('feeds repositories', function() {
       it('returns feed with object ids as strings', async function() {
 
         const stub: FeedCreateAttrs = {
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: uniqid(),
           title: 'No Object IDs',
           summary: 'Testing',
@@ -593,7 +591,7 @@ describe('feeds repositories', function() {
       it('omits version key from json', async function() {
 
         const stub: FeedCreateAttrs = {
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: uniqid(),
           title: 'No Version Keys',
           summary: 'Testing',
@@ -618,7 +616,7 @@ describe('feeds repositories', function() {
 
       it('finds the feeds with a service id', async function() {
 
-        const service = (new mongoose.Types.ObjectId()).toHexString()
+        const service = mongoose.Types.ObjectId().toHexString()
         const serviceFeeds: Feed[] = await Promise.all([
           repo.create({
             service,
@@ -644,14 +642,14 @@ describe('feeds repositories', function() {
         ])
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true
           }),
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
@@ -671,14 +669,14 @@ describe('feeds repositories', function() {
 
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true
           }),
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
@@ -686,7 +684,7 @@ describe('feeds repositories', function() {
           })
         ])
         const all = await repo.findAll()
-        const found = await repo.findFeedsForService((new mongoose.Types.ObjectId()).toHexString())
+        const found = await repo.findFeedsForService(mongoose.Types.ObjectId().toHexString())
 
         expect(all).to.have.deep.members(otherFeeds)
         expect(found).to.deep.equal([])
@@ -698,7 +696,7 @@ describe('feeds repositories', function() {
       it('removes the feed for the id', async function() {
 
         const stub: FeedCreateAttrs = Object.freeze({
-          service: (new mongoose.Types.ObjectId()).toHexString(),
+          service: mongoose.Types.ObjectId().toHexString(),
           topic: uniqid(),
           title: 'No Version Keys',
           summary: 'Testing',
@@ -727,7 +725,7 @@ describe('feeds repositories', function() {
 
       it('removes only the feeds that reference the service id and returns them', async function() {
 
-        const service = (new mongoose.Types.ObjectId()).toHexString()
+        const service = mongoose.Types.ObjectId().toHexString()
         const serviceFeeds: Feed[] = await Promise.all([
           repo.create({
             service,
@@ -746,14 +744,14 @@ describe('feeds repositories', function() {
         ])
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true
           }),
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
@@ -774,21 +772,21 @@ describe('feeds repositories', function() {
 
         const otherFeeds: Feed[] = await Promise.all([
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 1',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true
           }),
           repo.create({
-            service: (new mongoose.Types.ObjectId()).toHexString(),
+            service: mongoose.Types.ObjectId().toHexString(),
             topic: uniqid(),
             title: 'Other 2',
             itemsHaveIdentity: true,
             itemsHaveSpatialDimension: true
           })
         ])
-        const removed = await repo.removeByServiceId((new mongoose.Types.ObjectId()).toHexString())
+        const removed = await repo.removeByServiceId(mongoose.Types.ObjectId().toHexString())
         const allAfterRemove = await repo.findAll()
 
         expect(removed).to.deep.equal([])

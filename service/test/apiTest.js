@@ -3,13 +3,20 @@
 const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , UserModel = require('../lib/models/user')
   , SecurePropertyAppender = require('../lib/security/utilities/secure-property-appender')
-  , AuthenticationApiAppender = require('../lib/utilities/authenticationApiAppender')
-  , AuthenticationConfigurationModel = require('../lib/models/authenticationconfiguration')
-  , SettingModel = require('../lib/models/setting');
+  , AuthenticationApiAppender = require('../lib/utilities/authenticationApiAppender');
+
+require('../lib/models/setting');
+const SettingModel = mongoose.model('Setting');
+
+require('../lib/models/user');
+const UserModel = mongoose.model('User');
+
+const Authentication = require('../lib/models/authentication');
+const AuthenticationConfiguration = require('../lib/models/authenticationconfiguration');
 
 require('sinon-mongoose');
+require('chai').should();
 
 describe("api route tests", function () {
 
@@ -25,7 +32,7 @@ describe("api route tests", function () {
     };
     configs.push(config);
 
-    sinon.mock(AuthenticationConfigurationModel)
+    sinon.mock(AuthenticationConfiguration)
       .expects('getAllConfigurations')
       .resolves(configs);
 
@@ -53,8 +60,9 @@ describe("api route tests", function () {
 
     const settingMock = sinon.mock(SettingModel);
 
-    settingMock.expects('getSetting')
-      .withArgs('disclaimer')
+    settingMock.expects('findOne')
+      .withArgs({ type: 'disclaimer' })
+      .chain('exec')
       .resolves({
         type: "banner",
         settings: {
@@ -69,27 +77,29 @@ describe("api route tests", function () {
         }
       });
 
-    settingMock.expects('getSetting')
-      .withArgs('contactinfo')
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
+      .chain('exec')
       .resolves({
         type: "contactinfo",
         settings: {
         }
       });
 
-    const authentication = {
+    const authentication = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       previousPasswords: []
-    };
+    });
 
-    sinon.mock(AuthenticationConfigurationModel)
-      .expects('getConfigurationsByType')
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('find')
       .resolves([authentication]);
 
     sinon.mock(UserModel)
       .expects('count')
+      .withArgs({})
       .yields(null, 1);
 
     request(app)
@@ -119,27 +129,30 @@ describe("api route tests", function () {
 
     const settingMock = sinon.mock(SettingModel);
 
-    settingMock.expects('getSetting')
-      .withArgs('disclaimer')
+    settingMock.expects('findOne')
+      .withArgs({ type: 'disclaimer' })
+      .chain('exec')
       .resolves({});
 
-    settingMock.expects('getSetting')
-      .withArgs('contactinfo' )
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
+      .chain('exec')
       .resolves({});
 
     sinon.mock(UserModel)
       .expects('count')
+      .withArgs({})
       .yields(null, 0);
 
-    const authentication = {
+    const authentication = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       previousPasswords: []
-    };
+    });
 
-    sinon.mock(AuthenticationConfigurationModel)
-      .expects('getConfigurationsByType')
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('find')
       .resolves([authentication]);
 
     request(app)
@@ -166,27 +179,30 @@ describe("api route tests", function () {
 
     const settingMock = sinon.mock(SettingModel);
 
-    settingMock.expects('getSetting')
-      .withArgs('disclaimer')
+    settingMock.expects('findOne')
+      .withArgs({ type: 'disclaimer' })
+      .chain('exec')
       .resolves({});
 
-    settingMock.expects('getSetting')
-      .withArgs('contactinfo')
+    settingMock.expects('findOne')
+      .withArgs({ type: 'contactinfo' })
+      .chain('exec')
       .resolves({});
 
     sinon.mock(UserModel)
       .expects('count')
+      .withArgs({})
       .yields(null, 2);
 
-    const authentication = {
+    const authentication = new Authentication.Local({
       _id: mongoose.Types.ObjectId(),
       type: 'local',
       password: 'password',
       previousPasswords: []
-    };
+    });
 
-    sinon.mock(AuthenticationConfigurationModel)
-      .expects('getConfigurationsByType')
+    sinon.mock(AuthenticationConfiguration.Model)
+      .expects('find')
       .resolves([authentication]);
 
     request(app)

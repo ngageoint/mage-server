@@ -1,6 +1,6 @@
 import _ from 'underscore'
 import { Component, OnInit, Inject, ElementRef, ViewChild } from '@angular/core'
-import { UntypedFormControl } from '@angular/forms'
+import { FormControl } from '@angular/forms'
 import { Observable } from 'rxjs'
 import { map, startWith } from 'rxjs/operators'
 import { StateService } from '@uirouter/angular'
@@ -55,7 +55,7 @@ export class AdminFeedComponent implements OnInit {
   addEvent = false
   selectedEvent: string
 
-  searchControl: UntypedFormControl = new UntypedFormControl()
+  searchControl: FormControl = new FormControl()
   eventModel: any
   filteredChoices: Observable<any[]>
   events = []

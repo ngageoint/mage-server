@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { AttachmentAction } from './observation-edit-attachment-action';
 
 interface AttachmentField {
@@ -16,19 +16,19 @@ interface AttachmentField {
   styleUrls: ['./observation-edit-attachment.component.scss']
 })
 export class ObservationEditAttachmentComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: AttachmentField
   @Input() url: string
   @Input() attachments: any[]
 
-  control: UntypedFormControl
+  control: FormControl
   uploadId = 0
   uploadAttachments = false
 
   constructor(private changeDetector: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
+    this.control = this.formGroup.get(this.definition.name) as FormControl
   }
 
   trackByAttachment(index: number, attachment: any): any {

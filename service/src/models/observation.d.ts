@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import { MageEventAttrs, MageEventId } from '../entities/events/entities.events'
-import { Attachment, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
+import { MageEvent, MageEventAttrs, MageEventId } from '../entities/events/entities.events'
+import { Attachment, AttachmentId, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
 export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'importantFlag' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
@@ -26,7 +26,7 @@ export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 
  * This interface defines the options that one can supply to the `toJSON()`
  * method of the Mongoose Document instances of the Observation model.
  */
-export interface ObservationJsonOptions extends mongoose.ToObjectOptions {
+export interface ObservationJsonOptions extends mongoose.DocumentToObjectOptions {
   /**
    * The database schema does not include the event ID for observation
    * documents.  Use this option to add the `eventId` property to the

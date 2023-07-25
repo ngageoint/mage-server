@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { GeometryPipe } from 'src/app/geometry/geometry.pipe';
 
 import { ObservationViewGeometryComponent } from './observation-view-geometry.component';
 
-/* TODO test MUST contain at least 1 test
 describe('ObservationViewGeometryComponent', () => {
   let component: ObservationViewGeometryComponent;
   let fixture: ComponentFixture<ObservationViewGeometryComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationViewGeometryComponent, GeometryPipe]
     })
@@ -25,4 +24,3 @@ describe('ObservationViewGeometryComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

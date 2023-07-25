@@ -1,12 +1,12 @@
 @import "./variables.scss";
 
 @import "./material-theme.scss";
-@import "material-components-web/material-components-web.scss";
+@import "~material-components-web/material-components-web.scss";
 
-@import "ui-select/dist/select.min.css";
-@import "font-awesome/css/font-awesome.min.css";
-@import "jquery-minicolors/jquery.minicolors.css";
-@import "select2/dist/css/select2.min.css";
+@import "~ui-select/dist/select.min.css";
+@import "~font-awesome/css/font-awesome.min.css";
+@import "~jquery-minicolors/jquery.minicolors.css";
+@import "~select2/dist/css/select2.min.css";
 
 @import "./animate.scss";
 @import "./colors.scss";

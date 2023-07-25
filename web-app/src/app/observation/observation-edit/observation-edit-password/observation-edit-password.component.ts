@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 
 interface PasswordField {
   title: string,
@@ -13,6 +13,6 @@ interface PasswordField {
   styleUrls: ['./observation-edit-password.component.scss']
 })
 export class ObservationEditPasswordComponent {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: PasswordField
 }

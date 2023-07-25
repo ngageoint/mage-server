@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LayersComponent } from './layers.component';
 import { LayerHeaderComponent } from './layer-header.component';
@@ -17,12 +17,11 @@ import { Component, ViewChild } from '@angular/core';
 
 @Component({
   selector: `host-component`,
-  template: `<map-layers-panel
-    [mageLayers]="mageLayers"
-    [baseLayers]="baseLayers"
-    [tileOverlays]="tileOverlays"
-    [featureOverlays]="featureOverlays"
-    [gridOverlays]="gridOverlays">
+  template: `<map-layers-panel 
+    [mageLayers]="mageLayers" 
+    [baseLayers]="baseLayers" 
+    [tileOverlays]="tileOverlays" 
+    [featureOverlays]="featureOverlays">
   </map-layers-panel>`
 })
 class TestHostComponent {
@@ -31,7 +30,6 @@ class TestHostComponent {
   baseLayers= [];
   tileOverlays = [];
   featureOverlays = [];
-  gridOverlays = [];
 
   @ViewChild(LayersComponent) layers: LayersComponent;
 }
@@ -42,7 +40,7 @@ describe('LayersComponent', () => {
   let hostComponent: TestHostComponent;
   let fixture: ComponentFixture<TestHostComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ FormsModule, MatCardModule, MatFormFieldModule, MatIconModule, MatSliderModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, CheckboardModule, HueModule, SaturationModule, AlphaModule ],
       declarations: [ LayersComponent, LayerHeaderComponent, LayerContentComponent, ColorPickerComponent, TestHostComponent ]

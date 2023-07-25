@@ -1,5 +1,5 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ComponentFixture, inject, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { StateService } from '@uirouter/angular';
@@ -29,7 +29,7 @@ describe('AdminFeedsComponent', () => {
   let component: AdminFeedsComponent;
   let fixture: ComponentFixture<AdminFeedsComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: StateService, useValue: {} },

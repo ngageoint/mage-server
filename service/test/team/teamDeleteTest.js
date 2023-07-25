@@ -1,24 +1,25 @@
-'use strict';
-
-const request = require('supertest')
+var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , EventModel = require('../../lib/models/event')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
+var TeamModel = mongoose.model('Team');
 
-describe("team delete tests", function () {
+require('../../lib/models/event');
+var EventModel = mongoose.model('Event');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+
+describe("team delete tests", function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -37,40 +38,42 @@ describe("team delete tests", function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should delete team", function (done) {
+  it("should delete team", function(done) {
     mockTokenWithPermission('DELETE_TEAM');
 
-    const teamId = mongoose.Types.ObjectId();
-    const eventId = 1;
-    const mockTeam = new TeamModel({
+    var teamId = mongoose.Types.ObjectId();
+    var eventId = 1;
+    var mockTeam = new TeamModel({
       id: teamId,
       name: 'Team 1',
       teamEventId: eventId
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('getById')
-      .yields(null, {
+      .expects('findById').withArgs(eventId)
+      .yields(null, new EventModel({
         name: 'Mock Event'
-      });
+      }));
 
     sinon.mock(mockTeam)
       .expects('remove')
@@ -84,15 +87,15 @@ describe("team delete tests", function () {
       .end(done);
   });
 
-  it("should delete team with acl delete", function (done) {
+  it("should delete team with acl delete", function(done) {
     mockTokenWithPermission('');
 
-    const teamId = mongoose.Types.ObjectId();
-    const eventId = 1;
+    var teamId = mongoose.Types.ObjectId();
+    var eventId = 1;
 
-    const acl = {};
+    var acl = {};
     acl[userId.toString()] = 'OWNER';
-    const mockTeam = new TeamModel({
+    var mockTeam = new TeamModel({
       id: teamId,
       teamEventId: eventId,
       name: 'Mock Team',
@@ -100,16 +103,16 @@ describe("team delete tests", function () {
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('getById')
-      .yields(null, {
+      .expects('findById').withArgs(eventId)
+      .yields(null, new EventModel({
         name: 'Mock Event'
-      });
+      }));
 
     sinon.mock(mockTeam)
       .expects('remove')
@@ -123,15 +126,15 @@ describe("team delete tests", function () {
       .end(done);
   });
 
-  it("should fail to delete team with no acl delete", function (done) {
+  it("should fail to delete team with no acl delete", function(done) {
     mockTokenWithPermission('');
 
-    const teamId = mongoose.Types.ObjectId();
-    const eventId = 1;
+    var teamId = mongoose.Types.ObjectId();
+    var eventId = 1;
 
-    const acl = {};
+    var acl = {};
     acl[userId.toString()] = 'MANAGER';
-    const mockTeam = new TeamModel({
+    var mockTeam = new TeamModel({
       id: teamId,
       teamEventId: eventId,
       name: 'Mock Team',
@@ -139,7 +142,7 @@ describe("team delete tests", function () {
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
@@ -152,35 +155,35 @@ describe("team delete tests", function () {
       .end(done);
   });
 
-  it("should not delete team specifically for event", function (done) {
+  it("should not delete team specifically for event", function(done) {
     mockTokenWithPermission('DELETE_TEAM');
 
-    const teamId = mongoose.Types.ObjectId();
-    const eventId = 1;
-    const mockTeam = new TeamModel({
+    var teamId = mongoose.Types.ObjectId();
+    var eventId = 1;
+    var mockTeam = new TeamModel({
       id: teamId,
       name: 'Team 1',
       teamEventId: eventId
     });
 
     sinon.mock(TeamModel)
-      .expects('findOne').withArgs({ _id: teamId.toString() })
+      .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
     sinon.mock(EventModel)
-      .expects('getById')
-      .yields(null, {
+      .expects('findById').withArgs(eventId)
+      .yields(null, new EventModel({
         name: 'Mock Event'
-      });
+      }));
 
     request(app)
       .delete('/api/teams/' + teamId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(405)
-      .expect(function (res) {
+      .expect(function(res) {
         res.text.should.equal("Cannot delete an events team, event 'Mock Event' still exists.");
       })
       .end(done);

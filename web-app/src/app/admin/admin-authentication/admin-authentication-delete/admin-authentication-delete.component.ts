@@ -35,7 +35,7 @@ export class AuthenticationDeleteComponent implements AfterViewInit {
       this.dialogRef.close('delete');
     }).catch((err: any) => {
       console.error(err);
-      this.dialogRef.close('error');
+      this.dialogRef.close('cancel');
     });
   }
 }

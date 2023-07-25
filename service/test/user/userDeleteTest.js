@@ -2,22 +2,25 @@
 
 const request = require('supertest')
   , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+  , MockToken = require('../mockToken')
+  , mongoose = require('mongoose');
+
+require('../../lib/models/token');
+const TokenModel = mongoose.model('Token');
 
 require('../../lib/models/user');
 const UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
-describe("user delete tests", function () {
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+
+describe("user delete tests", function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -36,19 +39,21 @@ describe("user delete tests", function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
   const userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it('should delete user by id', function (done) {
+  it('should delete user by id', function(done) {
     mockTokenWithPermission('DELETE_USER');
 
     const id = mongoose.Types.ObjectId();

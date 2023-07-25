@@ -97,10 +97,9 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     function onMessage(event) {
       $window.removeEventListener('message', onMessage, false);
 
-      if (event.origin !== $location.protocol() + "://" + $location.host() &&
-          event.origin !== $location.protocol() + "://" + $location.host() + ":" + $location.port()) {
+      if (event.origin !== $location.protocol() + "://" + $location.host()) {
         return;
-    }
+      }
 
       deferred.resolve(event.data);
 

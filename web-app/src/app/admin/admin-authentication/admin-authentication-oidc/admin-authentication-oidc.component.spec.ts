@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdminAuthenticationOidcComponent } from './admin-authentication-oidc.component';
 
@@ -6,7 +6,7 @@ describe('AdminAuthenticationOidcComponent', () => {
   let component: AdminAuthenticationOidcComponent;
   let fixture: ComponentFixture<AdminAuthenticationOidcComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ AdminAuthenticationOidcComponent ]
     })

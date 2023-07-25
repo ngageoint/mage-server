@@ -2,7 +2,7 @@ import { animate, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'
 import { DOCUMENT } from '@angular/common'
 import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core'
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
 import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
@@ -17,7 +17,7 @@ import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from
 import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
 import { AttachmentAction } from './observation-edit-attachment/observation-edit-attachment-action'
 
-export type ObservationFormControl = UntypedFormControl & { definition: any }
+export type ObservationFormControl = FormControl & { definition: any }
 
 @Component({
   selector: 'observation-edit',
@@ -56,7 +56,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   @ViewChildren('form') formElements: QueryList<ElementRef>
 
   event: any
-  formGroup: UntypedFormGroup
+  formGroup: FormGroup
   formDefinitions: any
   timestampDefinition = {
     title: '',
@@ -97,7 +97,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     sanitizer: DomSanitizer,
     matIconRegistry: MatIconRegistry,
     public dialog: MatDialog,
-    private formBuilder: UntypedFormBuilder,
+    private formBuilder: FormBuilder,
     private bottomSheet: MatBottomSheet,
     private snackBar: MatSnackBar,
     private attachmentService: AttachmentService,
@@ -167,16 +167,16 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
   // TODO multi-form build out validators here as well for each form control
   toFormGroup(observation: any): void {
-    const timestampControl = new UntypedFormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
-    const geometryControl = new UntypedFormControl(observation.geometry, Validators.required);
+    const timestampControl = new FormControl(moment(observation.properties.timestamp).toDate(), Validators.required);
+    const geometryControl = new FormControl(observation.geometry, Validators.required);
 
-    const formArray = new UntypedFormArray([])
+    const formArray = new FormArray([])
     const observationForms = observation.properties.forms || []
     observationForms.forEach(observationForm => {
       const formDefinition = this.formDefinitions[observationForm.formId]
-      const fieldGroup = new UntypedFormGroup({
-        id: new UntypedFormControl(observationForm.id),
-        formId: new UntypedFormControl(formDefinition.id)
+      const fieldGroup = new FormGroup({
+        id: new FormControl(observationForm.id),
+        formId: new FormControl(formDefinition.id)
       })
 
       formDefinition.fields
@@ -184,7 +184,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
         .sort((a, b) => a.id - b.id)
         .forEach(field => {
           const value = this.isNewObservation ? field.value : observationForm[field.name]
-          const fieldControl = new UntypedFormControl(value, field.required ? Validators.required : null)
+          const fieldControl = new FormControl(value, field.required ? Validators.required : null)
           fieldGroup.addControl(field.name, fieldControl)
         })
 
@@ -193,10 +193,10 @@ export class ObservationEditComponent implements OnInit, OnChanges {
 
     this.formGroup = this.formBuilder.group({
       id: observation.id,
-      eventId: new UntypedFormControl(observation.eventId),
-      type: new UntypedFormControl(observation.type),
+      eventId: new FormControl(observation.eventId),
+      type: new FormControl(observation.type),
       geometry: geometryControl,
-      properties: new UntypedFormGroup({
+      properties: new FormGroup({
         timestamp: timestampControl,
         forms: formArray
       })
@@ -208,9 +208,9 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   }
 
   updatePrimarySecondary(): void {
-    const forms = this.formGroup.get('properties').get('forms') as UntypedFormArray
+    const forms = this.formGroup.get('properties').get('forms') as FormArray
     if (forms.length) {
-      const primaryFormGroup = forms.at(0) as UntypedFormGroup
+      const primaryFormGroup = forms.at(0) as FormGroup
       const definition = this.formDefinitions[primaryFormGroup.get('formId').value]
 
       let primaryFieldValue
@@ -356,19 +356,19 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     }).afterDismissed().subscribe(form => {
       if (!form) return
 
-      const fieldsGroup = new UntypedFormGroup({
-        formId: new UntypedFormControl(form.id)
+      const fieldsGroup = new FormGroup({
+        formId: new FormControl(form.id)
       });
 
       form.fields
         .filter(field => !field.archived)
         .sort((a, b) => a.id - b.id)
         .forEach(field => {
-          const fieldControl = new UntypedFormControl(field.value, field.required ? Validators.required : null)
+          const fieldControl = new FormControl(field.value, field.required ? Validators.required : null)
           fieldsGroup.addControl(field.name, fieldControl)
         });
 
-      (this.formGroup.get('properties').get('forms') as UntypedFormArray).push(fieldsGroup);
+      (this.formGroup.get('properties').get('forms') as FormArray).push(fieldsGroup);
 
       this.formElements.changes.pipe(first()).subscribe((queryList: QueryList<ElementRef>) => {
         queryList.last.nativeElement.scrollIntoView({ behavior: 'smooth' })
@@ -376,8 +376,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     })
   }
 
-  removeForm(formGroup: UntypedFormGroup): void {
-    const formArray = this.formGroup.get('properties').get('forms') as UntypedFormArray
+  removeForm(formGroup: FormGroup): void {
+    const formArray = this.formGroup.get('properties').get('forms') as FormArray
     const index = formArray.controls.indexOf(formGroup)
     formArray.removeAt(index)
 
@@ -394,7 +394,7 @@ export class ObservationEditComponent implements OnInit, OnChanges {
   reorderForm(event: CdkDragDrop<any, any>): void {
     if (event.currentIndex === event.previousIndex) return
 
-    const forms = (this.formGroup.get('properties').get('forms') as UntypedFormArray).controls
+    const forms = (this.formGroup.get('properties').get('forms') as FormArray).controls
     moveItemInArray(forms, event.previousIndex, event.currentIndex)
 
     // re-calculate primary/secondary based new first form
@@ -427,8 +427,8 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       case AttachmentUploadStatus.ERROR: {
         this.snackBar.open(event.response?.error, null, { duration: 4000 })
 
-        const formArray = this.formGroup.get('properties').get('forms') as UntypedFormArray
-        formArray.controls.forEach((formGroup: UntypedFormGroup) => {
+        const formArray = this.formGroup.get('properties').get('forms') as FormArray
+        formArray.controls.forEach((formGroup: FormGroup) => {
           const formId = formGroup.get('formId').value
           const formDefinition = this.formDefinitions[formId];
           Object.keys(formGroup.controls).forEach(fieldName => {

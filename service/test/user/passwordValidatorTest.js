@@ -4,14 +4,19 @@ const chai = require('chai')
   , expect = require("chai").expect
   , util = require('util')
   , mongoose = require('mongoose')
-  , TokenModel = require('../../lib/models/token')
-  , UserModel = require('../../lib/models/user')
-  , Authentication = require('../../lib/models/authentication')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
   , PasswordValidator = require('../../lib/utilities/passwordValidator')
   , hasher = require('../../lib/utilities/pbkdf2')();
 
 chai.use(sinonChai);
+
+require('../../lib/models/user');
+const UserModel = mongoose.model('User');
+
+require('../../lib/models/token');
+const TokenModel = mongoose.model('Token');
+
+const Authentication = require('../../lib/models/authentication');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("Password Validator Tests", function () {
 
@@ -505,11 +510,14 @@ describe("Password Validator Tests", function () {
       });
 
     sinon.mock(UserModel)
-      .expects('getUserByUsername')
-      .yields(null, {});
+      .expects('findOne')
+      .chain('populate')
+      .chain('populate')
+      .chain('exec')
+      .resolves({});
 
     sinon.mock(TokenModel)
-      .expects('removeTokensForUser')
+      .expects('remove')
       .yields(null, {});
 
     const authentication = new Authentication.Local({
@@ -565,11 +573,15 @@ describe("Password Validator Tests", function () {
       });
 
     sinon.mock(UserModel)
-      .expects('getUserByAuthenticationId')
-      .yields(null, user)
+      .expects('findOne')
+      .withArgs({ authenticationId: authentication._id })
+      .chain('populate')
+      .chain('exec')
+      .resolves(user)
 
     sinon.mock(TokenModel)
-      .expects('removeTokensForUser')
+      .expects('remove')
+      .withArgs({ userId: user._id })
       .yields(null, {})
 
     sinon.mock(Authentication.Model.collection)

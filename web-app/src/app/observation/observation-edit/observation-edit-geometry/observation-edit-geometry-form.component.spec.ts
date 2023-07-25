@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ObservationEditGeometryFormComponent } from './observation-edit-geometry-form.component';
 
-/* TODO tests MUST contain at least 1 test
 describe('ObservationEditGeometryFormComponent', () => {
   let component: ObservationEditGeometryFormComponent;
   let fixture: ComponentFixture<ObservationEditGeometryFormComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationEditGeometryFormComponent ]
     })
@@ -24,4 +23,3 @@ describe('ObservationEditGeometryFormComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

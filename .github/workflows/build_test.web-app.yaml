@@ -23,14 +23,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           # TODO: angular 9 build does not run on node > 14
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: 14
           cache: npm
           cache-dependency-path: web-app/package-lock.json
       - name: build
         run: |
           cd web-app
           npm ci
-          npm run build:prod
+          npm run build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test

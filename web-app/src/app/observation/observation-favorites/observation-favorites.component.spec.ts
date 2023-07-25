@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { ObservationFavoritesComponent } from './observation-favorites.component';
 
-/* TODO test MUST contain 1 test
 describe('ObservationFavoritesComponent', () => {
   let component: ObservationFavoritesComponent;
   let fixture: ComponentFixture<ObservationFavoritesComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [MatDialogModule],
       declarations: [ObservationFavoritesComponent],
@@ -31,4 +30,3 @@ describe('ObservationFavoritesComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

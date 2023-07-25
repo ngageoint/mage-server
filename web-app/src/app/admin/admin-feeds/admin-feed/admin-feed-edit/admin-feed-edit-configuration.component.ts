@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms'
+import { FormControl, FormGroup } from '@angular/forms'
 import { debounceTime, map } from 'rxjs/operators'
 import { FeedTopic } from '@ngageoint/mage.web-core-lib/feed'
 import { StaticIconReference } from '@ngageoint/mage.web-core-lib/static-icon'
@@ -32,16 +32,16 @@ export class AdminFeedEditConfigurationComponent implements OnInit, OnChanges {
   @Output() cancelled = new EventEmitter();
   @Output() opened = new EventEmitter();
 
-  feedMetaDataForm: UntypedFormGroup = new UntypedFormGroup({
-    title: new UntypedFormControl(),
-    summary: new UntypedFormControl(),
-    icon: new UntypedFormControl(),
-    itemsHaveIdentity: new UntypedFormControl(),
-    itemsHaveSpatialDimension: new UntypedFormControl(),
-    itemPrimaryProperty: new UntypedFormControl(),
-    itemSecondaryProperty: new UntypedFormControl(),
-    itemTemporalProperty: new UntypedFormControl(),
-    updateFrequencySeconds: new UntypedFormControl()
+  feedMetaDataForm: FormGroup = new FormGroup({
+    title: new FormControl(),
+    summary: new FormControl(),
+    icon: new FormControl(),
+    itemsHaveIdentity: new FormControl(),
+    itemsHaveSpatialDimension: new FormControl(),
+    itemPrimaryProperty: new FormControl(),
+    itemSecondaryProperty: new FormControl(),
+    itemTemporalProperty: new FormControl(),
+    updateFrequencySeconds: new FormControl()
   })
   itemSchemaPropertyTitles: { key: string, title: string }[] = [];
   readonly changeDebounceInterval = 500
@@ -127,17 +127,17 @@ type FeedMetaDataStringKeys = { [K in keyof FeedMetaData]: FeedMetaData[K] exten
 type FeedMetaDataBooleanKeys = { [K in keyof FeedMetaData]: FeedMetaData[K] extends boolean ? K : never }[keyof FeedMetaData]
 type FeedMetaDataNumberKeys = { [K in keyof FeedMetaData]: FeedMetaData[K] extends number ? K : never }[keyof FeedMetaData]
 
-function formUpdateValueForTextControl(key: FeedMetaDataStringKeys, form: UntypedFormGroup, updateMetaData: FeedMetaData): string | null {
+function formUpdateValueForTextControl(key: FeedMetaDataStringKeys, form: FormGroup, updateMetaData: FeedMetaData): string | null {
   const control = form.get(key)
   return control.dirty ? control.value as string || null : updateMetaData[key] || null
 }
 
-function formUpdateValueForBooleanControl(key: FeedMetaDataBooleanKeys, form: UntypedFormGroup, updateMetaData: FeedMetaData): boolean | null {
+function formUpdateValueForBooleanControl(key: FeedMetaDataBooleanKeys, form: FormGroup, updateMetaData: FeedMetaData): boolean | null {
   const control = form.get(key)
   return control.dirty ? control.value : (typeof updateMetaData[key] === 'boolean' ? updateMetaData[key] : null)
 }
 
-function formUpdateValueForNumberControl(key: FeedMetaDataNumberKeys, form: UntypedFormGroup, updateMetaData: FeedMetaData): number | null {
+function formUpdateValueForNumberControl(key: FeedMetaDataNumberKeys, form: FormGroup, updateMetaData: FeedMetaData): number | null {
   const control = form.get(key)
   if (control.dirty) {
     return typeof control.value === 'number' ? control.value : null
@@ -145,7 +145,7 @@ function formUpdateValueForNumberControl(key: FeedMetaDataNumberKeys, form: Unty
   return typeof updateMetaData[key] === 'number' ? updateMetaData[key] : null
 }
 
-function formUpdateValueForIconControl(key: keyof Pick<FeedMetaData, 'icon'>, form: UntypedFormGroup, updateMetaData: FeedMetaData): StaticIconReference | null {
+function formUpdateValueForIconControl(key: keyof Pick<FeedMetaData, 'icon'>, form: FormGroup, updateMetaData: FeedMetaData): StaticIconReference | null {
   const control = form.get(key)
   return control.dirty ? control.value as StaticIconReference : (updateMetaData.icon || null)
 }

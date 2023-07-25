@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core'
 import { Component, ViewChild } from '@angular/core'
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
+import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { By } from '@angular/platform-browser'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
@@ -33,7 +33,7 @@ describe('TopicConfigurationComponent', () => {
   let target: AdminFeedEditTopicConfigurationComponent
   let element: HTMLElement
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         MatExpansionModule,
@@ -95,6 +95,14 @@ describe('TopicConfigurationComponent', () => {
 
   describe('debouncing the change event', () => {
 
+    beforeEach(() => {
+      jasmine.clock().install()
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
     it('debounces multiple change events', async () => {
 
       fixture.detectChanges()
@@ -106,14 +114,11 @@ describe('TopicConfigurationComponent', () => {
 
       expect(changed).not.toHaveBeenCalled()
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2));
-
+      jasmine.clock().tick(target.changeDebounceInterval / 2)
 
       expect(changed).not.toHaveBeenCalled()
 
-      fixture.detectChanges()
-      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2 + 2));
+      jasmine.clock().tick(target.changeDebounceInterval / 2 + 2)
 
       expect(changed).toHaveBeenCalledTimes(1)
       expect(changed).toHaveBeenCalledWith({ derp: 10 })

@@ -109,7 +109,7 @@ function migrateIconData(event, formId, callback) {
       IconModel.create({eventId: event._id, formId: null, type: null, variant: null, relativePath: path.join(event._id.toString(), 'icon.png')}, done);
     },
     function(done) {
-      IconModel.updateMany({eventId: event._id, formId: formId}, {$rename: {'type': 'primary'}}, {strict: false}, done);
+      IconModel.update({eventId: event._id, formId: formId}, {$rename: {'type': 'primary'}}, {multi: true, strict: false}, done);
     }
   ],function(err) {
     callback(err);

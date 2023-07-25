@@ -1,6 +1,6 @@
 
 
-declare module '@ngageoint/mongodb-migrations' {
+declare module 'mongodb-migrations' {
 
   import { MongoClientOptions } from 'mongodb'
   export { MongoClientOptions } from 'mongodb'

@@ -58,20 +58,17 @@ class AdminEventController {
     this.eventLayers = [];
     this.layersPage = 0;
     this.layersPerPage = 5;
-    this.layerSearch = null;
 
     this.nonLayers = [];
     this.nonLayersPage = 0;
     this.nonLayersPerPage = 2;
-    this.nonLayerSearch = null;
 
     this.layers = [];
 
     this.eventTeam;
 
     // For some reason angular is not calling into filter function with correct context
-    this.filterLayers = this.filterLayers.bind(this);
-    this.filterNonLayers = this.filterNonLayers.bind(this);
+    this.filterLayers = this._filterLayers.bind(this);
   }
 
   $onInit() {
@@ -261,21 +258,13 @@ class AdminEventController {
     });
   }
 
-  filterLayers(layer) {
-    let filteredLayers = this.eventLayers;
-    if (this.layerSearch) {
-      filteredLayers = this.$filter('filter')([layer], this.layerSearch);
-    }
-
+  _filterLayers(layer) {
+    const filteredLayers = this.$filter('filter')([layer], this.layerSearch);
     return filteredLayers && filteredLayers.length;
   }
 
-  filterNonLayers(layer) {
-    let filteredNonLayers = this.nonLayers;
-    if (this.nonLayerSearch) {
-      filteredNonLayers = this.$filter('filter')([layer], this.nonLayerSearch);
-    }
-
+  _filterNonayers(layer) {
+    const filteredNonLayers = this.$filter('filter')([layer], this.nonLayerSearch);
     return filteredNonLayers && filteredNonLayers.length;
   }
 
@@ -487,16 +476,9 @@ class AdminEventController {
     $event.stopPropagation();
 
     let forms = this.event.forms;
+
     let from = forms.indexOf(form);
     let to = from - 1;
-    if (!this.showArchivedForms) {
-      for (; to >= 0; to--) {
-        if (!forms[to].archived) {
-          break;
-        }
-      }
-    }
-
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();
@@ -506,16 +488,9 @@ class AdminEventController {
     $event.stopPropagation();
 
     let forms = this.event.forms;
+
     let from = forms.indexOf(form);
     let to = from + 1;
-    if (!this.showArchivedForms) {
-      for (; from < forms.length; to++) {
-        if (!forms[to].archived) {
-          break;
-        }
-      }
-    }
-
     forms.splice(to, 0, forms.splice(from, 1)[0]);
 
     this.event.$save();

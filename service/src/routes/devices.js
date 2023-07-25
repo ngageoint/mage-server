@@ -124,9 +124,7 @@ DeviceResource.prototype.create = function(req, res, next) {
     .then(device => {
       res.json(device);
     })
-    .catch(err => { 
-      next(err)
-    });
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.count = function (req, res, next) {
@@ -185,22 +183,22 @@ DeviceResource.prototype.getDevice = function(req, res, next) {
 };
 
 DeviceResource.prototype.updateDevice = function(req, res, next) {
-  const update = {};
+  var update = {};
   if (req.newDevice.uid) update.uid = req.newDevice.uid;
   if (req.newDevice.name) update.name = req.newDevice.name;
   if (req.newDevice.description) update.description = req.newDevice.description;
   if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
-  Device.updateDevice(req.param('id'), update)
-    .then(device => {
-      if (!device) return res.sendStatus(404);
-
-      res.json(device);
-    })
-    .catch(err => {
-      next(err)
-    });
+  return Device.updateDevice(req.param('id'), update)
+    .then(
+      device => {
+        res.json(device)
+      },
+      err => {
+        next(err)
+      }
+    );
 };
 
 DeviceResource.prototype.deleteDevice = function(req, res, next) {

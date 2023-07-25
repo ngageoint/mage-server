@@ -1,30 +1,34 @@
-'use strict';
+const request = require('supertest');
+const sinon = require('sinon');
+const mongoose = require('mongoose');
+const mockfs = require('mock-fs');
+const { expect } = require('chai');
+const MockToken = require('../mockToken');
+const TokenModel = mongoose.model('Token');
 
-const request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , mockfs = require('mock-fs')
-  , { expect } = require('chai')
-  , createToken = require('../mockToken')
-  , IconModel = require('../../lib/models/icon')
-  , TokenModel = require('../../lib/models/token')
-  , UserModel = require('../../lib/models/user')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-
+require('chai').should();
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
+var TeamModel = mongoose.model('Team');
 
-const EventOperations = require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
+require('../../lib/models/event');
+var EventModel = mongoose.model('Event');
 
-describe('deleting events', function () {
+require('../../lib/models/icon');
+var IconModel = mongoose.model('Icon');
+
+require('../../lib/models/user');
+var UserModel = mongoose.model('User');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+
+describe('deleting events', function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -43,24 +47,26 @@ describe('deleting events', function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it('deletes the event and all related resources', function (done) {
+  it('deletes the event and all related resources', function(done) {
 
     mockTokenWithPermission('DELETE_EVENT');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       collectionName: 'observations1'
@@ -77,25 +83,26 @@ describe('deleting events', function () {
 
     const droppedObservationCollection = sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
-      .resolves(null);
+      .yields(null);
 
     sinon.mock(IconModel)
-      .expects('getIcon')
+      .expects('findOne')
       .yields(null);
 
     sinon.mock(IconModel)
       .expects('remove')
       .yields(null);
 
-    const teamId = mongoose.Types.ObjectId();
-    const mockTeam = new TeamModel({
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
       teamEventId: eventId
     });
 
-    sinon.mock(UserModel)
-      .expects('removeRecentEventForUsers')
+    var removeEventsFromUserExpectation = sinon.mock(UserModel)
+      .expects('update')
+      .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
       .yields(null);
 
     mockfs({
@@ -108,7 +115,7 @@ describe('deleting events', function () {
       .chain('exec')
       .yields(null, [mockTeam]);
 
-    const removedEventTeam = sinon.mock(mockTeam)
+    var removedEventTeam = sinon.mock(mockTeam)
       .expects('remove')
       .yields(null);
 
@@ -117,20 +124,21 @@ describe('deleting events', function () {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(204)
-      .end(function (err) {
+      .end(function(err) {
         droppedObservationCollection.verify();
         removedEventTeam.verify();
+        removeEventsFromUserExpectation.verify();
         expect(eventRemoveSpy.callCount).to.equal(1);
         mockfs.restore();
         done(err);
       });
   });
 
-  it("should delete event if delete permission in acl", function (done) {
+  it("should delete event if delete permission in acl", function(done) {
     mockTokenWithPermission('');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       collectionName: 'observations1',
@@ -138,44 +146,81 @@ describe('deleting events', function () {
     });
     mockEvent.acl[userId] = 'OWNER';
 
-    sinon.mock(EventOperations)
-      .expects('getById')
-      .yields(null, mockEvent);
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
+      .yields(null, null);
+
+    sinon.mock(EventModel.collection)
+      .expects('remove')
+      .yields(null);
+
+    sinon.mock(mongoose.connection.db)
+      .expects('dropCollection')
+      .yields(null);
 
     sinon.mock(IconModel)
-      .expects('getIcon')
+      .expects('findOne')
       .yields(null);
 
     sinon.mock(IconModel)
       .expects('remove')
       .yields(null);
 
-    sinon.mock(UserModel)
-      .expects('removeRecentEventForUsers')
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team',
+      teamEventId: 1
+    });
+
+    var removeEventsFromUserExpectation = sinon.mock(UserModel)
+      .expects('update')
+      .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
       .yields(null);
 
     mockfs({
       '/var/lib/mage': {}
     });
 
-    sinon.stub(mockEvent, 'remove').callsFake(function (){});
+    sinon.mock(TeamModel)
+      .expects('find')
+      .chain('populate')
+      .chain('exec')
+      .yields(null, [mockTeam]);
+
+    var removeTeamsFromEventExpectation = sinon.mock(EventModel)
+      .expects('update')
+      .withArgs({}, { $pull: { teamIds: teamId } })
+      .yields(null, [mockTeam]);
+
+    var removeTeamExpectation = sinon.mock(TeamModel.collection)
+      .expects('remove')
+      .yields(null);
 
     request(app)
       .delete('/api/events/' + eventId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(204)
-      .end(function (err) {
+      .end(function(err) {
+        removeTeamExpectation.verify();
+        removeEventsFromUserExpectation.verify();
+        removeTeamsFromEventExpectation.verify();
+
         mockfs.restore();
         done(err);
       });
   });
 
-  it("should reject event delete if no delete permission in acl", function (done) {
+  it("should reject event delete if no delete permission in acl", function(done) {
     mockTokenWithPermission('');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event',
       collectionName: 'observations1',

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -13,7 +13,7 @@ describe('AutocompleteMaterialSelectComponent', () => {
   let component: JsonSchemaWidgetAutocompleteComponent;
   let fixture: ComponentFixture<JsonSchemaWidgetAutocompleteComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         MatFormFieldModule,

@@ -1,22 +1,23 @@
-'use strict';
-
-const request = require('supertest')
+var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , DeviceModel = require('../../lib/models/device')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
-describe("device read tests", function () {
+require('../../lib/models/device');
+var DeviceModel = mongoose.model('Device');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+
+describe("device read tests", function() {
 
   let app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -35,26 +36,29 @@ describe("device read tests", function () {
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should get devices", function (done) {
+  it("should get devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
     sinon.mock(DeviceModel)
-      .expects('getDevices')
+      .expects('find')
+      .chain('exec')
       .resolves([{
         uid: '123'
-      }, {
+      },{
         uid: '456'
       }]);
 
@@ -64,94 +68,111 @@ describe("device read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const devices = res.body;
+      .expect(function(res) {
+        var devices = res.body;
         should.exist(devices);
       })
       .end(done);
   });
 
-  it("should get devices and populate user", function (done) {
+  it("should get devices and populate user", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    const mockDevices = [{
+    var mockDevices = [{
       uid: '123'
-    }, {
+    },{
       uid: '456'
     }];
     sinon.mock(DeviceModel)
-      .expects('getDevices')
+      .expects('find')
+      .chain('exec')
       .resolves(mockDevices);
 
+    sinon.mock(DeviceModel)
+      .expects('populate')
+      .withArgs(mockDevices, 'userId')
+      .yields(null, [{
+        uid: '123',
+        userId: {}
+      },{
+        uid: '456',
+        userId: {}
+      }]);
+
     request(app)
       .get('/api/devices')
-      .query({ expand: 'user' })
+      .query({expand: 'user'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const devices = res.body;
+      .expect(function(res) {
+        var devices = res.body;
         should.exist(devices);
       })
       .end(done);
   });
 
-  it("should get registered devices", function (done) {
+  it("should get registered devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
     sinon.mock(DeviceModel)
-      .expects('getDevices')
+      .expects('find')
+      .withArgs({ registered: true })
+      .chain('exec')
       .resolves([{
         uid: '123'
-      }, {
+      },{
         uid: '456'
       }]);
 
     request(app)
       .get('/api/devices')
-      .query({ registered: 'true' })
+      .query({registered: 'true'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const devices = res.body;
+      .expect(function(res) {
+        var devices = res.body;
         should.exist(devices);
       })
       .end(done);
   });
 
-  it("should get unregistered devices", function (done) {
+  it("should get unregistered devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
     sinon.mock(DeviceModel)
-      .expects('getDevices')
+      .expects('find')
+      .withArgs({ registered: false })
+      .chain('exec')
       .resolves([{
         uid: '123'
-      }, {
+      },{
         uid: '456'
       }]);
 
     request(app)
       .get('/api/devices')
-      .query({ registered: 'false' })
+      .query({registered: 'false'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const devices = res.body;
+      .expect(function(res) {
+        var devices = res.body;
         should.exist(devices);
       })
       .end(done);
   });
 
-  it("should get device by id", function (done) {
+  it("should get device by id", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
     sinon.mock(DeviceModel)
-      .expects('getDeviceById')
+      .expects('findById')
+      .chain('exec')
       .resolves({
         uid: '123'
       });
@@ -160,22 +181,23 @@ describe("device read tests", function () {
       .get('/api/devices/123')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .query({ expand: 'user' })
+      .query({expand: 'user'})
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const device = res.body;
+      .expect(function(res) {
+        var device = res.body;
         should.exist(device);
         device.should.have.property('uid').that.equals('123');
       })
       .end(done);
   });
 
-  it("should count devices", function (done) {
+  it("should count devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
     sinon.mock(DeviceModel)
       .expects('count')
+      .chain('exec')
       .resolves(2);
 
     request(app)
@@ -184,8 +206,8 @@ describe("device read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const body = res.body;
+      .expect(function(res) {
+        var body = res.body;
         should.exist(body);
         body.should.have.property('count').that.equals(2);
       })

@@ -20,7 +20,6 @@ export class LayersComponent {
   @Input() baseLayers: [any];
   @Input() tileOverlays: [any];
   @Input() featureOverlays: [any];
-  @Input() gridOverlays: [any];
 
   @Output() onReorder = new EventEmitter<ReorderEvent>();
 

@@ -1,32 +1,32 @@
-'use strict';
-
-const request = require('supertest')
+var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , expect = require('chai').expect
   , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
-  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
-  , { MageEventPermission } = require('../../lib/entities/authorization/entities.permissions')
-  , { EventAccessType } = require('../../lib/entities/events/entities.events');
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
+require('chai').should();
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
+var TeamModel = mongoose.model('Team');
 
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
-describe("event read tests", function () {
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { MageEventPermission } = require('../../lib/entities/authorization/entities.permissions');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
+
+describe("event read tests", function() {
 
   let app;
   let userId;
 
-  beforeEach(function () {
+  beforeEach(function() {
     const configs = [];
     const config = {
       name: 'local',
@@ -42,26 +42,28 @@ describe("event read tests", function () {
       .expects('appendToConfig')
       .resolves(config);
 
-    userId = new mongoose.Types.ObjectId();
+    userId = mongoose.Types.ObjectId();
     app = require('../../lib/express').app;
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sinon.restore();
   });
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should read active events", function (done) {
+  it("should read active events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -78,10 +80,10 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read active events if user has read permission in acl", function (done) {
+  it("should read active events if user has read permission in acl", function(done) {
     mockTokenWithPermission('');
 
-    const mockEvent1 = {
+    var mockEvent1 = {
       _id: 1,
       name: 'Mock Event',
       acl: {
@@ -91,14 +93,14 @@ describe("event read tests", function () {
     };
     mockEvent1.acl[userId] = 'GUEST';
 
-    const mockEvent2 = {
+    var mockEvent2 = {
       _id: 2,
       name: 'Mock Event',
       acl: {}
     };
 
-    const mockCursor = {
-      toArray: function (callback) {
+    var mockCursor = {
+      toArray: function(callback) {
         callback(null, [mockEvent1, mockEvent2]);
       }
     };
@@ -113,7 +115,7 @@ describe("event read tests", function () {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function (res) {
+      .expect(function(res) {
         should.exist(res.body);
         res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(1);
@@ -121,28 +123,24 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read active events if user is part of a team in event", function (done) {
+  it("should read active events if user is part of a team in event", function(done) {
     mockTokenWithPermission('');
 
-    const eventId = 1;
+    var eventId = 1;
 
-    const team1 = new TeamModel({
-      _id: new mongoose.Types.ObjectId(),
-      name: 'Team 1',
-      userIds: [userId],
-      acl: {}
-    });
-
-    const mockEvent1 = new EventModel({
+    var mockEvent1 = new EventModel({
       _id: eventId,
       name: 'Mock Event 123',
-      teamIds: [team1],
+      teamIds: [],
       acl: {
         1: 'NONE'
       }
     });
+    mockEvent1.teamIds[0] = {
+      userIds: [userId]
+    };
 
-    const mockEvent2 = new EventModel({
+    var mockEvent2 = new EventModel({
       _id: eventId,
       name: 'Mock Event 267',
       acl: {}
@@ -155,14 +153,14 @@ describe("event read tests", function () {
     sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
-      .yields(null, [mockEvent1, mockEvent2]);
+      .yields(null);
 
     request(app)
       .get('/api/events?populate=false')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function (res) {
+      .expect(function(res) {
         should.exist(res.body);
         res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(1);
@@ -170,18 +168,18 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should not read events if user is not part of a team in event or in acl", function (done) {
+  it("should not read events if user is not part of a team in event or in acl", function(done) {
     mockTokenWithPermission('');
 
-    const eventId = 1;
+    var eventId = 1;
 
-    const mockEvent1 = new EventModel({
+    var mockEvent1 = new EventModel({
       _id: eventId,
       name: 'Mock Event 1',
       acl: {}
     });
 
-    const mockEvent2 = new EventModel({
+    var mockEvent2 = new EventModel({
       _id: eventId,
       name: 'Mock Event 2',
       acl: {}
@@ -201,7 +199,7 @@ describe("event read tests", function () {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect(function (res) {
+      .expect(function(res) {
         console.log('res.body', res.body);
         should.exist(res.body);
         res.body.should.be.an('array');
@@ -210,11 +208,11 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read complete events", function (done) {
+  it("should read complete events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -229,18 +227,18 @@ describe("event read tests", function () {
 
     request(app)
       .get('/api/events')
-      .query({ state: 'complete' })
+      .query({state: 'complete'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .end(done);
   });
 
-  it("should read all events", function (done) {
+  it("should read all events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -255,18 +253,18 @@ describe("event read tests", function () {
 
     request(app)
       .get('/api/events')
-      .query({ state: 'all' })
+      .query({state: 'all'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .end(done);
   });
 
-  it("should read event by id", function (done) {
+  it("should read event by id", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -281,18 +279,18 @@ describe("event read tests", function () {
 
     request(app)
       .get('/api/events/1')
-      .query({ state: 'all' })
+      .query({state: 'all'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .end(done);
   });
 
-  it("should fail to read event by id if event does not exist", function (done) {
+  it("should fail to read event by id if event does not exist", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
@@ -307,14 +305,14 @@ describe("event read tests", function () {
 
     request(app)
       .get('/api/events/2')
-      .query({ state: 'all' })
+      .query({state: 'all'})
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(404)
       .end(done);
   });
 
-  it("should read teams page in event", function (done) {
+  it("should read teams page in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     const eventId = 1;
@@ -354,16 +352,16 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read users in event", function (done) {
+  it("should read users in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
-    const eventId = 1;
-    const mockEvent = new EventModel({
+    var eventId = 1;
+    var mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
 
-    const eventMock = sinon.mock(EventModel);
+    var eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -371,7 +369,7 @@ describe("event read tests", function () {
 
     eventMock.expects('findById')
       .chain('populate')
-      .withArgs({ path: 'teamIds', populate: { path: 'userIds' } })
+      .withArgs({path: 'teamIds', populate: { path: 'userIds' }})
       .chain('exec')
       .yields(null, mockEvent);
 
@@ -383,7 +381,7 @@ describe("event read tests", function () {
       .end(done);
   });
 
-  it("should read users in event with team access", function (done) {
+  it("should read users in event with team access", function(done) {
     mockTokenWithPermission('');
 
     const eventId = 1;
@@ -431,7 +429,7 @@ describe("event read tests", function () {
       .get('/api/events/1/users')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .query({ populate: 'users' })
+      .query({populate: 'users'})
       .expect(200)
       .end(done);
   });

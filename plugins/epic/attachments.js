@@ -105,7 +105,7 @@ function pushAttachments(done) {
         var project = {"$project": {esriId: true, lastModified: true, attachments: true}};
         var unwind = {"$unwind": "$attachments"};
         var sort = {"$sort": { "attachments.lastModified": 1 }};
-        Observation.observationModel(event).aggregate([{"$match": observationMatch}], project, sort, unwind, function(err, aggregate) {
+        Observation.observationModel(event).aggregate({"$match": observationMatch}, project, sort, unwind, function(err, aggregate) {
           if (err) return done(err);
           log.info(aggregate.length + ' have changed');
 

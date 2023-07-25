@@ -38,7 +38,10 @@ export function mongoTestBeforeAllHook(opts?: MongoMemoryServerOpts): () => Prom
   return async function setupMongoServer(this: Mocha.Context) {
     const server = await MongoMemoryServer.create(opts)
     const uri = server.getUri()
-    const conn = await mongoose.createConnection(uri).asPromise()
+    const conn = await mongoose.createConnection(uri, {
+      useMongoClient: true,
+      promiseLibrary: Promise
+    })
     this.mongo = { server, uri, conn }
   }
 }

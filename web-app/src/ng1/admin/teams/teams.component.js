@@ -30,11 +30,9 @@ class AdminTeamsController {
   }
 
   next() {
-    if (this.hasNext()) {
-      this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
-        this.teams = teams;
-      });
-    }
+    this.TeamPagingService.next(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
   }
 
   hasPrevious() {
@@ -42,11 +40,9 @@ class AdminTeamsController {
   }
 
   previous() {
-    if (this.hasPrevious()) {
-      this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
-        this.teams = teams;
-      });
-    }
+    this.TeamPagingService.previous(this.stateAndData[this.filter]).then(teams => {
+      this.teams = teams;
+    });
   }
 
   search() {
@@ -73,18 +69,18 @@ class AdminTeamsController {
 
   editTeam($event, team) {
     $event.stopPropagation();
-    this.$state.go('admin.editTeam', { teamId: team.id });
+    this.$state.go('admin.editTeam', {teamId:  team.id });
   }
 
   hasPermission(team, permission) {
     var myAccess = team.acl[this.UserService.myself.id];
     var aclPermissions = myAccess ? myAccess.permissions : [];
 
-    switch (permission) {
-      case 'update':
-        return _.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
-      case 'delete':
-        return _.contains(this.UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
+    switch(permission) {
+    case 'update':
+      return _.contains(this.UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
+    case 'delete':
+      return _.contains(this.UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
     }
   }
 

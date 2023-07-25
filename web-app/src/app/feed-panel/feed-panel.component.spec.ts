@@ -1,14 +1,13 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 
 import { FeedPanelComponent } from './feed-panel.component';
 
-/* TODO tests MUST include at least 1 test
 describe('FeedPanelComponent', () => {
   let component: FeedPanelComponent;
   let fixture: ComponentFixture<FeedPanelComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [FeedPanelComponent],
       imports: [MatDialogModule]
@@ -26,4 +25,3 @@ describe('FeedPanelComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

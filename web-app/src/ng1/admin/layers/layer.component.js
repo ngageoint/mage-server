@@ -125,7 +125,7 @@ class AdminLayerController {
   }
 
   gotoEvent(event) {
-    this.$state.go('admin.event', { eventId: event.id });
+    this.state.go('admin.event', { eventId: event.id });
   }
 
   deleteLayer() {

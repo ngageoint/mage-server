@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { GeometryPipe } from 'src/app/geometry/geometry.pipe';
 import { MomentPipe } from 'src/app/moment/moment.pipe';
@@ -91,7 +91,7 @@ describe('ObservationListItemComponent', () => {
   let hostComponent: TestHostComponent;
   let fixture: ComponentFixture<TestHostComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationListItemComponent, MomentPipe, GeometryPipe, TestHostComponent ],
       imports: [ NoopAnimationsModule ],

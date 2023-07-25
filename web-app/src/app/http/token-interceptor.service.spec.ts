@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 
-/* TODO test MUST include at least 1 test
 describe('TokenInterceptorService', () => {
   beforeEach(() => TestBed.configureTestingModule({
     providers: [{
@@ -12,4 +11,3 @@ describe('TokenInterceptorService', () => {
   //   expect(service).toBeTruthy();
   // });
 });
-*/

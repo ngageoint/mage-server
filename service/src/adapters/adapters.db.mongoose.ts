@@ -19,7 +19,7 @@ class RetryConnection {
     readonly uri: string,
     totalRetryTime: number,
     readonly retryInterval: number,
-    readonly options: mongoose.ConnectOptions,
+    readonly options: mongoose.ConnectionOptions,
     readonly resolve: () => any,
     readonly reject: (err: any) => any) {
     this.connectTimeout = Date.now() + totalRetryTime;
@@ -27,12 +27,6 @@ class RetryConnection {
 
   attemptConnection(): Promise<mongoose.Mongoose> {
     log.debug(`attempting new mongodb connection to`, this.uri)
-    if (this.options.authMechanism) {
-      log.info('connecting to mongodb using auth mechanism ' + this.options.authMechanism)
-    } else {
-      log.info('connecting to mongodb without authentication');
-    }
-
     return this.mongoose.connect(this.uri, this.options).then(this.resolve, this.onConnectionError.bind(this));
   }
 
@@ -48,7 +42,7 @@ class RetryConnection {
   }
 }
 
-export const waitForDefaultMongooseConnection = (mongoose: Mongoose, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectOptions): Promise<void> => {
+export const waitForDefaultMongooseConnection = (mongoose: Mongoose, uri: string, retryTotalTime: number, retryInterval: number, options: mongoose.ConnectionOptions): Promise<void> => {
   log.debug(`wait for default mongoose connection:`, uri)
   if (mongoose.connection.readyState === mongoose.STATES.connected || mongoose.connection.readyState === mongoose.STATES.connecting) {
     log.debug(`already connected to`, uri)
@@ -62,6 +56,6 @@ export const waitForDefaultMongooseConnection = (mongoose: Mongoose, uri: string
 
 export const MongoDbObjectIdFactory: EntityIdFactory = {
   async nextId(): Promise<string> {
-    return (new mongoose.Types.ObjectId()).toHexString()
+    return mongoose.Types.ObjectId().toHexString()
   }
 }

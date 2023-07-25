@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview-dialog.component';
@@ -9,7 +9,7 @@ describe('AdminEventFormPreviewComponent', () => {
   let component: AdminEventFormPreviewDialogComponent
   let fixture: ComponentFixture<AdminEventFormPreviewDialogComponent>
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, MatDialogModule],
       declarations: [AdminEventFormPreviewComponent],

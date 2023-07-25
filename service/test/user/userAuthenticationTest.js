@@ -1,13 +1,30 @@
 "use strict";
 
-const sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const request = require('supertest')
+  , sinon = require('sinon')
+  , expect = require('chai').expect
+  , moment = require('moment')
+  , MockToken = require('../mockToken')
+  , mongoose = require('mongoose');
+
+require('../../lib/models/token');
+const TokenModel = mongoose.model('Token');
+
+require('../../lib/models/login');
+const LoginModel = mongoose.model('Login');
+
+require('../../lib/models/device');
+const DeviceModel = mongoose.model('Device');
+
+require('../../lib/models/user');
+const UserModel = mongoose.model('User');
+
+const Authentication = require('../../lib/models/authentication');
 
 require('sinon-mongoose');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("user authentication tests", function () {
 
@@ -15,9 +32,11 @@ describe("user authentication tests", function () {
 
   beforeEach(function () {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(mongoose.Types.ObjectId(), ['READ_USER']));
+      .expects('findOne')
+      .withArgs({ token: "12345" })
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
 
     const configs = [];
     const config = {

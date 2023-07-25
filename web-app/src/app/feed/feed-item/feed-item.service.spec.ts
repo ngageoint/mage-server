@@ -5,7 +5,7 @@ describe('FeedItemService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: FeedItemService = TestBed.inject(FeedItemService);
+    const service: FeedItemService = TestBed.get(FeedItemService);
     expect(service).toBeTruthy();
   });
 });

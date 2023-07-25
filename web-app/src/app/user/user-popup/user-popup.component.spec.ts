@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { UserPopupComponent } from './user-popup.component';
 
-/* TODO test MUST containt at least 1 test
 describe('UserPopupComponent', () => {
   let component: UserPopupComponent;
   let fixture: ComponentFixture<UserPopupComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [UserPopupComponent ]
     })
@@ -24,4 +23,3 @@ describe('UserPopupComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

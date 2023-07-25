@@ -4,15 +4,20 @@ const log = require('winston');
 
 exports.id = 'move-user-authentication';
 
-exports.up = async function (done) {
+exports.up = function (done) {
   try {
     log.info('Moving authentication from user model to authentication model');
-    const authenticationCollection = await this.db.collection('authentications');
-    const userCollection = await this.db.collection('users');
-    migrateAuthentication(authenticationCollection, userCollection)
-      .then(() => done())
-      .catch(err => done(err));
+    this.db.createCollection('authentications', (err, authenticationCollection) => {
+      if (err) done(err);
 
+      this.db.collection('users', function (err, userCollection) {
+        if (err) done(err);
+
+        migrateAuthentication(authenticationCollection, userCollection)
+          .then(() => done())
+          .catch(err => done(err));
+      });
+    });
   } catch (err) {
     log.warn('Failed moving authentication to new model', err);
     done(err);

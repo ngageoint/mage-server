@@ -1,13 +1,12 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ObservationPopupComponent } from './observation-popup.component';
 
-/* TODO test MUST contain at least 1 test
 describe('ObservationPopupComponent', () => {
   let component: ObservationPopupComponent;
   let fixture: ComponentFixture<ObservationPopupComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ObservationPopupComponent ]
     })
@@ -24,4 +23,3 @@ describe('ObservationPopupComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
-*/

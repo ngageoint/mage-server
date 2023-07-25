@@ -1,10 +1,10 @@
 import { HttpClientModule } from '@angular/common/http';
-import { TestBed, waitForAsync } from '@angular/core/testing';
+import { async, TestBed } from '@angular/core/testing';
 import { FeedService } from './feed.service';
 
 
 describe('FeedService', () => {
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         HttpClientModule
@@ -15,7 +15,7 @@ describe('FeedService', () => {
 
   it('should be created', () => {
 
-    const service: FeedService = TestBed.inject(FeedService);
+    const service: FeedService = TestBed.get(FeedService);
     expect(service).toBeTruthy();
   })
 })

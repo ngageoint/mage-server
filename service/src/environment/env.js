@@ -1,7 +1,5 @@
-const mongodb = require('mongodb')
-  , path = require('path')
-  , cfenv = require('cfenv')
-  , log = require('winston');
+const path = require('path')
+  , cfenv = require('cfenv');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
   // bit of whitebox to cfenv lib here, because it provides no
@@ -13,6 +11,7 @@ if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT 
   // which i think is undesirable behavior.
   process.env.MAGE_PORT = '4242';
 }
+
 let x509Key = process.env.MAGE_MONGO_X509_KEY;
 let x509Cert = process.env.MAGE_MONGO_X509_CERT;
 let x509CaCert = process.env.MAGE_MONGO_X509_CA_CERT;
@@ -27,31 +26,8 @@ if (x509Key) {
 else if (x509KeyPath) {
   const fs = require('fs');
   x509Key = fs.readFileSync(x509KeyPath);
-  if (fs.existsSync(x509CertPath)) {
-    x509Cert = fs.readFileSync(x509CertPath);
-  }
+  x509Cert = fs.readFileSync(x509CertPath);
   x509CaCert = fs.readFileSync(x509CaCertPath);
-}
-
-//DEPRECATED: Remove in next release.
-if (process.env.MAGE_MONGO_POOL_SIZE) {
-  log.warn('[DEPRECATED] The env variable MAGE_MONGO_POOL_SIZE is DEPRECATED. Please use MAGE_MONGO_MIN_POOL_SIZE and MAGE_MONGO_MAX_POOL_SIZE instead.');
-}
-
-let minMongoPoolSize = 5;
-if (process.env.MAGE_MONGO_MIN_POOL_SIZE) {
-  minMongoPoolSize = parseInt(process.env.MAGE_MONGO_MIN_POOL_SIZE);
-} else if (process.env.MAGE_MONGO_POOL_SIZE) {
-  //DEPRECATED: Remove in next release.
-  minMongoPoolSize = parseInt(process.env.MAGE_MONGO_POOL_SIZE);
-}
-
-let maxMongoPoolSize = 5;
-if (process.env.MAGE_MONGO_MAX_POOL_SIZE) {
-  maxMongoPoolSize = parseInt(process.env.MAGE_MONGO_MAX_POOL_SIZE);
-} else if (process.env.MAGE_MONGO_POOL_SIZE) {
-  //DEPRECATED: Remove in next release.
-  maxMongoPoolSize = parseInt(process.env.MAGE_MONGO_POOL_SIZE);
 }
 
 const appEnv = cfenv.getAppEnv({
@@ -63,16 +39,14 @@ const appEnv = cfenv.getAppEnv({
           plan: 'unlimited',
           credentials: {
             url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
-            minPoolSize: minMongoPoolSize,
-            maxPoolSize: maxMongoPoolSize,
+            poolSize: parseInt(process.env.MAGE_MONGO_POOL_SIZE) || 5,
             replicaSet: process.env.MAGE_MONGO_REPLICA_SET,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
-            tls: process.env.MAGE_MONGO_SSL || null,
+            ssl: process.env.MAGE_MONGO_SSL,
             x509Key: x509Key || null,
             x509Cert: x509Cert || null,
-            x509CaCert: x509CaCert || null,
-            tlsInsecure: process.env.MAGE_MONGO_TLS_INSECURE || null
+            x509CaCert: x509CaCert || null
           }
         }
       ]
@@ -85,6 +59,7 @@ if (appEnv.isLocal) {
 }
 
 const mongoConfig = appEnv.getServiceCreds('MongoInstance');
+const mongoSsl = String(mongoConfig.ssl).toLowerCase() in { "true":0, "yes":0, "enabled":0 };
 
 const environment = {
   address: process.env.MAGE_ADDRESS || '0.0.0.0',
@@ -107,41 +82,32 @@ const environment = {
     connectTimeout: parseInt(process.env.MAGE_MONGO_CONN_TIMEOUT) * 1000 || 300000,
     connectRetryDelay: parseInt(process.env.MAGE_MONGO_CONN_RETRY_DELAY) * 1000 || 5000,
     options: {
-      minPoolSize: mongoConfig.minPoolSize,
-      maxPoolSize: mongoConfig.maxPoolSize,
-      replicaSet: mongoConfig.replicaSet
+      useMongoClient: true, // this can be removed after upgrading to mongoose 5+ http://mongoosejs.com/docs/connections.html#v5-changes
+      poolSize: mongoConfig.poolSize,
+      replicaSet: mongoConfig.replicaSet,
+      ssl: mongoSsl
     }
   }
 };
 
 const user = mongoConfig.user || mongoConfig.username;
-const password = mongoConfig.pass || mongoConfig.password;
-
+const password = mongoConfig.password;
 if (mongoConfig.x509Key) {
-  const mongoTls = String(mongoConfig.tls).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
-  const tlsInsecure = String(mongoConfig.tlsInsecure).toLowerCase() in { "true": 0, "yes": 0, "enabled": 0 };
-
   Object.assign(environment.mongo.options, {
-    tls: mongoTls,
-    key: mongoConfig.x509Key,
-    passphrase: password,
-    cert: mongoConfig.x509Cert,
-    ca: mongoConfig.x509CaCert,
+    sslKey: mongoConfig.x509Key,
+    sslPass: password,
+    sslCert: mongoConfig.x509Cert,
+    sslCA: mongoConfig.x509CaCert,
     authSource: '$external',
-    authMechanism: mongodb.AuthMechanism.MONGODB_X509,
-    tlsInsecure: tlsInsecure
+    ssl: true,
+    checkServerIdentity: false,
+    auth: { authMechanism: 'MONGODB-X509' }
   });
 }
 else if (user && password) {
-  Object.assign(environment.mongo.options, {
-    auth: {
-      username: user,
-      password: password
-    },
-    authSource: process.env.MAGE_MONGO_CRED_DB_NAME || 'admin',
-    //TODO we need to move to at least SHA256
-    authMechanism: mongodb.AuthMechanism.MONGODB_SCRAM_SHA1,
-  });
+  environment.mongo.options.auth = {
+    user: user, password: password
+  };
 }
 
 module.exports = environment;

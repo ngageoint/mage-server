@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatCardModule } from '@angular/material/card'
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { MatIconModule } from '@angular/material/icon'
@@ -9,7 +9,7 @@ import { MatPaginatorModule } from '@angular/material/paginator'
 import { RawParams, StateOrName, StateService, TransitionOptions, TransitionPromise } from '@uirouter/angular';
 import { of } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
-import { FeedExpanded, ServiceType } from '@ngageoint/mage.web-core-lib/feed/feed.model';
+import { Feed, FeedExpanded, ServiceType } from '@ngageoint/mage.web-core-lib/feed/feed.model';
 import { JsonSchemaModule } from 'src/app/json-schema/json-schema.module';
 import { UserService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { AdminBreadcrumbModule } from '../../admin-breadcrumb/admin-breadcrumb.module';
@@ -56,7 +56,7 @@ describe('AdminServiceComponent', () => {
 
   let httpMock: HttpTestingController;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       providers: [{
         provide: StateService,
@@ -94,7 +94,7 @@ describe('AdminServiceComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminServiceComponent);
     component = fixture.componentInstance;
-    httpMock = TestBed.inject(HttpTestingController);
+    httpMock = TestBed.get(HttpTestingController);
     fixture.detectChanges();
   });
 

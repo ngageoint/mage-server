@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { FormGroup, ValidatorFn, Validators } from '@angular/forms';
 
 interface NumberField {
   title: string,
@@ -16,7 +16,7 @@ interface NumberField {
   styleUrls: ['./observation-edit-number.component.scss']
 })
 export class ObservationEditNumberComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: NumberField
 
   ngOnInit(): void {

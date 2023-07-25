@@ -1,17 +1,16 @@
-'use strict';
-
-const request = require('supertest')
+var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , createToken = require('../mockToken')
-  , TokenModel = require('../../lib/models/token')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+  , MockToken = require('../mockToken')
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
 require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
+var TeamModel = mongoose.model('Team');
+
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
 describe("team create tests", function() {
 
@@ -40,26 +39,28 @@ describe("team create tests", function() {
     sinon.restore();
   });
 
-  const userId = mongoose.Types.ObjectId();
+  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('getToken')
-      .withArgs('12345')
-      .yields(null, createToken(userId, [permission]));
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should create team", function(done) {
     mockTokenWithPermission('CREATE_TEAM');
 
-    const teamId = mongoose.Types.ObjectId();
-    const eventId = 1;
-    const mockTeam = new TeamModel({
+    var teamId = mongoose.Types.ObjectId();
+    var eventId = 1;
+    var mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId
     });
 
-    const acl = {};
+    var acl = {};
     acl[userId.toString()] = 'OWNER';
     sinon.mock(TeamModel)
       .expects('create')

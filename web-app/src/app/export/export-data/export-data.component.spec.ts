@@ -1,5 +1,5 @@
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
+import { async, ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormsModule } from "@angular/forms";
 import { MatCardModule } from "@angular/material/card";
 import { MatCheckboxModule } from "@angular/material/checkbox";
@@ -84,29 +84,29 @@ class MockExportService {
 
 class MockSnackbarRef {
     private readonly _afterDismissed = new Subject<MatSnackBarDismiss>()
-
+  
     afterDismissed(): Observable<MatSnackBarDismiss> {
       return this._afterDismissed
     }
-
+  
     dismiss(): void {
       this._afterDismissed.next({ dismissedByAction: false })
       this._afterDismissed.complete()
     }
-
+  
     dismissWithAction(): void {
       this._afterDismissed.next({ dismissedByAction: true })
       this._afterDismissed.complete()
     }
   }
-
+  
 class MockSnackbar {
     private snackbarRef = new MockSnackbarRef()
-
+  
     get _openedSnackBarRef(): any {
       return this.snackbarRef
     }
-
+  
     open(): any {
       return this.snackbarRef
     }
@@ -116,7 +116,7 @@ describe('ExportDataComponent', () => {
     let component: ExportDataComponent;
     let fixture: ComponentFixture<ExportDataComponent>;
 
-    beforeEach(waitForAsync(() => {
+    beforeEach(async(() => {
         const mockFilterService = { getEvent: (): any => { return { id: 1 } } };
 
         TestBed.configureTestingModule({

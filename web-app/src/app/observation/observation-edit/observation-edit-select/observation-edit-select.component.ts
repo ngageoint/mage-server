@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -21,12 +21,12 @@ interface SelectField {
   styleUrls: ['./observation-edit-select.component.scss']
 })
 export class ObservationEditSelectComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
+  @Input() formGroup: FormGroup
   @Input() definition: SelectField
 
   @Output() selectionChange = new EventEmitter<{value: any}>();
 
-  searchControl: UntypedFormControl = new UntypedFormControl();
+  searchControl: FormControl = new FormControl();
   filteredChoices: Observable<any[]>;
 
   ngOnInit(): void {

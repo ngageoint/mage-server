@@ -19,7 +19,7 @@ async function append(api, options) {
     delete apiCopy.authenticationStrategies;
     apiCopy.authenticationStrategies = {};
 
-    const authenticationConfigurations = await AuthenticationConfiguration.getAllConfigurations();
+    const authenticationConfigurations = await AuthenticationConfiguration.Model.find();
 
     const filtered = authenticationConfigurations.filter(config => {
         if (!config.enabled) {

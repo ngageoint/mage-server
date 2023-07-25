@@ -41,7 +41,7 @@
                 locks their account a certain number of times.</mat-hint>
         </mat-form-field>
         <div *ngIf="maxLock.enabled">
-            <mat-label>Max Lockout Threshold</mat-label>
+            <mat-label>>Max Lockout Threshold</mat-label>
             <mat-form-field appearance="outline">
                 <input matInput type="number" [(ngModel)]="strategy.settings.accountLock.max"
                     [ngModelOptions]="{standalone: true}" (click)="setDirty(true)">

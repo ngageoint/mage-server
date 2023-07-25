@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { FeedPanelTabComponent } from './feed-panel-tab.component';
 
@@ -7,7 +7,7 @@ describe('FeedTabComponent', () => {
   let component: FeedPanelTabComponent;
   let fixture: ComponentFixture<FeedPanelTabComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         MatIconModule

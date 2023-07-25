@@ -5,6 +5,7 @@ import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
 import { Team } from '../../entities/teams/entities.teams'
 
+
 export const MageEventModelName = 'Event'
 
 export type MageEventDocument = legacy.MageEventDocument
@@ -34,7 +35,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
-    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [ null, false ] }}).exec()
+    const docs = await this.model.find({ complete: { $in: [ null, false ] }})
     return docs.map(this.entityForDocument)
   }
 
@@ -64,13 +65,13 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
 
   async removeFeedsFromEvents(...feeds: FeedId[]): Promise<number> {
     const updated = await this.model.updateMany({}, { $pull: { feedIds: { $in: feeds }}})
-    return updated.modifiedCount
+    return updated.nModified
   }
 
   /**
    * TODO: this is misplaced; create a team repository
    */
-  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<any[] | null> {
+  async findTeamsInEvent(event: MageEventId | MageEventAttrs | MageEventDocument): Promise<Team[] | null> {
     let eventDoc: MageEventDocument | null
     if (!(event instanceof this.model)) {
       const eventId = typeof event === 'object' && 'id' in event ? event.id : event
