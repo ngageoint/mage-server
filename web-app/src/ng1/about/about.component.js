@@ -6,6 +6,7 @@ class AboutController {
   $onInit() {
     this.Api.get(api => {
       this.name = api.name;
+      this.nodeVersion = api.nodeVersion;
       this.serverVersion = api.version;
       this.apk = api.apk;
     });
