@@ -3,6 +3,7 @@ import { PageOf, itemRangeOfPage } from '@ngageoint/mage.web-core-lib/paging'
 import { Observable, of } from 'rxjs'
 import { delay } from 'rxjs/operators'
 import { UserPhone, UserSearchResult } from 'core-lib-src/user'
+import { Injectable } from "@angular/core";
 
 const userList: User[] = Array.from({ length: 5000 }).map((_, count: number) => {
   const phones: UserPhone[] = []
@@ -28,6 +29,7 @@ const userList: User[] = Array.from({ length: 5000 }).map((_, count: number) => 
 
 type UserReadServiceInterface = { [K in keyof UserReadService]: UserReadService[K] extends Function ? UserReadService[K] : never }
 
+@Injectable()
 export class MockUserReadService implements UserReadServiceInterface {
 
   search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {

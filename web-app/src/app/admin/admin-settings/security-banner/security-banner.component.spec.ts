@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { Settings } from "src/app/upgrade/ajs-upgraded-providers";
 import { SecurityBannerComponent } from "./security-banner.component";
@@ -13,7 +13,7 @@ describe('SecurityBannerComponent', () => {
     let component: SecurityBannerComponent;
     let fixture: ComponentFixture<SecurityBannerComponent>;
 
-    beforeEach(async(() => {
+    beforeEach(waitForAsync(() => {
         TestBed.configureTestingModule({
             imports: [NoopAnimationsModule],
             providers: [

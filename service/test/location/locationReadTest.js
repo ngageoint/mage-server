@@ -1,29 +1,23 @@
-var request = require('supertest')
+'use strict';
+
+const request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , should = require('chai').should()
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , CappedLocationModel = require('../../lib/models/cappedLocation')
+  , EventModel = require('../../lib/models/event')
+  , TeamModel = require('../../lib/models/team')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
 
 require('sinon-mongoose');
 
-require('../../lib/models/team');
-var TeamModel = mongoose.model('Team');
-
-require('../../lib/models/event');
-var EventModel = mongoose.model('Event');
-
 require('../../lib/models/location');
-var LocationModel = mongoose.model('Location');
-
-require('../../lib/models/cappedLocation');
-var CappedLocationModel = mongoose.model('CappedLocation');
-
-const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const LocationModel = mongoose.model('Location');
 
 describe("location read tests", function () {
 
@@ -32,7 +26,7 @@ describe("location read tests", function () {
   let userId;
 
   beforeEach(function () {
-    mockEvent = new EventModel({
+    mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -40,10 +34,10 @@ describe("location read tests", function () {
         name: 'Team 1'
       }],
       acl: {}
-    });
+    };
 
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     const configs = [];
@@ -71,29 +65,17 @@ describe("location read tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it("should get locations with read all permission", function (done) {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
-
-    sinon.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
 
     sinon.mock(LocationModel)
       .expects('find')
@@ -115,7 +97,7 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var locations = res.body;
+        const locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
         locations.should.have.length(1);
@@ -151,7 +133,7 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var locations = res.body;
+        const locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
         locations.should.have.length(1);
@@ -168,8 +150,7 @@ describe("location read tests", function () {
       .resolves(true)
 
     sinon.mock(CappedLocationModel)
-      .expects('find')
-      .chain('exec')
+      .expects('getLocations')
       .yields(null, [{
         userId: mongoose.Types.ObjectId(),
         locations: [{
@@ -195,10 +176,10 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var users = res.body;
+        const users = res.body;
         should.exist(users);
         users.should.be.an('array').and.have.length(1);
-        var user = users[0];
+        const user = users[0];
         user.should.have.property('locations');
       })
       .end(done);
@@ -212,8 +193,8 @@ describe("location read tests", function () {
       .withArgs(mockEvent, userId.toHexString(), 'read')
       .resolves(true)
 
-    var startDate = moment("2016-01-01T00:00:00");
-    var endDate = moment("2016-02-01T00:00:00");
+    const startDate = moment("2016-01-01T00:00:00");
+    const endDate = moment("2016-02-01T00:00:00");
     sinon.mock(LocationModel)
       .expects('find')
       .withArgs({
@@ -242,7 +223,7 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var locations = res.body;
+        const locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
         locations.should.have.length(1);
@@ -258,9 +239,9 @@ describe("location read tests", function () {
       .withArgs(mockEvent, userId.toHexString(), 'read')
       .resolves(true)
 
-    var startDate = moment("2016-01-01T00:00:00");
-    var endDate = moment("2016-02-01T00:00:00");
-    var lastLocationId = mongoose.Types.ObjectId();
+    const startDate = moment("2016-01-01T00:00:00");
+    const endDate = moment("2016-02-01T00:00:00");
+    const lastLocationId = mongoose.Types.ObjectId();
     sinon.mock(LocationModel)
       .expects('find')
       .withArgs({
@@ -300,7 +281,7 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var locations = res.body;
+        const locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
         locations.should.have.length(1);
@@ -338,7 +319,7 @@ describe("location read tests", function () {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function (res) {
-        var locations = res.body;
+        const locations = res.body;
         should.exist(locations);
         locations.should.be.an('array');
         locations.should.have.length(1);

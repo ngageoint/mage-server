@@ -1,8 +1,7 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http'
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'
-import { async, TestBed } from '@angular/core/testing'
+import { TestBed, waitForAsync } from '@angular/core/testing'
 import * as _ from 'lodash'
-import { defer, throwError } from 'rxjs'
 import { RegisteredStaticIconReference, SourceUrlStaticIconReference, StaticIcon } from './static-icon.model'
 
 import { StaticIconService } from './static-icon.service'
@@ -34,7 +33,7 @@ describe('StaticIconService', () => {
 
   describe('fetching icon by id', () => {
 
-    it('fetches icon by id', async(() => {
+    it('fetches icon by id', waitForAsync(() => {
 
       const icon: StaticIcon = {
         id: 'icon1',

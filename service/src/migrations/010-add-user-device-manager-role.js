@@ -34,7 +34,7 @@ function createManagerRole(callback) {
   };
 
   console.log('Update event/team manager role to add user and device edit permissions...');
-  RoleModel.update({name: 'EVENT_MANAGER_ROLE'}, managerRole, function(err) {
+  RoleModel.updateOne({name: 'EVENT_MANAGER_ROLE'}, managerRole, function(err) {
     callback(err);
   });
 }

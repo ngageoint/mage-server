@@ -1,13 +1,13 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'
 import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core'
 
 import { ObservationEditMultiselectComponent } from './observation-edit-multiselect.component'
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
+import { MatChipsModule, MatChipInputEvent, MatChipInput } from '@angular/material/chips';
 import { MatFormFieldModule, MatError } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { By } from '@angular/platform-browser'
 
@@ -17,8 +17,8 @@ import { By } from '@angular/platform-browser'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class TestHostComponent {
-  formGroup = new FormGroup({
-    select: new FormControl()
+  formGroup = new UntypedFormGroup({
+    select: new UntypedFormControl()
   })
 
   definition: any = {
@@ -41,14 +41,15 @@ describe('ObservationEditMultiselectComponent', () => {
   let component: ObservationEditMultiselectComponent
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
+  let chipInput: MatChipInput
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule ],
-      declarations: [ObservationEditMultiselectComponent, TestHostComponent ],
-      schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
+      imports: [FormsModule, BrowserAnimationsModule, ReactiveFormsModule, MatInputModule, MatAutocompleteModule, MatChipsModule, MatIconModule, MatFormFieldModule],
+      declarations: [ObservationEditMultiselectComponent, TestHostComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     })
-    .compileComponents()
+      .compileComponents()
   }));
 
 
@@ -107,7 +108,8 @@ describe('ObservationEditMultiselectComponent', () => {
   it('should add choice', () => {
     const event: MatChipInputEvent = {
       input: null,
-      value: 'red'
+      value: 'red',
+      chipInput: chipInput
     }
     component.add(event)
 
@@ -118,7 +120,8 @@ describe('ObservationEditMultiselectComponent', () => {
   it('should not add invalid choice', () => {
     const event: MatChipInputEvent = {
       input: null,
-      value: 'purple'
+      value: 'purple',
+      chipInput: chipInput
     }
     component.add(event)
 
@@ -130,7 +133,8 @@ describe('ObservationEditMultiselectComponent', () => {
   it('should not add duplicate choice', () => {
     const event: MatChipInputEvent = {
       input: null,
-      value: 'red'
+      value: 'red',
+      chipInput: chipInput
     }
     component.add(event)
     component.add(event)
@@ -142,7 +146,8 @@ describe('ObservationEditMultiselectComponent', () => {
   it('should remove choice', () => {
     const event: MatChipInputEvent = {
       input: null,
-      value: 'red'
+      value: 'red',
+      chipInput: chipInput
     }
     component.add(event)
     component.remove('red')
@@ -154,7 +159,8 @@ describe('ObservationEditMultiselectComponent', () => {
   it('should not remove non existing choice', () => {
     const event: MatChipInputEvent = {
       input: null,
-      value: 'red'
+      value: 'red',
+      chipInput: chipInput
     }
     component.add(event)
     component.remove('blue')

@@ -1,12 +1,13 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { UserListComponent } from './user-list.component';
 
+/* TODO test MUST contain at least 1 test
 describe('UserListComponent', () => {
   let component: UserListComponent;
   let fixture: ComponentFixture<UserListComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [UserListComponent ]
     })
@@ -23,3 +24,4 @@ describe('UserListComponent', () => {
   //   expect(component).toBeTruthy();
   // });
 });
+*/

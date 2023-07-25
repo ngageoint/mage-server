@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '@angular/material' as mat;
 @import "variables.scss";
 
 .page {
@@ -39,7 +39,7 @@
 }
 
 .heading__icon {
-  color: mat-color($app-primary);
+  color: mat.get-color-from-palette($app-primary);
   margin-right: 16px;
   font-size: 40px;
   height: 40px;
@@ -116,5 +116,5 @@
 }
 
 mat-card-header {
-  color: mat-color($app-primary);
+  color: mat.get-color-from-palette($app-primary);
 }

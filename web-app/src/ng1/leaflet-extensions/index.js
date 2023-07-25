@@ -5,3 +5,5 @@ require('./ObservationMarker');
 require('./LocationMarker');
 require('./LocationMarker.Popup');
 require('./WorldExtentControl');
+require('./grid/gars/GARSLayer');
+require('./grid/mgrs/MGRSLayer');

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, waitForAsync } from '@angular/core/testing';
 import { Observable, of, Subject } from 'rxjs';
 import { ExportDialogComponent } from './export-dialog.component';
 import { MatCardModule } from '@angular/material/card';
@@ -117,7 +117,7 @@ describe('ExportDialogComponent', () => {
   let component: ExportDialogComponent;
   let fixture: ComponentFixture<ExportDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockLocalStorageService = { getToken: (): string => '1' };
     const mockFilterService = { getEvent: (): any => { return { id: 1 } } };
     const mockDialogRef = { close: (): void => { } };

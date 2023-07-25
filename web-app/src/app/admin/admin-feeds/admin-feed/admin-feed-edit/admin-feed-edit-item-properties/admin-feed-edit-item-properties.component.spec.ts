@@ -1,6 +1,6 @@
 import { JsonSchemaFormModule } from '@ajsf/core';
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatCardModule } from '@angular/material/card'
 import { MatDividerModule } from '@angular/material/divider'
@@ -67,9 +67,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
   let host: TestHostComponent
   let target: AdminFeedEditItemPropertiesComponent
   let fixture: ComponentFixture<TestHostComponent>
-  let tickPastDebounce: () => void
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -96,9 +95,6 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
     host = fixture.componentInstance;
     target = host.target;
     fixture.detectChanges()
-    tickPastDebounce = () => {
-      jasmine.clock().tick(target.changeDebounceInterval + 50)
-    }
   });
 
   it('should create', () => {
@@ -111,7 +107,6 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
     let schemaChanges: SimpleJsonSchema[]
 
     beforeEach(() => {
-      jasmine.clock().install()
       formChanges = []
       schemaChanges = []
       target.schemaForm.valueChanges.subscribe(x => {
@@ -122,15 +117,12 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       })
     })
 
-    afterEach(() => {
-      jasmine.clock().uninstall()
-    })
-
     describe('updating the schema form', () => {
 
-      afterEach(() => {
+      afterEach(async () => {
         // ensure no schema changes are emitted while syncing form to input schema changes
-        tickPastDebounce()
+        fixture.detectChanges()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
         expect(schemaChanges).toEqual([])
       })
 
@@ -487,7 +479,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         })
       })
 
-      it('emits debounced changes when form values change ', () => {
+      it('emits debounced changes when form values change ', async () => {
 
         host.topicSchema = {
           properties: {
@@ -498,7 +490,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(schemaChanges).toEqual([])
 
@@ -521,7 +513,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         expect(formChanges).toEqual(expectedFormChanges)
         expect(target.feedSchema).toBeNull()
 
-        tickPastDebounce()
+        fixture.detectChanges()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.feedSchema).toEqual({
           properties: {
@@ -531,7 +524,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         expect(schemaChanges).toEqual([ target.feedSchema ])
       })
 
-      it('retains extra properties from topic schema in emitted schema changes', () => {
+      it('retains extra properties from topic schema in emitted schema changes', async () => {
 
         const extendedSchema = {
           type: 'object',
@@ -548,7 +541,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         }
         host.topicSchema = extendedSchema as SimpleJsonSchema
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(schemaChanges).toEqual([])
 
@@ -579,7 +572,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         expect(formChanges).toEqual(expectedFormChanges)
         expect(target.feedSchema).toBeNull()
 
-        tickPastDebounce()
+        fixture.detectChanges()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.feedSchema).toEqual({
           type: 'object',
@@ -593,7 +587,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         expect(schemaChanges).toEqual([ target.feedSchema ])
       })
 
-      it('does not emit a change when populating the form from the topic schema', () => {
+      it('does not emit a change when populating the form from the topic schema', async () => {
 
         host.topicSchema = {
           properties: {
@@ -604,13 +598,13 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.topicSchema))
         expect(schemaChanges).toEqual([])
       })
 
-      it('does not emit a change when populating the form from the feed schema', () => {
+      it('does not emit a change when populating the form from the feed schema', async () => {
 
         host.feedSchema = {
           properties: {
@@ -621,13 +615,13 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.feedSchema))
         expect(schemaChanges).toEqual([])
       })
 
-      it('does not emit a change when topic and feed schemas change', () => {
+      it('does not emit a change when topic and feed schemas change', async () => {
 
         host.topicSchema = {
           properties: {
@@ -646,13 +640,13 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.feedSchema))
         expect(schemaChanges).toEqual([])
       })
 
-      it('does not emit a change when populating from feed schema after feed schema changes', () => {
+      it('does not emit a change when populating from feed schema after feed schema changes', async () => {
 
         host.topicSchema = {
           properties: {
@@ -663,7 +657,7 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.topicSchema))
 
@@ -676,13 +670,13 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.feedSchema))
         expect(schemaChanges).toEqual([])
       })
 
-      it('does not emit a change when populating from topic schema after feed schema changes to null', () => {
+      it('does not emit a change when populating from topic schema after feed schema changes to null', async () => {
 
         host.topicSchema = {
           properties: {
@@ -701,13 +695,13 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
           }
         }
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.feedSchema))
 
         host.feedSchema = null
         fixture.detectChanges()
-        tickPastDebounce()
+        await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
         expect(target.schemaForm.value).toEqual(formValueForSchema(host.topicSchema))
         expect(schemaChanges).toEqual([])
@@ -720,22 +714,17 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
     let accepted: SimpleJsonSchema[]
 
     beforeEach(() => {
-      jasmine.clock().install()
       accepted = []
       target.feedSchemaAccepted.subscribe(x => {
         accepted.push(x)
       })
     })
 
-    afterEach(() => {
-      jasmine.clock().uninstall()
-    })
-
-    it('emits a null schema if the user never changed the form from the topic schema', () => {
+    it('emits a null schema if the user never changed the form from the topic schema', async () => {
 
       host.topicSchema = topicSchema as SimpleJsonSchema
       fixture.detectChanges()
-      tickPastDebounce()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema(topicSchema as SimpleJsonSchema))
       expect(accepted).toEqual([])
@@ -745,12 +734,12 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       expect(accepted).toEqual([ null ])
     })
 
-    it('emits a null schema if the user never changed the form from the feed schema', () => {
+    it('emits a null schema if the user never changed the form from the feed schema', async () => {
 
       host.topicSchema = topicSchema as SimpleJsonSchema
       host.feedSchema = topicSchema as SimpleJsonSchema
       fixture.detectChanges()
-      tickPastDebounce()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema(topicSchema as SimpleJsonSchema))
       expect(accepted).toEqual([])
@@ -760,12 +749,12 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       expect(accepted).toEqual([ null ])
     })
 
-    it('emits the schema with changed form values applied', () => {
+    it('emits the schema with changed form values applied', async () => {
 
       host.topicSchema = topicSchema as SimpleJsonSchema
       host.feedSchema = topicSchema as SimpleJsonSchema
       fixture.detectChanges()
-      tickPastDebounce()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema(topicSchema as SimpleJsonSchema))
       expect(accepted).toEqual([])
@@ -778,7 +767,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       referenceInput.value = 'Mod ' + referenceInput.value
       timestampInput.dispatchEvent(new Event('input'))
       referenceInput.dispatchEvent(new Event('input'))
-      tickPastDebounce()
+      fixture.detectChanges()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       target.nextStep()
 
@@ -801,12 +791,12 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       ])
     })
 
-    it('emits the correct schema if accepted before the debounce interval', () => {
+    it('emits the correct schema if accepted before the debounce interval', async () => {
 
       host.topicSchema = topicSchema as SimpleJsonSchema
       host.feedSchema = topicSchema as SimpleJsonSchema
       fixture.detectChanges()
-      tickPastDebounce()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema(topicSchema as SimpleJsonSchema))
       expect(accepted).toEqual([])
@@ -816,7 +806,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       const timestampInput = allTitleInputs[titleInputOrder.findIndex(x => x.key === 'timestamp')].nativeElement as HTMLInputElement
       timestampInput.value = 'Mod ' + timestampInput.value
       timestampInput.dispatchEvent(new Event('input'))
-      jasmine.clock().tick(target.changeDebounceInterval / 2)
+      fixture.detectChanges()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema({
         ...topicSchema,
@@ -847,12 +838,12 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       ])
     })
 
-    it('emits the correct schema when accepted before debounce interval and feed schema is null', () => {
+    it('emits the correct schema when accepted before debounce interval and feed schema is null', async () => {
 
       host.topicSchema = topicSchema as SimpleJsonSchema
       host.feedSchema = null
       fixture.detectChanges()
-      tickPastDebounce()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval + 50));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema(topicSchema as SimpleJsonSchema))
       expect(accepted).toEqual([])
@@ -862,7 +853,8 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
       const timestampInput = allTitleInputs[titleInputOrder.findIndex(x => x.key === 'timestamp')].nativeElement as HTMLInputElement
       timestampInput.value = 'Mod ' + timestampInput.value
       timestampInput.dispatchEvent(new Event('input'))
-      jasmine.clock().tick(target.changeDebounceInterval / 2)
+      fixture.detectChanges()
+      await new Promise(resolve => setTimeout(resolve, target.changeDebounceInterval / 2));
 
       expect(target.schemaForm.value).toEqual(formValueForSchema({
         ...topicSchema,

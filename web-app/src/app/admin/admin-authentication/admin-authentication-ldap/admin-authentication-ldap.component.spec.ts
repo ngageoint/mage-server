@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AdminAuthenticationLDAPComponent } from './admin-authentication-ldap.component';
 
@@ -6,7 +6,7 @@ describe('AdminAuthenticationLDAPComponent', () => {
   let component: AdminAuthenticationLDAPComponent;
   let fixture: ComponentFixture<AdminAuthenticationLDAPComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ AdminAuthenticationLDAPComponent ]
     })

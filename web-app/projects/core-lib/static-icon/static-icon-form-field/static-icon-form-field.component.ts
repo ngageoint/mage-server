@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Component, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
-import { AbstractControl, ControlValueAccessor, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms'
+import { AbstractControl, ControlValueAccessor, UntypedFormControl, UntypedFormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { StaticIcon, StaticIconReference } from '../static-icon.model'
 import { StaticIconService } from '../static-icon.service'
@@ -27,9 +27,9 @@ export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, Contr
 
   iconRef: StaticIconReference = null
 
-  form: FormGroup = new FormGroup({
-    iconRefToken: new FormControl(null),
-    iconRefType: new FormControl(null, Validators.required)
+  form: UntypedFormGroup = new UntypedFormGroup({
+    iconRefToken: new UntypedFormControl(null),
+    iconRefType: new UntypedFormControl(null, Validators.required)
   })
   icon: StaticIcon | null
 

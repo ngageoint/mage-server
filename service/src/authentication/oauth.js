@@ -212,7 +212,7 @@ function initialize(strategy) {
                res.render('oauth', { uri: uri });
             }
          } else {
-            res.render('authentication', { host: req.getRoot(), login: { token: req.token, user: req.user } });
+            res.render('authentication', { host: req.getRoot(), success: true, login: { token: req.token, user: req.user } });
          }
       }
    );

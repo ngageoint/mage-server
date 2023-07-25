@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoose = require('mongoose')
   , async = require('async')
   , Observation = require('./observation')
@@ -10,14 +12,10 @@ const mongoose = require('mongoose')
 // Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
-function toLowerCase(field) {
-  return field.toLowerCase();
-}
-
 // Collection to hold users
 // TODO cascade delete from userId when user is deleted.
 const DeviceSchema = new Schema({
-  uid: { type: String, required: true, unique: true, set: toLowerCase },
+  uid: { type: String, required: true, unique: true, lowercase: true },
   description: { type: String, required: false },
   registered: { type: Boolean, required: true, default: false },
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -27,18 +25,23 @@ const DeviceSchema = new Schema({
   versionKey: false
 });
 
-DeviceSchema.path('userId').validate(function (userId, done) {
-  User.getUserById(userId, function (err, user) {
-    if (err || !user) {
-      done(false);
-    } else {
-      done(true);
+DeviceSchema.path('userId').validate(async function (userId) {
+  let isValid = true;
+
+  try {
+    const user = await User.getUserById(userId);
+    if (!user) {
+      isValid = false;
     }
-  });
+  } catch (err) {
+    isValid = false;
+  }
+
+  return isValid;
 }, 'Invalid POC user, user does not exist');
 
 DeviceSchema.pre('findOneAndUpdate', function (next) {
-  if (this.getUpdate().registered === false) {
+  if (this.getUpdate() && this.getUpdate().registered === false) {
     Token.removeTokenForDevice({ _id: this.getQuery()._id }, function (err) {
       next(err);
     });
@@ -47,17 +50,18 @@ DeviceSchema.pre('findOneAndUpdate', function (next) {
   }
 });
 
-DeviceSchema.pre('remove', function (next) {
-  const device = this;
+DeviceSchema.pre('findOneAndDelete', function (next) {
+  //Get a reference of "this" that can be used in async, since "this" changes in async
+  const query = this;
 
   async.parallel({
     token: function (done) {
-      Token.removeTokenForDevice(device, function (err) {
+      Token.removeTokenForDevice({ _id: query.getQuery()._id }, function (err) {
         done(err);
       });
     },
     observation: function (done) {
-      Observation.removeDevice(device, function (err) {
+      Observation.removeDevice({ _id: query.getQuery()._id }, function (err) {
         done(err);
       });
     }
@@ -68,14 +72,12 @@ DeviceSchema.pre('remove', function (next) {
 });
 
 function transform(device, ret) {
-  if ('function' !== typeof device.ownerDocument) {
-    ret.id = ret._id;
-    delete ret._id;
+  ret.id = ret._id;
+  delete ret._id;
 
-    if (device.populated('userId')) {
-      ret.user = ret.userId;
-      delete ret.userId;
-    }
+  if (device.populated('userId')) {
+    ret.user = ret.userId;
+    delete ret.userId;
   }
 }
 
@@ -99,7 +101,7 @@ exports.getDeviceById = function (id, options) {
 };
 
 exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
-  const query = Device.findOne({ uid: uid.toLowerCase() });
+  const query = Device.findOne({ uid: uid });
 
   if (expand.user) {
     query.populate('userId');
@@ -109,13 +111,13 @@ exports.getDeviceByUid = function (uid, { expand = {} } = {}) {
 };
 
 exports.getDevices = function (options = {}) {
-  const {filter = {}, expand = {}} = options;
+  const { filter = {}, expand = {} } = options;
 
   const conditions = createQueryConditions(filter);
 
   let query = Device.find(conditions);
 
-  if(options.lean) {
+  if (options.lean) {
     query = query.lean();
   }
 
@@ -137,7 +139,7 @@ exports.getDevices = function (options = {}) {
 
   const isPaging = options.limit != null && options.limit > 0;
   if (isPaging) {
-    let countQuery =  null;
+    let countQuery = null;
     if (!isUserQuery) {
       countQuery = Device.find(conditions);
     }
@@ -206,12 +208,7 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
   });
 }
 
-exports.createDevice = async function (device) {
-  // TODO there is a ticket in mongooose that is currently open
-  // to add support for running setters on findOneAndUpdate
-  // once that happens there is no need to do this
-  device.uid = device.uid.toLowerCase();
-
+exports.createDevice = function (device) {
   const update = {
     name: device.name,
     description: device.description,
@@ -222,23 +219,15 @@ exports.createDevice = async function (device) {
   };
 
   log.info(`creating new device ${device.uid} for user ${device.userId}`);
-  const options = { new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true };
-  return await Device.findOneAndUpdate({ uid: device.uid }, update, options);
+  const options = { new: true, upsert: true, runValidators: true };
+  return Device.findOneAndUpdate({ uid: device.uid }, update, options).exec();
 };
 
-exports.updateDevice = async function (id, update) {
-  // TODO there is a ticket in mongooose that is currently open
-  // to add support for running setters on findOneAndUpdate
-  // once that happens there is no need to do this
-  if (update.uid) {
-    update.uid = update.uid.toLowerCase();
-  }
-  return await Device.findByIdAndUpdate(id, update, { new: true, setDefaultsOnInsert: true, runValidators: true });
+exports.updateDevice = function (id, update) {
+  const options = { new: true, runValidators: true };
+  return Device.findOneAndUpdate({ _id: id }, update, options).exec();
 };
 
 exports.deleteDevice = function (id) {
-  return Device.findById(id).exec()
-    .then(device => {
-      return device ? device.remove() : Promise.resolve(device);
-    });
+  return Device.findOneAndDelete({ _id: id }).exec();
 };

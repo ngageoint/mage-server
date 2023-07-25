@@ -8,7 +8,7 @@ exports.id = '006-event-teams';
 exports.up = function(done) {
   this.log('creating team for each event');
 
-  mongoose.model('Team').collection.dropAllIndexes(function (err) {
+  mongoose.model('Team').collection.dropIndexes(function (err) {
     if (err) console.log('could not drop indexes', err);
 
     Event.getEvents(function(err, events) {

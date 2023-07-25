@@ -36,9 +36,11 @@ class AdminUsersController {
   }
 
   next() {
-    this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
-    });
+    if (this.hasNext()) {
+      this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
+        this.users = users;
+      });
+    }
   }
 
   hasPrevious() {
@@ -46,9 +48,11 @@ class AdminUsersController {
   }
 
   previous() {
-    this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
-    });
+    if (this.hasPrevious()) {
+      this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
+        this.users = users;
+      });
+    }
   }
 
   search() {

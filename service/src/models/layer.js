@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 // Creates the Schema for the Attachments object
 const LayerSchema = new Schema(
   {
-    _id: { type: Number, required: true, unique: true },
+    _id: { type: Number, required: true },
     name: { type: String, required: true, unique: true },
     description: { type: String, required: false },
     state: { type: String, required: true, enum: ['available', 'unavailable', 'processing'] },

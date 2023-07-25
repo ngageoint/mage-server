@@ -139,9 +139,6 @@ UserSchema.pre('remove', function (next) {
 
 // eslint-disable-next-line complexity
 function DbUserToObject(user, userOut, options) {
-  if ('function' === typeof user.ownerDocument) {
-    return void(0);
-  }
   userOut.id = userOut._id;
   delete userOut._id;
 
@@ -151,8 +148,8 @@ function DbUserToObject(user, userOut, options) {
     delete userOut.icon.relativePath;
   }
 
-  if (user.populated('roleId')) {
-    userOut.role = userOut.roleId;
+  if (!!user.roleId && typeof user.roleId.toObject === 'function') {
+    userOut.role = user.roleId.toObject();
     delete userOut.roleId;
   }
 
@@ -207,8 +204,8 @@ exports.getUserByUsername = function (username, callback) {
   User.findOne({ username: username.toLowerCase() }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 };
 
-exports.getUserByAuthenticationId = function (id) {
-  return User.findOne({ authenticationId: id }).populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec();
+exports.getUserByAuthenticationId = function (id, callback) {
+  User.findOne({ authenticationId: id }).populate('roleId').populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec(callback);
 }
 
 exports.getUserByAuthenticationStrategy = function (strategy, uid, callback) {
@@ -406,7 +403,7 @@ exports.removeRolesForUser = function (user, callback) {
 };
 
 exports.removeRoleFromUsers = function (role, callback) {
-  User.update({ role: role._id }, { roles: undefined }, function (err, number) {
+  User.updateMany({ role: role._id }, { roles: undefined }, function (err, number) {
     callback(err, number);
   });
 };
@@ -437,7 +434,7 @@ exports.removeRecentEventForUsers = function (event, callback) {
     $pull: { recentEventIds: event._id }
   };
 
-  User.update({}, update, { multi: true }, function (err) {
+  User.updateMany({}, update, {}, function (err) {
     callback(err);
   });
 };

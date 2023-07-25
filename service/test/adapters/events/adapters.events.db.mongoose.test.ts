@@ -21,13 +21,14 @@ describe('event mongoose repository', function() {
 
   beforeEach('initialize model', async function() {
 
-    model = legacy.Model as mongoose.Model<MageEventDocument>
+    //TODO remove cast to any, was mongoose.Model<MageEventDocument>
+    model = legacy.Model as any
     repo = new MongooseMageEventRepository(model)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
         legacy.create(
           attrs as MageEventCreateAttrs,
-          { _id: mongoose.Types.ObjectId() },
+          { _id: new mongoose.Types.ObjectId() },
           (err: any | null, event?: MageEventDocument) => {
             if (err) {
               return reject(err)
@@ -414,10 +415,10 @@ describe('event mongoose repository', function() {
 
     it('gets the teams', async function() {
 
-      const user = mongoose.Types.ObjectId().toHexString()
+      const user = new mongoose.Types.ObjectId().toHexString()
       const teams: Partial<Team>[] = [
         {
-          id: mongoose.Types.ObjectId().toHexString(),
+          id: new mongoose.Types.ObjectId().toHexString(),
           name: 'Team 1',
           acl: {
             [user]: {
@@ -425,10 +426,10 @@ describe('event mongoose repository', function() {
               permissions: [ 'read', 'update', 'delete' ]
             }
           },
-          userIds: [ user, mongoose.Types.ObjectId().toHexString(), mongoose.Types.ObjectId().toHexString() ]
+          userIds: [ user, new mongoose.Types.ObjectId().toHexString(), new mongoose.Types.ObjectId().toHexString() ]
         },
         {
-          id: mongoose.Types.ObjectId().toHexString(),
+          id: new mongoose.Types.ObjectId().toHexString(),
           name: 'Team 2',
           acl: {
             [user]: {
@@ -436,13 +437,13 @@ describe('event mongoose repository', function() {
               permissions: [ 'read' ]
             }
           },
-          userIds: [ user, mongoose.Types.ObjectId().toHexString() ]
+          userIds: [ user, new mongoose.Types.ObjectId().toHexString() ]
         }
       ]
       const teamDocs = await Promise.all(teams.map(async (x) => {
         return await TeamModel.create(Object.assign({ ...x },
           {
-            _id: mongoose.Types.ObjectId(x.id),
+            _id: new mongoose.Types.ObjectId(x.id),
             acl: _.mapValues(x.acl, x => x.role)
           }))
       }))

@@ -1,26 +1,23 @@
+'use strict';
+
 const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , moment = require('moment')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , createToken = require('../mockToken')
+  , EventModel = require('../../lib/models/event')
+  , TeamModel = require('../../lib/models/team')
+  , TokenModel = require('../../lib/models/token')
+  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
+  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
+  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
+  , { EventAccessType } = require('../../lib/entities/events/entities.events')
 
 require('sinon-mongoose');
 
-require('../../lib/models/team');
-const TeamModel = mongoose.model('Team');
-
-require('../../lib/models/event');
-const EventModel = mongoose.model('Event');
-
 const Observation = require('../../lib/models/observation');
 const observationModel = Observation.observationModel;
-
-const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
-const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
-const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
-const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("observation read tests", function () {
 
@@ -29,14 +26,14 @@ describe("observation read tests", function () {
   let app;
 
   beforeEach(function () {
-    mockEvent = new EventModel({
+    mockEvent = {
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
       acl: {}
-    });
+    };
     sinon.mock(EventModel)
-      .expects('findById')
+      .expects('getById')
       .yields(null, mockEvent);
 
     userId = mongoose.Types.ObjectId()
@@ -65,18 +62,16 @@ describe("observation read tests", function () {
 
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({ token: "12345" })
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .expects('getToken')
+      .withArgs('12345')
+      .yields(null, createToken(userId, [permission]));
   }
 
   it("should get observations for any event", function (done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     const ObservationModel = observationModel({
@@ -259,7 +254,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -310,7 +305,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -361,7 +356,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -415,7 +410,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -472,7 +467,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -654,7 +649,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -697,7 +692,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({
@@ -721,7 +716,7 @@ describe("observation read tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     sinon.mock(TeamModel)
-      .expects('find')
+      .expects('teamsForUserInEvent')
       .yields(null, [{ name: 'Team 1' }]);
 
     var ObservationModel = observationModel({

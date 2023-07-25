@@ -36,8 +36,8 @@
             "styles": [
               "src/ng1/vendor/bootstrap/css/bootstrap.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
-              "src/ng1/vendor/material-design-icons/icons.css",
               "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
+              "src/ng1/vendor/material-design-icons/icons.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
@@ -53,9 +53,19 @@
               "src/ng1/vendor/bootstrap/js/bootstrap.min.js",
               "node_modules/systemjs/dist/system.js",
               "node_modules/systemjs/dist/extras/amd.js",
-              "node_modules/systemjs/dist/extras/named-register.js"
+              "node_modules/systemjs/dist/extras/named-register.js",
+              "node_modules/js_cols/dist/js_cols.min.js"
             ],
-            "plugin": "~/post_build.js"
+            "plugin": "~/post_build.js",
+            "allowedCommonJsDependencies": [
+              "ajv",
+              "angular",
+              "core-js-pure",
+              "ev-emitter",
+              "focus-trap",
+              "lodash",
+              "traverse"
+            ]
           },
           "configurations": {
             "production": {
@@ -68,7 +78,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -78,7 +87,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "2mb",
-                  "maximumError": "10mb"
+                  "maximumError": "15mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -86,6 +95,16 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true
             }
           }
         },
@@ -99,6 +118,9 @@
           "configurations": {
             "production": {
               "browserTarget": "app:build:production"
+            },
+            "development": {
+              "browserTarget": "app:build:development"
             }
           }
         },
@@ -132,19 +154,6 @@
             "codeCoverage": true
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -166,7 +175,7 @@
       "prefix": "mage",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/core-lib/tsconfig.lib.json",
             "project": "projects/core-lib/ng-package.json"
@@ -174,6 +183,9 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/core-lib/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/core-lib/tsconfig.lib.dev.json"
             }
           }
         },
@@ -183,18 +195,6 @@
             "main": "projects/core-lib/src/test.ts",
             "tsConfig": "projects/core-lib/tsconfig.spec.json",
             "karmaConfig": "projects/core-lib/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/core-lib/tsconfig.lib.json",
-              "projects/core-lib/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         }
       }
@@ -218,7 +218,6 @@
             "main": "projects/core-lib-showcase/src/main.ts",
             "polyfills": "projects/core-lib-showcase/src/polyfills.ts",
             "tsConfig": "projects/core-lib-showcase/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "projects/core-lib-showcase/src/favicon.ico",
               "projects/core-lib-showcase/src/assets"
@@ -226,7 +225,13 @@
             "styles": [
               "projects/core-lib-showcase/src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -239,7 +244,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -256,8 +260,19 @@
                   "maximumError": "10kb"
                 }
               ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/core-lib-showcase/src/environments/environment.ts",
+                  "with": "projects/core-lib-showcase/src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -267,6 +282,9 @@
           "configurations": {
             "production": {
               "browserTarget": "core-lib-showcase:build:production"
+            },
+            "development": {
+              "browserTarget": "core-lib-showcase:build:development"
             }
           }
         },
@@ -293,19 +311,6 @@
             "scripts": []
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/core-lib-showcase/tsconfig.app.json",
-              "projects/core-lib-showcase/tsconfig.spec.json",
-              "projects/core-lib-showcase/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -320,6 +325,5 @@
         }
       }
     }
-  },
-  "defaultProject": "app"
+  }
 }

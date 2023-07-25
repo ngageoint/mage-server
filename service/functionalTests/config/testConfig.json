@@ -2,13 +2,9 @@
   "api": {
     "name": "MAGE (Mobile Awareness GEOINT Environment)",
     "version": {
-      "major": 3,
+      "major": 6,
       "minor": 1,
       "micro": 0
-    },
-    "authentication": {
-      "strategy": "local",
-      "passwordMinLength": 14
     },
     "provision": {
       "strategy": "uid"
@@ -33,7 +29,8 @@
       "host": "localhost",
       "port": 27017,
       "db": "magedb",
-      "poolSize": 5
+      "minPoolSize": 5,
+      "maxPoolSize": 5
     },
     "locationServices": {
       "enabled": true,

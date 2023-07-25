@@ -1,10 +1,10 @@
 import { UserSelectComponent } from './user-select.component'
-import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing'
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing'
 import { UserReadService, UserSearchParams } from '../user-read.service'
 import { NgSelectModule } from '@ng-select/ng-select'
 import { User } from '../user.model'
 import { Component } from '@angular/core'
-import { FormGroup, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { UntypedFormGroup, UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { By } from '@angular/platform-browser'
 import { of, Subject } from 'rxjs'
 import { PageOf, itemRangeOfPage, pageForItemIndex } from '@ngageoint/mage.web-core-lib/paging'
@@ -15,8 +15,8 @@ import { PageOf, itemRangeOfPage, pageForItemIndex } from '@ngageoint/mage.web-c
 })
 class TestHostComponent {
 
-  form = new FormGroup({
-    user: new FormControl(null)
+  form = new UntypedFormGroup({
+    user: new UntypedFormControl(null)
   })
 }
 
@@ -27,7 +27,7 @@ describe('user select component', () => {
   let fixture: ComponentFixture<TestHostComponent>
   let userService: jasmine.SpyObj<UserReadService>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     userService = jasmine.createSpyObj<UserReadService>('MockUserReadService', [
       'search'
     ])

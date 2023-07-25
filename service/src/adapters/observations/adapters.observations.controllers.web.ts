@@ -190,7 +190,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       }
       const appRes = await app.saveObservation(appReq)
       if (appRes.success) {
-        return res.json(jsonForObservation(appRes.success, `${qualifiedBaseUrl(req)}`))
+        return res.json(jsonForObservation(appRes.success, qualifiedBaseUrl(req)))
       }
       next(appRes.error)
     })

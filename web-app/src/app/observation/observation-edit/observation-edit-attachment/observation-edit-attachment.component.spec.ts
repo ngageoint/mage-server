@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 
 import { ObservationEditAttachmentComponent } from './observation-edit-attachment.component';
 
@@ -10,8 +10,8 @@ import { ObservationEditAttachmentComponent } from './observation-edit-attachmen
 })
 class TestHostComponent {
   attachments = []
-  formGroup = new FormGroup({
-    attachment: new FormControl([])
+  formGroup = new UntypedFormGroup({
+    attachment: new UntypedFormControl([])
   });
   definition = {
     name: 'attachment'
@@ -24,7 +24,7 @@ describe('ObservationEditAttachmentComponent', () => {
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ObservationEditAttachmentComponent, TestHostComponent]
     })

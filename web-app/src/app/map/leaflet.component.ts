@@ -3,6 +3,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
 import { MapService } from '../upgrade/ajs-upgraded-providers';
+import { I } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-leaflet',
@@ -14,6 +15,7 @@ export class LeafletComponent {
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
   public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
 
@@ -46,6 +48,11 @@ export class LeafletComponent {
 
     this.groups['feature'] = {
       offset: LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    };
+
+    this.groups['grid'] = {
+      offset: LeafletComponent.GRID_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
@@ -118,6 +125,9 @@ export class LeafletComponent {
   opacityChanged(event: OpacityEvent): void {
     const pane = this.map.getPanes()[event.layer.layer.pane];
     pane.style.opacity = event.opacity;
+    if (event.layer.layer.setOpacity) {
+      event.layer.layer.setOpacity(event.opacity);
+    }
   }
 
   zoom($event: ZoomEvent): void {
@@ -158,6 +168,8 @@ export class LeafletComponent {
       case 'Imagery':
         return layer.base ? 'base' : 'tile';
       case 'geojson':
+        return layer.group;
+      case 'grid': 
         return layer.group;
     }
   }

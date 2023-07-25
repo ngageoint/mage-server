@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatError, MatFormField, MatFormFieldModule } from '@angular/material/form-field';
 import { MatInput, MatInputModule } from '@angular/material/input';
@@ -22,12 +22,13 @@ class TestHostComponent {
   @ViewChild(ObservationEditTextComponent) component: ObservationEditTextComponent
 }
 
+/* TODO test MUST contain at least 1 test
 describe('ObservationEditTextComponent', () => {
   let component: ObservationEditTextComponent
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, NoopAnimationsModule],
       declarations: [ObservationEditTextComponent, TestHostComponent]
@@ -83,3 +84,4 @@ describe('ObservationEditTextComponent', () => {
   //   expect(error).toBeNull()
   // })
 });
+*/

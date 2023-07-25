@@ -4,7 +4,7 @@ import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.d
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
-import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
+import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
 
@@ -34,7 +34,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     }
     let dbId
     try {
-      dbId = mongoose.Types.ObjectId(observation.id)
+      dbId = new mongoose.Types.ObjectId(observation.id)
     }
     catch (err) {
       return new ObservationRepositoryError(ObservationRepositoryErrorCode.InvalidObservationId)
@@ -54,7 +54,8 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      beforeDoc = beforeDoc.set(docSeed) as legacy.ObservationDocument
+      //TODO remove any, was as legacy.ObservationDocument
+      beforeDoc = beforeDoc.set(docSeed) as any
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
@@ -63,7 +64,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    const savedDoc = await beforeDoc.save() as legacy.ObservationDocument
+    const savedDoc = await beforeDoc!.save() as legacy.ObservationDocument
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     for (const e of observation.pendingEvents) {
@@ -100,9 +101,9 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     }
     const attachment = attachmentDocSeedForEntity(patchedObs.attachmentFor(attachmentId) as Attachment)
     const doc = await this.model.findOneAndUpdate(
-      { _id: mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: mongoose.Types.ObjectId(attachmentId) } } },
+      { _id: new mongoose.Types.ObjectId(observation.id), attachments: { $elemMatch: { _id: new mongoose.Types.ObjectId(attachmentId) } } },
       { $set: { 'attachments.$': attachment } },
-      { new: true })
+      { new: true, setDefaultsOnInsert: false })
     if (doc) {
       return Observation.evaluate(this.entityForDocument(doc), observation.mageEvent)
     }
@@ -110,11 +111,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
-    return Array.from({ length: count }).map(_ => mongoose.Types.ObjectId().toHexString())
+    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
   }
 
   async nextAttachmentIds(count: number = 1): Promise<AttachmentId[]> {
-    return Array.from({ length: count }).map(_ => mongoose.Types.ObjectId().toHexString())
+    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
   }
 }
 
@@ -181,7 +182,7 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
       description: docImportant.description
     }
   }
-  return void(0)
+  return void (0)
 }
 
 function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
@@ -233,9 +234,9 @@ function formEntryForDoc(doc: legacy.ObservationDocumentFormEntry): FormEntry {
 function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _id: number | mongoose.Types.ObjectId, [other: string]: any } {
   const { id, ...withoutId } = attrs as any
   withoutId._id =
-    typeof id === 'string' ? mongoose.Types.ObjectId(id)
-    : typeof id === 'number' ? id
-    : mongoose.Types.ObjectId()
+    typeof id === 'string' ? new mongoose.Types.ObjectId(id)
+      : typeof id === 'number' ? id
+        : new mongoose.Types.ObjectId()
   return withoutId
 }
 
@@ -249,7 +250,7 @@ function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttr
 
 function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
   return {
-    _id: mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId(),
     relativePath: attrs.contentLocator,
     minDimension: attrs.minDimension,
     name: attrs.name,

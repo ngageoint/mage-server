@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, Input, AfterViewInit, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent, MatChipList } from '@angular/material/chips';
@@ -23,7 +23,7 @@ interface MultiSelectField {
   styleUrls: ['./observation-edit-multiselect.component.scss']
 })
 export class ObservationEditMultiselectComponent implements OnInit, AfterViewInit {
-  @Input() formGroup: FormGroup
+  @Input() formGroup: UntypedFormGroup
   @Input() definition: MultiSelectField
 
   @ViewChild('chipList', { static: false }) chipList: MatChipList
@@ -33,8 +33,8 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
   visible = true
   removable = true
   separatorKeysCodes: number[] = [ENTER, COMMA]
-  control: FormControl
-  choiceControl = new FormControl()
+  control: UntypedFormControl
+  choiceControl = new UntypedFormControl()
   filteredChoices: Observable<Choice[]>
 
   constructor() {
@@ -50,7 +50,7 @@ export class ObservationEditMultiselectComponent implements OnInit, AfterViewIni
   }
 
   ngOnInit(): void {
-    this.control = this.formGroup.get(this.definition.name) as FormControl
+    this.control = this.formGroup.get(this.definition.name) as UntypedFormControl
   }
 
   ngAfterViewInit(): void {

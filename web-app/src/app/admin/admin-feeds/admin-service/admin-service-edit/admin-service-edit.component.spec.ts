@@ -1,7 +1,6 @@
-import { JsonSchemaFormModule } from '@ajsf/core';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Component, ViewChild } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -32,7 +31,7 @@ describe('AdminServiceEditComponent', () => {
   let component: AdminServiceEditComponent;
   let element: HTMLElement;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
         MatExpansionModule,
@@ -59,7 +58,7 @@ describe('AdminServiceEditComponent', () => {
     hostComponent = fixture.componentInstance;
     component = hostComponent.createServiceComponent;
     element = fixture.nativeElement;
-    httpMock = TestBed.get(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
@@ -185,15 +184,7 @@ describe('AdminServiceEditComponent', () => {
     });
   });
 
-  /*
-  the following two tests fail with ExpressionChangedAfterItHasBeenCheckedError:
-  Expression has changed after it was checked. i believe this is related to
-  https://github.com/angular/components/issues/16209.  i am hoping this
-  magically works when we upgrade angular/material as well as ajsf, so punting
-  and skipping these tests for now so the ci build succeeds.
-  */
-
-  xit('should set the default value for a configSchema with a string', () => {
+  it('should set the default value for a configSchema with a string', () => {
     const serviceType: ServiceType = {
       pluginServiceTypeId: 'plugin1:type1',
       id: 'serviceTypeId',
@@ -231,7 +222,7 @@ describe('AdminServiceEditComponent', () => {
     expect(component.serviceConfiguration).toEqual(serviceType.configSchema.default);
   });
 
-  xit('should emit serviceCreated', async () => {
+  it('should emit serviceCreated', async () => {
     spyOn(component.serviceCreated, 'emit');
 
     const serviceType: ServiceType = {

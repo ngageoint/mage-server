@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '@angular/material' as mat;
 @import "variables.scss";
 
 .contact-info-summary {
@@ -7,7 +7,7 @@
 }
 
 mat-icon {
-    color: mat-color($app-primary);
+    color: mat.get-color-from-palette($app-primary);
 }
 
 mat-label {

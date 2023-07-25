@@ -21,10 +21,6 @@ type TeamMembership = {
   userIds: UserId[]
 }
 
-declare module 'mongoose' {
-  export const Document: new (...args: any[]) => MongooseDocument
-}
-
 /**
  * TODO: This should not depend explicitly on the MongooseMageEventRepository,
  * but the MageEventRepository interface instead.  However, a large number of

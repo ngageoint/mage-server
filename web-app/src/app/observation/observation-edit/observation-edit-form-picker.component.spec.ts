@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { EventService, FilterService } from 'src/app/upgrade/ajs-upgraded-providers';
 
@@ -20,7 +20,7 @@ describe('ObservationEditFormPickerComponent', () => {
   let component: ObservationEditFormPickerComponent;
   let fixture: ComponentFixture<ObservationEditFormPickerComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ObservationEditFormPickerComponent ],
       providers: [{

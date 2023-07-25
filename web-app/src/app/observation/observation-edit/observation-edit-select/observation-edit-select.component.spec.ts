@@ -1,9 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 
 import { ObservationEditSelectComponent } from './observation-edit-select.component';
 import { By } from '@angular/platform-browser';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatError } from '@angular/material/form-field';
@@ -15,8 +15,8 @@ import { MatSelectModule } from '@angular/material/select';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 class TestHostComponent {
-  formGroup = new FormGroup({
-    select: new FormControl()
+  formGroup = new UntypedFormGroup({
+    select: new UntypedFormControl()
   })
 
   definition = {
@@ -39,7 +39,7 @@ describe('ObservationEditSelectComponent', () => {
   let hostComponent: TestHostComponent
   let fixture: ComponentFixture<TestHostComponent>
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, FormsModule, ReactiveFormsModule, NgxMatSelectSearchModule, MatInputModule, MatSelectModule],
       declarations: [ObservationEditSelectComponent, TestHostComponent]
