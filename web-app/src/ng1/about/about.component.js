@@ -8,6 +8,7 @@ class AboutController {
       this.name = api.name;
       this.serverVersion = api.version;
       this.apk = api.apk;
+      this.nodeVersion = api.nodeVersion;
     });
   }
 }
