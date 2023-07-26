@@ -89,6 +89,7 @@ const mongoConfig = appEnv.getServiceCreds('MongoInstance');
 const environment = {
   address: process.env.MAGE_ADDRESS || '0.0.0.0',
   port: appEnv.port,
+  nodeVersion: process.versions.node,
   userBaseDirectory: path.resolve(process.env.MAGE_USER_DIR || '/var/lib/mage/users'),
   iconBaseDirectory: path.resolve(process.env.MAGE_ICON_DIR || '/var/lib/mage/icons'),
   attachmentBaseDirectory: path.resolve(process.env.MAGE_ATTACHMENT_DIR || '/var/lib/mage/attachments'),
