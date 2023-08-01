@@ -3,7 +3,7 @@ import { MageEvent, MageEventAttrs, MageEventId } from '../entities/events/entit
 import { Attachment, AttachmentId, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
-export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'importantFlag' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
+export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'important' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
   userId?: mongoose.Types.ObjectId
   deviceId?: mongoose.Types.ObjectId
   important?: ObservationDocumentImportantFlag
