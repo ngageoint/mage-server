@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import { MageEvent, MageEventAttrs, MageEventId } from '../entities/events/entities.events'
-import { Attachment, AttachmentId, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
+import { MageEventAttrs, MageEventId } from '../entities/events/entities.events'
+import { Attachment, FormEntry, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, Thumbnail } from '../entities/observations/entities.observations'
 import { MageEventDocument } from './event'
 
 export type ObservationDocument = Omit<mongoose.Document, 'toJSON'> & Omit<ObservationAttrs, 'eventId' | 'userId' | 'deviceId' | 'important' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'> & {
