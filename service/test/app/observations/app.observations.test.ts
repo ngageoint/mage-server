@@ -14,7 +14,7 @@ import util from 'util'
 import { BufferWriteable } from '../../utils'
 import EventEmitter from 'events'
 
-describe('observations use case interactions', function() {
+describe.only('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
@@ -730,6 +730,9 @@ describe('observations use case interactions', function() {
           },
           properties: {
             timestamp: minimalObs.properties.timestamp,
+            provider: 'hoomon',
+            accuracy: 25,
+            delta: 23232,
             forms: [
               { id: formEntryId, formId, field1: 'existing form entry' }
             ],
@@ -790,14 +793,15 @@ describe('observations use case interactions', function() {
           userId: modUserId,
           deviceId: modDeviceId
         }
-        const obsAfterAtrs: ObservationAttrs = {
+        const obsAfterAttrs: ObservationAttrs = {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.timestamp,
             forms: [ { id: obsBefore.formEntries[0].id, formId: obsBefore.formEntries[0].formId, field1: 'updated field' } ]
           }
         }
-        const obsAfter = Observation.assignTo(obsBefore, obsAfterAtrs) as Observation
+        const obsAfter = Observation.assignTo(obsBefore, obsAfterAttrs) as Observation
         const req: api.SaveObservationRequest = { context, observation: modExtra }
         obsRepo.save(Arg.all()).resolves(obsAfter)
         const res = await saveObservation(req)
@@ -824,6 +828,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.evaluate({
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.properties.timestamp,
             forms: [
               ...obsBefore.properties.forms,
@@ -1010,6 +1015,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.assignTo(obsBefore, {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.properties.timestamp,
             forms: [
               {
@@ -1107,6 +1113,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.assignTo(obsBefore, {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.properties.timestamp,
             forms: [
               {
@@ -1135,9 +1142,9 @@ describe('observations use case interactions', function() {
         }
         obsRepo.save(Arg.all()).resolves(obsAfter)
         const res = await saveObservation(req)
-        const saved = res.success as api.ExoObservation
 
         expect(res.error).to.be.null
+        expect(res.success).to.exist
         expect(obsAfter.validation.hasErrors).to.be.false
         expect(obsBefore.attachments.map(copyAttachmentAttrs)).to.deep.equal([
           copyAttachmentAttrs({
@@ -1191,6 +1198,7 @@ describe('observations use case interactions', function() {
           Observation.assignTo(obsBefore, {
             ...copyObservationAttrs(obsBefore),
             properties: {
+              ...obsBefore.properties,
               timestamp: obsBefore.timestamp,
               forms: [
                 {
@@ -1243,6 +1251,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.assignTo(obsBefore, {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.timestamp,
             forms: [
               { ...obsBefore.formEntries[0], field1: 'mod field 1' }
@@ -1312,6 +1321,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.assignTo(obsBefore, {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.timestamp,
             forms: [
               { ...obsBefore.formEntries[0], field1: 'mod field 1' }
@@ -1359,6 +1369,7 @@ describe('observations use case interactions', function() {
         const obsAfter = Observation.assignTo(obsBefore, {
           ...copyObservationAttrs(obsBefore),
           properties: {
+            ...obsBefore.properties,
             timestamp: obsBefore.timestamp,
             forms: [ { ...obsBefore.formEntries[0], field1: 'mod field 1' } ]
           }
@@ -1391,6 +1402,14 @@ describe('observations use case interactions', function() {
         expect(saved.state).to.deep.equal(obsAfter.states[0])
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'save argument')))
+      })
+
+      it('preserves location provider properties when mod does not specify them', async function() {
+        expect.fail('todo')
+      })
+
+      it('uses mod accuracy and delta when they are zero', async function() {
+        expect.fail('todo')
       })
     })
   })
