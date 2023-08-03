@@ -14,7 +14,7 @@ import util from 'util'
 import { BufferWriteable } from '../../utils'
 import EventEmitter from 'events'
 
-describe.only('observations use case interactions', function() {
+describe('observations use case interactions', function() {
 
   let mageEvent: MageEvent
   let obsRepo: SubstituteOf<EventScopedObservationRepository>
@@ -399,8 +399,11 @@ describe.only('observations use case interactions', function() {
       }
       const exo = api.exoObservationFor(from)
 
-
-      expect.fail('todo')
+      expect(exo.properties).to.include({
+        provider: 'gps',
+        accuracy: 50,
+        delta: 54321,
+      })
     })
   })
 
@@ -551,7 +554,6 @@ describe.only('observations use case interactions', function() {
       expect(saved.important?.user).to.deep.equal({ id: importantFlagger.id, displayName: importantFlagger.displayName })
     })
 
-
     it('populates the creator and important flag user id when present', async function() {
 
       const creator: User = {
@@ -605,10 +607,6 @@ describe.only('observations use case interactions', function() {
       userRepo.received(1).findAllByIds(Arg.all())
       userRepo.received(1).findAllByIds(Arg.is((x: UserId[]) => x.length === 2 && x.every(id => [ creator.id, importantFlagger.id ].includes(id))))
       userRepo.didNotReceive().findById(Arg.all())
-    })
-
-    it('accepts location provider properties', async function() {
-      expect.fail('todo')
     })
 
     describe('creating', function() {
@@ -677,6 +675,50 @@ describe.only('observations use case interactions', function() {
         expect(created.validation.hasErrors).to.be.false
         expect(created.userId).to.equal(context.userId)
         expect(created.deviceId).to.equal(context.deviceId)
+        expect(saved).to.deep.equal(api.exoObservationFor(created, { creator }))
+        obsRepo.received(1).save(Arg.all())
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
+      })
+
+      it('accepts location provider properties', async function() {
+
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: observationModFor({
+            ...minimalObs,
+            properties: {
+              ...minimalObs.properties,
+              accuracy: 100,
+              delta: 5000,
+              provider: 'fake',
+            }
+          })
+        }
+        const createdAttrs: ObservationAttrs = {
+          ...copyObservationAttrs(minimalObs),
+          userId: context.userId,
+          deviceId: context.deviceId,
+          properties: {
+            ...minimalObs.properties,
+            accuracy: 100,
+            delta: 5000,
+            provider: 'fake',
+          }
+        }
+        const created = Observation.evaluate(createdAttrs, mageEvent)
+        const creator: User = { id: context.userId, displayName: `User ${context.userId}` } as User
+        obsRepo.save(Arg.all()).resolves(created)
+        userRepo.findAllByIds([ context.userId ]).resolves({ [context.userId]: creator })
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(created.validation.hasErrors).to.be.false
+        expect(created.properties).to.include({
+          accuracy: 100,
+          delta: 5000,
+          provider: 'fake',
+        })
         expect(saved).to.deep.equal(api.exoObservationFor(created, { creator }))
         obsRepo.received(1).save(Arg.all())
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(created)))
@@ -1405,11 +1447,85 @@ describe.only('observations use case interactions', function() {
       })
 
       it('preserves location provider properties when mod does not specify them', async function() {
-        expect.fail('todo')
+
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            ...obsBefore.properties,
+            timestamp: obsBefore.timestamp,
+            forms: [
+              { ...obsBefore.formEntries[0], field1: 'mod field 1' }
+            ],
+          }
+        }) as Observation
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            timestamp: minimalObs.properties.timestamp,
+            forms: [
+              { ...obsBefore.formEntries[0], field1: 'mod field 1' }
+            ]
+          }
+        }, 'attachments')
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.properties).to.have.property('accuracy').that.is.a('number')
+        expect(obsBefore.properties).to.have.property('delta').that.is.a('number')
+        expect(obsBefore.properties).to.have.property('provider').that.is.a('string')
+        expect(obsMod.properties).not.to.have.keys('accuracy', 'delta', 'provider')
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.properties).to.include(_.pick(obsBefore.properties, 'accuracy', 'delta', 'provider'))
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
 
       it('uses mod accuracy and delta when they are zero', async function() {
-        expect.fail('todo')
+
+        const obsMod: api.ExoObservationMod = _.omit({
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            accuracy: 0,
+            delta: 0,
+            timestamp: minimalObs.properties.timestamp,
+            forms: obsBefore.formEntries,
+          }
+        }, 'attachments')
+        const obsAfter = Observation.assignTo(obsBefore, {
+          ...copyObservationAttrs(obsBefore),
+          properties: {
+            ...obsBefore.properties,
+            timestamp: obsBefore.timestamp,
+            accuracy: 0,
+            delta: 0,
+          }
+        }) as Observation
+        const req: api.SaveObservationRequest = {
+          context,
+          observation: obsMod
+        }
+        obsRepo.save(Arg.all()).resolves(obsAfter)
+        const res = await saveObservation(req)
+        const saved = res.success as api.ExoObservation
+
+        expect(res.error).to.be.null
+        expect(obsBefore.properties).to.have.property('accuracy').that.does.not.equal(0)
+        expect(obsBefore.properties).to.have.property('delta').that.does.not.equal(0)
+        expect(obsAfter.validation.hasErrors).to.be.false
+        expect(obsAfter.properties).to.include({
+          accuracy: 0,
+          delta: 0,
+        })
+        expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
+        obsRepo.received(1).save(Arg.is(validObservation()))
+        obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
       })
     })
   })
