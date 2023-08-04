@@ -1,0 +1,1 @@
+export interface SystemInfoServices { mongodbVersion: string }
