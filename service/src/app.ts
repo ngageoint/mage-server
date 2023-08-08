@@ -40,7 +40,7 @@ import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
 import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
-import { SystemInfoServices } from './entities/systemInfo/entities.systemInfo'
+import { SystemInfoService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
 import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.controllers.web'
 import { SearchUsers } from './app.impl/users/app.impl.users'
@@ -57,6 +57,9 @@ import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
+import { SystemInfoServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
+import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
+import { ReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
 
 
 export interface MageService {
@@ -121,12 +124,9 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     log.error(`error creating icon directory ${iconBase}: `, err)
     throw err
   }
-  
-  // Gets version of MongoDB
+
   const dbLayer = await initDatabase()
-  // Passes version of MongoDB to the repositories
   const repos = await initRepositories(dbLayer, config)
-  // Passes version of MongoDB to the app layer
   const appLayer = await initAppLayer(repos)
 
   const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
@@ -207,7 +207,6 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 
 type DatabaseLayer = {
   conn: mongoose.Connection
-  systemInfo: SystemInfoServices
   connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
   feeds: {
     feedServiceTypeIdentity: FeedServiceTypeIdentityModel
@@ -258,18 +257,12 @@ type AppLayer = {
   },
   icons: StaticIconsAppLayer,
   users: UsersAppLayer,
-  systemInfo: {
-    mongodbVersion: string
-  }
+  systemInfo: SystemInfoAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
   const { uri, connectRetryDelay, connectTimeout, options } = environment.mongo
   const conn = await waitForDefaultMongooseConnection(mongoose, uri, connectTimeout, connectRetryDelay, options).then(() => mongoose.connection)
-  const dbAdmin = conn.getClient().db().admin()
-  const serverInfo = await dbAdmin.serverInfo()
-  const systemInfo: SystemInfoServices = { mongodbVersion: serverInfo.version };
-   
   const PluginConnectionFactory = function PluginConnectionFactory(pluginId: string): GetDbConnection {
     const pluginMongoose = new mongoose.Mongoose()
     // TODO: add event listeners to plugin connections to log how plugins are using the connection
@@ -294,7 +287,6 @@ async function initDatabase(): Promise<DatabaseLayer> {
   await migrate.runDatabaseMigrations(uri, options)
   return {
     conn,
-    systemInfo,
     connectionFactoryForPlugin: PluginConnectionFactory,
     feeds: {
       feedServiceTypeIdentity: FeedServiceTypeIdentityModel(conn),
@@ -332,9 +324,7 @@ type Repositories = {
   users: {
     userRepo: UserRepository
   },
-  systemInfo: {
-    mongodbVersion: string
-  }
+  systemInfo: SystemInfoService
 }
 
   // TODO: the real thing
@@ -363,6 +353,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
+  const systemInfoService = new SystemInfoServiceImpl(models.conn)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
   }
@@ -383,9 +374,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     users: {
       userRepo
     },
-    systemInfo: {
-      mongodbVersion: models.systemInfo.mongodbVersion
-    }
+    systemInfo: systemInfoService
   }
 }
 
@@ -395,7 +384,7 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
-  const systemInfo: SystemInfoServices = repos.systemInfo
+  const systemInfo = initSystemInfoAppLayer(repos)
 
   return {
     events,
@@ -485,6 +474,12 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   }
 }
 
+function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
+  return {
+    readSystemInfo: ReadSystemInfo(repos.systemInfo)
+  }
+}
+
 interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
@@ -494,8 +489,6 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   // load routes the old way
   const webLayer = await import('./express')
   const webController = webLayer.app
-  console.log('initWebLayer app mongodbVersion:', app.systemInfo.mongodbVersion)
-  console.log('initWebLayer repos mongodbVersion:', repos.systemInfo.mongodbVersion)
   const webAuth = webLayer.auth
   const appRequestFactory: WebAppRequestFactory = <Params>(req: express.Request, params: Params): AppRequest<UserDocument, MageEventRequestContext> & Params => {
     return {
