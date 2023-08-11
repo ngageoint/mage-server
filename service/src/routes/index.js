@@ -14,42 +14,7 @@ module.exports = function(app, security) {
   const AuthenticationApiAppender = require('../utilities/authenticationApiAppender');
   const { modulesPathsInDir } = require('../utilities/loader');
 
-  app.get('/api', function (req, res, next) {
-    async.parallel({
-      initial: function (done) {
-        User.count(function (err, count) {
-          done(err, count === 0);
-        });
-      },
-      disclaimer: function (done) {
-        Setting.getSetting('disclaimer')
-          .then(disclaimer => done(null, disclaimer || {}))
-          .catch(err => done(err));
-      },
-      contactinfo: function (done) {
-        Setting.getSetting('contactinfo')
-          .then(contactinfo => done(null, contactinfo || {}))
-          .catch(err => done(err));
-      }
-    }, function (err, results) {
-      if (err) return next(err);
 
-      const api = extend({}, config.api);
-      api.disclaimer = results.disclaimer.settings;
-      api.contactinfo = results.contactinfo.settings;
-
-      if (results.initial) {
-        api.initial = true;
-      }
-
-      AuthenticationApiAppender.append(api, { whitelist: true }).then(appendedApi => {
-        res.json(appendedApi);
-        next();
-      }).catch(err => {
-        next(err);
-      });
-    });
-  });
 
   // Dynamically import all routes
   modulesPathsInDir(__dirname).forEach(modulePath => {

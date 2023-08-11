@@ -4,7 +4,7 @@ import { AppRequest, AppResponse } from '../app.api.global'
 
 
 export type ExoPrivilegedSystemInfo = SystemInfo
-export type ExoRedactedSystemInfo = Omit<SystemInfo, 'nodeVersion' | 'mongodbVersion'>
+export type ExoRedactedSystemInfo = Omit<SystemInfo, 'environment'>
 export type ExoSystemInfo = ExoPrivilegedSystemInfo | ExoRedactedSystemInfo
 
 export interface ReadSystemInfoRequest extends AppRequest {}

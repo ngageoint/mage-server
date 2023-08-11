@@ -40,7 +40,7 @@ import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
 import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
-import { SystemInfoService } from './entities/systemInfo/entities.systemInfo'
+import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
 import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.controllers.web'
 import { SearchUsers } from './app.impl/users/app.impl.users'
@@ -57,9 +57,10 @@ import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
-import { SystemInfoServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
+import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
 import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
-import { ReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
+import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
+import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
 
 
 export interface MageService {
@@ -128,7 +129,6 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase()
   const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
-
   const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
   const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
   const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
@@ -324,7 +324,7 @@ type Repositories = {
   users: {
     userRepo: UserRepository
   },
-  systemInfo: SystemInfoService
+  enviromentInfo: EnvironmentService
 }
 
   // TODO: the real thing
@@ -353,7 +353,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
-  const systemInfoService = new SystemInfoServiceImpl(models.conn)
+  const systemInfoService = new EnvironmentServiceImpl(models.conn) 
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
   }
@@ -374,7 +374,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     users: {
       userRepo
     },
-    systemInfo: systemInfoService
+    enviromentInfo: systemInfoService
   }
 }
 
@@ -385,7 +385,6 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
   const systemInfo = initSystemInfoAppLayer(repos)
-
   return {
     events,
     observations,
@@ -476,7 +475,7 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   return {
-    readSystemInfo: ReadSystemInfo(repos.systemInfo)
+    readSystemInfo: CreateReadSystemInfo(repos.enviromentInfo)
   }
 }
 
@@ -519,6 +518,10 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   webController.use('/api/icons', [
     bearerAuth,
     iconsRoutes
+  ])
+  const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
+  webController.use('/api', [
+    systemInfoRoutes
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
     const context: observationsApi.ObservationRequestContext = {
