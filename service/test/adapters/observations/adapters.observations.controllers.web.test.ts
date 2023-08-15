@@ -9,7 +9,7 @@ import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
 import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
 import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
 import { BufferWriteable } from '../../utils'
@@ -225,7 +225,7 @@ describe('observations web controller', function () {
 
       const obsId = uniqid()
       const reqBody = {
-        type: 'FeatureCollection',
+        type: 'Feature',
         geometry: { type: 'Point', coordinates: [ 23, 45 ] },
         properties: {
           timestamp: new Date().toISOString(),
@@ -279,6 +279,25 @@ describe('observations web controller', function () {
       expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(jsonForObservation(appRes, `${baseUrl}/events/${mageEvent.id}/observations`))))
       app.received(1).saveObservation(Arg.all())
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
+    })
+
+    it('retains only valid properties', async function() {
+
+      const validProperties: Required<ObservationFeatureProperties> = {
+        timestamp: new Date(Date.now() - 500),
+        provider: 'gps',
+        accuracy: 350,
+        delta: 7654,
+        forms: [
+          { id: 'entry1', formId: 1, field1: 123, field2: 'rocks' }
+        ]
+      }
+      const augmentedValidProperties = {
+        ...validProperties,
+        wutIsThis: 'why is it here?',
+        unacceptable: { why: 'trash' },
+        tryAgain: new Date()
+      }
     })
 
     it('uses event id only from the path', async function() {

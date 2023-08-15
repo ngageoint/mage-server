@@ -74,7 +74,12 @@ export interface ExoObservationImportantFlag extends ObservationImportantFlag {
 
 export type ExoObservationUserLite = Pick<User, 'id' | 'displayName'>
 
-export type ExoObservationMod = Omit<ExoObservation, 'eventId' | 'createdAt' | 'lastModified' | 'importantFlag' | 'states' | 'favoriteUserIds' | 'attachments' | 'properties'> & {
+/**
+ * `ExoObservationMod` defines the structure of an observation update object
+ * that the application layer receives from the adapter layer, most commonly
+ * the web layer.
+ */
+export type ExoObservationMod = Omit<ExoObservation, 'attachments' | 'createdAt' | 'deviceId' | 'eventId' | 'favoriteUserIds' | 'important' | 'lastModified' | 'properties' | 'state' | 'user' | 'userId'> & {
   properties: ExoObservationPropertiesMod
 }
 
