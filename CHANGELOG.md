@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ##### Features
 
+## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
+#### Features
+#### Bug Fixes
+* The server was not saving location provider information, such as accuracy and location source, e.g., `gps` or `manual`.
+* Previous 6.2.x releases were missing bug fixes from [6.1.3](#6.1.3) and [6.1.2](#6.1.2).
+
 ## [6.2.8](https://github.com/ngageoint/mage-server/releases/tag/6.2.8)
 #### Features
 #### Bug Fixes
@@ -58,7 +64,6 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Remove all dots from web plugin IDs so UI Router does not interpret them as route hierarchy.
 * Do not enforce form min/max validation constraints for archived forms.
 * Restore missing view templates for auth and observation pages.
-
 
 ## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
