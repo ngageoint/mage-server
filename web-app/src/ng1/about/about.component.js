@@ -9,7 +9,7 @@ class AboutController {
       this.serverVersion = api.version;
       this.apk = api.apk;
       this.nodeVersion = api.environment.nodeVersion;
-      this.mongddbVersion = api.environment.monogdbVersion;
+      this.monogdbVersion = api.environment.monogdbVersion;
     });
   }
 }

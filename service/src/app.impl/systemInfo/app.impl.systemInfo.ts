@@ -9,7 +9,7 @@ import AuthenticationConfigurationTransformer from '../../transformers/authentic
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
  */
-export function CreateReadSystemInfo(EnvironmentService: EnvironmentService): api.ReadSystemInfo {
+export function CreateReadSystemInfo(environmentService: EnvironmentService): api.ReadSystemInfo {
 
   // appending the authentication strategies to the api
    async function appendAuthenticationStrategies(api: any, options: any = {}): Promise<any> {
@@ -30,7 +30,7 @@ export function CreateReadSystemInfo(EnvironmentService: EnvironmentService): ap
   return async function readSystemInfo(req: api.ReadSystemInfoRequest): Promise<api.ReadSystemInfoResponse> {
     // TODO: will need a permission check to determine what level of system
     // information the requesting principal is allowed to see
-    const environment = await EnvironmentService.readEnvironmentInfo()
+    const environment = await environmentService.readEnvironmentInfo()
     const disclaimer = await Settings.getSetting('disclaimer') || {}
     const contactInfo = await Settings.getSetting('contactinfo') || {}
 
@@ -39,9 +39,9 @@ export function CreateReadSystemInfo(EnvironmentService: EnvironmentService): ap
       disclaimer: disclaimer,
       contactinfo: contactInfo
     });
-    
+
     const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, { whitelist: true });
-    
+
     return AppResponse.success(updatedApiConfig as any)
   }
 }
