@@ -6,7 +6,11 @@ module.exports = {
     name: packageJson.name,
     nodeVersion: process.versions.node,
     description: packageJson.description,
-    version: packageJson.version,
+    version: {
+      major: parseInt(version[0]),
+      minor: parseInt(version[1]),
+      micro: parseInt(version[2])
+    },
   },
   server: {
     locationServices: {
