@@ -12,8 +12,18 @@ export interface EnvironmentService {
 }
 
 export interface SystemInfo {
+  /**
+   * These [semantic](https://semver.org/) version components are parsed from
+   * the package version to allow the mobile apps to check compatibility with
+   * the server.  Without this structure, the apps will not allow interaction
+   * with the server.
+   */
+  version: { major: number, minor: number, micro: number }
+  /**
+   * Package version string straight from package.json
+   */
   mageVersion: string
   environment: EnvironmentInfo
   disclaimer: any // mongoose Document type
-  contactInfo: any 
+  contactInfo: any
 }
