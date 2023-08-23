@@ -3,13 +3,12 @@ import * as api from '../../app.api/systemInfo/app.api.systemInfo'
 import { EnvironmentService } from '../../entities/systemInfo/entities.systemInfo'
 import * as Settings from '../../models/setting'
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration'
-import config from '../../config'
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration'
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
  */
-export function CreateReadSystemInfo(environmentService: EnvironmentService): api.ReadSystemInfo {
+export function CreateReadSystemInfo(environmentService: EnvironmentService, config: any): api.ReadSystemInfo {
 
   // appending the authentication strategies to the api
    async function appendAuthenticationStrategies(api: any, options: any = {}): Promise<any> {

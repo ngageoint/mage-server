@@ -1,4 +1,5 @@
 const packageJson = require('../package');
+const version = packageJson.version.split('.');
 
 
 module.exports = {

@@ -1,14 +1,11 @@
 import { expect } from 'chai';
-import { AppResponse, AppRequest } from '../../../lib/app.api/app.api.global';
+import { AppResponse } from '../../../lib/app.api/app.api.global';
 import { beforeEach } from 'mocha';
 import express from 'express';
 import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web';
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute';
 import supertest from 'supertest';
-import {
-  EnvironmentService,
-  SystemInfo
-} from '../../../lib/entities/systemInfo/entities.systemInfo';
+import { SystemInfo } from '../../../lib/entities/systemInfo/entities.systemInfo';
 import { SystemInfoAppLayer } from '../../../lib/app.api/systemInfo/app.api.systemInfo';
 import { SystemInfoRoutes } from '../../../lib/adapters/systemInfo/adapters.systemInfo.controllers.web';
 
@@ -49,7 +46,12 @@ describe('SystemInfo web controller', () => {
           monogdbVersion: 'test'
         },
         disclaimer: 'test',
-        contactInfo: 'test'
+        contactInfo: 'test',
+        version: {
+          major: 1,
+          minor: 2,
+          micro: 3
+        }
       };
       appLayer
         .readSystemInfo(Arg.any())

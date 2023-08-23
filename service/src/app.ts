@@ -6,6 +6,7 @@ import fs from 'fs-extra'
 import mongoose from 'mongoose'
 import express from 'express'
 import util from 'util'
+import apiConfig from './config';
 import { MongooseFeedServiceTypeRepository, FeedServiceTypeIdentityModel, MongooseFeedServiceRepository, FeedServiceModel, MongooseFeedRepository, FeedModel } from './adapters/feeds/adapters.feeds.db.mongoose'
 import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose'
 import { FeedServiceTypeRepository, FeedServiceRepository, FeedRepository } from './entities/feeds/entities.feeds'
@@ -353,7 +354,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
-  const systemInfoService = new EnvironmentServiceImpl(models.conn) 
+  const systemInfoService = new EnvironmentServiceImpl(models.conn)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
   }
@@ -475,7 +476,7 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   return {
-    readSystemInfo: CreateReadSystemInfo(repos.enviromentInfo)
+    readSystemInfo: CreateReadSystemInfo(repos.enviromentInfo, apiConfig)
   }
 }
 
