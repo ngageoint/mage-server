@@ -104,7 +104,7 @@ The `@ngageoint/mage.service` package includes a [`mage.service` [bin script](ht
 the server process.  From the `instance` directory, you can run `npx @ngageoint/mage.service --help` to see the configuration
 options.
 
-On Windows Servers installations, running the following script in the `instance` directory, will initialize the mage.service script [bin script](node node_modules\@ngageoint\mage.service\bin\mage.service.js).
+On Windows Server installations, running the command: `node node_modules\@ngageoint\mage.service\bin\mage.service.js` in the `instance` directory, will initialize the `mage.service` script.
 
 #### Configuration merging
 
