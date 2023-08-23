@@ -30,8 +30,6 @@ const mockContactInfo = {
   settings: { email: 'contact@example.com' }
 };
 
-const mockVersion = '1.2.3';
-
 // Mocking AuthenticationConfiguration.getAllConfigurations and AuthenticationConfigurationTransformer.transform
 AuthenticationConfiguration.getAllConfigurations = async () => [];
 AuthenticationConfigurationTransformer.transform = (
@@ -100,8 +98,11 @@ describe('CreateReadSystemInfo', () => {
     console.log(`systemInfo TACOS!!! ${JSON.stringify(systemInfo)}`);
 
     // Asserting properties of SystemInfo
-    expect(systemInfo.version).to.exist;
-    expect(systemInfo.version).to.be.a('string');
+    expect(systemInfo.version).to.be.an('object');
+    expect(systemInfo.version.major).to.be.a('number');
+    expect(systemInfo.version.minor).to.be.a('number');
+    expect(systemInfo.version.micro).to.be.a('number');
+
     expect(systemInfo.mageVersion).to.be.a('string');
     expect(systemInfo.environment).to.eql(mockEnvironmentInfo);
     expect(systemInfo.disclaimer).to.eql(mockDisclaimer);
