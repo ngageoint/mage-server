@@ -31,12 +31,12 @@ export function CreateReadSystemInfo(environmentService: EnvironmentService, con
     // information the requesting principal is allowed to see
     const environment = await environmentService.readEnvironmentInfo()
     const disclaimer = await Settings.getSetting('disclaimer') || {}
-    const contactInfo = await Settings.getSetting('contactinfo') || {}
+    const contactInfo = await Settings.getSetting('contactInfo') || {}
 
     const apiConfig = Object.assign({}, config.api, {
       environment: environment,
       disclaimer: disclaimer,
-      contactinfo: contactInfo
+      contactInfo: contactInfo
     });
 
     const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, { whitelist: true });

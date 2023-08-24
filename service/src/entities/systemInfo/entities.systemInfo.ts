@@ -22,7 +22,6 @@ export interface SystemInfo {
   /**
    * Package version string straight from package.json
    */
-  mageVersion: string
   environment: EnvironmentInfo
   disclaimer: any // mongoose Document type
   contactInfo: any

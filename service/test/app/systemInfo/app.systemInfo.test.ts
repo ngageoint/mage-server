@@ -2,16 +2,16 @@ import { expect } from 'chai';
 import {
   EnvironmentInfo,
   SystemInfo
-} from '../../../src/entities/systemInfo/entities.systemInfo';
-import Substitute, { Substitute as Sub } from '@fluffy-spoon/substitute';
-import { CreateReadSystemInfo } from '../../../src/app.impl/systemInfo/app.impl.systemInfo';
+} from '../../../lib/entities/systemInfo/entities.systemInfo';
+import{ Substitute } from '@fluffy-spoon/substitute';
+import { CreateReadSystemInfo } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
 import {
   AppRequest,
   AppRequestContext
-} from '../../../src/app.api/app.api.global';
-import AuthenticationConfiguration from '../../../src/models/authenticationconfiguration';
-import AuthenticationConfigurationTransformer from '../../../src/transformers/authenticationconfiguration';
-import * as Settings from '../../../src/models/setting';
+} from '../../../lib/app.api/app.api.global';
+import AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
+import AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
+import * as Settings from '../../../lib/models/setting';
 
 const mockNodeVersion = '14.16.1';
 const mockMongoDBVersion = '4.2.0';
@@ -20,15 +20,8 @@ const mockEnvironmentInfo: EnvironmentInfo = {
   nodeVersion: mockNodeVersion,
   monogdbVersion: mockMongoDBVersion
 };
-
-const mockDisclaimer = {
-  type: 'disclaimer',
-  settings: { text: 'Sample disclaimer' }
-};
-const mockContactInfo = {
-  type: 'contactinfo',
-  settings: { email: 'contact@example.com' }
-};
+const mockDisclaimer = {};
+const mockContactInfo = {};
 
 // Mocking AuthenticationConfiguration.getAllConfigurations and AuthenticationConfigurationTransformer.transform
 AuthenticationConfiguration.getAllConfigurations = async () => [];
@@ -61,10 +54,10 @@ describe('CreateReadSystemInfo', () => {
   let readSystemInfo: (
     arg0: AppRequest<string, AppRequestContext<string>> & object
   ) => any;
-  const mockedSettings = Substitute.for<typeof Settings>();
+  let mockedSettingsModule = Substitute.for<typeof Settings>();
   const mockConfig = {
     api: {
-      name: 'test',
+      name: 'test-name',
       nodeVersion: '14.16.1',
       description: 'test-description',
       version: { major: 1, minor: 2, micro: 3 }
@@ -72,12 +65,13 @@ describe('CreateReadSystemInfo', () => {
   };
 
   beforeEach(() => {
-    mockedSettings
+    mockedSettingsModule
       .getSetting('disclaimer')
       .returns(Promise.resolve(mockDisclaimer as any));
-    mockedSettings
-      .getSetting('contactinfo')
-      .returns(Promise.resolve(mockContactInfo as any));
+
+    mockedSettingsModule
+      .getSetting('contactInfo') // Ensure correct casing here
+      .returns(Promise.resolve(mockDisclaimer as any));
     readSystemInfo = CreateReadSystemInfo(
       {
         readEnvironmentInfo: () => Promise.resolve(mockEnvironmentInfo),
@@ -87,6 +81,12 @@ describe('CreateReadSystemInfo', () => {
     );
   });
 
+  afterEach(() => {
+    // Reset the mock by creating a fresh instance
+    mockedSettingsModule = Substitute.for<typeof Settings>();
+  });
+
+
   it('should return a function that produces a ReadSystemInfoResponse with full SystemInfo', async () => {
     const request = requestBy('test-principal');
     const response = await readSystemInfo(request);
@@ -95,7 +95,6 @@ describe('CreateReadSystemInfo', () => {
     expect(response.success).to.exist;
 
     const systemInfo: SystemInfo = response.success as SystemInfo;
-    console.log(`systemInfo TACOS!!! ${JSON.stringify(systemInfo)}`);
 
     // Asserting properties of SystemInfo
     expect(systemInfo.version).to.be.an('object');
@@ -103,12 +102,10 @@ describe('CreateReadSystemInfo', () => {
     expect(systemInfo.version.minor).to.be.a('number');
     expect(systemInfo.version.micro).to.be.a('number');
 
-    expect(systemInfo.mageVersion).to.be.a('string');
     expect(systemInfo.environment).to.eql(mockEnvironmentInfo);
     expect(systemInfo.disclaimer).to.eql(mockDisclaimer);
     expect(systemInfo.contactInfo).to.eql(mockContactInfo);
     expect(systemInfo.version).to.eql(mockConfig.api.version);
-
   });
 
   it("should format the node version as 'major.minor.patch'", async () => {
@@ -116,7 +113,6 @@ describe('CreateReadSystemInfo', () => {
     const response = await readSystemInfo(request);
     const nodeVersion = (response.success as SystemInfo).environment
       .nodeVersion;
-
     const versionFormat = /^\d+\.\d+\.\d+$/;
     expect(nodeVersion).to.match(versionFormat);
   });

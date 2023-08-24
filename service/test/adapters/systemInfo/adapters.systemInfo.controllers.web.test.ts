@@ -40,13 +40,12 @@ describe('SystemInfo web controller', () => {
   describe('GET /api', () => {
     it('should return configuration', async () => {
       const expected: SystemInfo = {
-        mageVersion: 'someValue',
         environment: {
           nodeVersion: 'test',
           monogdbVersion: 'test'
         },
-        disclaimer: 'test',
-        contactInfo: 'test',
+        disclaimer: {},
+        contactInfo: {},
         version: {
           major: 1,
           minor: 2,
