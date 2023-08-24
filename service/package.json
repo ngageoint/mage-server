@@ -195,8 +195,9 @@
   },
   "main": "bin/mage.service.js",
   "files": [
-    "lib",
-    "bin"
+    "/lib",
+    "/bin",
+    "/npm-shrinkwrap.json"
   ],
   "bin": {
     "mage.service": "bin/mage.service.js"
