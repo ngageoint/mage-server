@@ -41,11 +41,7 @@ describe('Authentication API Appender Tests', function() {
       });
   });
 
-  // TODO: Temporarily skipping the "Test append" test due to unresolved issues with the mock resolution
-  // of AuthenticationConfigurationModel's 'getAllConfigurations' method. The test fails inconsistently,
-  // suggesting there might be some underlying race conditions or mocking conflicts.
-  // Need a deeper investigation to determine the root cause and fix. Plan to revisit soon.
-  it.skip('Test append', function(done) {
+  it('Test append', function(done) {
     const api = {
       name: 'testApi',
       description: 'Test description',
