@@ -61,6 +61,9 @@ import { EventEmitter } from 'events'
 import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
 import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
 import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
+ import Settings from "./models/setting";
+  import AuthenticationConfiguration from "./models/authenticationconfiguration";
+  import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
 import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
 
 
@@ -476,7 +479,13 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   return {
-    readSystemInfo: CreateReadSystemInfo(repos.enviromentInfo, apiConfig)
+    readSystemInfo: CreateReadSystemInfo(
+      repos.enviromentInfo,
+      apiConfig,
+      Settings,
+      AuthenticationConfiguration,
+      AuthenticationConfigurationTransformer
+    )
   }
 }
 

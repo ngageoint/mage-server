@@ -3,15 +3,15 @@ import {
   EnvironmentInfo,
   SystemInfo
 } from '../../../lib/entities/systemInfo/entities.systemInfo';
-import{ Substitute } from '@fluffy-spoon/substitute';
+import { Substitute, Arg } from '@fluffy-spoon/substitute';
 import { CreateReadSystemInfo } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
 import {
   AppRequest,
   AppRequestContext
 } from '../../../lib/app.api/app.api.global';
-import AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
-import AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
 import * as Settings from '../../../lib/models/setting';
+import * as AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
+import * as AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
 
 const mockNodeVersion = '14.16.1';
 const mockMongoDBVersion = '4.2.0';
@@ -22,13 +22,6 @@ const mockEnvironmentInfo: EnvironmentInfo = {
 };
 const mockDisclaimer = {};
 const mockContactInfo = {};
-
-// Mocking AuthenticationConfiguration.getAllConfigurations and AuthenticationConfigurationTransformer.transform
-AuthenticationConfiguration.getAllConfigurations = async () => [];
-AuthenticationConfigurationTransformer.transform = (
-  configurations: any,
-  options: any
-) => [];
 
 // Test utility function
 function requestBy<T extends object>(
@@ -54,7 +47,15 @@ describe('CreateReadSystemInfo', () => {
   let readSystemInfo: (
     arg0: AppRequest<string, AppRequestContext<string>> & object
   ) => any;
+
   let mockedSettingsModule = Substitute.for<typeof Settings>();
+  let mockedAuthConfigModule = Substitute.for<
+    typeof AuthenticationConfiguration
+  >();
+  let mockedAuthConfigTransformerModule = Substitute.for<
+    typeof AuthenticationConfigurationTransformer
+  >();
+
   const mockConfig = {
     api: {
       name: 'test-name',
@@ -65,26 +66,35 @@ describe('CreateReadSystemInfo', () => {
   };
 
   beforeEach(() => {
+    // Reinstantiate mock objects
+    mockedSettingsModule = Substitute.for<typeof Settings>();
+    mockedAuthConfigModule = Substitute.for<
+      typeof AuthenticationConfiguration
+    >();
+    mockedAuthConfigTransformerModule = Substitute.for<
+      typeof AuthenticationConfigurationTransformer
+    >();
+
     mockedSettingsModule
       .getSetting('disclaimer')
       .returns(Promise.resolve(mockDisclaimer as any));
-
     mockedSettingsModule
-      .getSetting('contactInfo') // Ensure correct casing here
-      .returns(Promise.resolve(mockDisclaimer as any));
+      .getSetting('contactInfo')
+      .returns(Promise.resolve(mockContactInfo as any));
+    mockedAuthConfigModule.getAllConfigurations().returns(Promise.resolve([]));
+    mockedAuthConfigTransformerModule.transform(Arg.any()).returns([]);
+
     readSystemInfo = CreateReadSystemInfo(
       {
         readEnvironmentInfo: () => Promise.resolve(mockEnvironmentInfo),
         readDependencies: () => Promise.resolve({})
       },
-      mockConfig
+      mockConfig,
+      mockedSettingsModule,
+      mockedAuthConfigModule,
+      mockedAuthConfigTransformerModule
     );
   });
-
-  afterEach(() => {
-    mockedSettingsModule = Substitute.for<typeof Settings>();
-  });
-
 
   it('should return a function that produces a ReadSystemInfoResponse with full SystemInfo', async () => {
     const request = requestBy('test-principal');
