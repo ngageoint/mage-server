@@ -38,6 +38,7 @@ module.exports = {
         '@ngageoint/mage.random',
       ],
       webUIPlugins: [
+        '@ngageoint/mage.arc-web'
       ],
     },
   }
