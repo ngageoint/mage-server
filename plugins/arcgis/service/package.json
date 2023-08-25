@@ -42,7 +42,7 @@
     "@types/geojson": "^7946.0.7"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.3.0-beta",
+    "@ngageoint/mage.service": "^6.2.0-beta",
     "express": "^4.17.0"
   },
   "devDependencies": {

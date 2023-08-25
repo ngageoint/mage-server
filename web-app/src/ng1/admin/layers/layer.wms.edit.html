@@ -19,16 +19,16 @@
   <div ng-repeat="layer in $ctrl.wms.layers">
     <div class="mdc-form-field">
       <div class="mdc-checkbox">
-        <input 
+        <input
           type="checkbox"
           ng-model="$ctrl.wms.selectedLayers[layer.Name]"
           ng-change="$ctrl.layerToggle(layer)"
-          value="{{layer.Name}}" 
+          value="{{layer.Name}}"
           class="mdc-checkbox__native-control"/>
         <div class="mdc-checkbox__background">
           <svg class="mdc-checkbox__checkmark"
               viewBox="0 0 24 24">
-            <path 
+            <path
               class="mdc-checkbox__checkmark-path"
               fill="none"
               d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
@@ -47,14 +47,14 @@
     <div ng-repeat="layer in $ctrl.wms.otherLayers">
       <div class="mdc-form-field">
         <div class="mdc-checkbox">
-          <input 
+          <input
             type="checkbox"
             class="mdc-checkbox__native-control"
             disabled="true"/>
           <div class="mdc-checkbox__background">
             <svg class="mdc-checkbox__checkmark"
                 viewBox="0 0 24 24">
-              <path 
+              <path
                 class="mdc-checkbox__checkmark-path"
                 fill="none"
                 d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
@@ -87,17 +87,17 @@
       </div>
       <div class="mdc-form-field">
         <div class="mdc-checkbox">
-          <input 
+          <input
             type="checkbox"
             ng-model="$ctrl.wms.transparency"
             ng-change="$ctrl.wms.transparencyToggle()"
-            value="{{$ctrl.wms.transparency}}" 
+            value="{{$ctrl.wms.transparency}}"
             class="mdc-checkbox__native-control"
             id="wms-transparency"/>
           <div class="mdc-checkbox__background">
             <svg class="mdc-checkbox__checkmark"
                 viewBox="0 0 24 24">
-              <path 
+              <path
                 class="mdc-checkbox__checkmark-path"
                 fill="none"
                 d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
@@ -111,7 +111,7 @@
         <div class="mdc-text-field mdc-text-field--outlined w-100">
           <input type="text"
             id="wms-styles"
-            placeholder="Comma seperated list of layer styles"
+            placeholder="Comma separated list of layer styles"
             ng-model="$ctrl.wms.styles"
             ng-value="$ctrl.wms.styles"
             ng-change="$ctrl.wmsStyleChange()"
