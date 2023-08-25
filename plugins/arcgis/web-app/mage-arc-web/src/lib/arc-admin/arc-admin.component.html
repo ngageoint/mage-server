@@ -1,0 +1,1047 @@
+<div class="arc-admin">
+  <h1>ArcGIS Configuration</h1>
+  <section class="arc-processing">
+    <header>
+      <h2>Processing <button class="edit-button" mat-icon-button (click)="onEditProcessing()"><mat-icon>edit</mat-icon></button></h2>
+      <p class="subheading">MAGE ArcGIS plugin processing settings.</p>
+    </header>
+    <div class="processing">
+      <table class="processing-table">
+        <tr>
+          <th>Enabled
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.enabled}}</td>
+        </tr>
+        <tr>
+          <th>Interval (s)
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.intervalSeconds}}</td>
+        </tr>
+        <tr>
+          <th>Startup Interval (s)
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.startupIntervalSeconds}}</td>
+        </tr>
+        <tr>
+          <th>Update Interval (s)
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.updateIntervalSeconds}}</td>
+        </tr>
+        <tr>
+          <th>Batch Size
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.batchSize}}</td>
+        </tr>
+        <tr>
+          <th>Attachment Tolerance (ms)
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.attachmentModifiedTolerance}}</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+  <arc-layer [config]=config (configChanged)=configChanged($event)></arc-layer>
+  <arc-event [config]=config (configChanged)=configChanged($event) [configChangedNotifier]=configChangedNotifier.asObservable()></arc-event>
+  <section class="arc-fields">
+    <header>
+      <h2>Attributes <button class="edit-button" mat-icon-button (click)="onEditAttributes()"><mat-icon>edit</mat-icon></button></h2>
+      <p class="subheading">MAGE Field to ArcGIS Attribute mappings.</p>
+    </header>
+    <div class="attributes">
+      <table class="attributes-table">
+        <tr>
+          <th>Observation Id Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.observationIdField}}</td>
+        </tr>
+        <tr>
+          <th>Id Separator
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Id Separator', 'When event id field is not configured, the separator combining observation ids and event ids in the observation id field')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.idSeparator}}</td>
+        </tr>
+        <tr>
+          <th>Event Id Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.eventIdField}}</td>
+        </tr>
+        <tr>
+          <th>Last Edited Date Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.lastEditedDateField}}</td>
+        </tr>
+        <tr>
+          <th>Event Name Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.eventNameField}}</td>
+        </tr>
+        <tr>
+          <th>User Id Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.userIdField}}</td>
+        </tr>
+        <tr>
+          <th>Username Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.usernameField}}</td>
+        </tr>
+        <tr>
+          <th>User Display Name Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.userDisplayNameField}}</td>
+        </tr>
+        <tr>
+          <th>Device Id Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.deviceIdField}}</td>
+        </tr>
+        <tr>
+          <th>Created At Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.createdAtField}}</td>
+        </tr>
+        <tr>
+          <th>Last Modified Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.lastModifiedField}}</td>
+        </tr>
+        <tr>
+          <th>Geometry Type Field
+            <button class="info-button" mat-icon-button
+              (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
+              <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+            </button>
+          </th>
+          <td>{{config.geometryType}}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="fieldOverrides">
+      Field Mappings
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Field Mappings', 'Override mappings between MAGE event form fields and ArcGIS attributes')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+      <button class="lock-button" mat-icon-button
+        (click)="updateFieldMappings(editFieldMappings); editFieldMappings = !editFieldMappings">
+        <mat-icon class="lock-icon" [inline]="true">{{editFieldMappings ? 'lock_open' : 'lock'}}</mat-icon>
+      </button>
+      <table class="fieldOverrides-table">
+        <tr>
+          <th>Event</th>
+          <th>Form</th>
+          <th>Field</th>
+          <th>Attribute</th>
+        </tr>
+        <ng-container *ngFor="let event of keys(config.fieldAttributes)">
+          <tr>
+            <td>
+              <ng-container *ngIf="findEvent(event) == undefined; else eventExists">
+                {{event}}
+              </ng-container>
+              <ng-template #eventExists>
+                <a href="/#/admin/events/{{eventId(event)}}" target="_blank">{{event}}</a>
+              </ng-template>
+              <ng-container *ngIf="editFieldMappings">
+                <button class="edit-button" mat-icon-button
+                  (click)="showEditFieldAuto('Event', 'fieldAttributes', config, event, selectableEvents())">
+                  <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                </button>
+                <button class="delete-button" mat-icon-button
+                  (click)="showDeleteField('event', config.fieldAttributes, event, event)">
+                  <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+          <ng-container *ngFor="let form of keys(config.fieldAttributes[event])">
+            <tr>
+              <td></td>
+              <td>
+                <ng-container *ngIf="findForm(event, form) == undefined; else formExists">
+                  {{form}}
+                </ng-container>
+                <ng-template #formExists>
+                  <a href="/#/admin/events/{{eventId(event)}}/forms/{{formId(event, form)}}" target="_blank">{{form}}</a>
+                </ng-template>
+                <ng-container *ngIf="editFieldMappings">
+                  <button class="edit-button" mat-icon-button
+                    (click)="showEditFieldAuto('Form', event, config.fieldAttributes, form, selectableForms(event))">
+                    <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                  </button>
+                  <button class="delete-button" mat-icon-button
+                    (click)="showDeleteField('form', config.fieldAttributes[event], form, form)">
+                    <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <ng-container *ngFor="let field of keys(config.fieldAttributes[event][form])">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>{{field}}
+                  <ng-container *ngIf="editFieldMappings">
+                    <button class="edit-button" mat-icon-button
+                      (click)="showEditFieldAuto('Field', form, config.fieldAttributes[event], field, selectableFields(event, form))">
+                      <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                    </button>
+                    <button class="delete-button" mat-icon-button
+                      (click)="showDeleteField('field', config.fieldAttributes[event][form], field, field)">
+                      <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                    </button>
+                  </ng-container>
+                </td>
+                <td>{{config.fieldAttributes[event][form][field]}}
+                  <ng-container *ngIf="editFieldMappings">
+                    <button class="edit-button" mat-icon-button
+                      (click)="showEditField(field, field, config.fieldAttributes[event][form], config.fieldAttributes[event][form][field])">
+                      <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                    </button>
+                  </ng-container>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="editFieldMappings">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>
+                  <button class="add-button" mat-icon-button
+                    (click)="showAddFieldAutoValue('Field', config.fieldAttributes[event][form], selectableFields(event, form))">
+                    <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="editFieldMappings">
+            <tr>
+              <td></td>
+              <td>
+                <button class="add-button" mat-icon-button
+                  (click)="showAddFieldAuto('Form', config.fieldAttributes[event], selectableForms(event))">
+                  <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="editFieldMappings">
+          <tr>
+            <td>
+              <button class="add-button" mat-icon-button
+                (click)="showAddFieldAuto('Event', config.fieldAttributes, selectableEvents())">
+                <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </table>
+    </div>
+    <div class="attributeConfigurations">
+      Attribute Settings
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Attribute Settings', 'Attribute settings including concatenation, value mappings, defaults, and omissions')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+      <button class="lock-button" mat-icon-button
+        (click)="updateAttributeSettings(editAttributes); editAttributes = !editAttributes">
+        <mat-icon class="lock-icon" [inline]="true">{{editAttributes ? 'lock_open' : 'lock'}}</mat-icon>
+      </button>
+      <table class="attributeConfigurations-table">
+        <tr>
+          <th>Attribute</th>
+          <th>Setting</th>
+        </tr>
+        <ng-container *ngFor="let attribute of keys(config.attributes)">
+          <tr>
+            <td>{{attribute}}
+              <ng-container *ngIf="editAttributes">
+                <button class="edit-button" mat-icon-button
+                  (click)="showEditFieldAuto('Attribute', 'attributes', config, attribute, selectableAttributes())">
+                  <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                </button>
+                <button class="edit-button" mat-icon-button
+                  (click)="showEditAttributeConfig(attribute)">
+                  <mat-icon class="edit-icon" [inline]="true">edit_attributes</mat-icon>
+                </button>
+                <button class="delete-button" mat-icon-button
+                  (click)="showDeleteField('attribute', config.attributes, attribute, attribute)">
+                  <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+          <ng-container *ngIf="hasConcatenation(attribute)">
+            <tr>
+              <td></td>
+              <td>Concatenation
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Concatenation', 'String value concatenation when an observation contains multiple attribute values')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+                <ng-container *ngIf="editAttributes">
+                  <button class="delete-button" mat-icon-button
+                    (click)="showDeleteField(attribute + ' setting', getAttributeConfig(attribute), 'Concatenation', 'concatenation')">
+                    <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td>Delimiter
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Delimiter', 'Delimiter used to combine attribute values')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+              </td>
+              <td>{{getConcatenation(attribute).delimiter}}
+                <ng-container *ngIf="editAttributes">
+                  <button class="edit-button" mat-icon-button
+                    (click)="showEditField('Delimiter', 'delimiter', getConcatenation(attribute), getConcatenation(attribute).delimiter)">
+                    <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td>Same Forms
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Same Forms', 'Combine attribute values from multiple instances of the same MAGE form')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+              </td>
+              <td>{{getSameForms(attribute)}}
+                <ng-container *ngIf="editAttributes">
+                  <button class="edit-button" mat-icon-button
+                    (click)="showEditBooleanField('Same Forms', 'sameForms', getConcatenation(attribute), getSameForms(attribute))">
+                    <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td>Different Forms
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Different Forms', 'Combine attribute values from different MAGE forms')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+              </td>
+              <td>{{getDifferentForms(attribute)}}
+                <ng-container *ngIf="editAttributes">
+                  <button class="edit-button" mat-icon-button
+                    (click)="showEditBooleanField('Different Forms', 'differentForms', getConcatenation(attribute), getDifferentForms(attribute))">
+                    <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="hasMappings(attribute)">
+            <tr>
+              <td></td>
+              <td>Mappings
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Mappings', 'Attribute value translation mappings performed before sending to ArcGIS')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+                <ng-container *ngIf="editAttributes">
+                  <button class="delete-button" mat-icon-button
+                    (click)="showDeleteField(attribute + ' setting', getAttributeConfig(attribute), 'Mappings', 'mappings')">
+                    <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <ng-container *ngFor="let mapping of keys(getMappings(attribute))">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>{{mapping}}
+                  <ng-container *ngIf="editAttributes">
+                    <button class="edit-button" mat-icon-button
+                      (click)="showEditField('Mapping', 'mappings', getAttributeConfig(attribute), mapping)">
+                      <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                    </button>
+                    <button class="delete-button" mat-icon-button
+                      (click)="showDeleteField(attribute + ' mapping', getMappings(attribute), mapping, mapping)">
+                      <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                    </button>
+                  </ng-container>
+                </td>
+                <td>{{getMappings(attribute)[mapping]}}
+                  <ng-container *ngIf="editAttributes">
+                    <button class="edit-button" mat-icon-button
+                      (click)="showEditField(mapping, mapping, getMappings(attribute), getMappings(attribute)[mapping])">
+                      <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                    </button>
+                  </ng-container>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="editAttributes">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>
+                  <button class="add-button" mat-icon-button
+                    (click)="showAddFieldValue('Mapping', getMappings(attribute))">
+                    <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="hasDefaults(attribute)">
+            <tr>
+              <td></td>
+              <td>Defaults
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Defaults', 'Default values when the attribute is missing or has no value')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+                <ng-container *ngIf="editAttributes">
+                  <button class="delete-button" mat-icon-button
+                    (click)="showDeleteField(attribute + ' setting', getAttributeConfig(attribute), 'Defaults', 'defaults')">
+                    <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <ng-container *ngFor="let default of getDefaults(attribute); index as defaultIndex">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>{{default.value}}
+                  <ng-container *ngIf="editAttributes">
+                    <button class="edit-button" mat-icon-button
+                      (click)="showEditField(attribute + ' Default', 'value', getDefaults(attribute)[defaultIndex], default.value)">
+                      <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                    </button>
+                    <button class="delete-button" mat-icon-button
+                      (click)="showDeleteField(attribute + ' default', getDefaults(attribute), default.value, defaultIndex)">
+                      <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                    </button>
+                  </ng-container>
+                </td>
+              </tr>
+              <ng-container *ngIf="default.condition != undefined || editAttributes">
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>Conditions
+                    <button class="info-button" mat-icon-button
+                      (click)="showInfo('Conditions', 'Conditional equality values matched against each configured attribute before applying the default')">
+                      <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                    </button>
+                    <ng-container *ngIf="default.condition != undefined && editAttributes">
+                      <button class="delete-button" mat-icon-button
+                        (click)="showDeleteField(attribute + ' default conditions', default, default.value, 'condition')">
+                        <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                      </button>
+                    </ng-container>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-container *ngIf="default.condition != undefined">
+                <ng-container *ngFor="let condition of default.condition!; index as conditionIndex">
+                  <ng-container *ngFor="let value of condition.values; index as valueIndex">
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <ng-container *ngIf="valueIndex == 0">
+                        <td>{{ condition.attribute }}
+                          <ng-container *ngIf="editAttributes">
+                            <button class="edit-button" mat-icon-button
+                              (click)="showEditFieldAuto('Condition Attribute', 'attribute', condition, condition.attribute, selectableConditionAttributes(attribute, default.condition))">
+                              <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                            </button>
+                            <button class="delete-button" mat-icon-button
+                              (click)="showDeleteField(attribute + ' default ' + default.value + ' condition attribute', default.condition, condition.attribute, conditionIndex)">
+                              <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                            </button>
+                          </ng-container>
+                        </td>
+                      </ng-container>
+                      <ng-container *ngIf="valueIndex > 0">
+                        <td></td>
+                      </ng-container>
+                      <td>{{value}}
+                        <ng-container *ngIf="editAttributes">
+                          <button class="edit-button" mat-icon-button
+                            (click)="showEditField('Condition Value', valueIndex, condition.values, value)">
+                            <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                          </button>
+                          <ng-container *ngIf="condition.values.length > 1">
+                            <button class="delete-button" mat-icon-button
+                              (click)="showDeleteField(attribute + ' default ' + default.value + ' condition ' + condition.attribute + ' value', condition.values, value, valueIndex)">
+                              <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                            </button>
+                          </ng-container>
+                        </ng-container>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-container *ngIf="editAttributes">
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <button class="add-button" mat-icon-button
+                          (click)="showAddField('Condition Value', condition.values)">
+                          <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+              <ng-container *ngIf="editAttributes">
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    <button class="add-button" mat-icon-button
+                      (click)="showAddFieldAutoValue('Condition Attribute', default, selectableConditionAttributes(attribute, default.condition))">
+                      <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </ng-container>
+            </ng-container>
+            <ng-container *ngIf="editAttributes">
+              <tr>
+                <td></td>
+                <td></td>
+                <td>
+                  <button class="add-button" mat-icon-button
+                    (click)="showAddField('Default', getAttributeConfig(attribute))">
+                    <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="hasOmit(attribute)">
+            <tr>
+              <td></td>
+              <td>Omit
+                <button class="info-button" mat-icon-button
+                  (click)="showInfo('Omit', 'Omit the attribute from being sent to ArcGIS')">
+                  <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+                </button>
+                <ng-container *ngIf="editAttributes">
+                  <button class="delete-button" mat-icon-button
+                    (click)="showDeleteField(attribute + ' setting', getAttributeConfig(attribute), 'Omit', 'omit')">
+                    <mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+              <td>{{getOmit(attribute)}}
+                <ng-container *ngIf="editAttributes">
+                  <button class="edit-button" mat-icon-button
+                    (click)="showEditBooleanField('Omit', 'omit', getAttributeConfig(attribute), getOmit(attribute))">
+                    <mat-icon class="edit-icon" [inline]="true">edit</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="editAttributes">
+          <tr>
+            <td>
+              <button class="add-button" mat-icon-button
+                (click)="showAddFieldAuto('Attribute', config.attributes, selectableAttributes())">
+                <mat-icon class="add-icon" [inline]="true">add_box</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
+      </table>
+    </div>
+  </section>
+</div>
+<ng-template #infoDialog let-data>
+  <h3 matDialogTitle>{{infoTitle}}</h3>
+  <mat-dialog-content>
+    <div class="info-form">
+      <mat-label>{{infoMessage}}</mat-label>
+    </div>
+  </mat-dialog-content>
+</ng-template>
+<ng-template #editProcessingDialog let-data>
+  <h2 matDialogTitle>Processing Configuration</h2>
+  <mat-dialog-content>
+    <div class="edit-processing-form">
+      <div class="edit-enabled-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-select placeholder="Enabled" [(value)]="editConfig.enabled"
+            (selectionChange)="setField('enabled', $event.value)">
+            <mat-option [value]="true">true</mat-option>
+            <mat-option [value]="false">false</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Enabled', 'Process observations and send to configured ArcGIS feature layers')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="edit-interval-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Interval</mat-label>
+          <input type="number" min="0" matInput value="{{editConfig.intervalSeconds}}"
+            (keyup)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)"
+            (change)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="edit-startup-interval-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Startup Interval</mat-label>
+          <input type="number" min="0" matInput value="{{editConfig.startupIntervalSeconds}}"
+            (keyup)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
+            (change)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
+            #startupIntervalSecondsField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Startup Interval', 'Startup interval in seconds to wait for feature layer processors to be ready')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="edit-update-interval-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Update Interval</mat-label>
+          <input type="number" min="0" matInput value="{{editConfig.updateIntervalSeconds}}"
+            (keyup)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
+            (change)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
+            #updateIntervalSecondsField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Update Interval', 'Processing wait time interval in seconds when pending observation updates exist')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="batch-size-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Batch Size</mat-label>
+          <input type="number" min="1" matInput value="{{editConfig.batchSize}}"
+            (keyup)="setNumberField('batchSize', batchSizeField.value, 1)"
+            (change)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="attachment-modified-tolerance-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Attachment Tolerance</mat-label>
+          <input type="number" min="0" matInput value="{{editConfig.attachmentModifiedTolerance}}"
+            (keyup)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
+            (change)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
+            #attachmentModifiedToleranceField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Attachment Tolerance', 'Time tolerance in milliseconds to consider an attachment as modified compared to the observation')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #editAttributesDialog let-data>
+  <h2 matDialogTitle>Attributes Configuration</h2>
+  <mat-dialog-content>
+    <div class="edit-attributes-form">
+      <div class="observation-id-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Observation Id Field</mat-label>
+          <input type="text" matInput value="{{editConfig.observationIdField}}"
+            (keyup)="setField('observationIdField', observationIdField.value)" #observationIdField />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Observation Id Field', 'The ArcGIS layer text field attribute name to store the MAGE observation id')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+      <div class="id-separator-field">
+        <mat-form-field [style.width.%]="90">
+          <mat-label>Id Separator</mat-label>
+          <input type="text" matInput value="{{editConfig.idSeparator}}"
+            (keyup)="setField('idSeparator', idSeparator.value)" #idSeparator />
+        </mat-form-field>
+        <button class="info-button" mat-icon-button
+          (click)="showInfo('Id Separator', 'When event id field is not configured, the separator combining observation ids and event ids in the observation id field')">
+          <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div class="event-id-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Event Id Field</mat-label>
+        <input type="text" matInput value="{{editConfig.eventIdField}}"
+          (keyup)="setField('eventIdField', eventIdField.value)" #eventIdField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Event Id Field', 'The ArcGIS layer integer field attribute name to store the MAGE event id')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="last-edited-date-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Last Edited Date Field</mat-label>
+        <input type="text" matInput value="{{editConfig.lastEditedDateField}}"
+          (keyup)="setField('lastEditedDateField', lastEditedDateField.value)" #lastEditedDateField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Last Edited Date Field', 'The last edited date field attribute name on the ArcGIS layer')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="event-name-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Event Name Field</mat-label>
+        <input type="text" matInput value="{{editConfig.eventNameField}}"
+          (keyup)="setField('eventNameField', eventNameField.value)" #eventNameField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Event Name Field', 'The ArcGIS layer text field attribute name to store the MAGE event name')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="user-id-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>User Id Field</mat-label>
+        <input type="text" matInput value="{{editConfig.userIdField}}"
+          (keyup)="setField('userIdField', userIdField.value)" #userIdField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('User Id Field', 'The ArcGIS layer text field attribute name to store the MAGE user id')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="username-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Username Field</mat-label>
+        <input type="text" matInput value="{{editConfig.usernameField}}"
+          (keyup)="setField('usernameField', usernameField.value)" #usernameField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Username Field', 'The ArcGIS layer text field attribute name to store the MAGE username')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="user-display-name-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>User Display Name Field</mat-label>
+        <input type="text" matInput value="{{editConfig.userDisplayNameField}}"
+          (keyup)="setField('userDisplayNameField', userDisplayNameField.value)" #userDisplayNameField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('User Display Name Field', 'The ArcGIS layer text field attribute name to store the MAGE user display name')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="device-id-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Device Id Field</mat-label>
+        <input type="text" matInput value="{{editConfig.deviceIdField}}"
+          (keyup)="setField('deviceIdField', deviceIdField.value)" #deviceIdField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Device Id Field', 'The ArcGIS layer text field attribute name to store the MAGE device id')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="created-at-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Created At Field</mat-label>
+        <input type="text" matInput value="{{editConfig.createdAtField}}"
+          (keyup)="setField('createdAtField', createdAtField.value)" #createdAtField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Created At Field', 'The ArcGIS layer date time field attribute name to store the MAGE created at date')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="last-modified-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Last Modified Field</mat-label>
+        <input type="text" matInput value="{{editConfig.lastModifiedField}}"
+          (keyup)="setField('lastModifiedField', lastModifiedField.value)" #lastModifiedField />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Last Modified Field', 'The ArcGIS layer date time field attribute name to store the MAGE last modified date (may be the same as last edited date field if editable)')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+    <div class="geometry-type-field">
+      <mat-form-field [style.width.%]="90">
+        <mat-label>Geometry Type Field</mat-label>
+        <input type="text" matInput value="{{editConfig.geometryType}}"
+          (keyup)="setField('geometryType', geometryType.value)" #geometryType />
+      </mat-form-field>
+      <button class="info-button" mat-icon-button
+        (click)="showInfo('Geometry Type Field', 'The ArcGIS layer text field attribute name to store the Esri geometry type')">
+        <mat-icon class="info-icon" [inline]="true">info_outline</mat-icon>
+      </button>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose (click)="cancelEdit()">CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="saveEdit()">SAVE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #deleteFieldDialog let-data>
+  <h3 matDialogTitle>Delete {{editType}}?</h3>
+  <div>
+    {{editName}}
+  </div>
+  <br>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="deleteField()">DELETE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #addFieldDialog let-data>
+  <mat-dialog-content>
+    <div class="add-field-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-label>{{editType}}</mat-label>
+        <input type="text" matInput #addFieldField />
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #addFieldValueDialog let-data>
+  <mat-dialog-content>
+    <div class="add-field-value-form">
+      <div class="add-field-field">
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{editType}}</mat-label>
+          <input type="text" matInput #addFieldField />
+        </mat-form-field>
+      </div>
+      <div class="add-field-value">
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
+          <input type="text" matInput #addValueField />
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #addFieldAutoDialog let-data>
+  <mat-dialog-content cdkFocusInitial>
+    <div class="add-field-auto-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-label>{{editType}}</mat-label>
+        <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let option of editOptions" [value]="option">
+            {{option}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="addField(addFieldField.value)">ADD</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #addFieldAutoValueDialog let-data>
+  <mat-dialog-content cdkFocusInitial>
+    <div class="add-field-auto-value-form">
+      <div class="add-field-auto-field">
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{editType}}</mat-label>
+          <input type="text" matInput [matAutocomplete]="auto" #addFieldField />
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let option of editOptions" [value]="option">
+              {{option}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div class="add-field-auto-value">
+        <mat-form-field [style.width.%]="100">
+          <mat-label>{{ editType == 'Field' ? 'Attribute' : 'Value' }}</mat-label>
+          <input type="text" matInput #addValueField />
+        </mat-form-field>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="addFieldValue(addFieldField.value, addValueField.value)">ADD</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #editFieldDialog let-data>
+  <mat-dialog-content>
+    <div class="edit-field-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-label>{{editName}}</mat-label>
+        <input type="text" matInput value="{{editValue}}" #editFieldField />
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #editFieldAutoDialog let-data>
+  <mat-dialog-content cdkFocusInitial>
+    <div class="edit-field-auto-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-label>{{editName}}</mat-label>
+        <input type="text" matInput value="{{editValue}}" [matAutocomplete]="auto" #editFieldField />
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let option of editOptions" [value]="option">
+            {{option}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="editField(editFieldField.value)">UPDATE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #editBooleanFieldDialog let-data>
+  <mat-dialog-content>
+    <div class="edit-boolean-field-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-select [placeholder]="editName" [(value)]="editValue" #editBooleanFieldField >
+          <mat-option [value]="true">true</mat-option>
+          <mat-option [value]="false">false</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="editBooleanField(editBooleanFieldField.value)">UPDATE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #editAttributeConfigDialog let-data>
+  <h2 matDialogTitle>{{editName}} settings</h2>
+  <mat-dialog-content>
+    <div class="concatenation-checkbox">
+      <input type="checkbox" [checked]="hasConcatenation(editName)" #concatenationCheckbox /> Concatenation
+    </div>
+    <div class="mappings-checkbox">
+      <input type="checkbox" [checked]="hasMappings(editName)" #mappingsCheckbox /> Mappings
+    </div>
+    <div class="defaults-checkbox">
+      <input type="checkbox" [checked]="hasDefaults(editName)" #defaultsCheckbox /> Defaults
+    </div>
+    <div class="omit-checkbox">
+      <input type="checkbox" [checked]="hasOmit(editName)" #omitCheckbox /> Omit
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="editAttributeConfig(concatenationCheckbox.checked,mappingsCheckbox.checked,defaultsCheckbox.checked,omitCheckbox.checked)">UPDATE</button>
+  </mat-dialog-actions>
+</ng-template>

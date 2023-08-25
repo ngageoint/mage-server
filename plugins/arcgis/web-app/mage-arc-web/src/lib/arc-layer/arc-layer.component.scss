@@ -1,0 +1,86 @@
+.arc-layer-form {
+    display: flex;
+    flex-direction: column;
+    min-width: 950px;
+}
+
+section {
+    >* {
+        margin-inline-start: 1em;
+    }
+
+    header {
+        margin-inline-start: 0;
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin-block-end: 0;
+        }
+
+        .subheading {
+            margin-block-start: 0;
+            opacity: 0.5;
+        }
+
+        margin-block-end: 2em;
+    }
+
+    margin-block-start: 2em;
+    margin-block-end: 2em;
+}
+
+.arcLayer {
+    margin-block-start: 1em;
+    display: grid;
+    grid-template-columns: 8fr 1fr 1fr;
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+.arcLayer__value {
+    grid-column-start: 1;
+}
+
+.arcLayer__edit {
+    grid-column-start: 2;
+    text-align: end;
+}
+
+.arcLayer__action {
+    grid-column-start: 3;
+    text-align: end;
+}
+
+.featureLayers {
+    display: grid;
+    opacity: 0.5;
+    font-size: 0.9em;
+}
+
+.edit-icon {
+    vertical-align: middle;
+}
+
+.edit-button {
+    opacity: 0.5;
+    font-size: inherit;
+    height: inherit;
+    line-height: inherit;
+    width: inherit;
+}
+
+.delete-icon {
+    vertical-align: middle;
+}
+
+.delete-button {
+    opacity: 0.5;
+    font-size: inherit;
+    height: inherit;
+    line-height: inherit;
+    width: inherit;
+}

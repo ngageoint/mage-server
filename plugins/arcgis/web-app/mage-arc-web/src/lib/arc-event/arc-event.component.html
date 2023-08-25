@@ -1,0 +1,51 @@
+<div class="arc-event">
+  <section class="arc-event-sync">
+    <header>
+      <h2>Events</h2>
+      <p class="subheading">Change the ArcGIS layers each MAGE event sends its observations to.</p>
+    </header>
+    <div class="arcEvents" *ngIf="!model.events.length">
+      <div class="arcEvent">
+        There are no events synchronizing to ArcGIS layers.
+      </div>
+    </div>
+    <div class="arcEvents" *ngFor="let event of model.events">
+      <ng-container>
+        <div class="arcEvent">
+          <div class="arcEvent__value">
+            <a href="/#/admin/events/{{event.id}}" target="_blank">{{event.name}}</a>
+          </div>
+          <div class="arcEvent__edit">
+            <button class="edit-button" mat-icon-button (click)="onEditEvent(event)"><mat-icon class="edit-icon" [inline]="true">edit</mat-icon></button>
+          </div>
+        </div>
+        <div class="featureLayers" *ngIf="!event.layers.length">
+          <div class="featureLayer_value">
+            This event is not synchronizing to any ArcGIS layers.
+          </div>
+        </div>
+        <div class="featureLayers" *ngFor="let featureLayer of event.layers">
+          <div class="featureLayer__value">
+            {{layerDisplay(featureLayer)}}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </section>
+</div>
+<ng-template #editEventDialog let-data>
+  <h2 matDialogTitle>ArcGIS layers that MAGE event named {{currentEditingEvent.name}} is synchronizing</h2>
+  <mat-dialog-content>
+    <div class="arc-layers" *ngFor="let arcLayer of layers">
+      <div class="featureLayer__value">
+        <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
+        {{layerDisplay(arcLayer)}}
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose
+      (click)="saveChanges()">SAVE</button>
+  </mat-dialog-actions>
+</ng-template>
