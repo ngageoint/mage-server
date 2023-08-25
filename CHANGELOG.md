@@ -9,7 +9,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 #### Features
 * Docker image now installs MAGE packages from NPM registry instead of local tarballs.
-* Use a [shrinkwrap](https://docs.npmjs.com/cli/v9/commands/npm-shrinkwrap) file to for consistent `@ngageoint/mage.service` installs.
+* Use a [shrinkwrap](https://docs.npmjs.com/cli/v9/commands/npm-shrinkwrap) file for consistent `@ngageoint/mage.service` installs.
 
 #### Bug Fixes
 * The server was not saving location provider information, such as accuracy and location source, e.g., `gps` or `manual`.
