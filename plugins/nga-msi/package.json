@@ -51,6 +51,6 @@
     "typescript": "^4.6.3"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.0-beta"
+    "@ngageoint/mage.service": "^6.2.3, ~6.2.10-beta"
   }
 }
