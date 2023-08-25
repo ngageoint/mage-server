@@ -82,7 +82,6 @@ describe('CreateReadSystemInfo', () => {
   });
 
   afterEach(() => {
-    // Reset the mock by creating a fresh instance
     mockedSettingsModule = Substitute.for<typeof Settings>();
   });
 
@@ -96,7 +95,6 @@ describe('CreateReadSystemInfo', () => {
 
     const systemInfo: SystemInfo = response.success as SystemInfo;
 
-    // Asserting properties of SystemInfo
     expect(systemInfo.version).to.be.an('object');
     expect(systemInfo.version.major).to.be.a('number');
     expect(systemInfo.version.minor).to.be.a('number');
