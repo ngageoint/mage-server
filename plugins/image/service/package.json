@@ -34,7 +34,7 @@
     "sharp": "^0.30.7"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.0-beta",
+    "@ngageoint/mage.service": "^6.2.0, ~6.2.10-beta",
     "express": "^4.17.0",
     "mongoose": "^4.0.0"
   },
