@@ -1,6 +1,6 @@
 const packageJson = require('../package');
+const version = packageJson.version.split('.');
 
-const version = packageJson.version.split(".");
 
 module.exports = {
   api: {
@@ -11,7 +11,7 @@ module.exports = {
       major: parseInt(version[0]),
       minor: parseInt(version[1]),
       micro: parseInt(version[2])
-    }
+    },
   },
   server: {
     locationServices: {

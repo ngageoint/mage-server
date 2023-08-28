@@ -1,5 +1,5 @@
 <div class="content-flex about-content">
-  <h2>About MAGE Server {{$ctrl.serverVersion.major}}.{{$ctrl.serverVersion.minor}}.{{$ctrl.serverVersion.micro}}</h2>
+  <h2>About MAGE Server {{$ctrl.serverVersion.major}} {{$ctrl.serverVersion.minor}} {{$ctrl.serverVersion.micro}}</h2>
   <p>
       MAGE is a dynamic, secure, mobile situational awareness and field data collection platform that supports
       low-bandwidth and disconnected users. MAGE can integrate with existing command centers and common operating
@@ -29,6 +29,7 @@
   <h2>System</h2>
   <ul>
     <li>Node Version: {{$ctrl.nodeVersion}} </li>
+    <li>MongoDB Version: {{$ctrl.mongodbVersion}} </li>
   </ul>
   <h2 class="top-gap-l">Acknowledgements</h2>
   <div class="row bottom-gap-l">

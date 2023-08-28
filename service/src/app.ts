@@ -6,6 +6,7 @@ import fs from 'fs-extra'
 import mongoose from 'mongoose'
 import express from 'express'
 import util from 'util'
+import apiConfig from './config';
 import { MongooseFeedServiceTypeRepository, FeedServiceTypeIdentityModel, MongooseFeedServiceRepository, FeedServiceModel, MongooseFeedRepository, FeedModel } from './adapters/feeds/adapters.feeds.db.mongoose'
 import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose'
 import { FeedServiceTypeRepository, FeedServiceRepository, FeedRepository } from './entities/feeds/entities.feeds'
@@ -40,6 +41,7 @@ import { UserRepositoryToken } from './plugins.api/plugins.api.users'
 import { StaticIconRepositoryToken } from './plugins.api/plugins.api.icons'
 import { UserModel, MongooseUserRepository } from './adapters/users/adapters.users.db.mongoose'
 import { UserRepository, UserExpanded } from './entities/users/entities.users'
+import { EnvironmentService } from './entities/systemInfo/entities.systemInfo'
 import { WebRoutesHooks, GetAppRequestContext } from './plugins.api/plugins.api.web'
 import { UsersAppLayer, UsersRoutes } from './adapters/users/adapters.users.controllers.web'
 import { SearchUsers } from './app.impl/users/app.impl.users'
@@ -56,6 +58,13 @@ import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
+import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
+import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
+import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
+ import Settings from "./models/setting";
+  import AuthenticationConfiguration from "./models/authenticationconfiguration";
+  import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
+import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
 
 
 export interface MageService {
@@ -124,7 +133,6 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const dbLayer = await initDatabase()
   const repos = await initRepositories(dbLayer, config)
   const appLayer = await initAppLayer(repos)
-
   const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
   const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
   const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
@@ -252,7 +260,8 @@ type AppLayer = {
     deleteFeed: feedsApi.DeleteFeed
   },
   icons: StaticIconsAppLayer,
-  users: UsersAppLayer
+  users: UsersAppLayer,
+  systemInfo: SystemInfoAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -318,7 +327,8 @@ type Repositories = {
   },
   users: {
     userRepo: UserRepository
-  }
+  },
+  enviromentInfo: EnvironmentService
 }
 
   // TODO: the real thing
@@ -347,6 +357,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
+  const systemInfoService = new EnvironmentServiceImpl(models.conn)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
   }
@@ -366,7 +377,8 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     },
     users: {
       userRepo
-    }
+    },
+    enviromentInfo: systemInfoService
   }
 }
 
@@ -376,12 +388,14 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
+  const systemInfo = initSystemInfoAppLayer(repos)
   return {
     events,
     observations,
     feeds,
     icons,
     users,
+    systemInfo
   }
 }
 
@@ -463,6 +477,18 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   }
 }
 
+function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
+  return {
+    readSystemInfo: CreateReadSystemInfo(
+      repos.enviromentInfo,
+      apiConfig,
+      Settings,
+      AuthenticationConfiguration,
+      AuthenticationConfigurationTransformer
+    )
+  }
+}
+
 interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
@@ -502,6 +528,10 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   webController.use('/api/icons', [
     bearerAuth,
     iconsRoutes
+  ])
+  const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
+  webController.use('/api', [
+    systemInfoRoutes
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
     const context: observationsApi.ObservationRequestContext = {
