@@ -1,6 +1,6 @@
 import { URL } from 'url'
 import { expect } from 'chai'
-import _, { uniq, uniqueId } from 'lodash'
+import _ from 'lodash'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import uniqid from 'uniqid'
@@ -9,6 +9,7 @@ import { StaticIcon, StaticIconContentStore, StaticIconImportFetch, StaticIconSt
 import { MongooseStaticIconRepository, StaticIconDocument, StaticIconModel } from '../../../lib/adapters/icons/adapters.icons.db.mongoose'
 import { EntityIdFactory, UrlResolutionError, UrlScheme } from '../../../lib/entities/entities.global'
 import { Readable } from 'stream'
+
 
 interface TestUrlScheme extends UrlScheme {
   urlWithPath(path: string): URL
@@ -130,7 +131,6 @@ describe('static icon mongoose repository', function() {
     it('replaces icon properties for an existing source url when the content hash changes', async function() {
 
       const sourceUrl = new URL('mage:///test/replace.png')
-
       const origAttrs: Required<StaticIconStub> = {
         sourceUrl,
         imageType: 'raster',
@@ -145,7 +145,7 @@ describe('static icon mongoose repository', function() {
         summary: 'replace me'
       }
       const updatedAttrs: Required<StaticIconStub> = {
-        sourceUrl,
+        sourceUrl: new URL(sourceUrl.toString()),
         imageType: 'vector',
         sizeBytes: 1100,
         sizePixels: { width: 220, height: 220 },
@@ -688,7 +688,7 @@ describe('static icon mongoose repository', function() {
         tags: []
       }
       scheme2LocalIcon = {
-        id: uniqueId(),
+        id: uniqid(),
         sourceUrl: scheme2Local.urlWithPath('test2.png'),
         registeredTimestamp: Date.now(),
         resolvedTimestamp: Date.now(),

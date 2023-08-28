@@ -1,10 +1,23 @@
 
+
+import url from 'url'
+
+/**
+ * This class works around issue https://github.com/nodejs/node/issues/48886,
+ * which was introduced in Node 18.17.0.
+ */
+url.URL = class Node_18_17_Issue_48886_URL extends url.URL {
+  constructor(input: string, base?: string | url.URL) {
+    super(input, base)
+    this.searchParams
+  }
+}
+
 declare module 'mocha' {
   namespace Mocha {
     interface MochaOptions {}
   }
 }
-
 
 import chai, { Assertion } from 'chai'
 import asPromised from 'chai-as-promised'
