@@ -129,9 +129,15 @@ describe('static icon mongoose repository', function() {
 
     it('replaces icon properties for an existing source url when the content hash changes', async function() {
 
-      const sourceUrl = new URL('mage:///test/replace.png')
+      const sourceUrl1 = new URL('mage:///test/replace.png')
+      const sourceUrl2 = new URL('mage:///test/replace.png')
+
+      // Trigger searchParams getter on both
+      sourceUrl1.searchParams.toString();
+      sourceUrl2.searchParams.toString();
+
       const origAttrs: Required<StaticIconStub> = {
-        sourceUrl,
+        sourceUrl: sourceUrl1,
         imageType: 'raster',
         sizeBytes: 1000,
         sizePixels: { width: 120, height: 120 },
@@ -142,9 +148,9 @@ describe('static icon mongoose repository', function() {
         fileName: 'orig.png',
         title: 'Original',
         summary: 'replace me'
-      }
+      };
       const updatedAttrs: Required<StaticIconStub> = {
-        sourceUrl,
+        sourceUrl: sourceUrl2,
         imageType: 'vector',
         sizeBytes: 1100,
         sizePixels: { width: 220, height: 220 },
@@ -298,6 +304,7 @@ describe('static icon mongoose repository', function() {
     it('does not update the icon properties if the stub has no content hash', async function() {
 
       const sourceUrl = new URL('mage:///test/replace.png')
+
       const origAttrs: Required<StaticIconStub> = Object.freeze({
         sourceUrl,
         imageType: 'raster',
@@ -330,6 +337,12 @@ describe('static icon mongoose repository', function() {
       const origFound = await model.find({})
       const updated = await repo.findOrImportBySourceUrl(updatedAttrs)
       const updatedFound = await model.find({})
+
+     const serializeForComparison = (obj: typeof origFound[0]) => {
+       const serialized = obj.toJSON();
+       serialized.sourceUrl = serialized.sourceUrl.href; // Convert the URL to string
+       return serialized;
+     };
 
       expect(orig).to.deep.equal({ id, registeredTimestamp: origFound[0].registeredTimestamp, ...origAttrs })
       expect(updated).to.deep.equal(orig)
