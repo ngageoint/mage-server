@@ -129,9 +129,13 @@ describe('static icon mongoose repository', function() {
 
     it('replaces icon properties for an existing source url when the content hash changes', async function() {
 
-      const sourceUrl = new URL('mage:///test/replace.png')
+      // const sourceUrl = new URL('mage:///test/replace.png')
+
+      const originalSourceUrl = new URL('mage:///test/replace.png');
+      const updatedSourceUrl = new URL('mage:///test/replace.png');
+
       const origAttrs: Required<StaticIconStub> = {
-        sourceUrl,
+        sourceUrl: originalSourceUrl,
         imageType: 'raster',
         sizeBytes: 1000,
         sizePixels: { width: 120, height: 120 },
@@ -144,7 +148,7 @@ describe('static icon mongoose repository', function() {
         summary: 'replace me'
       }
       const updatedAttrs: Required<StaticIconStub> = {
-        sourceUrl,
+        sourceUrl: updatedSourceUrl,
         imageType: 'vector',
         sizeBytes: 1100,
         sizePixels: { width: 220, height: 220 },
