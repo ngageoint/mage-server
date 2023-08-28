@@ -128,7 +128,7 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
   }
 
   async loadContent(id: StaticIconId): Promise<[StaticIcon, NodeJS.ReadableStream] | null | UrlResolutionError> {
-    let icon = await this.model.findById(id)
+    const icon = await this.model.findById(id)
     if (!icon) {
       return null
     }

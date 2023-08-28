@@ -23,7 +23,6 @@ const mockEnvironmentInfo: EnvironmentInfo = {
 const mockDisclaimer = {};
 const mockContactInfo = {};
 
-// Test utility function
 function requestBy<T extends object>(
   principal: string,
   params?: T
