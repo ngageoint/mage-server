@@ -41,6 +41,7 @@
     "async": "0.2.x",
     "async-lock": "^1.4.0",
     "base-64": "1.0.0",
+    "better-sqlite3": "^7.6.2",
     "body-parser": "1.18.3",
     "busboy": "^1.6.0",
     "cfenv": "1.0.3",
@@ -192,8 +193,9 @@
   },
   "main": "bin/mage.service.js",
   "files": [
-    "lib",
-    "bin"
+    "/lib",
+    "/bin",
+    "/npm-shrinkwrap.json"
   ],
   "bin": {
     "mage.service": "bin/mage.service.js"

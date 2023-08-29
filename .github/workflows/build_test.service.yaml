@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
           cache: npm
           cache-dependency-path: |
-            service/package-lock.json
+            service/npm-shrinkwrap.json
             plugins/nga-msi/package-lock.json
             plugins/image/service/package-lock.json
       - name: build service
@@ -77,7 +77,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
           cache-dependency-path: |
-            service/package-lock.json
+            service/npm-shrinkwrap.json
       - name: install service dependencies
         run: |
           npm ci --prefix service

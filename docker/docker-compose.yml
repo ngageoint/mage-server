@@ -1,11 +1,11 @@
 services:
 
   mage-db:
-    image: mongo:4.2
+    image: mongo:4.4-focal
     volumes:
-      - ./database/data:/data/mage
+      - ./database/data:/data/db
       - ./database/log:/var/log/mongodb
-    command: [ mongod, --dbpath, /data/mage, --logpath, /var/log/mongodb/mongod.log ]
+    command: [ --logpath, /var/log/mongodb/mongodb.log ]
     # Uncomment the following ports block to allow the mongo client on your
     # host machine to connect to MongoDB in the Docker container.
     # ports:

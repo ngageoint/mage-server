@@ -40,6 +40,23 @@ export interface ObservationFeatureProperties {
    */
   timestamp: Date
   forms: FormEntry[]
+  /**
+   * The provider is the source of the location coordinate.  This is usually
+   * either 'gps', as in from a mobile device, or 'manual' for a manually
+   * positioned point or polygon.  This could also be something different like
+   * 'wifi' depending on the device.  Android devices in particular from
+   * different manufacturers might submit varying provider strings.
+   */
+  provider?: string
+  /**
+   * The accuracy radius in meters of the location from a device GPS
+   */
+  accuracy?: number
+  /**
+   * Time in milliseconds between the last GPS location update from the device
+   * and the time the device posted the observation
+   */
+  delta?: number
 }
 
 export interface ObservationImportantFlag {
@@ -158,7 +175,11 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
     type: 'Feature',
     // meh, these shallow copies are probably fine ... right?
     geometry: Object.freeze({ ...from.geometry }),
-    properties: { ...from.properties, forms: from.properties.forms.map(x => ({ ...x })), timestamp: new Date(from.properties.timestamp) }
+    properties: {
+      ...from.properties,
+      timestamp: new Date(from.properties.timestamp),
+      forms: from.properties.forms.map(x => ({ ...x })),
+    }
   }
 }
 
@@ -235,6 +256,9 @@ export class Observation implements Readonly<ObservationAttrs> {
    * Eventually this should perform the logic to find the differences and
    * produce the domain events resulting from updating the target observation
    * to the update attributes.
+   * TODO: Some update logic is currently in the application layer, but perhaps
+   * should move here, such as preserving states, important flags, and location
+   * provider/accuracy/delta from the original observation.
    *
    * Return an {@link ObservationUpdateError} if the event IDs on the target
    * and udpate do not match.
