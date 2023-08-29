@@ -5,6 +5,7 @@ import { AttachmentStore, EventScopedObservationRepository, ObservationState } f
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
 import { invalidInput } from '../../app.api/app.api.errors'
+import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -175,14 +176,9 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       if (body.hasOwnProperty('id') && body.id !== observationId) {
         return res.status(400).json({ message: 'Body observation ID does not match path observation ID' })
       }
-      const mod: ExoObservationMod = {
-        id: observationId,
-        type: 'Feature',
-        geometry: req.body.geometry,
-        properties: {
-          timestamp: new Date(body.properties.timestamp),
-          forms: body.properties.forms
-        }
+      const mod = exoObservationModFromJson({ ...body, id: observationId })
+      if (mod instanceof Error) {
+        return next(mod)
       }
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
       if (body.hasOwnProperty('eventId') && body.eventId !== appReq.context.mageEvent.id) {

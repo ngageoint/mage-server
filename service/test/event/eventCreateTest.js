@@ -187,7 +187,7 @@ describe("event create tests", function () {
       .end(done);
   });
 
-  it("should reject event with duplicate name", function (done) {
+  it("should reject event with duplicate name", async function() {
     sinon.mock(TokenModel)
       .expects('getToken')
       .withArgs('12345')
@@ -212,7 +212,7 @@ describe("event create tests", function () {
       .expects('insertOne')
       .yields(uniqueError, null);
 
-    request(app)
+    const res = await request(app)
       .post('/api/events')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
@@ -231,14 +231,12 @@ describe("event create tests", function () {
           }]
         }
       })
-      .expect(400)
-      .expect(function (res) {
-        should.exist(res.body);
-        res.body.should.have.property('message').that.equals('Validation failed');
-        res.body.should.have.property('errors').that.is.an('object');
-        res.body.errors.should.have.property('name').that.is.an('object');
-        res.body.errors.name.should.have.property('message').that.equals('Event with name "Test" already exists.');
-      })
-      .end(done);
+
+    res.status.should.equal(400)
+    res.body.should.exist
+    res.body.message.should.equals('Validation failed');
+    res.body.should.have.property('errors').that.is.an('object');
+    res.body.errors.should.have.property('name').that.is.an('object');
+    res.body.errors.name.should.have.property('message').that.equals('Duplicate event name');
   });
 });

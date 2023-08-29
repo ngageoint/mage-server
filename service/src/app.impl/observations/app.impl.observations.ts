@@ -231,7 +231,7 @@ async function prepareObservationMod(mod: api.ExoObservationMod, before: Observa
  * @param before the observation to update, or null if none exists
  */
 function baseObservationAttrsForMod(mod: api.ExoObservationMod, before: Observation | null, context: api.ObservationRequestContext): ObservationAttrs {
-  return {
+  const attrs: ObservationAttrs = {
     id: mod.id,
     eventId: context.mageEvent.id,
     userId: before ? before.userId : context.userId,
@@ -245,11 +245,24 @@ function baseObservationAttrsForMod(mod: api.ExoObservationMod, before: Observat
     favoriteUserIds: before?.favoriteUserIds || [],
     important: before?.important,
     properties: {
+      // TODO: should timestamp be optional on the mod object?
       timestamp: mod.properties.timestamp,
       forms: []
     },
     attachments: [],
   }
+  assignFirstDefined('accuracy', attrs.properties, mod.properties, before?.properties)
+  assignFirstDefined('delta', attrs.properties, mod.properties, before?.properties)
+  assignFirstDefined('provider', attrs.properties, mod.properties, before?.properties)
+  return attrs
+}
+
+function assignFirstDefined<T>(key: keyof T, target: T, ...sources: (T | undefined)[]): T {
+  const source = sources.find(source => source && source[key] !== undefined)
+  if (source) {
+    target[key] = source[key]
+  }
+  return target
 }
 
 type QualifiedAttachmentMod = api.ExoAttachmentMod & { fieldName: string, formEntryId: FormEntryId }

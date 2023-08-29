@@ -107,7 +107,16 @@ EventSchema.virtual('id')
   .get(function () { return this._id })
   .set(function (x) { this._id = Number(x) })
 
-EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
+async function uniqueViolationToValidationErrorHook(err, _, next) {
+  if (err.code === 11000 || err.code === 11001) {
+    err = new mongoose.Error.ValidationError()
+    err.errors = { name: { type: 'unique', message: 'Duplicate event name' }}
+  }
+  return next(err)
+}
+EventSchema.post('save', uniqueViolationToValidationErrorHook)
+EventSchema.post('update', uniqueViolationToValidationErrorHook)
+EventSchema.post('findOneAndUpdate', uniqueViolationToValidationErrorHook)
 
 FormSchema.path('fields').validate(hasAtLeastOneField, 'A form must contain at least one field.');
 FormSchema.path('fields').validate(fieldNamesAreUnique, 'Form field names must be unique.');

@@ -19,6 +19,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Protect against disabling all authentications.
 * Fixing problem with oauth web login.
 
+## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
+#### Features
+* Docker image now installs MAGE packages from NPM registry instead of local tarballs.
+* Use a [shrinkwrap](https://docs.npmjs.com/cli/v9/commands/npm-shrinkwrap) file for consistent `@ngageoint/mage.service` installs.
+
+#### Bug Fixes
+* The server was not saving location provider information, such as accuracy and location source, e.g., `gps` or `manual`.
+* Previous 6.2.x releases were missing bug fixes from [6.1.3](#6.1.3) and [6.1.2](#6.1.2).
+* The service package did not always install [better-sqlite3](https://www.npmjs.com/package/better-sqlite3), which [GeoPackage](https://www.npmjs.com/package/@ngageoint/geopackage) requires to perform operations in the Node.js runtime.
+
 ## [6.2.8](https://github.com/ngageoint/mage-server/releases/tag/6.2.8)
 #### Features
 #### Bug Fixes
@@ -71,7 +81,6 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Remove all dots from web plugin IDs so UI Router does not interpret them as route hierarchy.
 * Do not enforce form min/max validation constraints for archived forms.
 * Restore missing view templates for auth and observation pages.
-
 
 ## [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0)
 ##### Breaking Changes
