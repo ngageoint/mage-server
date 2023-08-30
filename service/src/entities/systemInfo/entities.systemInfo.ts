@@ -26,3 +26,29 @@ export interface SystemInfo {
   disclaimer: any // mongoose Document type
   contactInfo: any
 }
+
+export enum SystemInfoRole {
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+}
+
+export enum SystemInfoAccessType {
+  Read = 'read',
+}
+
+export type SystemInfoRolePermissions = { [role in SystemInfoRole]: SystemInfoAccessType[] }
+
+export const SystemInfoRolePermissions: SystemInfoRolePermissions = {
+  ADMIN: [ SystemInfoAccessType.Read ],
+  USER: [],
+}
+
+export function rolesWithPermission(permission: SystemInfoAccessType): SystemInfoRole[] {
+  const roles: SystemInfoRole[] = [];
+  for (const key in SystemInfoRolePermissions) {
+    if (SystemInfoRolePermissions[key as SystemInfoRole].indexOf(permission) !== -1) {
+      roles.push(key as SystemInfoRole);
+    }
+  }
+  return roles;
+}

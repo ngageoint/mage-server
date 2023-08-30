@@ -53,19 +53,10 @@ export function CreateReadSystemInfo(
   const permissionError = await permissions.ensureReadSystemInfoPermission(
     req.context
   );
-
   if (permissionError) {
     throw permissionError;
   }
 
-  const user = req.context.requestingPrincipal();
-  if (user && user.username !== 'admin') {
-    throw permissionDenied(
-      SystemInfoPermission.READ_SYSTEM_INFO,
-      user.username,
-      'SystemInfo'
-    );
-  }
 
     // TODO: will need a permission check to determine what level of system
     // information the requesting principal is allowed to see

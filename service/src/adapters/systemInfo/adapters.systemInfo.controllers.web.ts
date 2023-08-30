@@ -16,14 +16,6 @@ export function SystemInfoRoutes(appLayer: SystemInfoAppLayer, createAppRequest:
     .get(async (req, res, next) => {
       const appReq = createAppRequest<systemInfoRequestType>(req)
 
-      const permissionError = await appLayer.permissionsService.ensureReadSystemInfoPermission(
-        appReq.context
-      );
-
-      if (permissionError) {
-        return next(permissionError);
-      }
-
       const appRes = await appLayer.readSystemInfo(appReq)
       if (appRes.success) {
         return res.json(appRes.success)
