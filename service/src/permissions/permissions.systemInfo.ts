@@ -5,14 +5,11 @@ import {
 import { AppRequestContext } from '../app.api/app.api.global';
 import { SystemInfoPermissionService } from '../app.api/systemInfo/app.api.systemInfo';
 import { SystemInfoPermission } from '../entities/authorization/entities.permissions';
-import { rolesWithPermission, SystemInfoAccessType } from '../entities/systemInfo/entities.systemInfo';
 import {
   UserWithRole,
-  ensureContextUserHasPermission
 } from './permissions.role-based.base';
 
-export class RoleBasedSystemInfoPermissionService
-  implements SystemInfoPermissionService {
+export class RoleBasedSystemInfoPermissionService implements SystemInfoPermissionService {
   async ensureReadSystemInfoPermission(
     ctx: AppRequestContext<UserWithRole>
   ): Promise<null | PermissionDeniedError> {
