@@ -6,7 +6,10 @@ import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute';
 import supertest from 'supertest';
 import { SystemInfo } from '../../../lib/entities/systemInfo/entities.systemInfo';
-import { SystemInfoAppLayer } from '../../../lib/app.api/systemInfo/app.api.systemInfo';
+import {
+  SystemInfoAppLayer,
+  SystemInfoPermissionService
+} from '../../../lib/app.api/systemInfo/app.api.systemInfo';
 import { SystemInfoRoutes } from '../../../lib/adapters/systemInfo/adapters.systemInfo.controllers.web';
 
 describe('SystemInfo web controller', () => {
@@ -17,12 +20,25 @@ describe('SystemInfo web controller', () => {
   };
 
   let client: supertest.SuperTest<supertest.Test>;
-  let appLayer: SubstituteOf<SystemInfoAppLayer>;
+
+  // Define and set up the mockPermissionsService
+  const mockPermissionsService = Sub.for<SystemInfoPermissionService>();
+  mockPermissionsService
+    .ensureReadSystemInfoPermission(Arg.any())
+    .returns(Promise.resolve(null));
+
+  let appLayer: SubstituteOf<SystemInfoAppLayer> = Sub.for<
+    SystemInfoAppLayer
+  >();
+
+
   let appReqFactory: SubstituteOf<AppRequestFactoryHandle>;
 
   beforeEach(function() {
+    // Reset appLayer for every test.
     appLayer = Sub.for<SystemInfoAppLayer>();
     appReqFactory = Sub.for<AppRequestFactoryHandle>();
+
     const endpoint = express();
     endpoint.use(function lookupUser(
       req: express.Request,
