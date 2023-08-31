@@ -5,16 +5,13 @@ import {
 } from '../../../lib/entities/systemInfo/entities.systemInfo';
 import { Substitute, Arg } from '@fluffy-spoon/substitute';
 import { CreateReadSystemInfo } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
-import {
-  AppRequest,
-  AppRequestContext
-} from '../../../lib/app.api/app.api.global';
 import * as Settings from '../../../lib/models/setting';
 import * as AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
 import * as AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base';
 import { ReadSystemInfo, ReadSystemInfoRequest } from '../../../lib/app.api/systemInfo/app.api.systemInfo';
 import { RoleBasedSystemInfoPermissionService } from '../../../lib/permissions/permissions.systemInfo';
+import { SystemInfoPermission } from '../../../lib/entities/authorization/entities.permissions';
 
 const mockNodeVersion = '14.16.1';
 const mockMongoDBVersion = '4.2.0';
@@ -34,8 +31,29 @@ const mockUserWithRole = ({
   phones: [],
   active: true,
   enabled: true,
-  roleId: 'mockRoleId',
+  roleId: {
+    id: 'mockRoleId',
+    permissions: [SystemInfoPermission.READ_SYSTEM_INFO] // Given the role the necessary permission.
+  },
   authenticationId: 'mockAuthId',
+  recentEventIds: [],
+  createdAt: new Date(),
+  lastUpdated: new Date()
+} as unknown) as UserWithRole;
+
+const mockUserWithoutPermission = ({
+  _id: 'mockObjectId2',
+  id: 'testUserId2',
+  username: 'testUser2',
+  displayName: 'Test User 2',
+  phones: [],
+  active: true,
+  enabled: true,
+  roleId: {
+    id: 'mockNoPermissionRoleId',
+    permissions: [] // No permissions.
+  },
+  authenticationId: 'mockAuthId2',
   recentEventIds: [],
   createdAt: new Date(),
   lastUpdated: new Date()
@@ -43,7 +61,7 @@ const mockUserWithRole = ({
 
 
 function requestBy<T extends object>(
-  principal: UserWithRole, // assuming you have some way to produce or mock a UserWithRole
+  principal: UserWithRole,
   params?: T
 ): ReadSystemInfoRequest & T {
   if (!params) {
@@ -84,10 +102,6 @@ describe('CreateReadSystemInfo', () => {
   };
 
   const mockedPermissionsModule = new RoleBasedSystemInfoPermissionService();
-  // mockedPermissionsModule
-  //   .checkPermission(Arg.any())
-  //   .returns(Promise.resolve(true));
-
 
   beforeEach(() => {
     mockedSettingsModule = Substitute.for<typeof Settings>();
@@ -148,4 +162,17 @@ describe('CreateReadSystemInfo', () => {
     const versionFormat = /^\d+\.\d+\.\d+$/;
     expect(nodeVersion).to.match(versionFormat);
   });
+
+  it('should return a function that produces a ReadSystemInfoResponse without environment info for users without permission', async () => {
+    const request = requestBy(mockUserWithoutPermission);
+    const response = await readSystemInfo(request);
+
+    expect(response).to.exist;
+    expect(response.success).to.exist;
+
+    const systemInfo: SystemInfo = response.success as SystemInfo;
+
+    expect(systemInfo.environment).to.be.undefined; // Asserts that environment info is not present
+  });
+
 });

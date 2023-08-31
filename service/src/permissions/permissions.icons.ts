@@ -1,4 +1,4 @@
-import { permissionDenied, PermissionDeniedError } from '../app.api/app.api.errors'
+import { PermissionDeniedError } from '../app.api/app.api.errors'
 import { AppRequestContext } from '../app.api/app.api.global'
 import { StaticIconPermissionService } from '../app.api/icons/app.api.icons'
 import { StaticIconPermission } from '../entities/authorization/entities.permissions'
