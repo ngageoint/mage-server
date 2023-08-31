@@ -7,33 +7,16 @@ import { SystemInfoPermissionService } from '../app.api/systemInfo/app.api.syste
 import { SystemInfoPermission } from '../entities/authorization/entities.permissions';
 import {
   UserWithRole,
+  ensureContextUserHasPermission
 } from './permissions.role-based.base';
 
 export class RoleBasedSystemInfoPermissionService implements SystemInfoPermissionService {
   async ensureReadSystemInfoPermission(ctx: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
-    const user = ctx.requestingPrincipal();
-
-    // If user doesn't exist, deny permission.
-    if (!user) {
-      return permissionDenied(
-        SystemInfoPermission.READ_SYSTEM_INFO,
-        'Unknown User',
-        'SystemInfo'
-      );
-    }
-
-    // Check if the user's role has the required permission.
-    if (
-      user.roleId.permissions.includes(SystemInfoPermission.READ_SYSTEM_INFO)
-    ) {
-      return null; // This means no error and the user has permission
-    } else {
-      return permissionDenied(
-        SystemInfoPermission.READ_SYSTEM_INFO,
-        user.username,
-        'SystemInfo'
-      );
-    }
+    return ensureContextUserHasPermission(
+      ctx,
+      SystemInfoPermission.READ_SYSTEM_INFO
+    );
   }
 }
+
 

@@ -7,6 +7,7 @@ import AuthenticationConfigurationTransformer from '../../transformers/authentic
 import { RoleBasedSystemInfoPermissionService } from '../../permissions/permissions.systemInfo';
 import { permissionDenied } from '../../app.api/app.api.errors';
 import { SystemInfoPermission } from '../../entities/authorization/entities.permissions';
+import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
@@ -17,7 +18,7 @@ export function CreateReadSystemInfo(
   settingsModule: typeof Settings = Settings,
   authConfigModule: typeof AuthenticationConfiguration = AuthenticationConfiguration,
   authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer,
-  permissions: RoleBasedSystemInfoPermissionService
+  permissions: SystemInfoPermissionService
 ): api.ReadSystemInfo {
 
   // appending the authentication strategies to the api
