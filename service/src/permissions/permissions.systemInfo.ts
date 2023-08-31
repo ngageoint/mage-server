@@ -10,9 +10,7 @@ import {
 } from './permissions.role-based.base';
 
 export class RoleBasedSystemInfoPermissionService implements SystemInfoPermissionService {
-  async ensureReadSystemInfoPermission(
-    ctx: AppRequestContext<UserWithRole>
-  ): Promise<null | PermissionDeniedError> {
+  async ensureReadSystemInfoPermission(ctx: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError> {
     const user = ctx.requestingPrincipal();
 
     // If user doesn't exist, deny permission.

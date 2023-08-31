@@ -23,7 +23,5 @@ export interface SystemInfoAppLayer {
 }
 
 export interface SystemInfoPermissionService {
-  ensureReadSystemInfoPermission(
-    context: AppRequestContext<UserWithRole>
-  ): Promise<null | PermissionDeniedError>;
+  ensureReadSystemInfoPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>;
 }
