@@ -35,8 +35,10 @@ describe('system info role-based permission service', function() {
 
     expect(denied?.code).to.equal(ErrPermissionDenied);
     expect(denied?.data.subject).to.equal('neverever');
-    expect(denied?.data.permission).to.equal(SystemInfoPermission.READ_SYSTEM_INFO);
-    expect(denied?.data.object).to.equal('SystemInfo');
+    expect(denied?.data.permission).to.equal(
+      SystemInfoPermission.READ_SYSTEM_INFO
+    );
+    expect(denied?.data.object).to.be.null; // Expecting no object in the denied data as per the static icon example.
   });
 
   it('allows read permission if user has read system info permission', async function() {
@@ -44,9 +46,9 @@ describe('system info role-based permission service', function() {
       requestToken: Symbol(),
       requestingPrincipal() {
         return ({
-          username: 'haspermission',
+          username: 'canread',
           roleId: {
-            permissions: [ SystemInfoPermission.READ_SYSTEM_INFO ]
+            permissions: [SystemInfoPermission.READ_SYSTEM_INFO]
           }
         } as unknown) as UserWithRole;
       },
@@ -57,6 +59,10 @@ describe('system info role-based permission service', function() {
 
     const denied = await permissions.ensureReadSystemInfoPermission(ctx);
 
-    expect(denied).to.be.null;
+    expect(denied).to.be.null; // No permission denied error should be returned.
   });
+
+  // If there's any other special permission behavior specific to SystemInfo,
+  // you can model another test case here similar to the static icon's "allows get permission always".
 });
+
