@@ -35,9 +35,7 @@ describe('system info role-based permission service', function() {
 
     expect(denied?.code).to.equal(ErrPermissionDenied);
     expect(denied?.data.subject).to.equal('neverever');
-    expect(denied?.data.permission).to.equal(
-      SystemInfoPermission.READ_SYSTEM_INFO
-    );
+    expect(denied?.data.permission).to.equal(SystemInfoPermission.READ_SYSTEM_INFO);
     expect(denied?.data.object).to.equal('SystemInfo');
   });
 
@@ -48,10 +46,7 @@ describe('system info role-based permission service', function() {
         return ({
           username: 'haspermission',
           roleId: {
-            permissions: [
-              allPermissions.READ_SYSTEM_INFO,
-              SystemInfoPermission.READ_SYSTEM_INFO
-            ]
+            permissions: [ SystemInfoPermission.READ_SYSTEM_INFO ]
           }
         } as unknown) as UserWithRole;
       },

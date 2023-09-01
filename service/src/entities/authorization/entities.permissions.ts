@@ -95,19 +95,19 @@ export enum StaticIconPermission {
 }
 
 export const allPermissions = Object.freeze({
-         ...DevicePermission,
-         ...UsersPermission,
-         ...RolePermission,
-         ...MageEventPermission,
-         ...LayerPermission,
-         ...ObservationPermission,
-         ...LocationPermission,
-         ...TeamPermission,
-         ...SettingPermission,
-         ...FeedsPermission,
-         ...StaticIconPermission,
-         ...SystemInfoPermission
-       });
+  ...DevicePermission,
+  ...UsersPermission,
+  ...RolePermission,
+  ...MageEventPermission,
+  ...LayerPermission,
+  ...ObservationPermission,
+  ...LocationPermission,
+  ...TeamPermission,
+  ...SettingPermission,
+  ...FeedsPermission,
+  ...StaticIconPermission,
+  ...SystemInfoPermission
+});
 
 export type AnyPermission =
   | DevicePermission
