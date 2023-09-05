@@ -4,6 +4,8 @@ import { EnvironmentService } from '../../entities/systemInfo/entities.systemInf
 import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
+
+import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
@@ -13,9 +15,9 @@ export function CreateReadSystemInfo(
   config: any,
   settingsModule: typeof Settings = Settings,
   authConfigModule: typeof AuthenticationConfiguration = AuthenticationConfiguration,
-  authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer
+  authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer,
+  permissions: SystemInfoPermissionService
 ): api.ReadSystemInfo {
-
   // appending the authentication strategies to the api
   async function appendAuthenticationStrategies(
     api: any,
@@ -45,9 +47,14 @@ export function CreateReadSystemInfo(
   return async function readSystemInfo(
     req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
-    // TODO: will need a permission check to determine what level of system
-    // information the requesting principal is allowed to see
-    const environment = await environmentService.readEnvironmentInfo();
+    const hasReadSystemInfoPermission =
+      (await permissions.ensureReadSystemInfoPermission(req.context)) === null;
+
+    let environment;
+    if (hasReadSystemInfoPermission) {
+      environment = await environmentService.readEnvironmentInfo();
+    }
+
     const disclaimer = (await settingsModule.getSetting('disclaimer')) || {};
     const contactInfo = (await settingsModule.getSetting('contactInfo')) || {};
 
@@ -56,6 +63,11 @@ export function CreateReadSystemInfo(
       disclaimer: disclaimer,
       contactInfo: contactInfo
     });
+
+    // Ensure the environment is removed if the user doesn't have permission
+    if (!hasReadSystemInfoPermission) {
+      delete apiConfig.environment;
+    }
 
     const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, {
       whitelist: true
