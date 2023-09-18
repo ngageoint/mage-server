@@ -10,7 +10,7 @@ export class NominatimService {
   public static readonly ADDRESS = '1';
   public static readonly LIMIT = '10';
 
-  constructor(private http: HttpClient) { }
+  constructor(private webClient: HttpClient) { }
 
   search(query: string) {
     const params = new HttpParams()
@@ -20,6 +20,6 @@ export class NominatimService {
       .set('addressdetails', NominatimService.ADDRESS);
 
 
-    return this.http.get(NominatimService.URL, { params: params });
+    return this.webClient.get(NominatimService.URL, { params: params });
   }
 }

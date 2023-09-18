@@ -15,7 +15,7 @@ export interface FeedPreviewOptions {
 })
 export class FeedService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private webClient: HttpClient) { }
 
   // TODO: there is probably a better solution than maintaining this map here
   private _feeds = new BehaviorSubject<Array<Feed>>([]);
@@ -27,73 +27,73 @@ export class FeedService {
   }
 
   fetchAllFeeds(): Observable<Array<Feed>> {
-    return this.http.get<Array<Feed>>('/api/feeds/');
+    return this.webClient.get<Array<Feed>>('/api/feeds/');
   }
 
   fetchFeed(feedId: string): Observable<FeedExpanded> {
-    return this.http.get<FeedExpanded>(`/api/feeds/${feedId}`);
+    return this.webClient.get<FeedExpanded>(`/api/feeds/${feedId}`);
   }
 
   fetchService(serviceId: string): Observable<Service> {
-    return this.http.get<Service>(`/api/feeds/services/${serviceId}`);
+    return this.webClient.get<Service>(`/api/feeds/services/${serviceId}`);
   }
 
   createService(service: { title: string, summary?: string, serviceType: string, config: any}): Observable<Service> {
-    return this.http.post<Service>(`/api/feeds/services`, service);
+    return this.webClient.post<Service>(`/api/feeds/services`, service);
   }
 
   fetchServices(): Observable<Array<Service>> {
-    return this.http.get<Array<Service>>(`/api/feeds/services`);
+    return this.webClient.get<Array<Service>>(`/api/feeds/services`);
   }
 
   fetchServiceFeeds(serviceId: string): Observable<Array<Feed>> {
-    return this.http.get<Array<Feed>>(`/api/feeds/services/${serviceId}/feeds`);
+    return this.webClient.get<Array<Feed>>(`/api/feeds/services/${serviceId}/feeds`);
   }
 
   fetchServiceType(serviceTypeId: string): Observable<ServiceType> {
-    return this.http.get<ServiceType>(`/api/feeds/service_types/${serviceTypeId}`);
+    return this.webClient.get<ServiceType>(`/api/feeds/service_types/${serviceTypeId}`);
   }
 
   fetchTopics(serviceId: string): Observable<Array<FeedTopic>> {
-    return this.http.get<Array<FeedTopic>>(`/api/feeds/services/${serviceId}/topics`);
+    return this.webClient.get<Array<FeedTopic>>(`/api/feeds/services/${serviceId}/topics`);
   }
 
   previewFeed(serviceId: string, topicId: string, feedSpec: Partial<Omit<FeedPost, 'service' | 'topic'>>, opts?: FeedPreviewOptions): Observable<FeedPreview> {
     opts = opts || {}
     const skipContentFetch: boolean = opts.skipContentFetch === true
-    return this.http.post<FeedPreview>(
+    return this.webClient.post<FeedPreview>(
       `/api/feeds/services/${serviceId}/topics/${topicId}/feed_preview?skip_content_fetch=${skipContentFetch}`,
       { feed: feedSpec });
   }
 
   fetchTopic(serviceId: string, topicId: string): Observable<FeedTopic> {
-    return this.http.get<FeedTopic>(`/api/feeds/services/${serviceId}/topics/${topicId}`);
+    return this.webClient.get<FeedTopic>(`/api/feeds/services/${serviceId}/topics/${topicId}`);
   }
 
   fetchServiceTypes(): Observable<Array<ServiceType>> {
-    return this.http.get<Array<ServiceType>>(`/api/feeds/service_types`);
+    return this.webClient.get<Array<ServiceType>>(`/api/feeds/service_types`);
   }
 
   createFeed(serviceId: string, topicId: string, feedConfiguration: any): Observable<FeedExpanded> {
-    return this.http.post<FeedExpanded>(`/api/feeds/services/${serviceId}/topics/${topicId}/feeds`, feedConfiguration);
+    return this.webClient.post<FeedExpanded>(`/api/feeds/services/${serviceId}/topics/${topicId}/feeds`, feedConfiguration);
   }
 
   updateFeed(feed: Partial<Omit<FeedPost, 'id'>> & Pick<Feed, 'id'>): Observable<FeedExpanded> {
-    return this.http.put<FeedExpanded>(`/api/feeds/${feed.id}`, feed);
+    return this.webClient.put<FeedExpanded>(`/api/feeds/${feed.id}`, feed);
   }
 
   deleteFeed(feed: Feed | FeedExpanded): Observable<{}> {
-    return this.http.delete(`/api/feeds/${feed.id}`, {responseType: 'text'});
+    return this.webClient.delete(`/api/feeds/${feed.id}`, {responseType: 'text'});
   }
 
   deleteService(service: Service): Observable<{}> {
     console.log('delete')
-    return this.http.delete(`/api/feeds/services/${service.id}`, { responseType: 'text' });
+    return this.webClient.delete(`/api/feeds/services/${service.id}`, { responseType: 'text' });
   }
 
   fetchFeeds(eventId: number): Observable<Array<Feed>> {
     const subject = new Subject<Array<Feed>>();
-    this.http.get<Array<Feed>>(`/api/events/${eventId}/feeds`).subscribe(feeds => {
+    this.webClient.get<Array<Feed>>(`/api/events/${eventId}/feeds`).subscribe(feeds => {
       feeds.map(feed => {
         feed.id = feed.id.toString();
         return feed;
@@ -116,7 +116,7 @@ export class FeedService {
 
   fetchFeedItems(event: any, feed: Feed): Observable<FeedContent> {
     const feedItems = this._feedItems.get(feed.id)
-    return this.http.post<FeedContent>(`/api/events/${event.id}/feeds/${feed.id}/content`, {}).pipe(
+    return this.webClient.post<FeedContent>(`/api/events/${event.id}/feeds/${feed.id}/content`, {}).pipe(
       map(content => {
         const features = content.items.features
         features.forEach((feature: StyledFeature) => {

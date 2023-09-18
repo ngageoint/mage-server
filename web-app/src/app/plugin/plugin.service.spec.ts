@@ -7,7 +7,7 @@ import { SystemJS } from './systemjs.service'
 
 describe('PluginService', () => {
 
-  let http: {
+  let mockClient: {
     get: jasmine.Spy<HttpClient['get']>
   }
   let compiler: {
@@ -32,11 +32,11 @@ describe('PluginService', () => {
       register: jasmine.createSpy('SystemJS.Context.register'),
       import: jasmine.createSpy('SystemJS.Context.import')
     }
-    http = {
+    mockClient = {
       get: jasmine.createSpy('HttpClient.get')
     }
     service = new PluginService(
-      http as unknown as HttpClient,
+      mockClient as unknown as HttpClient,
       compiler as unknown as Compiler,
       injector as unknown as Injector,
       system as unknown as SystemJS.Registry,
@@ -137,13 +137,13 @@ describe('PluginService', () => {
           }
         }
       }
-      http.get.and.returnValue(of(Object.keys(pluginsById)))
+      mockClient.get.and.returnValue(of(Object.keys(pluginsById)))
       system.import.withArgs(`/ui_plugins/plugin1?access_token=${token}`).and.returnValue(Promise.resolve(pluginsById.plugin1))
       system.import.withArgs(`/ui_plugins/plugin2?access_token=${token}`).and.returnValue(Promise.resolve(pluginsById.plugin2))
       const plugins = await service.availablePlugins()
 
       expect(plugins).toEqual(pluginsById)
-      expect(http.get).toHaveBeenCalledTimes(1)
+      expect(mockClient.get).toHaveBeenCalledTimes(1)
       expect(system.import).toHaveBeenCalledWith(`/ui_plugins/plugin1?access_token=${token}`)
       expect(system.import).toHaveBeenCalledWith(`/ui_plugins/plugin2?access_token=${token}`)
       expect(system.import).toHaveBeenCalledTimes(2)
@@ -159,14 +159,14 @@ describe('PluginService', () => {
           }
         }
       }
-      http.get.and.returnValue(of(Object.keys(pluginsById)))
+      mockClient.get.and.returnValue(of(Object.keys(pluginsById)))
       system.import.withArgs(`/ui_plugins/plugin1?access_token=${token}`).and.returnValue(Promise.resolve(pluginsById.plugin1))
       const plugins = await service.availablePlugins()
       const pluginsAgain = await service.availablePlugins()
 
       expect(plugins).toEqual(pluginsById)
       expect(pluginsAgain).toEqual(pluginsById)
-      expect(http.get).toHaveBeenCalledTimes(1)
+      expect(mockClient.get).toHaveBeenCalledTimes(1)
       expect(system.import).toHaveBeenCalledWith(`/ui_plugins/plugin1?access_token=${token}`)
       expect(system.import).toHaveBeenCalledTimes(1)
     })
