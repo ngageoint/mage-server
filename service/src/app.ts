@@ -1,7 +1,7 @@
 import environment from './environment/env'
 import log from './logger'
 import { InjectableServices, integratePluginHooks } from './main.impl/main.impl.plugins'
-import http from 'http'
+import httpLib from 'http'
 import fs from 'fs-extra'
 import mongoose from 'mongoose'
 import express from 'express'
@@ -60,7 +60,7 @@ import { EventEmitter } from 'events'
 
 export interface MageService {
   webController: express.Application
-  server: http.Server
+  server: httpLib.Server
   open(): this
 }
 
@@ -90,7 +90,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 
   const mongooseLogger = log.loggers.get('mongoose')
   mongoose.set('debug', function (collection: any, method: any, ...methodArgs: any[]) {
-    const formatter = (arg: any) => {
+    const formatter = (arg: any): string => {
       return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');
     }
     mongooseLogger.log('mongoose', `${collection}.${method}` + `(${methodArgs.map(formatter).join(', ')})`)
@@ -187,7 +187,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     throw new Error('error initializing scheduled tasks: ' + err)
   }
 
-  const server = http.createServer(webController)
+  const server = httpLib.createServer(webController)
   service = {
     webController,
     server,
