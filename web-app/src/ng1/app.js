@@ -77,7 +77,8 @@ app
   .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService))
-  .factory('PluginService', downgradeInjectable(PluginService));
+  .factory('PluginService', downgradeInjectable(PluginService))
+  .factory('UserReadService', downgradeInjectable(UserReadService))
 
 // Downgraded Angular components
 app

@@ -1,13 +1,14 @@
 import _ from 'underscore';
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
+  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService, UserReadService) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
+    this.UserReadService = UserReadService;
 
     this.users = [];
     this.stateAndData = this.UserPagingService.constructDefault();
@@ -22,6 +23,15 @@ class AdminUsersController {
   }
 
   $onInit() {
+    const searchParams = {
+      pageSize: 10, // example size, adjust as needed
+      pageIndex: 1, // example index, adjust as needed
+    };
+
+    this.UserReadService.search(searchParams).subscribe((data) => {
+      this.users = data; // assuming the returned data contains the list of users
+    });
+
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
@@ -140,7 +150,7 @@ class AdminUsersController {
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService', 'UserReadService'];
 
 export default {
   template: require('./users.html'),
