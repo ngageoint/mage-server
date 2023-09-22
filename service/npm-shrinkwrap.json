@@ -60,8 +60,6 @@
         "rfc5646": "^3.0.0",
         "superagent": "^8.0.0",
         "svg-captcha": "^1.4.0",
-        "terraformer": "1.0.4",
-        "terraformer-arcgis-parser": "1.0.4",
         "uniqid": "^5.2.0",
         "walk": "2.3.4",
         "winston": "1.0.1",
@@ -12648,21 +12646,6 @@
         "node": ">=10"
       }
     },
-    "node_modules/terraformer": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/terraformer/-/terraformer-1.0.4.tgz",
-      "integrity": "sha1-RrSIL7lbCct0YxXBPDW7BJwWKyQ=",
-      "deprecated": "terraformer is deprecated and no longer supported. Please use @terraformer/arcgis."
-    },
-    "node_modules/terraformer-arcgis-parser": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/terraformer-arcgis-parser/-/terraformer-arcgis-parser-1.0.4.tgz",
-      "integrity": "sha1-W8r3qZFraei9nwDsPlqBX8Vy9jU=",
-      "deprecated": "terraformer-arcgis-parser is deprecated and no longer supported. Please use @terraformer/arcgis.",
-      "dependencies": {
-        "terraformer": "~1.0.4"
-      }
-    },
     "node_modules/test-exclude": {
       "version": "5.2.3",
       "resolved": "https://registry.npmjs.org/test-exclude/-/test-exclude-5.2.3.tgz",
@@ -23952,19 +23935,6 @@
             "safe-buffer": "~5.2.0"
           }
         }
-      }
-    },
-    "terraformer": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/terraformer/-/terraformer-1.0.4.tgz",
-      "integrity": "sha1-RrSIL7lbCct0YxXBPDW7BJwWKyQ="
-    },
-    "terraformer-arcgis-parser": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/terraformer-arcgis-parser/-/terraformer-arcgis-parser-1.0.4.tgz",
-      "integrity": "sha1-W8r3qZFraei9nwDsPlqBX8Vy9jU=",
-      "requires": {
-        "terraformer": "~1.0.4"
       }
     },
     "test-exclude": {
