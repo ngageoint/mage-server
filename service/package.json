@@ -28,7 +28,6 @@
     "npm": ">= 6.x"
   },
   "dependencies": {
-    "@mapbox/togeojson": "0.16.0",
     "@ngageoint/geopackage": "^4.2.4",
     "@turf/centroid": "~6.0.0",
     "@turf/kinks": "~6.0.0",
