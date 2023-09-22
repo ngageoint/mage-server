@@ -39,7 +39,7 @@
   "homepage": "https://github.com/ngageoint/mage-server#readme",
   "dependencies": {
     "@types/geojson": "^7946.0.7",
-    "axios": "^0.19.2"
+    "axios": "^0.27.2"
   },
   "devDependencies": {
     "@types/jest": "^26.0.3",
