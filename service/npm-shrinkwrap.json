@@ -17,7 +17,7 @@
         "@xmldom/xmldom": "^0.8.10",
         "adm-zip": "0.4.9",
         "archiver": "5.3.0",
-        "async": "0.2.x",
+        "async": "^3.2.4",
         "base-64": "1.0.0",
         "better-sqlite3": "^7.6.2",
         "body-parser": "1.18.3",
@@ -1654,11 +1654,6 @@
         "node": ">= 6"
       }
     },
-    "node_modules/archiver/node_modules/async": {
-      "version": "3.2.3",
-      "resolved": "https://registry.npmjs.org/async/-/async-3.2.3.tgz",
-      "integrity": "sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g=="
-    },
     "node_modules/archiver/node_modules/readable-stream": {
       "version": "3.6.0",
       "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.0.tgz",
@@ -1878,9 +1873,9 @@
       }
     },
     "node_modules/async": {
-      "version": "0.2.10",
-      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz",
-      "integrity": "sha1-trvgsGdLnXGXCMo43owjfLUmw9E="
+      "version": "3.2.4",
+      "resolved": "https://registry.npmjs.org/async/-/async-3.2.4.tgz",
+      "integrity": "sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ=="
     },
     "node_modules/async-mutex": {
       "version": "0.3.2",
@@ -15184,11 +15179,6 @@
         "zip-stream": "^4.1.0"
       },
       "dependencies": {
-        "async": {
-          "version": "3.2.3",
-          "resolved": "https://registry.npmjs.org/async/-/async-3.2.3.tgz",
-          "integrity": "sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g=="
-        },
         "readable-stream": {
           "version": "3.6.0",
           "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.0.tgz",
@@ -15390,9 +15380,9 @@
       "dev": true
     },
     "async": {
-      "version": "0.2.10",
-      "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz",
-      "integrity": "sha1-trvgsGdLnXGXCMo43owjfLUmw9E="
+      "version": "3.2.4",
+      "resolved": "https://registry.npmjs.org/async/-/async-3.2.4.tgz",
+      "integrity": "sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ=="
     },
     "async-mutex": {
       "version": "0.3.2",
