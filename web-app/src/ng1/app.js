@@ -43,6 +43,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { UserReadService } from '../../projects/core-lib/user/user-read.service';
 
 import { ContactComponent } from '../app/contact/contact.component';
 
