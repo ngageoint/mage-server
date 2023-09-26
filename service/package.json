@@ -63,7 +63,7 @@
     "mongodb-migrations": "0.8.5",
     "mongoose": "^4.13.21",
     "mongoose-beautiful-unique-validation": "7.1.1",
-    "multer": "^1.4.2",
+    "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.0",
     "openid-client": "2.2.1",
     "passport": "0.4.1",
