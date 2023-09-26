@@ -1,12 +1,12 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.9",
+  "version": "6.2.10-beta.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@ngageoint/mage.service",
-      "version": "6.2.9",
+      "version": "6.2.10-beta.0",
       "dependencies": {
         "@ngageoint/geopackage": "^4.2.4",
         "@turf/centroid": "~6.0.0",
