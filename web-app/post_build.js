@@ -22,16 +22,9 @@ const post = builderOptions => {
   packageDesc.peerDependencies = {
     '@ngageoint/mage.service': `^${packageDesc.version}`
   };
-
-  const outputPath = path.resolve(process.cwd(), builderOptions.outputPath);
-  const distDir = path.join(outputPath, 'package.json');
-
-  // Ensure directory exists
-  if (!fs.existsSync(outputPath)) {
-    fs.mkdirSync(outputPath, { recursive: true });
-  }
-
-  fs.writeFileSync(distDir, JSON.stringify(packageDesc, null, 2));
+  const outputPathDir = path.resolve(process.cwd(), builderOptions.outputPath);
+  const packageDescPath = path.join(outputPathDir, 'package.json');
+  fs.writeFileSync(packageDescPath, JSON.stringify(packageDesc, null, 2));
 }
 
 module.exports.default = { post }
