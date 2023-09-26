@@ -1,7 +1,15 @@
 import _ from 'underscore';
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService, UserReadService) {
+  constructor(
+    $uibModal,
+    $state,
+    $timeout,
+    LocalStorageService,
+    UserService,
+    UserPagingService,
+    UserReadService
+  ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
@@ -14,18 +22,27 @@ class AdminUsersController {
     this.stateAndData = this.UserPagingService.constructDefault();
 
     this.token = LocalStorageService.getToken();
-    this.filter = "all"; // possible values all, active, inactive
+    this.filter = 'all'; // possible values all, active, inactive
     this.userSearch = '';
 
-    this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
-    this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
-    this.hasUserDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+    this.hasUserCreatePermission = _.contains(
+      UserService.myself.role.permissions,
+      'CREATE_USER'
+    );
+    this.hasUserEditPermission = _.contains(
+      UserService.myself.role.permissions,
+      'UPDATE_USER'
+    );
+    this.hasUserDeletePermission = _.contains(
+      UserService.myself.role.permissions,
+      'DELETE_USER'
+    );
   }
 
   $onInit() {
     const searchParams = {
-      pageSize: 10, // example size, adjust as needed
-      pageIndex: 1, // example index, adjust as needed
+      pageSize: 10,
+      pageIndex: 1
     };
 
     this.UserReadService.search(searchParams).subscribe((data) => {
@@ -46,9 +63,11 @@ class AdminUsersController {
   }
 
   next() {
-    this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
-    });
+    this.UserPagingService.next(this.stateAndData[this.filter]).then(
+      (users) => {
+        this.users = users;
+      }
+    );
   }
 
   hasPrevious() {
@@ -56,28 +75,38 @@ class AdminUsersController {
   }
 
   previous() {
-    this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
-      this.users = users;
-    });
+    this.UserPagingService.previous(this.stateAndData[this.filter]).then(
+      (users) => {
+        this.users = users;
+      }
+    );
   }
 
   search() {
-    this.UserPagingService.search(this.stateAndData[this.filter], this.userSearch).then(users => {
-      this.users = users;
-    });
-  }
+    const searchParams = {
+      term: this.userSearch,
+      pageSize: 10,
+      pageIndex: 1,
+      includeTotalCount: true
+    };
 
-  changeFilter(state) {
-    this.filter = state;
-    this.search();
+    this.UserReadService.search(searchParams).subscribe((data) => {
+      this.users = data.content;
+    });
   }
 
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.stateAndData = this.UserPagingService.constructDefault();
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+
+    const searchParams = {
+      pageSize: 10,
+      pageIndex: 1,
+      term: this.userSearch
+    };
+
+    this.UserReadService.search(searchParams).subscribe((data) => {
+      this.users = data.content;
     });
   }
 
@@ -107,12 +136,14 @@ class AdminUsersController {
           return user;
         }
       },
-      component: "adminUserDelete"
+      component: 'adminUserDelete'
     });
 
     modalInstance.result.then(() => {
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+        this.users = this.UserPagingService.users(
+          this.stateAndData[this.filter]
+        );
       });
     });
   }
@@ -121,21 +152,28 @@ class AdminUsersController {
     $event.stopPropagation();
 
     user.active = true;
-    this.UserService.updateUser(user.id, user, () => {
-      this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
-      });
+    this.UserService.updateUser(
+      user.id,
+      user,
+      () => {
+        this.UserPagingService.refresh(this.stateAndData).then(() => {
+          this.users = this.UserPagingService.users(
+            this.stateAndData[this.filter]
+          );
+        });
 
-      this.onUserActivated({
-        $event: {
-          user: user
-        }
-      });
-    }, response => {
-      this.$timeout(() => {
-        this.error = response.responseText;
-      });
-    });
+        this.onUserActivated({
+          $event: {
+            user: user
+          }
+        });
+      },
+      (response) => {
+        this.$timeout(() => {
+          this.error = response.responseText;
+        });
+      }
+    );
   }
 
   enableUser($event, user) {
@@ -144,7 +182,9 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+        this.users = this.UserPagingService.users(
+          this.stateAndData[this.filter]
+        );
       });
     });
   }
