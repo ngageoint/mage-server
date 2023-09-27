@@ -8,7 +8,6 @@ class AdminUsersController {
     LocalStorageService,
     UserService,
     UserPagingService,
-    UserReadService
   ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
@@ -16,7 +15,6 @@ class AdminUsersController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
-    this.UserReadService = UserReadService;
 
     this.users = [];
     this.stateAndData = this.UserPagingService.constructDefault();
@@ -168,7 +166,7 @@ class AdminUsersController {
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService', 'UserReadService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./users.html'),
