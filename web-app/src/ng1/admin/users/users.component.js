@@ -46,7 +46,7 @@ class AdminUsersController {
     };
 
     this.UserReadService.search(searchParams).subscribe((data) => {
-      this.users = data; // assuming the returned data contains the list of users
+      this.users = data;
     });
 
     this.UserPagingService.refresh(this.stateAndData).then(() => {
