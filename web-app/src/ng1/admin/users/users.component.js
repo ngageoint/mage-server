@@ -40,15 +40,6 @@ class AdminUsersController {
   }
 
   $onInit() {
-    const searchParams = {
-      pageSize: 10,
-      pageIndex: 1
-    };
-
-    this.UserReadService.search(searchParams).subscribe((data) => {
-      this.users = data;
-    });
-
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
@@ -83,30 +74,17 @@ class AdminUsersController {
   }
 
   search() {
-    const searchParams = {
-      term: this.userSearch,
-      pageSize: 10,
-      pageIndex: 1,
-      includeTotalCount: true
-    };
-
-    this.UserReadService.search(searchParams).subscribe((data) => {
-      this.users = data.content;
+    this.UserPagingService.search(this.stateAndData[this.filter],this.userSearch).then((users) => {
+      this.users = users;
     });
   }
 
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-
-    const searchParams = {
-      pageSize: 10,
-      pageIndex: 1,
-      term: this.userSearch
-    };
-
-    this.UserReadService.search(searchParams).subscribe((data) => {
-      this.users = data.content;
+    this.stateAndData = this.UserPagingService.constructDefault();
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
   }
 
