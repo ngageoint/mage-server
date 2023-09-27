@@ -246,7 +246,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     options = options || {};
     const deferredUsers = $q.defer();
 
-    $http.get('/api/users', {params: options})
+    $http.get('/api/next-users/search', {params: options})
       .success(function(data) {
         if (Array.isArray(data)) {
           deferredUsers.resolve(_.indexBy(data, 'id'));
