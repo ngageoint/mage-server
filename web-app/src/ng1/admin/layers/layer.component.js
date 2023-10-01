@@ -21,6 +21,7 @@ class AdminLayerController {
 
     this.hasLayerEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
     this.hasLayerDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
+    this.hasLayerDownloadPermission = _.contains(UserService.myself.role.permissions,'DOWNLOAD_LAYER');
 
     this.fileUploadOptions = {
       acceptFileTypes: /(\.|\/)(kml)$/i,

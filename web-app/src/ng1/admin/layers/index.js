@@ -5,6 +5,7 @@ import adminLayerEdit from './layer.edit.component';
 import adminLayerPreview from './layer.preview.component';
 import adminLayerDelete from './layer.delete.component';
 import adminLayerWmsEdit from './layer.wms.edit.component';
+import adminLayerDownload from './layer.download.component';
 
 angular.module('mage')
   .component('adminLayer', adminLayer)
@@ -12,4 +13,5 @@ angular.module('mage')
   .component('adminLayerEdit', adminLayerEdit)
   .component('adminLayerPreview', adminLayerPreview)
   .component('adminLayerDelete', adminLayerDelete)
-  .component('adminLayerWmsEdit',adminLayerWmsEdit);
+  .component('adminLayerWmsEdit', adminLayerWmsEdit)
+  .component('adminLayerDownload', adminLayerDownload);
