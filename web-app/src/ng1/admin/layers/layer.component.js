@@ -37,10 +37,6 @@ class AdminLayerController {
       UserService.myself.role.permissions,
       'DELETE_LAYER'
     );
-    this.hasLayerDownloadPermission = _.contains(
-      UserService.myself.role.permissions,
-      'DOWNLOAD_LAYER'
-    );
 
     this.fileUploadOptions = {
       acceptFileTypes: /(\.|\/)(kml)$/i,
