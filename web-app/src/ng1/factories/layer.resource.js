@@ -77,5 +77,11 @@ function Layer($resource) {
     }
   };
 
+  Layer.downloadLayer = function (eventId, layerId) {
+    const url = `/api/events/${eventId}/layers/${layerId}`;
+    return $resource(url).get({ responseType: 'blob' }).$promise;
+  };
+
+
   return Layer;
 }

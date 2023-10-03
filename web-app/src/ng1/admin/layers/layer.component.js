@@ -171,8 +171,22 @@ class AdminLayerController {
   }
 
   downloadLayer() {
-    // WIP - placeholder
-    this.$state.go('admin.layerEdit', { layerId: layer.id });
+    this.Layer.downloadLayer(this.$stateParams.eventId, this.layer.id)
+      .then((response) => {
+        const blob = new Blob([response.data], { type: response.data.type });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        // Use a structured naming convention for the filename
+        a.download = `Layer-${this.layer.id}-${new Date().toISOString()}.ext`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((err) => {
+        console.error('Error downloading the layer', err);
+      });
   }
 
   addUploadFile() {
