@@ -171,15 +171,18 @@ class AdminLayerController {
   }
 
   downloadLayer() {
-    this.Layer.downloadLayer(this.$stateParams.eventId, this.layer.id)
-      .then((response) => {
-        const blob = new Blob([response.data], { type: response.data.type });
+    this.Layer.download({ layerId: this.layer.id })
+      .$promise.then((response) => {
+        const blob = new Blob([response], { type: response.type });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        // Use a structured naming convention for the filename
-        a.download = `Layer-${this.layer.id}-${new Date().toISOString()}.ext`;
+
+        // Dynamically generating the filename
+        const currentDate = new Date().toISOString().slice(0, 10);
+        a.download = `layer-${this.layer.id}-${currentDate}.ext`; // Adjust extension as needed
+
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
