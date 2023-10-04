@@ -4,6 +4,7 @@ import { PageOf, PagingParameters } from '@ngageoint/mage.web-core-lib/paging'
 import { Observable, of } from 'rxjs'
 import { tap } from 'rxjs/operators';
 import { User } from './user.model'
+import { userSearchObservable } from './userSearchHelper'
 
 export const USER_READ_BASE_URL = '/api/next-users'
 
@@ -12,41 +13,24 @@ type SearchQueryParams = {
   page: string;
   term?: string;
   total?: 'true' | 'false';
-  activeOnly?: 'true' | 'false';
-  enabledOnly?: 'true' | 'false';
+  active?: 'true' | 'false';
+  enabled?: 'true' | 'false';
 };
 
 const reqKeys: { [SearchParamKey in keyof UserSearchParams]: string } = {
   term: 'term',
   pageSize: 'page_size',
   pageIndex: 'page',
-  includeTotalCount: 'total',
+  // includeTotalCount: 'total',
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserReadService {
-  private lastSearchParams: UserSearchParams | null = null;
-  private lastSearchResult: PageOf<UserSearchResult> | null = null;
-
   constructor(private http: HttpClient) {}
 
-  search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
-    // If search term is empty and the last search had a term, clear the search
-    if (!which.term && this.lastSearchParams?.term) {
-      this.clearSearch();
-    }
-
-    // Check if search params are the same as the last search
-    if (
-      this.lastSearchParams &&
-      JSON.stringify(this.lastSearchParams) === JSON.stringify(which)
-    ) {
-      // Return cached result
-      return of(this.lastSearchResult);
-    }
-
+  private searchRaw(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
     const queryParams: SearchQueryParams = {
       page_size: String(which.pageSize),
       page: String(which.pageIndex)
@@ -56,39 +40,29 @@ export class UserReadService {
       queryParams.term = which.term;
     }
 
-    // Add new filter queries
-    if (which.activeOnly) {
-      queryParams.activeOnly = 'true';
+    if (which.active !== undefined) {
+      queryParams.active = which.active ? 'true' : 'false';
     }
-    if (which.enabledOnly) {
-      queryParams.enabledOnly = 'true';
+    if (which.enabled !== undefined) {
+      queryParams.enabled = which.enabled ? 'true' : 'false';
     }
 
-    return this.http
-      .get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
-        params: queryParams
-      })
-      .pipe(
-        tap((result) => {
-          // Cache the search params and result for next time
-          this.lastSearchParams = which;
-          this.lastSearchResult = result;
-        })
-      );
+    return this.http.get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
+      params: queryParams
+    });
   }
 
-  // Method to clear cached search results and parameters
-  clearSearch(): void {
-    this.lastSearchParams = null;
-    this.lastSearchResult = null;
+  search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
+    return userSearchObservable(which, this);
   }
 }
 
-
-export interface UserSearchParams extends PagingParameters {
-  term?: string | null | undefined;
-  activeOnly?: boolean;
-  enabledOnly?: boolean;
+export interface UserSearchParams {
+  term?: string;
+  pageSize: number;
+  pageIndex: number;
+  active?: boolean;
+  enabled?: boolean;
 }
 
 export type UserSearchResult = Pick<User, 'id' | 'username' | 'displayName' | 'email' | 'active' | 'enabled'> & {
