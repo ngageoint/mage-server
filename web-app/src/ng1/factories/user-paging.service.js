@@ -1,6 +1,6 @@
 module.exports = UserPagingService;
 
-UserPagingService.$inject = ['UserService', '$q'];
+UserPagingService.$inject = ['UserService', '$q', 'UserReadService'];
 
 function UserPagingService(UserService, $q) {
 
@@ -121,45 +121,40 @@ function UserPagingService(UserService, $q) {
   }
 
   function search(data, userSearch) {
-
-    if (data.pageInfo == null || data.pageInfo.items == null) {
+    // Basic validation
+    if (!data.pageInfo || !data.pageInfo.items) {
       return $q.resolve([]);
     }
 
-    const previousSearch = data.searchFilter;
+    // Map to UserSearchParams
+    const params = {
+      pageSize: data.pageInfo.pageSize,
+      pageIndex: data.pageInfo.pageIndex,
+      term: userSearch || null
+    };
 
-    let promise = null;
-
-    if (previousSearch == '' && userSearch == '') {
-      //Not performing a seach
-      promise = $q.resolve(data.pageInfo.items);
-    } else if (previousSearch != '' && userSearch == '') {
-      //Clearing out the search
-      data.searchFilter = '';
-      delete data.userFilter['or'];
-
-      promise = UserService.getAllUsers(data.userFilter).then(pageInfo => {
-        data.pageInfo = pageInfo;
-        return $q.resolve(data.pageInfo.items);
-      });
-    } else if (previousSearch == userSearch) {
-      //Search is being performed, no need to keep searching the same info over and over
-      promise = $q.resolve(data.pageInfo.items);
-    } else {
-      //Perform the server side searching
-      data.searchFilter = userSearch;
-
-      const filter = data.userFilter;
-      filter.or = {
-        displayName: '.*' + userSearch + '.*',
-        email: '.*' + userSearch + '.*'
-      };
-      promise = UserService.getAllUsers(filter).then(pageInfo => {
-        data.pageInfo = pageInfo;
-        return $q.resolve(data.pageInfo.items)
-      });
+    // If there's no change in search, return cached items
+    if (data.searchFilter === userSearch) {
+      return $q.resolve(data.pageInfo.items);
     }
 
-    return promise;
+    // Update the current search term
+    data.searchFilter = userSearch;
+
+    // Request via UserReadService
+    return UserReadService.search(params)
+      .toPromise()
+      .then((response) => {
+        data.pageInfo = {
+          pageSize: response.pageSize,
+          pageIndex: response.pageIndex,
+          totalCount: response.totalCount,
+          next: response.next,
+          prev: response.prev,
+          items: response.items
+        };
+        return data.pageInfo.items;
+      });
   }
+
 }
