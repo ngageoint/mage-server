@@ -22,7 +22,7 @@ export function userSearchObservable(
     return of(lastSearchResult!);
   }
 
-  return userReadService.search(which).pipe(
+  return userReadService.baseSearch(which).pipe(
     tap((result) => {
       lastSearchParams = which;
       lastSearchResult = result;
@@ -30,7 +30,3 @@ export function userSearchObservable(
   );
 }
 
-export function clearSearchCache(): void {
-  lastSearchParams = null;
-  lastSearchResult = null;
-}

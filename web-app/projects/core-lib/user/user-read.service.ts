@@ -30,7 +30,7 @@ const reqKeys: { [SearchParamKey in keyof UserSearchParams]: string } = {
 export class UserReadService {
   constructor(private http: HttpClient) {}
 
-  private searchRaw(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
+  baseSearch(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
     const queryParams: SearchQueryParams = {
       page_size: String(which.pageSize),
       page: String(which.pageIndex)
@@ -47,16 +47,18 @@ export class UserReadService {
       queryParams.enabled = which.enabled ? 'true' : 'false';
     }
 
-    return this.http.get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
-      params: queryParams
-    });
+    return this.http.get<PageOf<UserSearchResult>>(
+      `${USER_READ_BASE_URL}/search`,
+      {
+        params: queryParams
+      }
+    );
   }
 
   search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
     return userSearchObservable(which, this);
   }
 }
-
 export interface UserSearchParams {
   term?: string;
   pageSize: number;
