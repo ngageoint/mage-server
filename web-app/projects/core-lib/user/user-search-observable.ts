@@ -16,18 +16,22 @@ export function userSearchObservable(
     return of(cachedResults.get(cacheKey)!);
   }
 
-  const queryParams = {
+  const queryParams: any = {
     page_size: String(which.pageSize),
-    page: String(which.pageIndex),
-    term: which.term,
-    active: which.active ? 'true' : 'false',
-    enabled: which.enabled ? 'true' : 'false',
-    total: which.includeTotalCount ? 'true' : 'false'
+    page: String(which.pageIndex)
   };
+
+  if (which.term) queryParams.term = which.term;
+  if (which.active !== undefined)
+    queryParams.active = which.active ? 'true' : 'false';
+  if (which.enabled !== undefined)
+    queryParams.enabled = which.enabled ? 'true' : 'false';
+  if (which.includeTotalCount !== undefined)
+    queryParams.total = which.includeTotalCount ? 'true' : 'false';
 
   return http
     .get<PageOf<UserSearchResult>>(`${baseUrl}/search`, {
-      params: queryParams as any
+      params: queryParams
     })
     .pipe(
       map((result) => result as PageOf<UserSearchResult>),
@@ -36,3 +40,4 @@ export function userSearchObservable(
       })
     );
 }
+
