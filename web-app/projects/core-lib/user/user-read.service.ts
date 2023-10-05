@@ -6,16 +6,6 @@ import { User } from './user.model';
 import { userSearchObservable } from './user-search-observable';
 
 export const USER_READ_BASE_URL = '/api/next-users';
-
-type SearchQueryParams = {
-  page_size: string;
-  page: string;
-  term?: string;
-  total?: 'true' | 'false';
-  active?: 'true' | 'false';
-  enabled?: 'true' | 'false';
-};
-
 @Injectable({
   providedIn: 'root'
 })
