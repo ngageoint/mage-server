@@ -20,7 +20,7 @@
             <button class="btn btn-default pull-right" ng-click="$ctrl.editLayer($ctrl.layer)"><i class="fa fa-edit"></i> Edit</button>
           </h2>
           <h2>
-            <button class="btn btn-default pull-right" ng-click="$ctrl.downloadLayer()"><i class="fa fa-download"></i> Download</button>
+            <button ng-if="layer.isFileBased" (click)="downloadLayer()">Download</button>
           </h2>
         </div>
       </div>

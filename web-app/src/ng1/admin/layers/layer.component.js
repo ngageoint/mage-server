@@ -57,6 +57,7 @@ class AdminLayerController {
   $onInit() {
     this.Layer.get({ id: this.$stateParams.layerId }, (layer) => {
       this.layer = layer;
+      this.layer.isFileBased = !['WMS', 'XYZ'].includes(this.layer.type);
 
       if (this.layer.state !== 'available') {
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 1000);
@@ -172,24 +173,47 @@ class AdminLayerController {
 
   downloadLayer() {
     this.Layer.download({ layerId: this.layer.id })
-      .$promise.then((response) => {
-        const blob = new Blob([response], { type: response.type });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
+      .$promise.then(this.handleLayerDownloadResponse.bind(this))
+      .catch(this.handleLayerDownloadError.bind(this));
+  }
 
-        // Dynamically generating the filename
-        const currentDate = new Date().toISOString().slice(0, 10);
-        a.download = `layer-${this.layer.id}-${currentDate}.ext`; // Adjust extension as needed
+  handleLayerDownloadResponse(response) {
+    if (response.type === 'application/json') {
+      this.handleJSONDownloadError(response);
+      return;
+    }
 
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-      })
-      .catch((err) => {
-        console.error('Error downloading the layer', err);
-      });
+    this.triggerFileDownload(response);
+  }
+
+  handleLayerDownloadError(err) {
+    console.error('Error downloading the layer', err);
+  }
+
+  handleJSONDownloadError(response) {
+    response.text().then((text) => {
+      const errorObj = JSON.parse(text);
+      console.error(
+        'Error downloading the layer',
+        errorObj.message || errorObj
+      );
+    });
+  }
+
+  triggerFileDownload(response) {
+    const blob = new Blob([response], { type: response.type });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const fileExtension = this.layer.fileType || 'ext';
+    a.download = `layer-${this.layer.id}-${currentDate}.${fileExtension}`;
+
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   addUploadFile() {
