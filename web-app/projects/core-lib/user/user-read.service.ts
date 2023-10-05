@@ -4,7 +4,7 @@ import { PageOf, PagingParameters } from '@ngageoint/mage.web-core-lib/paging'
 import { Observable, of } from 'rxjs'
 import { tap } from 'rxjs/operators';
 import { User } from './user.model'
-import { userSearchObservable } from './userSearchHelper'
+import { userSearchObservable } from './user-search-observable'
 
 export const USER_READ_BASE_URL = '/api/next-users'
 
@@ -28,9 +28,20 @@ const reqKeys: { [SearchParamKey in keyof UserSearchParams]: string } = {
   providedIn: 'root'
 })
 export class UserReadService {
+  private lastSearchParams: UserSearchParams | null = null;
+  private lastSearchResult: PageOf<UserSearchResult> | null = null;
+
   constructor(private http: HttpClient) {}
 
-  baseSearch(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
+  search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
+    // Check if the search parameters are the same as the last search
+    if (
+      this.lastSearchParams &&
+      JSON.stringify(this.lastSearchParams) === JSON.stringify(which)
+    ) {
+      return of(this.lastSearchResult!);
+    }
+
     const queryParams: SearchQueryParams = {
       page_size: String(which.pageSize),
       page: String(which.pageIndex)
@@ -43,27 +54,24 @@ export class UserReadService {
     if (which.active !== undefined) {
       queryParams.active = which.active ? 'true' : 'false';
     }
-
     if (which.enabled !== undefined) {
       queryParams.enabled = which.enabled ? 'true' : 'false';
     }
 
-    if (which.includeTotalCount) {
-      queryParams[reqKeys.includeTotalCount] = 'true'; // Updated this line to use the mapping
-    }
-
-    return this.http.get<PageOf<UserSearchResult>>(
-      `${USER_READ_BASE_URL}/search`,
-      {
+    return this.http
+      .get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
         params: queryParams
-      }
-    );
-  }
-
-  search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
-    return userSearchObservable(which, this);
+      })
+      .pipe(
+        tap((result) => {
+          this.lastSearchParams = which;
+          this.lastSearchResult = result;
+        })
+      );
   }
 }
+
+
 export interface UserSearchParams {
   term?: string;
   pageSize: number;
