@@ -21,7 +21,7 @@ const reqKeys: { [SearchParamKey in keyof UserSearchParams]: string } = {
   term: 'term',
   pageSize: 'page_size',
   pageIndex: 'page',
-  // includeTotalCount: 'total',
+  includeTotalCount: 'total',
 }
 
 @Injectable({
@@ -43,8 +43,13 @@ export class UserReadService {
     if (which.active !== undefined) {
       queryParams.active = which.active ? 'true' : 'false';
     }
+
     if (which.enabled !== undefined) {
       queryParams.enabled = which.enabled ? 'true' : 'false';
+    }
+
+    if (which.includeTotalCount) {
+      queryParams[reqKeys.includeTotalCount] = 'true'; // Updated this line to use the mapping
     }
 
     return this.http.get<PageOf<UserSearchResult>>(
@@ -65,6 +70,7 @@ export interface UserSearchParams {
   pageIndex: number;
   active?: boolean;
   enabled?: boolean;
+  includeTotalCount?: boolean;
 }
 
 export type UserSearchResult = Pick<User, 'id' | 'username' | 'displayName' | 'email' | 'active' | 'enabled'> & {
