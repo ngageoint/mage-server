@@ -232,7 +232,7 @@ async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository,
     }
   }
   if (Object.keys($unset).length > 0) {
-    update.$unset = $unset as mongodb.UpdateQuery<StaticIcon>['$unset']
+    update.$unset = $unset
   }
   update.contentHash = stub.contentHash
   update.contentTimestamp = Date.now()
