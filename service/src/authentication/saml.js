@@ -1,4 +1,4 @@
-const SamlStrategy = require('passport-saml').Strategy
+const SamlStrategy = require('@node-saml/passport-saml').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
