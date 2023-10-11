@@ -239,7 +239,7 @@ export class Observation implements Readonly<ObservationAttrs> {
   }
 
   /**
-   * TODO: This does not currently do anything besides assigning the
+   * TODO: This does not currently do anything besides refreshing the
    * `lastModified` timestamp on the updated observation and calling
    * {@link Observation.evaluate()} with the given update attributes.
    * Eventually this should perform the logic to find the differences and

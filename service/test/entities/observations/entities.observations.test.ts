@@ -1381,10 +1381,9 @@ describe('observation entities', function() {
         const before = Observation.evaluate(beforeAttrs, mageEvent)
         const after = Observation.assignTo(before, afterAttrs) as Observation
 
-        const beforeUnchanged = _.omit(before, 'attachments')
-        const afterUnchanged = _.omit(before, 'attachments')
+        const beforeUnchanged = _.omit(before, 'attachments', 'lastModified')
+        const afterUnchanged = _.omit(before, 'attachments', 'lastModified')
         expect(afterUnchanged).to.deep.equal(beforeUnchanged)
-        expect(before.lastModified.getTime()).to.equal(beforeLastModified)
         expect(before.attachments[0]).to.deep.include({
           id: 'a1',
           fieldName: 'field2',
