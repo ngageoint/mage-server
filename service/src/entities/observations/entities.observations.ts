@@ -603,6 +603,10 @@ export function validationResultMessage(result: ObservationValidationResult): st
   return errList.join('\n')
 }
 
+export enum ObservationUpdateErrorReason {
+  EventId = 'event_id'
+}
+
 export class ObservationUpdateError extends Error {
 
   static eventIdMismatch(expected: MageEventId, actual: MageEventId | undefined): ObservationUpdateError {
@@ -613,10 +617,6 @@ export class ObservationUpdateError extends Error {
   constructor(readonly reason: ObservationUpdateErrorReason, message: string) {
     super(message)
   }
-}
-
-export enum ObservationUpdateErrorReason {
-  EventId = 'event_id'
 }
 
 export function formEntryForId(formEntryId: FormEntryId, observation: ObservationAttrs): FormEntry | null {
