@@ -3,7 +3,7 @@ module.exports = function(app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , {defaultHandler: upload} = require('../upload')
-    , DOMParser = require('xmldom').DOMParser
+    , DOMParser = require('@xmldom/xmldom').DOMParser
     , toGeoJson = require('../utilities/togeojson');
 
   const passport = security.authentication.passport;
