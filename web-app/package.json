@@ -91,7 +91,6 @@
     "leaflet-editable": "1.2.0",
     "leaflet-groupedlayercontrol": "git+https://github.com/newmanw/leaflet-groupedlayercontrol.git#master",
     "leaflet.markercluster": "1.4.1",
-    "leaflet.vectorgrid": "git+https://github.com/newmanw/Leaflet.VectorGrid.git",
     "lodash": "^4.17.20",
     "material-components-web": "3.2.0",
     "mgrs": "1.0.0",
