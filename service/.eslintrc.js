@@ -1,6 +1,9 @@
 
 module.exports =  {
   root: true,
+  env: {
+    node: true
+  },
   extends:  [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',  // Uses the recommended rules from the @typescript-eslint/eslint-plugin
@@ -16,7 +19,6 @@ module.exports =  {
   ignorePatterns: [ 'test/', 'lib/', 'test-lib/', 'node_modules/', '.eslintrc.js' ],
   rules: {
     "camelcase": "off",
-    "@typescript-eslint/camelcase": ["error", { "properties": "never" }],
     // disable the rule for all files
     "@typescript-eslint/explicit-function-return-type": "off",
   },
