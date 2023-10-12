@@ -21,7 +21,9 @@ module.exports = function(app, security) {
       if (err) return next(err);
 
       const kml = new DOMParser({
-        errorHandler: () => { /* ignore */ }
+        errorHandler: (level, message) => {
+          console.log('kml parsing', level, req.file.filename, message)
+        }
       }).parseFromString(data);
 
       if (!kml || kml.documentElement.nodeName !== 'kml') {
