@@ -33,7 +33,6 @@
         "geojson": "^0.5.0",
         "geojson-validation": "^1.0.2",
         "gm": "1.23.1",
-        "jose": "0.3.2",
         "json2csv": "4.5.1",
         "jsonwebtoken": "^9.0.2",
         "lodash": "^4.17.21",
@@ -2241,21 +2240,6 @@
       "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.2.3.tgz",
       "integrity": "sha1-2sh4dxPJlmhJ/IGAd36+nB3fO4Y="
     },
-    "node_modules/asn1.js": {
-      "version": "2.2.1",
-      "resolved": "https://registry.npmjs.org/asn1.js/-/asn1.js-2.2.1.tgz",
-      "integrity": "sha1-yLpN1o6EQxKIEmIwyyBFvfqfv+E=",
-      "dependencies": {
-        "bn.js": "^2.0.0",
-        "inherits": "^2.0.1",
-        "minimalistic-assert": "^1.0.0"
-      }
-    },
-    "node_modules/asn1.js/node_modules/bn.js": {
-      "version": "2.2.0",
-      "resolved": "https://registry.npmjs.org/bn.js/-/bn.js-2.2.0.tgz",
-      "integrity": "sha1-EhYrwq5x/EClYmwzQ486h1zTdiU="
-    },
     "node_modules/assert": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/assert/-/assert-2.0.0.tgz",
@@ -2486,11 +2470,6 @@
       "version": "3.7.2",
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.7.2.tgz",
       "integrity": "sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg=="
-    },
-    "node_modules/bn.js": {
-      "version": "3.3.0",
-      "resolved": "https://registry.npmjs.org/bn.js/-/bn.js-3.3.0.tgz",
-      "integrity": "sha1-ETjld4if3Je72rUYRPIZDfwK49c="
     },
     "node_modules/body-parser": {
       "version": "1.19.2",
@@ -6096,16 +6075,6 @@
       "version": "2.4.6",
       "resolved": "https://registry.npmjs.org/jdataview/-/jdataview-2.4.6.tgz",
       "integrity": "sha1-Qapcdfl5TxFgWIPSm9qvCZizVSs="
-    },
-    "node_modules/jose": {
-      "version": "0.3.2",
-      "resolved": "https://registry.npmjs.org/jose/-/jose-0.3.2.tgz",
-      "integrity": "sha1-aWmN/LbnKMhDmEt+naRZSn+NssM=",
-      "deprecated": "this version is no longer supported",
-      "dependencies": {
-        "asn1.js": "^2.2.0",
-        "bn.js": "^3.1.2"
-      }
     },
     "node_modules/js-stringify": {
       "version": "1.0.2",
@@ -14011,23 +13980,6 @@
       "resolved": "https://registry.npmjs.org/asn1/-/asn1-0.2.3.tgz",
       "integrity": "sha1-2sh4dxPJlmhJ/IGAd36+nB3fO4Y="
     },
-    "asn1.js": {
-      "version": "2.2.1",
-      "resolved": "https://registry.npmjs.org/asn1.js/-/asn1.js-2.2.1.tgz",
-      "integrity": "sha1-yLpN1o6EQxKIEmIwyyBFvfqfv+E=",
-      "requires": {
-        "bn.js": "^2.0.0",
-        "inherits": "^2.0.1",
-        "minimalistic-assert": "^1.0.0"
-      },
-      "dependencies": {
-        "bn.js": {
-          "version": "2.2.0",
-          "resolved": "https://registry.npmjs.org/bn.js/-/bn.js-2.2.0.tgz",
-          "integrity": "sha1-EhYrwq5x/EClYmwzQ486h1zTdiU="
-        }
-      }
-    },
     "assert": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/assert/-/assert-2.0.0.tgz",
@@ -14217,11 +14169,6 @@
       "version": "3.7.2",
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.7.2.tgz",
       "integrity": "sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg=="
-    },
-    "bn.js": {
-      "version": "3.3.0",
-      "resolved": "https://registry.npmjs.org/bn.js/-/bn.js-3.3.0.tgz",
-      "integrity": "sha1-ETjld4if3Je72rUYRPIZDfwK49c="
     },
     "body-parser": {
       "version": "1.19.2",
@@ -16980,15 +16927,6 @@
       "version": "2.4.6",
       "resolved": "https://registry.npmjs.org/jdataview/-/jdataview-2.4.6.tgz",
       "integrity": "sha1-Qapcdfl5TxFgWIPSm9qvCZizVSs="
-    },
-    "jose": {
-      "version": "0.3.2",
-      "resolved": "https://registry.npmjs.org/jose/-/jose-0.3.2.tgz",
-      "integrity": "sha1-aWmN/LbnKMhDmEt+naRZSn+NssM=",
-      "requires": {
-        "asn1.js": "^2.2.0",
-        "bn.js": "^3.1.2"
-      }
     },
     "js-stringify": {
       "version": "1.0.2",

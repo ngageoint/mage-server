@@ -53,7 +53,6 @@
     "geojson": "^0.5.0",
     "geojson-validation": "^1.0.2",
     "gm": "1.23.1",
-    "jose": "0.3.2",
     "json2csv": "4.5.1",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
