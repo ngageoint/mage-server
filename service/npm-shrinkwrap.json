@@ -32,7 +32,6 @@
         "fs-extra": "4.0.3",
         "geojson": "^0.5.0",
         "geojson-validation": "^1.0.2",
-        "geojson-vt": "3.1.3",
         "gm": "1.23.1",
         "jose": "0.3.2",
         "json2csv": "4.5.1",
@@ -4877,11 +4876,6 @@
       "bin": {
         "gjv": "bin/gjv"
       }
-    },
-    "node_modules/geojson-vt": {
-      "version": "3.1.3",
-      "resolved": "https://registry.npmjs.org/geojson-vt/-/geojson-vt-3.1.3.tgz",
-      "integrity": "sha512-oWaMsd08gUa1c4B4s2Z3LIX+oUIe8G/i5vp9JLjXlROuveMUpEwT49WDGHp5Gs4RVaJ0B51h1QTcj/dvtT+w9A=="
     },
     "node_modules/get-caller-file": {
       "version": "2.0.5",
@@ -16089,11 +16083,6 @@
       "version": "1.0.2",
       "resolved": "https://registry.npmjs.org/geojson-validation/-/geojson-validation-1.0.2.tgz",
       "integrity": "sha512-K5jrJ4wFvORn2pRKeg181LL0QPYuEKn2KHPvfH1m2QtFlAXFLKdseqt0XwBM3ELOY7kNM1fglRQ6ZwUQZ5S00A=="
-    },
-    "geojson-vt": {
-      "version": "3.1.3",
-      "resolved": "https://registry.npmjs.org/geojson-vt/-/geojson-vt-3.1.3.tgz",
-      "integrity": "sha512-oWaMsd08gUa1c4B4s2Z3LIX+oUIe8G/i5vp9JLjXlROuveMUpEwT49WDGHp5Gs4RVaJ0B51h1QTcj/dvtT+w9A=="
     },
     "get-caller-file": {
       "version": "2.0.5",
