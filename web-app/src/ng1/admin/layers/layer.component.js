@@ -57,7 +57,6 @@ class AdminLayerController {
   $onInit() {
     this.Layer.get({ id: this.$stateParams.layerId }, (layer) => {
       this.layer = layer;
-      this.layer.isFileBased = !['WMS', 'XYZ'].includes(this.layer.type);
 
       if (this.layer.state !== 'available') {
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 1000);
@@ -95,6 +94,10 @@ class AdminLayerController {
         this.nonLayerEvents = nonLayerEvents.value();
       });
     });
+  }
+
+  isLayerFileBased() {
+    return this.layer && !!this.layer.file;
   }
 
   $postLink() {
@@ -178,12 +181,22 @@ class AdminLayerController {
   }
 
   handleLayerDownloadResponse(response) {
-    if (response.type === 'application/json') {
+    if (response && response.filePath) {
+      const desiredFileName = this.layer.fileName;
+      this.triggerFileDownload(response.filePath, desiredFileName);
+    } else {
       this.handleJSONDownloadError(response);
-      return;
     }
+  }
 
-    this.triggerFileDownload(response);
+  triggerFileDownload(filePath, fileName) {
+    const a = document.createElement('a');
+    a.href = filePath;
+    a.download = fileName;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   handleLayerDownloadError(err) {
@@ -191,13 +204,11 @@ class AdminLayerController {
   }
 
   handleJSONDownloadError(response) {
-    response.text().then((text) => {
-      const errorObj = JSON.parse(text);
-      console.error(
-        'Error downloading the layer',
-        errorObj.message || errorObj
-      );
-    });
+    if (response && response.message) {
+      console.error('Error downloading the layer', response.message);
+    } else {
+      console.error('Error downloading the layer', response);
+    }
   }
 
   triggerFileDownload(response) {

@@ -59,7 +59,7 @@ function Layer($resource) {
       download: {
         method: 'GET',
         url: '/api/layers/:layerId',
-        responseType: 'blob'
+        responseType: 'json'
       },
     }
   );
