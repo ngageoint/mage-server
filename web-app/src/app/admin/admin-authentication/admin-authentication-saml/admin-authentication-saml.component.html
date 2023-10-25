@@ -2,7 +2,7 @@
   <div class="mat-subheading-2">Identity Provider (IdP)</div>
   <mat-form-field appearance="outline">
     <mat-label>Entry Point</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.entryPoint"
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.entryPoint"
       (click)="setDirty(true)">
     <mat-hint align="end">
       Location of the IdP. This can be the location of the single sign-on identity provider.
@@ -11,7 +11,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Issuer</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.issuer"
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.issuer"
       (click)="setDirty(true)">
     <mat-hint align="end">
       This is given to the IdP.
@@ -69,7 +69,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>IdP Issuer</mat-label>
-    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.options.idpIssuer"
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.idpIssuer"
       (click)="setDirty(true)">
     <mat-hint align="end">
       The IdP issuer will be validated for incoming Logout Requests/Responses.
@@ -91,7 +91,7 @@
   <mat-form-field appearance="outline">
     <mat-label>Request ID Expiration Period</mat-label>
     <input matInput type="number" [readonly]="!editable"
-      [(ngModel)]="strategy.settings.options.requestIdExpirationPeriodMs" (click)="setDirty(true)">
+      [(ngModel)]="strategy.settings.requestIdExpirationPeriodMs" (click)="setDirty(true)">
     <div class="suffix-spacing" matSuffix>Milliseconds</div>
     <mat-hint align="end">
       Defines the expiration time when a Request ID generated for a SAML request will not be valid if seen in a SAML
@@ -103,7 +103,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Logout URL</mat-label>
-    <input matInput type="url" [readonly]="!editable" [(ngModel)]="strategy.settings.options.logoutUrl"
+    <input matInput type="url" [readonly]="!editable" [(ngModel)]="strategy.settings.logoutUrl"
       (click)="setDirty(true)">
     <mat-hint align="end">
       Base address to call with logout requests. Default is Entry Point.
