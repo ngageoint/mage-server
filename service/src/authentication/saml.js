@@ -15,11 +15,8 @@ function configure(strategy) {
   const options = {
     path: `/auth/${strategy.name}/callback`,
     entryPoint: strategy.settings.entryPoint,
+    cert: strategy.settings.cert,
     issuer: strategy.settings.issuer
-  }
-
-  if (strategy.settings.cert) {
-    options.cert = strategy.settings.cert;
   }
   if (strategy.settings.privateCert) {
     options.privateCert = strategy.settings.privateCert;
