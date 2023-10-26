@@ -18,8 +18,8 @@ function configure(strategy) {
     cert: strategy.settings.cert,
     issuer: strategy.settings.issuer
   }
-  if (strategy.settings.privateCert) {
-    options.privateCert = strategy.settings.privateCert;
+  if (strategy.settings.privateKey) {
+    options.privateKey = strategy.settings.privateKey;
   }
   if (strategy.settings.decryptionPvk) {
     options.decryptionPvk = strategy.settings.decryptionPvk;

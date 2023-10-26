@@ -32,7 +32,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Private Key</mat-label>
-    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.privateCert"
+    <textarea matInput [readonly]="!editable" [(ngModel)]="strategy.settings.privateKey"
       (click)="setDirty(true)"></textarea>
     <mat-hint align="end">
       Private key used to sign requests. Supports well formatted PEM or single-line.

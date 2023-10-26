@@ -27,7 +27,7 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
     {value: 'sha256', viewValue: 'SHA-256'},
     {value: 'sha512', viewValue: 'SHA-512'}
   ];
- 
+
   racs: RACComparison[] = [
     {value: 'exact', viewValue: 'Exact'},
     {value: 'minimum', viewValue: 'Minimum'},
@@ -42,10 +42,6 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
 
     if (!this.strategy.settings.profile) {
       this.strategy.settings.profile = {};
-    }
-
-    if (!this.strategy.settings.options) {
-      this.strategy.settings.options = {};
     }
   }
 
