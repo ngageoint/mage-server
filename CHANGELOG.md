@@ -6,6 +6,21 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ##### Features
 
+## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10)
+#### Database Migrations
+* [SAML settings](./service/src/migrations/030-saml-settings.js)
+  This migration modifies documents in the `authenticationconfigurations` collection
+  by moving all entries from `settings.options` into `settings` and removing
+  the `options` entry.  See the related bug fix below.
+
+#### Features
+
+#### Bug Fixes
+* The web app and service incorrectly used a `settings.options` sub-document on
+  SAML configurations to read and write some entries that should be in the
+  `settings` entry.
+
+
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 #### Features
 * Docker image now installs MAGE packages from NPM registry instead of local tarballs.
