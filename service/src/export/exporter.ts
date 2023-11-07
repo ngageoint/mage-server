@@ -1,41 +1,65 @@
-const Observation = require('../models/observation')
-  , Location = require('../models/location');
+import * as ObservationModelModule from '../models/observation'
+import * as LocationModelModule from '../models/location'
+import { MageEventDocument } from '../models/event'
+import mongoose from 'mongoose'
 
-function Exporter(options) {
-  this._event = options.event;
-  this._filter = options.filter;
+
+export interface ExportOptions {
+  event: MageEventDocument
+  filter: ExportFilter
 }
 
-Exporter.prototype.requestObservations = function (filter, done) {
-  const options = {
-    filter: {
-      states: ['active'],
-      observationStartDate: filter.startDate,
-      observationEndDate: filter.endDate,
-      favorites: filter.favorites,
-      important: filter.important,
-      attachments: filter.attachments
-    },
-    sort: { userId: 1 },
-    stream: true
+export interface ExportFilter {
+  exportObservations?: boolean
+  exportLocations?: boolean
+  startDate?: Date
+  endDate?: Date
+  favorites?: false | { userId: mongoose.Types.ObjectId }
+  important?: boolean
+  attachments?: boolean
+}
+
+export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>
+
+export class Exporter {
+
+  private _event: MageEventDocument
+  private _filter: ExportFilter
+
+  constructor(options: ExportOptions) {
+    this._event = options.event;
+    this._filter = options.filter;
   }
 
-  return Observation.getObservations(this._event, options, done);
-};
+  requestObservations(filter: ExportFilter, done?: (error?: any) => any): ReturnType<typeof ObservationModelModule['getObservations']> {
+    const options = {
+      filter: {
+        states: ['active'],
+        observationStartDate: filter.startDate,
+        observationEndDate: filter.endDate,
+        favorites: filter.favorites,
+        important: filter.important,
+        attachments: filter.attachments
+      },
+      sort: { userId: 1 },
+      stream: true
+    }
+    return ObservationModelModule.getObservations(this._event, options, done);
+  }
 
-Exporter.prototype.requestLocations = function (options, done) {
-  const filter = {
-    eventId: this._event._id
-  };
-
-  if (options.userId) filter.userId = options.userId;
-  if (options.lastLocationId) filter.lastLocationId = options.lastLocationId;
-  if (options.startDate) filter.startDate = options.startDate.toDate();
-  if (options.endDate) filter.endDate = options.endDate.toDate();
-
-  const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
-
-  return Location.getLocations({ filter: filter, limit: options.limit, stream: true, sort: sort }, done);
-};
+  requestLocations(options: LocationFetchOptions, done?: (error?: any) => any): ReturnType<typeof LocationModelModule['getLocations']> {
+    const filter = {
+      eventId: this._event._id
+    } as { eventId: number, startDate?: Date, endDate?: Date }
+    if (options.startDate) {
+      filter.startDate = options.startDate
+    }
+    if (options.endDate) {
+      filter.endDate = options.endDate
+    }
+    const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
+    return LocationModelModule.getLocations({ filter, stream: true, sort }, done);
+  }
+}
 
 module.exports = Exporter;

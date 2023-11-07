@@ -7,6 +7,7 @@ var Schema = mongoose.Schema;
 var LocationSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User' },
   eventId: { type: Number, required: false, sparse: true, ref: 'Event' },
+  // TODO: not sure anything references this
   teamIds: [{ type: Schema.Types.ObjectId }],
   type: { type: String, required: true },
   geometry: {

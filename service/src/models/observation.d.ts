@@ -90,4 +90,5 @@ export type ObservationIdDocument = mongoose.Document
 export const ObservationId: mongoose.Model<ObservationIdDocument>
 
 export function observationModel(event: Partial<MageEventDocument> & Pick<MageEventDocument, 'collectionName'>): ObservationModel
+export function getObservations(event: MageEventDocument, options: any, callback?: (err: any | null, ) => any): ReturnType<ObservationModel['find']>
 export function updateObservation(event: MageEventDocument, observationId: ObservationId, update: any, callback: (err: any | null, obseration: ObservationDocument) => any): void
