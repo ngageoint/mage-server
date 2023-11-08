@@ -96,10 +96,6 @@ class AdminLayerController {
     });
   }
 
-  isLayerFileBased() {
-    return this.layer && !!this.layer.file;
-  }
-
   $postLink() {
     this.uploadSnackbar = new snackbar.MDCSnackbar(
       document.querySelector('#upload-snackbar')
@@ -174,28 +170,37 @@ class AdminLayerController {
     });
   }
 
-  downloadLayer() {
-    this.Layer.download({ layerId: this.layer.id })
-      .$promise.then(this.handleLayerDownloadResponse.bind(this))
-      .catch(this.handleLayerDownloadError.bind(this));
+  isLayerFileBased() {
+    return this.layer && !!this.layer.file;
   }
 
-  handleLayerDownloadResponse(response) {
-    if (response && response.filePath) {
-      const desiredFileName = this.layer.fileName;
-      this.triggerFileDownload(response.filePath, desiredFileName);
-    } else {
-      this.handleJSONDownloadError(response);
-    }
+  getAccessToken() {
+    return this.LocalStorageService.getToken();
   }
 
-  triggerFileDownload(filePath, fileName) {
+  constructDownloadURL() {
+    const accessToken = this.getAccessToken();
+    return `/api/layers/${this.layer.id}/file?access_token=${accessToken}`;
+  }
+
+  createDownloadLink() {
+    const downloadURL = this.constructDownloadURL();
+
     const a = document.createElement('a');
-    a.href = filePath;
-    a.download = fileName;
+    a.href = downloadURL;
+    a.download = this.layer.file.name;
     a.style.display = 'none';
+
+    return a;
+  }
+
+  downloadLayer() {
+    const a = this.createDownloadLink();
+
     document.body.appendChild(a);
     a.click();
+
+    // Clean up
     document.body.removeChild(a);
   }
 
@@ -209,22 +214,6 @@ class AdminLayerController {
     } else {
       console.error('Error downloading the layer', response);
     }
-  }
-
-  triggerFileDownload(response) {
-    const blob = new Blob([response], { type: response.type });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-
-    const currentDate = new Date().toISOString().slice(0, 10);
-    const fileExtension = this.layer.fileType || 'ext';
-    a.download = `layer-${this.layer.id}-${currentDate}.${fileExtension}`;
-
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
   }
 
   addUploadFile() {

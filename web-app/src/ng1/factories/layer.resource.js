@@ -58,8 +58,8 @@ function Layer($resource) {
       },
       download: {
         method: 'GET',
-        url: '/api/layers/:layerId',
-        responseType: 'json'
+        url: '/api/layers/:layerId/file',
+        responseType: 'blob'
       },
     }
   );
