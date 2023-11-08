@@ -2,6 +2,7 @@ import * as ObservationModelModule from '../models/observation'
 import * as LocationModelModule from '../models/location'
 import { MageEventDocument } from '../models/event'
 import mongoose from 'mongoose'
+import { UserLocationDocument } from '../models/location'
 
 
 export interface ExportOptions {
@@ -23,18 +24,18 @@ export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>
 
 export class Exporter {
 
-  private _event: MageEventDocument
-  private _filter: ExportFilter
+  protected _event: MageEventDocument
+  protected _filter: ExportFilter
 
   constructor(options: ExportOptions) {
     this._event = options.event;
     this._filter = options.filter;
   }
 
-  requestObservations(filter: ExportFilter, done?: (error?: any) => any): ReturnType<typeof ObservationModelModule['getObservations']> {
-    const options = {
+  requestObservations(filter: ExportFilter): ReturnType<typeof ObservationModelModule['getObservations']> {
+    const options: ObservationModelModule.ObservationReadStreamOptions = {
       filter: {
-        states: ['active'],
+        states: [ 'active' ] as [ 'active' ],
         observationStartDate: filter.startDate,
         observationEndDate: filter.endDate,
         favorites: filter.favorites,
@@ -44,10 +45,10 @@ export class Exporter {
       sort: { userId: 1 },
       stream: true
     }
-    return ObservationModelModule.getObservations(this._event, options, done);
+    return ObservationModelModule.getObservations(this._event, options);
   }
 
-  requestLocations(options: LocationFetchOptions, done?: (error?: any) => any): ReturnType<typeof LocationModelModule['getLocations']> {
+  requestLocations(options: LocationFetchOptions): mongoose.QueryCursor<UserLocationDocument> {
     const filter = {
       eventId: this._event._id
     } as { eventId: number, startDate?: Date, endDate?: Date }
@@ -58,8 +59,6 @@ export class Exporter {
       filter.endDate = options.endDate
     }
     const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
-    return LocationModelModule.getLocations({ filter, stream: true, sort }, done);
+    return LocationModelModule.getLocations({ stream: true, filter, sort });
   }
 }
-
-module.exports = Exporter;

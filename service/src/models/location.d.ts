@@ -32,7 +32,7 @@ export interface UserLocationReadOptions {
   stream?: false | null
 }
 
-export type UserLocationReadStreamOptions = UserLocationReadOptions & {
+export type UserLocationReadStreamOptions = Omit<UserLocationReadOptions, 'stream'> & {
   stream: true
 }
 
