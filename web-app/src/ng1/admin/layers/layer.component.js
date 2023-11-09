@@ -204,18 +204,6 @@ class AdminLayerController {
     document.body.removeChild(a);
   }
 
-  handleLayerDownloadError(err) {
-    console.error('Error downloading the layer', err);
-  }
-
-  handleJSONDownloadError(response) {
-    if (response && response.message) {
-      console.error('Error downloading the layer', response.message);
-    } else {
-      console.error('Error downloading the layer', response);
-    }
-  }
-
   addUploadFile() {
     this.uploads.push({});
   }
