@@ -1,8 +1,8 @@
-import * as ObservationModelModule from '../models/observation'
-import * as LocationModelModule from '../models/location'
-import { MageEventDocument } from '../models/event'
 import mongoose from 'mongoose'
-import { UserLocationDocument } from '../models/location'
+import * as ObservationModelModule from '../models/observation'
+import * as UserLocationModelModule from '../models/location'
+import { MageEventDocument } from '../models/event'
+import { MageEvent } from '../entities/events/entities.events'
 
 
 export interface ExportOptions {
@@ -24,15 +24,17 @@ export type LocationFetchOptions = Pick<ExportFilter, 'startDate' | 'endDate'>
 
 export class Exporter {
 
-  protected _event: MageEventDocument
+  protected eventDoc: MageEventDocument
+  protected _event: MageEvent
   protected _filter: ExportFilter
 
   constructor(options: ExportOptions) {
-    this._event = options.event;
+    this.eventDoc = options.event
+    this._event = new MageEvent(options.event.toJSON())
     this._filter = options.filter;
   }
 
-  requestObservations(filter: ExportFilter): ReturnType<typeof ObservationModelModule['getObservations']> {
+  requestObservations(filter: ExportFilter): mongoose.QueryCursor<ObservationModelModule.ObservationDocument> {
     const options: ObservationModelModule.ObservationReadStreamOptions = {
       filter: {
         states: [ 'active' ] as [ 'active' ],
@@ -45,12 +47,12 @@ export class Exporter {
       sort: { userId: 1 },
       stream: true
     }
-    return ObservationModelModule.getObservations(this._event, options);
+    return ObservationModelModule.getObservations(this.eventDoc, options);
   }
 
-  requestLocations(options: LocationFetchOptions): mongoose.QueryCursor<UserLocationDocument> {
+  requestLocations(options: LocationFetchOptions): mongoose.QueryCursor<UserLocationModelModule.UserLocationDocument> {
     const filter = {
-      eventId: this._event._id
+      eventId: this._event.id
     } as { eventId: number, startDate?: Date, endDate?: Date }
     if (options.startDate) {
       filter.startDate = options.startDate
@@ -58,7 +60,7 @@ export class Exporter {
     if (options.endDate) {
       filter.endDate = options.endDate
     }
-    const sort = { userId: 1, "properties.timestamp": 1, _id: 1 };
-    return LocationModelModule.getLocations({ stream: true, filter, sort });
+    const sort = { userId: 1, 'properties.timestamp': 1, _id: 1 };
+    return UserLocationModelModule.getLocations({ stream: true, filter, sort });
   }
 }
