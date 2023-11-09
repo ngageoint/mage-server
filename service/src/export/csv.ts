@@ -146,11 +146,15 @@ export class Csv extends Exporter {
       ...observation.properties
     } as any
 
-    if (!cache.user || cache.user._id.toString() !== observation.userId.toString()) {
-      cache.user = await User.getUserById(observation.userId);
+    if (!cache.user || cache.user._id.toString() !== observation.userId?.toString()) {
+      if (observation.userId) {
+        cache.user = await User.getUserById(observation.userId!)
+      }
     }
-    if (!cache.device || cache.device._id.toString() !== observation.deviceId.toString()) {
-      cache.device = await Device.getDeviceById(observation.deviceId);
+    if (!cache.device || cache.device._id.toString() !== observation.deviceId?.toString()) {
+      if (observation.deviceId) {
+        cache.device = await Device.getDeviceById(observation.deviceId);
+      }
     }
 
     if (cache.user) {
