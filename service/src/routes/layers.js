@@ -314,6 +314,25 @@ module.exports = function(app, security) {
     }
   );
 
+  // get layer file
+  app.get(
+    '/api/layers/:layerId/file',
+    access.authorize('READ_LAYER_ALL'),
+    function(req, res) {
+      if (!req.layer.file) {
+        return res.status(404).send('Layer does not have a file');
+      }
+      const stream = fs.createReadStream(
+        path.join(environment.layerBaseDirectory, req.layer.file.relativePath)
+      );
+      stream.on('open', () => {
+        res.type(req.layer.file.contentType);
+        res.header('Content-Length', req.layer.file.size);
+        stream.pipe(res);
+      });
+    }
+  );
+
   // get layer
   app.get('/api/layers/:layerId',
     access.authorize('READ_LAYER_ALL'),

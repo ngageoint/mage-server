@@ -12,4 +12,4 @@ angular.module('mage')
   .component('adminLayerEdit', adminLayerEdit)
   .component('adminLayerPreview', adminLayerPreview)
   .component('adminLayerDelete', adminLayerDelete)
-  .component('adminLayerWmsEdit',adminLayerWmsEdit);
+  .component('adminLayerWmsEdit', adminLayerWmsEdit)

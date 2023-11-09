@@ -2,7 +2,17 @@ import _ from 'underscore';
 import { snackbar } from 'material-components-web';
 
 class AdminLayerController {
-  constructor($uibModal, $state, $stateParams, $filter, $timeout, Layer, Event, LocalStorageService, UserService) {
+  constructor(
+    $uibModal,
+    $state,
+    $stateParams,
+    $filter,
+    $timeout,
+    Layer,
+    Event,
+    LocalStorageService,
+    UserService
+  ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$stateParams = $stateParams;
@@ -19,12 +29,22 @@ class AdminLayerController {
     this.eventsPerPage = 10;
     this.status = {};
 
-    this.hasLayerEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
-    this.hasLayerDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
+    this.hasLayerEditPermission = _.contains(
+      UserService.myself.role.permissions,
+      'UPDATE_LAYER'
+    );
+    this.hasLayerDeletePermission = _.contains(
+      UserService.myself.role.permissions,
+      'DELETE_LAYER'
+    );
 
     this.fileUploadOptions = {
       acceptFileTypes: /(\.|\/)(kml)$/i,
-      url: '/api/layers/' + $stateParams.layerId + '/kml?access_token=' + LocalStorageService.getToken(),
+      url:
+        '/api/layers/' +
+        $stateParams.layerId +
+        '/kml?access_token=' +
+        LocalStorageService.getToken()
     };
 
     this.uploads = [{}];
@@ -35,7 +55,7 @@ class AdminLayerController {
   }
 
   $onInit() {
-    this.Layer.get({ id: this.$stateParams.layerId }, layer => {
+    this.Layer.get({ id: this.$stateParams.layerId }, (layer) => {
       this.layer = layer;
 
       if (this.layer.state !== 'available') {
@@ -44,18 +64,20 @@ class AdminLayerController {
 
       this.updateUrlLayers();
 
-      this.Event.query(events => {
+      this.Event.query((events) => {
         this.event = {};
-        this.layerEvents = _.filter(events, event => {
-          return _.some(event.layers, layer => {
+        this.layerEvents = _.filter(events, (event) => {
+          return _.some(event.layers, (layer) => {
             return this.layer.id === layer.id;
           });
         });
 
         let nonLayerEvents = _.chain(events);
-        if (!_.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT')) {
+        if (
+          !_.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT')
+        ) {
           // filter teams based on acl
-          nonLayerEvents = nonLayerEvents.filter(event => {
+          nonLayerEvents = nonLayerEvents.filter((event) => {
             const permissions = event.acl[this.UserService.myself.id]
               ? event.acl[this.UserService.myself.id].permissions
               : [];
@@ -63,8 +85,8 @@ class AdminLayerController {
           });
         }
 
-        nonLayerEvents = nonLayerEvents.reject(event => {
-          return _.some(event.layers, layer => {
+        nonLayerEvents = nonLayerEvents.reject((event) => {
+          return _.some(event.layers, (layer) => {
             return this.layer.id === layer.id;
           });
         });
@@ -75,7 +97,9 @@ class AdminLayerController {
   }
 
   $postLink() {
-    this.uploadSnackbar = new snackbar.MDCSnackbar(document.querySelector('#upload-snackbar'));
+    this.uploadSnackbar = new snackbar.MDCSnackbar(
+      document.querySelector('#upload-snackbar')
+    );
   }
 
   _filterEvents(event) {
@@ -86,12 +110,12 @@ class AdminLayerController {
   updateUrlLayers() {
     const mapping = [];
     if (this.layer.tables) {
-      this.layer.tables.forEach(table => {
+      this.layer.tables.forEach((table) => {
         mapping.push({
           table: table.name,
           url: `/api/layers/${this.layer.id}/${
             table.name
-          }/{z}/{x}/{y}.png?access_token=${this.LocalStorageService.getToken()}`,
+          }/{z}/{x}/{y}.png?access_token=${this.LocalStorageService.getToken()}`
         });
       });
     }
@@ -99,9 +123,9 @@ class AdminLayerController {
   }
 
   addEventToLayer(event) {
-    this.Event.addLayer({ id: event.id }, this.layer, event => {
+    this.Event.addLayer({ id: event.id }, this.layer, (event) => {
       this.layerEvents.push(event);
-      this.nonLayerEvents = _.reject(this.nonLayerEvents, e => {
+      this.nonLayerEvents = _.reject(this.nonLayerEvents, (e) => {
         return e.id === event.id;
       });
 
@@ -112,12 +136,15 @@ class AdminLayerController {
   removeEventFromLayer($event, event) {
     $event.stopPropagation();
 
-    this.Event.removeLayer({ id: event.id, layerId: this.layer.id }, event => {
-      this.layerEvents = _.reject(this.layerEvents, e => {
-        return e.id === event.id;
-      });
-      this.nonLayerEvents.push(event);
-    });
+    this.Event.removeLayer(
+      { id: event.id, layerId: this.layer.id },
+      (event) => {
+        this.layerEvents = _.reject(this.layerEvents, (e) => {
+          return e.id === event.id;
+        });
+        this.nonLayerEvents.push(event);
+      }
+    );
   }
 
   editLayer(layer) {
@@ -133,14 +160,48 @@ class AdminLayerController {
       resolve: {
         layer: () => {
           return this.layer;
-        },
+        }
       },
-      component: 'adminLayerDelete',
+      component: 'adminLayerDelete'
     });
 
     modalInstance.result.then(() => {
       this.$state.go('admin.layers');
     });
+  }
+
+  isLayerFileBased() {
+    return this.layer && !!this.layer.file;
+  }
+
+  getAccessToken() {
+    return this.LocalStorageService.getToken();
+  }
+
+  constructDownloadURL() {
+    const accessToken = this.getAccessToken();
+    return `/api/layers/${this.layer.id}/file?access_token=${accessToken}`;
+  }
+
+  createDownloadLink() {
+    const downloadURL = this.constructDownloadURL();
+
+    const a = document.createElement('a');
+    a.href = downloadURL;
+    a.download = this.layer.file.name;
+    a.style.display = 'none';
+
+    return a;
+  }
+
+  downloadLayer() {
+    const a = this.createDownloadLink();
+
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up
+    document.body.removeChild(a);
   }
 
   addUploadFile() {
@@ -150,7 +211,7 @@ class AdminLayerController {
   confirmUpload() {
     this.$timeout(() => {
       this.uploadConfirmed = true;
-    })
+    });
   }
 
   uploadComplete($event) {
@@ -160,9 +221,9 @@ class AdminLayerController {
       this.status[$event.id] = $event.response.files[0];
 
       const url = new URL(this.layer.url);
-      url.searchParams.set('_dc', new Date().getTime())
+      url.searchParams.set('_dc', new Date().getTime());
       this.layer.url = url.toString();
-    })
+    });
   }
 
   uploadFailed($event) {
@@ -171,7 +232,7 @@ class AdminLayerController {
   }
 
   confirmCreateLayer() {
-    this.Layer.makeAvailable({ id: this.$stateParams.layerId }, layer => {
+    this.Layer.makeAvailable({ id: this.$stateParams.layerId }, (layer) => {
       if (layer.processing) {
         this.layer.processing = layer.processing;
         this.$timeout(this.checkLayerProcessingStatus.bind(this), 1500);
@@ -180,7 +241,7 @@ class AdminLayerController {
   }
 
   checkLayerProcessingStatus() {
-    this.Layer.get({ id: this.$stateParams.layerId }, layer => {
+    this.Layer.get({ id: this.$stateParams.layerId }, (layer) => {
       this.layer = layer;
       this.updateUrlLayers();
       if (this.layer.state !== 'available') {
