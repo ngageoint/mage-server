@@ -19,4 +19,14 @@ export interface UserLocation extends Feature<Point, UserLocationProperties> {
 export interface UserLocationProperties {
   timestamp: Date
   deviceId?: string | null
+  /**
+   * Provider is the source that generated the location, e.g., `gps` for a
+   * mobile phone's GPS.  This is device-dependent.
+   */
+  provider?: string
+  altitude?: number
+  accuracy?: number
+  speed?: number,
+  bearing?: number,
+  battery_level?: number,
 }
