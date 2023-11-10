@@ -1,15 +1,20 @@
 'use strict';
 
-const moment = require('moment')
-  , path = require('path')
-  , mgrs = require('mgrs')
-  , { default: turfCentroid } = require('@turf/centroid')
-  , { fragment } = require('xmlbuilder2');
+const mgrs = require('mgrs')
+import moment  from 'moment'
+import path from 'path'
+import turfCentroid from '@turf/centroid'
+import { fragment }  from 'xmlbuilder2'
+import { UserDocument } from '../models/user'
+import { FormDocument, FormFieldDocument, MageEventDocument } from '../models/event'
+import { Form } from '../entities/events/entities.events.forms'
+import { ObservationDocument } from '../models/observation'
+import { UserLocationDocument } from '../models/location'
+import { Feature } from 'geojson'
 
-function KmlWriter() { }
-module.exports = new KmlWriter();
 
-function hexToParts(hex) {
+
+function hexToParts(hex: string): { r: string, g: string, b: string } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
     r: result[1],
@@ -18,12 +23,12 @@ function hexToParts(hex) {
   } : null;
 }
 
-function convert(integer) {
+function convert(integer: any): string {
   const str = Number(integer).toString(16);
   return str.length === 1 ? "0" + str : str;
 }
 
-KmlWriter.prototype.generateKMLDocument = function () {
+export function generateKMLDocument(): string {
   return "<?xml version='1.0' encoding='UTF-8'?>" +
     "<kml xmlns='http://www.opengis.net/kml/2.2' " +
     "xmlns:gx='http://www.google.com/kml/ext/2.2' " +
@@ -32,17 +37,15 @@ KmlWriter.prototype.generateKMLDocument = function () {
     "<Document>" +
     "<name>MAGE-Export.kml</name>" +
     "<open>1</open>";
-};
+}
 
-KmlWriter.prototype.generateKMLFolderStart = function (name) {
+export function generateKMLFolderStart(name: string): string {
   return `<Folder><name>${name}</name>`;
-};
+}
 
-KmlWriter.prototype.generateUserStyle = function (user) {
-  let userStyle = '';
-
+export function generateUserStyle(user: UserDocument): string {
   if (user.icon && user.icon.relativePath) {
-    userStyle = fragment({
+    return fragment({
       Style: {
         '@id': `user-${user._id.toString()}`,
         IconStyle: {
@@ -53,17 +56,15 @@ KmlWriter.prototype.generateUserStyle = function (user) {
       }
     }).end();
   }
+  return ''
+}
 
-  return userStyle;
-};
-
-KmlWriter.prototype.generateEventStyle = function (event, icons) {
-  const defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant);
-  const strokeParts = hexToParts(event.style.stroke);
-  const fillParts = hexToParts(event.style.fill);
-  const strokeOpacity = convert(~~(event.style.strokeOpacity * 255));
-  const fillOpacity = convert(~~(event.style.fillOpacity * 255));
-
+export function generateEventStyle(event: MageEventDocument, icons: any[]): string {
+  const defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant)
+  const strokeParts = hexToParts(event.style.stroke || '')
+  const fillParts = hexToParts(event.style.fill || '')
+  const strokeOpacity = convert(~~(event.style.strokeOpacity || 1 * 255))
+  const fillOpacity = convert(~~(event.style.fillOpacity || 1 * 255))
   return fragment({
     Style: {
       '@id': event._id.toString(),
@@ -83,19 +84,17 @@ KmlWriter.prototype.generateEventStyle = function (event, icons) {
   }).end();
 }
 
-KmlWriter.prototype.generateFormStyles = function (event, form, icons) {
-  const styles = [];
-
-  const style = form.style || event.style;
-
-  let defaultIconPath = "";
-  const primaryPathMap = {};
-  const secondaryPathMap = {};
-  let strokeWidth = style.strokeWidth;
-  let strokeParts = hexToParts(style.stroke);
-  let fillParts = hexToParts(style.fill);
-  let strokeOpacity = convert(~~(style.strokeOpacity * 255));
-  let fillOpacity = convert(~~(style.fillOpacity * 255));
+ export function generateFormStyles(event: MageEventDocument, form: FormDocument, icons: any[]): string {
+  const styles = []
+  const style = form.style || event.style
+  let defaultIconPath = ''
+  const primaryPathMap = {} as any
+  const secondaryPathMap = {} as any
+  let strokeWidth = style.strokeWidth
+  let strokeParts = hexToParts(style.stroke)
+  let fillParts = hexToParts(style.fill)
+  let strokeOpacity = convert(~~(style.strokeOpacity * 255))
+  let fillOpacity = convert(~~(style.fillOpacity * 255))
 
   icons.forEach(icon => {
     if (icon.variant) {
@@ -128,7 +127,7 @@ KmlWriter.prototype.generateFormStyles = function (event, form, icons) {
   }).end();
   styles.push(defaultStyle);
 
-  const primaryField = this.getFieldByName(form, form.primaryField);
+  const primaryField = getFieldByName(form, form.primaryField);
 
   if (primaryField) {
     primaryField.choices.forEach(choice => {
@@ -206,15 +205,14 @@ KmlWriter.prototype.generateFormStyles = function (event, form, icons) {
   return styles;
 }
 
-KmlWriter.prototype.generateObservationStyles = function (event, icons) {
+export function generateObservationStyles(event: MageEventDocument, icons: any[]): string {
   const formStyles = event.forms.map(form => {
-    return this.generateFormStyles(event, form, icons.filter(icon => icon.formId === form._id));
-  });
+    return generateFormStyles(event, form, icons.filter(icon => icon.formId === form._id));
+  })
+  return [ generateEventStyle(event, icons), ...formStyles ].join('')
+}
 
-  return [this.generateEventStyle(event, icons), ...formStyles].join("");
-};
-
-KmlWriter.prototype.generateObservationPlacemark = function (observation, event) {
+export function generateObservationPlacemark(observation: ObservationDocument, event: MageEventDocument): string {
   const forms = event.formMap;
 
   const names = [];
@@ -224,13 +222,12 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
     if (firstForm[form.primaryFeedField]) {
       names.push(firstForm[form.primaryFeedField])
     }
-
     if (firstForm[form.secondaryFeedField]) {
       names.push(firstForm[form.secondaryFeedField])
     }
   }
 
-  let sections = [];
+  let sections = [] as any[]
   if (observation.properties.forms) {
     sections = observation.properties.forms.map(observationForm => {
       const form = forms[observationForm.formId]
@@ -240,22 +237,18 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
         .filter(field => {
           let hasValue = false;
           switch (field.type) {
-            case 'attachment': {
+            case 'attachment':
               hasValue = observation.attachments.some(attachment => {
                 return attachment.fieldName === field.name &&
                   attachment.observationFormId.toString() === observationForm._id.toString();
-              });
-
-              break;
-            }
-            case 'checkbox': {
+              })
+              break
+            case 'checkbox':
               hasValue = field.value != null
-            }
-            default: {
-              hasValue = observationForm[field.name]
-            }
+              break
+            default:
+              hasValue = !!observationForm[field.name]
           }
-
           return hasValue;
         })
         .sort((a, b) => a.id - b.id)
@@ -303,8 +296,8 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
     }
   }
 
-  const coordinates = this.generatePlacemarkCoordinates(observation);
-  const description = this.generateDescription(observation, sections, observation.attachments);
+  const coordinates = generatePlacemarkCoordinates(observation);
+  const description = generateDescription(observation, sections, observation.attachments);
   const placemark = {
     name: names.length ? names.join(' - ') : event.name,
     visibility: 0,
@@ -319,7 +312,7 @@ KmlWriter.prototype.generateObservationPlacemark = function (observation, event)
   }).end();
 };
 
-KmlWriter.prototype.generateLocationPlacemark = function (user, location) {
+export function generateLocationPlacemark(user: UserDocument, location: UserLocationDocument): string {
   const properties = Object.entries(location.properties).map(([key, value]) => {
     return {
       key,
@@ -331,8 +324,8 @@ KmlWriter.prototype.generateLocationPlacemark = function (user, location) {
     properties: properties
   }];
 
-  const coordinates = this.generatePlacemarkCoordinates(location);
-  const description = this.generateDescription(location, sections);
+  const coordinates = generatePlacemarkCoordinates(location);
+  const description = generateDescription(location, sections);
   const placemark = {
     name: moment(location.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z',
     visibility: 0,
@@ -345,21 +338,21 @@ KmlWriter.prototype.generateLocationPlacemark = function (user, location) {
   return fragment({
     Placemark: { ...placemark, ...coordinates, ...description }
   }).end();
-};
+}
 
-KmlWriter.prototype.generateKMLDocumentClose = function () {
-  return "</Document>";
-};
+export function generateKMLDocumentClose(): string {
+  return '</Document>'
+}
 
-KmlWriter.prototype.generateKMLFolderClose = function () {
-  return "</Folder>";
-};
+export function generateKMLFolderClose(): string {
+  return '</Folder>'
+}
 
-KmlWriter.prototype.generateKMLClose = function () {
-  return "</kml>";
-};
+export function generateKMLClose(): string {
+  return '</kml>'
+}
 
-KmlWriter.prototype.generateDescription = function (geojson, sections) {
+export function generateDescription(geojson, sections): { description: string } {
   const centroid = turfCentroid(geojson);
   const header = [{
     section: [{
@@ -373,7 +366,7 @@ KmlWriter.prototype.generateDescription = function (geojson, sections) {
     }]
   }];
 
-  const properties = [];
+  const properties = [] as any[]
   sections.forEach(section => {
     if (section.title) {
       properties.push({
@@ -416,7 +409,7 @@ KmlWriter.prototype.generateDescription = function (geojson, sections) {
         });
       }
     });
-  });
+  })
 
   const content = {
     section: properties
@@ -439,7 +432,7 @@ KmlWriter.prototype.generateDescription = function (geojson, sections) {
   }
 }
 
-KmlWriter.prototype.generatePlacemarkCoordinates = function (geojson) {
+export function generatePlacemarkCoordinates(geojson: Feature): any {
   if (geojson.geometry.type === 'Point') {
     return {
       Point: {
@@ -462,7 +455,7 @@ KmlWriter.prototype.generatePlacemarkCoordinates = function (geojson) {
       }
     }
   } else if (geojson.geometry.type === 'LineString') {
-    const coordinates = geojson.geometry.coordinates.reduce((coordinates, points) => {
+    const coordinates = geojson.geometry.coordinates.reduce((coordinates: number[], points) => {
       return coordinates.concat(points.join(','))
     }, []);
 
@@ -475,10 +468,10 @@ KmlWriter.prototype.generatePlacemarkCoordinates = function (geojson) {
       }
     }
   }
-
-  return coordinates;
+  // TODO: not sure if this ever happens or what will happen if it does ¯\_(ツ)_/¯
+  return {}
 }
 
-KmlWriter.prototype.getFieldByName = function (form, name) {
-  return form.fields.find(field => field.name === name);
+export function getFieldByName(form: FormDocument, name: string): FormFieldDocument | undefined {
+  return form.fields.find(field => field.name === name)
 }
