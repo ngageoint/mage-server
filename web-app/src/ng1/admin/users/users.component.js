@@ -8,6 +8,7 @@ class AdminUsersController {
     LocalStorageService,
     UserService,
     UserPagingService,
+    UserReadService
   ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
@@ -15,7 +16,7 @@ class AdminUsersController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
-
+    this.UserReadService = UserReadService;
     this.users = [];
     this.stateAndData = this.UserPagingService.constructDefault();
 
@@ -38,8 +39,14 @@ class AdminUsersController {
   }
 
   $onInit() {
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+    const searchParams = {
+      pageSize: 10,
+      pageIndex: 1,
+      includeTotalCount: true
+    };
+
+    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
+      this.users = pageOfUsers.items; // Assuming the API returns an array of users in 'items'
     });
   }
 
@@ -72,18 +79,33 @@ class AdminUsersController {
   }
 
   search() {
-    this.UserPagingService.search(this.stateAndData[this.filter],this.userSearch).then((users) => {
-      this.users = users;
+    const searchParams = {
+      term: this.userSearch,
+      pageSize: 10,
+      pageIndex: 1,
+      includeTotalCount: true
+    };
+
+    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
+      this.users = pageOfUsers.items; // Update with the current page of users
     });
+
   }
 
   reset() {
     this.filter = 'all';
     this.userSearch = '';
-    this.stateAndData = this.UserPagingService.constructDefault();
-    this.UserPagingService.refresh(this.stateAndData).then(() => {
-      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+
+    const searchParams = {
+      pageSize: 10,
+      pageIndex: 1,
+      includeTotalCount: true
+    };
+
+    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
+      this.users = pageOfUsers.items;
     });
+
   }
 
   newUser() {
@@ -166,7 +188,7 @@ class AdminUsersController {
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService', 'UserReadService'];
 
 export default {
   template: require('./users.html'),
