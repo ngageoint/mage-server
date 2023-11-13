@@ -46,7 +46,7 @@ class AdminUsersController {
     };
 
     this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
-      this.users = pageOfUsers.items; // Assuming the API returns an array of users in 'items'
+      this.users = pageOfUsers.items;
     });
   }
 
@@ -87,7 +87,7 @@ class AdminUsersController {
     };
 
     this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
-      this.users = pageOfUsers.items; // Update with the current page of users
+      this.users = pageOfUsers.items;
     });
 
   }
