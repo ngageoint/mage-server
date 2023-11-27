@@ -19,7 +19,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * The web app and service incorrectly used a `settings.options` sub-document on
   SAML configurations to read and write some entries that should be in the
   `settings` entry.
-
+* Many third-party dependencies were quite outdated or superfluous.
 
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 #### Features
