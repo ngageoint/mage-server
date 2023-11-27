@@ -1,0 +1,10 @@
+{
+  "name": "@ngageoint/mage.arc-web",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@ngageoint/mage.web-app": "^6.2.0"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}

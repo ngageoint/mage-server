@@ -200,7 +200,6 @@ export class GeoPackageUtility {
       };
     });
 
-
     connection.finished();
     return tables.concat(tileTables);
   }
