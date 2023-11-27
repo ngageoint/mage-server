@@ -28,6 +28,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Protect against disabling all authentications.
 - Fixing problem with oauth web login.
 
+## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10) (unreleased)
+
+#### Features
+
+- Easily download file-based layers, i.e. GeoPackages, with a new button on the _Layers_ admin page.
+
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 
 #### Features

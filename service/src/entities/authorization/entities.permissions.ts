@@ -34,7 +34,7 @@ export enum LayerPermission {
   READ_LAYER_EVENT = 'READ_LAYER_EVENT',
   UPDATE_LAYER = 'UPDATE_LAYER',
   CREATE_LAYER = 'CREATE_LAYER',
-  DELETE_LAYER = 'DELETE_LAYER'
+  DELETE_LAYER = 'DELETE_LAYER',
 }
 
 export enum ObservationPermission {
