@@ -467,6 +467,8 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
 
+const observationEventScopeKey = 'observationEventScope' as const
+
 async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
   Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
   // load routes the old way
@@ -591,8 +593,6 @@ function baseAppRequestContext(req: express.Request): AppRequestContext<UserWith
     }
   }
 }
-
-const observationEventScopeKey = 'observationEventScope' as const
 
 function ensureObservationEventScope(eventRepo: MageEventRepository, createObsRepo: ObservationRepositoryForEvent) {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {

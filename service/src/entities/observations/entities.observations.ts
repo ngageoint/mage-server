@@ -217,6 +217,8 @@ export function copyImportantFlagAttrs(from: ObservationImportantFlag): Observat
   }
 }
 
+const ObservationConstructionToken = Symbol('ObservationConstructor')
+
 /**
  * The intention of this class is to provide a mutation model for observation
  * updates.  While `ObservationAttrs` is more just raw the keys and values of
@@ -696,14 +698,15 @@ export function addAttachment(observation: Observation, attachmentId: Attachment
     return new AttachmentNotFoundError(attachmentId)
   }
   const patched = copyAttachmentAttrs(target)
-  patched.contentType = patch.hasOwnProperty('contentType') ? patch.contentType : patched.contentType
-  patched.height = patch.hasOwnProperty('height') ? patch.height : patched.height
-  patched.width = patch.hasOwnProperty('width') ? patch.width : patched.width
-  patched.name = patch.hasOwnProperty('name') ? patch.name : patched.name
-  patched.oriented = patch.hasOwnProperty('oriented') ? !!patch.oriented : patched.oriented
-  patched.size = patch.hasOwnProperty('size') ? patch.size : patched.size
-  patched.contentLocator = patch.hasOwnProperty('contentLocator') ? patch.contentLocator : patched.contentLocator
-  patched.thumbnails = patch.hasOwnProperty('thumbnails') ? patch.thumbnails?.map(copyThumbnailAttrs) as Thumbnail[] : patched.thumbnails
+  const patchHasProperty = (key: string): boolean => Object.prototype.hasOwnProperty.call(patch, key)
+  patched.contentType = patchHasProperty('contentType') ? patch.contentType : patched.contentType
+  patched.height = patchHasProperty('height') ? patch.height : patched.height
+  patched.width = patchHasProperty('width') ? patch.width : patched.width
+  patched.name = patchHasProperty('name') ? patch.name : patched.name
+  patched.oriented = patchHasProperty('oriented') ? !!patch.oriented : patched.oriented
+  patched.size = patchHasProperty('size') ? patch.size : patched.size
+  patched.contentLocator = patchHasProperty('contentLocator') ? patch.contentLocator : patched.contentLocator
+  patched.thumbnails = patchHasProperty('thumbnails') ? patch.thumbnails?.map(copyThumbnailAttrs) as Thumbnail[] : patched.thumbnails
   patched.lastModified = new Date()
   const patchedObservation = copyObservationAttrs(observation)
   const before = patchedObservation.attachments.slice(0, targetPos)
@@ -980,8 +983,6 @@ export enum AttachmentStoreErrorCode {
    */
   StorageError = 'AttachmentStoreError.StorageError'
 }
-
-const ObservationConstructionToken = Symbol('ObservationConstructor')
 
 function createObservation(attrs: ObservationAttrs, mageEvent: MageEvent, pendingEvents?: readonly PendingObservationDomainEvent[]): Observation {
   attrs = copyObservationAttrs(attrs)

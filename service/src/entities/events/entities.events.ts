@@ -2,7 +2,6 @@ import { FeedId } from '../feeds/entities.feeds'
 import { copyFormAttrs, Form, FormField, FormId } from './entities.events.forms'
 import { Team, TeamId } from '../teams/entities.teams'
 import { copyLineStyleAttrs, LineStyle } from '../entities.global'
-import { UserId } from '../users/entities.users'
 
 export type MageEventId = number
 
