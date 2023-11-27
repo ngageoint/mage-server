@@ -1,7 +1,6 @@
 'use strict';
 
 const log = require('winston')
-import util from 'util'
 import async from 'async'
 import archiver from 'archiver'
 import moment from 'moment'
@@ -13,114 +12,103 @@ import api from '../api'
 import environment from '../environment/env'
 import Icon from '../models/icon'
 import User from '../models/user'
+import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
 
 const userBase = environment.userBaseDirectory;
 const attachmentBase = environment.attachmentBaseDirectory;
 
 export class Kml extends Exporter {
 
-  export(streamable) {
+  export(streamable: NodeJS.WritableStream): void {
     // Known limitation in Google Earth, embedded media from a kmz file not render in a popup
     // Treating it as a zip, rather than a kmz.
     const archive = archiver('zip');
     archive.pipe(streamable);
     const kmlStream = new stream.PassThrough();
     archive.append(kmlStream, { name: 'mage-export.kml' });
-
     kmlStream.write(writer.generateKMLDocument());
-
-    async.series([
-      done => {
-        if (!this._filter.exportObservations) return done();
-
-        this.streamObservations(kmlStream, archive, done);
-      },
-      done => {
-        if (!this._filter.exportLocations) return done();
-
-        this.streamLocations(kmlStream, archive, done);
-      }
-    ],
+    async.series(
+      [
+        (done): void => {
+          if (!this._filter.exportObservations) {
+            return done();
+          }
+          this.streamObservations(kmlStream, archive, done);
+        },
+        (done): void => {
+          if (!this._filter.exportLocations) {
+            return done();
+          }
+          this.streamLocations(kmlStream, archive, done);
+        }
+      ],
       err => {
-        if (err) log.warn(err);
-
+        if (err) {
+          log.warn(err);
+        }
         kmlStream.write(writer.generateKMLDocumentClose());
         kmlStream.write(writer.generateKMLClose());
         kmlStream.end();
-
         archive.finalize();
       });
   }
 
-  streamObservations (stream, archive, done) {
-
+  streamObservations (stream: stream.PassThrough, archive: archiver.Archiver, done: async.AsyncResultCallback<any>): void {
     log.info("Retrieving icons from DB for the event " + this._event.name);
-    Icon.getAll({ eventId: this._event._id }, (err, icons) => {
-      if (err) return done(err);
-
-      log.info("Retrieved " + icons.length + " icons");
-      stream.write(writer.generateObservationStyles(this._event, icons));
-      stream.write(writer.generateKMLFolderStart(this._event.name));
-
-      log.info('Retrieving observations from DB');
-      const cursor = this.requestObservations(this._filter);
-
+    Icon.getAll({ eventId: this._event.id }, (err: any, icons: any[]) => {
+      if (err) {
+        return done(err)
+      }
+      log.info(`retrieved ${icons.length} icons`)
+      stream.write(writer.generateObservationStyles(this._event, icons))
+      stream.write(writer.generateKMLFolderStart(this._event.name))
+      const cursor = this.requestObservations(this._filter)
       let numObservations = 0;
-      cursor.eachAsync(async observation => {
-        stream.write(writer.generateObservationPlacemark(observation, this._event));
-
+      cursor.eachAsync(observation => {
+        stream.write(writer.generateObservationPlacemark(observation, this._event))
         if (observation.attachments) {
-          observation.attachments
-            .filter(attachment => !!attachment.relativePath)
-            .forEach(attachment => {
-            archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath });
-          });
+          observation.attachments.forEach(attachment => {
+            if (attachment.relativePath) {
+              archive.file(path.join(attachmentBase, attachment.relativePath), { name: attachment.relativePath })
+            }
+          })
         }
-
-        numObservations++;
-      }).then(() => {
-        if (cursor) cursor.close;
-
-        log.info('Successfully wrote ' + numObservations + ' observations to KML');
-        stream.write(writer.generateKMLFolderClose());
-
-        // throw in icons
-        archive.directory(new api.Icon(this._event._id).getBasePath(), 'icons/' + this._event._id, { date: new Date() });
-
-        done();
-      }).catch(err => done(err));
+        numObservations++
+      })
+      .then(() => {
+        if (cursor) {
+          cursor.close
+        }
+        log.info('Successfully wrote ' + numObservations + ' observations to KML')
+        stream.write(writer.generateKMLFolderClose())
+        archive.directory(new api.Icon(this._event.id).getBasePath(), 'icons/' + this._event.id, { date: new Date() })
+        done()
+      })
+      .catch(err => done(err))
     });
   }
 
-  async streamLocations(stream, archive, done) {
+  async streamLocations(stream: stream.PassThrough, archive: archiver.Archiver, done: async.AsyncResultCallback<any>): Promise<void> {
     log.info('Retrieving locations from DB');
 
-    const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
-    const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
+    const { startDate, endDate } = this._filter
+    const cursor = this.requestLocations({ startDate, endDate });
 
-    const cursor = this.requestLocations({ startDate: startDate, endDate: endDate });
-
-    let user = null;
-
-    let userStyles = "";
+    let user: UserDocument | null = null;
+    let userStyles = '';
     let numLocations = 0;
     let locationString = '';
     cursor.eachAsync(async location => {
-
       if (!user || user._id.toString() !== location.userId.toString()) {
-
         if (user) {
-          //complete the prrevious user
+          //complete the previous user
           this.completeUserFolder(stream, archive, user, locationString);
         }
-
         locationString = '';
-
         user = await User.getUserById(location.userId);
         userStyles += writer.generateUserStyle(user);
         stream.write(writer.generateKMLFolderStart(user.displayName, false));
       }
-
       locationString += writer.generateLocationPlacemark(user, location);
       numLocations++;
     }).then(() => {
@@ -139,16 +127,14 @@ export class Kml extends Exporter {
     }).catch(err => done(err));
   }
 
-  async completeUserFolder(stream, archive, user, locationString) {
-
+  completeUserFolder(stream: stream.PassThrough, archive: archiver.Archiver, user: UserDocument, locationString: string): void {
     stream.write(locationString);
-    // throw in user map icon
     if (user.icon && user.icon.relativePath) {
       archive.file(path.join(userBase, user.icon.relativePath), {
         name: 'icons/users/' + user._id.toString(),
         date: new Date()
-      });
+      })
     }
-    stream.write(writer.generateKMLFolderClose());
+    stream.write(writer.generateKMLFolderClose())
   }
 }

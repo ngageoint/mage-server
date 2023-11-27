@@ -132,12 +132,11 @@ module.exports = function (app, security) {
     getEvent,
     authorizeEventAccess,
     function (req, res) {
-      res.json({ id: req.params.exportId });
-
-      exportData(req.param('exportId'), req.event);
+      const exportId = req.params.exportId;
+      res.json({ id: exportId });
+      exportData(exportId, req.event);
     });
 };
-
 
 /*
 TODO: This should not be using middleware to parse query parameters and find the
@@ -146,107 +145,80 @@ in the actual request handler.
 */
 
 function getExport(req, res, next) {
-  Export.getExportById(req.params.exportId).then(result => {
-    const parameters = { filter: {} };
-
-    parameters.filter.eventId = result.options.eventId;
-    parameters.exportId = result._id;
-
-    req.parameters = parameters;
-
-    next();
-  }).catch(err => next(err));
+  Export.getExportById(req.params.exportId)
+    .then(result => {
+      const parameters = { filter: {} };
+      parameters.filter.eventId = result.options.eventId;
+      parameters.exportId = result._id;
+      req.parameters = parameters;
+      next();
+    })
+    .catch(err => next(err));
 }
 
 function parseQueryParams(req, res, next) {
   const parameters = { filter: {} };
-
-  const startDate = req.param('startDate');
+  const body = req.body || {};
+  // TODO: check dates are valid
+  const startDate = body.startDate;
   if (startDate) {
     parameters.filter.startDate = moment.utc(startDate).toDate();
   }
-
-  const endDate = req.param('endDate');
+  const endDate = body.endDate;
   if (endDate) {
     parameters.filter.endDate = moment.utc(endDate).toDate();
   }
-
-  const eventId = req.param('eventId');
+  const eventId = body.eventId;
   if (!eventId) {
     return res.status(400).send("eventId is required");
   }
   parameters.filter.eventId = eventId;
-
-  parameters.filter.exportObservations = String(req.param('observations')).toLowerCase() === 'true';
+  parameters.filter.exportObservations = String(body.observations).toLowerCase() === 'true';
   if (parameters.filter.exportObservations) {
-    parameters.filter.favorites = String(req.param('favorites')).toLowerCase() === 'true';
+    parameters.filter.favorites = String(body.favorites).toLowerCase() === 'true';
     if (parameters.filter.favorites) {
       parameters.filter.favorites = {
         userId: req.user._id
       };
     }
-
-    parameters.filter.important = String(req.param('important')).toLowerCase() === 'true';
-    parameters.filter.attachments = String(req.param('attachments')).toLowerCase() === 'true';
+    parameters.filter.important = String(body.important).toLowerCase() === 'true';
+    parameters.filter.attachments = String(body.attachments).toLowerCase() === 'true';
   }
-
-  parameters.filter.exportLocations = String(req.param('locations')).toLowerCase() === 'true';
-
+  parameters.filter.exportLocations = String(body.locations).toLowerCase() === 'true';
   req.parameters = parameters;
-
   next();
 }
 
 function getEvent(req, res, next) {
   Event.getById(req.parameters.filter.eventId, {}, function (err, event) {
     if (err || !event) {
-      const msg = "Event with id " + req.parameters.filter.eventId + " does not exist";
+      const msg = `Event with ID ${req.parameters.filter.eventId} does not exist.`;
       return res.status(400).send(msg);
     }
-
     req.event = event;
-
-    // form map
-    event.formMap = {};
-
-    // field by name map
-    event.forms.forEach(function (form) {
-      event.formMap[form.id] = form;
-
-      const fieldNameToField = {};
-      form.fields.forEach(function (field) {
-        fieldNameToField[field.name] = field;
-      });
-
-      form.fieldNameToField = fieldNameToField;
-    });
-
     next(err);
   });
 }
 
 async function exportData(exportId, event) {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
-
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
   exportDocument = await Export.updateExport(exportId, {
     status: Export.ExportStatus.Running,
     relativePath: filename,
     filename: filename
   });
-
   const file = path.join(exportDirectory, filename);
   const stream = fs.createWriteStream(file);
   stream.on('finish', () => {
-    log.info('Successfully completed export of ' + exportId);
+    log.info(`finished export ${exportId} @ ${file}`);
     Export.updateExport(exportId, { status: Export.ExportStatus.Completed });
   });
-
   const options = {
     event: event,
     filter: exportDocument.options.filter
   };
-  log.info('Export ' + exportId + ' (' + exportDocument.exportType + ')');
+  log.info('begin export\n', exportDocument.toJSON());
   const exporter = exporterFactory.createExporter(exportDocument.exportType.toLowerCase(), options);
   try {
     await exporter.export(stream);

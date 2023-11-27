@@ -1,4 +1,4 @@
-import { copyLineStyleAttrs, LineStyle } from '../entities.global'
+import { LineStyle } from '../entities.global'
 
 
 export type FormId = number
@@ -56,9 +56,19 @@ export interface Form {
    * e.g., #0a0b0c.
    */
   color: string
-  style?: LineStyle
+  style?: BaseFormStyle
   archived: boolean
 }
+
+export type BaseFormStyle = LineStyle & {
+  [variantFieldEntry: string]: PrimaryFieldStyle | LineStyle[keyof LineStyle]
+}
+
+export type PrimaryFieldStyle = LineStyle & {
+  [variantFieldEntry: string]: VariantFieldStyle
+}
+
+export type VariantFieldStyle = LineStyle
 
 export function copyFormAttrs(x: Form): Form {
   return {
@@ -74,7 +84,7 @@ export function copyFormAttrs(x: Form): Form {
     primaryFeedField: x.primaryFeedField,
     secondaryFeedField: x.secondaryFeedField,
     color: x.color,
-    style: x.style ? copyLineStyleAttrs(x.style) : undefined,
+    style: x.style ? copyBaseFormStyle(x.style) : undefined,
     userFields: x.userFields ? [ ...x.userFields ] : [],
   }
 }
@@ -102,6 +112,29 @@ export function copyFormFieldChoiceAttrs(x: FormFieldChoice): FormFieldChoice {
     value: x.value,
     blank: x.blank
   }
+}
+
+export function copyBaseFormStyle(x: BaseFormStyle): BaseFormStyle {
+  return copyFieldEntryStyles(x, 2)
+}
+
+function copyFieldEntryStyles(x: BaseFormStyle, depth: number): BaseFormStyle {
+  const lineStyleKeys: Record<keyof LineStyle, true> = {
+    fill: true,
+    stroke: true,
+    fillOpacity: true,
+    strokeOpacity: true,
+    strokeWidth: true
+  }
+  return Object.getOwnPropertyNames(x).reduce((copy, key) => {
+    if (lineStyleKeys[key as keyof LineStyle]) {
+      copy[key] = x[key]
+    }
+    else if (depth > 0) {
+      copy[key] = copyFieldEntryStyles(copy[key] as BaseFormStyle, depth - 1) as any
+    }
+    return copy
+  }, {} as BaseFormStyle)
 }
 
 export interface FormField {
