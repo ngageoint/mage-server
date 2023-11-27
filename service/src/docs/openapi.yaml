@@ -3566,10 +3566,10 @@ components:
       properties:
         layers:
           type: string
-          description: Comma seperated list of WMS layer names
+          description: Comma separated list of WMS layer names
         styles:
           type: string
-          description: Comma seperated list of WMS style names
+          description: Comma separated list of WMS style names
         format:
           type: string
           description: WMS map tile format.

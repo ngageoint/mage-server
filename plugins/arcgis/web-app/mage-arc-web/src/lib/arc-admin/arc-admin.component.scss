@@ -1,0 +1,197 @@
+@import '~@angular/material/theming';
+
+.arc-admin {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem;
+}
+
+section {
+  >* {
+    margin-inline-start: 1em;
+  }
+
+  header {
+    margin-inline-start: 0;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-block-end: 0;
+    }
+
+    .subheading {
+      margin-block-start: 0;
+      opacity: 0.5;
+    }
+
+    margin-block-end: 2em;
+  }
+
+  margin-block-start: 2em;
+  margin-block-end: 2em;
+}
+
+.processing-table {
+  tr {
+    th {
+      font-weight: normal;
+    }
+
+    td {
+      padding-left: 20px;
+      opacity: 0.5;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.attributes-table {
+  tr {
+    th {
+      font-weight: normal;
+    }
+
+    td {
+      padding-left: 20px;
+      opacity: 0.5;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.fieldOverrides {
+  margin-top: 20px;
+}
+
+.fieldOverrides-table {
+  margin-top: 5px;
+
+  tr {
+    th {
+      font-weight: normal;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-size: 0.9em;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+    }
+
+    td {
+      padding-left: 10px;
+      padding-right: 10px;
+      opacity: 0.5;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.attributeConfigurations {
+  margin-top: 20px;
+}
+
+.attributeConfiguration {
+  margin-top: 5px;
+  opacity: 0.5;
+  font-size: 0.9em;
+}
+
+.attributeConfigurations-table {
+  margin-top: 5px;
+
+  tr {
+    th {
+      font-weight: normal;
+      padding-left: 10px;
+      padding-right: 10px;
+      font-size: 0.9em;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+    }
+
+    td {
+      padding-left: 10px;
+      padding-right: 10px;
+      opacity: 0.5;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.info-icon {
+  vertical-align: middle;
+}
+
+.info-button {
+  opacity: 0.5;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}
+
+.edit-icon {
+  vertical-align: middle;
+}
+
+.edit-button {
+  opacity: 0.7;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}
+
+.lock-icon {
+  vertical-align: middle;
+}
+
+.lock-button {
+  opacity: 0.8;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}
+
+.add-icon {
+  vertical-align: middle;
+}
+
+.add-button {
+  opacity: 0.8;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}
+
+.edit-icon {
+  vertical-align: middle;
+}
+
+.edit-button {
+  opacity: 0.8;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}
+
+.delete-icon {
+  vertical-align: middle;
+}
+
+.delete-button {
+  opacity: 0.8;
+  font-size: inherit;
+  height: inherit;
+  line-height: inherit;
+  width: inherit;
+}

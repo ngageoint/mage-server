@@ -98,6 +98,7 @@ export class MageEvent implements Readonly<MageEventAttrs> {
    * Return only the forms for this event whose `archived` flag is `false`.
    */
   get activeForms(): Form[] { return this.forms.filter(x => !x.archived) }
+  get archivedForms(): Form[] { return this.forms.filter(x => x.archived) }
   get minObservationForms(): number | undefined { return this.#attrs.minObservationForms }
   get maxObservationForms(): number | undefined { return this.#attrs.maxObservationForms }
   get style(): LineStyle { return this.#attrs.style }
