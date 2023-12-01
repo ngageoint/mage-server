@@ -136,7 +136,13 @@ export class UrlResolutionError extends Error {
    * Number between 0 and 1
    */
   fillOpacity?: number,
+  /**
+   * Number between 0 and 1
+   */
   strokeOpacity?: number,
+  /**
+   * Decimal stroke width
+   */
   strokeWidth?: number,
 }
 
