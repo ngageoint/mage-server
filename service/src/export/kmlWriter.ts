@@ -12,7 +12,9 @@ import { UserLocationDocument } from '../models/location'
 import { Feature } from 'geojson'
 import { LineStyle } from '../entities/entities.global'
 import { MageEvent } from '../entities/events/entities.events'
-import { BaseFormStyle, copyBaseFormStyle, PrimaryFieldStyle } from '../entities/events/entities.events.forms'
+import { BaseFormStyle, copyBaseFormStyle, PrimaryFieldStyle, VariantFieldStyle } from '../entities/events/entities.events.forms'
+
+type RGBColor = { r: string, g: string, b: string }
 
 const defaultStyle: Required<LineStyle> = {
   fill: '#5278A2',
@@ -36,7 +38,7 @@ function isNumber(x: any): x is number {
   return !isNaN(x) && typeof x === 'number'
 }
 
-function splitRGBHexColor(hex: string): { r: string, g: string, b: string } {
+function splitRGBHexColor(hex: string): RGBColor {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (result) {
     return { r: result[1], g: result[2], b: result[3] }
@@ -47,6 +49,39 @@ function splitRGBHexColor(hex: string): { r: string, g: string, b: string } {
 function hexStringForInt(integer: any): string {
   const str = Number(integer).toString(16);
   return str.length === 1 ? "0" + str : str;
+}
+
+function rgbIntForDecimal(maybeDec: any): number {
+  return ~~(numberOrDefault(maybeDec, 1) * 255)
+}
+
+function colorHexForDecimal(maybeDec: any): string {
+  return hexStringForInt(rgbIntForDecimal(maybeDec))
+}
+
+function numberOrDefault(maybeNumber: any, def: number): number {
+  return typeof maybeNumber === 'number' && !Number.isNaN(maybeNumber) ? maybeNumber : def
+}
+
+function kmlColor(rgb: RGBColor, opacityHexOrDec: string | number): string {
+  const opacityHex = typeof opacityHexOrDec === 'number' ? hexStringForInt(opacityHexOrDec) : opacityHexOrDec
+  return opacityHex + rgb.b + rgb.g + rgb.r
+}
+
+/**
+ * Return the stroke opacity decimal for the given style if present, or the
+ * default stroke opacity.
+ */
+function ensureStrokeOpacity(maybe: LineStyle | undefined): number {
+  return numberOrDefault(maybe?.strokeOpacity, defaultStyle.strokeOpacity)
+}
+
+/**
+ * Return the fill opacity decimal for the given style if present, or the
+ * default fill opacity.
+ */
+function ensureFillOpacity(maybe: LineStyle | undefined): number {
+  return numberOrDefault(maybe?.fillOpacity, defaultStyle.fillOpacity)
 }
 
 export function generateKMLDocument(): string {
@@ -84,11 +119,11 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
   const defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant)
   const strokeParts = splitRGBHexColor(event.style.stroke || '')
   const fillParts = splitRGBHexColor(event.style.fill || '')
-  const strokeOpacity = hexStringForInt(~~(event.style.strokeOpacity || 1 * 255))
-  const fillOpacity = hexStringForInt(~~(event.style.fillOpacity || 1 * 255))
+  const strokeOpacity = ensureStrokeOpacity(event.style)
+  const fillOpacity = ensureFillOpacity(event.style)
   return fragment({
     Style: {
-      '@id': event._id.toString(),
+      '@id': String(event._id),
       IconStyle: {
         Icon: {
           href: path.join('icons', defaultIcon.relativePath)
@@ -96,17 +131,17 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
       },
       LineStyle: {
         width: event.style.strokeWidth,
-        color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+        color: kmlColor(strokeParts, strokeOpacity)
       },
       PolyStyle: {
-        color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+        color: kmlColor(fillParts, fillOpacity)
       }
     }
   }).end();
 }
 
- export function generateFormStyles(event: MageEventDocument, form: FormDocument, icons: any[]): any[] {
-  const styles = []
+export function generateFormStyles(event: MageEventDocument, form: FormDocument, icons: any[]): any[] {
+  const styleKmlFragments = []
   const style = requiredStyle(form.style || event.style as BaseFormStyle)
   let defaultIconPath = ''
   const primaryPathMap = {} as any
@@ -114,8 +149,8 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
   let strokeWidth = style.strokeWidth
   let strokeParts = splitRGBHexColor(style.stroke || '')
   let fillParts = splitRGBHexColor(style.fill || '')
-  let strokeOpacity = hexStringForInt(~~(style.strokeOpacity * 255))
-  let fillOpacity = hexStringForInt(~~(style.fillOpacity * 255))
+  let strokeOpacity = ensureStrokeOpacity(style)
+  let fillOpacity = ensureFillOpacity(style)
 
   icons.forEach(icon => {
     if (icon.variant) {
@@ -129,9 +164,9 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
   });
 
   // default form style
-  const defaultStyle = fragment({
+  const defaultStyleKml = fragment({
     Style: {
-      '@id': [event._id.toString(), form._id.toString()].join("-"),
+      '@id': `${event._id}-${form._id}`,
       IconStyle: {
         Icon: {
           href: path.join('icons', defaultIconPath)
@@ -139,14 +174,14 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
       },
       LineStyle: {
         width: strokeWidth,
-        color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+        color: kmlColor(strokeParts, strokeOpacity)
       },
       PolyStyle: {
-        color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+        color: kmlColor(fillParts, fillOpacity)
       }
     }
   }).end();
-  styles.push(defaultStyle);
+  styleKmlFragments.push(defaultStyleKml);
 
   const primaryField = form.primaryField ? getFieldByName(form, form.primaryField) : undefined
   if (primaryField && Array.isArray(primaryField.choices)) {
@@ -154,16 +189,15 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
       let iconPath = primaryPathMap[choice.title] ? primaryPathMap[choice.title] : defaultIconPath
       const primaryChoiceStyle = style[choice.title] as PrimaryFieldStyle | undefined
       if (primaryChoiceStyle) {
-        strokeWidth = primaryChoiceStyle.strokeWidth
-        strokeParts = splitRGBHexColor(primaryChoiceStyle.stroke);
-        fillParts = splitRGBHexColor(primaryChoiceStyle.fill);
-        strokeOpacity = hexStringForInt(~~(primaryChoiceStyle.strokeOpacity * 255));
-        fillOpacity = hexStringForInt(~~(primaryChoiceStyle.fillOpacity * 255));
+        strokeWidth = numberOrDefault(primaryChoiceStyle.strokeWidth, strokeWidth);
+        strokeParts = splitRGBHexColor(primaryChoiceStyle.stroke || defaultStyle.stroke);
+        fillParts = splitRGBHexColor(primaryChoiceStyle.fill || defaultStyle.fill);
+        strokeOpacity = ensureStrokeOpacity(primaryChoiceStyle);
+        fillOpacity = ensureFillOpacity(primaryChoiceStyle);
       }
-
-      const primaryStyle = fragment({
+      const primaryStyleKml = fragment({
         Style: {
-          '@id': [event._id.toString(), form._id.toString(), choice.title].join("-"),
+          '@id': `${event._id}-${form._id.toString()}-${choice.title}`,
           IconStyle: {
             Icon: {
               href: path.join('icons', iconPath)
@@ -171,14 +205,14 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
           },
           LineStyle: {
             width: strokeWidth,
-            color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+            color: kmlColor(strokeParts, strokeOpacity)
           },
           PolyStyle: {
-            color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+            color: kmlColor(fillParts, fillOpacity)
           }
         }
       }).end()
-      styles.push(primaryStyle)
+      styleKmlFragments.push(primaryStyleKml)
 
       // secondary styles for each type
       const secondaryField = getFieldByName(form, form.variantField || '')
@@ -191,18 +225,17 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
           } else {
             iconPath = defaultIconPath;
           }
-
-          if (style[choice.title] && style[choice.title][secondaryChoice.title]) {
-            strokeWidth = style[choice.title][secondaryChoice.title].strokeWidth;
-            strokeParts = splitRGBHexColor(style[choice.title][secondaryChoice.title].stroke);
-            fillParts = splitRGBHexColor(style[choice.title][secondaryChoice.title].fill);
-            strokeOpacity = hexStringForInt(~~(style[choice.title][secondaryChoice.title].strokeOpacity * 255));
-            fillOpacity = hexStringForInt(~~(style[choice.title][secondaryChoice.title].fillOpacity * 255));
+          const variantStyle = primaryChoiceStyle?.[secondaryChoice.title] as Required<VariantFieldStyle> | undefined
+          if (variantStyle) {
+            strokeWidth = variantStyle.strokeWidth;
+            strokeParts = splitRGBHexColor(variantStyle.stroke);
+            fillParts = splitRGBHexColor(variantStyle.fill);
+            strokeOpacity = ensureStrokeOpacity(variantStyle);
+            fillOpacity = ensureFillOpacity(variantStyle);
           }
-
-          const secondaryStyle = fragment({
+          const variantStyleKml = fragment({
             Style: {
-              '@id': [event._id.toString(), form._id.toString(), choice.title, secondaryChoice.title].join("-"),
+              '@id': `${event._id}-${form._id.toString()}-${choice.title}-${secondaryChoice.title}`,
               IconStyle: {
                 Icon: {
                   href: path.join('icons', iconPath)
@@ -210,20 +243,20 @@ export function generateEventStyle(event: MageEventDocument, icons: any[]): stri
               },
               LineStyle: {
                 width: strokeWidth,
-                color: strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r
+                color: kmlColor(strokeParts, strokeOpacity)
               },
               PolyStyle: {
-                color: fillOpacity + fillParts.b + fillParts.g + fillParts.r
+                color: kmlColor(fillParts, fillOpacity)
               }
             }
           }).end()
-          styles.push(secondaryStyle)
+          styleKmlFragments.push(variantStyleKml)
         })
       }
     });
   }
 
-  return styles
+  return styleKmlFragments
 }
 
 export function generateObservationStyles(event: MageEventDocument, icons: any[]): string {

@@ -3,11 +3,10 @@
 const log = require('winston')
 import async from 'async'
 import archiver from 'archiver'
-import moment from 'moment'
 import stream from 'stream'
 import path from 'path'
 import { Exporter } from './exporter'
-import writer from './kmlWriter'
+import * as writer from './kmlWriter'
 import api from '../api'
 import environment from '../environment/env'
 import Icon from '../models/icon'
@@ -60,7 +59,7 @@ export class Kml extends Exporter {
         return done(err)
       }
       log.info(`retrieved ${icons.length} icons`)
-      stream.write(writer.generateObservationStyles(this._event, icons))
+      stream.write(writer.generateObservationStyles(this.eventDoc, icons))
       stream.write(writer.generateKMLFolderStart(this._event.name))
       const cursor = this.requestObservations(this._filter)
       let numObservations = 0;
@@ -93,38 +92,42 @@ export class Kml extends Exporter {
 
     const { startDate, endDate } = this._filter
     const cursor = this.requestLocations({ startDate, endDate });
-
-    let user: UserDocument | null = null;
+    let lastUserId: string | null = null;
+    let lastUser: UserDocument | null = null;
     let userStyles = '';
     let numLocations = 0;
     let locationString = '';
     cursor.eachAsync(async location => {
-      if (!user || user._id.toString() !== location.userId.toString()) {
-        if (user) {
+      if (lastUserId !== location.userId.toString()) {
+        if (lastUser) {
           //complete the previous user
-          this.completeUserFolder(stream, archive, user, locationString);
+          this.completeUserFolder(stream, archive, lastUser, locationString);
         }
         locationString = '';
-        user = await User.getUserById(location.userId);
-        userStyles += writer.generateUserStyle(user);
-        stream.write(writer.generateKMLFolderStart(user.displayName, false));
+        lastUserId = location.userId.toString();
+        lastUser = await User.getUserById(location.userId);
+        if (lastUser) {
+          userStyles += writer.generateUserStyle(lastUser);
+          stream.write(writer.generateKMLFolderStart(lastUser.displayName));
+        }
       }
-      locationString += writer.generateLocationPlacemark(user, location);
+      if (lastUser) {
+        locationString += writer.generateLocationPlacemark(lastUser, location);
+      }
       numLocations++;
-    }).then(() => {
-      if (cursor) cursor.close;
-
-      if (user) {
-        //complete the last user
-        this.completeUserFolder(stream, archive, user, locationString);
+    })
+    .then(() => {
+      if (cursor) {
+        cursor.close;
       }
-
+      if (lastUser) {
+        this.completeUserFolder(stream, archive, lastUser, locationString);
+      }
       stream.write(userStyles);
-
-      log.info('Successfully wrote ' + numLocations + ' locations to KML');
-
+      log.info(`wrote ${numLocations} locations to kml`);
       done();
-    }).catch(err => done(err));
+    })
+    .catch(err => done(err));
   }
 
   completeUserFolder(stream: stream.PassThrough, archive: archiver.Archiver, user: UserDocument, locationString: string): void {

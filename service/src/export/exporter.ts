@@ -50,6 +50,10 @@ export class Exporter {
     return ObservationModelModule.getObservations(this.eventDoc, options);
   }
 
+  /**
+   * Return a cursor for the given location query with results ordered by user
+   * ID and ascending timestamp.
+   */
   requestLocations(options: LocationFetchOptions): mongoose.QueryCursor<UserLocationModelModule.UserLocationDocument> {
     const filter = {
       eventId: this._event.id
