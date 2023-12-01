@@ -63,8 +63,8 @@ function numberOrDefault(maybeNumber: any, def: number): number {
   return typeof maybeNumber === 'number' && !Number.isNaN(maybeNumber) ? maybeNumber : def
 }
 
-function kmlColor(rgb: RGBColor, opacityHexOrDec: string | number): string {
-  const opacityHex = typeof opacityHexOrDec === 'number' ? hexStringForInt(opacityHexOrDec) : opacityHexOrDec
+function kmlColor(rgb: RGBColor, opacityDecimal: number): string {
+  const opacityHex = colorHexForDecimal(opacityDecimal)
   return opacityHex + rgb.b + rgb.g + rgb.r
 }
 

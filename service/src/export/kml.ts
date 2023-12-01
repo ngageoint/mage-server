@@ -97,6 +97,7 @@ export class Kml extends Exporter {
     let userStyles = '';
     let numLocations = 0;
     let locationString = '';
+
     cursor.eachAsync(async location => {
       if (lastUserId !== location.userId.toString()) {
         if (lastUser) {
