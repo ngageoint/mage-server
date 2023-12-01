@@ -1,20 +1,20 @@
 'use strict';
 
-const { RelationType } = require('@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType');
-const { EnvelopeBuilder } = require('@ngageoint/geopackage/dist/lib/geom/envelopeBuilder');
-const util = require('util')
-  , fs = require('fs')
-  , api = require('../api')
-  , archiver = require('archiver')
-  , moment = require('moment')
-  , log = require('winston')
-  , path = require('path')
-  , Exporter = require('./exporter')
-  , GeoPackageAPI = require('@ngageoint/geopackage')
-  , environment = require('../environment/env')
-  , os = require('os')
-  , wkx = require('wkx')
-  , User = require('../models/user');
+import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType'
+import { EnvelopeBuilder } from '@ngageoint/geopackage/dist/lib/geom/envelopeBuilder'
+import GeoPackageAPI from '@ngageoint/geopackage'
+import util from 'util'
+import fs from 'fs'
+import api from '../api'
+import archiver from 'archiver'
+import moment from 'moment'
+import os from 'os'
+import path from 'path'
+import wkx from 'wkx'
+import { Exporter } from './exporter'
+import environment from '../environment/env'
+import * as User from '../models/user'
+const log = require('winston')
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
