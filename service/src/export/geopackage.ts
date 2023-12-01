@@ -13,14 +13,25 @@ import path from 'path'
 import wkx from 'wkx'
 import { Exporter } from './exporter'
 import environment from '../environment/env'
-import * as User from '../models/user'
-import { UserLocationDocument } from '../models/location'
+import User, { UserDocument } from '../models/user'
+import { UserLocationDocument, UserLocationDocumentProperties } from '../models/location'
 import { UserId } from '../entities/users/entities.users'
 import { FormFieldType } from '../entities/events/entities.events.forms'
 import { Envelope } from '@ngageoint/geopackage/dist/lib/geom/envelope'
 import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
 import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
-const log = require('winston')
+import geojson, { Feature } from 'geojson'
+import { UserLocation, UserLocationProperties } from '../entities/locations/entities.locations'
+import { FormFieldEntry } from '../entities/observations/entities.observations'
+import { AttachmentDocument } from '../models/observation'
+type ConsoleLogMethodName = 'log' | 'debug' | 'info' | 'warn' | 'error'
+const log = ([ 'debug', 'info', 'warn', 'error', 'log' ] as ConsoleLogMethodName[]).reduce((log: any, methodName: ConsoleLogMethodName): any => {
+  const consoleMethod = console[methodName]
+  return {
+    ...log,
+    [methodName]: (...args: any[]) => consoleMethod('[export.geopackage]', ...args)
+  }
+}, {} as any)
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
@@ -64,7 +75,7 @@ export class GeoPackage extends Exporter {
       log.error(`error exporting geopackage`, err);
       throw err;
     }
-  };
+  }
 
   createGeoPackageFile(): Promise<string> {
     const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
@@ -134,9 +145,9 @@ export class GeoPackage extends Exporter {
     geopackage.createMediaTable('Attachments', columns);
   }
 
-  async addUserToUsersTable(geopackage: GPKG.GeoPackage, user: User.UserDocument, usersLastLocation: UserLocationDocument, zoomToEnvelope: Envelope): Promise<void> {
+  async addUserToUsersTable(geopackage: GPKG.GeoPackage, user: UserDocument, usersLastLocation: UserLocationDocument, zoomToEnvelope: Envelope): Promise<void> {
     log.info(`add user ${user.username} to users table`);
-    const geoJson = {
+    const feature: geojson.Feature = {
       type: 'Feature',
       geometry: usersLastLocation.geometry,
       properties: {
@@ -147,8 +158,8 @@ export class GeoPackage extends Exporter {
         phones: user.phones.join(', '),
         userId: user._id.toString()
       }
-    };
-    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(geoJson, 'Users');
+    }
+    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Users');
     const iconPath = path.join(environment.userBaseDirectory, user._id.toString(), 'icon');
     let iconBuffer = null;
     try {
@@ -158,7 +169,7 @@ export class GeoPackage extends Exporter {
       log.error(`error reading reading user icon for geopackage export: ${iconPath}`, err)
       return void(0);
     }
-    const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Users');
+    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Users');
     const iconRow = featureTableStyles.getIconDao().newRow();
     iconRow.data = iconBuffer;
     iconRow.contentType = 'image/png';
@@ -169,7 +180,7 @@ export class GeoPackage extends Exporter {
     iconRow.anchorV = 1.0;
     featureTableStyles.setIconDefault(userRowId, iconRow);
     const featureDao = geopackage.getFeatureDao('Users');
-    const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
+    const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
     rtreeIndex.create();
     if (zoomToEnvelope) {
       this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
@@ -210,9 +221,9 @@ export class GeoPackage extends Exporter {
     const cursor = this.requestLocations({ startDate, endDate });
 
     let numLocations = 0;
-    let user = null;
-    let userLastLocation = null;
-    let zoomToEnvelope;
+    let user: UserDocument | null = null;
+    let userLastLocation: UserLocationDocument | null = null;
+    let zoomToEnvelope: Envelope | null = null;
     return cursor.eachAsync(async location => {
 
       if (!user || user._id.toString() !== location.userId.toString()) {
@@ -232,21 +243,20 @@ export class GeoPackage extends Exporter {
       zoomToEnvelope = this.calculateBounds(location.geometry, zoomToEnvelope);
       userLastLocation = location;
 
-      const geojson = {
+      const feature: geojson.Feature<geojson.Point, any> = {
         type: 'Feature',
         geometry: location.geometry,
         properties: location.properties
       };
+      feature.properties.mageId = location._id.toString();
+      feature.properties.userId = location.userId.toString();
+      feature.properties.deviceId = location.properties.deviceId.toString();
 
-      geojson.properties.mageId = location._id.toString();
-      geojson.properties.userId = location.userId.toString();
-      geojson.properties.deviceId = location.properties.deviceId.toString();
-
-      if (geojson.properties.id) {
-        delete geojson.properties.id;
+      if (feature.properties.id) {
+        delete feature.properties.id;
       }
 
-      await geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Locations_' + location.userId.toString());
+      await geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Locations_' + location.userId.toString());
 
       numLocations++;
     }).then(async () => {
@@ -265,13 +275,9 @@ export class GeoPackage extends Exporter {
   }
 
   async createFormAttributeTables(geopackage: GPKG.GeoPackage): Promise<void> {
-    log.info('Create Form Attribute Tables');
-    const formIds = Object.keys(this._event.formMap);
-
-    for (let i = 0; i < formIds.length; i++) {
-      const formId = formIds[i];
+    log.info('create form attribute tables');
+    for (const form of this._event.forms) {
       const columns = [];
-      const form = this._event.formMap[formId];
       if (form.primaryField) {
         columns.push({
           name: 'primaryField',
@@ -287,14 +293,14 @@ export class GeoPackage extends Exporter {
       columns.push({
         name: 'formId',
         dataType: 'INTEGER',
-        default: formId
+        default: form.id
       });
       for (let i = 0; i < form.fields.length; i++) {
         const field = form.fields[i];
         columns.push({
           dataColumn: {
             column_name: field.name,
-            table_name: 'Form_' + formId,
+            table_name: 'Form_' + form.id,
             name: field.title,
             title: field.title
           },
@@ -302,7 +308,7 @@ export class GeoPackage extends Exporter {
           dataType: this.fieldTypeToGeoPackageType(field.type)
         });
       }
-      await geopackage.createAttributesTableFromProperties('Form_' + formId, columns);
+      await geopackage.createAttributesTableFromProperties('Form_' + form.id, columns);
     }
   }
 
@@ -347,7 +353,7 @@ export class GeoPackage extends Exporter {
     });
     await geopackage.createFeatureTableFromProperties('Users', columns)
     log.info('create user avatar table');
-    await geopackage.createMediaTable('UserAvatars');
+    await geopackage.createMediaTable('UserAvatars', void(0) as any /* really is optional */);
   }
 
   async addFormDataToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -374,22 +380,20 @@ export class GeoPackage extends Exporter {
     });
 
     await geopackage.createAttributesTableFromProperties('Forms', columns)
-    for (const formId in this._event.formMap) {
-      const form = this._event.formMap[formId];
+    for (const form of this._event.forms) {
       const row = {
         formName: form.name,
-        primaryField: form.primaryField,
-        variantField: form.variantField,
+        primaryField: form.primaryField || null,
+        variantField: form.variantField || null,
         color: form.color,
-        formId: formId
+        formId: form.id
       };
-
-      geopackage.addAttributeRow('Forms', row);
+      geopackage.addAttributeRow('Forms', row as any);
     }
   }
 
   async addObservationsToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
-    log.info('Requesting locations from DB');
+    log.info('requesting locations from db');
 
     this.createAttachmentTable(geopackage);
 
@@ -401,16 +405,16 @@ export class GeoPackage extends Exporter {
 
       numObservations++;
 
-      let primary;
-      let variant;
+      let primary: string | null = null;
+      let variant: string | null = null;
       if (observation.properties.forms && observation.properties.forms.length > 0) {
-        const observationFirstForm = observation.properties.forms[0];
-        const form = this._event.formMap[observationFirstForm.formId];
-        primary = observationFirstForm[form.primaryField];
-        variant = observationFirstForm[form.variantField];
+        const formEntry1 = observation.properties.forms[0];
+        const form = this._event.formFor(formEntry1.formId);
+        primary = (formEntry1[form?.primaryField || ''] || null) as string | null;
+        variant = (formEntry1[form?.variantField || ''] || null) as string | null;
       }
 
-      const properties = {
+      const properties: any = {
         lastModified: observation.lastModified,
         timestamp: observation.properties.timestamp,
         mageId: observation._id.toString(),
@@ -418,106 +422,108 @@ export class GeoPackage extends Exporter {
         primaryField: primary,
         variantField: variant
       }
-
       if (observation.userId) {
         properties.userId = observation.userId.toString()
       }
-
       if (observation.deviceId) {
         properties.deviceId = observation.deviceId.toString()
       }
 
-      const geojson = {
+      const feature: geojson.Feature = {
         type: 'Feature',
         geometry: observation.geometry,
-        properties: properties
+        properties
       };
 
-      zoomToEnvelope = this.calculateBounds(geojson.geometry, zoomToEnvelope);
+      zoomToEnvelope = this.calculateBounds(feature.geometry, zoomToEnvelope);
 
-      const featureId = geopackage.addGeoJSONFeatureToGeoPackage(geojson, 'Observations');
+      const featureId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Observations');
 
       if (observation.properties.forms && observation.properties.forms[0]) {
         // insert the icon link
         let iconId = this.iconMap[observation.properties.forms[0].formId]['icon.png'];
-
         if (primary && this.iconMap[observation.properties.forms[0].formId][primary]) {
           iconId = this.iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
-        }
-        if (variant && this.iconMap[observation.properties.forms[0].formId][primary] && this.iconMap[observation.properties.forms[0].formId][primary][variant]) {
-          iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
+          if (variant && this.iconMap[observation.properties.forms[0].formId][primary] && this.iconMap[observation.properties.forms[0].formId][primary][variant]) {
+            iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
+          }
         }
         const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Observations');
         featureTableStyles.setIconDefault(featureId, iconId)
       }
 
-      if (observation.properties.forms) {
-        for (let f = 0; f < observation.properties.forms.length; f++) {
-          const observationForm = observation.properties.forms[f];
-          const formDefinition = this._event.formMap[observationForm.formId];
-          primary = observationForm[formDefinition.primaryField];
-          variant = observationForm[formDefinition.variantField];
-          const formToSave = {
-            primaryField: primary,
-            variantField: variant,
-            formId: observationForm.formId
-          };
-          const attachments = [];
-          if (observation.attachments) {
-            observation.attachments.forEach((attachment) => {
-              if (attachment.observationFormId.toString() == observationForm._id) {
-                attachments.push(attachment);
-                observationForm[attachment.fieldName] = observationForm[attachment.fieldName] || []
-                observationForm[attachment.fieldName].push(attachment._id.toString());
-              }
-            })
-          }
-          Object.keys(observationForm).forEach(key => {
-
-            if (observationForm[key] == null) return;
-
-            const fieldDefinition = formDefinition.fields.find(field => field.name === key);
-            if (!fieldDefinition) return;
-            if (fieldDefinition.type === 'multiselectdropdown') {
-              formToSave[key] = observationForm[key].join(', ');
-            } else if (fieldDefinition.type === 'date') {
-              formToSave[key] = moment(observationForm[key]).toISOString();
-            } else if (fieldDefinition.type === 'checkbox') {
-              formToSave[key] = observationForm[key].toString();
-            } else if (fieldDefinition.type === 'geometry') {
-              formToSave[key] = wkx.Geometry.parseGeoJSON(observationForm[key]).toWkt();
-            } else if (fieldDefinition.type === 'attachment') {
-              formToSave[key] = observationForm[key].join(', ');
-            } else {
-              formToSave[key] = observationForm[key]
+      const formEntries = observation.properties.forms || []
+      for (const formEntry of formEntries) {
+        const formDefinition = this._event.formFor(formEntry.formId)!;
+        const primary = formEntry[formDefinition.primaryField || ''];
+        const variant = formEntry[formDefinition.variantField || ''];
+        const formToSave = {
+          primaryField: primary,
+          variantField: variant,
+          formId: formEntry.formId
+        } as any;
+        const attachments = [] as AttachmentDocument[];
+        if (observation.attachments) {
+          observation.attachments.forEach((attachment) => {
+            if (String(attachment.observationFormId) === String(formEntry._id)) {
+              attachments.push(attachment);
+              const attachmentFieldEntries = (formEntry[attachment.fieldName] || []) as string[]
+              attachmentFieldEntries.push(String(attachment._id))
+              formEntry[attachment.fieldName] = attachmentFieldEntries
             }
           })
-
-          try {
-            const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
-
-            if (attachments.length) {
-              await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
-            }
-
-            await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
+        }
+        Object.keys(formEntry).forEach(key => {
+          const fieldEntry = formEntry[key] as any
+          if (fieldEntry === null || fieldEntry === undefined) {
+            return
           }
-          catch (e) {
-            console.error('error is ', e);
+          const field = this._event.formFieldFor(key, formDefinition.id)
+          if (!field) {
+            return
           }
+          if (field.type === 'multiselectdropdown') {
+            formToSave[key] = fieldEntry.join(', ');
+          }
+          else if (field.type === 'date') {
+            formToSave[key] = moment(fieldEntry).toISOString();
+          }
+          else if (field.type === 'checkbox') {
+            formToSave[key] = String(fieldEntry)
+          }
+          else if (field.type === 'geometry') {
+            formToSave[key] = wkx.Geometry.parseGeoJSON(fieldEntry).toWkt();
+          }
+          else if (field.type === 'attachment') {
+            formToSave[key] = fieldEntry.join(', ');
+          }
+          else {
+            formToSave[key] = fieldEntry
+          }
+        })
+
+        try {
+          const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
+          if (attachments.length) {
+            await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+          }
+          await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
+        }
+        catch (e) {
+          log.error(`error writing rows for form entry ${formEntry.id} of observation ${observation.id} to geopackage`, e);
         }
       }
-    }).then(async () => {
-      if (cursor) cursor.close;
-
+    })
+    .then(async () => {
+      if (cursor) {
+        await cursor.close()
+      }
       const featureDao = geopackage.getFeatureDao('Observations');
-      const rtreeIndex = new GeoPackageAPI.RTreeIndex(geopackage, featureDao);
+      const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
       rtreeIndex.create();
-
       if (zoomToEnvelope) {
         this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
       }
-
       log.info(`'wrote ${numObservations} observations to geopackage`);
     })
     .catch(err => {
@@ -525,7 +531,7 @@ export class GeoPackage extends Exporter {
     });
   }
 
-  calculateBounds(geometry: wkx.Geometry, zoomToEnvelope: Envelope): Envelope {
+  calculateBounds(geometry: geojson.Geometry, zoomToEnvelope: Envelope | null): Envelope {
     const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
     const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
     if (!zoomToEnvelope) {
@@ -546,7 +552,7 @@ export class GeoPackage extends Exporter {
     return zoomToEnvelope;
   }
 
-  async addAttachments(geopackage: GPKG.GeoPackage, attachments, observationId, formTable, formRowId): Promise<void> {
+  async addAttachments(geopackage: GPKG.GeoPackage, attachments: AttachmentDocument[], observationId: number, formTable: string, formRowId: number): Promise<void> {
     log.info('Add Attachments');
 
     for (let i = 0; i < attachments.length; i++) {
@@ -554,13 +560,14 @@ export class GeoPackage extends Exporter {
 
       if (attachment.relativePath) {
         await new Promise(function (resolve, reject) {
-          fs.readFile(path.join(attachmentBase, attachment.relativePath), async (err, dataBuffer) => {
-            if (err) return reject(err);
-            const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType, {
-              name: attachment.name,
-              size: attachment.size
+          fs.readFile(path.join(attachmentBase, attachment.relativePath!), async (err, dataBuffer) => {
+            if (err) {
+              return reject(err);
+            }
+            const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType || 'application/octet-stream', {
+              name: attachment.name || attachment._id,
+              size: attachment.size || 0
             });
-
             await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
             resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
           });
@@ -571,7 +578,7 @@ export class GeoPackage extends Exporter {
 
   async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
     const featureTableName = 'Observations';
-    const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
+    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
     await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
     await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension()
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension()
@@ -581,15 +588,15 @@ export class GeoPackage extends Exporter {
 
   async createUserFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
     const featureTableName = 'Users';
-    const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
+    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
     await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
     await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
     featureTableStyles.createRelationships();
   }
 
-  async addObservationIcons(geopackage: GPKG.GeoPackage, featureTableStyles): Promise<void> {
-    const rootDir = path.join(new api.Icon(this._event._id).getBasePath());
+  async addObservationIcons(geopackage: GPKG.GeoPackage, featureTableStyles: GPKG.FeatureTableStyles): Promise<void> {
+    const rootDir = path.join(new api.Icon(this._event.id).getBasePath());
 
     if (!fs.existsSync(path.join(rootDir))) {
       return;
