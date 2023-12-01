@@ -18,9 +18,6 @@ const log = require('winston')
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
-const pathToGeoPackageModule = path.resolve(path.dirname(require.resolve('@ngageoint/geopackage/package.json')))
-GeoPackageAPI.setCanvasKitWasmLocateFile(file => `${pathToGeoPackageModule}/dist/canvaskit/${file}`);
-
 function GeoPackage(options) {
   GeoPackage.super_.call(this, options);
   this.iconMap = {}
