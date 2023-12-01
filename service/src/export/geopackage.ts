@@ -2,7 +2,7 @@
 
 import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType'
 import { EnvelopeBuilder } from '@ngageoint/geopackage/dist/lib/geom/envelopeBuilder'
-import GeoPackageAPI from '@ngageoint/geopackage'
+import GPKG, { GeoPackageAPI } from '@ngageoint/geopackage'
 import util from 'util'
 import fs from 'fs'
 import api from '../api'
@@ -14,15 +14,21 @@ import wkx from 'wkx'
 import { Exporter } from './exporter'
 import environment from '../environment/env'
 import * as User from '../models/user'
+import { UserLocationDocument } from '../models/location'
+import { UserId } from '../entities/users/entities.users'
+import { FormFieldType } from '../entities/events/entities.events.forms'
+import { Envelope } from '@ngageoint/geopackage/dist/lib/geom/envelope'
+import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
+import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
 const log = require('winston')
 
 const attachmentBase = environment.attachmentBaseDirectory;
 
-class GeoPackage extends Exporter {
+export class GeoPackage extends Exporter {
 
   private iconMap = {} as any
 
-  async export(streamable) {
+  async export(streamable: NodeJS.WritableStream): Promise<void> {
     log.info('Export the GeoPackage');
     const downloadedFileName = 'mage-' + this._event.name;
 
@@ -31,7 +37,7 @@ class GeoPackage extends Exporter {
 
     try {
       const filePath = await this.createGeoPackageFile();
-      const gp = await GeoPackageAPI.GeoPackageAPI.create(filePath);
+      const gp = await GeoPackageAPI.create(filePath);
       await this.createUserTable(gp);
       await this.createUserFeatureTableStyles(gp);
       if (this._filter.exportObservations) {
@@ -60,8 +66,7 @@ class GeoPackage extends Exporter {
     }
   };
 
-  createGeoPackageFile() {
-    log.info('Create GeoPackage File');
+  createGeoPackageFile(): Promise<string> {
     const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
     const filePath = path.join(os.tmpdir(), filename);
     return new Promise(function (resolve, reject) {
@@ -76,7 +81,7 @@ class GeoPackage extends Exporter {
     });
   }
 
-  async createObservationTable(geopackage) {
+  async createObservationTable(geopackage: GPKG.GeoPackage): Promise<void> {
     log.info('Create Observation Table');
     const columns = [];
 
@@ -115,11 +120,10 @@ class GeoPackage extends Exporter {
     });
 
     await geopackage.createFeatureTableFromProperties('Observations', columns);
-    return geopackage;
   }
 
-  createAttachmentTable(geopackage) {
-    log.info('Create Attachment Table');
+  createAttachmentTable(geopackage: GPKG.GeoPackage): void {
+    log.info('create attachment table');
     const columns = [{
       name: "name",
       dataType: "TEXT"
@@ -127,10 +131,10 @@ class GeoPackage extends Exporter {
       name: "size",
       dataType: "REAL"
     }];
-    return geopackage.createMediaTable('Attachments', columns);
+    geopackage.createMediaTable('Attachments', columns);
   }
 
-  addUserToUsersTable = async function (geopackage, user, usersLastLocation, zoomToEnvelope) {
+  async addUserToUsersTable(geopackage: GPKG.GeoPackage, user: User.UserDocument, usersLastLocation: UserLocationDocument, zoomToEnvelope: Envelope): Promise<void> {
     log.info(`add user ${user.username} to users table`);
     const geoJson = {
       type: 'Feature',
@@ -172,7 +176,7 @@ class GeoPackage extends Exporter {
     }
   }
 
-  async createLocationTableForUser(geopackage, userId) {
+  async createLocationTableForUser(geopackage: GPKG.GeoPackage, userId: UserId): Promise<void> {
     const columns = [];
 
     columns.push({
@@ -197,16 +201,13 @@ class GeoPackage extends Exporter {
     });
 
     await geopackage.createFeatureTableFromProperties('Locations_' + userId, columns);
-    return geopackage;
   }
 
-  async addLocationsToGeoPackage(geopackage) {
+  async addLocationsToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
     log.info('Requesting locations from DB');
 
-    const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
-    const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
-
-    const cursor = this.requestLocations({ startDate: startDate, endDate: endDate, stream: true });
+    const { startDate, endDate } = this._filter
+    const cursor = this.requestLocations({ startDate, endDate });
 
     let numLocations = 0;
     let user = null;
@@ -258,13 +259,12 @@ class GeoPackage extends Exporter {
         await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
       }
 
-      log.info('Successfully wrote ' + numLocations + ' locations to Geopackage');
-
-      return geopackage;;
-    }).catch(err => { log.warn(err) });
+      log.info(`wrote ${numLocations} locations to geopackage`);
+    })
+    .catch(err => { log.warn(err) });
   }
 
-  async createFormAttributeTables(geopackage) {
+  async createFormAttributeTables(geopackage: GPKG.GeoPackage): Promise<void> {
     log.info('Create Form Attribute Tables');
     const formIds = Object.keys(this._event.formMap);
 
@@ -304,10 +304,9 @@ class GeoPackage extends Exporter {
       }
       await geopackage.createAttributesTableFromProperties('Form_' + formId, columns);
     }
-    return geopackage;
   }
 
-  fieldTypeToGeoPackageType(fieldType) {
+  fieldTypeToGeoPackageType(fieldType: FormFieldType): string {
     switch (fieldType) {
       case 'numberfield':
         return 'INTEGER'
@@ -320,7 +319,7 @@ class GeoPackage extends Exporter {
     }
   }
 
-  async createUserTable(geopackage) {
+  async createUserTable(geopackage: GPKG.GeoPackage): Promise<void> {
     const columns = [];
     columns.push({
       name: 'username',
@@ -347,51 +346,49 @@ class GeoPackage extends Exporter {
       dataType: 'DATETIME'
     });
     await geopackage.createFeatureTableFromProperties('Users', columns)
-    log.info('Create User Avatar Table');
+    log.info('create user avatar table');
     await geopackage.createMediaTable('UserAvatars');
-    return geopackage;
   }
 
-async addFormDataToGeoPackage(geopackage) {
-  const columns = [];
-  columns.push({
-    name: 'formName',
-    dataType: 'TEXT'
-  });
-  columns.push({
-    name: 'primaryField',
-    dataType: 'TEXT'
-  });
-  columns.push({
-    name: 'variantField',
-    dataType: 'TEXT'
-  });
-  columns.push({
-    name: 'color',
-    dataType: 'TEXT'
-  });
-  columns.push({
-    name: 'formId',
-    dataType: 'TEXT'
-  });
+  async addFormDataToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
+    const columns = [];
+    columns.push({
+      name: 'formName',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'primaryField',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'variantField',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'color',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'formId',
+      dataType: 'TEXT'
+    });
 
-  await geopackage.createAttributesTableFromProperties('Forms', columns)
-  for (const formId in this._event.formMap) {
-    const form = this._event.formMap[formId];
-    const row = {
-      formName: form.name,
-      primaryField: form.primaryField,
-      variantField: form.variantField,
-      color: form.color,
-      formId: formId
-    };
+    await geopackage.createAttributesTableFromProperties('Forms', columns)
+    for (const formId in this._event.formMap) {
+      const form = this._event.formMap[formId];
+      const row = {
+        formName: form.name,
+        primaryField: form.primaryField,
+        variantField: form.variantField,
+        color: form.color,
+        formId: formId
+      };
 
-    geopackage.addAttributeRow('Forms', row);
+      geopackage.addAttributeRow('Forms', row);
+    }
   }
-  return geopackage;
-}
 
-  async addObservationsToGeoPackage(geopackage) {
+  async addObservationsToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
     log.info('Requesting locations from DB');
 
     this.createAttachmentTable(geopackage);
@@ -399,7 +396,7 @@ async addFormDataToGeoPackage(geopackage) {
     const cursor = this.requestObservations(this._filter);
 
     let numObservations = 0;
-    let zoomToEnvelope;
+    let zoomToEnvelope: Envelope;
     return cursor.eachAsync(async observation => {
 
       numObservations++;
@@ -450,7 +447,7 @@ async addFormDataToGeoPackage(geopackage) {
         if (variant && this.iconMap[observation.properties.forms[0].formId][primary] && this.iconMap[observation.properties.forms[0].formId][primary][variant]) {
           iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
         }
-        const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, 'Observations');
+        const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Observations');
         featureTableStyles.setIconDefault(featureId, iconId)
       }
 
@@ -521,38 +518,35 @@ async addFormDataToGeoPackage(geopackage) {
         this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
       }
 
-      log.info('Successfully wrote ' + numObservations + ' observations to Geopackage');
-
-      return geopackage;
-    }).catch(err => { log.warn(err) });
+      log.info(`'wrote ${numObservations} observations to geopackage`);
+    })
+    .catch(err => {
+      log.warn(err)
+    });
   }
 
-  calculateBounds(geometry, zoomToEnvelope) {
-
+  calculateBounds(geometry: wkx.Geometry, zoomToEnvelope: Envelope): Envelope {
     const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
     const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
-
     if (!zoomToEnvelope) {
-      zoomToEnvelope = envelope;
-    } else {
-      if (zoomToEnvelope.maxX < envelope.maxX) {
-        zoomToEnvelope.maxX = envelope.maxX;
-      }
-      if (zoomToEnvelope.maxY < envelope.maxY) {
-        zoomToEnvelope.maxY = envelope.maxY;
-      }
-      if (zoomToEnvelope.minX > envelope.minX) {
-        zoomToEnvelope.minX = envelope.minX;
-      }
-      if (zoomToEnvelope.minY > envelope.minY) {
-        zoomToEnvelope.minY = envelope.minY;
-      }
+      return envelope;
     }
-
+    if (zoomToEnvelope.maxX < envelope.maxX) {
+      zoomToEnvelope.maxX = envelope.maxX;
+    }
+    if (zoomToEnvelope.maxY < envelope.maxY) {
+      zoomToEnvelope.maxY = envelope.maxY;
+    }
+    if (zoomToEnvelope.minX > envelope.minX) {
+      zoomToEnvelope.minX = envelope.minX;
+    }
+    if (zoomToEnvelope.minY > envelope.minY) {
+      zoomToEnvelope.minY = envelope.minY;
+    }
     return zoomToEnvelope;
   }
 
-  async addAttachments(geopackage, attachments, observationId, formTable, formRowId) {
+  async addAttachments(geopackage: GPKG.GeoPackage, attachments, observationId, formTable, formRowId): Promise<void> {
     log.info('Add Attachments');
 
     for (let i = 0; i < attachments.length; i++) {
@@ -575,7 +569,7 @@ async addFormDataToGeoPackage(geopackage) {
     }
   }
 
-  async createObservationFeatureTableStyles(geopackage) {
+  async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
     const featureTableName = 'Observations';
     const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
     await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
@@ -583,24 +577,22 @@ async addFormDataToGeoPackage(geopackage) {
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension()
     featureTableStyles.createRelationships()
     await this.addObservationIcons(geopackage, featureTableStyles);
-    return geopackage;
   }
 
-  async createUserFeatureTableStyles(geopackage) {
+  async createUserFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
     const featureTableName = 'Users';
     const featureTableStyles = new GeoPackageAPI.FeatureTableStyles(geopackage, featureTableName);
     await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
     await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
     featureTableStyles.createRelationships();
-    return geopackage;
   }
 
-  async addObservationIcons(geopackage, featureTableStyles) {
+  async addObservationIcons(geopackage: GPKG.GeoPackage, featureTableStyles): Promise<void> {
     const rootDir = path.join(new api.Icon(this._event._id).getBasePath());
 
     if (!fs.existsSync(path.join(rootDir))) {
-      return geopackage;
+      return;
     }
 
     const formDirs = fs.readdirSync(path.join(rootDir));
@@ -624,7 +616,7 @@ async addFormDataToGeoPackage(geopackage) {
             iconRow.anchorV = 1.0;
             this.iconMap[formDir] = iconRow;
             await featureTableStyles.setTableIconDefault(iconRow);
-            resolve();
+            resolve(void(0));
           });
         });
       } else {
@@ -647,7 +639,7 @@ async addFormDataToGeoPackage(geopackage) {
                 iconRow.anchorU = 0.5;
                 iconRow.anchorV = 1.0;
                 this.iconMap[formDir]['icon.png'] = iconRow;
-                resolve();
+                resolve(void(0));
               });
             });
           } else {
@@ -671,7 +663,7 @@ async addFormDataToGeoPackage(geopackage) {
                     iconRow.anchorU = 0.5;
                     iconRow.anchorV = 1.0;
                     this.iconMap[formDir][primaryDir]['icon.png'] = iconRow;
-                    resolve();
+                    resolve(void(0));
                   });
                 });
               } else {
@@ -691,7 +683,7 @@ async addFormDataToGeoPackage(geopackage) {
                     iconRow.anchorU = 0.5;
                     iconRow.anchorV = 1.0;
                     this.iconMap[formDir][primaryDir][variantDir]['icon.png'] = iconRow;
-                    resolve();
+                    resolve(void(0));
                   });
                 });
               }
@@ -700,16 +692,14 @@ async addFormDataToGeoPackage(geopackage) {
         }
       }
     }
-    return geopackage;
   }
 
-  setContentBounds(geopackage, featureDao, zoomToEnvelope) {
+  setContentBounds(geopackage: GPKG.GeoPackage, featureDao: FeatureDao<FeatureRow>, zoomToEnvelope: Envelope): void {
     const contents = featureDao.getContents();
     contents.max_x = zoomToEnvelope.maxX;
     contents.max_y = zoomToEnvelope.maxY;
     contents.min_x = zoomToEnvelope.minX;
     contents.min_y = zoomToEnvelope.minY;
-
     const contentsDao = geopackage.contentsDao;
     contentsDao.update(contents);
   }
