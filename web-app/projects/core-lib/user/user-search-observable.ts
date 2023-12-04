@@ -21,6 +21,8 @@ export function userSearchObservable(
     page: String(which.pageIndex)
   };
 
+  console.log('userSearchObservable Query Params:', queryParams);
+
   if (which.term) queryParams.term = which.term;
   if (which.active !== undefined)
     queryParams.active = which.active ? 'true' : 'false';
@@ -34,6 +36,7 @@ export function userSearchObservable(
       params: queryParams
     })
     .pipe(
+      tap((result) => console.log('Received data:', result)), // Log the received data
       map((result) => result as PageOf<UserSearchResult>),
       tap((result) => {
         cachedResults.set(cacheKey, result);

@@ -16,8 +16,22 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount: 'total' in req.query ? /^true$/i.test(String(req.query.total)) : undefined
-      }
+        includeTotalCount:
+          'total' in req.query
+            ? /^true$/i.test(String(req.query.total))
+            : undefined,
+        active:
+          'active' in req.query
+            ? /^true$/i.test(String(req.query.active))
+            : undefined,
+        enabled:
+          'enabled' in req.query
+            ? /^true$/i.test(String(req.query.enabled))
+            : undefined
+      };
+
+      console.log('Backend Received Params:', userSearch);
+
       const appReq = createAppRequest(req, { userSearch })
       const appRes = await app.searchUsers(appReq)
       if (appRes.success) {

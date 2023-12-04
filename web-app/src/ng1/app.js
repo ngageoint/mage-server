@@ -82,6 +82,7 @@ app
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService))
   .factory('PluginService', downgradeInjectable(PluginService))
+  // TODO: remove this once we have a new user service
   .factory('UserReadService', downgradeInjectable(UserReadService))
 
 // Downgraded Angular components
