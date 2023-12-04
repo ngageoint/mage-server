@@ -246,16 +246,28 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     options = options || {};
     const deferredUsers = $q.defer();
 
-    $http.get('/api/next-users/search', {params: options})
-      .success(function(data) {
-        if (Array.isArray(data)) {
-          deferredUsers.resolve(_.indexBy(data, 'id'));
-        } else {
-          deferredUsers.resolve(data);
-        }
+    // Map frontend parameters to backend expected parameters
+    let queryParams = {
+      page_size: options.limit || 10, // Map 'limit' to 'pageSize'
+      page: options.page || 0, // Assuming 'page' is provided in options
+      active: options.active, // Include 'active' if present
+      enabled: options.enabled, // Include 'enabled' if present
+      term: options.term // Include 'term' if present for nameOrContactTerm
+    };
+
+    // console.log('Requesting Users with queryParams: ', queryParams);
+    $http
+      .get('/api/next-users/search', { params: queryParams })
+      .success(function (data) {
+        // console.log('Received User Data getAllUsers:', data);
+        deferredUsers.resolve(data); // Resolve the promise with the fetched data
+      })
+      .error(function (error) {
+        console.log('error in getAllUsers', error);
+        deferredUsers.reject(error); // Reject the promise in case of an error
       });
 
-    return deferredUsers.promise;
+    return deferredUsers.promise; // Return the promise object
   }
 
   function createUser(user, success, error, progress) {

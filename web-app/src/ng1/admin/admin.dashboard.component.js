@@ -115,6 +115,7 @@ class AdminDashboardController {
 
   search() {
     this.UserPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
+      console.log('Users to be displayed:', users);
       this.inactiveUsers = users;
     });
   }
@@ -154,7 +155,7 @@ class AdminDashboardController {
     if (searchString == null) {
       searchString = '.*';
     }
-    
+
     return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
       this.loginDeviceSearchResults = devices;
 

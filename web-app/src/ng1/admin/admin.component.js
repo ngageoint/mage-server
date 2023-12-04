@@ -13,10 +13,13 @@ class AdminController {
 
     this.userState = 'inactive';
     this.inactiveUsers = [];
-    const defaultUserQueries = this.UserPagingService.constructDefault()
+    const defaultUserQueries = this.UserPagingService.constructDefault();
     this.stateAndData = {
       inactive: defaultUserQueries.inactive
-    }
+    };
+
+    // console.log('stateAndData after initialization:', this.stateAndData);
+
 
     this.deviceState = 'unregistered';
     this.unregisteredDevices = [];
@@ -36,6 +39,7 @@ class AdminController {
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
+    // console.log('Initial stateAndData:', this.stateAndData);
     this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
       this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });

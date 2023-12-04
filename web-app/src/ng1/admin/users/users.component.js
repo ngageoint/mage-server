@@ -41,16 +41,20 @@ class AdminUsersController {
   $onInit() {
     const searchParams = {
       pageSize: 10,
-      pageIndex: 1,
+      pageIndex: 0,
       includeTotalCount: true
     };
 
     this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
+      console.log('Frontend Request Params:', searchParams);
+      console.log('Backend Response:', pageOfUsers);
       this.users = pageOfUsers.items;
     });
+
   }
 
   count(state) {
+    console.log('Count for state', state, ':', this.stateAndData[state].userCount);
     return this.stateAndData[state].userCount;
   }
 
@@ -85,6 +89,9 @@ class AdminUsersController {
       pageIndex: 1,
       includeTotalCount: true
     };
+
+    console.log('Search Params:', searchParams);
+
 
     this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
       this.users = pageOfUsers.items;
