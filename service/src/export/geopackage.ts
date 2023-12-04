@@ -47,10 +47,10 @@ export class GeoPackage extends Exporter {
     archive.pipe(streamable);
 
     try {
-      const filePath = await this.createGeoPackageFile();
+      const filePath = await createGeoPackageFile();
       const gp = await GeoPackageAPI.create(filePath);
       await this.createUserTable(gp);
-      await this.createUserFeatureTableStyles(gp);
+      await createUserFeatureTableStyles(gp);
       if (this._filter.exportObservations) {
         await this.addFormDataToGeoPackage(gp);
         await this.createFormAttributeTables(gp);
@@ -75,21 +75,6 @@ export class GeoPackage extends Exporter {
       log.error(`error exporting geopackage`, err);
       throw err;
     }
-  }
-
-  createGeoPackageFile(): Promise<string> {
-    const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
-    const filePath = path.join(os.tmpdir(), filename);
-    return new Promise(function (resolve, reject) {
-      fs.unlink(filePath, function () {
-        fs.mkdir(path.dirname(filePath), function () {
-          fs.open(filePath, 'w', function (err) {
-            if (err) return reject(err);
-            resolve(filePath);
-          });
-        });
-      });
-    });
   }
 
   async createObservationTable(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -183,7 +168,7 @@ export class GeoPackage extends Exporter {
     const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
     rtreeIndex.create();
     if (zoomToEnvelope) {
-      this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+      setContentBounds(geopackage, featureDao, zoomToEnvelope);
     }
   }
 
@@ -228,7 +213,7 @@ export class GeoPackage extends Exporter {
         if (zoomToEnvelope) {
           // Switching user, so update location
           const featureDao = geopackage.getFeatureDao('Locations_' + user!._id.toString());
-          this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+          setContentBounds(geopackage, featureDao, zoomToEnvelope);
           await this.addUserToUsersTable(geopackage, user!, userLastLocation!, zoomToEnvelope);
         }
         zoomToEnvelope = null;
@@ -236,7 +221,7 @@ export class GeoPackage extends Exporter {
         await this.createLocationTableForUser(geopackage, location.userId.toString());
       }
 
-      zoomToEnvelope = this.calculateBounds(location.geometry, zoomToEnvelope);
+      zoomToEnvelope = calculateBounds(location.geometry, zoomToEnvelope);
       userLastLocation = location;
 
       const feature: geojson.Feature<geojson.Point, any> = {
@@ -263,7 +248,7 @@ export class GeoPackage extends Exporter {
       if (zoomToEnvelope && user) {
         //Process the last user, since it was missed in the loop above
         const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
-        this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+        setContentBounds(geopackage, featureDao, zoomToEnvelope);
         await this.addUserToUsersTable(geopackage, user, userLastLocation!, zoomToEnvelope);
       }
 
@@ -433,7 +418,7 @@ export class GeoPackage extends Exporter {
         properties
       };
 
-      zoomToEnvelope = this.calculateBounds(feature.geometry, zoomToEnvelope);
+      zoomToEnvelope = calculateBounds(feature.geometry, zoomToEnvelope);
 
       const featureId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Observations');
 
@@ -503,7 +488,7 @@ export class GeoPackage extends Exporter {
         try {
           const rowId = geopackage.addAttributeRow('Form_' + formToSave.formId, formToSave);
           if (attachments.length) {
-            await this.addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
+            await addAttachments(geopackage, attachments, featureId, 'Form_' + formToSave.formId, rowId);
           }
           await geopackage.linkRelatedRows('Observations', featureId, 'Form_' + formToSave.formId, rowId, RelationType.ATTRIBUTES);
         }
@@ -520,58 +505,13 @@ export class GeoPackage extends Exporter {
       const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
       rtreeIndex.create();
       if (zoomToEnvelope) {
-        this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
+        setContentBounds(geopackage, featureDao, zoomToEnvelope);
       }
       log.info(`'wrote ${numObservations} observations to geopackage`);
     })
     .catch(err => {
       log.warn(err)
     });
-  }
-
-  calculateBounds(geometry: geojson.Geometry, zoomToEnvelope: Envelope | null): Envelope {
-    const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
-    const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
-    if (!zoomToEnvelope) {
-      return envelope;
-    }
-    if (zoomToEnvelope.maxX < envelope.maxX) {
-      zoomToEnvelope.maxX = envelope.maxX;
-    }
-    if (zoomToEnvelope.maxY < envelope.maxY) {
-      zoomToEnvelope.maxY = envelope.maxY;
-    }
-    if (zoomToEnvelope.minX > envelope.minX) {
-      zoomToEnvelope.minX = envelope.minX;
-    }
-    if (zoomToEnvelope.minY > envelope.minY) {
-      zoomToEnvelope.minY = envelope.minY;
-    }
-    return zoomToEnvelope;
-  }
-
-  async addAttachments(geopackage: GPKG.GeoPackage, attachments: AttachmentDocument[], observationId: number, formTable: string, formRowId: number): Promise<void> {
-    log.info('Add Attachments');
-
-    for (let i = 0; i < attachments.length; i++) {
-      const attachment = attachments[i];
-
-      if (attachment.relativePath) {
-        await new Promise(function (resolve, reject) {
-          fs.readFile(path.join(attachmentBase, attachment.relativePath!), async (err, dataBuffer) => {
-            if (err) {
-              return reject(err);
-            }
-            const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType || 'application/octet-stream', {
-              name: attachment.name || attachment._id,
-              size: attachment.size || 0
-            });
-            await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
-            resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
-          });
-        });
-      }
-    }
   }
 
   async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -582,15 +522,6 @@ export class GeoPackage extends Exporter {
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension()
     featureTableStyles.createRelationships()
     await this.addObservationIcons(geopackage, featureTableStyles);
-  }
-
-  async createUserFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
-    const featureTableName = 'Users';
-    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
-    await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
-    await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
-    await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
-    featureTableStyles.createRelationships();
   }
 
   async addObservationIcons(geopackage: GPKG.GeoPackage, featureTableStyles: GPKG.FeatureTableStyles): Promise<void> {
@@ -698,14 +629,83 @@ export class GeoPackage extends Exporter {
       }
     }
   }
+}
 
-  setContentBounds(geopackage: GPKG.GeoPackage, featureDao: FeatureDao<FeatureRow>, zoomToEnvelope: Envelope): void {
-    const contents = featureDao.getContents();
-    contents.max_x = zoomToEnvelope.maxX;
-    contents.max_y = zoomToEnvelope.maxY;
-    contents.min_x = zoomToEnvelope.minX;
-    contents.min_y = zoomToEnvelope.minY;
-    const contentsDao = geopackage.contentsDao;
-    contentsDao.update(contents);
+function  createGeoPackageFile(): Promise<string> {
+  const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
+  const filePath = path.join(os.tmpdir(), filename);
+  return new Promise(function (resolve, reject) {
+    fs.unlink(filePath, function () {
+      fs.mkdir(path.dirname(filePath), function () {
+        fs.open(filePath, 'w', function (err) {
+          if (err) return reject(err);
+          resolve(filePath);
+        });
+      });
+    });
+  });
+}
+
+function calculateBounds(geometry: geojson.Geometry, zoomToEnvelope: Envelope | null): Envelope {
+  const wkxGeometry = wkx.Geometry.parseGeoJSON(geometry);
+  const envelope = EnvelopeBuilder.buildEnvelopeWithGeometry(wkxGeometry);
+  if (!zoomToEnvelope) {
+    return envelope;
   }
+  if (zoomToEnvelope.maxX < envelope.maxX) {
+    zoomToEnvelope.maxX = envelope.maxX;
+  }
+  if (zoomToEnvelope.maxY < envelope.maxY) {
+    zoomToEnvelope.maxY = envelope.maxY;
+  }
+  if (zoomToEnvelope.minX > envelope.minX) {
+    zoomToEnvelope.minX = envelope.minX;
+  }
+  if (zoomToEnvelope.minY > envelope.minY) {
+    zoomToEnvelope.minY = envelope.minY;
+  }
+  return zoomToEnvelope;
+}
+
+async function addAttachments(geopackage: GPKG.GeoPackage, attachments: AttachmentDocument[], observationId: number, formTable: string, formRowId: number): Promise<void> {
+  log.info('add attachments');
+
+  for (let i = 0; i < attachments.length; i++) {
+    const attachment = attachments[i];
+
+    if (attachment.relativePath) {
+      await new Promise(function (resolve, reject) {
+        fs.readFile(path.join(attachmentBase, attachment.relativePath!), async (err, dataBuffer) => {
+          if (err) {
+            return reject(err);
+          }
+          const mediaId = geopackage.addMedia('Attachments', dataBuffer, attachment.contentType || 'application/octet-stream', {
+            name: attachment.name || attachment._id,
+            size: attachment.size || 0
+          });
+          await geopackage.linkMedia('Observations', observationId, 'Attachments', mediaId)
+          resolve(geopackage.linkMedia(formTable, formRowId, 'Attachments', mediaId))
+        });
+      });
+    }
+  }
+}
+
+async function createUserFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
+  const featureTableName = 'Users';
+  const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
+  await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
+  await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
+  await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
+  featureTableStyles.createRelationships();
+}
+
+function setContentBounds(geopackage: GPKG.GeoPackage, featureDao: FeatureDao<FeatureRow>, zoomToEnvelope: Envelope): void {
+  const contents = featureDao.getContents();
+  contents.max_x = zoomToEnvelope.maxX;
+  contents.max_y = zoomToEnvelope.maxY;
+  contents.min_x = zoomToEnvelope.minX;
+  contents.min_y = zoomToEnvelope.minY;
+  const contentsDao = geopackage.contentsDao;
+  contentsDao.update(contents);
 }
