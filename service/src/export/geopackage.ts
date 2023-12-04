@@ -3,33 +3,33 @@
 import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType'
 import { EnvelopeBuilder } from '@ngageoint/geopackage/dist/lib/geom/envelopeBuilder'
 import GPKG, { GeoPackageAPI } from '@ngageoint/geopackage'
+import { Envelope } from '@ngageoint/geopackage/dist/lib/geom/envelope'
+import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
+import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
+import geojson from 'geojson'
 import util from 'util'
 import fs from 'fs'
-import api from '../api'
 import archiver from 'archiver'
 import moment from 'moment'
 import os from 'os'
 import path from 'path'
 import wkx from 'wkx'
 import { Exporter } from './exporter'
+import api from '../api'
 import environment from '../environment/env'
 import User, { UserDocument } from '../models/user'
-import { UserLocationDocument, UserLocationDocumentProperties } from '../models/location'
+import { UserLocationDocument } from '../models/location'
 import { UserId } from '../entities/users/entities.users'
 import { FormFieldType } from '../entities/events/entities.events.forms'
-import { Envelope } from '@ngageoint/geopackage/dist/lib/geom/envelope'
-import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
-import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
-import geojson, { Feature } from 'geojson'
-import { UserLocation, UserLocationProperties } from '../entities/locations/entities.locations'
-import { FormFieldEntry } from '../entities/observations/entities.observations'
 import { AttachmentDocument } from '../models/observation'
-type ConsoleLogMethodName = 'log' | 'debug' | 'info' | 'warn' | 'error'
-const log = ([ 'debug', 'info', 'warn', 'error', 'log' ] as ConsoleLogMethodName[]).reduce((log: any, methodName: ConsoleLogMethodName): any => {
-  const consoleMethod = console[methodName]
+
+// TODO: we really need to revamp our logging
+const logger = require('../logger')
+const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
+  const logMethod = logger[methodName] as (...args: any[]) => any
   return {
     ...log,
-    [methodName]: (...args: any[]) => consoleMethod('[export.geopackage]', ...args)
+    [methodName]: (...args: any[]) => logMethod('[export:geopackage]', ...args)
   }
 }, {} as any)
 
@@ -93,7 +93,7 @@ export class GeoPackage extends Exporter {
   }
 
   async createObservationTable(geopackage: GPKG.GeoPackage): Promise<void> {
-    log.info('Create Observation Table');
+    log.info('create observation table');
     const columns = [];
 
     // TODO columns should be the same as KML file
@@ -215,11 +215,9 @@ export class GeoPackage extends Exporter {
   }
 
   async addLocationsToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
-    log.info('Requesting locations from DB');
-
+    log.info('fetching locations');
     const { startDate, endDate } = this._filter
     const cursor = this.requestLocations({ startDate, endDate });
-
     let numLocations = 0;
     let user: UserDocument | null = null;
     let userLastLocation: UserLocationDocument | null = null;
@@ -228,12 +226,10 @@ export class GeoPackage extends Exporter {
 
       if (!user || user._id.toString() !== location.userId.toString()) {
         if (zoomToEnvelope) {
-          //Switching user, so update location
-          const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
-
+          // Switching user, so update location
+          const featureDao = geopackage.getFeatureDao('Locations_' + user!._id.toString());
           this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
-
-          await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
+          await this.addUserToUsersTable(geopackage, user!, userLastLocation!, zoomToEnvelope);
         }
         zoomToEnvelope = null;
         user = await User.getUserById(location.userId);
@@ -260,13 +256,15 @@ export class GeoPackage extends Exporter {
 
       numLocations++;
     }).then(async () => {
-      if (cursor) cursor.close;
+      if (cursor) {
+        cursor.close();
+      }
 
       if (zoomToEnvelope && user) {
         //Process the last user, since it was missed in the loop above
         const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
         this.setContentBounds(geopackage, featureDao, zoomToEnvelope);
-        await this.addUserToUsersTable(geopackage, user, userLastLocation, zoomToEnvelope);
+        await this.addUserToUsersTable(geopackage, user, userLastLocation!, zoomToEnvelope);
       }
 
       log.info(`wrote ${numLocations} locations to geopackage`);
