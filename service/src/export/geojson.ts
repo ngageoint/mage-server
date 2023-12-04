@@ -1,19 +1,27 @@
 'use strict';
 
-const util = require('util')
-  , api = require('../api')
-  , async = require('async')
-  , archiver = require('archiver')
-  , mgrs = require('mgrs')
-  , moment = require('moment')
-  , log = require('winston')
-  , stream = require('stream')
-  , path = require('path')
-  , Exporter = require('./exporter')
-  , attachmentBase = require('../environment/env').attachmentBaseDirectory
-  , User = require('../models/user')
-  , Device = require('../models/device')
-  , { default: turfCentroid } = require('@turf/centroid');
+import util from 'util'
+import api from '../api'
+import async from 'async'
+import archiver from 'archiver'
+import moment from 'moment'
+import stream from 'stream'
+import path from 'path'
+import { Exporter } from './exporter'
+import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
+import User from '../models/user'
+import Device from '../models/device'
+import turfCentroid from '@turf/centroid'
+const mgrs = require('mgrs')
+
+const logger = require('../logger')
+const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, methodName: string): any => {
+  const logMethod = logger[methodName] as (...args: any[]) => any
+  return {
+    ...log,
+    [methodName]: (...args: any[]) => logMethod('[export:geojson]', ...args)
+  }
+}, {} as any)
 
 function GeoJson(options) {
   GeoJson.super_.call(this, options);
