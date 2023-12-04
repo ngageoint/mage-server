@@ -24,6 +24,7 @@ LocationSchema.index({ 'properties.timestamp': 1 });
 LocationSchema.index({ 'properties.timestamp': 1, _id: 1 });
 // TODO: this seems superfluous - probably remove because there's already an index on userId in the field definition
 LocationSchema.index({ 'userId': 1 });
+// TODO: should add _id to the end of the index for consistent ordering
 LocationSchema.index({ 'properties.user': 1, 'properties.timestamp': 1 });
 
 // Creates the Model for the User Schema
