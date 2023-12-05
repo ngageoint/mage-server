@@ -246,16 +246,24 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     options = options || {};
     const deferredUsers = $q.defer();
 
-    // Map frontend parameters to backend expected parameters
     let queryParams = {
-      page_size: options.limit || 10, // Map 'limit' to 'pageSize'
-      page: options.page || 0, // Assuming 'page' is provided in options
-      active: options.active, // Include 'active' if present
-      enabled: options.enabled, // Include 'enabled' if present
-      term: options.term // Include 'term' if present for nameOrContactTerm
+      pageSize: options.limit || 10,
+      pageIndex: options.page || 0,
+      term: options.term
     };
 
-    // console.log('Requesting Users with queryParams: ', queryParams);
+    // Include 'active' and 'enabled' only if they are explicitly set
+    if (typeof options.active === 'boolean')
+      queryParams.active = options.active;
+    if (typeof options.enabled === 'boolean')
+      queryParams.enabled = options.enabled;
+
+    // Include 'total' parameter based on includeTotalCount
+    if (typeof options.includeTotalCount === 'boolean')
+      queryParams.total = options.includeTotalCount ? 'true' : 'false';
+
+    console.log('Requesting Users with queryParams:', queryParams);
+
     $http
       .get('/api/next-users/search', { params: queryParams })
       .success(function (data) {
