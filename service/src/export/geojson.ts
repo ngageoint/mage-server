@@ -12,7 +12,6 @@ import User, { UserDocument } from '../models/user'
 import Device from '../models/device'
 import turfCentroid from '@turf/centroid'
 import { AttachmentDocument, ObservationDocument, ObservationDocumentFormEntry } from '../models/observation'
-import { Document } from 'mongoose'
 import { FormFieldType } from '../entities/events/entities.events.forms'
 const mgrs = require('mgrs')
 
@@ -33,8 +32,9 @@ export class GeoJson extends Exporter {
     async.parallel(
       [
         (done): void => {
-          if (!this._filter.exportObservations) return done();
-
+          if (!this._filter.exportObservations) {
+            return done();
+          }
           const observationStream = new stream.PassThrough();
           archive.append(observationStream, { name: 'observations.geojson' });
           this.streamObservations(observationStream, archive, err => {
@@ -114,7 +114,7 @@ export class GeoJson extends Exporter {
     log.info('fetching observations');
     const cursor = this.requestObservations(this._filter);
     let user: UserDocument | null = null;
-    let device: Document | null = null;
+    let device: any = null;
     let numObservations = 0;
 
     stream.write('{"type": "FeatureCollection", "features": [');
@@ -135,12 +135,12 @@ export class GeoJson extends Exporter {
           device = await Device.getDeviceById(observation.deviceId)
         }
       }
-
+      const exportProperties = observation.properties as any
       if (user) {
-        observation.properties.user = user.username;
+        exportProperties.user = user.username;
       }
       if (device) {
-        observation.properties.device = device.uid;
+        exportProperties.device = device.uid;
       }
       const data = JSON.stringify({
         geometry: observation.geometry,
@@ -155,8 +155,8 @@ export class GeoJson extends Exporter {
       }
       stream.write(']}');
       // throw in icons
-      archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
-      log.info('Successfully wrote ' + numObservations + ' observations to GeoJSON');
+      archive.directory(new api.Icon(this._event.id).getBasePath(), 'mage-export/icons', { date: new Date() });
+      log.info(`wrote ${numObservations} observations`);
       done();
     })
     .catch(err => done(err));
@@ -173,7 +173,8 @@ export class GeoJson extends Exporter {
         stream.write(',');
       }
       const centroid = turfCentroid(location);
-      location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+      const exportProperties = location.properties as any
+      exportProperties.mgrs = mgrs.forward(centroid.geometry.coordinates);
       const data = JSON.stringify(location);
       stream.write(data);
       numLocations++;
