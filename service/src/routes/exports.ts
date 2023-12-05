@@ -1,14 +1,14 @@
-const moment = require('moment')
-  , path = require('path')
-  , log = require('winston')
-  , fs = require('fs')
-  , exportDirectory = require('../environment/env').exportDirectory
-  , Event = require('../models/event')
-  , access = require('../access')
-  , exportXform = require('../transformers/export')
-  , exporterFactory = require('../export/exporterFactory')
-  , Export = require('../models/export')
-  , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
+import moment from 'moment'
+import path from 'path'
+import log from '../logger'
+import fs from 'fs'
+import { exportDirectory } from '../environment/env'
+import Event from '../models/event'
+import access from '../access'
+import exportXform from '../transformers/export'
+import { createExportTransform } from '../export'
+import Export from '../models/export'
+import { defaultEventPermissionsService as eventPermissions } from '../permissions/permissions.events'
 
 module.exports = function (app, security) {
 
