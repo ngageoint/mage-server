@@ -7,8 +7,7 @@ class AdminUsersController {
     $timeout,
     LocalStorageService,
     UserService,
-    UserPagingService,
-    UserReadService
+    UserPagingService
   ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
@@ -16,7 +15,6 @@ class AdminUsersController {
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
-    this.UserReadService = UserReadService;
     this.users = [];
     this.stateAndData = this.UserPagingService.constructDefault();
 
@@ -39,22 +37,33 @@ class AdminUsersController {
   }
 
   $onInit() {
-    const searchParams = {
-      pageSize: 10,
-      pageIndex: 0,
-      includeTotalCount: true
-    };
-
-    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
-      console.log('Frontend Request Params:', searchParams);
-      console.log('Backend Response:', pageOfUsers);
-      this.users = pageOfUsers.items;
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
-
   }
 
+  // $onInit() {
+  //   const searchParams = {
+  //     pageSize: 10,
+  //     pageIndex: 0,
+  //     includeTotalCount: true
+  //   };
+
+  //   this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
+  //     console.log('Frontend Request Params:', searchParams);
+  //     console.log('Backend Response:', pageOfUsers);
+  //     this.users = pageOfUsers.items;
+  //   });
+
+  // }
+
   count(state) {
-    console.log('Count for state', state, ':', this.stateAndData[state].userCount);
+    console.log(
+      'Count for state',
+      state,
+      ':',
+      this.stateAndData[state].userCount
+    );
     return this.stateAndData[state].userCount;
   }
 
@@ -83,36 +92,23 @@ class AdminUsersController {
   }
 
   search() {
-    const searchParams = {
-      term: this.userSearch,
-      pageSize: 10,
-      pageIndex: 1,
-      includeTotalCount: true
-    };
 
-    console.log('Search Params:', searchParams);
-
-
-    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
-      this.users = pageOfUsers.items;
-    });
-
+     this.UserPagingService.search(
+       this.stateAndData[this.filter],
+       this.userSearch
+     ).then((users) => {
+       this.users = users;
+     });
   }
 
   reset() {
     this.filter = 'all';
     this.userSearch = '';
 
-    const searchParams = {
-      pageSize: 10,
-      pageIndex: 1,
-      includeTotalCount: true
-    };
-
-    this.UserReadService.search(searchParams).subscribe((pageOfUsers) => {
-      this.users = pageOfUsers.items;
+    this.stateAndData = this.UserPagingService.constructDefault();
+    this.UserPagingService.refresh(this.stateAndData).then(() => {
+      this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
     });
-
   }
 
   newUser() {
@@ -195,7 +191,7 @@ class AdminUsersController {
   }
 }
 
-AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService', 'UserReadService'];
+AdminUsersController.$inject = ['$uibModal', '$state', '$timeout', 'LocalStorageService', 'UserService', 'UserPagingService'];
 
 export default {
   template: require('./users.html'),
