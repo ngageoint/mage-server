@@ -1,6 +1,5 @@
 'use strict';
 
-import util from 'util'
 import api from '../api'
 import async from 'async'
 import archiver from 'archiver'
@@ -9,9 +8,12 @@ import stream from 'stream'
 import path from 'path'
 import { Exporter } from './exporter'
 import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
-import User from '../models/user'
+import User, { UserDocument } from '../models/user'
 import Device from '../models/device'
 import turfCentroid from '@turf/centroid'
+import { AttachmentDocument, ObservationDocument, ObservationDocumentFormEntry } from '../models/observation'
+import { Document } from 'mongoose'
+import { FormFieldType } from '../entities/events/entities.events.forms'
 const mgrs = require('mgrs')
 
 const logger = require('../logger')
@@ -25,111 +27,94 @@ const log = [ 'debug', 'info', 'warn', 'error', 'log' ].reduce((log: any, method
 
 export class GeoJson extends Exporter {
 
-  export(streamable) {
+  export(streamable: NodeJS.WritableStream): void {
     const archive = archiver('zip');
     archive.pipe(streamable);
+    async.parallel(
+      [
+        (done): void => {
+          if (!this._filter.exportObservations) return done();
 
-    async.parallel([
-      done => {
-        if (!this._filter.exportObservations) return done();
+          const observationStream = new stream.PassThrough();
+          archive.append(observationStream, { name: 'observations.geojson' });
+          this.streamObservations(observationStream, archive, err => {
+            observationStream.end();
+            done(err);
+          });
+        },
+        (done): void => {
+          if (!this._filter.exportLocations) return done();
 
-        const observationStream = new stream.PassThrough();
-        archive.append(observationStream, { name: 'observations.geojson' });
-        this.streamObservations(observationStream, archive, err => {
-          observationStream.end();
-          done(err);
-        });
-      },
-      done => {
-        if (!this._filter.exportLocations) return done();
-
-        const locationStream = new stream.PassThrough();
-        archive.append(locationStream, { name: 'locations.geojson' });
-        this.streamLocations(locationStream, err => {
-          locationStream.end();
-          done(err);
-        });
-      }
-    ],
+          const locationStream = new stream.PassThrough();
+          archive.append(locationStream, { name: 'locations.geojson' });
+          this.streamLocations(locationStream, (err: any) => {
+            locationStream.end();
+            done(err);
+          });
+        }
+      ],
       err => {
-        if (err) log.warn(err);
+        if (err) {
+          log.warn(err);
+        }
         archive.finalize();
-      });
+      }
+    );
   }
 
-  mapObservationProperties(observation, archive) {
-    observation.properties = observation.properties || {};
-    observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
-
-    const centroid = turfCentroid(observation);
-    observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
-
-    if (observation.properties.forms) {
-      observation.properties.forms.forEach(observationForm => {
-        if (Object.keys(observationForm).length === 0) return;
-
-        const form = this._event.formMap[observationForm.formId];
-        const formProperties = observation.properties[form.name] || [];
-        const properties = Object.fromEntries(form.fields
-          .filter(field => !field.archived && field.type !== 'password' && field.type !== 'geometry')
-          .filter(field => {
-            let hasValue = false;
-            switch (field.type) {
-              case 'attachment': {
-                hasValue = observation.attachments.some(attachment => {
-                  return attachment.fieldName === field.name &&
-                    attachment.observationFormId.toString() === observationForm._id.toString();
-                });
-
-                break;
-              }
-              case 'checkbox': {
-                hasValue = field.value != null
-              }
-              default: {
-                hasValue = observationForm[field.name]
-              }
+  mapObservationProperties(observation: ObservationDocument, archive: archiver.Archiver): void {
+    const centroid = turfCentroid(observation)
+    const exportProperties = {
+      ...observation.properties,
+      id: observation._id,
+      timestamp: moment(observation.properties.timestamp).toISOString(),
+      mgrs: mgrs.forward(centroid.geometry.coordinates),
+    } as any
+    delete exportProperties.forms
+    const formEntries = observation.properties?.forms || [] as ObservationDocumentFormEntry[]
+    const { formEntriesByName, exportAttachments } = formEntries.reduce(({ formEntriesByName, exportAttachments }, formEntry) => {
+      const form = this._event.formFor(formEntry.formId)
+      if (!form) {
+        return { formEntriesByName, exportAttachments }
+      }
+      const { fieldEntryHash, entryAttachments } = form.fields.reduce(({ fieldEntryHash, entryAttachments }, field) => {
+        if (field.archived || field.type === FormFieldType.Password || field.type === FormFieldType.Geometry ||
+          (field.type === FormFieldType.CheckBox && field.value === null)) {
+          return { fieldEntryHash, entryAttachments }
+        }
+        if (field.type === FormFieldType.Attachment) {
+          const fieldAttachments = observation.attachments.filter(attachment => {
+            return attachment.relativePath &&
+              attachment.fieldName === field.name &&
+              String(attachment.observationFormId) === String(formEntry._id)
             }
+          )
+          const attachmentRelPaths = fieldAttachments.map(x => x.relativePath)
+          fieldEntryHash[field.name] = attachmentRelPaths
+          entryAttachments = entryAttachments.concat(fieldAttachments)
+        }
+        else if (formEntry[field.name] !== undefined) {
+          fieldEntryHash[field.name] = formEntry[field.name]
+        }
+        return { fieldEntryHash, entryAttachments }
+      }, { fieldEntryHash: {} as any, entryAttachments: [] as AttachmentDocument[] })
+      const entriesForForm = formEntriesByName[form.name] || []
+      entriesForForm.push(fieldEntryHash)
+      formEntriesByName[form.name] = entriesForForm
+      exportAttachments = exportAttachments.concat(entryAttachments)
+      return { formEntriesByName, exportAttachments }
+    }, { formEntriesByName: {} as any, exportAttachments: [] as AttachmentDocument[] })
 
-            return hasValue;
-          })
-          .sort((a, b) => a.id - b.id)
-          .map(field => {
-            let value = observationForm[field.name];
-            if (field.type === 'attachment') {
-              value = observation.attachments.filter(attachment => {
-                return attachment.relativePath && attachment.fieldName === field.name &&
-                  attachment.observationFormId.toString() === observationForm._id.toString();
-              })
-              .map(attachment => {
-                return attachment.relativePath
-              });
-              value.forEach(attachmentPath => {
-                archive.file(path.join(attachmentBase, attachmentPath), { name: attachmentPath });
-              });
-            }
+    exportAttachments.forEach(x => archive.file(path.join(attachmentBase, x.relativePath!), { name: x.relativePath! }))
 
-            return [field.title, value];
-          }));
-
-        formProperties.push(properties);
-        observation.properties[form.name] = formProperties;
-      });
-    }
-
-    delete observation.properties.forms;
-
-    observation.properties.id = observation._id;
+    observation.properties = { ...exportProperties, ...formEntriesByName }
   }
 
-  async streamObservations(stream, archive, done) {
-    log.info("Requesting observations from DB");
-
+  async streamObservations(stream: NodeJS.WritableStream, archive: archiver.Archiver, done: (err?: any) => void): Promise<void> {
+    log.info('fetching observations');
     const cursor = this.requestObservations(this._filter);
-
-    let user = null;
-    let device = null;
-
+    let user: UserDocument | null = null;
+    let device: Document | null = null;
     let numObservations = 0;
 
     stream.write('{"type": "FeatureCollection", "features": [');
@@ -140,66 +125,67 @@ export class GeoJson extends Exporter {
 
       this.mapObservationProperties(observation, archive);
 
-      if (!user || user._id.toString() !== observation.userId.toString()) {
-        user = await User.getUserById(observation.userId);
+      if (observation.userId) {
+        if (!user || user._id.toString() !== String(observation.userId)) {
+          user = await User.getUserById(observation.userId)
+        }
       }
-      if (!device || device._id.toString() !== observation.deviceId.toString()) {
-        device = await Device.getDeviceById(observation.deviceId);
+      if (observation.deviceId) {
+        if (!device || device._id.toString() !== String(observation.deviceId)) {
+          device = await Device.getDeviceById(observation.deviceId)
+        }
       }
 
-      if (user) observation.properties.user = user.username;
-      if (device) observation.properties.device = device.uid;
-
+      if (user) {
+        observation.properties.user = user.username;
+      }
+      if (device) {
+        observation.properties.device = device.uid;
+      }
       const data = JSON.stringify({
         geometry: observation.geometry,
         properties: observation.properties
       });
       stream.write(data);
       numObservations++;
-    }).then(() => {
-      if (cursor) cursor.close;
-
+    })
+    .then(() => {
+      if (cursor) {
+        cursor.close()
+      }
       stream.write(']}');
-
       // throw in icons
       archive.directory(new api.Icon(this._event._id).getBasePath(), 'mage-export/icons', { date: new Date() });
-
       log.info('Successfully wrote ' + numObservations + ' observations to GeoJSON');
-
       done();
-    }).catch(err => done(err));
+    })
+    .catch(err => done(err));
   }
 
-  streamLocations(stream, done) {
-    log.info('Requesting locations from DB');
-
-    const startDate = this._filter.startDate ? moment(this._filter.startDate) : null;
-    const endDate = this._filter.endDate ? moment(this._filter.endDate) : null;
-
+  streamLocations(stream: NodeJS.WritableStream, done: (err?: any) => void): void {
+    log.info('fetching locations');
+    const { startDate, endDate } = this._filter
     const cursor = this.requestLocations({ startDate: startDate, endDate: endDate });
-
     let numLocations = 0;
-
     stream.write('{"type": "FeatureCollection", "features": [');
     cursor.eachAsync(location => {
       if (numLocations > 0) {
         stream.write(',');
       }
-
       const centroid = turfCentroid(location);
       location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
-
       const data = JSON.stringify(location);
       stream.write(data);
       numLocations++;
-    }).then(() => {
-      if (cursor) cursor.close;
-
+    })
+    .then(() => {
+      if (cursor) {
+        cursor.close();
+      }
       stream.write(']}');
-
-      log.info('Successfully wrote ' + numLocations + ' locations to GeoJSON');
-
+      log.info(`wrote ${numLocations} locations`);
       done();
-    }).catch(err => done(err));
+    })
+    .catch(err => done(err));
   }
 }
