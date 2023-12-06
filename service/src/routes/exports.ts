@@ -1,26 +1,38 @@
 import moment from 'moment'
 import path from 'path'
-import log from '../logger'
+import express from 'express'
 import fs from 'fs'
+import log from '../logger'
 import { exportDirectory } from '../environment/env'
-import Event from '../models/event'
+import Event, { MageEventDocument } from '../models/event'
 import access from '../access'
 import exportXform from '../transformers/export'
-import { createExportTransform } from '../export'
-import Export from '../models/export'
+import { createExportTransform, ExportFormat } from '../export'
 import { defaultEventPermissionsService as eventPermissions } from '../permissions/permissions.events'
+import { MageRouteDefinitions } from './routes.types'
+import { ExportPermission, ObservationPermission } from '../entities/authorization/entities.permissions'
+import { EventAccessType } from '../entities/events/entities.events'
+import Export, { ExportDocument } from '../models/export'
 
-module.exports = function (app, security) {
+type ExportRequest = express.Request & {
+    export?: ExportDocument | null
+    parameters?: {
+      exportId?: ExportDocument['_id']
+      filter: any
+    },
+}
+
+const DefineExportsRoutes: MageRouteDefinitions = function(app, security) {
 
   const passport = security.authentication.passport;
 
-  async function authorizeEventAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
+  async function authorizeEventAccess(req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> {
+    if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_ALL)) {
       return next();
     }
-    else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
+    else if (access.userHasPermission(req.user, ObservationPermission.READ_OBSERVATION_EVENT)) {
       // Make sure I am part of this event
-      const allowed = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
+      const allowed = await eventPermissions.userHasEventPermission(req.event!, req.user.id, EventAccessType.Read)
       if (allowed) {
         return next();
       }
@@ -28,13 +40,15 @@ module.exports = function (app, security) {
     res.sendStatus(403);
   }
 
-  function authorizeExportAccess(permission) {
+  function authorizeExportAccess(permission: ExportPermission): express.RequestHandler {
     return async function authorizeExportAccess(req, res, next) {
-      req.export = await Export.getExportById(req.params.exportId);
-      if (access.userHasPermission(req.user, permission)) {
-        next();
-      } else {
-        req.user._id.toString() === req.export.userId.toString() ? next() : res.sendStatus(403);
+      const exportReq = req as ExportRequest
+      exportReq.export = await Export.getExportById(req.params.exportId)
+      if (access.userHasPermission(exportReq.user, permission)) {
+        next()
+      }
+      else {
+        exportReq.user._id.toString() === exportReq.export?.userId.toString() ? next() : res.sendStatus(403);
       }
     }
   }
@@ -45,37 +59,37 @@ module.exports = function (app, security) {
     getEvent,
     authorizeEventAccess,
     function (req, res, next) {
+      const exportReq = req as ExportRequest
       const document = {
-        userId: req.user._id,
-        exportType: req.body.exportType,
+        userId: exportReq.user._id,
+        exportType: exportReq.body.exportType,
         options: {
           eventId: req.body.eventId,
-          filter: req.parameters.filter
+          filter: exportReq.parameters!.filter
         }
-      };
-
+      }
       Export.createExport(document).then(result => {
         const response = exportXform.transform(result, { path: req.getPath() });
         res.location(`${req.route.path}/${result._id.toString()}`).status(201).json(response);
-
-        exportData(result._id, req.event);
-      }).catch(err => next(err));
+        exportData(result._id, exportReq.event!);
+      })
+      .catch(err => next(err))
     }
-  );
+  )
 
   /**
    * Get all exports
    */
   app.get('/api/exports',
     passport.authenticate('bearer'),
-    access.authorize('READ_EXPORT'),
+    access.authorize(ExportPermission.READ_EXPORT),
     function (req, res, next) {
       Export.getExports().then(results => {
         const response = exportXform.transform(results, { path: req.getPath() });
         res.json(response);
       }).catch(err => next(err));
     }
-  );
+  )
 
   /**
    * Get my exports
@@ -88,23 +102,24 @@ module.exports = function (app, security) {
         res.json(response);
       }).catch(err => next(err));
     }
-  );
+  )
 
   /**
   * Get a specific export
   */
   app.get('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    authorizeExportAccess('READ_EXPORT'),
+    authorizeExportAccess(ExportPermission.READ_EXPORT),
     function (req, res) {
-      const file = path.join(exportDirectory, req.export.relativePath);
+      const exportReq = req as ExportRequest
+      const file = path.join(exportDirectory, exportReq.export!.relativePath!);
       res.writeHead(200, {
         'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${req.export.filename}`
+        'Content-Disposition': `attachment; filename="${exportReq.export!.filename}`
       });
       const readStream = fs.createReadStream(file);
       readStream.pipe(res);
-    });
+    })
 
   /**
    * Remove a specific export
@@ -112,14 +127,22 @@ module.exports = function (app, security) {
   // TODO should be able to delete your own export
   app.delete('/api/exports/:exportId',
     passport.authenticate('bearer'),
-    authorizeExportAccess('DELETE_EXPORT'),
+    authorizeExportAccess(ExportPermission.DELETE_EXPORT),
     function (req, res, next) {
-      Export.removeExport(req.params.exportId).then(result => {
-        fs.promises.unlink(path.join(exportDirectory, result.relativePath)).catch(err => {
-          log.warn(`Error removing export file, ${result.relativePath}`, err)
+      const exportId = req.params.exportId
+      Export.removeExport(req.params.exportId)
+        .then(result => {
+          if (!result) {
+            return res.status(404).json({ message: `No export exists for ID ${exportId}` })
+          }
+          if (result.relativePath) {
+            fs.promises.unlink(path.join(exportDirectory, result.relativePath)).catch(err => {
+              log.warn(`error removing export file, ${result.relativePath}`, err)
+            })
+          }
+          res.json(result);
         })
-        res.json(result);
-      }).catch(err => next(err));
+        .catch(err => next(err));
     });
 
   /**
@@ -127,16 +150,16 @@ module.exports = function (app, security) {
    */
   app.post('/api/exports/:exportId/retry',
     passport.authenticate('bearer'),
-    authorizeExportAccess('READ_EXPORT'),
+    authorizeExportAccess(ExportPermission.READ_EXPORT),
     getExport,
     getEvent,
     authorizeEventAccess,
     function (req, res) {
-      const exportId = req.params.exportId;
-      res.json({ id: exportId });
-      exportData(exportId, req.event);
-    });
-};
+      const exportId = req.params.exportId
+      res.json({ id: exportId })
+      exportData(exportId, req.event!)
+    })
+}
 
 /*
 TODO: This should not be using middleware to parse query parameters and find the
@@ -144,20 +167,28 @@ event and add those keys to the incoming request object.  Just do those things
 in the actual request handler.
 */
 
-function getExport(req, res, next) {
-  Export.getExportById(req.params.exportId)
+function getExport(req: express.Request, res: express.Response, next: express.NextFunction): void {
+  const exportId = req.params.exportId
+  if (!exportId) {
+    return void(res.status(400).json({ message: `exportId is required`}))
+  }
+  Export.getExportById(exportId)
     .then(result => {
-      const parameters = { filter: {} };
+      if (!result) {
+        return void(res.status(404).json({ message: `No export exists for ID ${exportId}`}))
+      }
+      const exportReq = req as ExportRequest
+      const parameters = { filter: {} } as Required<ExportRequest>['parameters']
       parameters.filter.eventId = result.options.eventId;
       parameters.exportId = result._id;
-      req.parameters = parameters;
+      exportReq.parameters = parameters;
       next();
     })
     .catch(err => next(err));
 }
 
-function parseQueryParams(req, res, next) {
-  const parameters = { filter: {} };
+function parseQueryParams(req: express.Request, res: express.Response, next: express.NextFunction): void {
+  const parameters = { filter: {} } as any;
   const body = req.body || {};
   // TODO: check dates are valid
   const startDate = body.startDate;
@@ -170,7 +201,7 @@ function parseQueryParams(req, res, next) {
   }
   const eventId = body.eventId;
   if (!eventId) {
-    return res.status(400).send("eventId is required");
+    return void(res.status(400).send("eventId is required"))
   }
   parameters.filter.eventId = eventId;
   parameters.filter.exportObservations = String(body.observations).toLowerCase() === 'true';
@@ -189,25 +220,32 @@ function parseQueryParams(req, res, next) {
   next();
 }
 
-function getEvent(req, res, next) {
-  Event.getById(req.parameters.filter.eventId, {}, function (err, event) {
+function getEvent(req: express.Request, res: express.Response, next: express.NextFunction): void {
+  const exportReq = req as ExportRequest
+  if (!exportReq.parameters?.filter) {
+    return void(res.status(400).send('eventId is required'))
+  }
+  const { eventId } = exportReq.parameters.filter
+  Event.getById(eventId, {}, function (err, event) {
     if (err || !event) {
-      const msg = `Event with ID ${req.parameters.filter.eventId} does not exist.`;
-      return res.status(400).send(msg);
+      return res.status(400).send(`Event with ID ${eventId} does not exist.`)
     }
-    req.event = event;
-    next(err);
-  });
+    req.event = event
+    next()
+  })
 }
 
-async function exportData(exportId, event) {
+async function exportData(exportId: ExportDocument['_id'], event: MageEventDocument): Promise<void> {
   let exportDocument = await Export.updateExport(exportId, { status: Export.ExportStatus.Running })
+  if (!exportDocument) {
+    return
+  }
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
-  exportDocument = await Export.updateExport(exportId, {
+  exportDocument = (await Export.updateExport(exportId, {
     status: Export.ExportStatus.Running,
     relativePath: filename,
     filename: filename
-  });
+  }))!
   const file = path.join(exportDirectory, filename);
   const stream = fs.createWriteStream(file);
   stream.on('finish', () => {
@@ -219,7 +257,7 @@ async function exportData(exportId, event) {
     filter: exportDocument.options.filter
   };
   log.info('begin export\n', exportDocument.toJSON());
-  const exporter = exporterFactory.createExporter(exportDocument.exportType.toLowerCase(), options);
+  const exporter = createExportTransform(exportDocument.exportType.toLowerCase() as ExportFormat, options);
   try {
     await exporter.export(stream);
   } catch (e) {
@@ -228,5 +266,6 @@ async function exportData(exportId, event) {
       log.warn(`Failed to update export ${exportId} to failed state`, err);
     });
   }
-
 }
+
+export = DefineExportsRoutes
