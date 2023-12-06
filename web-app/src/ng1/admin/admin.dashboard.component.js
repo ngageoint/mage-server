@@ -115,7 +115,6 @@ class AdminDashboardController {
 
   search() {
     this.UserPagingService.search(this.stateAndData[this.userState], this.userSearch).then(users => {
-      console.log('Users to be displayed:', users);
       this.inactiveUsers = users;
     });
   }

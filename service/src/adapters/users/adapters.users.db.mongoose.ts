@@ -45,10 +45,8 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
   }
 
   async find<T = User>(which: UserFindParameters, mapping?: (x: User) => T): Promise<PageOf<T>> {
-    console.log('Find Function - Input Parameters:', which);
     const { nameOrContactTerm, active, enabled } = which || {}
     const searchRegex = new RegExp(_.escapeRegExp(nameOrContactTerm), 'i')
-    console.log('Find Function - Search Regex:', searchRegex);
 
     const params = nameOrContactTerm ? {
       $or: [
@@ -58,21 +56,17 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
         { 'phones.number': searchRegex }
       ]
     } : {} as any
-    console.log('Find Function - MongoDB Query Params:', params);
 
     if (typeof which?.active === 'boolean') {
       params.active = which.active
-      console.log('Find Function - Active Filter:', which.active);
 
     }
     if (typeof which?.enabled === 'boolean') {
       params.enabled = which.enabled
-      console.log('Find Function - Enabled Filter:', which.enabled);
     }
 
     const baseQuery = this.model.find(params).sort('displayName _id')
     const counted = await pageQuery(baseQuery, which)
-    console.log('Find Function - Pagination and Total Count:', counted);
     const users: T[] = []
     if (!mapping) {
       mapping = (x: User) => (x as any as T)
@@ -80,12 +74,9 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
     for await (const userDoc of counted.query.cursor()) {
       users.push(mapping(this.entityForDocument(userDoc)))
     }
-    // return pageOf(users, which, counted.totalCount)
 
-      const finalResult = pageOf(users, which, counted.totalCount);
-      console.log('Find Function - Final Returned Data:', finalResult);
-
-      return finalResult;
+    const finalResult = pageOf(users, which, counted.totalCount);
+    return finalResult;
 
   }
 }

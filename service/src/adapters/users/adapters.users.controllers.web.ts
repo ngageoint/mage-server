@@ -1,6 +1,7 @@
 import express from 'express'
 import { SearchUsers, UserSearchRequest } from '../../app.api/users/app.api.users'
 import { WebAppRequestFactory } from '../adapters.controllers.web'
+import { calculateLinks } from '../../entities/entities.global'
 
 export interface UsersAppLayer {
   searchUsers: SearchUsers
@@ -30,13 +31,21 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
             : undefined
       };
 
-      console.log('Backend Received Params:', userSearch);
-
       const appReq = createAppRequest(req, { userSearch })
       const appRes = await app.searchUsers(appReq)
-      if (appRes.success) {
-        return res.json(appRes.success)
-      }
+       if (appRes.success) {
+         const links = calculateLinks(
+           { pageSize: userSearch.pageSize, pageIndex: userSearch.pageIndex },
+           appRes.success.totalCount
+         );
+
+         const responseWithLinks = {
+           ...appRes.success,
+           links
+         };
+
+         return res.json(responseWithLinks);
+       }
       next(appRes.error)
     })
   return routes

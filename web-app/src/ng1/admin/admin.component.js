@@ -18,9 +18,6 @@ class AdminController {
       inactive: defaultUserQueries.inactive
     };
 
-    // console.log('stateAndData after initialization:', this.stateAndData);
-
-
     this.deviceState = 'unregistered';
     this.unregisteredDevices = [];
     const defaultDeviceQueries = this.DevicePagingService.constructDefault();
@@ -39,7 +36,6 @@ class AdminController {
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.inactiveUsers = this.UserPagingService.users(this.stateAndData[this.userState]);
     });
-    // console.log('Initial stateAndData:', this.stateAndData);
     this.DevicePagingService.refresh(this.deviceStateAndData).then(() => {
       this.unregisteredDevices = this.DevicePagingService.devices(this.deviceStateAndData[this.deviceState]);
     });

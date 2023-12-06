@@ -1,8 +1,8 @@
 module.exports = UserPagingService;
 
-UserPagingService.$inject = ['UserService', '$q', 'UserReadService'];
+UserPagingService.$inject = ['UserService', '$q'];
 
-function UserPagingService(UserService, $q, UserReadService) {
+function UserPagingService(UserService, $q) {
   return {
     constructDefault,
     refresh,
@@ -69,7 +69,6 @@ function UserPagingService(UserService, $q, UserReadService) {
 
   function refresh(stateAndData) {
     const promises = [];
-
     for (const [key, value] of Object.entries(stateAndData)) {
       // Map frontend parameters to backend expected parameters
       let backendParams = {
@@ -108,23 +107,7 @@ function UserPagingService(UserService, $q, UserReadService) {
   }
 
   function next(data) {
-    console.log('stateAndData after calling next:', data);
     return move(data.pageInfo.links.next, data);
-
-    function count(data) {
-      return data.userCount;
-    }
-
-    function hasNext(data) {
-      let status = false;
-
-      if (data.pageInfo && data.pageInfo.links) {
-        status =
-          data.pageInfo.links.next != null && data.pageInfo.links.next !== '';
-      }
-
-      return status;
-    }
   }
 
   function hasPrevious(data) {
@@ -139,7 +122,6 @@ function UserPagingService(UserService, $q, UserReadService) {
   }
 
   function previous(data) {
-    console.log('stateAndData after calling previous:', data);
     return move(data.pageInfo.links.prev, data);
   }
 
@@ -162,46 +144,46 @@ function UserPagingService(UserService, $q, UserReadService) {
     return users;
   }
 
+
   function search(data, userSearch) {
-    console.log('user-paging.service.js search', data, userSearch);
-    // Basic validation
-    if (!data.pageInfo || !data.pageInfo.items) {
+    if (data.pageInfo == null || data.pageInfo.users == null) {
       return $q.resolve([]);
     }
 
-    // Map to UserSearchParams
-    const params = {
-      pageSize: data.pageInfo.pageSize,
-      pageIndex: data.pageInfo.pageIndex,
-      term: userSearch || null,
-      active: data.userFilter.active, // Include the active filter
-      enabled: data.userFilter.enabled // Include the enabled filter
-    };
+    const previousSearch = data.searchFilter;
 
-    console.log('Search Parameters:', params); // Log the constructed parameters
+    let promise = null;
 
-    // If there's no change in search, return cached items
-    if (data.searchFilter === userSearch) {
-      return $q.resolve(data.pageInfo.items);
+    if (previousSearch == '' && userSearch == '') {
+      //Not performing a search
+      promise = $q.resolve(data.pageInfo.users);
+    } else if (previousSearch != '' && userSearch == '') {
+      //Clearing out the search
+      data.searchFilter = '';
+      delete data.userFilter['or'];
+
+      promise = UserService.getAllUsers(data.userFilter).then((pageInfo) => {
+        data.pageInfo = pageInfo;
+        return $q.resolve(data.pageInfo.users);
+      });
+    } else if (previousSearch == userSearch) {
+      //Search is being performed, no need to keep searching the same info over and over
+      promise = $q.resolve(data.pageInfo.users);
+    } else {
+      //Perform the server side searching
+      data.searchFilter = userSearch;
+
+      const filter = data.userFilter;
+      filter.or = {
+        displayName: '.*' + userSearch + '.*',
+        email: '.*' + userSearch + '.*'
+      };
+      promise = UserService.getAllUsers(filter).then((pageInfo) => {
+        data.pageInfo = pageInfo;
+        return $q.resolve(data.pageInfo.users);
+      });
     }
 
-    // Update the current search term
-    data.searchFilter = userSearch;
-
-    // Request via UserReadService
-    return UserReadService.search(params)
-      .toPromise()
-      .then((response) => {
-        console.log('Received Users:', response.items); // Log the received data
-        data.pageInfo = {
-          pageSize: response.pageSize,
-          pageIndex: response.pageIndex,
-          totalCount: response.totalCount,
-          next: response.next,
-          prev: response.prev,
-          items: response.items
-        };
-        return data.pageInfo.items;
-      });
+    return promise;
   }
 }

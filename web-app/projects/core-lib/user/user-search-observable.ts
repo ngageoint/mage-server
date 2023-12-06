@@ -21,8 +21,6 @@ export function userSearchObservable(
     page: String(which.pageIndex)
   };
 
-  console.log('userSearchObservable Query Params:', queryParams);
-
   if (which.term) queryParams.term = which.term;
   if (which.active !== undefined)
     queryParams.active = which.active ? 'true' : 'false';

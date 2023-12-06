@@ -247,8 +247,8 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     const deferredUsers = $q.defer();
 
     let queryParams = {
-      pageSize: options.limit || 10,
-      pageIndex: options.page || 0,
+      page_size: options.limit || 10,
+      page: options.page || 0,
       term: options.term
     };
 
@@ -267,7 +267,6 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     $http
       .get('/api/next-users/search', { params: queryParams })
       .success(function (data) {
-        // console.log('Received User Data getAllUsers:', data);
         deferredUsers.resolve(data); // Resolve the promise with the fetched data
       })
       .error(function (error) {
