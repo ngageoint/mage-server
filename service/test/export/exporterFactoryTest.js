@@ -1,36 +1,36 @@
 const { expect } = require('chai');
-const ExporterFactory = require('../../lib/export/exporterFactory');
+const { createExportTransform } = require('../../lib/export');
 
 require('chai').should();
 
-describe("exporter factory", function () {
+describe("export factory", function () {
 
     it("should create kml exporter", function () {
-        const exporter = ExporterFactory.createExporter('kml', {});
+        const exporter = createExportTransform('kml', {});
         expect(exporter).to.not.be.undefined;
         expect(exporter).to.not.be.null;
     });
 
     it("should create geojson exporter", function () {
-        const exporter = ExporterFactory.createExporter('geojson', {});
+        const exporter = createExportTransform('geojson', {});
         expect(exporter).to.not.be.undefined;
         expect(exporter).to.not.be.null;
     });
 
     it("should create csv exporter", function () {
-        const exporter = ExporterFactory.createExporter('csv', {});
+        const exporter = createExportTransform('csv', {});
         expect(exporter).to.not.be.undefined;
         expect(exporter).to.not.be.null;
     });
 
     it("should create geopackage exporter", function () {
-        const exporter = ExporterFactory.createExporter('geopackage', {});
+        const exporter = createExportTransform('geopackage', {});
         expect(exporter).to.not.be.undefined;
         expect(exporter).to.not.be.null;
     });
 
     it("should handle unsupported exporter", function () {
-        const exporter = ExporterFactory.createExporter('fake', {});
+        const exporter = createExportTransform('fake', {});
         expect(exporter).to.be.undefined;
     });
 });
