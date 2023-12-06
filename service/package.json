@@ -30,8 +30,8 @@
   "dependencies": {
     "@ngageoint/geopackage": "^4.2.4",
     "@node-saml/passport-saml": "^4.0.4",
-    "@turf/centroid": "~6.0.0",
-    "@turf/kinks": "~6.0.0",
+    "@turf/centroid": "^6.5.0",
+    "@turf/kinks": "^6.5.0",
     "@types/geojson": "^7946.0.7",
     "@types/json-schema": "^7.0.11",
     "@types/mime-types": "^2.1.1",

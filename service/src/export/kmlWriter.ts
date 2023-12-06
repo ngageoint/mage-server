@@ -4,6 +4,7 @@ const mgrs = require('mgrs')
 import moment  from 'moment'
 import path from 'path'
 import turfCentroid from '@turf/centroid'
+import { AllGeoJSON } from '@turf/helpers'
 import { fragment }  from 'xmlbuilder2'
 import { UserDocument } from '../models/user'
 import { FormDocument, FormFieldDocument, MageEventDocument } from '../models/event'
@@ -406,7 +407,7 @@ export function generateKMLClose(): string {
 }
 
 export function generateDescription(feature: Feature, sections: any[]): { description: { $: string }} {
-  const centroid = turfCentroid(feature);
+  const centroid = turfCentroid(feature as AllGeoJSON);
   const header = [{
     section: [
       {

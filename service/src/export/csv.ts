@@ -3,6 +3,7 @@
 import async from 'async'
 import archiver from 'archiver'
 import path from 'path'
+import { AllGeoJSON } from '@turf/helpers'
 import { Exporter } from './exporter'
 import turfCentroid from '@turf/centroid'
 import * as User from '../models/user'
@@ -164,7 +165,7 @@ export class Csv extends Exporter {
       flat.device = cache.device.uid;
     }
 
-    const centroid = turfCentroid(observation);
+    const centroid = turfCentroid(observation as AllGeoJSON);
     flat.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
     flat.shapeType = observation.geometry.type;

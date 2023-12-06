@@ -6,11 +6,12 @@ import archiver from 'archiver'
 import moment from 'moment'
 import stream from 'stream'
 import path from 'path'
+import turfCentroid from '@turf/centroid'
+import { AllGeoJSON } from '@turf/helpers'
 import { Exporter } from './exporter'
 import { attachmentBaseDirectory as attachmentBase } from '../environment/env'
 import User, { UserDocument } from '../models/user'
 import Device from '../models/device'
-import turfCentroid from '@turf/centroid'
 import { AttachmentDocument, ObservationDocument, ObservationDocumentFormEntry } from '../models/observation'
 import { FormFieldType } from '../entities/events/entities.events.forms'
 const mgrs = require('mgrs')
@@ -63,7 +64,7 @@ export class GeoJson extends Exporter {
   }
 
   mapObservationProperties(observation: ObservationDocument, archive: archiver.Archiver): void {
-    const centroid = turfCentroid(observation)
+    const centroid = turfCentroid(observation as AllGeoJSON)
     const exportProperties = {
       ...observation.properties,
       id: observation._id,
