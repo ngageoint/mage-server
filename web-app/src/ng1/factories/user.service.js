@@ -247,8 +247,8 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     const deferredUsers = $q.defer();
 
     let queryParams = {
-      page_size: options.limit || 10,
-      page: options.page || 0,
+      page_size: options.pageSize || 10,
+      page: options.pageIndex || 0,
       term: options.term
     };
 
@@ -261,8 +261,6 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     // Include 'total' parameter based on includeTotalCount
     if (typeof options.includeTotalCount === 'boolean')
       queryParams.total = options.includeTotalCount ? 'true' : 'false';
-
-    console.log('Requesting Users with queryParams:', queryParams);
 
     $http
       .get('/api/next-users/search', { params: queryParams })

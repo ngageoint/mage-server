@@ -96,38 +96,40 @@ function UserPagingService(UserService, $q) {
   }
 
   function hasNext(data) {
-    let status = false;
-
-    if (data.pageInfo && data.pageInfo.links) {
-      status =
-        data.pageInfo.links.next != null && data.pageInfo.links.next !== '';
-    }
-
-    return status;
+    return (
+      data.pageInfo && data.pageInfo.links && data.pageInfo.links.next !== null
+    );
   }
+
 
   function next(data) {
-    return move(data.pageInfo.links.next, data);
+    if (hasNext(data)) {
+      data.userFilter.pageIndex = data.pageInfo.links.next;
+      return move(data.userFilter, data);
+    }
+    return $q.resolve([]);
   }
+
+
 
   function hasPrevious(data) {
-    let status = false;
-
-    if (data.pageInfo && data.pageInfo.links) {
-      status =
-        data.pageInfo.links.prev != null && data.pageInfo.links.prev !== '';
-    }
-
-    return status;
+    return (
+      data.pageInfo && data.pageInfo.links && data.pageInfo.links.prev !== null
+    );
   }
 
+
   function previous(data) {
-    return move(data.pageInfo.links.prev, data);
+    if (hasPrevious(data)) {
+      data.userFilter.pageIndex = data.pageInfo.links.prev;
+      return move(data.userFilter, data);
+    }
+    return $q.resolve([]);
   }
 
   function move(start, data) {
     const filter = JSON.parse(JSON.stringify(data.userFilter));
-    filter.start = start;
+
     return UserService.getAllUsers(filter).then((pageInfo) => {
       data.pageInfo = pageInfo;
       return $q.resolve(pageInfo.items);
