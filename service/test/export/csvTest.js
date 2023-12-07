@@ -1,14 +1,14 @@
 'use strict';
 
 const sinon = require('sinon')
-  , expect = require('chai').expect
-  , mongoose = require('mongoose')
-  , stream = require('stream')
-  , util = require('util')
-  , JSZip = require('jszip')
-  , CsvExporter = require('../../lib/export/csv')
-  , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+const expect = require('chai').expect
+const mongoose = require('mongoose')
+const stream = require('stream')
+const util = require('util')
+const JSZip = require('jszip')
+const { Csv: CsvExporter } = require('../../lib/export/csv')
+const MockToken = require('../mockToken')
+const TokenModel = mongoose.model('Token')
 
 require('chai').should();
 require('sinon-mongoose');
