@@ -7,7 +7,7 @@ import { exportDirectory } from '../environment/env'
 import Event, { MageEventDocument } from '../models/event'
 import access from '../access'
 import exportXform from '../transformers/export'
-import { createExportTransform, ExportFormat } from '../export'
+import { exportFactory, ExportFormat } from '../export'
 import { defaultEventPermissionsService as eventPermissions } from '../permissions/permissions.events'
 import { MageRouteDefinitions } from './routes.types'
 import { ExportPermission, ObservationPermission } from '../entities/authorization/entities.permissions'
@@ -240,6 +240,14 @@ async function exportData(exportId: ExportDocument['_id'], event: MageEventDocum
   if (!exportDocument) {
     return
   }
+  const options = {
+    event: event,
+    filter: exportDocument.options.filter
+  };
+  const exporter = exportFactory.createExportTransform(exportDocument.exportType.toLowerCase() as ExportFormat, options);
+  if (!exporter) {
+    return
+  }
   const filename = exportId + '-' + exportDocument.exportType + '.zip';
   exportDocument = (await Export.updateExport(exportId, {
     status: Export.ExportStatus.Running,
@@ -252,12 +260,7 @@ async function exportData(exportId: ExportDocument['_id'], event: MageEventDocum
     log.info(`finished export ${exportId} @ ${file}`);
     Export.updateExport(exportId, { status: Export.ExportStatus.Completed });
   });
-  const options = {
-    event: event,
-    filter: exportDocument.options.filter
-  };
   log.info('begin export\n', exportDocument.toJSON());
-  const exporter = createExportTransform(exportDocument.exportType.toLowerCase() as ExportFormat, options);
   try {
     await exporter.export(stream);
   } catch (e) {

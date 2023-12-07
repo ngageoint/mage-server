@@ -15,7 +15,9 @@ export interface ExportTransform {
   export(dest: NodeJS.WritableStream): void
 }
 
-export function createExportTransform(format: ExportFormat, options: ExportOptions): ExportTransform {
+export const exportFactory = { createExportTransform }
+
+function createExportTransform(format: ExportFormat, options: ExportOptions): ExportTransform | undefined {
   switch (format) {
     case 'kml':
       return new Kml(options);
@@ -26,5 +28,4 @@ export function createExportTransform(format: ExportFormat, options: ExportOptio
     case 'geopackage':
       return new GeoPackage(options);
   }
-  throw new Error(`unknown export format: ${format}`)
 }
