@@ -252,27 +252,25 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       term: options.term
     };
 
-    // Include 'active' and 'enabled' only if they are explicitly set
     if (typeof options.active === 'boolean')
       queryParams.active = options.active;
     if (typeof options.enabled === 'boolean')
       queryParams.enabled = options.enabled;
 
-    // Include 'total' parameter based on includeTotalCount
     if (typeof options.includeTotalCount === 'boolean')
       queryParams.total = options.includeTotalCount ? 'true' : 'false';
 
     $http
       .get('/api/next-users/search', { params: queryParams })
       .success(function (data) {
-        deferredUsers.resolve(data); // Resolve the promise with the fetched data
+        deferredUsers.resolve(data);
       })
       .error(function (error) {
         console.log('error in getAllUsers', error);
-        deferredUsers.reject(error); // Reject the promise in case of an error
+        deferredUsers.reject(error);
       });
 
-    return deferredUsers.promise; // Return the promise object
+    return deferredUsers.promise;
   }
 
   function createUser(user, success, error, progress) {
