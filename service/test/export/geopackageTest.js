@@ -6,7 +6,7 @@ const sinon = require('sinon')
     , stream = require('stream')
     , util = require('util')
     , JSZip = require('jszip')
-    , GeopackageExporter = require('../../lib/export/geopackage')
+    , { GeoPackage: GeopackageExporter } = require('../../lib/export/geopackage')
     , GeoPackageAPI = require('@ngageoint/geopackage');
 
 require('chai').should();
