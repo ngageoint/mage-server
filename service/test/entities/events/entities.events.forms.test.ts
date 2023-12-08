@@ -91,7 +91,7 @@ describe('copying form styles', function() {
       primaryEntry2: {
         fill: '#111133',
         variantEntry1: {
-          fillOpacity: 0.6,
+          fillOpacity: 0.0,
           tooDeep: {
             never: 'copy'
           }
@@ -120,10 +120,7 @@ describe('copying form styles', function() {
       primaryEntry2: {
         fill: '#111133',
         variantEntry1: {
-          fillOpacity: 0.6,
-          tooDeep: {
-            never: 'copy'
-          }
+          fillOpacity: 0.0,
         },
         variantEntry2: {
           fillOpacity: 0.6,

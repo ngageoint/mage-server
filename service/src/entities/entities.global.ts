@@ -147,5 +147,16 @@ export class UrlResolutionError extends Error {
 }
 
 export function copyLineStyleAttrs(x: LineStyle): LineStyle {
-  return { ...x }
+  const keys: Record<keyof LineStyle, true> = {
+    fill: true,
+    stroke: true,
+    fillOpacity: true,
+    strokeOpacity: true,
+    strokeWidth: true,
+  }
+  const copy = {} as any
+  for (const key in keys) {
+    copy[key] = x[key as keyof LineStyle]
+  }
+  return copy
 }

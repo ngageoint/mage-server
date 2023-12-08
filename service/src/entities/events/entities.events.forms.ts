@@ -130,8 +130,8 @@ function copyFieldEntryStyles(x: BaseFormStyle, depth: number): BaseFormStyle {
     if (lineStyleKeys[key as keyof LineStyle]) {
       copy[key] = x[key]
     }
-    else if (depth > 0) {
-      copy[key] = copyFieldEntryStyles(copy[key] as BaseFormStyle, depth - 1) as any
+    else if (depth > 0 && x[key] !== undefined) {
+      copy[key] = copyFieldEntryStyles(x[key] as BaseFormStyle, depth - 1) as any
     }
     return copy
   }, {} as BaseFormStyle)
