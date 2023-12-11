@@ -146,46 +146,50 @@ function UserPagingService(UserService, $q) {
     return users;
   }
 
-
   function search(data, userSearch) {
-    if (data.pageInfo == null || data.pageInfo.users == null) {
-      return $q.resolve([]);
-    }
-
     const previousSearch = data.searchFilter;
 
-    let promise = null;
-
-    if (previousSearch == '' && userSearch == '') {
-      //Not performing a search
-      promise = $q.resolve(data.pageInfo.users);
-    } else if (previousSearch != '' && userSearch == '') {
-      //Clearing out the search
-      data.searchFilter = '';
-      delete data.userFilter['or'];
-
-      promise = UserService.getAllUsers(data.userFilter).then((pageInfo) => {
-        data.pageInfo = pageInfo;
-        return $q.resolve(data.pageInfo.users);
-      });
-    } else if (previousSearch == userSearch) {
-      //Search is being performed, no need to keep searching the same info over and over
-      promise = $q.resolve(data.pageInfo.users);
+    if (previousSearch === '' && userSearch === '') {
+      return performNoSearch(data);
+    } else if (previousSearch !== '' && userSearch === '') {
+      return clearSearch(data);
+    } else if (previousSearch === userSearch) {
+      return continueExistingSearch(data);
     } else {
-      //Perform the server side searching
-      data.searchFilter = userSearch;
-
-      const filter = data.userFilter;
-      filter.or = {
-        displayName: '.*' + userSearch + '.*',
-        email: '.*' + userSearch + '.*'
-      };
-      promise = UserService.getAllUsers(filter).then((pageInfo) => {
-        data.pageInfo = pageInfo;
-        return $q.resolve(data.pageInfo.users);
-      });
+      return performNewSearch(data, userSearch);
     }
+  }
 
-    return promise;
+  function performNoSearch(data) {
+    // Logic for not performing a search
+    return $q.resolve(data.pageInfo.items);
+  }
+
+  function clearSearch(data) {
+    // Logic for clearing out the search
+    data.searchFilter = '';
+    delete data.userFilter['or'];
+    return UserService.getAllUsers(data.userFilter).then((pageInfo) => {
+      data.pageInfo = pageInfo;
+      return $q.resolve(data.pageInfo.items);
+    });
+  }
+
+  function continueExistingSearch(data) {
+    // Logic for continuing an existing search
+    return $q.resolve(data.pageInfo.items);
+  }
+
+  function performNewSearch(data, userSearch) {
+    // Logic for performing a new search
+    data.searchFilter = userSearch;
+
+    const filter = { ...data.userFilter };
+    filter.term = userSearch;
+
+    return UserService.getAllUsers(filter).then((pageInfo) => {
+      data.pageInfo = pageInfo;
+      return $q.resolve(data.pageInfo.items);
+    });
   }
 }

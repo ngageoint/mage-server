@@ -17,10 +17,7 @@ export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestF
         nameOrContactTerm: req.query.term as string | undefined,
         pageSize: parseInt(String(req.query.page_size)) || 250,
         pageIndex: parseInt(String(req.query.page)) || 0,
-        includeTotalCount:
-          'total' in req.query
-            ? /^true$/i.test(String(req.query.total))
-            : undefined,
+        includeTotalCount: req.query.total ? /^true$/i.test(String(req.query.total)) : true,
         active:
           'active' in req.query
             ? /^true$/i.test(String(req.query.active))

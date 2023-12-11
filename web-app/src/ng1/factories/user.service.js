@@ -249,16 +249,19 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     let queryParams = {
       page_size: options.pageSize || 10,
       page: options.pageIndex || 0,
-      term: options.term
+      term: options.term || '',
+      total:
+        typeof options.includeTotalCount === 'boolean'
+          ? options.includeTotalCount
+            ? 'true'
+            : 'false'
+          : 'true'
     };
 
     if (typeof options.active === 'boolean')
       queryParams.active = options.active;
     if (typeof options.enabled === 'boolean')
       queryParams.enabled = options.enabled;
-
-    if (typeof options.includeTotalCount === 'boolean')
-      queryParams.total = options.includeTotalCount ? 'true' : 'false';
 
     $http
       .get('/api/next-users/search', { params: queryParams })
