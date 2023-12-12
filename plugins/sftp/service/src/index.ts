@@ -50,7 +50,6 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     processor.start();
     return {
       webRoutes(requestContext: GetAppRequestContext): express.Router {
-        // TODO hook into the mage.service permissions?
         const router: express.Router = express.Router()
           .use(express.json())
           .use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -64,14 +63,20 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
         router.route('/configuration')
           .get(async (_req, res, _next) => {
-            console.info('Getting SFTP plugin config...')
+            console.info('Getting SFTP plugin configuration')
             const config = await processor.getConfiguration();
             res.json(config)
           })
           .post(async (req, res, _next) => {
-            console.info('Applying SFTP plugin config...')
+            console.info('Applying SFTP plugin configuration')
+
+            await processor.stop()
+
             const configuration = req.body as SFTPPluginConfig
-            processor.updateConfiguration(configuration)
+            await processor.updateConfiguration(configuration)
+
+            await processor.start()
+
             res.status(200).json(configuration)
           })
 

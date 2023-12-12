@@ -1,6 +1,4 @@
-import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { ArchiveFormat, CompletionAction, TriggerRule } from './format/format';
-import { ObservationId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+import { ArchiveFormat } from "./entities/entities.format"
 
 /**
  * Contains various configuration values used by the plugin.
@@ -25,7 +23,7 @@ export interface SFTPPluginConfig {
   /**
    * Events in which to SFTP observations
    */
-  events: Array<MageEventId>
+  events: Array<number>
 
   /**
    * Specifies how to format the SFTP archive file
@@ -33,50 +31,24 @@ export interface SFTPPluginConfig {
   archiveFormat: ArchiveFormat
 
   /**
-   * Action to perform on observation when SFTP is complete
-   */
-  completionAction: CompletionAction
-
-  /**
-   * When to to initiate SFTP
-   */
-  initiation: {
-    rule: TriggerRule,
-    timeout: number
-  }
-
-  /**
    * SFTP client configuartion
    */
-  sftpClient: {
+  sftpConfiguration: {
     host: string,
-    path: string,
     username: string,
     password: string
   }
-
-  /**
-   * Last observation sync time per event
-   */
-  sync: { [key: MageEventId]: number; }
 }
 
 export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
-  enabled: false,
+  enabled: true,
   interval: 60,
   pageSize: 100,
   events: [],
   archiveFormat: ArchiveFormat.GeoJSON,
-  completionAction: CompletionAction.None,
-  initiation: {
-    rule: TriggerRule.CreateAndUpdate,
-    timeout: 60
-  },
-  sftpClient: {
+  sftpConfiguration: {
     host: '',
-    path: '',
     username: '',
     password: ''
-  },
-  sync: {}
+  }
 })

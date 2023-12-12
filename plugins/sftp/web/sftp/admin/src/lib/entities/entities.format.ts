@@ -1,6 +1,18 @@
-import { MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { ArchiveFormat, CompletionAction, TriggerRule } from './format/format';
-import { ObservationId } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
+export enum ArchiveFormat {
+  GeoJSON = "GeoJSON"
+}
+
+export enum CompletionAction {
+  None = "None",
+  Archive = "Archive"
+}
+
+export enum TriggerRule {
+  Create = "Create",
+  CreateAndUpdate = "CreateAndUpdate"
+}
+
+export type MageEventId = number
 
 /**
  * Contains various configuration values used by the plugin.
@@ -54,29 +66,4 @@ export interface SFTPPluginConfig {
     username: string,
     password: string
   }
-
-  /**
-   * Last observation sync time per event
-   */
-  sync: { [key: MageEventId]: number; }
 }
-
-export const defaultSFTPPluginConfig = Object.freeze<SFTPPluginConfig>({
-  enabled: false,
-  interval: 60,
-  pageSize: 100,
-  events: [],
-  archiveFormat: ArchiveFormat.GeoJSON,
-  completionAction: CompletionAction.None,
-  initiation: {
-    rule: TriggerRule.CreateAndUpdate,
-    timeout: 60
-  },
-  sftpClient: {
-    host: '',
-    path: '',
-    username: '',
-    password: ''
-  },
-  sync: {}
-})

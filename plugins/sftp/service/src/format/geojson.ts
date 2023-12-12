@@ -3,7 +3,7 @@ import { Form, FormField, FormFieldType, FormId } from "@ngageoint/mage.service/
 import { Attachment, AttachmentStore, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation } from "@ngageoint/mage.service/lib/entities/observations/entities.observations";
 import archiver, { Archiver } from "archiver";
 import { Feature } from "geojson";
-import { ObservationArchiver } from "./format";
+import { ObservationArchiver, ArchiveError } from "./format";
 import { ReadStream } from "fs";
 import { User, UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
 const { Readable } = require('node:stream');
@@ -17,7 +17,7 @@ export class GeoJsonFormatter implements ObservationArchiver {
     this.attachmentStore = attachmentStore
   }
 
-  async createArchive(observation: Observation, event: MageEvent): Promise<Archiver> {
+  async createArchive(observation: Observation, event: MageEvent): Promise<Archiver | ArchiveError> {
     const archive: Archiver = archiver('zip')
     const geojson = await this.createObservationGeoJSON(observation, event)
     archive.append(JSON.stringify(geojson), { name: 'observation.geojson' })
@@ -26,6 +26,8 @@ export class GeoJsonFormatter implements ObservationArchiver {
       const stream = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, new MageEvent(event)))
       if (stream instanceof ReadStream) {
         archive.append(new Readable.from(stream), { name: this.getAttachmentPath(attachment) });
+      } else {
+        return ArchiveError.attachmentNotFound(attachment.id, observation.id)
       }
     }
 

@@ -39,7 +39,7 @@ module.exports = {
         '@ngageoint/mage.sftp.service',
       ],
       webUIPlugins: [
-        '@ngageoint/mage.arc-web'
+        '@ngageoint/mage.sftp.web'
       ],
     },
   }

@@ -7,6 +7,7 @@ import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig } from './SFTPPluginConfig';
 import { ArchiveFormat, ArchiverFactory } from './format/format';
+import archiver, { Archiver } from "archiver";
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -93,8 +94,8 @@ export class ObservationProcessor {
    * Updates new configuration in the state repository.
    * @param configuration The new config to put into the state repo.
    */
-  public updateConfiguration(configuration: SFTPPluginConfig) {
-    this.stateRepository.put(configuration);
+  public async updateConfiguration(configuration: SFTPPluginConfig) {
+    await this.stateRepository.put(configuration);
   }
 
   /**
@@ -102,21 +103,26 @@ export class ObservationProcessor {
    */
   async start() {
     const configuration = await this.getConfiguration()
+    if (!configuration.enabled) {
+      return
+    }
+
     try {
-      await this.sftpClient.connect(configuration.sftpConfiguration)
+      await this.sftpClient.connect(configuration.sftpClient)
     } catch (e) {
-      this.console.error("ERROR, could not connect to SFTP endpoint")
+      this.console.error("ERROR, could not connect to SFTP endpoint", e)
     }
 
     this.isRunning = true;
-    this.processAndScheduleNext();
+    await this.processAndScheduleNext();
   }
 
   /**
    * Stops the processor.
    */
-  stop() {
+  async stop() {
     this.isRunning = false;
+    await this.sftpClient.end()
     clearTimeout(this.nextTimeout);
   }
 
@@ -167,7 +173,11 @@ export class ObservationProcessor {
     if (observations.length) {
       for (const attrs of observations) {
         const observation = Observation.evaluate(attrs, event)
-        await this.processObservation(observation, event, configuration.archiveFormat)
+        const status = await this.processObservation(observation, event, configuration.archiveFormat, configuration.sftpClient.path)
+
+        if (!status) {
+          return
+        }
       }
 
       page.pageIndex = ++page.pageIndex
@@ -176,21 +186,27 @@ export class ObservationProcessor {
     }
   }
 
-  private async processObservation(observation: Observation, event: MageEvent, format: ArchiveFormat) {
+  private async processObservation(observation: Observation, event: MageEvent, format: ArchiveFormat, path: string): Promise<boolean> {
     this.console.info('SFTP observation', observation.id)
 
     const archiver = new ArchiverFactory(format, this.userRepository, this.attachmentStore).createArchiver()
     const archive = await archiver.createArchive(observation, event)
 
-    const stream = new PassThrough();
-    archive.pipe(stream)
-    await archive.finalize()
-    await this.sftpClient.put(stream, `/Users/wnewman/sftp/${observation.id}.zip`);
+    if (typeof archive === Archive) {
+      const stream = new PassThrough()
+      archive.pipe(stream)
+      await archive.finalize()
+      await this.sftpClient.put(stream, `${path}/${observation.id}.zip`)
 
-    const sync: { [key: MageEventId]: number } = {
-      [observation.eventId]: observation.lastModified.getTime()
-    };
-    const config: Partial<SFTPPluginConfig> = { sync }
-    this.stateRepository.patch(config)
+      const sync: { [key: MageEventId]: number } = {
+        [observation.eventId]: observation.lastModified.getTime()
+      };
+      const configuration: Partial<SFTPPluginConfig> = { sync }
+      await this.stateRepository.patch(configuration)
+
+      return true
+    } else {
+      return false
+    }
   }
 }
