@@ -20,21 +20,22 @@ const EventModel = mongoose.model('Event');
 
 describe("geopackage export tests", function () {
 
-    const event = {
-        _id: 1,
-        name: 'Geopackage_Test_Event_1',
-        collectionName: 'observations1',
-        forms: [],
-        formMap: {},
-        acl: {}
-    };
-    const userId = mongoose.Types.ObjectId();
+    let event
+    let userId
 
     beforeEach(function () {
-        const mockEvent = new EventModel(event);
+        event = new EventModel({
+            _id: 1,
+            name: 'Geopackage_Test_Event_1',
+            collectionName: 'observations1',
+            forms: [],
+            formMap: {},
+            acl: {}
+        })
+        userId = mongoose.Types.ObjectId()
         sinon.mock(EventModel)
             .expects('findById')
-            .yields(null, mockEvent);
+            .yields(null, event);
     });
 
     afterEach(function () {
@@ -57,9 +58,9 @@ describe("geopackage export tests", function () {
         devices[device0.id] = device0;
 
         const options = {
-            event: event,
-            users: users,
-            devices: devices,
+            event,
+            users,
+            devices,
             filter: {
                 exportObservations: false,
                 exportLocations: false

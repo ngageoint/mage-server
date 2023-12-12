@@ -2,7 +2,8 @@
 
 import { RelationType } from '@ngageoint/geopackage/dist/lib/extension/relatedTables/relationType'
 import { EnvelopeBuilder } from '@ngageoint/geopackage/dist/lib/geom/envelopeBuilder'
-import GPKG, { GeoPackageAPI } from '@ngageoint/geopackage'
+import * as GPKG from '@ngageoint/geopackage'
+import { GeoPackageAPI } from '@ngageoint/geopackage'
 import { Envelope } from '@ngageoint/geopackage/dist/lib/geom/envelope'
 import { FeatureDao } from '@ngageoint/geopackage/dist/lib/features/user/featureDao'
 import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/featureRow'
