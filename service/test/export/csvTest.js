@@ -38,30 +38,30 @@ const deviceId = mongoose.Types.ObjectId();
 
 describe("csv export tests", function () {
 
-  const event = {
-    _id: 1,
-    name: 'Event 1',
-    collectionName: 'observations1',
-    forms: [],
-    acl: {}
-  };
-
-  const user = {
-    _id: userId,
-    username: 'csv.export.test',
-    displayName: 'CSV Export Test'
-  }
-
-  const device = {
-    _id: deviceId,
-    uid: '123456'
-  }
+  let event
+  let user
+  let device
 
   beforeEach(function () {
-    const mockEvent = new EventModel(event);
+    event = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      forms: [],
+      acl: {}
+    })
+    user = {
+      _id: userId,
+      username: 'csv.export.test',
+      displayName: 'CSV Export Test'
+    }
+    device = {
+      _id: deviceId,
+      uid: '123456'
+    }
     sinon.mock(EventModel)
       .expects('findById')
-      .yields(null, mockEvent);
+      .yields(null, event);
 
     const mockUser = new UserModel(user);
     sinon.mock(User)
@@ -116,9 +116,9 @@ describe("csv export tests", function () {
     devices[device0.id] = device0;
 
     const options = {
-      event: event,
-      users: users,
-      devices: devices,
+      event,
+      users,
+      devices,
       filter: {
         exportObservations: false,
         exportLocations: false
@@ -149,7 +149,7 @@ describe("csv export tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     const options = {
-      event: event,
+      event,
       filter: {
         exportObservations: true,
         exportLocations: false
@@ -202,7 +202,7 @@ describe("csv export tests", function () {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
     const options = {
-      event: event,
+      event,
       filter: {
         exportObservations: false,
         exportLocations: true
