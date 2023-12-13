@@ -71,13 +71,17 @@ class AdminUsersController {
   }
 
   search() {
+    this.UserPagingService.search(
+      this.stateAndData[this.filter],
+      this.userSearch
+    ).then((users) => {
+      this.users = users;
+    });
+  }
 
-     this.UserPagingService.search(
-       this.stateAndData[this.filter],
-       this.userSearch
-     ).then((users) => {
-       this.users = users;
-     });
+  changeFilter(state) {
+    this.filter = state;
+    this.search();
   }
 
   reset() {

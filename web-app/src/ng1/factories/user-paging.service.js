@@ -124,7 +124,8 @@ function UserPagingService(UserService, $q) {
       data.userFilter.pageIndex = data.pageInfo.links.prev;
       return move(data.userFilter, data);
     }
-    return $q.resolve([]);
+    // Return the current items without clearing them
+    return $q.resolve(data.pageInfo.items);
   }
 
   function move(start, data) {
