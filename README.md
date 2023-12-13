@@ -227,7 +227,12 @@ a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGIN
 external connections to use HTTPS and run the MAGE server Node process on a private subnet host.  The MAGE server Node
 application itself does not support HTTPS/TLS connections.
 
-For ISS installations, in addition to running a reverse proxy, it is required to configure ISS to preserve host headers. To do this, the following command must be completed:
+**IMPORTANT:** Be sure your reverse proxy properly sets the `X-Forwarded-Host` and `X-Forwarded-Proto` headers properly.
+The MAGE Node.js app builds URLs, via [Express.js](https://expressjs.com/en/4x/api.html#req.hostname), that MAGE clients
+use to request resources.
+
+For Microsoft ISS installations, in addition to running a reverse proxy, you must configure ISS to preserve
+host headers. To do this, execute the following command:
 ```bash
 \Windows\System32\inetsrv\appcmd.exe set config -section:system.webServer/proxy -preserveHostHeader:true /commit:apphost
 ```
