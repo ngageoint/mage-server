@@ -188,12 +188,49 @@ where you have installed the MAGE server packages.
 forever start ./node_modules/.bin/mage.service <...options>
 ```
 
+#### Running as a Windows Service
+To continuously run mage.service on a windows environment, it is recommended to create a windows service using a tool such as [`node-windows`](https://github.com/coreybutler/node-windows).
+
+First you'll need to install `node-windows`
+```bash
+npm install -g node-windows
+```
+Then a script is needed to configure and create the windows service.
+```js
+var Service = require('node-windows').Service;
+
+// Create a new service object
+var svc = new Service({
+  name:'Mage Service',
+  description: 'To run MAGE Server as a windows service',
+  script: '{MAGE Install Directory}\\node_modules\\@ngageoint\\mage.service\\bin\\mage.service.js',
+  nodeOptions: [
+  ]
+  //, workingDirectory: '...'
+  //, allowServiceLogon: true
+});
+
+// Listen for the "install" event, which indicates the
+// process is available as a service.
+svc.on('install',function(){
+  svc.start();
+});
+
+svc.install();
+```
+Upon running the created script, a new Windows service will be created matching the name given. This service can then be configured to automatically start by the windows server.
+
 #### HTTPS/TLS
 
 When running a MAGE server in a publicly accessible production environment, as with any web application, you should use
 a reverse proxy such as [Apache HTTP Server](https://httpd.apache.org/) or [NGINX](https://nginx.org/) to force
 external connections to use HTTPS and run the MAGE server Node process on a private subnet host.  The MAGE server Node
 application itself does not support HTTPS/TLS connections.
+
+For ISS installations, in addition to running a reverse proxy, it is required to configure ISS to preserve host headers. To do this, the following command must be completed:
+```bash
+\Windows\System32\inetsrv\appcmd.exe set config -section:system.webServer/proxy -preserveHostHeader:true /commit:apphost
+```
 
 #### Cloud Foundry deployment
 
