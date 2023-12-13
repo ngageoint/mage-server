@@ -6,57 +6,57 @@ function Layer($resource) {
   const Layer = $resource(
     '/api/layers/:id',
     {
-      id: '@id',
+      id: '@id'
     },
     {
       get: {
         headers: {
-          Accept: 'application/json',
-        },
+          Accept: 'application/json'
+        }
       },
       create: {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       },
       update: {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       },
       makeAvailable: {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         url: '/api/layers/:id/available',
         params: {
-          available: true,
-        },
+          available: true
+        }
       },
       queryByEvent: {
         method: 'GET',
         isArray: true,
-        url: '/api/events/:eventId/layers',
+        url: '/api/events/:eventId/layers'
       },
       closestFeatureByLayer: {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         isArray: true,
-        url: '/api/events/:eventId/features',
+        url: '/api/events/:eventId/features'
       },
       count: {
         method: 'GET',
         url: '/api/layers/count',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Content-Type': 'application/json'
+        }
       },
-    },
+    }
   );
 
   Layer.prototype.$save = function(params, success, error) {

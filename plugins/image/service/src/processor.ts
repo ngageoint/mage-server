@@ -1,5 +1,5 @@
 import { MageEventAttrs, MageEventId, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, EventScopedObservationRepository, AttachmentStoreError, putAttachmentThumbnailForMinDimension, StagedAttachmentContent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentStore, Observation, ObservationId, ObservationRepositoryForEvent, AttachmentPatchAttrs, Thumbnail, EventScopedObservationRepository, AttachmentStoreError, putAttachmentThumbnailForMinDimension, StagedAttachmentContent, patchAttachment } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api'
 import path from 'path'
 
@@ -148,6 +148,24 @@ export type EventProcessingState = {
   latestAttachmentProcessedTimestamp: number
 }
 
+/**
+ TODO:
+ reads zero-byte file (?) and fails - mark as processed
+
+2023-09-27T09:31:50.738Z - [mage.image] error processing attachment {
+eventId: 17,
+observationId: '619ec65d7dc44d090239b266',
+attachmentId: '619ec6677dc44d090239b268'
+}
+-- process result: [Error: pngload_buffer: libspng read error vips2png: unable to write to target target]
+
+2023-09-27T20:26:57.400Z - [mage.image] error processing attachment {
+  eventId: 17,
+  observationId: '619fbe0b7dc44d090239b4d4',
+  attachmentId: '619fbe107dc44d090239b4d6'
+}
+-- process result: [Error: Input buffer contains unsupported image format]
+ */
 export async function processImageAttachments(
   pluginState: ImagePluginConfig,
   eventProcessingStates: Map<MageEventId, EventProcessingState> | null,
@@ -164,30 +182,42 @@ export async function processImageAttachments(
   eventProcessingStates = syncProcessingStatesFromAllEvents(allEvents, eventProcessingStates)
   const eventLatestModifiedTimes = new Map<MageEventId, number>()
   const unprocessedAttachments = await findUnprocessedAttachments(Array.from(eventProcessingStates.values()), null, startTime, pluginState.intervalBatchSize)
+  unprocessedAttachments[Symbol.asyncIterator]
   let processedCount = 0
   for await (const unprocessed of unprocessedAttachments) {
     // TODO: check results for errors
     console.info(`processing attachment`, unprocessed)
     const { observationId, attachmentId } = unprocessed
     const observationRepo = await observationRepoForEvent(unprocessed.eventId)
-    const orient = async (observation: Observation) => orientAttachmentImage(observation, attachmentId, imageService, observationRepo, attachmentStore, console)
-    const thumbnail = async (observation: Observation) => thumbnailAttachmentImage(observation, attachmentId, pluginState.thumbnailSizes, imageService, observationRepo, attachmentStore, console)
+    const orient = async (observation: Observation): Promise<AttachmentProcessingResult> =>
+      orientAttachmentImage(observation, attachmentId, imageService, attachmentStore, console)
+    const thumbnail = async (observation: Observation): Promise<AttachmentProcessingResult> =>
+      thumbnailAttachmentImage(observation, attachmentId, pluginState.thumbnailSizes, imageService, attachmentStore, console)
     const [ original, processed ] = await observationRepo.findById(observationId)
-      .then(checkObservationThen(orient))
-      .then(checkObservationThen(thumbnail))
-    if (original instanceof Observation && processed instanceof Observation) {
-      const eventLatestModified = eventLatestModifiedTimes.get(unprocessed.eventId) || 0
-      const attachment = original.attachmentFor(attachmentId)
-      const attachmentLastModified = attachment?.lastModified?.getTime() || original.lastModified.getTime()
-      if (attachmentLastModified > eventLatestModified) {
-        eventLatestModifiedTimes.set(unprocessed.eventId, attachmentLastModified)
+      .then(saveResultOf(orient, observationRepo))
+      .then(saveResultOf(thumbnail, observationRepo))
+    if (original instanceof Observation) {
+      if (processed instanceof Observation) {
+        const eventLatestModified = eventLatestModifiedTimes.get(unprocessed.eventId) || 0
+        const attachment = original.attachmentFor(attachmentId)
+        const attachmentLastModified = attachment?.lastModified?.getTime() || original.lastModified.getTime()
+        if (attachmentLastModified > eventLatestModified) {
+          eventLatestModifiedTimes.set(unprocessed.eventId, attachmentLastModified)
+        }
+        console.info(`processed attachment ${attachment?.name || '<unnamed>'}`, unprocessed)
       }
-      console.info(`processed attachment ${attachment?.name || '<unnamed>'}`, unprocessed)
+      else {
+        console.error(`error processing attachment`, unprocessed, '\n-- process result:', processed)
+        const attachment = original.attachmentFor(attachmentId)
+        if (attachment && !attachment.oriented) {
+          const oriented = await observationRepo.patchAttachment(original, attachmentId, { oriented: true })
+          if (oriented instanceof Error) {
+            console.error(`error marking attachment oriented after failed processing:`, unprocessed, oriented)
+          }
+        }
+      }
+      processedCount++
     }
-    else {
-      console.error(`error processing attachment`, unprocessed, '\n-- process result:', processed)
-    }
-    processedCount++
   }
   console.info(`finished image attachment processing interval - ${processedCount} attachments`)
   return new Map<MageEventId, EventProcessingState>(Array.from(eventProcessingStates.entries(), ([ eventId, state ]) => {
@@ -195,39 +225,44 @@ export async function processImageAttachments(
   }))
 }
 
+export class AttachmentProcessingResult {
+
+  constructor(
+    readonly observation: Observation,
+    readonly attachmentId: AttachmentId,
+    readonly patch?: AttachmentPatchAttrs,
+    readonly error?: Error,
+  ) {}
+
+  get success(): boolean { return !this.error }
+}
+
 export async function orientAttachmentImage (
   observation: Observation,
   attachmentId: AttachmentId,
   imageService: ImageService,
-  observationRepo: EventScopedObservationRepository,
   attachmentStore: AttachmentStore,
   console: Console
-): Promise<Observation | Error> {
+): Promise<AttachmentProcessingResult> {
   const attachment = observation.attachmentFor(attachmentId)
   if (!attachment) {
-    return new Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`)
+    return new AttachmentProcessingResult(observation, attachmentId, undefined, Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`))
   }
   const content = await attachmentStore.readContent(attachmentId, observation)
   if (!content || content instanceof Error) {
     console.error(`error reading content of image attachment ${attachmentId} observation ${observation.id}:`, content || 'content not found')
-    const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, { oriented: true })
-    if (updatedObservation instanceof Observation) {
-      return updatedObservation
-    }
-    const errMsg = `error marking attachment ${attachmentId} oriented on observation ${observation.id} after reading content failed:`
-    const errReason = updatedObservation ? String(updatedObservation) : 'observation not found'
-    console.error(errMsg, updatedObservation || errReason)
-    return new Error(`${errMsg} ${errReason}`)
+    return new AttachmentProcessingResult(observation, attachmentId, undefined, content || new Error('content not found'))
   }
   const pending = await attachmentStore.stagePendingContent()
   const oriented = await imageService.autoOrient(imageContentForAttachment(attachment, content), pending.tempLocation)
   if (oriented instanceof Error) {
-    return oriented
+    console.error(`error orienting attachment ${attachmentId} on observation ${observation.id} at ${attachment.contentLocator}`, oriented)
+    return new AttachmentProcessingResult(observation, attachmentId, undefined, oriented)
   }
   const storeResult = await attachmentStore.saveContent(pending, attachment.id, observation)
   if (storeResult instanceof AttachmentStoreError) {
     console.error(`error saving pending oriented content ${pending.id} for attachment ${attachmentId} on observation ${observation.id}:`, storeResult)
-    return storeResult
+    return new AttachmentProcessingResult(observation, attachmentId, undefined, storeResult)
   }
   const patch: AttachmentPatchAttrs = {
     oriented: true,
@@ -236,28 +271,19 @@ export async function orientAttachmentImage (
     ...oriented.dimensions,
     ...storeResult,
   }
-  const updatedObservation = await observationRepo.patchAttachment(observation, attachmentId, patch)
-  if (!updatedObservation) {
-    const err = new Error(`observation ${observation.id} did not exist after orienting attachment ${attachmentId}`)
-    console.error(err)
-    return err
-  }
-  else if (updatedObservation instanceof Error) {
-    console.error(`error updating oriented attachment ${attachment.id} on observation ${observation.id}:`, updatedObservation)
-    return updatedObservation
-  }
-  return updatedObservation
+  return new AttachmentProcessingResult(observation, attachmentId, patch)
 }
 
 export async function thumbnailAttachmentImage(
   observation: Observation, attachmentId: AttachmentId, thumbnailSizes: number[],
-  imageService: ImageService, observationRepo: EventScopedObservationRepository, attachmentStore: AttachmentStore,
-  console: Console): Promise<Error | Observation> {
+  imageService: ImageService, attachmentStore: AttachmentStore, console: Console): Promise<AttachmentProcessingResult> {
+  if (thumbnailSizes.length === 0) {
+    return new AttachmentProcessingResult(observation, attachmentId)
+  }
   const attachment = observation.attachmentFor(attachmentId)
   if (!attachment) {
     const err = new Error(`attachment ${attachmentId} does not exist on observation ${observation.id}`)
-    console.error(err)
-    return err
+    return new AttachmentProcessingResult(observation, attachmentId, undefined, err)
   }
   /*
   TODO: this thumbnail meta-data and content saving sequence is pretty awkward,
@@ -285,13 +311,7 @@ export async function thumbnailAttachmentImage(
     return putAttachmentThumbnailForMinDimension(obsWithThumbs, attachmentId, storedThumb) as Observation
   }, obsWithThumbs)
   const storedThumbPatch: AttachmentPatchAttrs = { thumbnails: obsWithThumbs.attachmentFor(attachmentId)!.thumbnails }
-  const savedObsWithThumbs = await observationRepo.patchAttachment(observation, attachmentId, storedThumbPatch)
-  if (!(savedObsWithThumbs instanceof Observation)) {
-    if (!savedObsWithThumbs) {
-      return new Error(`observation ${observation.id} did not exist after thumbnail operation on attachment ${attachment.id}`)
-    }
-  }
-  return savedObsWithThumbs
+  return new AttachmentProcessingResult(observation, attachmentId, storedThumbPatch)
 }
 
 function syncProcessingStatesFromAllEvents(allEvents: MageEventAttrs[], states: Map<MageEventId, EventProcessingState> | null | undefined): Map<MageEventId, EventProcessingState> {
@@ -304,14 +324,24 @@ function syncProcessingStatesFromAllEvents(allEvents: MageEventAttrs[], states: 
   return newStates
 }
 
-type ObservationUpdateResult = [ original: Observation | Error | null, updated: Observation | Error | null ]
-function checkObservationThen(update: (o: Observation) => Promise<Observation | Error | null>): (target: Observation | Error | null | ObservationUpdateResult) => Promise<ObservationUpdateResult> {
-  return async target => {
-    const [ original, updated ] = Array.isArray(target) ? target : [ target, target ]
-    if (updated instanceof Observation) {
-      return await update(updated).then(result => [ original, result ])
+type ObservationUpdateResult = [ Observation | Error | null, Observation | Error | null ]
+
+/**
+ * Perform the given attachment processing operation.  If the operation
+ * produces an attachment patch, apply the patch and save the observation.
+ */
+function saveResultOf(processAttachment: (o: Observation) => Promise<AttachmentProcessingResult>, repo: EventScopedObservationRepository): (target: Observation | null | Error | ObservationUpdateResult) => Promise<ObservationUpdateResult> {
+  return async (target): Promise<ObservationUpdateResult> => {
+    const [ original, next ] = Array.isArray(target) ? target : [ target, target ]
+    if (original instanceof Observation && next instanceof Observation) {
+      const result = await processAttachment(next)
+      if (result.patch) {
+        const patched = await repo.patchAttachment(next, result.attachmentId, result.patch)
+        return [ original, result.error || patched ]
+      }
+      return [ original, result.error || original ]
     }
-    return [ original, updated ]
+    return [ original, next ]
   }
 }
 

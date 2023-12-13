@@ -37,7 +37,7 @@ class MigrationContext {
 
   onFinished(err: any, results: migrations.MigrationSetResults): void {
     if (err) {
-      log.error('database mirgrations failed: ', err)
+      log.error('database migrations failed: ', err)
       log.error('migration results:\n' + JSON.stringify(results, null, 2))
       process.exit(1)
     }

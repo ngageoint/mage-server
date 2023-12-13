@@ -1,10 +1,10 @@
-import { MageEvent, MageEventId, MageEventRepository } from '../../entities/events/entities.events'
-import { Attachment, AttachmentContentPatchAttrs, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
-import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
+import { MageEvent, MageEventId } from '../../entities/events/entities.events'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
-import { PageOf, PagingParameters, PendingEntityId } from '../../entities/entities.global'
+import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
 
@@ -89,8 +89,15 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
     return latest ? this.entityForDocument(latest) : null
   }
 
-  async findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<Observation>> {
-    throw new Error('unimplemented')
+  async findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>> {
+    const match = { lastModified: {$gte: new Date(timestamp)} }
+    const counted = await pageQuery(this.model.find(match), paging)
+    const observations: ObservationAttrs[] = []
+    for await (const doc of counted.query.cursor()) {
+      observations.push(this.entityForDocument(doc))
+    }
+
+    return pageOf(observations, paging, counted.totalCount)
   }
 
   async patchAttachment(observation: Observation, attachmentId: AttachmentId, patch: AttachmentPatchAttrs): Promise<Observation | AttachmentNotFoundError | null> {

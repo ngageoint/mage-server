@@ -1,0 +1,18 @@
+ARG base_mage_image=mage-server:latest
+
+FROM ${base_mage_image}
+
+COPY ngageoint-mage.*.tgz ${MAGE_HOME}/
+RUN \
+  id && pwd && ls -ld && ls -lrt \
+  && npm i --force --omit dev ./ngageoint-mage.service-6.2.10-beta.1.tgz \
+  && npm i --force --omit dev ./ngageoint-mage.arcgis-1.0.0.tgz \
+  && npm i --force --omit dev ./ngageoint-mage.arc-web-1.0.0.tgz
+
+ENTRYPOINT [ \
+  "./mage.service", \
+  "--plugin", "@ngageoint/mage.image.service", \
+  "--plugin", "@ngageoint/mage.nga-msi", \
+  "--plugin", "@ngageoint/mage.arcgis", \
+  "--web-plugin", "@ngageoint/mage.arc-web" \
+]

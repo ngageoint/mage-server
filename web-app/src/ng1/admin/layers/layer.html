@@ -19,6 +19,8 @@
           <h2>
             <button class="btn btn-default pull-right" ng-click="$ctrl.editLayer($ctrl.layer)"><i class="fa fa-edit"></i> Edit</button>
           </h2>
+          <h2>
+            <button ng-if="$ctrl.isLayerFileBased()" ng-click="$ctrl.downloadLayer()" class="btn btn-default pull-right" style="margin-right: 10px;"><i class="fa fa-download"></i> Download</button>
         </div>
       </div>
       <hr>

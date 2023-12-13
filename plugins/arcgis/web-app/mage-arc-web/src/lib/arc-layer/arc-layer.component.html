@@ -1,0 +1,86 @@
+<div class="arc-layer">
+  <section class="arc-service">
+    <header>
+      <h2>Feature Layers</h2>
+      <p class="subheading">Add ArcGIS feature service urls and layers to sychronize MAGE data to.</p>
+    </header>
+    <div>
+      <button mat-button mat-stroked-button color="primary" aria-label="Add ArcGIS feature layer"
+        (click)="onAddLayer()">ADD FEATURE SERVICE</button>
+    </div>
+    <div class="arcLayers" *ngIf="!config.featureServices.length">
+      <div class="arcLayer">
+        There are no ArcGIS feature services currently being synchronized.
+      </div>
+    </div>
+    <div class="arcLayers" *ngFor="let arcLayer of config.featureServices">
+      <ng-container>
+        <div class="arcLayer">
+          <div class="arcLayer__value">
+            <a href="{{addToken(arcLayer.url, arcLayer.token)}}" target="_blank">{{arcLayer.url}}</a>
+          </div>
+          <div class="arcLayer__edit">
+            <button class="edit-button" mat-icon-button (click)="onEditLayer(arcLayer)"><mat-icon class="edit-icon" [inline]="true">edit</mat-icon></button>
+          </div>
+          <div class="arcLayer__action">
+            <button class="delete-button" mat-icon-button aria-label="Delete ArcGIS layer"
+              (click)="showDeleteLayer(arcLayer.url)"><mat-icon class="delete-icon" [inline]="true">delete_outline</mat-icon></button>
+          </div>
+        </div>
+        <div class="featureLayers" *ngFor="let featureLayer of arcLayer.layers">
+          <div class="featureLayer__value">
+            {{featureLayer.layer}}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </section>
+</div>
+<ng-template #addLayerDialog let-data>
+  <ng-container *ngIf="currentUrl == undefined; else editLayer">
+    <h2 matDialogTitle>Add ArcGIS Feature Service</h2>
+  </ng-container>
+  <ng-template #editLayer>
+    <h2 matDialogTitle>Edit ArcGIS Feature Service</h2>
+  </ng-template>
+  <mat-dialog-content>
+    <div class="arc-layer-form">
+      <mat-form-field [style.width.%]="100">
+        <mat-label>URL</mat-label>
+        <input type="text" matInput [formControl]="arcLayerControl" (keyup)="inputChanged(layerUrl.value, layerToken.value)"
+          placeholder="http{s}://{domain}/arcgis/rest/services/{service}/FeatureServer" #layerUrl />
+        <mat-error *ngIf="arcLayerControl.hasError('required')">
+          URL is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field [style.width.%]="100">
+        <mat-label>Token</mat-label>
+        <input type="text" matInput [formControl]="arcTokenControl" (keyup)="inputChanged(layerUrl.value, layerToken.value)" #layerToken />
+      </mat-form-field>
+    </div>
+    <h3 matDialogTitle>Layers</h3>
+    <mat-spinner *ngIf="isLoading"></mat-spinner>
+    <div class="arc-layers" *ngFor="let arcLayer of layers">
+      <div class="featureLayer__value">
+        <input type="checkbox" [checked]="arcLayer.isSelected" (change)="selectedChanged(arcLayer)" />
+        {{arcLayer.name}}
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button [disabled]="isSaveDisabled()" mat-flat-button color="primary" matDialogClose
+      (click)="onAddLayerUrl(layerUrl.value, layers)">SAVE</button>
+  </mat-dialog-actions>
+</ng-template>
+<ng-template #deleteLayerDialog let-data>
+  <h3 matDialogTitle>Delete feature service?</h3>
+  <div class="deleteArcLayer__value">
+    {{currentUrl}}
+  </div>
+  <br>
+  <mat-dialog-actions align="end">
+    <button mat-button matDialogClose>CANCEL</button>
+    <button mat-flat-button color="primary" matDialogClose (click)="onDeleteLayer()">DELETE</button>
+  </mat-dialog-actions>
+</ng-template>
