@@ -72,7 +72,9 @@ export enum TeamPermission {
 
 export enum SettingPermission {
   READ_SETTINGS = 'READ_SETTINGS',
-  UPDATE_SETTINGS = 'UPDATE_SETTINGS'
+  UPDATE_SETTINGS = 'UPDATE_SETTINGS',
+  MAP_SETTINGS_READ = 'MAP_SETTINGS_READ',
+  MAP_SETTINGS_UPDATE = 'MAP_SETTINGS_UPDATE',
 }
 
 export enum FeedsPermission {

@@ -56,6 +56,11 @@ import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
 import { EventEmitter } from 'events'
+import { SettingsAppLayer, SettingsRoutes } from './adapters/settings/adapters.settings.controllers.web'
+import { MongooseSettingsRepository, SettingsModel } from './adapters/settings/adapters.settings.db.mongoose'
+import { FetchMapSettings, UpdateMapSettings } from './app.impl/settings/app.impl.settings'
+import { RoleBasedMapPermissionService } from './permissions/permissions.settings'
+import { SettingRepository } from './entities/settings/entities.settings'
 
 
 export interface MageService {
@@ -217,6 +222,9 @@ type DatabaseLayer = {
   },
   users: {
     user: UserModel
+  },
+  settings: {
+    setting: SettingsModel
   }
 }
 
@@ -252,7 +260,8 @@ type AppLayer = {
     deleteFeed: feedsApi.DeleteFeed
   },
   icons: StaticIconsAppLayer,
-  users: UsersAppLayer
+  users: UsersAppLayer,
+  settings: SettingsAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -296,6 +305,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     },
     users: {
       user: require('./models/user').Model
+    },
+    settings: {
+      setting: require('./models/setting').Model
     }
   }
 }
@@ -318,6 +330,9 @@ type Repositories = {
   },
   users: {
     userRepo: UserRepository
+  },
+  settings: {
+    settingRepo: SettingRepository
   }
 }
 
@@ -346,6 +361,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     new FileSystemIconContentStore(),
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
+  const settingRepo = new MongooseSettingsRepository(models.settings.setting)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
     throw attachmentStore
@@ -366,6 +382,9 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     },
     users: {
       userRepo
+    },
+    settings: {
+      settingRepo
     }
   }
 }
@@ -376,12 +395,14 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
+  const settings = await initSettingsAppLayer(repos)
   return {
     events,
     observations,
     feeds,
     icons,
     users,
+    settings
   }
 }
 
@@ -463,6 +484,16 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
   }
 }
 
+async function initSettingsAppLayer(repos: Repositories): Promise<AppLayer['settings']> {
+  const mapPermissions = new RoleBasedMapPermissionService()
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions)
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions)
+  return {
+    getMapSettings,
+    updateMapSettings
+  }
+}
+
 interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
@@ -483,6 +514,13 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     }
   }
   const bearerAuth = webAuth.passport.authenticate('bearer')
+
+  const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory)
+  webController.use('/api/settings', [
+    bearerAuth,
+    settingsRoutes
+  ])
+
   const usersRoutes = UsersRoutes(app.users, appRequestFactory)
   /*
   TODO: cannot mount at /api/users/search because the /api/users/:userId route

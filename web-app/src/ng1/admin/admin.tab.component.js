@@ -12,6 +12,7 @@ class AdminTabController {
 
   tabChanged(state) {
     this.$state.go(state);
+    console.log('state changes', state)
   }
 }
 
