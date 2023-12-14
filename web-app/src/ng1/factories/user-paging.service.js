@@ -101,16 +101,13 @@ function UserPagingService(UserService, $q) {
     );
   }
 
-
   function next(data) {
     if (hasNext(data)) {
       data.userFilter.pageIndex = data.pageInfo.links.next;
       return move(data.userFilter, data);
     }
-    return $q.resolve([]);
+    return $q.resolve(data.pageInfo.items);
   }
-
-
 
   function hasPrevious(data) {
     return (
