@@ -109,8 +109,8 @@
     "@types/passport": "^1.0.3",
     "@types/sinon": "^9.0.4",
     "@types/sinon-chai": "^3.2.4",
-    "@types/superagent": "^4.1.15",
-    "@types/supertest": "^2.0.8",
+    "@types/superagent": "^4.1.24",
+    "@types/supertest": "^2.0.16",
     "@types/uniqid": "^5.2.0",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
@@ -186,7 +186,7 @@
   },
   "config": {
     "mongodbMemoryServer": {
-      "version": "4.0.27"
+      "version": "4.4.26"
     }
   },
   "main": "bin/mage.service.js",
