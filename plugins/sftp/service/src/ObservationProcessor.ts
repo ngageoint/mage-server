@@ -6,8 +6,8 @@ import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
 import { SFTPPluginConfig, defaultSFTPPluginConfig } from './SFTPPluginConfig';
-import { ArchiveFormat, ArchiverFactory } from './format/format';
-import archiver, { Archiver } from "archiver";
+import { ArchiveError, ArchiveFormat, ArchiverFactory } from './format/format';
+// import { SftpObservationRepository } from 'entities.sftp';
 
 /**
  * Class that wakes up at a certain configured interval and processes any new observations that can be
@@ -71,6 +71,7 @@ export class ObservationProcessor {
     observationRepository: ObservationRepositoryForEvent,
     userRepository: UserRepository,
     attachmentStore: AttachmentStore,
+    // sftpObservationRepository: SftpObservationRepository,
     console: Console
   ) {
     this.stateRepository = stateRepository;
@@ -192,7 +193,9 @@ export class ObservationProcessor {
     const archiver = new ArchiverFactory(format, this.userRepository, this.attachmentStore).createArchiver()
     const archive = await archiver.createArchive(observation, event)
 
-    if (typeof archive === Archive) {
+    if (archive instanceof ArchiveError) {
+      return false
+    } else {
       const stream = new PassThrough()
       archive.pipe(stream)
       await archive.finalize()
@@ -205,8 +208,6 @@ export class ObservationProcessor {
       await this.stateRepository.patch(configuration)
 
       return true
-    } else {
-      return false
     }
   }
 }

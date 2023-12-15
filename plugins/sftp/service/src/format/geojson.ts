@@ -6,7 +6,7 @@ import { Feature } from "geojson";
 import { ObservationArchiver, ArchiveError } from "./format";
 import { ReadStream } from "fs";
 import { User, UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
-const { Readable } = require('node:stream');
+import { Readable } from 'node:stream';
 
 export class GeoJsonFormatter implements ObservationArchiver {
   private userRepository: UserRepository
@@ -25,7 +25,7 @@ export class GeoJsonFormatter implements ObservationArchiver {
     for (const attachment of observation.attachments) {
       const stream = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, new MageEvent(event)))
       if (stream instanceof ReadStream) {
-        archive.append(new Readable.from(stream), { name: this.getAttachmentPath(attachment) });
+        archive.append(Readable.from(stream), { name: this.getAttachmentPath(attachment) });
       } else {
         return ArchiveError.attachmentNotFound(attachment.id, observation.id)
       }

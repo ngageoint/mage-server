@@ -1,12 +1,15 @@
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SFTPPluginConfig } from './SFTPPluginConfig'
 import { ObservationProcessor } from './ObservationProcessor'
+// import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
 import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
 import { AttachmentStoreToken, ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations'
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
 import express from 'express'
+import mongoose from 'mongodb'
+// import { MongooseSftpObservationRepository, SftpObservatioModel } from 'adapters.sftp.observations'
 
 const logPrefix = '[mage.sftp]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -24,11 +27,12 @@ const consoleOverrides = logMethods.reduce((overrides, fn) => {
 const console = Object.create(globalThis.console, consoleOverrides) as Console
 
 const InjectedServices = {
-  stateRepo: PluginStateRepositoryToken,
-  eventRepo: MageEventRepositoryToken,
-  observationRepoForEvent: ObservationRepositoryToken,
-  userRepo: UserRepositoryToken,
+  stateRepository: PluginStateRepositoryToken,
+  eventRepository: MageEventRepositoryToken,
+  observationRepository: ObservationRepositoryToken,
+  userRepository: UserRepositoryToken,
   attachmentStore: AttachmentStoreToken,
+  // getDbConnection: MongooseDbConnectionToken
 }
 
 /**
@@ -37,17 +41,42 @@ const InjectedServices = {
  */
 const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
   inject: {
-    stateRepo: PluginStateRepositoryToken,
-    eventRepo: MageEventRepositoryToken,
-    observationRepoForEvent: ObservationRepositoryToken,
+    stateRepository: PluginStateRepositoryToken,
+    eventRepository: MageEventRepositoryToken,
+    observationRepository: ObservationRepositoryToken,
     userRepo: UserRepositoryToken,
     attachmentStore: AttachmentStoreToken,
+    // getDbConnection: MongooseDbConnectionToken
   },
   init: async (services): Promise<WebRoutesHooks> => {
     console.info('Intializing SFTP plugin...')
-    const { stateRepo, eventRepo, observationRepoForEvent, userRepo, attachmentStore } = services
-    const processor = new ObservationProcessor(stateRepo, eventRepo, observationRepoForEvent, userRepo, attachmentStore, console);
+
+    const {
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      userRepository,
+      attachmentStore,
+      // getDbConnection
+    } = services
+
+
+    // const dbConnection: mongoose.Connection = await getDbConnection()
+    // const sftpObservationModel = SftpObservatioModel(dbConnection)
+    // const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
+
+    const processor = new ObservationProcessor(
+      stateRepository,
+      eventRepository,
+      observationRepository,
+      userRepository,
+      attachmentStore,
+      // sftpObservationRepository,
+      console
+    );
+
     processor.start();
+
     return {
       webRoutes(requestContext: GetAppRequestContext): express.Router {
         const router: express.Router = express.Router()
