@@ -21,7 +21,7 @@ function UserPagingService(UserService, $q) {
         countFilter: {},
         userFilter: {
           pageSize: 10,
-          pageIndex: 1,
+          pageIndex: 0,
           sort: { displayName: 1, _id: 1 }
         },
         searchFilter: '',
@@ -32,7 +32,7 @@ function UserPagingService(UserService, $q) {
         countFilter: { active: true },
         userFilter: {
           pageSize: 10,
-          pageIndex: 1,
+          pageIndex: 0,
           sort: { displayName: 1, _id: 1 },
           active: true
         },
@@ -44,7 +44,7 @@ function UserPagingService(UserService, $q) {
         countFilter: { active: false },
         userFilter: {
           pageSize: 10,
-          pageIndex: 1,
+          pageIndex: 0,
           sort: { displayName: 1, _id: 1 },
           active: false
         },
@@ -56,7 +56,7 @@ function UserPagingService(UserService, $q) {
         countFilter: { enabled: false },
         userFilter: {
           pageSize: 10,
-          pageIndex: 1,
+          pageIndex: 0,
           sort: { displayName: 1, _id: 1 },
           enabled: false
         },
@@ -104,6 +104,7 @@ function UserPagingService(UserService, $q) {
   function next(data) {
     if (hasNext(data)) {
       data.userFilter.pageIndex = data.pageInfo.links.next;
+      data.userFilter.term = data.searchFilter;
       return move(data.userFilter, data);
     }
     return $q.resolve(data.pageInfo.items);
@@ -119,20 +120,20 @@ function UserPagingService(UserService, $q) {
   function previous(data) {
     if (hasPrevious(data)) {
       data.userFilter.pageIndex = data.pageInfo.links.prev;
+      data.userFilter.term = data.searchFilter;
       return move(data.userFilter, data);
     }
-    // Return the current items without clearing them
     return $q.resolve(data.pageInfo.items);
   }
 
-  function move(start, data) {
-    const filter = JSON.parse(JSON.stringify(data.userFilter));
 
+  function move(filter, data) {
     return UserService.getAllUsers(filter).then((pageInfo) => {
       data.pageInfo = pageInfo;
       return $q.resolve(pageInfo.items);
     });
   }
+
 
   function users(data) {
     let users = [];
@@ -159,12 +160,10 @@ function UserPagingService(UserService, $q) {
   }
 
   function performNoSearch(data) {
-    // Logic for not performing a search
     return $q.resolve(data.pageInfo.items);
   }
 
   function clearSearch(data) {
-    // Logic for clearing out the search
     data.searchFilter = '';
     delete data.userFilter['or'];
     return UserService.getAllUsers(data.userFilter).then((pageInfo) => {
@@ -174,12 +173,10 @@ function UserPagingService(UserService, $q) {
   }
 
   function continueExistingSearch(data) {
-    // Logic for continuing an existing search
     return $q.resolve(data.pageInfo.items);
   }
 
   function performNewSearch(data, userSearch) {
-    // Logic for performing a new search
     data.searchFilter = userSearch;
 
     const filter = { ...data.userFilter };
