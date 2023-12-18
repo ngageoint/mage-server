@@ -36,7 +36,7 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
 
     injector = getTestBed();
-    service = injector.get(PlacenameSearchService);
+    service = injector.inject(PlacenameSearchService);
   });
 
   it('should create', () => {
@@ -85,7 +85,7 @@ describe('SearchComponent', () => {
 
     const input = fixture.debugElement.query(By.css('input')).nativeElement
     input.value = "test"
-    
+
     const event = new KeyboardEvent("keydown", {
       "key": "Enter"
     });
