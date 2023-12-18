@@ -1,4 +1,4 @@
-<div class="search-control">
+<div class="search-control" *ngIf="mapSettings?.webSearchType !== 'NONE'">
   <button mat-mini-fab [color]="searchState === SearchState.ON ? 'primary' : 'basic'" matTooltip="Address / Place Name Search" matTooltipPosition="after" (click)="searchToggle()">
     <mat-icon color="primary" [ngClass]="{'active': searchState === SearchState.ON}">search</mat-icon>
   </button>
@@ -14,7 +14,7 @@
         <mat-list>
           <mat-list-item matRipple *ngFor="let result of searchResults" (click)="searchResultClick(result)">
             <mat-icon mat-list-icon>place</mat-icon>
-            <span mat-line class="mat-headline"> {{result.properties.display_name}}</span>
+            <span mat-line class="mat-headline"> {{result.name}}</span>
           </mat-list-item>
         </mat-list>
       </div>

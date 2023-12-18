@@ -4,7 +4,6 @@ import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule,
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser'
-import { by } from 'protractor';
 
 import { ObservationEditRadioComponent } from './observation-edit-radio.component'
 
