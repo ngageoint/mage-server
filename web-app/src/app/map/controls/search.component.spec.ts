@@ -8,20 +8,22 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListModule, MatListItem } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NominatimService } from '../search/nominatim.service';
 import { By } from '@angular/platform-browser';
-import { defer } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { PlacenameSearchResult, PlacenameSearchService } from '../search/search.service';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { defer } from 'rxjs';
+import { MobileSearchType, WebSearchType } from 'src/app/entities/map/entities.map';
 
 describe('SearchComponent', () => {
   let component: SearchComponent;
   let fixture: ComponentFixture<SearchComponent>;
   let injector: TestBed;
-  let service: NominatimService;
+  let service: PlacenameSearchService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, MatIconModule, MatButtonModule, HttpClientTestingModule, MatInputModule, MatProgressSpinnerModule, MatListModule, MatCardModule],
+      imports: [BrowserAnimationsModule, HttpClientTestingModule, MatCardModule, MatButtonModule, MatIconModule, MatInputModule, MatListModule, MatProgressSpinnerModule, MatSnackBarModule ],
       declarations: [ SearchComponent ],
       providers: []
     })
@@ -34,7 +36,7 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
 
     injector = getTestBed();
-    service = injector.get(NominatimService);
+    service = injector.get(PlacenameSearchService);
   });
 
   it('should create', () => {
@@ -60,33 +62,38 @@ describe('SearchComponent', () => {
   it('should search', fakeAsync(() => {
     spyOn(component.onSearch, 'emit');
 
-    let mockResult: any = {
-      features: [{
-        properties: {
-          display_name: 'test'
-        }
-      }]
-    };
+    component.searchState = SearchState.ON
 
-    service.search = () => {
-      return defer(() => Promise.resolve(mockResult));
+    component.mapSettings = {
+      webSearchType: WebSearchType.NOMINATIM,
+      webNominatimUrl: '',
+      mobileSearchType: MobileSearchType.NONE,
+      mobileNominatimUrl: ''
     }
 
-    const button = fixture.debugElement.query(By.css('button'));
-    button.nativeElement.click();
+    fixture.detectChanges()
 
-    fixture.detectChanges();
+    let results: PlacenameSearchResult[] = [{
+      name: "test",
+      bbox: [0, 0, 0, 0],
+      position: [0, 0]
+    }];
 
-    component.searchInput.value = "test";
+    service.search = () => {
+      return defer(() => Promise.resolve(results));
+    }
 
+    const input = fixture.debugElement.query(By.css('input')).nativeElement
+    input.value = "test"
+    
     const event = new KeyboardEvent("keydown", {
       "key": "Enter"
     });
-    component.searchInput.nativeElement.dispatchEvent(event);
+    input.dispatchEvent(event);
 
     tick(100);
 
-    expect(component.searchResults).toEqual(mockResult.features);
+    expect(component.searchResults).toEqual(results);
 
     fixture.detectChanges();
 
@@ -94,28 +101,37 @@ describe('SearchComponent', () => {
     item.nativeElement.click();
 
     expect(component.onSearch.emit).toHaveBeenCalledWith({
-      feature: mockResult.features[0]
+      result: results[0]
     });
   }));
 
   it('should clear', () => {
     spyOn(component.onSearchClear, 'emit');
 
-    const button = fixture.debugElement.query(By.css('button'));
-    button.nativeElement.click();
+    component.searchState = SearchState.ON
+
+    component.mapSettings = {
+      webSearchType: WebSearchType.NOMINATIM,
+      webNominatimUrl: '',
+      mobileSearchType: MobileSearchType.NONE,
+      mobileNominatimUrl: ''
+    }
 
     fixture.detectChanges();
 
-    component.searchInput.nativeElement.value = "test";
+    const input = fixture.debugElement.query(By.css('input')).nativeElement
+    input.value = "test"
 
     fixture.detectChanges();
+
+    expect(input.value).toEqual("test");
 
     const clearButton = fixture.debugElement.queryAll(By.css('button'))[1];
     clearButton.nativeElement.click();
 
     fixture.detectChanges();
 
-    expect(component.searchInput.nativeElement.value).toEqual("");
+    expect(input.value).toEqual("");
     expect(component.onSearchClear.emit).toHaveBeenCalled();
   });
 });

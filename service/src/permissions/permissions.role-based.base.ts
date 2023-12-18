@@ -19,5 +19,6 @@ export function ensureContextUserHasPermission(context: AppRequestContext<UserWi
   if (role.permissions.includes(permission)) {
     return null
   }
+
   return permissionDenied(permission, user.username)
 }
