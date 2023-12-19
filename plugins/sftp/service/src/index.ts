@@ -1,15 +1,19 @@
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
-import { SFTPPluginConfig } from './SFTPPluginConfig'
-import { ObservationProcessor } from './ObservationProcessor'
-// import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
+import { SFTPPluginConfig } from './configuration/SFTPPluginConfig'
+import { SftpController } from './controller/controller'
+import { MongooseDbConnectionToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { InitPluginHook, PluginStateRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api'
 import { GetAppRequestContext, WebRoutesHooks } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.web'
 import { AttachmentStoreToken, ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.observations'
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
+import { MongooseSftpObservationRepository, SftpObservationModel } from './adapters/adapters.sftp.mongoose'
 import express from 'express'
-import mongoose from 'mongodb'
-// import { MongooseSftpObservationRepository, SftpObservatioModel } from 'adapters.sftp.observations'
+import mongoose from 'mongoose'
+import SFTPClient from 'ssh2-sftp-client';
+import { ArchiverFactory } from './format/entities.format'
+
+const { name: packageName } = require('../package.json')
 
 const logPrefix = '[mage.sftp]'
 const logMethods = ['log', 'debug', 'info', 'warn', 'error'] as const
@@ -32,7 +36,7 @@ const InjectedServices = {
   observationRepository: ObservationRepositoryToken,
   userRepository: UserRepositoryToken,
   attachmentStore: AttachmentStoreToken,
-  // getDbConnection: MongooseDbConnectionToken
+  getDbConnection: MongooseDbConnectionToken
 }
 
 /**
@@ -44,12 +48,12 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
     stateRepository: PluginStateRepositoryToken,
     eventRepository: MageEventRepositoryToken,
     observationRepository: ObservationRepositoryToken,
-    userRepo: UserRepositoryToken,
+    userRepository: UserRepositoryToken,
     attachmentStore: AttachmentStoreToken,
-    // getDbConnection: MongooseDbConnectionToken
+    getDbConnection: MongooseDbConnectionToken
   },
   init: async (services): Promise<WebRoutesHooks> => {
-    console.info('Intializing SFTP plugin...')
+    console.info('intializing sftp plugin')
 
     const {
       stateRepository,
@@ -57,25 +61,27 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
       observationRepository,
       userRepository,
       attachmentStore,
-      // getDbConnection
+      getDbConnection
     } = services
 
+    const dbConnection: mongoose.Connection = await getDbConnection()
+    const sftpObservationModel = SftpObservationModel(dbConnection, `${packageName}/observations`)
+    const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
+    const archiverFactory = new ArchiverFactory(userRepository, attachmentStore)
 
-    // const dbConnection: mongoose.Connection = await getDbConnection()
-    // const sftpObservationModel = SftpObservatioModel(dbConnection)
-    // const sftpObservationRepository = new MongooseSftpObservationRepository(sftpObservationModel)
-
-    const processor = new ObservationProcessor(
+    const controller = new SftpController(
       stateRepository,
       eventRepository,
       observationRepository,
       userRepository,
       attachmentStore,
-      // sftpObservationRepository,
+      sftpObservationRepository,
+      new SFTPClient(),
+      archiverFactory,
       console
     );
 
-    processor.start();
+    controller.start();
 
     return {
       webRoutes(requestContext: GetAppRequestContext): express.Router {
@@ -92,19 +98,19 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
 
         router.route('/configuration')
           .get(async (_req, res, _next) => {
-            console.info('Getting SFTP plugin configuration')
-            const config = await processor.getConfiguration();
+            console.debug('fetching plugin configuration')
+            const config = await controller.getConfiguration();
             res.json(config)
           })
           .post(async (req, res, _next) => {
-            console.info('Applying SFTP plugin configuration')
+            console.debug('applying plugin configuration')
 
-            await processor.stop()
+            await controller.stop()
 
             const configuration = req.body as SFTPPluginConfig
-            await processor.updateConfiguration(configuration)
+            await controller.updateConfiguration(configuration)
 
-            await processor.start()
+            await controller.start()
 
             res.status(200).json(configuration)
           })

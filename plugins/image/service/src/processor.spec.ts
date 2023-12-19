@@ -164,7 +164,7 @@ describe('processing interval', () => {
     allEvents = new Map()
       .set(event1.id, event1)
       .set(event2.id, event2)
-    eventRepo = jasmine.createSpyObj<MageEventRepository>('eventRepo', [ 'findActiveEvents' ])
+    const eventRepo: MageEventRepository = jasmine.createSpyObj<MageEventRepository>('eventRepo', [ 'findActiveEvents' ])
     eventRepo.findActiveEvents.and.resolveTo(Array.from(allEvents.values()).map(copyMageEventAttrs))
     observationRepos = Array.from(allEvents.values()).reduce((repos, event) => {
       return repos.set(event.id, jasmine.createSpyObj<EventScopedObservationRepository>(`observationRepo-${event.id}`, [ 'findById', 'patchAttachment', 'save' ]))
@@ -426,8 +426,10 @@ describe('processing interval', () => {
         it('waits for the current processing interval to finish then stops', async () => {
 
           stateRepo.state = { ...defaultImagePluginConfig, intervalSeconds: 10 }
+          const foo = stateRepo.state
           const clockTickMillis = stateRepo.state.intervalSeconds * 1000 + 1
           attachmentQuery.and.resolveTo(asyncIterableOf([]))
+          const obsR = observationRepoForEvent
           const plugin = await createImagePluginControl(stateRepo, eventRepo, observationRepoForEvent, attachmentStore, attachmentQuery, imageService, console)
           plugin.start()
           clock.tick(clockTickMillis)

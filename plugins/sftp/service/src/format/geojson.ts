@@ -3,7 +3,7 @@ import { Form, FormField, FormFieldType, FormId } from "@ngageoint/mage.service/
 import { Attachment, AttachmentStore, FormEntry, FormFieldEntry, FormFieldEntryItem, Observation } from "@ngageoint/mage.service/lib/entities/observations/entities.observations";
 import archiver, { Archiver } from "archiver";
 import { Feature } from "geojson";
-import { ObservationArchiver, ArchiveError } from "./format";
+import { ObservationArchiver, ArchiveError, ArchiveResult } from "./entities.format";
 import { ReadStream } from "fs";
 import { User, UserRepository } from "@ngageoint/mage.service/lib/entities/users/entities.users";
 import { Readable } from 'node:stream';
@@ -17,21 +17,25 @@ export class GeoJsonFormatter implements ObservationArchiver {
     this.attachmentStore = attachmentStore
   }
 
-  async createArchive(observation: Observation, event: MageEvent): Promise<Archiver | ArchiveError> {
-    const archive: Archiver = archiver('zip')
-    const geojson = await this.createObservationGeoJSON(observation, event)
-    archive.append(JSON.stringify(geojson), { name: 'observation.geojson' })
+  async createArchive(observation: Observation, event: MageEvent): Promise<ArchiveResult | ArchiveError> {
+    try {
+      const archive: Archiver = archiver('zip')
+      const geojson = await this.createObservationGeoJSON(observation, event)
+      archive.append(JSON.stringify(geojson), { name: 'observation.geojson' })
 
-    for (const attachment of observation.attachments) {
-      const stream = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, new MageEvent(event)))
-      if (stream instanceof ReadStream) {
-        archive.append(Readable.from(stream), { name: this.getAttachmentPath(attachment) });
-      } else {
-        return ArchiveError.attachmentNotFound(attachment.id, observation.id)
+      for (const attachment of observation.attachments) {
+        const stream = await this.attachmentStore.readContent(attachment.id, Observation.evaluate(observation, new MageEvent(event)))
+        if (stream instanceof ReadStream) {
+          archive.append(Readable.from(stream), { name: this.getAttachmentPath(attachment) });
+        } else {
+          return ArchiveResult.incomplete(archive)
+        }
       }
-    }
 
-    return archive
+      return ArchiveResult.complete(archive)
+    } catch (e) {
+      return ArchiveError.error(e, observation.id)
+    }
   }
 
   private async createObservationGeoJSON(observation: Observation, event: MageEvent): Promise<Feature> {
