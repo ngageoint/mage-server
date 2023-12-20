@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatError } from '@angular/material/form-field';
-import { By } from 'protractor';
-
 import { ObservationEditPasswordComponent } from './observation-edit-password.component';
 
 @Component({

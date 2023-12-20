@@ -1,0 +1,57 @@
+<div class="page">
+  <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+  <div class="page-container">
+    <div class="content">
+      <mat-card>
+        <mat-card-header>
+          <mat-icon mat-card-avatar>search</mat-icon>
+          <mat-card-title class="primary-color">Location Search</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="platform">
+            <div class="platform__label">Mobile</div>
+            <div class="mat-body-1 platform__description">Configure how users search for places on MAGE mobile.</div>
+
+            <mat-radio-group class="radio-group" [(ngModel)]="mobileSearchType">
+              <mat-radio-button color="primary" *ngFor="let mobileSearchOption of mobileSearchOptions" [value]="mobileSearchOption">
+                {{mobileSearchOption}}
+              </mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="mobileSearchType === 'NOMINATIM'">
+              <mat-form-field appearance="fill">
+                <mat-label>Nominatim URL</mat-label>
+                <input matInput type="text" placeholder="https://nominatim.openstreetmap.org" [(ngModel)]="mobileNominatimUrl" required>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="platform">
+            <div class="platform__label">Web</div>
+            <div class="mat-body-2 platform__description">Configure how users search for places on MAGE web.</div>
+
+            <mat-radio-group class="radio-group" [(ngModel)]="webSearchType">
+              <mat-radio-button color="primary" *ngFor="let webSearchOption of webSearchOptions" [value]="webSearchOption">
+                {{webSearchOption}}
+              </mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="webSearchType === 'NOMINATIM'">
+              <mat-form-field appearance="fill">
+                <mat-label>Nominatim URL</mat-label>
+                <input matInput type="text" placeholder="https://nominatim.openstreetmap.org" [(ngModel)]="webNominatimUrl" required>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <button mat-flat-button color="primary" (click)="save()">
+            <mat-icon>save</mat-icon>
+            <span>Save</span>
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

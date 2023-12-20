@@ -52,6 +52,12 @@
       <div>Feeds</div>
     </div>
 
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.map'}" ng-click="$ctrl.tabChanged('admin.map')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.map'}"></div>
+      <i class="fa fa-globe"></i>
+      <div>Map</div>
+    </div>
+
     <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
       <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.settings'}"></div>
       <i class="fa fa-wrench"></i>

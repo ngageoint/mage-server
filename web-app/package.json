@@ -79,6 +79,7 @@
     "@uirouter/angular-hybrid": "^14.0.0",
     "@uirouter/angularjs": "1.0.30",
     "@uirouter/rx": "^1.0.0",
+    "@types/geojson": "^7946.0.7",
     "angular": "1.5.11",
     "angular-animate": "1.5.11",
     "angular-messages": "1.5.11",

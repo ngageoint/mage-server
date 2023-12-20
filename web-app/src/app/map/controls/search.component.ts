@@ -1,7 +1,10 @@
 import { Component, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { NominatimService } from '../search/nominatim.service';
 import { MatList } from '@angular/material/list';
 import { DomEvent } from 'leaflet';
+import { MapSettingsService } from '../settings/map.settings.service';
+import { MapSettings } from 'src/app/entities/map/entities.map';
+import { PlacenameSearchResult, PlacenameSearchService } from '../search/search.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export enum SearchState {
   ON,
@@ -9,7 +12,7 @@ export enum SearchState {
 }
 
 export interface SearchEvent {
-  feature: any;
+  result: PlacenameSearchResult;
 }
 
 @Component({
@@ -19,11 +22,13 @@ export interface SearchEvent {
 })
 export class SearchComponent implements AfterViewInit {
 
-  @ViewChild('searchInput', { static: true }) searchInput: any;
+  @ViewChild('searchInput') searchInput: any;
   @ViewChild(MatList, { read: ElementRef }) matList: ElementRef;
 
   @Output() onSearch = new EventEmitter<SearchEvent>();
   @Output() onSearchClear = new EventEmitter<void>();
+
+  mapSettings: MapSettings
 
   SearchState = SearchState;
   searchState = SearchState.OFF;
@@ -31,7 +36,17 @@ export class SearchComponent implements AfterViewInit {
   searchResults: any[] = [];
   searching = false;
 
-  constructor(private nominatim: NominatimService) { }
+  constructor(
+    private mapSettingsService: MapSettingsService,
+    private searchService: PlacenameSearchService,
+    private snackBar: MatSnackBar
+  ) { }
+
+  ngOnInit(): void {
+    this.mapSettingsService.getMapSettings().subscribe((settings: MapSettings) => {
+      this.mapSettings = settings
+    })
+  }
 
   ngAfterViewInit(): void {
     DomEvent.disableClickPropagation(this.matList.nativeElement);
@@ -50,10 +65,15 @@ export class SearchComponent implements AfterViewInit {
 
   search(value: string): void {
     this.searching = true;
-    this.nominatim.search(value).subscribe((data: any) => {
+    this.searchService.search(this.mapSettings, value).subscribe((results: PlacenameSearchResult[]) => {
       this.searching = false;
-      this.searchResults = data.features;
-    });
+      this.searchResults = results;
+    }, () => {
+      this.searching = false;
+      this.snackBar.open("Error accessing place name server ", null, {
+        duration: 2000,
+      })
+    })
   }
 
   clear($event: MouseEvent, input: HTMLInputElement): void {
@@ -65,8 +85,8 @@ export class SearchComponent implements AfterViewInit {
     this.onSearchClear.emit();
   }
 
-  searchResultClick(result: any): void {
+  searchResultClick(result: PlacenameSearchResult): void {
     this.searchToggle();
-    this.onSearch.emit({ feature: result });
+    this.onSearch.emit({ result: result });
   }
 }

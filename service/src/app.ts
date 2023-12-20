@@ -61,11 +61,16 @@ import { EventEmitter } from 'events'
 import { EnvironmentServiceImpl } from './adapters/systemInfo/adapters.systemInfo.service'
 import { SystemInfoAppLayer } from './app.api/systemInfo/app.api.systemInfo'
 import { CreateReadSystemInfo } from './app.impl/systemInfo/app.impl.systemInfo'
- import Settings from "./models/setting";
-  import AuthenticationConfiguration from "./models/authenticationconfiguration";
-  import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
+import Settings from "./models/setting";
+import AuthenticationConfiguration from "./models/authenticationconfiguration";
+import AuthenticationConfigurationTransformer from "./transformers/authenticationconfiguration";
 import { SystemInfoRoutes } from './adapters/systemInfo/adapters.systemInfo.controllers.web'
 import { RoleBasedSystemInfoPermissionService } from './permissions/permissions.systemInfo'
+import { SettingsAppLayer, SettingsRoutes } from './adapters/settings/adapters.settings.controllers.web'
+import { MongooseSettingsRepository, SettingsModel } from './adapters/settings/adapters.settings.db.mongoose'
+import { FetchMapSettings, UpdateMapSettings } from './app.impl/settings/app.impl.settings'
+import { RoleBasedMapPermissionService } from './permissions/permissions.settings'
+import { SettingRepository } from './entities/settings/entities.settings'
 
 
 export interface MageService {
@@ -226,6 +231,9 @@ type DatabaseLayer = {
   },
   users: {
     user: UserModel
+  },
+  settings: {
+    setting: SettingsModel
   }
 }
 
@@ -262,7 +270,8 @@ type AppLayer = {
   },
   icons: StaticIconsAppLayer,
   users: UsersAppLayer,
-  systemInfo: SystemInfoAppLayer
+  systemInfo: SystemInfoAppLayer,
+  settings: SettingsAppLayer,
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -306,6 +315,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     },
     users: {
       user: require('./models/user').Model
+    },
+    settings: {
+      setting: require('./models/setting').Model
     }
   }
 }
@@ -329,7 +341,10 @@ type Repositories = {
   users: {
     userRepo: UserRepository
   },
-  enviromentInfo: EnvironmentService
+  enviromentInfo: EnvironmentService,
+  settings: {
+    settingRepo: SettingRepository
+  },
 }
 
   // TODO: the real thing
@@ -357,6 +372,7 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     new FileSystemIconContentStore(),
     [ new PluginUrlScheme(config.plugins?.servicePlugins || []) ])
   const userRepo = new MongooseUserRepository(models.users.user)
+  const settingRepo = new MongooseSettingsRepository(models.settings.setting)
   const attachmentStore = await intializeAttachmentStore(environment.attachmentBaseDirectory)
   const systemInfoService = new EnvironmentServiceImpl(models.conn)
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
@@ -379,7 +395,10 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
     users: {
       userRepo
     },
-    enviromentInfo: systemInfoService
+    enviromentInfo: systemInfoService,
+    settings: {
+      settingRepo
+    },
   }
 }
 
@@ -390,13 +409,15 @@ async function initAppLayer(repos: Repositories): Promise<AppLayer> {
   const feeds = await initFeedsAppLayer(repos)
   const users = await initUsersAppLayer(repos)
   const systemInfo = initSystemInfoAppLayer(repos)
+  const settings = await initSettingsAppLayer(repos)
   return {
     events,
     observations,
     feeds,
     icons,
     users,
-    systemInfo
+    systemInfo,
+    settings,
   }
 }
 
@@ -479,7 +500,7 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 }
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
-  const permissionsService = new RoleBasedSystemInfoPermissionService();
+  const permissionsService = new RoleBasedSystemInfoPermissionService()
   return {
     readSystemInfo: CreateReadSystemInfo(
       repos.enviromentInfo,
@@ -490,7 +511,17 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
       permissionsService
     ),
     permissionsService
-  };
+  }
+}
+
+async function initSettingsAppLayer(repos: Repositories): Promise<AppLayer['settings']> {
+  const mapPermissions = new RoleBasedMapPermissionService()
+  const getMapSettings = FetchMapSettings(repos.settings.settingRepo, mapPermissions)
+  const updateMapSettings = UpdateMapSettings(repos.settings.settingRepo, mapPermissions)
+  return {
+    getMapSettings,
+    updateMapSettings
+  }
 }
 
 interface MageEventRequestContext extends AppRequestContext<UserDocument> {
@@ -513,6 +544,13 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
     }
   }
   const bearerAuth = webAuth.passport.authenticate('bearer')
+
+  const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory)
+  webController.use('/api/settings', [
+    bearerAuth,
+    settingsRoutes
+  ])
+
   const usersRoutes = UsersRoutes(app.users, appRequestFactory)
   /*
   TODO: cannot mount at /api/users/search because the /api/users/:userId route
