@@ -70,13 +70,12 @@ function UserPagingService(UserService, $q) {
   function refresh(stateAndData) {
     const promises = [];
     for (const [key, value] of Object.entries(stateAndData)) {
-      // Map frontend parameters to backend expected parameters
       let backendParams = {
         pageSize: value.userFilter.limit,
-        pageIndex: value.userFilter.page, // Assuming 'page' exists in userFilter
+        pageIndex: value.userFilter.page,
         active: value.userFilter.active,
         enabled: value.userFilter.enabled,
-        term: value.searchFilter // Assuming searchFilter is the search term
+        term: value.searchFilter
       };
 
       const promise = UserService.getAllUsers(backendParams).then((page) => {
@@ -117,14 +116,14 @@ function UserPagingService(UserService, $q) {
   }
 
 
-  function previous(data) {
-    if (hasPrevious(data)) {
-      data.userFilter.pageIndex = data.pageInfo.links.prev;
-      data.userFilter.term = data.searchFilter;
-      return move(data.userFilter, data);
-    }
-    return $q.resolve(data.pageInfo.items);
-  }
+ function previous(data) {
+   if (hasPrevious(data)) {
+     data.userFilter.pageIndex = data.pageInfo.links.prev;
+     data.userFilter.term = data.searchFilter;
+     return move(data.userFilter, data);
+   }
+   return $q.resolve(data.pageInfo.items);
+ }
 
 
   function move(filter, data) {
@@ -163,6 +162,10 @@ function UserPagingService(UserService, $q) {
     return $q.resolve(data.pageInfo.items);
   }
 
+  function performNoSearch(data) {
+    return $q.resolve(data.pageInfo.items);
+  }
+
   function clearSearch(data) {
     data.searchFilter = '';
     delete data.userFilter['or'];
@@ -177,14 +180,24 @@ function UserPagingService(UserService, $q) {
   }
 
   function performNewSearch(data, userSearch) {
+    // Store the current items in case the search yields no results
+    const currentItems = data.pageInfo.items;
     data.searchFilter = userSearch;
+
+    // Reset pageIndex to 0 for a new search
+    data.userFilter.pageIndex = 0;
 
     const filter = { ...data.userFilter };
     filter.term = userSearch;
 
     return UserService.getAllUsers(filter).then((pageInfo) => {
       data.pageInfo = pageInfo;
-      return $q.resolve(data.pageInfo.items);
+      if (pageInfo.items && pageInfo.items.length === 0) {
+        // If no search results, return the current items and do not change pageIndex
+        data.userFilter.pageIndex = data.pageInfo.pageIndex; // Reset pageIndex to its original state
+        return $q.resolve(currentItems); // Return the current items
+      }
+      return $q.resolve(pageInfo.items);
     });
   }
 }
