@@ -144,23 +144,21 @@ function UserPagingService(UserService, $q) {
     return users;
   }
 
-  function search(data, userSearch) {
-    const previousSearch = data.searchFilter;
+ function search(data, userSearch) {
+   const previousSearch = data.searchFilter;
 
-    if (previousSearch === '' && userSearch === '') {
-      return performNoSearch(data);
-    } else if (previousSearch !== '' && userSearch === '') {
-      return clearSearch(data);
-    } else if (previousSearch === userSearch) {
-      return continueExistingSearch(data);
-    } else {
-      return performNewSearch(data, userSearch);
-    }
-  }
+   switch (true) {
+     case previousSearch === '' && userSearch === '':
+       return performNoSearch(data);
+     case previousSearch !== '' && userSearch === '':
+       return clearSearch(data);
+     case previousSearch === userSearch:
+       return continueExistingSearch(data);
+     default:
+       return performNewSearch(data, userSearch);
+   }
+ }
 
-  function performNoSearch(data) {
-    return $q.resolve(data.pageInfo.items);
-  }
 
   function performNoSearch(data) {
     return $q.resolve(data.pageInfo.items);
