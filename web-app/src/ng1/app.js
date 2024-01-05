@@ -44,6 +44,7 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
 
 import { ContactComponent } from '../app/contact/contact.component';
 
@@ -80,7 +81,9 @@ app
   .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService))
-  .factory('PluginService', downgradeInjectable(PluginService));
+  .factory('PluginService', downgradeInjectable(PluginService))
+  // TODO: remove this once we have a new user service
+  .factory('UserReadService', downgradeInjectable(UserReadService))
 
 // Downgraded Angular components
 app

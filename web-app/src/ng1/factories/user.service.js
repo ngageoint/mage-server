@@ -246,13 +246,31 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     options = options || {};
     const deferredUsers = $q.defer();
 
-    $http.get('/api/users', {params: options})
-      .success(function(data) {
-        if (Array.isArray(data)) {
-          deferredUsers.resolve(_.indexBy(data, 'id'));
-        } else {
-          deferredUsers.resolve(data);
-        }
+    let queryParams = {
+      page_size: options.pageSize || 10,
+      page: options.pageIndex || 0,
+      term: options.term || '',
+      total:
+        typeof options.includeTotalCount === 'boolean'
+          ? options.includeTotalCount
+            ? 'true'
+            : 'false'
+          : 'true'
+    };
+
+    if (typeof options.active === 'boolean')
+      queryParams.active = options.active;
+    if (typeof options.enabled === 'boolean')
+      queryParams.enabled = options.enabled;
+
+    $http
+      .get('/api/next-users/search', { params: queryParams })
+      .success(function (data) {
+        deferredUsers.resolve(data);
+      })
+      .error(function (error) {
+        console.log('error in getAllUsers', error);
+        deferredUsers.reject(error);
       });
 
     return deferredUsers.promise;
