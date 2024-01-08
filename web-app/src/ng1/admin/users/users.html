@@ -9,31 +9,70 @@
 <div class="container">
   <div class="row">
     <div class="col-md-3">
+      <!--  -->
       <ul class="nav nav-pills nav-stacked">
-        <li ng-click="$ctrl.changeFilter('all')" ng-class="{active: $ctrl.filter=='all'}"><a
-            href="javascript:void(0);">All <span class="badge pull-right">{{($ctrl.count('all'))}}</span></a></li>
-        <li ng-click="$ctrl.changeFilter('active')" ng-class="{active: $ctrl.filter=='active'}"><a
-            href="javascript:void(0);">Active <span class="badge pull-right">{{($ctrl.count('active'))}}</span></a></li>
-        <li ng-click="$ctrl.changeFilter('inactive')" ng-class="{active: $ctrl.filter=='inactive'}"><a
-            href="javascript:void(0);">Inactive <span class="badge pull-right">{{($ctrl.count('inactive'))}}</span></a>
+        <li
+          ng-click="$ctrl.changeFilter('all')"
+          ng-class="{active: $ctrl.filter=='all'}"
+        >
+          <a href="javascript:void(0);"
+            >All
+            <span class="badge pull-right">{{($ctrl.count('all'))}}</span></a
+          >
+        </li>
+        <li
+          ng-click="$ctrl.changeFilter('active')"
+          ng-class="{active: $ctrl.filter=='active'}"
+        >
+          <a href="javascript:void(0);"
+            >Active
+            <span class="badge pull-right">{{($ctrl.count('active'))}}</span></a
+          >
+        </li>
+        <li
+          ng-click="$ctrl.changeFilter('inactive')"
+          ng-class="{active: $ctrl.filter=='inactive'}"
+        >
+          <a href="javascript:void(0);"
+            >Inactive
+            <span class="badge pull-right"
+              >{{($ctrl.count('inactive'))}}</span
+            ></a
+          >
         </li>
         <!-- TODO only if local is enabled -->
-        <li ng-click="$ctrl.changeFilter('disabled')" ng-class="{active: $ctrl.filter=='disabled'}"><a
-            href="javascript:void(0);">Disabled <span class="badge pull-right">{{($ctrl.count('disabled'))}}</span></a>
+        <li
+          ng-click="$ctrl.changeFilter('disabled')"
+          ng-class="{active: $ctrl.filter=='disabled'}"
+        >
+          <a href="javascript:void(0);"
+            >Disabled
+            <span class="badge pull-right"
+              >{{($ctrl.count('disabled'))}}</span
+            ></a
+          >
         </li>
       </ul>
 
-      <hr>
+      <hr />
       <form class="form">
         <div class="top-gap">
           <label>Search</label>
-          <input type="text" class="form-control" placeholder="name, email" ng-model="$ctrl.userSearch"
-            ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="name, email"
+            ng-model="$ctrl.userSearch"
+            ng-model-options="{ debounce: 1000 }"
+            ng-change="$ctrl.search()"
+          />
         </div>
       </form>
-      <hr>
+      <hr />
 
-      <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
+      <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">
+        Reset
+      </button>
     </div>
 
     <div class="col-md-9">
@@ -44,10 +83,22 @@
           </div>
 
           <form class="navbar-form navbar-right" role="search">
-            <button type="submit" class="btn btn-default" ng-if="$ctrl.hasUserCreatePermission"
-              ng-click="$ctrl.bulkImport()"><i class="fa fa-users"></i> Bulk Import</button>
-            <button type="submit" class="btn btn-default" ng-if="$ctrl.hasUserCreatePermission"
-              ng-click="$ctrl.newUser()"><i class="fa fa-user"></i> New User</button>
+            <button
+              type="submit"
+              class="btn btn-default"
+              ng-if="$ctrl.hasUserCreatePermission"
+              ng-click="$ctrl.bulkImport()"
+            >
+              <i class="fa fa-users"></i> Bulk Import
+            </button>
+            <button
+              type="submit"
+              class="btn btn-default"
+              ng-if="$ctrl.hasUserCreatePermission"
+              ng-click="$ctrl.newUser()"
+            >
+              <i class="fa fa-user"></i> New User
+            </button>
           </form>
         </div>
       </nav>
@@ -56,37 +107,64 @@
         <div class="col-md-12">
           <div class="admin-table">
             <div class="well-item" ng-repeat="u in $ctrl.users">
-
               <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
                 <div class="col-md-8">
-                  <user-avatar class="pull-left right-gap" [user]="u" avatar-width="40" avatar-height="40"></user-avatar>
+                  <user-avatar
+                    class="pull-left right-gap"
+                    [user]="u"
+                    avatar-width="40"
+                    avatar-height="40"
+                  ></user-avatar>
                   <div class="strong">{{u.displayName}}</div>
                   <div class="muted">{{u.email}}</div>
                 </div>
                 <div class="col-md-4">
-                  <button class="btn btn-sm btn-danger pull-right admin-user-button"
-                    ng-if="$ctrl.hasUserDeletePermission" ng-click="$ctrl.deleteUser($event, u)">Delete</button>
-                  <button class="btn btn-sm btn-success pull-right admin-user-button"
-                    ng-if="$ctrl.hasUserEditPermission" ng-hide="u.active"
-                    ng-click="$ctrl.activateUser($event, u)">Activate</button>
-                  <button class="btn btn-sm btn-warning pull-right admin-user-button"
-                    ng-if="$ctrl.hasUserEditPermission" ng-hide="u.enabled"
-                    ng-click="$ctrl.enableUser($event, u)">Enable</button>
-                  <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasUserEditPermission"
-                    ng-click="$ctrl.editUser($event, u)">Edit</button>
+                  <button
+                    class="btn btn-sm btn-danger pull-right admin-user-button"
+                    ng-if="$ctrl.hasUserDeletePermission"
+                    ng-click="$ctrl.deleteUser($event, u)"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    class="btn btn-sm btn-success pull-right admin-user-button"
+                    ng-if="$ctrl.hasUserEditPermission"
+                    ng-hide="u.active"
+                    ng-click="$ctrl.activateUser($event, u)"
+                  >
+                    Activate
+                  </button>
+                  <button
+                    class="btn btn-sm btn-warning pull-right admin-user-button"
+                    ng-if="$ctrl.hasUserEditPermission"
+                    ng-hide="u.enabled"
+                    ng-click="$ctrl.enableUser($event, u)"
+                  >
+                    Enable
+                  </button>
+                  <button
+                    class="btn btn-sm btn-default pull-right"
+                    ng-if="$ctrl.hasUserEditPermission"
+                    ng-click="$ctrl.editUser($event, u)"
+                  >
+                    Edit
+                  </button>
                 </div>
               </div>
-
             </div>
           </div>
           <div class="row">
             <div class="col-md-12">
               <ul class="pager pull-right">
-                <li ng-class="{'disabled': $ctrl.hasPrevious() == false}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.previous()">&larr; Previous</a>
+                <li ng-class="{'disabled': !$ctrl.hasPrevious()}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.previous()"
+                    >&larr; Previous</a
+                  >
                 </li>
-                <li ng-class="{'disabled': $ctrl.hasNext() == false}">
-                  <a href="javascript:void(0);" ng-click="$ctrl.next()">Next&rarr;</a>
+                <li ng-class="{'disabled': !$ctrl.hasNext()}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.next()"
+                    >Next&rarr;</a
+                  >
                 </li>
               </ul>
             </div>

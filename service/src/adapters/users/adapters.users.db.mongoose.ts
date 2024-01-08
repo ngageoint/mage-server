@@ -47,6 +47,7 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
   async find<T = User>(which: UserFindParameters, mapping?: (x: User) => T): Promise<PageOf<T>> {
     const { nameOrContactTerm, active, enabled } = which || {}
     const searchRegex = new RegExp(_.escapeRegExp(nameOrContactTerm), 'i')
+
     const params = nameOrContactTerm ? {
       $or: [
         { username: searchRegex },
@@ -55,14 +56,15 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
         { 'phones.number': searchRegex }
       ]
     } : {} as any
+
     if (typeof which?.active === 'boolean') {
       params.active = which.active
+
     }
     if (typeof which?.enabled === 'boolean') {
       params.enabled = which.enabled
     }
-    // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
-    // add _id to sort to ensure consistent ordering
+
     const baseQuery = this.model.find(params).sort('displayName _id')
     const counted = await pageQuery(baseQuery, which)
     const users: T[] = []
@@ -72,6 +74,9 @@ export class MongooseUserRepository extends BaseMongooseRepository<UserDocument,
     for await (const userDoc of counted.query.cursor()) {
       users.push(mapping(this.entityForDocument(userDoc)))
     }
-    return pageOf(users, which, counted.totalCount)
+
+    const finalResult = pageOf(users, which, counted.totalCount);
+    return finalResult;
+
   }
 }

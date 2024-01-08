@@ -22,6 +22,7 @@
 
                 <form class="navbar-form navbar-left">
                   <div class="form-group">
+                    <!-- Triggers search method -->
                     <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.userSearch"
                       ng-model-options="{ debounce: 1000 }" ng-change="$ctrl.search()">
                   </div>
@@ -44,7 +45,6 @@
                     <span>
                       {{user.displayName}}
                     </span>
-
                     <span class="pull-right" ng-if="$ctrl.hasPermission('UPDATE_USER')">
                       <a class="btn btn-xs btn-success" ng-click="$ctrl.activateUser($event, user)"><i
                           class="fa fa-check"></i> Activate</a>
@@ -149,7 +149,7 @@
                 <div class="form-group">
                   <input type="text" ng-model="$ctrl.user" placeholder="Filter on user"
                       uib-typeahead="user as user.displayName for user in $ctrl.searchLoginsAgainstUsers($viewValue)"
-                      typeahead-loading="$ctrl.loginSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }" 
+                      typeahead-loading="$ctrl.loginSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }"
                       typeahead-min-length="0" typeahead-on-select='$ctrl.filterLogins()'>
                 </div>
 
@@ -157,11 +157,11 @@
                   <div class="form-group">
                     <input type="text" ng-model="$ctrl.device" placeholder="Filter on device"
                         uib-typeahead="device as device.uid for device in $ctrl.searchLoginsAgainstDevices($viewValue)"
-                        typeahead-loading="$ctrl.loginDeviceSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }" 
+                        typeahead-loading="$ctrl.loginDeviceSearchResults" class="form-control" ng-model-options="{ debounce: 1000 }"
                         typeahead-min-length="0" typeahead-on-select='$ctrl.filterLogins()'>
                   </div>
                 </div>
-                
+
                 <div class="form-group">
                   <div class="input-group">
                     <input type="text" placeholder="Start Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy"

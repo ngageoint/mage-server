@@ -7,7 +7,6 @@
  * via npm install, there is no need to install all the web app dependencies,
  * only the compiled bundle that MAGE serves to the web browser.
  */
-
 const fs = require('fs-extra');
 const path = require('path');
 const process = require('process');
@@ -23,8 +22,9 @@ const post = builderOptions => {
   packageDesc.peerDependencies = {
     '@ngageoint/mage.service': `^${packageDesc.version}`
   };
-  const distDir = path.resolve(process.cwd(), builderOptions.outputPath, 'package.json');
-  fs.writeFileSync(distDir, JSON.stringify(packageDesc, null, 2))
+  const outputPathDir = path.resolve(process.cwd(), builderOptions.outputPath);
+  const packageDescPath = path.join(outputPathDir, 'package.json');
+  fs.writeFileSync(packageDescPath, JSON.stringify(packageDesc, null, 2));
 }
 
 module.exports.default = { post }

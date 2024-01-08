@@ -13,10 +13,10 @@ class AdminController {
 
     this.userState = 'inactive';
     this.inactiveUsers = [];
-    const defaultUserQueries = this.UserPagingService.constructDefault()
+    const defaultUserQueries = this.UserPagingService.constructDefault();
     this.stateAndData = {
       inactive: defaultUserQueries.inactive
-    }
+    };
 
     this.deviceState = 'unregistered';
     this.unregisteredDevices = [];

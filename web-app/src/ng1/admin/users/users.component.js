@@ -1,24 +1,39 @@
 import _ from 'underscore';
 
 class AdminUsersController {
-  constructor($uibModal, $state, $timeout, LocalStorageService, UserService, UserPagingService) {
+  constructor(
+    $uibModal,
+    $state,
+    $timeout,
+    LocalStorageService,
+    UserService,
+    UserPagingService
+  ) {
     this.$uibModal = $uibModal;
     this.$state = $state;
     this.$timeout = $timeout;
     this.LocalStorageService = LocalStorageService;
     this.UserService = UserService;
     this.UserPagingService = UserPagingService;
-
     this.users = [];
     this.stateAndData = this.UserPagingService.constructDefault();
 
     this.token = LocalStorageService.getToken();
-    this.filter = "all"; // possible values all, active, inactive
+    this.filter = 'all'; // possible values all, active, inactive
     this.userSearch = '';
 
-    this.hasUserCreatePermission = _.contains(UserService.myself.role.permissions, 'CREATE_USER');
-    this.hasUserEditPermission = _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
-    this.hasUserDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+    this.hasUserCreatePermission = _.contains(
+      UserService.myself.role.permissions,
+      'CREATE_USER'
+    );
+    this.hasUserEditPermission = _.contains(
+      UserService.myself.role.permissions,
+      'UPDATE_USER'
+    );
+    this.hasUserDeletePermission = _.contains(
+      UserService.myself.role.permissions,
+      'DELETE_USER'
+    );
   }
 
   $onInit() {
@@ -36,11 +51,11 @@ class AdminUsersController {
   }
 
   next() {
-    if (this.hasNext()) {
-      this.UserPagingService.next(this.stateAndData[this.filter]).then(users => {
+    this.UserPagingService.next(this.stateAndData[this.filter]).then(
+      (users) => {
         this.users = users;
-      });
-    }
+      }
+    );
   }
 
   hasPrevious() {
@@ -48,15 +63,18 @@ class AdminUsersController {
   }
 
   previous() {
-    if (this.hasPrevious()) {
-      this.UserPagingService.previous(this.stateAndData[this.filter]).then(users => {
+    this.UserPagingService.previous(this.stateAndData[this.filter]).then(
+      (users) => {
         this.users = users;
-      });
-    }
+      }
+    );
   }
 
   search() {
-    this.UserPagingService.search(this.stateAndData[this.filter], this.userSearch).then(users => {
+    this.UserPagingService.search(
+      this.stateAndData[this.filter],
+      this.userSearch
+    ).then((users) => {
       this.users = users;
     });
   }
@@ -69,6 +87,7 @@ class AdminUsersController {
   reset() {
     this.filter = 'all';
     this.userSearch = '';
+
     this.stateAndData = this.UserPagingService.constructDefault();
     this.UserPagingService.refresh(this.stateAndData).then(() => {
       this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
@@ -101,12 +120,14 @@ class AdminUsersController {
           return user;
         }
       },
-      component: "adminUserDelete"
+      component: 'adminUserDelete'
     });
 
     modalInstance.result.then(() => {
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+        this.users = this.UserPagingService.users(
+          this.stateAndData[this.filter]
+        );
       });
     });
   }
@@ -115,21 +136,28 @@ class AdminUsersController {
     $event.stopPropagation();
 
     user.active = true;
-    this.UserService.updateUser(user.id, user, () => {
-      this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
-      });
+    this.UserService.updateUser(
+      user.id,
+      user,
+      () => {
+        this.UserPagingService.refresh(this.stateAndData).then(() => {
+          this.users = this.UserPagingService.users(
+            this.stateAndData[this.filter]
+          );
+        });
 
-      this.onUserActivated({
-        $event: {
-          user: user
-        }
-      });
-    }, response => {
-      this.$timeout(() => {
-        this.error = response.responseText;
-      });
-    });
+        this.onUserActivated({
+          $event: {
+            user: user
+          }
+        });
+      },
+      (response) => {
+        this.$timeout(() => {
+          this.error = response.responseText;
+        });
+      }
+    );
   }
 
   enableUser($event, user) {
@@ -138,7 +166,9 @@ class AdminUsersController {
     user.enabled = true;
     this.UserService.updateUser(user.id, user, () => {
       this.UserPagingService.refresh(this.stateAndData).then(() => {
-        this.users = this.UserPagingService.users(this.stateAndData[this.filter]);
+        this.users = this.UserPagingService.users(
+          this.stateAndData[this.filter]
+        );
       });
     });
   }
