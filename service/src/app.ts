@@ -573,7 +573,6 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   ])
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
   webController.use('/api', [
-    bearerAuth,
     systemInfoRoutes
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {

@@ -14,7 +14,9 @@ export interface ReadSystemInfoRequest extends AppRequest {
 export interface ReadSystemInfoResponse extends AppResponse<ExoSystemInfo, InfrastructureError> {}
 
 export interface ReadSystemInfo {
-  (req: ReadSystemInfoRequest): Promise<ReadSystemInfoResponse>
+  (req: ReadSystemInfoRequest, isAuthenticated: boolean): Promise<
+    ReadSystemInfoResponse
+  >;
 }
 
 export interface SystemInfoAppLayer {

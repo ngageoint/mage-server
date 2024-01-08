@@ -1,18 +1,20 @@
-import { AppResponse } from '../../app.api/app.api.global';
 import * as api from '../../app.api/systemInfo/app.api.systemInfo';
-import { EnvironmentService } from '../../entities/systemInfo/entities.systemInfo';
 import * as Settings from '../../models/setting';
+import { AppResponse } from '../../app.api/app.api.global';
+import {
+  EnvironmentService,
+  SystemInfo
+} from '../../entities/systemInfo/entities.systemInfo';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
+import { ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 
-import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
  */
 export function CreateReadSystemInfo(
   environmentService: EnvironmentService,
-  config: any,
   settingsModule: typeof Settings = Settings,
   authConfigModule: typeof AuthenticationConfiguration = AuthenticationConfiguration,
   authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer,
@@ -45,34 +47,37 @@ export function CreateReadSystemInfo(
   }
 
   return async function readSystemInfo(
-    req: api.ReadSystemInfoRequest
+    req: api.ReadSystemInfoRequest,
+    isAuthenticated: boolean
   ): Promise<api.ReadSystemInfoResponse> {
-    const hasReadSystemInfoPermission =
-      (await permissions.ensureReadSystemInfoPermission(req.context)) === null;
 
-    let environment;
-    if (hasReadSystemInfoPermission) {
-      environment = await environmentService.readEnvironmentInfo();
-    }
+     let hasReadSystemInfoPermission = false;
 
-    const disclaimer = (await settingsModule.getSetting('disclaimer')) || {};
-    const contactInfo = (await settingsModule.getSetting('contactInfo')) || {};
+     if (isAuthenticated) {
+       hasReadSystemInfoPermission =
+         (await permissions.ensureReadSystemInfoPermission(req.context)) ===
+         null;
+     }
 
-    const apiConfig = Object.assign({}, config.api, {
-      environment: environment,
-      disclaimer: disclaimer,
-      contactInfo: contactInfo
-    });
+    // base config
+    let apiConfig: Partial<SystemInfo> = {
+      disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
+      contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
+    };
 
-    // Ensure the environment is removed if the user doesn't have permission
-    if (!hasReadSystemInfoPermission) {
-      delete apiConfig.environment;
-    }
+     // Add environment details based on permission
+     if (hasReadSystemInfoPermission) {
+       apiConfig.environment = await environmentService.readEnvironmentInfo();
+     } else {
+       // Remove environment details if no permission
+       delete apiConfig.environment;
+     }
 
-    const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, {
-      whitelist: true
-    });
+     // Apply authentication strategies
+     const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, {
+       whitelist: true
+     });
 
-    return AppResponse.success(updatedApiConfig as any);
+     return AppResponse.success(updatedApiConfig as ExoSystemInfo);
   };
 }
