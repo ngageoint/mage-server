@@ -1,14 +1,11 @@
-import * as api from '../../app.api/systemInfo/app.api.systemInfo';
-import * as Settings from '../../models/setting';
 import { AppResponse } from '../../app.api/app.api.global';
-import {
-  EnvironmentService,
-  SystemInfo
-} from '../../entities/systemInfo/entities.systemInfo';
+import * as api from '../../app.api/systemInfo/app.api.systemInfo';
+import { EnvironmentService, SystemInfo } from '../../entities/systemInfo/entities.systemInfo';
+import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
-import { ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 
+import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
@@ -48,19 +45,20 @@ export function CreateReadSystemInfo(
 
   return async function readSystemInfo(
     req: api.ReadSystemInfoRequest,
-    isAuthenticated: boolean
+    // isAuthenticated: boolean
   ): Promise<api.ReadSystemInfoResponse> {
 
-     let hasReadSystemInfoPermission = false;
+     const hasReadSystemInfoPermission =
+       (await permissions.ensureReadSystemInfoPermission(req.context)) === null;;
 
-     if (isAuthenticated) {
-       hasReadSystemInfoPermission =
-         (await permissions.ensureReadSystemInfoPermission(req.context)) ===
-         null;
-     }
+    //  if (isAuthenticated) {
+    //    hasReadSystemInfoPermission =
+    //      (await permissions.ensureReadSystemInfoPermission(req.context)) ===
+    //      null;
+    //  }
 
-    // base config
-    let apiConfig: Partial<SystemInfo> = {
+    // Start with base config
+    const apiConfig: Partial<SystemInfo> = {
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
       contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
     };
@@ -68,9 +66,6 @@ export function CreateReadSystemInfo(
      // Add environment details based on permission
      if (hasReadSystemInfoPermission) {
        apiConfig.environment = await environmentService.readEnvironmentInfo();
-     } else {
-       // Remove environment details if no permission
-       delete apiConfig.environment;
      }
 
      // Apply authentication strategies
@@ -78,6 +73,6 @@ export function CreateReadSystemInfo(
        whitelist: true
      });
 
-     return AppResponse.success(updatedApiConfig as ExoSystemInfo);
+     return AppResponse.success(updatedApiConfig);
   };
 }

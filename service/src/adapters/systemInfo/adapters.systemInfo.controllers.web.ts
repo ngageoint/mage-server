@@ -34,12 +34,12 @@ export function SystemInfoRoutes(appLayer: SystemInfoAppLayer, createAppRequest:
            }
            // Authentication successful, attach user to request
            req.user = user;
-           handleRequest(appReq, res, next, appLayer, true);
+           handleRequest(appReq, res, next, appLayer);
          }
        )(req, res, next);
      } else {
        // Proceed without authentication if no Authorization header
-       handleRequest(appReq, res, next, appLayer, false);
+       handleRequest(appReq, res, next, appLayer);
      }
 
     })
@@ -52,10 +52,10 @@ async function handleRequest(
   res: express.Response,
   next: express.NextFunction,
   appLayer: SystemInfoAppLayer,
-  isAuthenticated: boolean
+  // isAuthenticated: boolean
 ) {
   try {
-    const appRes = await appLayer.readSystemInfo(req, isAuthenticated);
+    const appRes = await appLayer.readSystemInfo(req);
     if (appRes.success) {
       res.json(appRes.success);
     } else {

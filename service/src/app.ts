@@ -504,7 +504,7 @@ function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   return {
     readSystemInfo: CreateReadSystemInfo(
       repos.enviromentInfo,
-      apiConfig,
+      // apiConfig,
       Settings,
       AuthenticationConfiguration,
       AuthenticationConfigurationTransformer,
