@@ -243,8 +243,26 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     return deferred.promise;
   }
 
+  // ON dashboard load
+  //localhost:4200/api/next-users/search?limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?active=true&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?active=false&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?enabled=false&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+
+  // When I click Activate button on Dashboard Tab, inactive users section
+  // http://localhost:4200/api/users/651d9bb4ae61ebecaa07dbf9?access_token=f8a2038ed09c93bcbec1aec2bd062dbfdc0ae42f
+  // http://localhost:4200/api/next-users/search?limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?active=true&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?active=false&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?enabled=false&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+  // http://localhost:4200/api/next-users/search?active=false&limit=10&sort=%7B%22displayName%22:1,%22_id%22:1%7D
+
+
+
   function getAllUsers(options) {
     options = options || {};
+    console.log('Requesting users with options:', options);
+
     const deferredUsers = $q.defer();
 
     let queryParams = {

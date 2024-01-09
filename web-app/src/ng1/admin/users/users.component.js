@@ -50,6 +50,9 @@ class AdminUsersController {
     return this.UserPagingService.hasNext(this.stateAndData[this.filter]);
   }
 
+  //  console.log('Next Function - Data:', data);
+  //   this.UserPagingService.next(this.stateAndData[this.filter]).then(
+  //     (users) => {
   next() {
     this.UserPagingService.next(this.stateAndData[this.filter]).then(
       (users) => {
