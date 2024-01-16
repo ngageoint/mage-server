@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import express from 'express'
 import util from 'util'
 import apiConfig from './config';
+import { PassportStatic } from 'passport';
 import { MongooseFeedServiceTypeRepository, FeedServiceTypeIdentityModel, MongooseFeedServiceRepository, FeedServiceModel, MongooseFeedRepository, FeedModel } from './adapters/feeds/adapters.feeds.db.mongoose'
 import { waitForDefaultMongooseConnection } from './adapters/adapters.db.mongoose'
 import { FeedServiceTypeRepository, FeedServiceRepository, FeedRepository } from './entities/feeds/entities.feeds'
@@ -528,6 +529,10 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
 
+interface WebAuth {
+  passport: PassportStatic;
+}
+
 async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
   Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
   // load routes the old way
@@ -543,6 +548,34 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
       }
     }
   }
+
+  function customAuthMiddleware(webAuth: WebAuth) {
+    return function(
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) {
+      if (req.headers.authorization) {
+        // Use the passport property of webAuth to call authenticate
+        webAuth.passport.authenticate(
+          'bearer',
+          { session: false },
+          (err: any, user: any) => {
+            if (err) {
+              return next(err);
+            }
+            if (user) {
+              req.user = user; // User is authenticated
+            }
+            next(); // Proceed regardless of authentication status
+          }
+        )(req, res, next);
+      } else {
+        next(); // No Authorization header, proceed with the request
+      }
+    };
+  }
+
   const bearerAuth = webAuth.passport.authenticate('bearer')
 
   const settingsRoutes = SettingsRoutes(app.settings, appRequestFactory)
@@ -573,7 +606,8 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   ])
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
   webController.use('/api', [
-    systemInfoRoutes
+    systemInfoRoutes,
+    // customAuthMiddleware
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {
     const context: observationsApi.ObservationRequestContext = {

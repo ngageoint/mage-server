@@ -13,38 +13,22 @@ export function SystemInfoRoutes(appLayer: SystemInfoAppLayer, createAppRequest:
 
   const routes = express.Router()
 
+
+
   routes.route('/')
     .get(async (req, res, next) => {
-     const appReq = createAppRequest<SystemInfoRequestType>(req); // Define appReq
+      const appReq = createAppRequest<SystemInfoRequestType>(req)
 
-     console.log()
-
-     if (req.headers.authorization) {
-        // Directly use passport.authenticate with a custom callback
-       passport.authenticate(
-         'bearer',
-         { session: false },
-         (err: any, user: any | false) => {
-           if (err) {
-             return next(err);
-           }
-           if (!user) {
-             // Authentication failed - Send a JSON response
-             return res.status(401).json({ error: 'Unauthorized access' });
-           }
-           // Authentication successful, attach user to request
-           req.user = user;
-           handleRequest(appReq, res, next, appLayer);
-         }
-       )(req, res, next);
-     } else {
-       // Proceed without authentication if no Authorization header
-       handleRequest(appReq, res, next, appLayer);
-     }
-
+      const appRes = await appLayer.readSystemInfo(appReq)
+      if (appRes.success) {
+        return res.json(appRes.success)
+      }
+      return next(appRes.error)
     })
 
   return routes
+
+
 }
 
 async function handleRequest(
