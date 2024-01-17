@@ -52,7 +52,6 @@ async function handleRequest(
   res: express.Response,
   next: express.NextFunction,
   appLayer: SystemInfoAppLayer,
-  // isAuthenticated: boolean
 ) {
   try {
     const appRes = await appLayer.readSystemInfo(req);

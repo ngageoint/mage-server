@@ -45,17 +45,12 @@ export function CreateReadSystemInfo(
 
   return async function readSystemInfo(
     req: api.ReadSystemInfoRequest,
-    // isAuthenticated: boolean
   ): Promise<api.ReadSystemInfoResponse> {
 
-     const hasReadSystemInfoPermission =
-       (await permissions.ensureReadSystemInfoPermission(req.context)) === null;;
+    const hasReadSystemInfoPermission = req.context.requestingPrincipal()
+      ? (await permissions.ensureReadSystemInfoPermission(req.context)) === null
+      : false;
 
-    //  if (isAuthenticated) {
-    //    hasReadSystemInfoPermission =
-    //      (await permissions.ensureReadSystemInfoPermission(req.context)) ===
-    //      null;
-    //  }
 
     // Start with base config
     const apiConfig: Partial<SystemInfo> = {

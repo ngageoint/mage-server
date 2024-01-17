@@ -15,7 +15,6 @@ export interface ReadSystemInfoResponse extends AppResponse<ExoSystemInfo, Infra
 
 export interface ReadSystemInfo {
   (req: ReadSystemInfoRequest): Promise<
-  // (req: ReadSystemInfoRequest, isAuthenticated: boolean): Promise<
     ReadSystemInfoResponse
   >;
 }
