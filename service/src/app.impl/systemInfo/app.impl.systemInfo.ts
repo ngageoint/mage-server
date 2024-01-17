@@ -51,6 +51,12 @@ export function CreateReadSystemInfo(
      const hasReadSystemInfoPermission =
        (await permissions.ensureReadSystemInfoPermission(req.context)) === null;;
 
+    //  if (isAuthenticated) {
+    //    hasReadSystemInfoPermission =
+    //      (await permissions.ensureReadSystemInfoPermission(req.context)) ===
+    //      null;
+    //  }
+
     // Start with base config
     const apiConfig: Partial<SystemInfo> = {
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
