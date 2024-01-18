@@ -6,7 +6,7 @@ import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
 
-import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
+import { ExoPrivilegedSystemInfo, ExoRedactedSystemInfo, ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
@@ -43,16 +43,14 @@ export function CreateReadSystemInfo(
     );
     return apiCopy;
   }
-
   return async function readSystemInfo(
-    req: api.ReadSystemInfoRequest,
+  req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
-
     const isAuthenticated = req.context.requestingPrincipal() != null;
-
-    // Initialize with basic information
     const versionInfo = config.api.version; // Version info from config
-    let systemInfoResponse: Partial<SystemInfo> = {
+
+    // Initialize with base system info
+    let systemInfoResponse: ExoRedactedSystemInfo = {
       version: versionInfo,
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
       contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
@@ -65,15 +63,20 @@ export function CreateReadSystemInfo(
 
       if (hasReadSystemInfoPermission) {
         const environmentInfo = await environmentService.readEnvironmentInfo();
-        systemInfoResponse.environment = environmentInfo;
+        systemInfoResponse = {
+          ...systemInfoResponse,
+          environment: environmentInfo
+        } as ExoPrivilegedSystemInfo;
       }
     }
 
     // Apply authentication strategies for authenticated users
     const updatedApiConfig = isAuthenticated
-      ? await appendAuthenticationStrategies(systemInfoResponse, { whitelist: true })
+      ? await appendAuthenticationStrategies(systemInfoResponse, {
+          whitelist: true
+        })
       : systemInfoResponse;
 
-    return AppResponse.success(updatedApiConfig as SystemInfo); // Cast to SystemInfo
+    return AppResponse.success(updatedApiConfig as ExoSystemInfo); // Cast to ExoSystemInfo
   };
 }
