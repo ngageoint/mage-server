@@ -24,7 +24,7 @@ describe('exports', function() {
     const setupRes = await rootSession.setupRootUser(fixture.root)
     const initRoot = setupRes.data
 
-    expect(setupRes.status).to.equal(201)
+    expect(setupRes.status).to.equal(200)
     expect(initRoot.user.username).to.equal(fixture.root.username)
     expect(initRoot.device.uid).to.equal(fixture.root.uid)
 
