@@ -1,5 +1,6 @@
 import { AppResponse } from '../../app.api/app.api.global';
 import * as api from '../../app.api/systemInfo/app.api.systemInfo';
+import config from '../../config'
 import { EnvironmentService, SystemInfo } from '../../entities/systemInfo/entities.systemInfo';
 import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
@@ -47,27 +48,32 @@ export function CreateReadSystemInfo(
     req: api.ReadSystemInfoRequest,
   ): Promise<api.ReadSystemInfoResponse> {
 
-    const hasReadSystemInfoPermission = req.context.requestingPrincipal()
-      ? (await permissions.ensureReadSystemInfoPermission(req.context)) === null
-      : false;
+    const isAuthenticated = req.context.requestingPrincipal() != null;
 
-
-    // Start with base config
-    const apiConfig: Partial<SystemInfo> = {
+    // Initialize with basic information
+    const versionInfo = config.api.version; // Version info from config
+    let systemInfoResponse: Partial<SystemInfo> = {
+      version: versionInfo,
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
       contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
     };
 
-     // Add environment details based on permission
-     if (hasReadSystemInfoPermission) {
-       apiConfig.environment = await environmentService.readEnvironmentInfo();
-     }
+    // Add environment details for authenticated users with permission
+    if (isAuthenticated) {
+      const hasReadSystemInfoPermission =
+        (await permissions.ensureReadSystemInfoPermission(req.context)) === null;
 
-     // Apply authentication strategies
-     const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, {
-       whitelist: true
-     });
+      if (hasReadSystemInfoPermission) {
+        const environmentInfo = await environmentService.readEnvironmentInfo();
+        systemInfoResponse.environment = environmentInfo;
+      }
+    }
 
-     return AppResponse.success(updatedApiConfig);
+    // Apply authentication strategies for authenticated users
+    const updatedApiConfig = isAuthenticated
+      ? await appendAuthenticationStrategies(systemInfoResponse, { whitelist: true })
+      : systemInfoResponse;
+
+    return AppResponse.success(updatedApiConfig as SystemInfo); // Cast to SystemInfo
   };
 }
