@@ -192,9 +192,10 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     webController,
     server,
     open(): MageService {
-      server.listen(environment.port, environment.address,
-        () => log.info(`MAGE Server listening at address ${environment.address} on port ${environment.port}`))
-      webController.emit(MageReadyEvent, service)
+      server.listen(environment.port, environment.address, () => {
+        log.info(`MAGE Server listening at address ${environment.address} on port ${environment.port}`)
+        webController.emit(MageReadyEvent, service)
+      })
       return this
     }
   }
