@@ -55,7 +55,7 @@ const appEnv = cfenv.getAppEnv({
 });
 
 if (appEnv.isLocal) {
-  appEnv.port = parseInt(process.env.MAGE_PORT || process.env.PORT) || 4242;
+  appEnv.port = [ process.env.MAGE_PORT, process.env.PORT, 4242 ].map(parseInt).find(x => typeof x === 'number' && !isNaN(x));
 }
 
 const mongoConfig = appEnv.getServiceCreds('MongoInstance');
