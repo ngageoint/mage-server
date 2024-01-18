@@ -60,7 +60,7 @@ export class MageClientSession {
   }
 
   async setupRootUser(setup: RootUserSetupRequest): Promise<AxiosResponse<{ user: User, device: Device }>> {
-    return await this.http.post('/api/setup', setup)
+    return await this.http.post('/api/setup', { ...setup, passwordconfirm: setup.password })
   }
 
   async listRoles(): Promise<AxiosResponse<Role[]>> {
