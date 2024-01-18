@@ -25,7 +25,7 @@ export class MageClientSession {
     })
   }
 
-  async signIn(username: string, password: string, device: string): Promise<void> {
+  async signIn(username: string, password: string, device: string): Promise<void | Error> {
     this.accessToken = null
     this.user = null
     try {
@@ -55,6 +55,7 @@ export class MageClientSession {
     }
     catch (err) {
       console.error(err)
+      return new Error('sign in failed: ' + String(err))
     }
   }
 

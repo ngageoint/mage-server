@@ -13,9 +13,6 @@
     "typeRoots": [
       "../src/@types",
       "../node_modules/@types"
-    ],
-    "paths": {
-      "@ngageoint/mage.service/lib/*": [ "../lib/*" ]
-    }
+    ]
   }
 }

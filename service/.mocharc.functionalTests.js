@@ -1,6 +1,6 @@
 
 module.exports = {
-  spec: 'functionalTests-lib/**/*.js',
+  spec: 'functionalTests-lib/**/*.test.js',
   ignore: 'functionalTests-lib/node_modules/**',
   require: [
     require.resolve('iconv-lite/encodings'),

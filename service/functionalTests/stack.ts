@@ -1,22 +1,25 @@
+import child_process from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import * as MageApp from '@ngageoint/mage.service/lib/app'
 import { AddressInfo } from 'net'
 import uniqid from 'uniqid'
+import { MageService } from '../lib/app'
 
-const scratchDirPath = path.join(__dirname, 'scratch')
+const scratchDirPath = path.resolve(__dirname, '..', 'scratch', 'functionalTests')
 
 async function startMongoDB(baseDirPath: string): Promise<MongoMemoryServer> {
   const dbPath = path.join(baseDirPath, 'mongodb')
+  fs.mkdirSync(dbPath, { recursive: true })
   return await MongoMemoryServer.create({
     instance: { dbPath }
   })
 }
 
-async function startMageServer(baseDirPath: string, mongo: MongoMemoryServer): Promise<MageApp.MageService> {
+async function startMageServer(baseDirPath: string, mongo: MongoMemoryServer): Promise<{ service: MageService, appDataPath: string }> {
   const appDataPath = path.join(baseDirPath, 'mage')
+  fs.mkdirSync(appDataPath, { recursive: true })
   const dbUri = mongo.getUri('mage_test')
   const envConfig = {
     MAGE_ADDRESS: '127.0.0.1',
@@ -31,49 +34,132 @@ async function startMageServer(baseDirPath: string, mongo: MongoMemoryServer): P
     MAGE_USER_DIR: path.join(appDataPath, 'users'),
   }
   Object.assign(process.env, envConfig)
-  return await MageApp.boot({
+  const MageApp = await import('../lib/app')
+  const service = await MageApp.boot({
     plugins: {}
+  })
+  return new Promise((resolve, reject) => {
+    service.open().webController.on(MageApp.MageReadyEvent, () => {
+      resolve({
+        service,
+        appDataPath
+      })
+    })
   })
 }
 
-export interface TestStack {
-  readonly name: string
-  readonly baseDirPath: string
-  readonly mongo: MongoMemoryServer
-  readonly mage: MageApp.MageService
-  readonly mageUrl: string
-  destroy(): Promise<void>
+enum ProcMessage {
+  ChildStackStart = 'ChildStackStart',
+  StopChild = 'StopChild',
 }
 
-/**
- * Initialize a test stack with the given name.  If the given name is empty,
- * or not present, the test stack will have a generated unique name.  The
- * resulting test stack is a running `MongoMemoryServer` and MAGE HTTP service.
- * The service does not include the web app package.
- */
-export async function createTestStack(name?: string): Promise<TestStack> {
-  name = String(name || '').trim()
-  if (name.length === 0) {
-    name = uniqid()
-  }
+interface ProcMessageBody {
+  mageMessage?:
+    | { [ProcMessage.ChildStackStart]?: TestStack }
+    | ProcMessage.StopChild
+}
+
+async function startLocalProcessStack(name: string): Promise<LocalProcessTestStack> {
   const baseDirPath = path.join(scratchDirPath, name)
+  fs.mkdirSync(baseDirPath, { recursive: true })
   const mongo = await startMongoDB(baseDirPath)
   const mage = await startMageServer(baseDirPath, mongo)
-  const addr = mage.server.address() as AddressInfo
-  return Object.freeze({
+  const mageService = mage.service
+  const addr = mageService.server.address() as AddressInfo
+  const mageUrl = `http://127.0.0.1:${addr.port}`
+  const stack: TestStack = Object.freeze({
     name,
     baseDirPath,
+    mongoDBPath: mongo.instanceInfo!.dbPath,
+    appDataPath: mage.appDataPath,
+    mageUrl
+  })
+  const localStack: LocalProcessTestStack = Object.freeze({
+    ...stack,
     mongo,
-    mage,
-    get mageUrl(): string { return `http://127.0.0.1:${addr.port}` },
-    async destroy(): Promise<void> {
+    mage: mage.service,
+    async stop(): Promise<void> {
       console.info('stopping mage service')
-      await util.promisify(mage.server.close).bind(mage.server)()
+      await util.promisify(mageService.server.close).bind(mageService.server)()
       console.info('stopping mongodb')
       await mongo.stop()
       console.info('removing mongodb data')
       await mongo.cleanup()
       console.info(`destroyed test stack ${name}`)
     }
+  }) as LocalProcessTestStack
+  process.on('message', (message: ProcMessageBody) => {
+    const { mageMessage } = message
+    if (!mageMessage) {
+      return
+    }
+    if (mageMessage === ProcMessage.StopChild) {
+      console.info('stopping test stack child process')
+      localStack.stop().then(() => {
+        process.disconnect()
+        process.exit(0)
+      })
+    }
   })
+  if (typeof process.send === 'function') {
+    process.send({ mageMessage: { [ProcMessage.ChildStackStart]: stack } })
+  }
+  return localStack
+}
+
+export interface TestStack {
+  readonly name: string
+  readonly baseDirPath: string
+  readonly mongoDBPath: string
+  readonly appDataPath: string
+  readonly mageUrl: string
+}
+
+export interface ChildProcessTestStackRef extends TestStack {
+  stop(): Promise<void>
+}
+
+interface LocalProcessTestStack extends TestStack {
+  stop(): Promise<void>
+}
+
+/**
+ * Launch a test stack with the given name.  If the given name is empty,
+ * or not present, the test stack will have a generated unique name.  The
+ * resulting test stack is a child process running a `MongoMemoryServer` and a
+ * MAGE HTTP service.  The MAGE service does not include the web app package.
+ */
+export function launchTestStack(name?: string): Promise<ChildProcessTestStackRef> {
+  name = String(name || '').trim()
+  if (name.length === 0) {
+    name = uniqid()
+  }
+  return new Promise<ChildProcessTestStackRef>((resolve, reject) => {
+    console.info('forking child stack', name, __filename)
+    const child = child_process.fork(__filename, [ `mage:stack_name=${name}` ], { cwd: process.cwd() } )
+    child.on('message', (message: ProcMessageBody, sendHandle: any) => {
+      const { mageMessage } = message
+      console.info('child message:', message)
+      if (typeof mageMessage === 'object' && mageMessage[ProcMessage.ChildStackStart]) {
+        const stackInfo = mageMessage[ProcMessage.ChildStackStart] as TestStack
+        const stackRef: ChildProcessTestStackRef = {
+          ...stackInfo,
+          async stop(): Promise<void> {
+            child.send({ mageMessage: ProcMessage.StopChild })
+          }
+        }
+        resolve(stackRef)
+      }
+    })
+    console.info('forked child stack process with pid', child.pid)
+  })
+}
+
+const arg = String(process.argv[2])
+const argItems = arg.split('=')
+console.log('args:', process.argv)
+if (argItems[0] === 'mage:stack_name') {
+  const stackName = argItems[1]
+  console.info('starting stack', stackName)
+  startLocalProcessStack(stackName)
 }
