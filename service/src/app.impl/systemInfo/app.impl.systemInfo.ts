@@ -70,12 +70,10 @@ export function CreateReadSystemInfo(
       }
     }
 
-    // Apply authentication strategies for authenticated users
-    const updatedApiConfig = isAuthenticated
-      ? await appendAuthenticationStrategies(systemInfoResponse, {
-          whitelist: true
-        })
-      : systemInfoResponse;
+    // Apply authentication strategies to the system info response
+    const updatedApiConfig = await appendAuthenticationStrategies(systemInfoResponse, {
+        whitelist: true
+    });
 
     return AppResponse.success(updatedApiConfig as ExoSystemInfo); // Cast to ExoSystemInfo
   };
