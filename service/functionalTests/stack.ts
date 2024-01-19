@@ -82,9 +82,7 @@ async function startLocalProcessStack(name: string): Promise<LocalProcessTestSta
       console.info('stopping mage service')
       await util.promisify(mageService.server.close).bind(mageService.server)()
       console.info('stopping mongodb')
-      await mongo.stop()
-      console.info('removing mongodb data')
-      await mongo.cleanup()
+      await mongo.stop({ doCleanup: true })
       console.info(`destroyed test stack ${name}`)
     }
   }) as LocalProcessTestStack
