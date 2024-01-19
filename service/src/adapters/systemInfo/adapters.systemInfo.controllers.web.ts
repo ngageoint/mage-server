@@ -16,9 +16,7 @@ export function SystemInfoRoutes(appLayer: SystemInfoAppLayer, createAppRequest:
   routes.route('/')
     .get(async (req, res, next) => {
      const appReq = createAppRequest<SystemInfoRequestType>(req); // Define appReq
-
-     console.log()
-
+     // Check for Authorization header
      if (req.headers.authorization) {
         // Directly use passport.authenticate with a custom callback
        passport.authenticate(

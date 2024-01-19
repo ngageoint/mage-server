@@ -18,7 +18,7 @@ const mockMongoDBVersion = '4.2.0';
 
 const mockEnvironmentInfo: EnvironmentInfo = {
   nodeVersion: mockNodeVersion,
-  monogdbVersion: mockMongoDBVersion
+  mongodbVersion: mockMongoDBVersion
 };
 const mockDisclaimer = {};
 const mockContactInfo = {};
@@ -126,7 +126,6 @@ describe('CreateReadSystemInfo', () => {
         readEnvironmentInfo: () => Promise.resolve(mockEnvironmentInfo),
         readDependencies: () => Promise.resolve({})
       },
-      mockConfig,
       mockedSettingsModule,
       mockedAuthConfigModule,
       mockedAuthConfigTransformerModule,
