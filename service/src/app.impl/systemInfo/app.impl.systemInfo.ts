@@ -1,18 +1,24 @@
 import { AppResponse } from '../../app.api/app.api.global';
 import * as api from '../../app.api/systemInfo/app.api.systemInfo';
-import config from '../../config'
-import { EnvironmentService, SystemInfo } from '../../entities/systemInfo/entities.systemInfo';
+import { EnvironmentService } from '../../entities/systemInfo/entities.systemInfo';
 import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
-
 import { ExoPrivilegedSystemInfo, ExoRedactedSystemInfo, ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
+
+export interface ApiVersion {
+  major: number;
+  minor: number;
+  micro: number;
+}
+
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
  */
 export function CreateReadSystemInfo(
   environmentService: EnvironmentService,
+  versionInfo: ApiVersion,
   settingsModule: typeof Settings = Settings,
   authConfigModule: typeof AuthenticationConfiguration = AuthenticationConfiguration,
   authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer,
@@ -47,7 +53,6 @@ export function CreateReadSystemInfo(
   req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
     const isAuthenticated = req.context.requestingPrincipal() != null;
-    const versionInfo = config.api.version; // Version info from config
 
     // Initialize with base system info
     let systemInfoResponse: ExoRedactedSystemInfo = {

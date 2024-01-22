@@ -501,10 +501,11 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   const permissionsService = new RoleBasedSystemInfoPermissionService()
+  const versionInfo = apiConfig.api.version
   return {
     readSystemInfo: CreateReadSystemInfo(
       repos.enviromentInfo,
-      // apiConfig,
+      versionInfo,
       Settings,
       AuthenticationConfiguration,
       AuthenticationConfigurationTransformer,
