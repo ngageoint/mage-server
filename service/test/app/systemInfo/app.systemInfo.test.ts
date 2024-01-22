@@ -4,7 +4,7 @@ import {
   SystemInfo
 } from '../../../lib/entities/systemInfo/entities.systemInfo';
 import { Substitute, Arg } from '@fluffy-spoon/substitute';
-import { CreateReadSystemInfo } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
+import { CreateReadSystemInfo, ApiVersion } from '../../../lib/app.impl/systemInfo/app.impl.systemInfo';
 import * as Settings from '../../../lib/models/setting';
 import * as AuthenticationConfiguration from '../../../lib/models/authenticationconfiguration';
 import * as AuthenticationConfigurationTransformer from '../../../lib/transformers/authenticationconfiguration';
@@ -13,6 +13,7 @@ import { ReadSystemInfo, ReadSystemInfoRequest } from '../../../lib/app.api/syst
 import { RoleBasedSystemInfoPermissionService } from '../../../lib/permissions/permissions.systemInfo';
 import { SystemInfoPermission } from '../../../lib/entities/authorization/entities.permissions';
 
+// Mocked environment info, disclaimer, contactInfo, and API version
 const mockNodeVersion = '14.16.1';
 const mockMongoDBVersion = '4.2.0';
 
@@ -22,7 +23,13 @@ const mockEnvironmentInfo: EnvironmentInfo = {
 };
 const mockDisclaimer = {};
 const mockContactInfo = {};
+const mockVersionInfo: ApiVersion = {
+  major: 1,
+  minor: 2,
+  micro: 3
+};
 
+// Mocked user with role having READ_SYSTEM_INFO permission
 const mockUserWithRole = ({
   _id: 'mockObjectId',
   id: 'testUserId',
@@ -41,6 +48,7 @@ const mockUserWithRole = ({
   lastUpdated: new Date()
 } as unknown) as UserWithRole;
 
+// Mocked user without READ_SYSTEM_INFO permission
 const mockUserWithoutPermission = ({
   _id: 'mockObjectId2',
   id: 'testUserId2',
@@ -126,6 +134,7 @@ describe('CreateReadSystemInfo', () => {
         readEnvironmentInfo: () => Promise.resolve(mockEnvironmentInfo),
         readDependencies: () => Promise.resolve({})
       },
+      mockVersionInfo,
       mockedSettingsModule,
       mockedAuthConfigModule,
       mockedAuthConfigTransformerModule,
