@@ -67,18 +67,21 @@ export class MageClientSession {
     return await this.http.get<Role[]>('/api/roles')
   }
 
-  async createUser(body: UserCreateRequest): Promise<AxiosResponse<any>> {
+  async createUser(body: UserCreateRequest): Promise<AxiosResponse<User>> {
     return await this.http.post(`/api/users`, body)
   }
 
-  async listEvents(): Promise<any> {
+  async listEvents(): Promise<Event[]> {
     const res = await this.http.get('/api/events')
     return res.data
   }
 
-  async readEvent(id: number): Promise<any> {
-    const res = await this.http.get(`/api/events/${id}`)
-    return res.data
+  async createEvent(body: MageEventCreateRequest): Promise<AxiosResponse<MageEvent>> {
+    return await this.http.post('/api/events', body)
+  }
+
+  async readEvent(id: number): Promise<AxiosResponse<MageEvent>> {
+    return await this.http.get(`/api/events/${id}`)
   }
 
   async postUserLocation(eventId: number, lon: number, lat: number): Promise<any> {
@@ -139,3 +142,163 @@ export interface Device {
 }
 
 export type RootUserSetupRequest = Omit<UserCreateRequest, 'passwordconfirm' | 'roleId'> & Pick<Device, 'uid'>
+
+export interface MageEvent {
+  id: number
+  name: string
+  description?: string
+  style: LineStyle
+  forms: MageForm[]
+  teamIds: string[]
+  layerIds: string[]
+  feedIds: string[]
+}
+
+export interface MageForm {
+  id: number
+  name: string
+  description?: string
+  /**
+   * Require at least the given number of entries for this form.
+   */
+  min?: number
+  /**
+   * Limit the entries for this form to the given number.
+   */
+  max?: number
+  /**
+   * Use the value of the specified field as the first component in a map style
+   * rule that determines the map marker for observations with entries for this
+   * form.  For example, the primary field could be `vehicleType`, and values
+   * could map to different icon images that represent types of vehicles.
+   */
+  primaryField?: string
+  /**
+   * Use the value of the specified field as the second component in a map style
+   * rule that determines the map marker for observations with entries for this
+   * form.  For example, the variant field could be `color`, and values could
+   * map to defined color values to apply to the map marker.
+   */
+  variantField?: string
+  /**
+   * Use the value of the specified field as the most prominent heading value
+   * that a feed list view would display for an observation.
+   */
+  primaryFeedField?: string
+  /**
+   * Use the value of the specified field as a sub-heading value that a feed
+   * list view would display for an observation.
+   */
+  secondaryFeedField?: string
+  /**
+   * This is a list of references to fields that are dropdowns whose choices
+   * are MAGE users' names.
+   * TODO: this could be modeled better as a general choice field that
+   * specifies a data source for its choices
+   */
+  userFields: string[]
+  /**
+   * Color must be a valid hexadecimal color string prefixed with a "#" symbol,
+   * e.g., #0a0b0c.
+   */
+  color: string
+  style?: BaseFormStyle
+  archived: boolean
+  fields: MageFormField[]
+}
+
+export interface MageFormField {
+  id: number,
+  archived?: boolean,
+  name: string,
+  title: string,
+  type: FormFieldType,
+  required: boolean,
+  value?: any,
+  choices?: FormFieldChoice[],
+  /**
+   * The absence of any media type constraints indicates the field allows any
+   * file type as an attachment.
+   */
+  allowedAttachmentTypes?: AttachmentPresentationType[]
+  /**
+   * The minimum constraint applies to the value of a numeric field or to the
+   * number of attachments required on an attachment field.
+   */
+  min?: number,
+  /**
+   * The maximum constraint applies to the value of a numeric field or to the
+   * number of attachments allowed on an attachment field.
+   */
+  max?: number
+}
+
+export enum FormFieldType {
+  Attachment = 'attachment',
+  CheckBox = 'checkbox',
+  DateTime = 'date',
+  Dropdown = 'dropdown',
+  Email = 'email',
+  Geometry = 'geometry',
+  Hidden = 'hidden',
+  MultiSelectDropdown = 'multiselectdropdown',
+  Numeric = 'numberfield',
+  Password = 'password',
+  Radio = 'radio',
+  Text = 'textfield',
+  TextArea = 'textarea',
+}
+
+export interface FormFieldChoice {
+  id: number,
+  title: string,
+  value: number,
+  blank?: boolean
+}
+
+export enum AttachmentPresentationType {
+  Image = 'image',
+  Video = 'video',
+  Audio = 'audio',
+}
+
+/**
+ * This is and related style types are copies from the core MAGE service
+ * entity types.
+ */
+export interface LineStyle {
+  /**
+   * Hex RGB string beginning with '#'
+   */
+  fill?: string,
+  /**
+   * Hex RGB string beginning with '#'
+   */
+  stroke?: string,
+  /**
+   * Number between 0 and 1
+   */
+  fillOpacity?: number,
+  /**
+   * Number between 0 and 1
+   */
+  strokeOpacity?: number,
+  /**
+   * Decimal stroke width
+   */
+  strokeWidth?: number,
+}
+
+export type BaseFormStyle = LineStyle & {
+  [variantFieldEntry: string]: PrimaryFieldStyle | LineStyle[keyof LineStyle]
+}
+
+export type PrimaryFieldStyle = LineStyle & {
+  [variantFieldEntry: string]: VariantFieldStyle
+}
+
+export type VariantFieldStyle = LineStyle
+
+export type MageEventCreateRequest = Omit<MageEvent, 'id'>
+
+export type MageEventUpdateRequest = MageEvent

@@ -21,14 +21,8 @@ describe('exports', function() {
   before('initialize fixture data', async function() {
 
     const rootSession = new MageClientSession(stack.mageUrl)
-    const setupRes = await rootSession.setupRootUser(fixture.root)
-    const initRoot = setupRes.data
-
-    expect(setupRes.status).to.equal(200)
-    expect(initRoot.user.username).to.equal(fixture.root.username)
-    expect(initRoot.device.uid).to.equal(fixture.root.uid)
-
-    const signInError = await rootSession.signIn(fixture.root.username, fixture.root.password, fixture.root.uid)
+    await fixture.createFixtureData(rootSession)
+    const signInError = await rootSession.signIn(fixture.rootSeed.username, fixture.rootSeed.password, fixture.rootSeed.uid)
 
     expect(signInError).to.not.exist
   })
@@ -40,4 +34,14 @@ describe('exports', function() {
   it('exports geopackage', async function() {
 
   })
+
+  it('exports kml', async function() {
+
+  })
+
+  it('exports csv', async function() {
+
+  })
+
+  it('exports geojson')
 })
