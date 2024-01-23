@@ -55,7 +55,7 @@ const provision = new Provision();
 
 // Dynamically add all provisioning strategies
 modulesPathsInDir(__dirname).forEach(modulePath => {
-  const moduleName = modulePath.substr(0, modulePath.indexOf('.'));
+  const moduleName = modulePath.substring(0, modulePath.indexOf('.'));
   log.debug(`loading ${moduleName} provision strategy from ${modulePath}`);
   const initStrategy = require('./' + moduleName);
   initStrategy(provision);
