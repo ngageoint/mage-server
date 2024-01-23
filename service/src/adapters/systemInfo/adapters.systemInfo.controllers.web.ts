@@ -4,7 +4,6 @@ import { WebAppRequestFactory } from '../adapters.controllers.web'
 import { SystemInfoAppLayer } from '../../app.api/systemInfo/app.api.systemInfo'
 import { AppRequest, AppRequestContext } from '../../app.api/app.api.global'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
-// import { User } from '../../models/user'
 
 type SystemInfoRequestType = AppRequest<UserWithRole, AppRequestContext<UserWithRole>>;
 
