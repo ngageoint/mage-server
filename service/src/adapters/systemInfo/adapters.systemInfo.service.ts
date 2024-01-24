@@ -15,7 +15,7 @@ export class EnvironmentServiceImpl implements EnvironmentService {
     }
     return {
       nodeVersion: this.nodeVersion,
-      monogdbVersion: this.mongodbVersion!,
+      mongodbVersion: this.mongodbVersion!,
     }
   }
 

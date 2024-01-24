@@ -501,10 +501,11 @@ function initFeedsAppLayer(repos: Repositories): AppLayer['feeds'] {
 
 function initSystemInfoAppLayer(repos: Repositories): SystemInfoAppLayer {
   const permissionsService = new RoleBasedSystemInfoPermissionService()
+  const versionInfo = apiConfig.api.version
   return {
     readSystemInfo: CreateReadSystemInfo(
       repos.enviromentInfo,
-      apiConfig,
+      versionInfo,
       Settings,
       AuthenticationConfiguration,
       AuthenticationConfigurationTransformer,
@@ -573,7 +574,6 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   ])
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory)
   webController.use('/api', [
-    bearerAuth,
     systemInfoRoutes
   ])
   const observationRequestFactory: ObservationWebAppRequestFactory = <Params extends object | undefined>(req: express.Request, params: Params) => {

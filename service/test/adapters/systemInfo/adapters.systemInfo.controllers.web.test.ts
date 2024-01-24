@@ -58,7 +58,7 @@ describe('SystemInfo web controller', () => {
       const expected: SystemInfo = {
         environment: {
           nodeVersion: 'test',
-          monogdbVersion: 'test'
+          mongodbVersion: 'test'
         },
         disclaimer: {},
         contactInfo: {},

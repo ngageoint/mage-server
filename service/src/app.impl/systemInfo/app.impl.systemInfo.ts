@@ -4,15 +4,21 @@ import { EnvironmentService } from '../../entities/systemInfo/entities.systemInf
 import * as Settings from '../../models/setting';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
+import { ExoPrivilegedSystemInfo, ExoRedactedSystemInfo, ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
 
-import { SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
+export interface ApiVersion {
+  major: number;
+  minor: number;
+  micro: number;
+}
+
 /**
  * This factory function creates the implementation of the {@link api.ReadSystemInfo}
  * application layer interface.
  */
 export function CreateReadSystemInfo(
   environmentService: EnvironmentService,
-  config: any,
+  versionInfo: ApiVersion,
   settingsModule: typeof Settings = Settings,
   authConfigModule: typeof AuthenticationConfiguration = AuthenticationConfiguration,
   authConfigTransformerModule: typeof AuthenticationConfigurationTransformer = AuthenticationConfigurationTransformer,
@@ -43,36 +49,37 @@ export function CreateReadSystemInfo(
     );
     return apiCopy;
   }
-
   return async function readSystemInfo(
-    req: api.ReadSystemInfoRequest
+  req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
-    const hasReadSystemInfoPermission =
-      (await permissions.ensureReadSystemInfoPermission(req.context)) === null;
+    const isAuthenticated = req.context.requestingPrincipal() != null;
 
-    let environment;
-    if (hasReadSystemInfoPermission) {
-      environment = await environmentService.readEnvironmentInfo();
+    // Initialize with base system info
+    let systemInfoResponse: ExoRedactedSystemInfo = {
+      version: versionInfo,
+      disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
+      contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
+    };
+
+    // Add environment details for authenticated users with permission
+    if (isAuthenticated) {
+      const hasReadSystemInfoPermission =
+        (await permissions.ensureReadSystemInfoPermission(req.context)) === null;
+
+      if (hasReadSystemInfoPermission) {
+        const environmentInfo = await environmentService.readEnvironmentInfo();
+        systemInfoResponse = {
+          ...systemInfoResponse,
+          environment: environmentInfo
+        } as ExoPrivilegedSystemInfo;
+      }
     }
 
-    const disclaimer = (await settingsModule.getSetting('disclaimer')) || {};
-    const contactInfo = (await settingsModule.getSetting('contactInfo')) || {};
-
-    const apiConfig = Object.assign({}, config.api, {
-      environment: environment,
-      disclaimer: disclaimer,
-      contactInfo: contactInfo
+    // Apply authentication strategies to the system info response
+    const updatedApiConfig = await appendAuthenticationStrategies(systemInfoResponse, {
+        whitelist: true
     });
 
-    // Ensure the environment is removed if the user doesn't have permission
-    if (!hasReadSystemInfoPermission) {
-      delete apiConfig.environment;
-    }
-
-    const updatedApiConfig = await appendAuthenticationStrategies(apiConfig, {
-      whitelist: true
-    });
-
-    return AppResponse.success(updatedApiConfig as any);
+    return AppResponse.success(updatedApiConfig as ExoSystemInfo); // Cast to ExoSystemInfo
   };
 }

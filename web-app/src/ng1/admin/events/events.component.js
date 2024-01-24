@@ -9,11 +9,16 @@ class AdminEventsController {
     this.UserService = UserService;
 
     this.events = [];
-    this.filter = "active"; // possible values all, active, complete
+    this.filter = 'active'; // possible values all, active, complete
     this.page = 0;
     this.itemsPerPage = 10;
-  
-    this.projection = { name: true, description: true, acl: true, complete: true };
+
+    this.projection = {
+      name: true,
+      description: true,
+      acl: true,
+      complete: true
+    };
 
     // For some reason angular is not calling into filter function with correct context
     this.filterEvents = this._filterEvents.bind(this);
@@ -21,21 +26,44 @@ class AdminEventsController {
   }
 
   $onInit() {
-    this.Event.query({state: 'all',  populate: false, projection: JSON.stringify(this.projection)}, events => {
-      this.events = events;
-    });
+    this.Event.query(
+      {
+        state: 'all',
+        populate: false,
+        projection: JSON.stringify(this.projection)
+      },
+      (events) => {
+        this.events = events;
+      }
+    );
+  }
+
+  handleSearchChange() {
+    const filtered = this.events.filter((event) => this._filterEvents(event));
+
+    // If there are filtered results, reset to page 0, else keep the current page
+    this.page = filtered.length > 0 ? 0 : this.page;
   }
 
   _filterEvents(event) {
-    var filteredEvents = this.$filter('filter')([event], this.eventSearch);
-    return filteredEvents && filteredEvents.length;
+    const searchTerm = this.eventSearch.trim().toLowerCase();
+    if (!searchTerm) {
+      return true;
+    }
+    const nameMatches = event.name.toLowerCase().includes(searchTerm);
+    const descriptionMatches =
+      event.description && event.description.toLowerCase().includes(searchTerm);
+    return nameMatches || descriptionMatches;
   }
 
   _filterComplete(event) {
     switch (this.filter) {
-    case 'all': return true;
-    case 'active': return !event.complete;
-    case 'complete': return event.complete;
+      case 'all':
+        return true;
+      case 'active':
+        return !event.complete;
+      case 'complete':
+        return event.complete;
     }
   }
 
@@ -70,11 +98,21 @@ class AdminEventsController {
     var myAccess = event.acl[this.UserService.myself.id];
     var aclPermissions = myAccess ? myAccess.permissions : [];
 
-    switch(permission) {
-    case 'update':
-      return _.contains(this.UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
-    case 'delete':
-      return _.contains(this.UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
+    switch (permission) {
+      case 'update':
+        return (
+          _.contains(
+            this.UserService.myself.role.permissions,
+            'UPDATE_EVENT'
+          ) || _.contains(aclPermissions, 'update')
+        );
+      case 'delete':
+        return (
+          _.contains(
+            this.UserService.myself.role.permissions,
+            'DELETE_EVENT'
+          ) || _.contains(aclPermissions, 'delete')
+        );
     }
   }
 
@@ -87,10 +125,10 @@ class AdminEventsController {
           return event;
         }
       },
-      component: "adminEventDelete"
+      component: 'adminEventDelete'
     });
 
-    modalInstance.result.then(event => {
+    modalInstance.result.then((event) => {
       this.events = _.without(this.events, event);
     });
   }

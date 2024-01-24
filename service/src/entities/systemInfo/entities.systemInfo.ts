@@ -1,7 +1,7 @@
 
 export interface EnvironmentInfo {
   nodeVersion: string
-  monogdbVersion: string
+  mongodbVersion: string
   // TODO: maybe relavant environment variables? redact sensitive values
 }
 

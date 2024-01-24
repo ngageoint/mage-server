@@ -14,7 +14,9 @@ export interface ReadSystemInfoRequest extends AppRequest {
 export interface ReadSystemInfoResponse extends AppResponse<ExoSystemInfo, InfrastructureError> {}
 
 export interface ReadSystemInfo {
-  (req: ReadSystemInfoRequest): Promise<ReadSystemInfoResponse>
+  (req: ReadSystemInfoRequest): Promise<
+    ReadSystemInfoResponse
+  >;
 }
 
 export interface SystemInfoAppLayer {
@@ -23,5 +25,5 @@ export interface SystemInfoAppLayer {
 }
 
 export interface SystemInfoPermissionService {
-  ensureReadSystemInfoPermission(context: AppRequestContext<UserWithRole>): Promise<null | PermissionDeniedError>;
+  ensureReadSystemInfoPermission(context: AppRequestContext<UserWithRole | null>): Promise<null | PermissionDeniedError>;
 }
