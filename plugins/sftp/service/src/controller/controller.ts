@@ -1,7 +1,6 @@
 import { PagingParameters } from '@ngageoint/mage.service/lib/entities/entities.global';
 import { MageEvent, MageEventRepository } from '@ngageoint/mage.service/lib/entities/events/entities.events';
-import { AttachmentStore, Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
-import { UserRepository } from '@ngageoint/mage.service/lib/entities/users/entities.users';
+import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations';
 import { PluginStateRepository } from '@ngageoint/mage.service/lib/plugins.api';
 import SFTPClient from 'ssh2-sftp-client';
 import { PassThrough } from 'stream';
@@ -35,19 +34,9 @@ export class SftpController {
   private observationRepository: ObservationRepositoryForEvent;
 
   /**
-   * Used to get user information.
-   */
-  private userRepository: UserRepository;
-
-  /**
   * Used to save sftp status for each observation
   */
   private sftpObservationRepository: SftpObservationRepository
-
-  /**
-   * Used to get user information.
-   */
-  private attachmentStore: AttachmentStore;
 
   /**
    * SFTP plugin state configuration
@@ -58,7 +47,6 @@ export class SftpController {
    * SFTP client configuration
    */
   private sftpClient: SFTPClient
-
 
   /**
    * SFTP plugin configuration
@@ -87,8 +75,6 @@ export class SftpController {
     stateRepository: PluginStateRepository<SFTPPluginConfig>,
     eventRepository: MageEventRepository,
     observationRepository: ObservationRepositoryForEvent,
-    userRepository: UserRepository,
-    attachmentStore: AttachmentStore,
     sftpObservationRepository: SftpObservationRepository,
     sftpClient: SFTPClient,
     archiverFactory: ArchiverFactory,
@@ -98,8 +84,6 @@ export class SftpController {
     this.eventRepository = eventRepository;
     this.sftpObservationRepository = sftpObservationRepository;
     this.observationRepository = observationRepository;
-    this.userRepository = userRepository;
-    this.attachmentStore = attachmentStore
     this.sftpClient = sftpClient
     this.archiveFactory = archiverFactory
     this.configuration = null
@@ -248,16 +232,16 @@ export class SftpController {
     const result = await archiver.createArchive(observation, event)
 
     if (result instanceof ArchiveResult) {
-      this.console.log(`archive result ${result.status}`)
-      if (ArchiveStatus.Complete || ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now()) {
-        this.console.info(`send observation ${observation.id}`)
-
+      if (result.status === ArchiveStatus.Complete || (result.status === ArchiveStatus.Incomplete && (observation.lastModified.getTime() + timeout) > Date.now())) {
+        this.console.log(`posting status of success`)
         const stream = new PassThrough()
         result.archive.pipe(stream)
         await result.archive.finalize()
         await this.sftpClient.put(stream, `${sftpPath}/${observation.id}.zip`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.SUCCESS)
       } else {
+        this.console.log(`posting status of pending`)
+
         this.console.info(`pending observation ${observation.id}`)
         await this.sftpObservationRepository.postStatus(event.id, observation.id, SftpStatus.PENDING)
       }

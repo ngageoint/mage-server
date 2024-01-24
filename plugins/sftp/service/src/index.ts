@@ -73,8 +73,6 @@ const sftpPluginHooks: InitPluginHook<typeof InjectedServices> = {
       stateRepository,
       eventRepository,
       observationRepository,
-      userRepository,
-      attachmentStore,
       sftpObservationRepository,
       new SFTPClient(),
       archiverFactory,

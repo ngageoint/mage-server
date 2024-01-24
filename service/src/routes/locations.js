@@ -4,6 +4,7 @@ module.exports = function(app, security) {
     , Team = require('../models/team')
     , Event = require('../models/event')
     , access = require('../access')
+    , log = require('../logger')
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
   var passport = security.authentication.passport;
@@ -150,6 +151,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res, next) {
+      log.info(`POST - /api/events/${req.event._id}/locations with locations`, JSON.stringify(req.locations))
       location.createLocations(req.locations, req.user, req.event, function(err, locations) {
         if (err) return next(err);
 
