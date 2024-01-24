@@ -489,7 +489,7 @@ exports.update = function(id, event, options, callback) {
   }
 
   const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function(o, k) {
-    if (event.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(event, k)) {
       o[k] = event[k];
     }
     return o;
