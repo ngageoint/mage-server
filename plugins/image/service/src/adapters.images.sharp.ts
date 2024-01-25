@@ -62,10 +62,15 @@ export function SharpImageService(): ImageService {
       return ImageOperation.apply(orient).to(source.bytes, dest)
     },
     scaleToDimension(minDimension: number, source: ImageContent, dest: NodeJS.WritableStream): Promise<Required<ImageDescriptor> | Error> {
-      const { width, height } = source.dimensions || { width: 0, height: 0 }
-      const targetDimensions = width < height ? { width: minDimension } : { height: minDimension }
-      const scale = sharp(defaultOptions).resize(targetDimensions)
-      return ImageOperation.apply(scale).to(source.bytes, dest)
+      // 1. Extract width and height from the source image's dimensions
+      const { width, height } = source.dimensions || { width: 0, height: 0 };
+      // 2. Determine the target dimensions based on the minimum dimension
+      const targetDimensions =
+        width < height ? { width: minDimension } : { height: minDimension };
+      // 3. Create a sharp instance with default options and apply the resize operation
+      const scale = sharp(defaultOptions).resize(targetDimensions);
+      // 4. Apply the scaling operation to the source image's bytes and write the result to the destination
+      return ImageOperation.apply(scale).to(source.bytes, dest);
     }
   }
 }
