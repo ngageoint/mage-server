@@ -172,6 +172,12 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
   const passport = security.authentication.passport;
 
+  /*
+  TODO: this just sends whatever is in the body straight through the API level
+  and to the DB model with no sanitization and minimal validation.  this
+  bypasses ID/name generation for forms and fields.  the model has some
+  validation rules for those but
+  */
   app.post(
     '/api/events',
     passport.authenticate('bearer'),

@@ -4,7 +4,8 @@
 // observation with invalid obsolete form data
 // observation with missing attachments
 // observation with corrupted attachment
-// observation with icons
+// observation with primary icons
+// observation with primary and secondary icons
 // observation with missing icons
 // observation with deleted user
 // observation with deleted device
@@ -12,7 +13,7 @@
 // location with missing icon
 // location with corrupted icon
 
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest } from '../client'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageForm, MageFormCreateRequest } from '../client'
 
 export const rootSeed: RootUserSetupRequest = {
   username: 'exports.root',
@@ -33,17 +34,33 @@ export const usersSeed: Omit<UserCreateRequest, 'roleId'>[] = Array.from({ lengt
 
 export const eventSeed: MageEventCreateRequest = {
   name: 'Export Me',
-  feedIds: [],
-  layerIds: [],
   style: {},
-  teamIds: [],
-  forms: [
-    {
-      name: 'Export Form 1',
-
-    }
-  ]
 }
+
+export const formsSeed: MageFormCreateRequest[] = [
+  {
+    name: 'Export Form 1',
+    userFields: [],
+    archived: false,
+    color: '#ff0000',
+    fields: [
+      {
+        id: 1,
+        name: 'field1',
+        required: false,
+        title: 'Field 1',
+        type: FormFieldType.Text,
+      },
+      {
+        id: 2,
+        name: 'field2',
+        required: false,
+        title: 'Field 2',
+        type: FormFieldType.Attachment,
+      }
+    ]
+  }
+]
 
 export async function createFixtureData(rootSession: MageClientSession): Promise<void> {
   const rootSetup = await rootSession.setupRootUser(rootSeed).then(x => x.data)
@@ -51,5 +68,9 @@ export async function createFixtureData(rootSession: MageClientSession): Promise
   const roles = await rootSession.listRoles().then(x => x.data)
   const userRole = roles.find(x => x.name === 'USER_ROLE')!
   const users = await Promise.all(usersSeed.map(x => rootSession.createUser({ ...x, roleId: userRole.id }).then(x => x.data)))
-  const event = await rootSession.createEvent(eventSeed)
+  console.log('USERS', users)
+  const event = await rootSession.createEvent(eventSeed).then(x => x.data).catch(err => {
+    console.error('EVENT', err)
+  })
+  console.log('EVENT', event)
 }

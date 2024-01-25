@@ -100,6 +100,11 @@ export class MageClientSession {
     )
     return res
   }
+
+  uploadIcon(eventId: number, formId: number): Promise<AxiosResponse>
+  uploadIcon(eventId: number, formId: number, fieldName: string, primaryValue: string, secondaryValue: string | null | undefined): Promise<AxiosResponse> {
+    throw new Error('unimplemented')
+  }
 }
 
 export interface Role {
@@ -299,6 +304,8 @@ export type PrimaryFieldStyle = LineStyle & {
 
 export type VariantFieldStyle = LineStyle
 
-export type MageEventCreateRequest = Omit<MageEvent, 'id'>
+export type MageEventCreateRequest = Pick<MageEvent, 'name' | 'description' | 'style'>
 
 export type MageEventUpdateRequest = MageEvent
+
+export type MageFormCreateRequest = Omit<MageForm, 'id'>
