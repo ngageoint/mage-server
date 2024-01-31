@@ -16,7 +16,7 @@ import { ObservationId } from '../../entities/observations/entities.observations
  * typed {@link ExoObservationMod} object for the application layer.  This performs
  * validation only on the primitive JSON keys and types present in the input,
  * but not any application or domain layer validation of the content.  This
- * function reatains only known keys, i.e. those that `ExoObservationMod`
+ * function retains only known keys, i.e. those that `ExoObservationMod`
  * defines, and discards the rest from the result object.
  */
 export function exoObservationModFromJson(json: Json): ExoObservationMod | InvalidInputError {

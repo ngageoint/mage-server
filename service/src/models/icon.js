@@ -1,9 +1,6 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-// Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
-
-var IconSchema = new Schema({
+const IconSchema = new mongoose.Schema({
   eventId: { type: Number, required: true },
   formId: { type: Number, required: false },
   primary: { type: String, required: false },
@@ -13,8 +10,7 @@ var IconSchema = new Schema({
   versionKey: false
 });
 
-// Creates the Model for the Layer Schema
-var Icon = mongoose.model('Icon', IconSchema);
+const Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
 exports.getAll = function(options, callback) {

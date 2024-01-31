@@ -536,7 +536,7 @@ describe('observations web controller', function () {
       const res = await client.put(attachmentRequestPath)
         .attach('attachment', attachmentBytes, { filename: fileName, contentType: 'video/mp4' })
         .field('nonsense', 'ignore this')
-        .attach('invalid-file', attachmentBytes.slice(0, attachmentBytes.length / 2))
+        .attach('invalid-file', attachmentBytes.subarray(0, attachmentBytes.length / 2))
         .field('more-nonsense', 'wut is going on')
         .accept('application/json')
 
