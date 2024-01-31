@@ -1,6 +1,12 @@
 
-// observation with attachments
 // observation with archived form
+// observation with single form
+// observation with multiple forms
+// observation with first form primary/variant
+// observation with first form primary only
+// observation with first form no icon
+// observation with attachments
+// observation with obsolete attachment field
 // observation with invalid obsolete form data
 // observation with missing attachments
 // observation with corrupted attachment
@@ -13,7 +19,9 @@
 // location with missing icon
 // location with corrupted icon
 
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageForm, MageFormCreateRequest } from '../client'
+import path from 'path'
+import { expect } from 'chai'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest } from '../client'
 
 export const rootSeed: RootUserSetupRequest = {
   username: 'exports.root',
@@ -39,38 +47,159 @@ export const eventSeed: MageEventCreateRequest = {
 
 export const formsSeed: MageFormCreateRequest[] = [
   {
-    name: 'Export Form 1',
+    name: 'form1',
     userFields: [],
     archived: false,
-    color: '#ff0000',
+    color: '#aa0000',
+    primaryField: 'form1.dropdown1',
+    variantField: 'form1.dropdown2',
+    primaryFeedField: 'form1.text1',
+    style: {
+      red: {
+        happy: { },
+        neutral: {},
+        sad: {}
+      },
+      green: {
+        happy: {},
+        neutral: {},
+        sad: {}
+      },
+      yellow: {
+        happy: {},
+        neutral: {},
+        sad: {}
+      }
+    },
     fields: [
       {
         id: 1,
-        name: 'field1',
+        name: 'form1.text1',
+        required: false,
+        title: 'Text 1',
+        type: FormFieldType.Text,
+      },
+      {
+        id: 2,
+        name: 'form1.attachment1',
+        required: false,
+        title: 'Attachment 1',
+        type: FormFieldType.Attachment,
+      },
+      {
+        id: 3,
+        name: 'form1.dropdown1',
+        required: false,
+        title: 'Choice 1',
+        type: FormFieldType.Dropdown,
+        choices: [
+          { id: 1, value: 1, title: 'red' },
+          { id: 2, value: 2, title: 'green' },
+          { id: 3, value: 3, title: 'yellow' },
+        ]
+      },
+      {
+        id: 4,
+        name: 'form1.dropdown2',
+        required: false,
+        title: 'Choice 2',
+        type: FormFieldType.Dropdown,
+        choices: [
+          { id: 1, value: 1, title: 'happy' },
+          { id: 2, value: 2, title: 'neutral' },
+          { id: 3, value: 3, title: 'sad' },
+        ]
+      },
+    ]
+  },
+  {
+    name: 'form2',
+    userFields: [],
+    archived: false,
+    color: '#00aa00',
+    primaryField: 'form2.dropdown1',
+    fields: [
+      {
+        id: 1,
+        name: 'form2.text1',
+        required: false,
+        title: 'Text 1',
+        type: FormFieldType.Text,
+      },
+      {
+        id: 2,
+        name: 'form2.attachment1',
+        required: false,
+        title: 'Attachment 1',
+        type: FormFieldType.Attachment,
+      },
+      {
+        id: 3,
+        name: 'form2.dropdown1',
+        required: false,
+        title: 'Choice 1',
+        type: FormFieldType.Dropdown,
+        choices: [
+          { id: 1, value: 1, title: 'red' },
+          { id: 2, value: 2, title: 'green' },
+          { id: 3, value: 3, title: 'yellow' },
+        ]
+      },
+      {
+        id: 4,
+        name: 'form2.dropdown2',
+        required: false,
+        title: 'Choice 2',
+        type: FormFieldType.Dropdown,
+        choices: [
+          { id: 1, value: 1, title: 'happy' },
+          { id: 2, value: 2, title: 'neutral' },
+          { id: 3, value: 3, title: 'sad' },
+        ]
+      },
+    ]
+  },
+  {
+    name: 'form3',
+    userFields: [],
+    archived: false,
+    color: '#0000aa',
+    fields: [
+      {
+        id: 1,
+        name: 'form3.field1',
         required: false,
         title: 'Field 1',
         type: FormFieldType.Text,
       },
       {
         id: 2,
-        name: 'field2',
+        name: 'form3.field2',
         required: false,
         title: 'Field 2',
         type: FormFieldType.Attachment,
       }
     ]
-  }
+  },
 ]
 
-export async function createFixtureData(rootSession: MageClientSession): Promise<void> {
-  const rootSetup = await rootSession.setupRootUser(rootSeed).then(x => x.data)
-  await rootSession.signIn(rootSeed.username, rootSeed.password, rootSeed.uid)
+export async function populateFixtureData(rootSession: MageClientSession): Promise<void> {
+
   const roles = await rootSession.listRoles().then(x => x.data)
   const userRole = roles.find(x => x.name === 'USER_ROLE')!
+
+  expect(userRole, 'failed to find user role').to.exist
+
   const users = await Promise.all(usersSeed.map(x => rootSession.createUser({ ...x, roleId: userRole.id }).then(x => x.data)))
-  console.log('USERS', users)
-  const event = await rootSession.createEvent(eventSeed).then(x => x.data).catch(err => {
-    console.error('EVENT', err)
-  })
-  console.log('EVENT', event)
+
+  expect(users.length).to.equal(usersSeed.length)
+
+  const event = await rootSession.createEvent(eventSeed).then(x => x.data)
+
+  expect(event.id).to.be.a('number')
+
+  const forms = await Promise.all(formsSeed.map(x => rootSession.createForm(event.id, x).then(x => x.data)))
+
+  const assetsDirPath = path.resolve(__dirname, '..', 'assets')
+  await rootSession.saveMapIcon(path.resolve(assetsDirPath, 'happy_red.png'), event.id, forms[0].id)
 }
