@@ -83,7 +83,15 @@ export class GeoJsonFormatter implements ObservationArchiver {
       geometry: observation.geometry,
       properties: {
         timestamp: observation.properties.timestamp,
-        user: user?.displayName,
+        user: {
+          id: user?.id,
+          name: user?.displayName
+        },
+        event: {
+          id: event.id,
+          name: event.name,
+          description: event.description
+        },
         forms,
       }
     }
