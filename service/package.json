@@ -136,6 +136,7 @@
     "openapi-enforcer": "1.15.5",
     "prettier": "^1.19.1",
     "proxyquire": "2.1.3",
+    "rimraf": "^5.0.5",
     "sinon": "7.5.0",
     "sinon-chai": "3.3.0",
     "sinon-mongoose": "2.3.0",
@@ -166,6 +167,7 @@
     "test:run": "mocha --config .mocharc.js",
     "test:build": "npm-run-all build test:compile test:copy_resources test:copy_node_modules",
     "test": "npm-run-all test:build test:run",
+    "functionalTests:clean": "rimraf scratch/functionalTests/*",
     "functionalTests:compile": "tsc -b functionalTests",
     "functionalTests:copy_certs": "cpy --cwd=functionalTests 'certs/*.pem' '../functionalTests-lib/certs/'",
     "functionalTests:copy_configs": "cpy --cwd=functionalTests 'config/*.json' '../functionalTests-lib/config/'",
@@ -173,7 +175,7 @@
     "functionalTests:copy_node_modules": "cpy --cwd=functionalTests 'node_modules/**/*' '../functionalTests-lib/node_modules/'",
     "functionalTests:run": "mocha --config .mocharc.functionalTests.js",
     "functionalTests:build": "npm-run-all build functionalTests:compile functionalTests:copy_certs functionalTests:copy_configs functionalTests:copy_node_modules functionalTests:copy_assets",
-    "functionalTests": "npm-run-all functionalTests:build functionalTests:run",
+    "functionalTests": "npm-run-all functionalTests:clean functionalTests:build functionalTests:run",
     "report": "nyc report",
     "coverage": "nyc mocha",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
@@ -183,7 +185,7 @@
     "migration:run": "node bin/migration.js run",
     "start": "node lib/app.js",
     "debug": "node --inspect-brk=9229 lib/app.js",
-    "clean": "rm -rf lib test-lib functionalTests-lib",
+    "clean": "rimraf lib test-lib functionalTests-lib",
     "ci:test": "npm-run-all test:compile test:copy_resources test:copy_node_modules test:run"
   },
   "config": {
