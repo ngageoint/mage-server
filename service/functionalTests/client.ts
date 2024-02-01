@@ -1,11 +1,11 @@
 import buffer from 'buffer'
-import fs_async from 'fs/promises'
+import fs from 'fs'
 import path from 'path'
-import stream from 'stream/web'
 import { URLSearchParams } from 'url'
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import geojson from 'geojson'
 import uniqid from 'uniqid'
+import { Readable } from 'stream'
 
 export class MageClientSession {
 
@@ -104,32 +104,24 @@ export class MageClientSession {
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number, primaryValue: string): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number, primaryValue: string, secondaryValue: string): Promise<AxiosResponse<MapIcon>>
-  saveMapIcon(data: buffer.Buffer | stream.ReadableStream, iconName: string, eventId: MageEventId, formId: number): Promise<AxiosResponse<MapIcon>>
-  saveMapIcon(data: buffer.Buffer | stream.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string): Promise<AxiosResponse<MapIcon>>
-  saveMapIcon(data: buffer.Buffer | stream.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string, secondaryValue: string): Promise<AxiosResponse<MapIcon>>
+  saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number): Promise<AxiosResponse<MapIcon>>
+  saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string): Promise<AxiosResponse<MapIcon>>
+  saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string, secondaryValue: string): Promise<AxiosResponse<MapIcon>>
   async saveMapIcon(...args: any[]): Promise<AxiosResponse<MapIcon>> {
-    const [ data, iconName, eventId, formId, primary, variant ] = await (async (): Promise<[ data: Buffer | stream.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ]> => {
+    const [ data, iconName, eventId, formId, primary, variant ] = await (async (): Promise<[ data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ]> => {
       if (typeof args[0] === 'string') {
         const [ filePath, eventId, formId, primary, variant ] = args
         const iconName = path.basename(filePath)
-        const fh = await fs_async.open(filePath)
-        const data = fh.readableWebStream()
+        const data = await fs.createReadStream(filePath)
         return [ data, iconName, eventId, formId, primary, variant ]
       }
       return [ args[0], args[1], args[2], args[3], args[4], args[5] ]
     })()
     const primaryPath = primary ? `/${primary}` : ''
-    const variantPath = primary && variant ? '/${variant}' : ''
+    const variantPath = primary && variant ? `/${variant}` : ''
     const form = new FormData()
-    const blob = new buffer.Blob([])
-    blob.stream = (): stream.ReadableStream => data instanceof stream.ReadableStream ? data : new stream.ReadableStream({
-      async start(controller): Promise<void> {
-        for await (const chunk of data) {
-          controller.enqueue(chunk)
-        }
-      }
-    })
-    form.append('icon', blob as any, iconName)
+    const blobDuck = BlobDuck(data, iconName)
+    form.set('icon', blobDuck, iconName)
     return await this.http.postForm(`/api/events/${eventId}/icons/${formId}${primaryPath}${variantPath}`, form)
   }
 
@@ -139,11 +131,15 @@ export class MageClientSession {
       const id = newIdRes.data.id as string
       mod.id = id
     }
-    const saved = await this.http.put<Observation>(`/api/events/${mod.eventId}/observations/${mod.id}`).then(x => x.data)
+    const savedObs = await this.http.put<Observation>(`/api/events/${mod.eventId}/observations/${mod.id}`).then(x => x.data)
     for (const upload of attachmentUploads) {
-      await savedAttachmentForMod(upload.attachmentInfo, saved)
+      const [ savedAttachment ] = savedAttachmentForMod(upload.attachmentInfo, savedObs)
+      if (!savedAttachment) {
+        throw new Error(`no saved attachment matches upload id ${upload.attachmentInfo.id} on observation ${savedObs.id}`)
+      }
+      await this.saveAttachmentContent(upload.attachmentContent(), savedAttachment, savedObs)
     }
-    return await this.readObservation(saved.eventId, saved.id)
+    return await this.readObservation(savedObs.eventId, savedObs.id)
   }
 
   async saveAttachmentContent(content: NodeJS.ReadableStream, attachment: Attachment, observation: Observation): Promise<Attachment> {
@@ -207,6 +203,27 @@ export class MageClientSession {
       })
     }.bind(this))
   }
+}
+
+/**
+ *
+ * Looks an quacks like a Blob.  A hack from https://github.com/nodejs/undici/issues/2202#issuecomment-1664134203
+ * to create an object that _looks_ like a Blob that Axios can consume.
+ * Could maybe also use `form-data` package which should except Node streams
+ * natively, but not sure if that works with Axios.
+ * TODO: mage api should support a simple PUT with content-type header
+ */
+function BlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, name: string): Blob {
+  return {
+    [Symbol.toStringTag]: 'File',
+    name,
+    stream(): NodeJS.ReadableStream {
+      if (source instanceof buffer.Buffer) {
+        return Readable.from(source)
+      }
+      return source
+    }
+  } as any
 }
 
 export type ISODateString = string
