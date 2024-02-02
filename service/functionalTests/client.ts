@@ -93,7 +93,7 @@ export class MageClientSession {
     return await this.http.post('/api/events', mageEvent)
   }
 
-  async readEvent(id: MageEventId): Promise<AxiosResponse<MageEvent>> {
+  async readEvent(id: MageEventId): Promise<AxiosResponse<MageEventPopulated>> {
     return await this.http.get(`/api/events/${id}`)
   }
 
@@ -125,13 +125,19 @@ export class MageClientSession {
     return await this.http.postForm(`/api/events/${eventId}/icons/${formId}${primaryPath}${variantPath}`, form)
   }
 
-  async saveObservation(mod: ObservationMod, attachmentUploads: AttachmentUpload[]): Promise<Observation> {
+  async addParticipantToEvent(event: MageEventPopulated, participantId: UserId): Promise<AxiosResponse<any>> {
+    const eventTeam = event.teams.find(x => x.teamEventId === event.id)!
+    return await this.http.post(`/api/teams/${eventTeam.id}/users`, { id: participantId })
+  }
+
+  async saveObservation(mod: ObservationMod, attachmentUploads?: AttachmentUpload[]): Promise<Observation> {
+    attachmentUploads = attachmentUploads || []
     if (mod.id === null) {
       const newIdRes = await this.http.post(`/api/events/${mod.eventId}/observations/id`)
       const id = newIdRes.data.id as string
       mod.id = id
     }
-    const savedObs = await this.http.put<Observation>(`/api/events/${mod.eventId}/observations/${mod.id}`).then(x => x.data)
+    const savedObs = await this.http.put<Observation>(`/api/events/${mod.eventId}/observations/${mod.id}`, mod).then(x => x.data)
     for (const upload of attachmentUploads) {
       const [ savedAttachment ] = savedAttachmentForMod(upload.attachmentInfo, savedObs)
       if (!savedAttachment) {
@@ -148,6 +154,10 @@ export class MageClientSession {
     return await this.http.put(
       `/api/events/${observation.eventId}/observations/${observation.id}/attachments/${attachment.id}`, form)
       .then(x => x.data)
+  }
+
+  async readObservations(eventId: MageEventId): Promise<Observation[]> {
+    return await this.http.get<Observation[]>(`/api/events/${eventId}/observations`).then(x => x.data)
   }
 
   async readObservation(eventId: MageEventId, observationId: ObservationId): Promise<Observation> {
@@ -284,7 +294,20 @@ export interface MageEvent {
   feedIds: string[]
 }
 
+export type MageEventPopulated = Omit<MageEvent, 'teamIds'> & {
+  teams: Team[]
+}
+
 export type MageEventId = number
+
+export interface Team {
+  id: string
+  name: string
+  description?: string
+  teamEventId?: null | MageEventId
+  userIds: UserId[]
+  acl: any
+}
 
 export interface MageForm {
   id: MageFormId
@@ -530,7 +553,7 @@ export function savedAttachmentForMod(mod: AttachmentMod, observation: Observati
   return [ attachment, pos ]
 }
 
-export type AttachmentMod = Partial<Attachment> & {
+export type AttachmentMod = Partial<Omit<Attachment, 'observationFormId'>> & {
   action?: AttachmentModAction
   id?: any
 }
