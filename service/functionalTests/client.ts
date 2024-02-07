@@ -84,6 +84,10 @@ export class MageClientSession {
     return await this.http.post(`/api/users`, body)
   }
 
+  async deleteUser(userId: UserId): Promise<AxiosResponse> {
+    return await this.http.delete(`/api/users/${userId}`)
+  }
+
   async listEvents(): Promise<Event[]> {
     const res = await this.http.get('/api/events')
     return res.data
@@ -190,35 +194,31 @@ export class MageClientSession {
     return res
   }
 
-  async startExport(eventId: MageEventId, opts: ExportOptions): Promise<Export> {
+  async startExport(eventId: MageEventId, opts: ExportOptions): Promise<ExportInfo> {
     const optsJson: ExportRequestJson = {
       ...opts,
       eventId,
       startDate: opts.startDate?.toISOString(),
       endDate: opts.endDate?.toISOString(),
     }
-    return await this.http.post<Export>(`/api/exports`, optsJson).then(x => x.data)
+    return await this.http.post<ExportInfo>(`/api/exports`, optsJson).then(x => x.data)
   }
 
-  async readExport(id: ExportId): Promise<Export> {
-    return await this.http.get<Export>(`/api/exports/${id}`).then(x => x.data)
+  async readExport(id: ExportId): Promise<ExportInfo> {
+    return await this.http.get<ExportInfo>(`/api/exports/${id}`).then(x => x.data)
   }
 
-  async waitForExport(id: ExportId, timeoutMillis: number = 15000): Promise<Export> {
-    const exportInfo = await this.readExport(id)
-    if (exportInfo.status === ExportStatus.Completed || exportInfo.status === ExportStatus.Failed) {
-      return exportInfo
-    }
+  async waitForExport(id: ExportId, timeoutMillis: number = 5000): Promise<ExportInfo | ExportTimeoutError> {
     const start = Date.now()
-    return new Promise<Export>(function tryAgain(this: MageClientSession, resolve: any, reject: any): void {
+    return new Promise<ExportInfo>(function tryAgain(this: MageClientSession, resolve: any, reject: any): void {
       this.readExport(id).then(exportInfo => {
         if (Date.now() - start > timeoutMillis) {
-          return reject(new ExportTimeoutError(exportInfo, `timed out after ${timeoutMillis}ms waiting for export ${id}`))
+          return resolve(new ExportTimeoutError(exportInfo, `timed out after ${timeoutMillis}ms waiting for export ${id}`))
         }
         if (exportInfo.status === ExportStatus.Completed || exportInfo.status === ExportStatus.Failed) {
           return resolve(exportInfo)
         }
-        setTimeout(() => tryAgain.bind(this)(resolve, reject), 250)
+        setTimeout(() => tryAgain.bind(this)(resolve, reject), 150)
       })
     }.bind(this))
   }
@@ -577,7 +577,7 @@ export interface AttachmentUpload {
   attachmentContent: () => NodeJS.ReadableStream
 }
 
-interface Export {
+export interface ExportInfo {
   id: ExportId
   userId: UserId
   exportType: ExportFormat
@@ -639,7 +639,7 @@ export interface ExportError {
 }
 
 export class ExportTimeoutError extends Error {
-  constructor(readonly exportInfo: Export, message: string) {
+  constructor(readonly exportInfo: ExportInfo, message: string) {
     super(message)
   }
 }

@@ -401,7 +401,7 @@ const deletedUserObservationSeed: ObservationSeed = {
   }
 }
 
-export async function populateFixtureData(stack: TestStack, rootSession: MageClientSession): Promise<void> {
+export async function populateFixtureData(stack: TestStack, rootSession: MageClientSession): Promise<ExportTestFixture> {
 
   const roles = await rootSession.listRoles().then(x => x.data)
   const userRole = roles.find(x => x.name === 'USER_ROLE')!
@@ -462,6 +462,30 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   expect(archivedForm.name).to.equal('form4')
   expect(archivedForm.archived).to.be.true
 
+  const user2Session = new MageClientSession(rootSession.mageUrl)
+  const user2SignInError = await user2Session.signIn(usersSeed[1].username, usersSeed[1].password, rootSeed.uid)
+
+  expect(user2SignInError).not.to.exist
+
+  const deletedUserObservation = await user2Session.saveObservation(observationModForSeed(deletedUserObservationSeed, eventWithForms))
+
+  expect(new Date(deletedUserObservation.createdAt).getTime()).to.be.closeTo(Date.now(), 100)
+
+  const userDeleted = await rootSession.deleteUser(user2Session.user.id)
+
+  expect(userDeleted.status).to.equal(204)
+
   const allObs = await user1Session.readObservations(event.id)
-  console.info(allObs)
+
+  expect(allObs.length).to.equal(Object.keys(observationTestCases).length + 1)
+
+  const finalEvent = await rootSession.readEvent(event.id).then(res => res.data)
+
+  return {
+    event: finalEvent,
+  }
+}
+
+export interface ExportTestFixture {
+  event: MageEventPopulated
 }
