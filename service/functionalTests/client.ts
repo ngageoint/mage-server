@@ -101,6 +101,15 @@ export class MageClientSession {
     return await this.http.post(`/api/events/${mageEventId}/forms`, form)
   }
 
+  async archiveForm(mageEvent: MageEvent | MageEventPopulated, formId: MageFormId): Promise<AxiosResponse<MageForm>> {
+    const form = mageEvent.forms.find(x => x.id === formId)
+    if (!form) {
+      throw new Error(`form ${formId} does not exist on event ${mageEvent.id}`)
+    }
+    const archived = { ...form, archived: true }
+    return this.http.put(`/api/events/${mageEvent.id}/forms/${formId}`, archived)
+  }
+
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number, primaryValue: string): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(filePath: string, eventId: MageEventId, formId: number, primaryValue: string, secondaryValue: string): Promise<AxiosResponse<MapIcon>>
