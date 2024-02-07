@@ -1,12 +1,14 @@
 import { expect } from 'chai'
-import { MageClientSession } from '../client'
+import { ExportInfo, ExportFormat, MageClientSession, ExportStatus } from '../client'
 import { ChildProcessTestStackRef, launchTestStack } from '../stack'
-import * as fixture from './fixture'
+import * as Fixture from './fixture'
 
 
 describe('exports', function() {
 
   let stack: ChildProcessTestStackRef
+  let rootSession: MageClientSession
+  let fixture: Fixture.ExportTestFixture
 
   this.timeout(15000)
 
@@ -16,17 +18,17 @@ describe('exports', function() {
 
   before('initialize fixture data', async function() {
 
-    const rootSession = new MageClientSession(stack.mageUrl)
-    const rootSetup = await rootSession.setupRootUser(fixture.rootSeed).then(x => x.data)
+    rootSession = new MageClientSession(stack.mageUrl)
+    const rootSetup = await rootSession.setupRootUser(Fixture.rootSeed).then(x => x.data)
 
-    expect(rootSetup.user.username, 'unexpected root user').to.equal(fixture.rootSeed.username)
-    expect(rootSetup.device.uid, 'unexpected root device').to.equal(fixture.rootSeed.uid)
+    expect(rootSetup.user.username, 'unexpected root user').to.equal(Fixture.rootSeed.username)
+    expect(rootSetup.device.uid, 'unexpected root device').to.equal(Fixture.rootSeed.uid)
 
-    const signInError = await rootSession.signIn(fixture.rootSeed.username, fixture.rootSeed.password, fixture.rootSeed.uid)
+    const signInError = await rootSession.signIn(Fixture.rootSeed.username, Fixture.rootSeed.password, Fixture.rootSeed.uid)
 
     expect(signInError).to.not.exist
 
-    const fixtureData = await fixture.populateFixtureData(rootSession)
+    fixture = await Fixture.populateFixtureData(stack, rootSession)
   })
 
   after('stop stack', async function() {
@@ -35,6 +37,19 @@ describe('exports', function() {
 
   it('exports geopackage', async function() {
 
+    const pendingExport = await rootSession.startExport(
+      fixture.event.id,
+      {
+        exportType: ExportFormat.GeoPackage,
+        observations: true,
+        locations: true,
+        attachments: true,
+      }
+    )
+    const finishedExport = await rootSession.waitForExport(pendingExport.id) as ExportInfo
+
+    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 
   it('exports kml', async function() {
