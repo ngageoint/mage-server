@@ -387,17 +387,19 @@ export class GeoPackage extends Exporter {
     let zoomToEnvelope: Envelope;
     return cursor.eachAsync(async observation => {
 
+      console.debug('exporting observation', observation.id, '...')
       numObservations++;
 
-      let primary: string | null = null;
-      let variant: string | null = null;
-      if (observation.properties.forms && observation.properties.forms.length > 0) {
-        const formEntry1 = observation.properties.forms[0];
-        const form = this._event.formFor(formEntry1.formId);
-        primary = (formEntry1[form?.primaryField || ''] || null) as string | null;
-        variant = (formEntry1[form?.variantField || ''] || null) as string | null;
+      if (!Array.isArray(observation.properties.forms)) {
+        return
       }
-
+      const primaryEntry = observation.properties.forms[0]
+      if (!primaryEntry) {
+        return
+      }
+      const form = this._event.formFor(primaryEntry.formId)
+      const primary = form?.primaryField ? String(primaryEntry[form.primaryField]) : null
+      const variant = form?.primaryField && form?.variantField ? String(primaryEntry[form.variantField]) : null
       const properties: any = {
         lastModified: observation.lastModified,
         timestamp: observation.properties.timestamp,
@@ -422,25 +424,24 @@ export class GeoPackage extends Exporter {
       zoomToEnvelope = calculateBounds(feature.geometry, zoomToEnvelope);
 
       const featureId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Observations');
-
-      if (observation.properties.forms && observation.properties.forms[0]) {
-        // insert the icon link
-        let iconId = this.iconMap[observation.properties.forms[0].formId]['icon.png'];
-        if (primary && this.iconMap[observation.properties.forms[0].formId][primary]) {
-          iconId = this.iconMap[observation.properties.forms[0].formId][primary]['icon.png'];
-          if (variant && this.iconMap[observation.properties.forms[0].formId][primary] && this.iconMap[observation.properties.forms[0].formId][primary][variant]) {
-            iconId = this.iconMap[observation.properties.forms[0].formId][primary][variant];
-          }
+      // insert the icon link
+      let iconId = this.iconMap[primaryEntry.formId]['icon.png'];
+      if (primary && this.iconMap[primaryEntry.formId][primary]) {
+        iconId = this.iconMap[primaryEntry.formId][primary]['icon.png'];
+        if (variant && this.iconMap[primaryEntry.formId][primary] && this.iconMap[primaryEntry.formId][primary][variant]) {
+          iconId = this.iconMap[primaryEntry.formId][primary][variant];
         }
+      }
+      if (iconId) {
         const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Observations');
         featureTableStyles.setIconDefault(featureId, iconId)
       }
 
       const formEntries = observation.properties.forms || []
       for (const formEntry of formEntries) {
-        const formDefinition = this._event.formFor(formEntry.formId)!;
-        const primary = formEntry[formDefinition.primaryField || ''];
-        const variant = formEntry[formDefinition.variantField || ''];
+        const form = this._event.formFor(formEntry.formId)!;
+        const primary = form.primaryField ? String(formEntry[form.primaryField]) : null
+        const variant = form.primaryField && form.variantField ? String(formEntry[form.variantField]) : null
         const formToSave = {
           primaryField: primary,
           variantField: variant,
@@ -462,7 +463,7 @@ export class GeoPackage extends Exporter {
           if (fieldEntry === null || fieldEntry === undefined) {
             return
           }
-          const field = this._event.formFieldFor(key, formDefinition.id)
+          const field = this._event.formFieldFor(key, form.id)
           if (!field) {
             return
           }
