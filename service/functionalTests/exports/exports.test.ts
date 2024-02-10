@@ -46,7 +46,7 @@ describe('exports', function() {
         attachments: true,
       }
     )
-    const finishedExport = await rootSession.waitForExport(pendingExport.id) as ExportInfo
+    const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
 
     expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
     expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
@@ -54,6 +54,19 @@ describe('exports', function() {
 
   it('exports kml', async function() {
 
+    const pendingExport = await rootSession.startExport(
+      fixture.event.id,
+      {
+        exportType: ExportFormat.KML,
+        observations: true,
+        locations: true,
+        attachments: true,
+      }
+    )
+    const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
+
+    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 
   it('exports csv', async function() {

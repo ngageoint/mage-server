@@ -204,14 +204,33 @@ export class MageClientSession {
     return await this.http.post<ExportInfo>(`/api/exports`, optsJson).then(x => x.data)
   }
 
-  async readExport(id: ExportId): Promise<ExportInfo> {
-    return await this.http.get<ExportInfo>(`/api/exports/${id}`).then(x => x.data)
+  async readAllExports(): Promise<ExportInfo[]> {
+    return await this.http.get<ExportInfo[]>('/api/exports').then(x => x.data)
   }
 
-  async waitForExport(id: ExportId, timeoutMillis: number = 5000): Promise<ExportInfo | ExportTimeoutError> {
+  async readMyExports(): Promise<ExportInfo[]> {
+    return await this.http.get<ExportInfo[]>('/api/exports/myself').then(x => x.data)
+  }
+
+  async downloadExport(exportId: ExportId): Promise<buffer.Buffer> {
+    return await this.http.get<buffer.Buffer>(`/api/exports/${exportId}`).then(x => x.data)
+  }
+
+  /**
+   * Wait for the given export to complete.  The request user must have
+   * permission to access the export, i.e., they created the export or have
+   * admin priveleges.  Resolve to `null` if no export for the given ID exists.
+   * Resolve to an `ExportTimeoutError` if timeout passes before the export
+   * completes or fails.
+   */
+  async waitForMyExport(id: ExportId, timeoutMillis: number = 5000): Promise<ExportInfo | null | ExportTimeoutError> {
     const start = Date.now()
     return new Promise<ExportInfo>(function tryAgain(this: MageClientSession, resolve: any, reject: any): void {
-      this.readExport(id).then(exportInfo => {
+      this.readMyExports().then(exports => {
+        const exportInfo = exports.find(x => x.id === id)
+        if (!exportInfo) {
+          return resolve(null)
+        }
         if (Date.now() - start > timeoutMillis) {
           return resolve(new ExportTimeoutError(exportInfo, `timed out after ${timeoutMillis}ms waiting for export ${id}`))
         }
