@@ -9,7 +9,7 @@ import { Exporter } from './exporter'
 import * as writer from './kmlWriter'
 import api from '../api'
 import environment from '../environment/env'
-import Icon from '../models/icon'
+import Icon, { IconDocument } from '../models/icon'
 import User from '../models/user'
 import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
 
@@ -54,10 +54,11 @@ export class Kml extends Exporter {
 
   streamObservations (stream: stream.PassThrough, archive: archiver.Archiver, done: async.AsyncResultCallback<any>): void {
     log.info("Retrieving icons from DB for the event " + this._event.name);
-    Icon.getAll({ eventId: this._event.id }, (err: any, icons: any[]) => {
+    Icon.getAll({ eventId: this._event.id }, (err: any, icons?: IconDocument[]) => {
       if (err) {
         return done(err)
       }
+      icons = icons || []
       log.info(`retrieved ${icons.length} icons`)
       stream.write(writer.generateObservationStyles(this.eventDoc, icons))
       stream.write(writer.generateKMLFolderStart(this._event.name))
