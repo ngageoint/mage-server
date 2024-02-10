@@ -10,6 +10,7 @@ import { FeatureRow } from '@ngageoint/geopackage/dist/lib/features/user/feature
 import geojson from 'geojson'
 import util from 'util'
 import fs from 'fs'
+import fs_async from 'fs/promises'
 import archiver from 'archiver'
 import moment from 'moment'
 import os from 'os'
@@ -21,8 +22,11 @@ import environment from '../environment/env'
 import User, { UserDocument } from '../models/user'
 import { UserLocationDocument } from '../models/location'
 import { UserId } from '../entities/users/entities.users'
-import { FormFieldType } from '../entities/events/entities.events.forms'
+import { FormFieldType, FormId } from '../entities/events/entities.events.forms'
 import { AttachmentDocument } from '../models/observation'
+import { IconRow } from '@ngageoint/geopackage/dist/lib/extension/style/iconRow'
+import { IconAttrs, IconDocument } from '../models/icon'
+import { MageEvent } from '../entities/events/entities.events'
 
 // TODO: we really need to revamp our logging
 const logger = require('../logger')
@@ -38,15 +42,14 @@ const attachmentBase = environment.attachmentBaseDirectory;
 
 export class GeoPackage extends Exporter {
 
-  private iconMap = {} as any
+  private iconCache = new IconTreeCache()
+  private observationStyles: GPKG.FeatureTableStyles | null = null
 
   async export(streamable: NodeJS.WritableStream): Promise<void> {
-    log.info('Export the GeoPackage');
-    const downloadedFileName = 'mage-' + this._event.name;
-
-    const archive = archiver('zip');
-    archive.pipe(streamable);
-
+    log.info(`export geopackage for event ${this._event.id} - ${this._event.name}:\n`, this._filter)
+    const downloadedFileName = 'mage-' + this._event.name
+    const archive = archiver('zip')
+    archive.pipe(streamable)
     try {
       const filePath = await createGeoPackageFile();
       const gp = await GeoPackageAPI.create(filePath);
@@ -56,25 +59,28 @@ export class GeoPackage extends Exporter {
         await this.addFormDataToGeoPackage(gp);
         await this.createFormAttributeTables(gp);
         await this.createObservationTable(gp);
-        await this.createObservationFeatureTableStyles(gp);
+        this.observationStyles = await this.createObservationFeatureTableStyles(gp);
         await this.addObservationsToGeoPackage(gp);
       }
       if (this._filter.exportLocations) {
         await this.addLocationsToGeoPackage(gp);
       }
-      log.info(`export geopackage created: ${filePath}`);
-      archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' });
-      archive.on('end', function () {
-        log.info(`removing temporary export geopackage file ${filePath}`);
-        fs.unlink(filePath, function () {
-          gp.close();
-        });
-      });
-      archive.finalize();
+      log.info(`export geopackage created: ${filePath}`)
+      archive.append(fs.createReadStream(filePath), { name: downloadedFileName + '.gpkg' })
+      archive.on('end', () => {
+        log.info(`removing temporary export geopackage file ${filePath}`)
+        fs.unlink(filePath, (err?: any) => {
+          if (err) {
+            console.warn('error removing temporary geopackage', filePath)
+          }
+          gp.close()
+        })
+      })
+      archive.finalize()
     }
     catch (err) {
-      log.error(`error exporting geopackage`, err);
-      throw err;
+      log.error(`error exporting geopackage`, err)
+      throw err
     }
   }
 
@@ -419,23 +425,18 @@ export class GeoPackage extends Exporter {
         type: 'Feature',
         geometry: observation.geometry,
         properties
-      };
-
-      zoomToEnvelope = calculateBounds(feature.geometry, zoomToEnvelope);
-
-      const featureId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Observations');
-      // insert the icon link
-      let iconId = this.iconMap[primaryEntry.formId]['icon.png'];
-      if (primary && this.iconMap[primaryEntry.formId][primary]) {
-        iconId = this.iconMap[primaryEntry.formId][primary]['icon.png'];
-        if (variant && this.iconMap[primaryEntry.formId][primary] && this.iconMap[primaryEntry.formId][primary][variant]) {
-          iconId = this.iconMap[primaryEntry.formId][primary][variant];
-        }
       }
-      if (iconId) {
-        const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Observations');
-        featureTableStyles.setIconDefault(featureId, iconId)
+
+      zoomToEnvelope = calculateBounds(feature.geometry, zoomToEnvelope)
+
+      const featureId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Observations')
+      const iconSpec = {
+        eventId: this._event.id,
+        formId: primaryEntry.formId,
+        primary,
+        variant,
       }
+      await this.linkObservationFeatureIcon(iconSpec, featureId)
 
       const formEntries = observation.properties.forms || []
       for (const formEntry of formEntries) {
@@ -516,136 +517,182 @@ export class GeoPackage extends Exporter {
     });
   }
 
-  async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
-    const featureTableName = 'Observations';
-    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
+  async createObservationFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<GPKG.FeatureTableStyles> {
+    const featureTableName = 'Observations'
+    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName)
     await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName)
     await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension()
     await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension()
     featureTableStyles.createRelationships()
-    await this.addObservationIcons(geopackage, featureTableStyles);
+    const defaultIconAccess = new api.Icon(this._event.id)
+    const defaultIconDoc = await util.promisify(defaultIconAccess.getIcon.bind(defaultIconAccess))()
+    if (!defaultIconDoc || isNothing(defaultIconDoc.path)) {
+      return featureTableStyles
+    }
+    try {
+      const iconBytes = await fs_async.readFile(defaultIconDoc.path)
+      const gpkgIconRow = featureTableStyles.getIconDao().newRow()
+      gpkgIconRow.data = iconBytes
+      populateGpkgIconRow(gpkgIconRow, defaultIconDoc, this._event)
+      featureTableStyles.setTableIconDefault(gpkgIconRow)
+      this.iconCache.put(defaultIconDoc, gpkgIconRow.id)
+    }
+    catch (err) {
+      console.warn('error setting default icon', defaultIconDoc.path)
+    }
+    return featureTableStyles
   }
 
-  async addObservationIcons(geopackage: GPKG.GeoPackage, featureTableStyles: GPKG.FeatureTableStyles): Promise<void> {
-    const rootDir = path.join(new api.Icon(this._event.id).getBasePath());
-
-    if (!fs.existsSync(path.join(rootDir))) {
-      return;
+  async linkObservationFeatureIcon(iconSpec: IconCachePath, featureId: number): Promise<void> {
+    const iconId = await this.ensureIconInGeopackage(iconSpec)
+    if (iconId === null) {
+      return
     }
+    const styleExt = this.observationStyles!.getFeatureStyleExtension()
+    const iconMappingDao = this.observationStyles!.getIconMappingDao()
+    styleExt.insertStyleMapping(iconMappingDao, featureId, iconId)
+  }
 
-    const formDirs = fs.readdirSync(path.join(rootDir));
-    for (let i = 0; i < formDirs.length; i++) {
-      const formDir = formDirs[i];
-      this.iconMap[formDir] = this.iconMap[formDir] || {};
-      if (!fs.existsSync(path.join(rootDir, formDir))) {
-        continue;
-      }
-      if (formDir === 'icon.png') {
-        await new Promise((resolve, reject) => {
-          fs.readFile(path.join(rootDir, formDir), async (err, iconBuffer) => {
-            if (err) return reject(err);
-            const iconRow = featureTableStyles.getIconDao().newRow();
-            iconRow.data = iconBuffer;
-            iconRow.contentType = 'image/png';
-            iconRow.name = `${this._event.name} icon`;
-            iconRow.description = `Icon for event ${this._event.name}`;
-            iconRow.width = 20;
-            iconRow.anchorU = 0.5;
-            iconRow.anchorV = 1.0;
-            this.iconMap[formDir] = iconRow;
-            await featureTableStyles.setTableIconDefault(iconRow);
-            resolve(void(0));
-          });
-        });
-      } else {
-        const primaryDirs = fs.readdirSync(path.join(rootDir, formDir));
-        for (let p = 0; p < primaryDirs.length; p++) {
-          const primaryDir = primaryDirs[p];
-          if (!fs.existsSync(path.join(rootDir, formDir, primaryDir))) {
-            continue;
-          }
-          if (primaryDir === 'icon.png') {
-            await new Promise((resolve, reject) => {
-              fs.readFile(path.join(rootDir, formDir, primaryDir), (err, iconBuffer) => {
-                if (err) return reject(err);
-                const iconRow = featureTableStyles.getIconDao().newRow();
-                iconRow.data = iconBuffer;
-                iconRow.contentType = 'image/png';
-                iconRow.name = formDir;
-                iconRow.description = `Icon for form ${formDir}/icon.png`;
-                iconRow.width = 20;
-                iconRow.anchorU = 0.5;
-                iconRow.anchorV = 1.0;
-                this.iconMap[formDir]['icon.png'] = iconRow;
-                resolve(void(0));
-              });
-            });
-          } else {
-            this.iconMap[formDir][primaryDir] = this.iconMap[formDir][primaryDir] || {};
-            const variantDirs = fs.readdirSync(path.join(rootDir, formDir, primaryDir));
-            for (let v = 0; v < variantDirs.length; v++) {
-              const variantDir = variantDirs[v];
-              if (!fs.existsSync(path.join(rootDir, formDir, primaryDir, variantDir))) {
-                continue;
-              }
-              if (variantDir === 'icon.png') {
-                await new Promise((resolve, reject) => {
-                  fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir), (err, iconBuffer) => {
-                    if (err) return reject(err);
-                    const iconRow = featureTableStyles.getIconDao().newRow();
-                    iconRow.data = iconBuffer;
-                    iconRow.contentType = 'image/png';
-                    iconRow.name = primaryDir;
-                    iconRow.description = `Icon for form ${formDir}/${primaryDir}/icon.png`;
-                    iconRow.width = 20;
-                    iconRow.anchorU = 0.5;
-                    iconRow.anchorV = 1.0;
-                    this.iconMap[formDir][primaryDir]['icon.png'] = iconRow;
-                    resolve(void(0));
-                  });
-                });
-              } else {
-                this.iconMap[formDir][primaryDir][variantDir] = this.iconMap[formDir][primaryDir][variantDir] || {};
-                if (!fs.existsSync(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'))) {
-                  continue;
-                }
-                await new Promise((resolve, reject) => {
-                  fs.readFile(path.join(rootDir, formDir, primaryDir, variantDir, 'icon.png'), (err, iconBuffer) => {
-                    if (err) return reject(err);
-                    const iconRow = featureTableStyles.getIconDao().newRow();
-                    iconRow.data = iconBuffer;
-                    iconRow.contentType = 'image/png';
-                    iconRow.name = variantDir;
-                    iconRow.description = `Icon for form ${formDir}/${primaryDir}/${variantDir}/icon.png`;
-                    iconRow.width = 20;
-                    iconRow.anchorU = 0.5;
-                    iconRow.anchorV = 1.0;
-                    this.iconMap[formDir][primaryDir][variantDir]['icon.png'] = iconRow;
-                    resolve(void(0));
-                  });
-                });
-              }
-            }
-          }
-        }
-      }
+  async ensureIconInGeopackage(iconSpec: IconCachePath): Promise<IconRow['id'] | null> {
+    const cachedIconId = this.iconCache.get(iconSpec)
+    if (cachedIconId === IconTreeCache.ICON_LOAD_ERROR) {
+      return null
     }
+    if (cachedIconId !== null) {
+      return cachedIconId
+    }
+    const iconAccess = new api.Icon(this._event.id, iconSpec.formId, iconSpec.primary, iconSpec.variant)
+    const iconDoc = await util.promisify(iconAccess.getIcon.bind(iconAccess))()
+    if (!iconDoc || isNothing(iconDoc.path)) {
+      return null
+    }
+    try {
+      const iconBytes = await fs_async.readFile(iconDoc.path)
+      const gpkgIconRow = this.observationStyles!.getIconDao().newRow()
+      gpkgIconRow.data = iconBytes
+      populateGpkgIconRow(gpkgIconRow, iconDoc, this._event)
+      const id = this.observationStyles!.getIconDao().create(gpkgIconRow)
+      this.iconCache.put(iconDoc, id)
+      return id
+    }
+    catch (err) {
+      console.warn('error adding icon', iconDoc.path, err)
+    }
+    this.iconCache.put(iconDoc, IconTreeCache.ICON_LOAD_ERROR)
+    return null
   }
 }
 
+function populateGpkgIconRow(gpkgIconRow: IconRow, iconDoc: IconDocument, mageEvent: MageEvent): IconRow {
+  gpkgIconRow.contentType = 'image/png'
+  gpkgIconRow.width = 20
+  gpkgIconRow.anchorU = 0.5
+  gpkgIconRow.anchorV = 1.0
+  const defaultName = `${mageEvent.name} default`
+  const name = ((): string => {
+    if (isNothing(iconDoc.formId)) {
+      if (isNothing(iconDoc.primary)) {
+        if (isNothing(iconDoc.variant)) {
+          return defaultName
+        }
+        return iconDoc.variant
+      }
+      return iconDoc.primary
+    }
+    const form = mageEvent.formFor(iconDoc.formId)
+    if (!form) {
+      return defaultName
+    }
+    return `${form.name} icon`
+  })()
+  gpkgIconRow.name = name
+  return gpkgIconRow
+}
+
+function isNothing(wut: any): wut is undefined | null | ''  {
+  return wut === null || wut === undefined || wut === '' || (typeof wut === 'number' && isNaN(wut))
+}
+
+class IconTreeCache {
+
+  static readonly ICON_LOAD_ERROR = Number.MIN_SAFE_INTEGER
+
+  readonly root: IconTreeCacheNode = new IconTreeCacheNode()
+
+  constructor() {}
+
+  get(icon: IconCachePath): IconRow['id'] | null {
+    const { formId, primary, variant } = icon
+    if (!isNothing(formId)) {
+      const formNode = this.root.children[formId]
+      if (formNode) {
+        if (!isNothing(primary)) {
+          const primaryNode = formNode.children[primary]
+          if (primaryNode) {
+            if (!isNothing(variant)) {
+              const variantNode = primaryNode.children[variant]
+              return variantNode?.gpkgIconId || null
+            }
+            return primaryNode.gpkgIconId
+          }
+          return null
+        }
+        return formNode.gpkgIconId
+      }
+      return null
+    }
+    return this.root.gpkgIconId
+  }
+
+  put(icon: IconDocument, gpkgIconId: IconRow['id']): this {
+    const node = this.ensurePathNodes(icon)
+    node.gpkgIconId = gpkgIconId
+    return this
+  }
+
+  private ensurePathNodes(path: IconCachePath): IconTreeCacheNode {
+    const { formId, primary, variant } = path
+    if (!isNothing(formId)) {
+      const formNode = this.root.children[formId] = this.root.children[formId] || new IconTreeCacheNode()
+      if (!isNothing(primary)) {
+        const primaryNode = formNode.children[primary] = formNode.children[primary] || new IconTreeCacheNode()
+        if (!isNothing(variant)) {
+          return primaryNode.children[variant] = primaryNode.children[variant] || new IconTreeCacheNode()
+        }
+        return primaryNode
+      }
+      return formNode
+    }
+    return this.root
+  }
+}
+
+class IconTreeCacheNode {
+
+  gpkgIconId: IconRow['id'] | null = null
+  readonly children: { [key: FormId | string]: IconTreeCacheNode | undefined }
+
+  constructor(gpkgRowId: number | null = null, children: IconTreeCacheNode['children'] = {}) {
+    this.gpkgIconId = isNothing(gpkgRowId) ? null : gpkgRowId
+    this.children = children
+  }
+}
+
+type IconCachePath = Pick<IconAttrs, 'formId' | 'primary' | 'variant'>
+
 function  createGeoPackageFile(): Promise<string> {
-  const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg';
-  const filePath = path.join(os.tmpdir(), filename);
+  const filename = moment().format('YYYMMDD_hhmmssSSS') + '.gpkg'
+  const filePath = path.join(os.tmpdir(), filename)
   return new Promise(function (resolve, reject) {
     fs.unlink(filePath, function () {
       fs.mkdir(path.dirname(filePath), function () {
         fs.open(filePath, 'w', function (err) {
-          if (err) return reject(err);
-          resolve(filePath);
-        });
-      });
-    });
-  });
+          if (err) return reject(err)
+          resolve(filePath)
+        })
+      })
+    })
+  })
 }
 
 function calculateBounds(geometry: geojson.Geometry, zoomToEnvelope: Envelope | null): Envelope {
