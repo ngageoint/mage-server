@@ -32,7 +32,7 @@ export class MageClientSession {
     this.http.interceptors.response.use(
       res => res,
       err => {
-        console.error(err)
+        console.error(err.response)
         return Promise.reject(err)
       }
     )
@@ -163,7 +163,8 @@ export class MageClientSession {
 
   async saveAttachmentContent(content: NodeJS.ReadableStream, attachment: Attachment, observation: Observation): Promise<Attachment> {
     const form = new FormData()
-    form.append('attachment', content as any, attachment.name)
+    const blobDuck = BlobDuck(content, String(attachment.name), attachment.contentType)
+    form.set('attachment', blobDuck, blobDuck.name)
     return await this.http.put(
       `/api/events/${observation.eventId}/observations/${observation.id}/attachments/${attachment.id}`, form)
       .then(x => x.data)
@@ -251,10 +252,11 @@ export class MageClientSession {
  * natively, but not sure if that works with Axios.
  * TODO: mage api should support a simple PUT with content-type header
  */
-function BlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, name: string): Blob {
+function BlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, name: string, contentType?: string): Blob {
   return {
     [Symbol.toStringTag]: 'File',
     name,
+    type: contentType,
     stream(): NodeJS.ReadableStream {
       if (source instanceof buffer.Buffer) {
         return Readable.from(source)
