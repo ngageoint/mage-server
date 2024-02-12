@@ -20,9 +20,10 @@
 // location with corrupted icon
 
 import path from 'path'
+import fs from 'fs'
 import fs_async from 'fs/promises'
 import { expect } from 'chai'
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, ObservationProperties, MageFormEntry, MageEventPopulated, Observation } from '../client'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod } from '../client'
 import { TestStack } from '../stack'
 
 export const rootSeed: RootUserSetupRequest = {
@@ -169,44 +170,50 @@ export const formsSeed: MageFormCreateRequest[] = [
     fields: [
       {
         id: 1,
-        name: 'form3/field1',
+        name: 'form3/multiselect1',
         required: false,
-        title: 'Field 1',
-        type: FormFieldType.Text,
+        title: 'Multi-Select 1',
+        type: FormFieldType.MultiSelectDropdown,
+        choices: [
+          { id: 1, value: 1, title: 'a' },
+          { id: 2, value: 2, title: 'b' },
+          { id: 3, value: 3, title: 'c' },
+          { id: 4, value: 4, title: 'd' },
+        ]
       },
       {
         id: 2,
-        name: 'form3/field2',
+        name: 'form3/attachment1',
         required: false,
-        title: 'Field 2',
+        title: 'Attachment 1',
         type: FormFieldType.Attachment,
       },
     ]
   },
   {
-    name: 'form4',
+    name: 'archivedForm',
     userFields: [],
     archived: false,
     color: '#00aa00',
-    primaryField: 'form4/dropdown1',
+    primaryField: 'archivedForm/dropdown1',
     fields: [
       {
         id: 1,
-        name: 'form4/text1',
+        name: 'archivedForm/text1',
         required: false,
         title: 'Text 1',
         type: FormFieldType.Text,
       },
       {
         id: 2,
-        name: 'form4/attachment1',
+        name: 'archivedForm/attachment1',
         required: false,
         title: 'Attachment 1',
         type: FormFieldType.Attachment,
       },
       {
         id: 3,
-        name: 'form4/dropdown1',
+        name: 'archivedForm/dropdown1',
         required: false,
         title: 'Choice 1',
         type: FormFieldType.Dropdown,
@@ -225,11 +232,11 @@ export type ObservationSeed = Omit<ObservationMod, 'eventId' | 'properties'> & {
   properties: ObservationSeedProperties
 }
 
-export type ObservationSeedProperties = Omit<ObservationProperties, 'forms'> & {
+export type ObservationSeedProperties = Omit<ObservationPropertiesMod, 'forms'> & {
   forms: MageFormEntrySeed[]
 }
 
-export type MageFormEntrySeed = Omit<MageFormEntry, 'formId'> & {
+export type MageFormEntrySeed = Omit<MageFormEntryMod, 'formId'> & {
   formName: string
 }
 
@@ -251,10 +258,14 @@ type ObservationTestCases = {
   singleForm: true,
   multipleForms: true,
   unpopulatedIconFields: true,
-  noIcons: true,
+  formWithoutIcons: true,
   archivedFormWithIcons: true,
   archivedFormWithoutIcons: true,
   activeFormAndArchivedForm: true,
+  withAttachmentsOnOneForm: true,
+  withAttachmentsOnMultipleForms: true,
+  withMissingAttachment: true,
+  withAttachmentsAndNoIcons: true,
 }
 type ObservationTestCasesSeed = Record<keyof ObservationTestCases, ObservationSeed>
 type ObservationTestCasesSaved = Record<keyof ObservationTestCases, Observation>
@@ -284,6 +295,7 @@ export const observationSeed: ObservationTestCasesSeed = {
       forms: [
         {
           formName: 'form1',
+          'form1/text1': 'look at this',
           'form1/dropdown1': 'sad',
           'form1/dropdown2': 'gold',
         },
@@ -313,7 +325,7 @@ export const observationSeed: ObservationTestCasesSeed = {
       ]
     }
   },
-  noIcons: {
+  formWithoutIcons: {
     id: null,
     type: 'Feature',
     geometry: { type: 'Point', coordinates: [ -1.252441, 51.733745 ] },
@@ -336,7 +348,7 @@ export const observationSeed: ObservationTestCasesSeed = {
       timestamp: new Date().toISOString(),
       forms: [
         {
-          formName: 'form4',
+          formName: 'archivedForm',
           'form1/dropdown1': 'happy',
           'form1/dropdown2': 'green',
         },
@@ -351,7 +363,7 @@ export const observationSeed: ObservationTestCasesSeed = {
       timestamp: new Date().toISOString(),
       forms: [
         {
-          formName: 'form4',
+          formName: 'archivedForm',
           'form1/dropdown1': 'happy',
           'form1/dropdown2': 'red',
         },
@@ -366,17 +378,141 @@ export const observationSeed: ObservationTestCasesSeed = {
       timestamp: new Date().toISOString(),
       forms: [
         {
-          formName: 'form1',
-          'form1/dropdown1': 'neutral',
-          'form1/dropdown2': 'red',
+          formName: 'archivedForm',
+          'archivedForm/text1': 'used to be somebody',
+          'archivedForm/dropdown1': 'happy',
         },
         {
-          formName: 'form4',
-          'form1/dropdown1': 'happy',
+          formName: 'form1',
+          'form1/dropdown1': 'sad',
           'form1/dropdown2': 'green',
         },
       ]
     }
+  },
+  withAttachmentsOnOneForm: {
+    id: null,
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ -0.075291, 51.505568 ] },
+    properties: {
+      timestamp: new Date().toISOString(),
+      forms: [
+        {
+          formName: 'form1',
+          'form1/dropdown1': 'neutral',
+          'form1/dropdown2': 'red',
+          'form1/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'tower bridge 1.jpeg',
+              contentType: 'image/jpeg'
+            } as AttachmentMod,
+            {
+              action: AttachmentModAction.Add,
+              name: 'tower bridge 2.jpeg',
+              contentType: 'image/jpeg'
+            } as AttachmentMod,
+          ]
+        }
+      ]
+    },
+  },
+  withAttachmentsOnMultipleForms: {
+    id: null,
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ -79.076874, 43.084346 ] },
+    properties: {
+      timestamp: new Date().toISOString(),
+      forms: [
+        {
+          formName: 'form1',
+          'form1/dropdown1': 'neutral',
+          'form1/dropdown2': 'gold',
+          'form1/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'niagra1.jpeg',
+              contentType: 'image/jpeg'
+            }
+          ]
+        },
+        {
+          formName: 'form1',
+          'form1/dropdown1': 'happy',
+          'form1/dropdown2': 'gold',
+          'form1/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'niagra2.jpeg',
+              contentType: 'image/jpeg',
+            }
+          ]
+        }
+      ]
+    },
+  },
+  withMissingAttachment: {
+    id: null,
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ -103.460999, 26.257522 ] },
+    properties: {
+      timestamp: new Date().toISOString(),
+      forms: [
+        {
+          formName: 'form2',
+          'form3/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'never uploaded.jpeg',
+              contentType: 'image/jpeg'
+            }
+          ]
+        },
+        {
+          formName: 'form2',
+          'form1/dropdown1': 'happy',
+          'form1/dropdown2': 'gold',
+          'form1/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'axolotl.jpeg',
+              contentType: 'image/jpeg',
+            }
+          ]
+        }
+      ]
+    },
+  },
+  withAttachmentsAndNoIcons: {
+    id: null,
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [ -1.511540, 48.635837 ] },
+    properties: {
+      timestamp: new Date().toISOString(),
+      forms: [
+        {
+          formName: 'form2',
+          'form2/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'mont saint michel.jpeg',
+              contentType: 'image/jpeg'
+            }
+          ]
+        },
+        {
+          formName: 'form3',
+          'form3/multiselect1': [ 'a', 'c' ],
+          'form1/attachment1': [
+            {
+              action: AttachmentModAction.Add,
+              name: 'axolotl.jpeg',
+              contentType: 'image/jpeg',
+            }
+          ]
+        }
+      ]
+    },
   }
 }
 
@@ -432,10 +568,17 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
       return rootSession.saveMapIcon(iconPath, event.id, formsByName.form1.id, primary, variant)
     })
   )
-  await rootSession.saveMapIcon(path.resolve(assetsDirPath, 'happy_green.png'), event.id, formsByName.form4.id)
-  // TODO: add icons to form4
+  await Promise.all(
+    primaryValues.map(primary => {
+      const iconName = `${primary}_green.png`
+      const iconPath = path.resolve(assetsDirPath, iconName)
+      return rootSession.saveMapIcon(iconPath, event.id, formsByName.archivedForm.id, primary)
+    })
+  )
+  await rootSession.saveMapIcon(path.resolve(assetsDirPath, 'happy_green.png'), event.id, formsByName.archivedForm.id)
+  // TODO: add icons to archivedForm
   for (const [ primary, variant ] of allCombos) {
-    const savedIconPath = path.resolve(stack.appDataPath, 'icons', String(event.id), String(forms[0].id), primary, variant, 'icon.png')
+    const savedIconPath = path.resolve(stack.appDataPath, 'icons', String(event.id), String(formsByName.form1.id), primary, variant, 'icon.png')
     const savedIconStats = await fs_async.stat(savedIconPath)
 
     expect(savedIconStats.isFile(), `saved icon ${savedIconPath} does not exist`).to.be.true
@@ -446,20 +589,40 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   expect(user1SignInError).not.to.exist
 
-  const observations = await Promise.all(Object.entries(observationSeed).map(([name, seed]) => {
+  const observations = await Promise.all(Object.entries(observationSeed).map(([ name, seed ]) => {
     const mod = observationModForSeed(seed, eventWithForms)
-    return user1Session.saveObservation(mod, []).then(x => [ name, x ] as [ string, Observation ])
+    return user1Session.saveObservation(mod, []).then(obs => {
+      // upload the attachment(s) content to the saved observation
+      return Promise.all(
+        obs.attachments.map(async attachment => {
+          const contentPath = path.join(assetsDirPath, String(attachment.name))
+          console.info(`uploading attachment content for observation ${obs.id}:`, contentPath)
+          try {
+            const content = fs.createReadStream(contentPath)
+            return await user1Session.saveAttachmentContent(content, attachment, obs)
+          }
+          catch (err) {
+            console.warn(`skipping attachment upload for absent file:`, contentPath)
+          }
+          return
+        }, [] as Promise<any>[])
+      )
+      .then(async () => {
+        const finalObs = await user1Session.readObservation(event.id, obs.id)
+        return [ name, finalObs ] as [ string, Observation ]
+      })
+    })
   }))
   const observationTestCases: ObservationTestCasesSaved = Object.fromEntries(observations) as ObservationTestCasesSaved
 
   const now = Date.now()
   for (const obs of observations) {
-    expect(new Date(obs[1].createdAt).getTime()).to.be.closeTo(now, 150)
+    expect(new Date(obs[1].createdAt).getTime()).to.be.closeTo(now, 250)
   }
 
-  const archivedForm = await rootSession.archiveForm(eventWithForms, formsByName.form4.id).then(x => x.data)
+  const archivedForm = await rootSession.archiveForm(eventWithForms, formsByName.archivedForm.id).then(x => x.data)
 
-  expect(archivedForm.name).to.equal('form4')
+  expect(archivedForm.name).to.equal('archivedForm')
   expect(archivedForm.archived).to.be.true
 
   const user2Session = new MageClientSession(rootSession.mageUrl)
@@ -480,6 +643,9 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   expect(allObs.length).to.equal(Object.keys(observationTestCases).length + 1)
 
   const finalEvent = await rootSession.readEvent(event.id).then(res => res.data)
+
+  // TODO: add attachments
+  // TODO: add locations
 
   return {
     event: finalEvent,
