@@ -621,6 +621,10 @@ interface ExportOptions {
   observations?: boolean
   favorites?: boolean
   important?: boolean
+  /**
+   * Unintuitively, `attachments: true` will EXCLUDE attachments from the
+   * export.
+   */
   attachments?: boolean
   locations?: boolean
 }

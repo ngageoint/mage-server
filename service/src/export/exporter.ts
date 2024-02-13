@@ -17,6 +17,11 @@ export interface ExportFilter {
   endDate?: Date
   favorites?: false | { userId: mongoose.Types.ObjectId }
   important?: boolean
+  /**
+   * Unintuitively, `attachments: true` will EXCLUDE attachments from the
+   * export.
+   * TODO: fix that
+   */
   attachments?: boolean
 }
 
