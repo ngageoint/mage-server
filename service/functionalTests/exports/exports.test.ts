@@ -43,7 +43,7 @@ describe('exports', function() {
         exportType: ExportFormat.GeoPackage,
         observations: true,
         locations: true,
-        attachments: true,
+        attachments: false,
       }
     )
     const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
@@ -60,7 +60,7 @@ describe('exports', function() {
         exportType: ExportFormat.KML,
         observations: true,
         locations: true,
-        attachments: true,
+        attachments: false,
       }
     )
     const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
