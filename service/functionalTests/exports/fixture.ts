@@ -460,7 +460,7 @@ export const observationSeed: ObservationTestCasesSeed = {
       forms: [
         {
           formName: 'form2',
-          'form3/attachment1': [
+          'form2/attachment1': [
             {
               action: AttachmentModAction.Add,
               name: 'never uploaded.jpeg',
@@ -470,9 +470,9 @@ export const observationSeed: ObservationTestCasesSeed = {
         },
         {
           formName: 'form2',
-          'form1/dropdown1': 'happy',
-          'form1/dropdown2': 'gold',
-          'form1/attachment1': [
+          'form2/dropdown1': 'happy',
+          'form2/dropdown2': 'gold',
+          'form2/attachment1': [
             {
               action: AttachmentModAction.Add,
               name: 'axolotl.jpeg',
@@ -503,7 +503,7 @@ export const observationSeed: ObservationTestCasesSeed = {
         {
           formName: 'form3',
           'form3/multiselect1': [ 'a', 'c' ],
-          'form1/attachment1': [
+          'form3/attachment1': [
             {
               action: AttachmentModAction.Add,
               name: 'axolotl.jpeg',
@@ -593,6 +593,7 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
     const mod = observationModForSeed(seed, eventWithForms)
     return user1Session.saveObservation(mod, []).then(obs => {
       // upload the attachment(s) content to the saved observation
+      console.info(`uploading ${obs.attachments.length} attachments for observation ${name}`)
       return Promise.all(
         obs.attachments.map(async attachment => {
           const contentPath = path.join(assetsDirPath, String(attachment.name))
@@ -639,12 +640,12 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   expect(userDeleted.status).to.equal(204)
 
   const allObs = await user1Session.readObservations(event.id)
+  console.info('all observations', allObs)
 
   expect(allObs.length).to.equal(Object.keys(observationTestCases).length + 1)
 
   const finalEvent = await rootSession.readEvent(event.id).then(res => res.data)
 
-  // TODO: add attachments
   // TODO: add locations
 
   return {
