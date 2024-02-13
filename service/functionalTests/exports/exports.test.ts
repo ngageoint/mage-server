@@ -71,7 +71,35 @@ describe('exports', function() {
 
   it('exports csv', async function() {
 
+    const pendingExport = await rootSession.startExport(
+      fixture.event.id,
+      {
+        exportType: ExportFormat.CSV,
+        observations: true,
+        locations: true,
+        attachments: false,
+      }
+    )
+    const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
+
+    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 
-  it('exports geojson')
+  it('exports geojson', async function() {
+
+    const pendingExport = await rootSession.startExport(
+      fixture.event.id,
+      {
+        exportType: ExportFormat.GeoJSON,
+        observations: true,
+        locations: true,
+        attachments: false,
+      }
+    )
+    const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
+
+    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
+  })
 })
