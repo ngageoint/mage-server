@@ -6,12 +6,14 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 import geojson from 'geojson'
 import uniqid from 'uniqid'
 import { Readable } from 'stream'
+import web_streams from 'stream/web'
 
 export class MageClientSession {
 
   readonly http: AxiosInstance
   accessToken: string | null = null
-  user: any = null
+  user: User | null = null
+  device: Device['uid'] | null = null
 
   get authHeader(): { Authorization: string } {
     return { Authorization: `bearer ${this.accessToken}` }
@@ -41,6 +43,7 @@ export class MageClientSession {
   async signIn(username: string, password: string, device: string): Promise<void | Error> {
     this.accessToken = null
     this.user = null
+    this.device = null
     try {
       const signInRes = await this.http.post(
         '/auth/local/signin',
@@ -80,8 +83,23 @@ export class MageClientSession {
     return await this.http.get<Role[]>('/api/roles')
   }
 
-  async createUser(body: UserCreateRequest): Promise<AxiosResponse<User>> {
-    return await this.http.post(`/api/users`, body)
+  async createUser(userAttrs: UserCreateRequest, mapIcon?: BlobDuck): Promise<AxiosResponse<User>> {
+    const form = new FormData()
+    form.set('username', userAttrs.username)
+    form.set('displayName', userAttrs.displayName)
+    form.set('password', userAttrs.password)
+    form.set('passwordconfirm', userAttrs.password)
+    form.set('roleId', userAttrs.roleId)
+    if (userAttrs.email) {
+      form.set('email', userAttrs.email)
+    }
+    if (userAttrs.phone) {
+      form.set('phone', userAttrs.phone)
+    }
+    if (mapIcon) {
+      form.set('icon', mapIcon, mapIcon.name)
+    }
+    return await this.http.post(`/api/users`, form)
   }
 
   async deleteUser(userId: UserId): Promise<AxiosResponse> {
@@ -120,6 +138,9 @@ export class MageClientSession {
   saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string): Promise<AxiosResponse<MapIcon>>
   saveMapIcon(data: buffer.Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primaryValue: string, secondaryValue: string): Promise<AxiosResponse<MapIcon>>
+  /**
+   * TODO: mage api should support a simple PUT with content-type header
+   */
   async saveMapIcon(...args: any[]): Promise<AxiosResponse<MapIcon>> {
     const [ data, iconName, eventId, formId, primary, variant ] = await (async (): Promise<[ data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ]> => {
       if (typeof args[0] === 'string') {
@@ -133,7 +154,7 @@ export class MageClientSession {
     const primaryPath = primary ? `/${primary}` : ''
     const variantPath = primary && variant ? `/${variant}` : ''
     const form = new FormData()
-    const blobDuck = BlobDuck(data, iconName)
+    const blobDuck = createBlobDuck(data, iconName)
     form.set('icon', blobDuck, iconName)
     return await this.http.postForm(`/api/events/${eventId}/icons/${formId}${primaryPath}${variantPath}`, form)
   }
@@ -163,7 +184,7 @@ export class MageClientSession {
 
   async saveAttachmentContent(content: NodeJS.ReadableStream, attachment: Attachment, observation: Observation): Promise<Attachment> {
     const form = new FormData()
-    const blobDuck = BlobDuck(content, String(attachment.name), attachment.contentType)
+    const blobDuck = createBlobDuck(content, String(attachment.name), attachment.contentType)
     form.set('attachment', blobDuck, blobDuck.name)
     return await this.http.put(
       `/api/events/${observation.eventId}/observations/${observation.id}/attachments/${attachment.id}`, form)
@@ -178,21 +199,24 @@ export class MageClientSession {
     return await this.http.get<Observation>(`/api/events/${eventId}/observations/${observationId}`).then(x => x.data)
   }
 
-  async postUserLocation(eventId: number, lon: number, lat: number): Promise<any> {
-    const res = await this.http.post(`/api/events/${eventId}/locations`,
-      {
+  async postUserLocations(eventId: number, locations: Array<[lon: number, lat: number, timestamp?: number | undefined]>): Promise<AxiosResponse<UserLocation[]>> {
+    const features = locations.map<geojson.Feature<geojson.Point>>(([ lon, lat, timestamp ]) => {
+      if (typeof timestamp !== 'number') {
+        timestamp = Date.now()
+      }
+      return {
         type: 'Feature',
         geometry: {
           type: 'Point',
           coordinates: [ lon, lat ]
         },
         properties: {
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(timestamp).toISOString(),
           accuracy: 1
         }
       }
-    )
-    return res
+    })
+    return await this.http.post(`/api/events/${eventId}/locations`, features)
   }
 
   async startExport(eventId: MageEventId, opts: ExportOptions): Promise<ExportInfo> {
@@ -246,25 +270,26 @@ export class MageClientSession {
 
 /**
  *
- * Looks an quacks like a Blob.  A hack from https://github.com/nodejs/undici/issues/2202#issuecomment-1664134203
+ * Looks and quacks like a Blob.  A hack from https://github.com/nodejs/undici/issues/2202#issuecomment-1664134203
  * to create an object that _looks_ like a Blob that Axios can consume.
  * Could maybe also use `form-data` package which should except Node streams
  * natively, but not sure if that works with Axios.
- * TODO: mage api should support a simple PUT with content-type header
  */
-function BlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, name: string, contentType?: string): Blob {
+export function createBlobDuck(source: NodeJS.ReadableStream | buffer.Buffer, name: string, contentType?: string): BlobDuck {
   return {
-    [Symbol.toStringTag]: 'File',
     name,
-    type: contentType,
-    stream(): NodeJS.ReadableStream {
+    type: contentType || 'application/octet-stream',
+    stream(): web_streams.ReadableStream {
       if (source instanceof buffer.Buffer) {
-        return Readable.from(source)
+        source = Readable.from(source)
       }
-      return source
-    }
+      return Readable.toWeb(Readable.from(source))
+    },
+    [Symbol.toStringTag]: 'File',
   } as any
 }
+
+export interface BlobDuck extends globalThis.Blob {}
 
 export type ISODateString = string
 
@@ -282,7 +307,6 @@ export interface UserCreateRequest {
   phone?: string
   roleId: string
   password: string
-  passwordconfirm: string
 }
 
 export interface UserPhone {
@@ -311,7 +335,7 @@ export interface Device {
   appVersion?: string
 }
 
-export type RootUserSetupRequest = Omit<UserCreateRequest, 'passwordconfirm' | 'roleId'> & Pick<Device, 'uid'>
+export type RootUserSetupRequest = Omit<UserCreateRequest, 'roleId'> & Pick<Device, 'uid'>
 
 export interface MageEvent {
   id: MageEventId
@@ -596,6 +620,16 @@ export enum AttachmentModAction {
 export interface AttachmentUpload {
   attachmentInfo: AttachmentMod
   attachmentContent: () => NodeJS.ReadableStream
+}
+
+export interface UserLocation extends geojson.Feature<geojson.Point, UserLocationFeatureProperties> {
+  eventId: MageEventId
+  userId: UserId
+  teamIds: Team['id'][]
+}
+
+export interface UserLocationFeatureProperties {
+  devicedId?: Device['uid']
 }
 
 export interface ExportInfo {
