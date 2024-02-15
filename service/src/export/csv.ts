@@ -19,10 +19,6 @@ import { UserDocument } from '../adapters/users/adapters.users.db.mongoose'
 import { UserLocationDocument, UserLocationDocumentProperties } from '../models/location'
 
 
-function excelLink(attachmentName: string, attachmentNumber: number): string {
-  return `=HYPERLINK("${attachmentName}", "attachment${attachmentNumber}")`;
-}
-
 export class Csv extends Exporter {
 
   export(streamable: NodeJS.WritableStream): void {
@@ -62,9 +58,9 @@ export class Csv extends Exporter {
     });
 
     observationFields.push({
-      label: 'Attachment Excel Link',
-      value: 'attachmentExcelLink'
-    });
+      label: 'Attachment Orig Name',
+      value: 'attachmentOriginalName'
+    })
 
     const locationFields = [
       'user',
@@ -202,8 +198,8 @@ export class Csv extends Exporter {
           return
         }
         const name = path.basename(attachment.relativePath!);
-        flat.attachment = attachment.name;
-        flat.attachmentExcelLink = excelLink(name, index);
+        flat.attachment = name
+        flat.attachmentOriginalName = attachment.name
         archive.file(path.join(attachmentBase, attachment.relativePath), { name });
       })
     }
