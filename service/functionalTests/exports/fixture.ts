@@ -23,7 +23,7 @@ import path from 'path'
 import fs from 'fs'
 import fs_async from 'fs/promises'
 import { expect } from 'chai'
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod } from '../client'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod, createBlobDuck } from '../client'
 import { TestStack } from '../stack'
 
 export const rootSeed: RootUserSetupRequest = {
@@ -539,12 +539,23 @@ const deletedUserObservationSeed: ObservationSeed = {
 
 export async function populateFixtureData(stack: TestStack, rootSession: MageClientSession): Promise<ExportTestFixture> {
 
+  const assetsDirPath = path.resolve(__dirname, '..', 'assets')
+
   const roles = await rootSession.listRoles().then(x => x.data)
   const userRole = roles.find(x => x.name === 'USER_ROLE')!
 
   expect(userRole, 'failed to find user role').to.exist
 
-  const users = await Promise.all(usersSeed.map(x => rootSession.createUser({ ...x, roleId: userRole.id }).then(x => x.data)))
+  const userIcons = [ 'blue', 'green', 'pink' ].map(color => {
+    const iconName = `person_${color}.png`
+    const iconPath = path.join(assetsDirPath, iconName)
+    return createBlobDuck(fs.createReadStream(iconPath), iconName, 'image/png')
+  })
+  const users = await Promise.all(
+    usersSeed.map((userSeed, index) => {
+      return rootSession.createUser({ ...userSeed, roleId: userRole.id }, userIcons[index]).then(x => x.data)
+    })
+  )
 
   expect(users.length).to.equal(usersSeed.length)
 
@@ -557,7 +568,6 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   const eventWithForms = await rootSession.readEvent(event.id).then(x => x.data)
   await Promise.all(users.map(user => rootSession.addParticipantToEvent(eventWithForms, user.id)))
 
-  const assetsDirPath = path.resolve(__dirname, '..', 'assets')
   const primaryValues = [ 'happy', 'neutral', 'sad' ]
   const variantValues = [ 'red', 'gold', 'green' ]
   const allCombos = primaryValues.flatMap(primary => variantValues.map(variant => [ primary, variant ]))
@@ -635,7 +645,7 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   expect(new Date(deletedUserObservation.createdAt).getTime()).to.be.closeTo(Date.now(), 100)
 
-  const userDeleted = await rootSession.deleteUser(user2Session.user.id)
+  const userDeleted = await rootSession.deleteUser(user2Session.user!.id)
 
   expect(userDeleted.status).to.equal(204)
 
@@ -647,6 +657,27 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   const finalEvent = await rootSession.readEvent(event.id).then(res => res.data)
 
   // TODO: add locations
+  const user1Locations = Array.from({ length: 9 }).reduce((locations: Array<[number, number, number]>, empty: unknown, index: number): Array<[number, number, number]> => {
+    const prevLoc = locations[index]
+    const nextLoc = [ prevLoc[0] - 0.0001, prevLoc[1] + Math.random(), prevLoc[2] + 60000 ] as [ number, number, number ]
+    return [ ...locations, nextLoc ]
+  }, [ [ 31.069164, 31.366097, Date.now() ] ] as Array<[number, number, number]>)
+  const user1LocationsRes = await user1Session.postUserLocations(event.id, user1Locations)
+
+  expect(user1LocationsRes.status).to.equal(200)
+  expect(user1LocationsRes.data).to.have.length(10)
+
+  const user4Locations = Array.from({ length: 9 }).reduce((locations: Array<[number, number, number]>, empty: unknown, index: number): Array<[number, number, number]> => {
+    const prevLoc = locations[index]
+    const nextLoc = [ prevLoc[0] - 0.0001, prevLoc[1] + Math.random(), prevLoc[2] + 60000 ] as [ number, number, number ]
+    return [ ...locations, nextLoc ]
+  }, [ [ 31.757698, 22.444985, Date.now() ] ] as Array<[number, number, number]>)
+  const user4Session = new MageClientSession(stack.mageUrl)
+  await user4Session.signIn(usersSeed[3].username, usersSeed[3].password, rootSeed.uid)
+  const user4LocationsRes = await user4Session.postUserLocations(event.id, user4Locations)
+
+  expect(user4LocationsRes.status).to.equal(200)
+  expect(user4LocationsRes.data).to.have.length(10)
 
   return {
     event: finalEvent,
