@@ -138,7 +138,7 @@ export class GeoPackage extends Exporter {
   }
 
   async addUserToUsersTable(geopackage: GPKG.GeoPackage, user: UserDocument, usersLastLocation: UserLocationDocument, zoomToEnvelope: Envelope): Promise<void> {
-    log.info(`add user ${user.username} to users table`);
+    log.info(`add user ${user.username} to users table`)
     const feature: geojson.Feature = {
       type: 'Feature',
       geometry: usersLastLocation.geometry,
@@ -151,31 +151,32 @@ export class GeoPackage extends Exporter {
         userId: user._id.toString()
       }
     }
-    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Users');
-    const iconPath = path.join(environment.userBaseDirectory, user._id.toString(), 'icon');
-    let iconBuffer = null;
-    try {
-      iconBuffer = await util.promisify(fs.readFile)(iconPath)
+    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Users')
+    const iconPath = user.icon.relativePath ? path.join(environment.userBaseDirectory, user.icon.relativePath) : null
+    if (iconPath) {
+      const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Users')
+      const iconRow = featureTableStyles.getIconDao().newRow()
+      try {
+        const iconBuffer = await fs_async.readFile(iconPath)
+        iconRow.data = iconBuffer
+        iconRow.contentType = 'image/png'
+        iconRow.name = user.username
+        iconRow.description = `Icon for user ${user.username}`
+        iconRow.width = 20
+        iconRow.anchorU = 0.5
+        iconRow.anchorV = 1.0
+        featureTableStyles.setIconDefault(userRowId, iconRow)
+      }
+      catch (err) {
+        log.error(`error reading user icon for geopackage export: ${iconPath}`, err)
+        return void(0)
+      }
     }
-    catch (err) {
-      log.error(`error reading reading user icon for geopackage export: ${iconPath}`, err)
-      return void(0);
-    }
-    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Users');
-    const iconRow = featureTableStyles.getIconDao().newRow();
-    iconRow.data = iconBuffer;
-    iconRow.contentType = 'image/png';
-    iconRow.name = user.username;
-    iconRow.description = `Icon for user ${user.username}`;
-    iconRow.width = 20;
-    iconRow.anchorU = 0.5;
-    iconRow.anchorV = 1.0;
-    featureTableStyles.setIconDefault(userRowId, iconRow);
-    const featureDao = geopackage.getFeatureDao('Users');
-    const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
-    rtreeIndex.create();
+    const featureDao = geopackage.getFeatureDao('Users')
+    const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao)
+    rtreeIndex.create()
     if (zoomToEnvelope) {
-      setContentBounds(geopackage, featureDao, zoomToEnvelope);
+      setContentBounds(geopackage, featureDao, zoomToEnvelope)
     }
   }
 
