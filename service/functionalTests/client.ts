@@ -13,7 +13,7 @@ export class MageClientSession {
   readonly http: AxiosInstance
   accessToken: string | null = null
   user: User | null = null
-  device: Device['uid'] | null = null
+  device: Device | null = null
 
   get authHeader(): { Authorization: string } {
     return { Authorization: `bearer ${this.accessToken}` }
@@ -40,12 +40,12 @@ export class MageClientSession {
     )
   }
 
-  async signIn(username: string, password: string, device: string): Promise<void | Error> {
+  async signIn(username: string, password: string, device: string): Promise<SignInResult | Error> {
     this.accessToken = null
     this.user = null
     this.device = null
     try {
-      const signInRes = await this.http.post(
+      const authnRes = await this.http.post(
         '/auth/local/signin',
         new URLSearchParams({ username, password }),
         {
@@ -54,8 +54,8 @@ export class MageClientSession {
           }
         }
       )
-      const { user, token } = signInRes.data
-      const authzRes = await this.http.post(
+      const { token } = authnRes.data
+      const authzRes = await this.http.post<SignInResult>(
         '/auth/token',
         { uid: device },
         {
@@ -65,9 +65,12 @@ export class MageClientSession {
           }
         }
       )
-      this.accessToken = authzRes.data.token
-      this.user = user
-      console.info('successfully signed in', user.username)
+      const signIn = authzRes.data
+      this.accessToken = signIn.token
+      this.user = signIn.user
+      this.device = signIn.device
+      console.info('successfully signed in', signIn)
+      return signIn
     }
     catch (err) {
       console.error(err)
@@ -106,6 +109,14 @@ export class MageClientSession {
     return await this.http.delete(`/api/users/${userId}`)
   }
 
+  async createDevice(deviceAttrs: DeviceCreateRequest): Promise<AxiosResponse<Device>> {
+    return await this.http.post(`/api/devices`, deviceAttrs)
+  }
+
+  async deleteDevice(deviceId: Device['uid']): Promise<AxiosResponse<Device>> {
+    return await this.http.delete(`/api/devices/${deviceId}`)
+  }
+
   async listEvents(): Promise<Event[]> {
     const res = await this.http.get('/api/events')
     return res.data
@@ -121,6 +132,10 @@ export class MageClientSession {
 
   async createForm(mageEventId: MageEventId, form: MageFormCreateRequest): Promise<AxiosResponse<MageForm>> {
     return await this.http.post(`/api/events/${mageEventId}/forms`, form)
+  }
+
+  async updateForm(mageEventId: MageEventId, form: MageForm): Promise<AxiosResponse<MageForm>> {
+    return await this.http.put(`/api/events/${mageEventId}/forms/${form.id}`, form)
   }
 
   async archiveForm(mageEvent: MageEvent | MageEventPopulated, formId: MageFormId): Promise<AxiosResponse<MageForm>> {
@@ -293,6 +308,14 @@ export interface BlobDuck extends globalThis.Blob {}
 
 export type ISODateString = string
 
+export interface SignInResult {
+  token: string
+  expirationDate: string
+  user: User
+  device: Device
+  api: any
+}
+
 export interface Role {
   id: string,
   name: string,
@@ -328,12 +351,15 @@ export type UserId = string
 export type UserLite = Pick<User, 'id' | 'displayName'>
 
 export interface Device {
+  id: string
   uid: string
   description?: string
   userId: string
   userAgent?: string
   appVersion?: string
 }
+
+export type DeviceCreateRequest = Omit<Device, 'id'>
 
 export type RootUserSetupRequest = Omit<UserCreateRequest, 'roleId'> & Pick<Device, 'uid'>
 
