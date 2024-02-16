@@ -23,7 +23,7 @@ import path from 'path'
 import fs from 'fs'
 import fs_async from 'fs/promises'
 import { expect } from 'chai'
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod, createBlobDuck } from '../client'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod, createBlobDuck, DeviceCreateRequest, Device } from '../client'
 import { TestStack } from '../stack'
 
 export const rootSeed: RootUserSetupRequest = {
@@ -42,6 +42,16 @@ export const usersSeed: Omit<UserCreateRequest, 'roleId'>[] = Array.from({ lengt
     passwordconfirm: `user${ordinal}.secret_password`,
   }
 })
+
+type DeviceSeed = Omit<DeviceCreateRequest, 'userId'> & {
+  username: string
+}
+
+export const devicesSeed: Omit<DeviceSeed, 'userId'>[] = [
+  { uid: 'user1-device1', username: 'user1' },
+  { uid: 'user3-device1', username: 'user3' },
+  { uid: 'user3-device2', username: 'user3' },
+]
 
 export const eventSeed: MageEventCreateRequest = {
   name: 'Export Me',
@@ -225,6 +235,39 @@ export const formsSeed: MageFormCreateRequest[] = [
       },
     ]
   },
+  {
+    name: 'volatile',
+    userFields: [],
+    color: '#343411',
+    archived: false,
+    primaryField: 'tricksie',
+    fields: [
+      {
+        id: 1,
+        name: 'tricksie',
+        type: FormFieldType.Dropdown,
+        title: 'Happiness is fleeting',
+        required: false,
+        choices: [
+          { id: 1, value: 1, title: 'happy' },
+          { id: 2, value: 2, title: 'neutral' },
+          { id: 3, value: 3, title: 'sad' },
+        ],
+      },
+      {
+        id: 2,
+        name: 'ghost',
+        type: FormFieldType.Dropdown,
+        title: 'Poof',
+        required: false,
+        choices: [
+          { id: 1, value: 1, title: 'red' },
+          { id: 2, value: 2, title: 'green' },
+          { id: 3, value: 3, title: 'gold' },
+        ]
+      }
+    ]
+  }
 ]
 
 export type ObservationSeed = Omit<ObservationMod, 'eventId' | 'properties'> & {
@@ -513,7 +556,7 @@ export const observationSeed: ObservationTestCasesSeed = {
         }
       ]
     },
-  }
+  },
 }
 
 const deletedUserObservationSeed: ObservationSeed = {
@@ -533,6 +576,38 @@ const deletedUserObservationSeed: ObservationSeed = {
         'form1/dropdown1': 'happy',
         'form1/dropdown2': 'green',
       },
+    ]
+  }
+}
+
+const deletedDeviceObservationSeed: ObservationSeed = {
+  id: null,
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates: [ 2.912404, 39.719863 ] },
+  properties: {
+    timestamp: new Date().toISOString(),
+    forms: [
+      {
+        formName: 'form1',
+        'form1/dropdown1': 'neutral',
+        'form1/dropdown2': 'green'
+      }
+    ]
+  }
+}
+
+const invalidFormEntryObservationSeed: ObservationSeed = {
+  id: null,
+  type: 'Feature',
+  geometry: { type: 'Point', coordinates: [ 2.910519, 39.642380 ] },
+  properties: {
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+    forms: [
+      {
+        formName: 'volatile',
+        tricksie: 'happy',
+        ghost: 'green',
+      }
     ]
   }
 }
@@ -559,6 +634,18 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   expect(users.length).to.equal(usersSeed.length)
 
+  const devices = await Promise.all(
+    devicesSeed.map((deviceSeed) => {
+      const deviceUser = users.find(x => x.username === deviceSeed.username)
+      return rootSession.createDevice({
+        uid: deviceSeed.uid,
+        userId: deviceUser!.id
+      })
+      .then(x => x.data)
+    })
+  )
+  const devicesByUid = devices.reduce((devicesByUid, device) => ({ ...devicesByUid, [device.uid]: device }), {} as { [uid: string]: Device })
+
   const event = await rootSession.createEvent(eventSeed).then(x => x.data)
 
   expect(event.id).to.be.a('number')
@@ -574,30 +661,37 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   await Promise.all(
     allCombos.map(([ primary, variant ]) => {
       const iconName = `${primary}_${variant}.png`
-      const iconPath = path.resolve(assetsDirPath, iconName)
-      return rootSession.saveMapIcon(iconPath, event.id, formsByName.form1.id, primary, variant)
+      const iconPath = path.join(assetsDirPath, iconName)
+      return rootSession
+        .saveMapIcon(iconPath, event.id, formsByName.form1.id, primary, variant)
+        .then(() => rootSession.saveMapIcon(iconPath, event.id, formsByName.volatile.id, primary, variant))
     })
   )
   await Promise.all(
     primaryValues.map(primary => {
       const iconName = `${primary}_green.png`
-      const iconPath = path.resolve(assetsDirPath, iconName)
+      const iconPath = path.join(assetsDirPath, iconName)
       return rootSession.saveMapIcon(iconPath, event.id, formsByName.archivedForm.id, primary)
     })
   )
-  await rootSession.saveMapIcon(path.resolve(assetsDirPath, 'happy_green.png'), event.id, formsByName.archivedForm.id)
-  // TODO: add icons to archivedForm
+  await rootSession.saveMapIcon(path.join(assetsDirPath, 'happy_green.png'), event.id, formsByName.archivedForm.id)
   for (const [ primary, variant ] of allCombos) {
-    const savedIconPath = path.resolve(stack.appDataPath, 'icons', String(event.id), String(formsByName.form1.id), primary, variant, 'icon.png')
+    const savedIconPath = path.join(stack.appDataPath, 'icons', String(event.id), String(formsByName.form1.id), primary, variant, 'icon.png')
     const savedIconStats = await fs_async.stat(savedIconPath)
 
     expect(savedIconStats.isFile(), `saved icon ${savedIconPath} does not exist`).to.be.true
   }
+  await Promise.all(
+    [ 'happy_green', 'neutral_gold', 'sad_red' ].map(iconName => {
+      const iconPath = path.join(assetsDirPath, `${iconName}.png`)
+      return rootSession.saveMapIcon(iconPath, event.id, formsByName.volatile.id, iconName)
+    })
+  )
 
   const user1Session = new MageClientSession(rootSession.mageUrl)
-  const user1SignInError = await user1Session.signIn(users[0].username, usersSeed[0].password, rootSeed.uid)
+  const user1SignIn = await user1Session.signIn(users[0].username, usersSeed[0].password, rootSeed.uid)
 
-  expect(user1SignInError).not.to.exist
+  expect(user1SignIn).not.to.be.instanceOf(Error)
 
   const observations = await Promise.all(Object.entries(observationSeed).map(([ name, seed ]) => {
     const mod = observationModForSeed(seed, eventWithForms)
@@ -637,9 +731,9 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   expect(archivedForm.archived).to.be.true
 
   const user2Session = new MageClientSession(rootSession.mageUrl)
-  const user2SignInError = await user2Session.signIn(usersSeed[1].username, usersSeed[1].password, rootSeed.uid)
+  const user2SignIn = await user2Session.signIn(usersSeed[1].username, usersSeed[1].password, rootSeed.uid)
 
-  expect(user2SignInError).not.to.exist
+  expect(user2SignIn).not.to.be.instanceOf(Error)
 
   const deletedUserObservation = await user2Session.saveObservation(observationModForSeed(deletedUserObservationSeed, eventWithForms))
 
@@ -649,10 +743,38 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   expect(userDeleted.status).to.equal(204)
 
+  const user3Session = new MageClientSession(stack.mageUrl)
+  await user3Session.signIn(usersSeed[2].username, usersSeed[2].password, 'user3-device1')
+  await user3Session.postUserLocations(event.id, [
+    [ 3.017120, 39.875000, Date.now() - 1000 * 60 * 60 * 24 * 7 ],
+    [ 3.017120, 39.820000, Date.now() - 1000 * 60 * 60 * 24 * 7 + 30000 ]
+  ])
+  await user3Session.saveObservation(observationModForSeed(deletedDeviceObservationSeed, eventWithForms))
+  await user3Session.saveObservation(observationModForSeed(invalidFormEntryObservationSeed, eventWithForms))
+  await rootSession.deleteDevice(devicesByUid['user3-device1'].id)
+
+  const volatileForm = { ...formsByName.volatile }
+  const tricksieField = { ...volatileForm.fields[0] }
+  tricksieField.choices = tricksieField.choices?.slice(1)
+  volatileForm.fields = [
+    tricksieField,
+    {
+      id: 3,
+      name: 'violator',
+      title: 'Invalidating Your Data',
+      type: FormFieldType.Text,
+      required: true
+    }
+  ]
+  const volatileFormMod = await rootSession.updateForm(event.id, volatileForm)
+
+  expect(volatileFormMod.status).to.equal(200)
+  expect(volatileFormMod.data.fields).to.have.length(2)
+
   const allObs = await user1Session.readObservations(event.id)
   console.info('all observations', allObs)
 
-  expect(allObs.length).to.equal(Object.keys(observationTestCases).length + 1)
+  expect(allObs.length).to.equal(Object.keys(observationTestCases).length + 3)
 
   const finalEvent = await rootSession.readEvent(event.id).then(res => res.data)
 

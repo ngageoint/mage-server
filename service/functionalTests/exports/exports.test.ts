@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { ExportInfo, ExportFormat, MageClientSession, ExportStatus } from '../client'
+import { ExportInfo, ExportFormat, MageClientSession, ExportStatus, SignInResult } from '../client'
 import { ChildProcessTestStackRef, launchTestStack } from '../stack'
 import * as Fixture from './fixture'
 
@@ -24,9 +24,10 @@ describe('exports', function() {
     expect(rootSetup.user.username, 'unexpected root user').to.equal(Fixture.rootSeed.username)
     expect(rootSetup.device.uid, 'unexpected root device').to.equal(Fixture.rootSeed.uid)
 
-    const signInError = await rootSession.signIn(Fixture.rootSeed.username, Fixture.rootSeed.password, Fixture.rootSeed.uid)
+    const rootSignIn = await rootSession.signIn(Fixture.rootSeed.username, Fixture.rootSeed.password, Fixture.rootSeed.uid) as SignInResult
 
-    expect(signInError).to.not.exist
+    expect(rootSignIn.user).to.exist
+    expect(rootSignIn.user.username).to.equal(Fixture.rootSeed.username)
 
     fixture = await Fixture.populateFixtureData(stack, rootSession)
   })
