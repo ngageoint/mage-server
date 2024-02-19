@@ -66,7 +66,7 @@ describe('exports', function() {
     )
     const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
 
-    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport instanceof Error, 'kml export error').to.be.false
     expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 
@@ -83,7 +83,7 @@ describe('exports', function() {
     )
     const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
 
-    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport instanceof Error, 'csv export error').to.be.false
     expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 
@@ -100,7 +100,7 @@ describe('exports', function() {
     )
     const finishedExport = await rootSession.waitForMyExport(pendingExport.id) as ExportInfo
 
-    expect(finishedExport instanceof Error, 'geopackage export error').to.be.false
+    expect(finishedExport instanceof Error, 'geojson export error').to.be.false
     expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
   })
 })
