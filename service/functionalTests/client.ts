@@ -40,7 +40,7 @@ export class MageClientSession {
     )
   }
 
-  async signIn(username: string, password: string, device: string): Promise<SignInResult | Error> {
+  async signIn(username: string, password: string, device: string | null = null): Promise<SignInResult | Error> {
     this.accessToken = null
     this.user = null
     this.device = null
@@ -54,13 +54,11 @@ export class MageClientSession {
           }
         }
       )
-      const { token } = authnRes.data
-      const authzRes = await this.http.post<SignInResult>(
-        '/auth/token',
-        { uid: device },
+      const authzRes = await this.http.post<SignInResult>('/auth/token',
+        device ? { uid: device } : undefined,
         {
           headers: {
-            'authorization': `bearer ${token}`,
+            'authorization': `bearer ${authnRes.data.token}`,
             'content-type': 'application/json'
           }
         }
@@ -68,7 +66,7 @@ export class MageClientSession {
       const signIn = authzRes.data
       this.accessToken = signIn.token
       this.user = signIn.user
-      this.device = signIn.device
+      this.device = signIn.device || null
       console.info('successfully signed in', signIn)
       return signIn
     }
@@ -78,15 +76,32 @@ export class MageClientSession {
     }
   }
 
-  async setupRootUser(setup: RootUserSetupRequest): Promise<AxiosResponse<{ user: User, device: Device }>> {
-    return await this.http.post('/api/setup', { ...setup, passwordconfirm: setup.password })
+  setupRootUser(setup: RootUserSetupRequest): Promise<AxiosResponse<{ user: User, device: Device }>> {
+    return this.http.post('/api/setup', { ...setup, passwordconfirm: setup.password })
   }
 
-  async listRoles(): Promise<AxiosResponse<Role[]>> {
-    return await this.http.get<Role[]>('/api/roles')
+  readAuthenticationProviders(options?: { includeDisabled: boolean }): Promise<AxiosResponse<AuthenticationProvider[]>> {
+    options = options || { includeDisabled: true }
+    return this.http.get('/api/authentication/configuration/', { params: options })
   }
 
-  async createUser(userAttrs: UserCreateRequest, mapIcon?: BlobDuck): Promise<AxiosResponse<User>> {
+  createAuthenticationProvider(provider: Partial<AuthenticationProvider>): Promise<AxiosResponse<AuthenticationProvider>> {
+    return this.http.post('/api/authentication/configuration/', provider)
+  }
+
+  updateAuthenticationProvider(provider: AuthenticationProvider): Promise<AxiosResponse<AuthenticationProvider>> {
+    return this.http.put(`/api/authentication/configuration/${provider._id}`, provider)
+  }
+
+  deleteAuthenticationProvider(providerId: string): Promise<AxiosResponse<AuthenticationProvider>> {
+    return this.http.delete(`/api/authentication/configuration/${providerId}`)
+  }
+
+  listRoles(): Promise<AxiosResponse<Role[]>> {
+    return this.http.get<Role[]>('/api/roles')
+  }
+
+  createUser(userAttrs: UserCreateRequest, mapIcon?: BlobDuck): Promise<AxiosResponse<User>> {
     const form = new FormData()
     form.set('username', userAttrs.username)
     form.set('displayName', userAttrs.displayName)
@@ -102,43 +117,42 @@ export class MageClientSession {
     if (mapIcon) {
       form.set('icon', mapIcon, mapIcon.name)
     }
-    return await this.http.post(`/api/users`, form)
+    return this.http.post(`/api/users`, form)
   }
 
-  async deleteUser(userId: UserId): Promise<AxiosResponse> {
-    return await this.http.delete(`/api/users/${userId}`)
+  deleteUser(userId: UserId): Promise<AxiosResponse> {
+    return this.http.delete(`/api/users/${userId}`)
   }
 
-  async createDevice(deviceAttrs: DeviceCreateRequest): Promise<AxiosResponse<Device>> {
-    return await this.http.post(`/api/devices`, deviceAttrs)
+  createDevice(deviceAttrs: DeviceCreateRequest): Promise<AxiosResponse<Device>> {
+    return this.http.post(`/api/devices`, deviceAttrs)
   }
 
-  async deleteDevice(deviceId: Device['uid']): Promise<AxiosResponse<Device>> {
-    return await this.http.delete(`/api/devices/${deviceId}`)
+  deleteDevice(deviceId: Device['uid']): Promise<AxiosResponse<Device>> {
+    return this.http.delete(`/api/devices/${deviceId}`)
   }
 
-  async listEvents(): Promise<Event[]> {
-    const res = await this.http.get('/api/events')
-    return res.data
+  listEvents(): Promise<Event[]> {
+    return this.http.get('/api/events').then(x => x.data)
   }
 
-  async createEvent(mageEvent: MageEventCreateRequest): Promise<AxiosResponse<MageEvent>> {
-    return await this.http.post('/api/events', mageEvent)
+  createEvent(mageEvent: MageEventCreateRequest): Promise<AxiosResponse<MageEvent>> {
+    return this.http.post('/api/events', mageEvent)
   }
 
-  async readEvent(id: MageEventId): Promise<AxiosResponse<MageEventPopulated>> {
-    return await this.http.get(`/api/events/${id}`)
+  readEvent(id: MageEventId): Promise<AxiosResponse<MageEventPopulated>> {
+    return this.http.get(`/api/events/${id}`)
   }
 
-  async createForm(mageEventId: MageEventId, form: MageFormCreateRequest): Promise<AxiosResponse<MageForm>> {
-    return await this.http.post(`/api/events/${mageEventId}/forms`, form)
+  createForm(mageEventId: MageEventId, form: MageFormCreateRequest): Promise<AxiosResponse<MageForm>> {
+    return this.http.post(`/api/events/${mageEventId}/forms`, form)
   }
 
-  async updateForm(mageEventId: MageEventId, form: MageForm): Promise<AxiosResponse<MageForm>> {
-    return await this.http.put(`/api/events/${mageEventId}/forms/${form.id}`, form)
+  updateForm(mageEventId: MageEventId, form: MageForm): Promise<AxiosResponse<MageForm>> {
+    return this.http.put(`/api/events/${mageEventId}/forms/${form.id}`, form)
   }
 
-  async archiveForm(mageEvent: MageEvent | MageEventPopulated, formId: MageFormId): Promise<AxiosResponse<MageForm>> {
+  archiveForm(mageEvent: MageEvent | MageEventPopulated, formId: MageFormId): Promise<AxiosResponse<MageForm>> {
     const form = mageEvent.forms.find(x => x.id === formId)
     if (!form) {
       throw new Error(`form ${formId} does not exist on event ${mageEvent.id}`)
@@ -156,12 +170,12 @@ export class MageClientSession {
   /**
    * TODO: mage api should support a simple PUT with content-type header
    */
-  async saveMapIcon(...args: any[]): Promise<AxiosResponse<MapIcon>> {
-    const [ data, iconName, eventId, formId, primary, variant ] = await (async (): Promise<[ data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ]> => {
+  saveMapIcon(...args: any[]): Promise<AxiosResponse<MapIcon>> {
+    const [ data, iconName, eventId, formId, primary, variant ] = ((): [ data: Buffer | NodeJS.ReadableStream, iconName: string, eventId: MageEventId, formId: number, primary: string | undefined, variant: string | undefined ] => {
       if (typeof args[0] === 'string') {
         const [ filePath, eventId, formId, primary, variant ] = args
         const iconName = path.basename(filePath)
-        const data = await fs.createReadStream(filePath)
+        const data = fs.createReadStream(filePath)
         return [ data, iconName, eventId, formId, primary, variant ]
       }
       return [ args[0], args[1], args[2], args[3], args[4], args[5] ]
@@ -171,12 +185,12 @@ export class MageClientSession {
     const form = new FormData()
     const blobDuck = createBlobDuck(data, iconName)
     form.set('icon', blobDuck, iconName)
-    return await this.http.postForm(`/api/events/${eventId}/icons/${formId}${primaryPath}${variantPath}`, form)
+    return this.http.postForm(`/api/events/${eventId}/icons/${formId}${primaryPath}${variantPath}`, form)
   }
 
-  async addParticipantToEvent(event: MageEventPopulated, participantId: UserId): Promise<AxiosResponse<any>> {
+  addParticipantToEvent(event: MageEventPopulated, participantId: UserId): Promise<AxiosResponse<any>> {
     const eventTeam = event.teams.find(x => x.teamEventId === event.id)!
-    return await this.http.post(`/api/teams/${eventTeam.id}/users`, { id: participantId })
+    return this.http.post(`/api/teams/${eventTeam.id}/users`, { id: participantId })
   }
 
   async saveObservation(mod: ObservationMod, attachmentUploads?: AttachmentUpload[]): Promise<Observation> {
@@ -197,24 +211,24 @@ export class MageClientSession {
     return await this.readObservation(savedObs.eventId, savedObs.id)
   }
 
-  async saveAttachmentContent(content: NodeJS.ReadableStream, attachment: Attachment, observation: Observation): Promise<Attachment> {
+  saveAttachmentContent(content: NodeJS.ReadableStream, attachment: Attachment, observation: Observation): Promise<Attachment> {
     const form = new FormData()
     const blobDuck = createBlobDuck(content, String(attachment.name), attachment.contentType)
     form.set('attachment', blobDuck, blobDuck.name)
-    return await this.http.put(
+    return this.http.put(
       `/api/events/${observation.eventId}/observations/${observation.id}/attachments/${attachment.id}`, form)
       .then(x => x.data)
   }
 
-  async readObservations(eventId: MageEventId): Promise<Observation[]> {
-    return await this.http.get<Observation[]>(`/api/events/${eventId}/observations`).then(x => x.data)
+  readObservations(eventId: MageEventId): Promise<Observation[]> {
+    return this.http.get<Observation[]>(`/api/events/${eventId}/observations`).then(x => x.data)
   }
 
-  async readObservation(eventId: MageEventId, observationId: ObservationId): Promise<Observation> {
-    return await this.http.get<Observation>(`/api/events/${eventId}/observations/${observationId}`).then(x => x.data)
+  readObservation(eventId: MageEventId, observationId: ObservationId): Promise<Observation> {
+    return this.http.get<Observation>(`/api/events/${eventId}/observations/${observationId}`).then(x => x.data)
   }
 
-  async postUserLocations(eventId: number, locations: Array<[lon: number, lat: number, timestamp?: number | undefined]>): Promise<AxiosResponse<UserLocation[]>> {
+  postUserLocations(eventId: number, locations: Array<[lon: number, lat: number, timestamp?: number | undefined]>): Promise<AxiosResponse<UserLocation[]>> {
     const features = locations.map<geojson.Feature<geojson.Point>>(([ lon, lat, timestamp ]) => {
       if (typeof timestamp !== 'number') {
         timestamp = Date.now()
@@ -231,29 +245,29 @@ export class MageClientSession {
         }
       }
     })
-    return await this.http.post(`/api/events/${eventId}/locations`, features)
+    return this.http.post(`/api/events/${eventId}/locations`, features)
   }
 
-  async startExport(eventId: MageEventId, opts: ExportOptions): Promise<ExportInfo> {
+  startExport(eventId: MageEventId, opts: ExportOptions): Promise<ExportInfo> {
     const optsJson: ExportRequestJson = {
       ...opts,
       eventId,
       startDate: opts.startDate?.toISOString(),
       endDate: opts.endDate?.toISOString(),
     }
-    return await this.http.post<ExportInfo>(`/api/exports`, optsJson).then(x => x.data)
+    return this.http.post<ExportInfo>(`/api/exports`, optsJson).then(x => x.data)
   }
 
-  async readAllExports(): Promise<ExportInfo[]> {
-    return await this.http.get<ExportInfo[]>('/api/exports').then(x => x.data)
+  readAllExports(): Promise<ExportInfo[]> {
+    return this.http.get<ExportInfo[]>('/api/exports').then(x => x.data)
   }
 
-  async readMyExports(): Promise<ExportInfo[]> {
-    return await this.http.get<ExportInfo[]>('/api/exports/myself').then(x => x.data)
+  readMyExports(): Promise<ExportInfo[]> {
+    return this.http.get<ExportInfo[]>('/api/exports/myself').then(x => x.data)
   }
 
-  async downloadExport(exportId: ExportId): Promise<buffer.Buffer> {
-    return await this.http.get<buffer.Buffer>(`/api/exports/${exportId}`).then(x => x.data)
+  downloadExport(exportId: ExportId): Promise<buffer.Buffer> {
+    return this.http.get<buffer.Buffer>(`/api/exports/${exportId}`).then(x => x.data)
   }
 
   /**
@@ -263,7 +277,7 @@ export class MageClientSession {
    * Resolve to an `ExportTimeoutError` if timeout passes before the export
    * completes or fails.
    */
-  async waitForMyExport(id: ExportId, timeoutMillis: number = 5000): Promise<ExportInfo | null | ExportTimeoutError> {
+  waitForMyExport(id: ExportId, timeoutMillis: number = 5000): Promise<ExportInfo | null | ExportTimeoutError> {
     const start = Date.now()
     return new Promise<ExportInfo>(function tryAgain(this: MageClientSession, resolve: any, reject: any): void {
       this.readMyExports().then(exports => {
@@ -312,7 +326,7 @@ export interface SignInResult {
   token: string
   expirationDate: string
   user: User
-  device: Device
+  device?: Device | null
   api: any
 }
 
@@ -362,6 +376,77 @@ export interface Device {
 export type DeviceCreateRequest = Omit<Device, 'id'>
 
 export type RootUserSetupRequest = Omit<UserCreateRequest, 'roleId'> & Pick<Device, 'uid'>
+
+export enum AuthenticationStrategy {
+  Local = 'local',
+  OpenIDConnect = 'oidc',
+
+}
+
+export type AuthenticationProviderId = 'string'
+
+export interface AuthenticationProvider<Settings = any> {
+  _id: string
+  name: string
+  type: AuthenticationStrategy
+  title: string
+  textColor: null | string,
+  buttonColor: null | string,
+  icon: null | any,
+  settings: Settings
+  lastUpdated: ISODateString,
+  enabled: true,
+  isDirty: true
+}
+
+export interface LocalAuthenticationProviderSettings {
+  passwordPolicy: {
+    passwordHistoryCountEnabled: boolean
+    passwordHistoryCount: number
+    helpTextTemplate: {
+      passwordHistoryCount: string
+      passwordMinLength: string
+      restrictSpecialChars: string
+      specialChars: string
+      numbers: string
+      highLetters: string
+      lowLetters: string
+      maxConChars: string
+      minChars: string
+    }
+    helpText: string,
+    customizeHelpText: boolean,
+    passwordMinLengthEnabled: boolean,
+    passwordMinLength: number,
+    restrictSpecialChars: string,
+    restrictSpecialCharsEnabled: boolean,
+    specialChars: number,
+    specialCharsEnabled: boolean,
+    numbers: number,
+    numbersEnabled: boolean,
+    highLetters: number,
+    highLettersEnabled: boolean,
+    lowLetters: number,
+    lowLettersEnabled: boolean,
+    maxConChars: number
+    maxConCharsEnabled: boolean
+    minChars: number
+    minCharsEnabled: boolean
+  }
+  accountLock: {
+    enabled: boolean,
+    threshold: number,
+    interval: number
+  }
+  devicesReqAdmin: {
+    enabled: boolean
+  }
+  usersReqAdmin: {
+    enabled: boolean
+  }
+  newUserTeams: [],
+  newUserEvents: []
+}
 
 export interface MageEvent {
   id: MageEventId
