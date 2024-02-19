@@ -232,14 +232,15 @@ export class GeoPackage extends Exporter {
       zoomToEnvelope = calculateBounds(location.geometry, zoomToEnvelope);
       userLastLocation = location;
 
+      const properties = location.properties || {}
       const feature: geojson.Feature<geojson.Point, any> = {
         type: 'Feature',
         geometry: location.geometry,
-        properties: location.properties
+        properties
       };
-      feature.properties.mageId = location._id.toString();
-      feature.properties.userId = location.userId.toString();
-      feature.properties.deviceId = location.properties.deviceId.toString();
+      feature.properties.mageId = location._id.toString()
+      feature.properties.userId = location.userId?.toString()
+      feature.properties.deviceId = properties.deviceId ? properties.deviceId.toString() : undefined
 
       if (feature.properties.id) {
         delete feature.properties.id;

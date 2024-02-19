@@ -245,8 +245,8 @@ export class Csv extends Exporter {
     if (!cache.user || cache.user._id.toString() !== location.userId.toString()) {
       cache.user = await User.getUserById(location.userId)
     }
-    if (!cache.device || cache.device._id.toString() !== flat.deviceId.toString()) {
-      cache.device = await Device.getDeviceById(flat.deviceId)
+    if (!cache.device || cache.device._id.toString() !== flat.deviceId?.toString()) {
+      cache.device = flat.deviceId ? await Device.getDeviceById(flat.deviceId) : undefined
     }
     if (cache.user) {
       flat.user = cache.user.username
