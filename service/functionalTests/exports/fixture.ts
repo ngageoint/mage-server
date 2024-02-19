@@ -23,7 +23,7 @@ import path from 'path'
 import fs from 'fs'
 import fs_async from 'fs/promises'
 import { expect } from 'chai'
-import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod, createBlobDuck, DeviceCreateRequest, Device } from '../client'
+import { MageEventCreateRequest, MageClientSession, RootUserSetupRequest, UserCreateRequest, FormFieldType, MageFormCreateRequest, ObservationMod, MageForm, MageEvent, MageEventPopulated, Observation, AttachmentModAction, AttachmentMod, ObservationPropertiesMod, MageFormEntryMod, createBlobDuck, DeviceCreateRequest, Device, AuthenticationStrategy, AuthenticationProvider, LocalAuthenticationProviderSettings, SignInResult } from '../client'
 import { TestStack } from '../stack'
 
 export const rootSeed: RootUserSetupRequest = {
@@ -800,6 +800,34 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   expect(user4LocationsRes.status).to.equal(200)
   expect(user4LocationsRes.data).to.have.length(10)
+
+  const defaultLocalAuth = await rootSession.readAuthenticationProviders().then(res => res.data.find(x => x.type === AuthenticationStrategy.Local && x.name === 'local') as AuthenticationProvider<LocalAuthenticationProviderSettings>)
+
+  expect(defaultLocalAuth, 'no default local auth provider').to.exist
+
+  const deviceFreeLocalAuthSeed: AuthenticationProvider<LocalAuthenticationProviderSettings> = {
+    ...defaultLocalAuth,
+    title: 'Local Without Device Verification',
+    settings: {
+      ...defaultLocalAuth?.settings,
+      devicesReqAdmin: { enabled: false }
+    }
+  }
+  const deviceFreeLocalAuth = await rootSession.updateAuthenticationProvider(deviceFreeLocalAuthSeed).then(x => x.data)
+
+  expect(deviceFreeLocalAuth._id).to.equal(defaultLocalAuth._id)
+  expect(deviceFreeLocalAuth.settings.devicesReqAdmin?.enabled).to.be.false
+
+  const user4SessionNoDevice = new MageClientSession(stack.mageUrl)
+  const user4SignInNoDevice = await user4SessionNoDevice.signIn(usersSeed[3].username, usersSeed[3].password) as SignInResult
+
+  expect(user4SignInNoDevice.device?.uid).not.to.exist
+
+  const user4LocationNoDevice = await user4SessionNoDevice.postUserLocations(event.id, [ [ -155.233088, 19.426449 ] ])
+
+  expect(user4LocationNoDevice.status).to.equal(200)
+  expect(user4LocationNoDevice.data).to.have.length(1)
+  expect(user4LocationNoDevice.data[0].properties.devicedId).to.not.exist
 
   return {
     event: finalEvent,
