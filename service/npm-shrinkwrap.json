@@ -1,12 +1,12 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.10-beta.1",
+  "version": "6.2.10-beta.2",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@ngageoint/mage.service",
-      "version": "6.2.10-beta.1",
+      "version": "6.2.10-beta.2",
       "dependencies": {
         "@ngageoint/geopackage": "^4.2.4",
         "@node-saml/passport-saml": "^4.0.4",
