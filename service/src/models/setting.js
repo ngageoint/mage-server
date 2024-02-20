@@ -25,6 +25,7 @@ SettingSchema.set("toJSON", {
 
 // Creates the Model for the Setting Schema
 const Setting = mongoose.model('Setting', SettingSchema);
+exports.Model = Setting;
 
 exports.getSettings = function () {
   return Setting.find({}).exec();

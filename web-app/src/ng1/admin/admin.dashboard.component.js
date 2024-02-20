@@ -154,7 +154,7 @@ class AdminDashboardController {
     if (searchString == null) {
       searchString = '.*';
     }
-    
+
     return this.DevicePagingService.search(this.deviceStateAndData['all'], searchString).then(devices => {
       this.loginDeviceSearchResults = devices;
 

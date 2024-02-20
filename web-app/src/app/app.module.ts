@@ -176,6 +176,8 @@ import { ExportDataComponent } from './export/export-data/export-data.component'
 import { NoExportsComponent } from './export/empty-state/no-exports.component';
 import { AdminEventFormPreviewComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview-dialog.component';
+import { AdminMapComponent } from './admin/admin-map/admin-map.component';
+
 
 @NgModule({
   declarations: [
@@ -269,7 +271,8 @@ import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-
     AdminAuthenticationSettingsComponent,
     AdminSettingsUnsavedComponent,
     AdminEventFormPreviewComponent,
-    AdminEventFormPreviewDialogComponent
+    AdminEventFormPreviewDialogComponent,
+    AdminMapComponent
   ],
   imports: [
     CommonModule,

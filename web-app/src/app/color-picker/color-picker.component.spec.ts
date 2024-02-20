@@ -43,6 +43,7 @@ describe('ColorPickerComponent', () => {
     expect(component).toBeTruthy();
   });
 
+
   it('should show color picker on open', () => {
     component.open();
     expect(component.showColorPicker).toEqual(true);

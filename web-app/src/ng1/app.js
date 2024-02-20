@@ -27,7 +27,8 @@ import { LocationComponent } from '../app/map/controls/location.component';
 import { AddObservationComponent } from '../app/map/controls/add-observation.component';
 import { LeafletComponent } from '../app/map/leaflet.component';
 import { ExportComponent } from '../app/export/export.component';
-import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
+
+
 
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { ExportService } from '../app/export/export.service'
@@ -43,9 +44,12 @@ import { ObservationListItemComponent } from '../app/observation/observation-lis
 
 import { UserAvatarComponent } from '../app/user/user-avatar/user-avatar.component';
 import { UserPopupComponent } from '../app/user/user-popup/user-popup.component';
+import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
 
 import { ContactComponent } from '../app/contact/contact.component';
 
+import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
+import { AdminMapComponent } from '../app/admin/admin-map/admin-map.component';
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
 import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
@@ -77,7 +81,9 @@ app
   .factory('ExportService', downgradeInjectable(ExportService))
   .factory('FeedPanelService', downgradeInjectable(FeedPanelService))
   .factory('MapPopupService', downgradeInjectable(MapPopupService))
-  .factory('PluginService', downgradeInjectable(PluginService));
+  .factory('PluginService', downgradeInjectable(PluginService))
+  // TODO: remove this once we have a new user service
+  .factory('UserReadService', downgradeInjectable(UserReadService))
 
 // Downgraded Angular components
 app
@@ -106,6 +112,7 @@ app
   .directive('feedEdit', downgradeComponent({ component: AdminFeedEditComponent }))
   .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
   .directive('export', downgradeComponent({ component: ExportComponent }))
+  .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
   .directive('contact', downgradeComponent({ component: ContactComponent }))
@@ -431,6 +438,13 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   $stateProvider.state('admin.service', {
     url: '/services/:serviceId',
     component: "adminService",
+    resolve: resolveAdmin()
+  });
+
+  // Admin map routes
+  $stateProvider.state('admin.map', {
+    url: '/map',
+    component: "upgradedAdminMapSettings",
     resolve: resolveAdmin()
   });
 

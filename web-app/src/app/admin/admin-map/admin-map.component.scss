@@ -1,0 +1,65 @@
+@import '~@angular/material/theming';
+@import "variables.scss";
+
+:host ::ng-deep label {
+  font-weight: unset;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  overflow-y: auto;
+  background-color: #F0F0F0;
+}
+
+.content {
+  display: block;
+  margin: 16px;
+}
+
+.platform {}
+
+.platform__label {
+  font: 500 20px/32px Roboto, "Helvetica Neue", sans-serif;
+  letter-spacing: normal;
+  margin: 0 0 16px;
+}
+
+.platform__description {
+    color: rgba(0, 0, 0, .6);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+}
+
+.radio-button {
+  margin: 5px;
+}
+
+mat-card-header {
+  color: white;
+  background-color: mat-color($app-primary);
+  position: relative;
+  padding: 16px 16px 0;
+  margin-bottom: 8px;
+}
+
+mat-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+mat-card-content {
+  padding: 16px;
+}
+
+mat-form-field {
+  width: 600px;
+}
+

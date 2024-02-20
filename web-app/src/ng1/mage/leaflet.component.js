@@ -183,13 +183,13 @@ class LeafletController {
 
     this.map.fitBounds(
       L.latLngBounds(
-        L.latLng($event.feature.bbox[1], $event.feature.bbox[0]),
-        L.latLng($event.feature.bbox[3], $event.feature.bbox[2])
+        L.latLng($event.result.bbox[1], $event.result.bbox[0]),
+        L.latLng($event.result.bbox[3], $event.result.bbox[2])
       )
     );
 
-    const popup = L.popup({ className: 'leaflet-material-popup' }).setContent($event.feature.properties.display_name);
-    this.searchMarker = L.marker([$event.feature.geometry.coordinates[1], $event.feature.geometry.coordinates[0]])
+    const popup = L.popup({ className: 'leaflet-material-popup' }).setContent($event.result.name);
+    this.searchMarker = L.marker([$event.result.position[1], $event.result.position[0]])
       .addTo(this.map)
       .bindPopup(popup)
       .openPopup();

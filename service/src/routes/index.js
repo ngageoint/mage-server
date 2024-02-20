@@ -15,9 +15,12 @@ module.exports = function(app, security) {
   const { modulesPathsInDir } = require('../utilities/loader');
 
   app.get('/api', function (req, res, next) {
+    console.log('*********************** get api ')
+
     async.parallel({
       initial: function (done) {
         User.count(function (err, count) {
+          console.log('*********************** user count is ', count)
           done(err, count === 0);
         });
       },

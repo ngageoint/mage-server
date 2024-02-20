@@ -1343,8 +1343,11 @@ describe('observation entities', function() {
 
       it('updates attachments', function() {
 
-        const beforeLastModified = Date.now() - 1000 * 60 * 60
-        const beforeAttrs = makeObservationAttrs(mageEvent)
+        const beforeLastModified = Date.now() - 1000 * 60 * 35
+        const beforeAttrs = {
+          ...makeObservationAttrs(mageEvent),
+          lastModified: new Date(beforeLastModified),
+        }
         beforeAttrs.properties.forms = [
           {
             id: 'attachments',
