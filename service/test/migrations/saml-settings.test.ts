@@ -1,6 +1,6 @@
 import { describe, it, before, after } from 'mocha'
 import * as mongoTest from '../mongo.test'
-import * as migration from '../../lib/migrations/030-saml-settings'
+import * as migration from '../../lib/migrations/031-saml-settings'
 import { Db } from 'mongodb'
 import { expect } from 'chai'
 
