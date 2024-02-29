@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM registry1.dso.mil/ironbank/opensource/nodejs/debian/nodejs:18.19.1
 
 ARG service_version=latest
 ARG web_version=${service_version}
