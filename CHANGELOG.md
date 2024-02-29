@@ -18,6 +18,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
   the `options` entry.  See the related bug fix below.
 
 #### Features
+* Admins can now configure different placename search services in settings.
 * Layer file download - The _Layer_ admin web page now includes a button to
   download layer files when applicable.  This currently works only for
   GeoPackage layers.
@@ -26,7 +27,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * The web app and service incorrectly used a `settings.options` sub-document on
   SAML configurations to read and write some entries that should be in the
   `settings` entry.
+* Admin user search could crash the server when sending certain characters.
+* Feed item timestamps appeared as epoch milliseconds rather than formatted dates.
 * Many third-party dependencies were quite outdated or superfluous.
+* Fortify static code analysis had findings that were addressed.
+* GeoPackage and CSV exports had several null reference bugs.
+* Some TypeScript DTS files for plain JS files were incorrect or incomplete.
+* The ready event for app startup was emitting before the HTTP server was actually listening.
+* The service configuration did not allow a port value of `0`, which prompts the HTTP server to pick a random open port.  This helps with testing.
 
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 
