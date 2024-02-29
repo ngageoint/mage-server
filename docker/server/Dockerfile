@@ -7,13 +7,9 @@ ARG msi_version=latest
 
 LABEL author="NGA"
 
-WORKDIR /root/building
+USER root
 
-RUN apt-get update && apt-get -y install \
-    curl \
-    git \
-    sudo \
-    unzip
+RUN apt-get update
 
 RUN groupadd -r mage \
     && useradd -m -r -s /bin/bash -g mage mage \

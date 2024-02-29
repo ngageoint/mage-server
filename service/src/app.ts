@@ -1,7 +1,7 @@
 import environment from './environment/env'
 import log from './logger'
 import { InjectableServices, integratePluginHooks } from './main.impl/main.impl.plugins'
-import http from 'http'
+import httpLib from 'http'
 import fs from 'fs-extra'
 import mongoose from 'mongoose'
 import express from 'express'
@@ -65,7 +65,7 @@ import { SettingRepository } from './entities/settings/entities.settings'
 
 export interface MageService {
   webController: express.Application
-  server: http.Server
+  server: httpLib.Server
   open(): this
 }
 
@@ -95,7 +95,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 
   const mongooseLogger = log.loggers.get('mongoose')
   mongoose.set('debug', function (collection: any, method: any, ...methodArgs: any[]) {
-    const formatter = (arg: any) => {
+    const formatter = (arg: any): string => {
       return util.inspect(arg, false, 10, true).replace(/\n/g, '').replace(/\s{2,}/g, ' ');
     }
     mongooseLogger.log('mongoose', `${collection}.${method}` + `(${methodArgs.map(formatter).join(', ')})`)
@@ -192,14 +192,15 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     throw new Error('error initializing scheduled tasks: ' + err)
   }
 
-  const server = http.createServer(webController)
+  const server = httpLib.createServer(webController)
   service = {
     webController,
     server,
     open(): MageService {
-      server.listen(environment.port, environment.address,
-        () => log.info(`MAGE Server listening at address ${environment.address} on port ${environment.port}`))
-      webController.emit(MageReadyEvent, service)
+      server.listen(environment.port, environment.address, () => {
+        log.info(`MAGE Server listening at address ${environment.address} on port ${environment.port}`)
+        webController.emit(MageReadyEvent, service)
+      })
       return this
     }
   }
@@ -498,6 +499,8 @@ interface MageEventRequestContext extends AppRequestContext<UserDocument> {
   event: MageEventDocument | MageEvent | undefined
 }
 
+const observationEventScopeKey = 'observationEventScope' as const
+
 async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: string[]):
   Promise<{ webController: express.Application, addAuthenticatedPluginRoutes: (pluginId: string, pluginRoutes: WebRoutesHooks['webRoutes']) => void }> {
   // load routes the old way
@@ -629,8 +632,6 @@ function baseAppRequestContext(req: express.Request): AppRequestContext<UserWith
     }
   }
 }
-
-const observationEventScopeKey = 'observationEventScope' as const
 
 function ensureObservationEventScope(eventRepo: MageEventRepository, createObsRepo: ObservationRepositoryForEvent) {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {

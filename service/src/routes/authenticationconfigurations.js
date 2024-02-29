@@ -19,9 +19,8 @@ module.exports = function (app, security) {
         access.authorize('READ_AUTH_CONFIG'),
         function (req, res, next) {
             const includeDisabled = req.query.includeDisabled === 'true' ? true :
-                req.query.includeDisabled === 'false' ? false :
-                    req.query.includeDisabled;
-            AuthenticationConfiguration.getAllConfigurations().then(configs => {
+                req.query.includeDisabled === 'false' ? false : req.query.includeDisabled;
+                AuthenticationConfiguration.getAllConfigurations().then(configs => {
                 const filtered = configs.filter(config => {
                     if (!config.enabled) {
                         if (includeDisabled) {
@@ -34,7 +33,7 @@ module.exports = function (app, security) {
                 });
 
                 const promises = [];
-                
+
                 filtered.forEach(config => {
                     promises.push(SecurePropertyAppender.appendToConfig(config));
                 });
@@ -79,14 +78,12 @@ module.exports = function (app, security) {
                 enabled: req.body.enabled,
                 settings: {}
             };
-
             const securityData = {};
-
-            const settings = JSON.parse(req.body.settings);
+            const { settings } = req.body;
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
-                    if(AuthenticationConfiguration.secureMask !== settings[key]) {
+                    if (AuthenticationConfiguration.secureMask !== settings[key]) {
                         securityData[key] = settings[key];
                     }
                 } else {
@@ -150,10 +147,8 @@ module.exports = function (app, security) {
                 enabled: req.body.enabled,
                 settings: {}
             };
-
             const securityData = {};
-
-            const settings = JSON.parse(req.body.settings);
+            const { settings } = req.body;
 
             Object.keys(settings).forEach(key => {
                 if (blacklist && blacklist.indexOf(key.toLowerCase()) != -1) {
@@ -176,7 +171,7 @@ module.exports = function (app, security) {
                 return Promise.all(response);
             }).then(response => {
                 // Read any authentications that could be attached to this config
-                // For example: 
+                // For example:
                 // 1. authentications attached to saml
                 // 2. saml removed
                 // 3. Authentications attached to saml no longer have a config

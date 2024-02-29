@@ -35,7 +35,8 @@ export interface MongoTestContext {
  * ```
  */
 export function mongoTestBeforeAllHook(opts?: MongoMemoryServerOpts): () => Promise<void> {
-  return async function setupMongoServer(this: Mocha.Context) {
+  async function setupMongoServer(this: Mocha.Context) {
+    this.timeout(300000)
     const server = await MongoMemoryServer.create(opts)
     const uri = server.getUri()
     const conn = await mongoose.createConnection(uri, {
@@ -44,6 +45,7 @@ export function mongoTestBeforeAllHook(opts?: MongoMemoryServerOpts): () => Prom
     })
     this.mongo = { server, uri, conn }
   }
+  return setupMongoServer
 }
 
 /**

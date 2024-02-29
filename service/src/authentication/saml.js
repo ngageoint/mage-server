@@ -1,4 +1,4 @@
-const SamlStrategy = require('passport-saml').Strategy
+const SamlStrategy = require('@node-saml/passport-saml').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
@@ -14,15 +14,12 @@ function configure(strategy) {
 
   const options = {
     path: `/auth/${strategy.name}/callback`,
-    entryPoint: strategy.settings.options.entryPoint,
-    issuer: strategy.settings.options.issuer
+    entryPoint: strategy.settings.entryPoint,
+    cert: strategy.settings.cert,
+    issuer: strategy.settings.issuer
   }
-
-  if (strategy.settings.cert) {
-    options.cert = strategy.settings.cert;
-  }
-  if (strategy.settings.privateCert) {
-    options.privateCert = strategy.settings.privateCert;
+  if (strategy.settings.privateKey) {
+    options.privateKey = strategy.settings.privateKey;
   }
   if (strategy.settings.decryptionPvk) {
     options.decryptionPvk = strategy.settings.decryptionPvk;
@@ -128,7 +125,10 @@ function configure(strategy) {
 
   function authenticate(req, res, next) {
     AuthenticationInitializer.passport.authenticate(strategy.name, function (err, user, info = {}) {
-      if (err) return next(err);
+      if (err) {
+        console.error('saml: authentication error', err);
+        return next(err);
+      }
 
       req.user = user;
 
@@ -150,6 +150,9 @@ function configure(strategy) {
 
       // DEPRECATED session authorization, remove req.login which creates session in next version
       req.login(user, function (err) {
+        if (err) {
+          return next(err);
+        }
         AuthenticationInitializer.tokenService.generateToken(user._id.toString(), TokenAssertion.Authorized, 60 * 5)
           .then(token => {
             req.token = token;
@@ -170,7 +173,9 @@ function configure(strategy) {
       let state = {};
       try {
         state = JSON.parse(req.body.RelayState)
-      } catch(ignore) {}
+      } catch (ignore) {
+        console.warn('saml: error parsing RelayState', ignore)
+      }
 
       if (state.initiator === 'mage') {
         if (state.client === 'mobile') {
@@ -209,9 +214,6 @@ function setDefaults(strategy) {
   }
   if (!strategy.settings.profile.id) {
     strategy.settings.profile.id = 'uid';
-  }
-  if (!strategy.settings.options) {
-    strategy.settings.options = {};
   }
 }
 
@@ -321,8 +323,7 @@ function initialize(strategy) {
       req.session = null;
     }
   );
-
-};
+}
 
 module.exports = {
   initialize

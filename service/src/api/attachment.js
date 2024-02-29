@@ -86,6 +86,9 @@ Attachment.prototype.delete = function(attachmentId, callback) {
   });
 };
 
+/**
+ * TODO: this no longer works with the directory scheme `FileSystemAttachmentStore` uses.
+ */
 Attachment.prototype.deleteAllForEvent = function (callback) {
   const directoryPath = path.join(attachmentBase, this._event.collectionName);
   log.info('removing attachments directory ' + directoryPath);

@@ -15,7 +15,7 @@ export interface IconFetch extends PagingParameters {
 })
 export class StaticIconService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private webClient: HttpClient) { }
 
   fetchIcons(fetch?: IconFetch): Observable<PageOf<StaticIcon>> {
     const now = Date.now()
@@ -49,7 +49,7 @@ export class StaticIconService {
   }
 
   fetchIconById(id: string): Observable<StaticIcon | null> {
-    return this.http.get<StaticIcon>(`/api/icons/${id}`).pipe(
+    return this.webClient.get<StaticIcon>(`/api/icons/${id}`).pipe(
       catchError((err, caught) => {
         // TODO: this is probably better practice to insulate app layer from
         // http errors
@@ -64,7 +64,7 @@ export class StaticIconService {
   }
 
   fetchIconBySourceUrl(url: string): Observable<StaticIcon> {
-    return this.http.get<StaticIcon | null>(`/api/icons`, {
+    return this.webClient.get<StaticIcon | null>(`/api/icons`, {
       params: new HttpParams().set('source_url', url)
     })
   }

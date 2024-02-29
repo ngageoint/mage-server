@@ -7,7 +7,6 @@ import { default as countries } from './countries-land-10km.geo.json';
 import { LocationState } from '../../app/map/controls/location.component';
 import { ZoomDirection } from '../../app/map/controls/zoom.component';
 
-require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
 require('leaflet.markercluster');
 

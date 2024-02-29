@@ -91,6 +91,11 @@ export enum StaticIconPermission {
   STATIC_ICON_WRITE = 'STATIC_ICON_WRITE',
 }
 
+export enum ExportPermission {
+  READ_EXPORT = 'READ_EXPORT',
+  DELETE_EXPORT = 'DELETE_EXPORT',
+}
+
 export const allPermissions = Object.freeze({
   ...DevicePermission,
   ...UsersPermission,
@@ -102,7 +107,8 @@ export const allPermissions = Object.freeze({
   ...TeamPermission,
   ...SettingPermission,
   ...FeedsPermission,
-  ...StaticIconPermission
+  ...StaticIconPermission,
+  ...ExportPermission,
 })
 
 export type AnyPermission =
@@ -117,6 +123,7 @@ export type AnyPermission =
   | SettingPermission
   | FeedsPermission
   | StaticIconPermission
+  | ExportPermission
 
 const allPermissionsList = Object.freeze(Object.values(allPermissions))
 

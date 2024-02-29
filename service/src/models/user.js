@@ -1,7 +1,7 @@
 "use strict";
 
 const mongoose = require('mongoose')
-  , async = require("async")
+  , async = require('async')
   , moment = require('moment')
   , Token = require('./token')
   , Login = require('./login')

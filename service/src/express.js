@@ -65,12 +65,11 @@ const authentication = AuthenticationInitializer.initialize(app, passport, provi
 // TODO: don't pass authentication to other routes, but enforce authentication ahead of adding route modules
 require('./routes')(app, { authentication });
 
+// Express requires a 4 parameter function callback, do not remove unused next parameter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use(function(err, req, res, next) { // Express requires a 4 parameter function callback, dont' remove unused next parameter
-  if (process.env.NODE_ENV !== 'test') {
-    log.error(err.message);
-    log.error(err.stack);
-  }
+app.use(function(err, req, res, next) {
+
+  log.error('\n-----\nunhandled error during request\n', req.method, req.path, err, '\n-----')
 
   const status = err.status || 500;
   let msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;

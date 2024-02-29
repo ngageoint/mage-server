@@ -11,12 +11,22 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10)
 
-#### Features
+#### Database Migrations
+* [SAML settings](./service/src/migrations/030-saml-settings.js)
+  This migration modifies documents in the `authenticationconfigurations` collection
+  by moving all entries from `settings.options` into `settings` and removing
+  the `options` entry.  See the related bug fix below.
 
-- **Download Layer File Button**:
-  - Added a new "Download" layer file button to the interface.
-  - Allows users to download layer files associated with a specific layer.
-  - Enhanced user experience by enabling easy file downloads.
+#### Features
+* Layer file download - The _Layer_ admin web page now includes a button to
+  download layer files when applicable.  This currently works only for
+  GeoPackage layers.
+
+#### Bug Fixes
+* The web app and service incorrectly used a `settings.options` sub-document on
+  SAML configurations to read and write some entries that should be in the
+  `settings` entry.
+* Many third-party dependencies were quite outdated or superfluous.
 
 ## [6.2.9](https://github.com/ngageoint/mage-server/releases/tag/6.2.9)
 

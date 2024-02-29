@@ -1,6 +1,7 @@
 import { SharpImageService } from './adapters.images.sharp'
 import { ImageContent } from './processor'
 import fs from 'fs'
+import fs_async from 'fs/promises'
 import path from 'path'
 import stream from 'stream'
 import sharp from 'sharp'
@@ -29,7 +30,7 @@ describe('sharp image service', () => {
       const expectedPixels = await sharp(path.resolve(imageBasePath, 'majestic_ram.oriented.jpg')).toBuffer()
       const orientedByServiceJimp = await Jimp.read(dest.content)
       const expectedJimp = await Jimp.read(expectedPixels)
-      const percentDifferent = Jimp.distance(orientedByServiceJimp, expectedJimp) * 100
+      const percentDifferent = Jimp.diff(orientedByServiceJimp, expectedJimp).percent
 
       expect(percentDifferent).toBeLessThan(1)
       expect(oriented.sizeInBytes).toEqual(dest.content.length)
@@ -65,7 +66,7 @@ describe('sharp image service', () => {
       const expectedPixels = await sharp(path.resolve(imageBasePath, 'tumbeasts-120x76.png')).toBuffer()
       const scaledJimp = await Jimp.read(dest.content)
       const expectedJimp = await Jimp.read(expectedPixels)
-      const percentDifferent = Jimp.distance(scaledJimp, expectedJimp) * 100
+      const percentDifferent = Jimp.diff(scaledJimp, expectedJimp).percent
 
       expect(scaled).toEqual(jasmine.objectContaining({
         mediaType: 'image/png',
@@ -96,7 +97,7 @@ describe('sharp image service', () => {
       const expectedPixels = await sharp(path.resolve(imageBasePath, 'tumbeasts-76x120.png')).toBuffer()
       const scaledJimp = await Jimp.read(dest.content)
       const expectedJimp = await Jimp.read(expectedPixels)
-      const percentDifferent = Jimp.distance(scaledJimp, expectedJimp) * 100
+      const percentDifferent = Jimp.diff(scaledJimp, expectedJimp).percent
 
       expect(scaled).toEqual(jasmine.objectContaining({
         mediaType: 'image/png',
@@ -127,7 +128,7 @@ describe('sharp image service', () => {
       const expectedPixels = await sharp(path.resolve(imageBasePath, 'tumbeasts-48x76.png')).toBuffer()
       const scaledJimp = await Jimp.read(dest.content)
       const expectedJimp = await Jimp.read(expectedPixels)
-      const percentDifferent = Jimp.distance(scaledJimp, expectedJimp) * 100
+      const percentDifferent = Jimp.diff(scaledJimp, expectedJimp).percent
 
       expect(scaled).toEqual(jasmine.objectContaining({
         mediaType: 'image/png',
@@ -154,7 +155,7 @@ describe('sharp image service', () => {
       const expectedPixels = await sharp(path.resolve(imageBasePath, 'tumbeasts-48x76.png')).toBuffer()
       const scaledJimp = await Jimp.read(dest.content)
       const expectedJimp = await Jimp.read(expectedPixels)
-      const percentDifferent = Jimp.distance(scaledJimp, expectedJimp) * 100
+      const percentDifferent = Jimp.diff(scaledJimp, expectedJimp).percent
 
       expect(scaled).toEqual(jasmine.objectContaining({
         mediaType: 'image/png',
@@ -171,7 +172,7 @@ describe('sharp image service', () => {
 
   describe('corrupted image tolerance', () => {
 
-    it('allows loading this test image found on a demo server', async () => {
+    it('returns an error loading this test image found on a demo server', async () => {
 
       const service = SharpImageService()
       const corruptedBytes = fs.readFileSync(path.join(imageBasePath, 'corrupted.jpeg'))
@@ -182,7 +183,7 @@ describe('sharp image service', () => {
       const corruptedDest = new BufferWriteable()
       const err = await service.autoOrient(corruptedSource, corruptedDest)
 
-      expect(err).not.toBeInstanceOf(Error)
+      expect(err).toBeInstanceOf(Error)
     })
   })
 })

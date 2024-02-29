@@ -40,7 +40,7 @@ module.exports = function (app, security) {
 
     const uid = req.param('uid');
     if (!uid) {
-      return res.send(400).send('passwordconfirm is required');
+      return res.send(400).send('uid is required');
     }
 
     req.device = {

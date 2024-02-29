@@ -13,19 +13,13 @@ type SearchQueryParams = {
   total?: 'true' | 'false'
 }
 
-const reqKeys: { [SearchParamKey in keyof UserSearchParams]: string } = {
-  term: 'term',
-  pageSize: 'page_size',
-  pageIndex: 'page',
-  includeTotalCount: 'total',
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserReadService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private webClient: HttpClient) { }
 
   search(which: UserSearchParams): Observable<PageOf<UserSearchResult>> {
     const queryParams: SearchQueryParams = {
@@ -38,7 +32,7 @@ export class UserReadService {
     if (typeof which.includeTotalCount === 'boolean') {
       queryParams.total = which.includeTotalCount ? 'true' : 'false'
     }
-    return this.http.get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
+    return this.webClient.get<PageOf<UserSearchResult>>(`${USER_READ_BASE_URL}/search`, {
       params: queryParams
     })
   }

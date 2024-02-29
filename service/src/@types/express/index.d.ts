@@ -2,7 +2,7 @@ import { UserDocument } from '../../models/user'
 
 declare module 'express-serve-static-core' {
   export interface Request {
-    user: UserDocument
+    user: UserDocument & any
     provisionedDeviceId: string
     /**
      * Return the root HTTP URL of the server, including the scheme, e.g.,

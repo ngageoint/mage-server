@@ -4,29 +4,22 @@
 
 The MAGE Server image contains the the core MAGE server Node app that consists
 of the ReST web service and the MAGE web app.  By default, the image also
-includes plugins maintained in the [MAGE server repository](../plugins/).  To
-build the image, you will need the NPM package tarballs for the MAGE server
-packages - `@ngageoint/mage.service`, `@ngageoint/mage.web-app`, and any
-available plugin packages.  You can obtain the tarballs by building the
-packages locally and using the `npm pack` command in each package directory,
-download the tarballs from a GitHub [actions workflow run](https://github.com/ngageoint/mage-server/actions),
-or from a GitHub [release](https://github.com/ngageoint/mage-server/releases).
-The server [Dockerfile](server/Dockerfile) expects the tarballs to be
-siblings of the Dockerfile, so move them into the `server` directory.  Then,
-starting the top level of the MAGE server repository:
+includes plugins maintained in the [MAGE server repository](../plugins/).  By
+default, the server [Dockerfile](./server/Dockerfile) pulls the latest tagged
+versions from the NPM registry.  You can override the version using Docker's
+`--build-arg` CLI switch to set the package versions you want in the image.
+If you are building on Apple Silicon hardware, use `--platform linux/amd64` so
+the built image platform matches the base image platform.  Here's an example of
+building the image with an explicit service version.
 ```bash
 $ cd ./docker/server
-$ docker build -t mage-server:<version>
+$ docker build --platform linux/amd64 --build-arg service_version=6.2.10 -t mage-server:<version> .
 ```
-If you are building from a release and have [GitHub CLI](https://cli.github.com/)
-installed, you can also use the [`build_release.sh`](server/build_release.sh)
-utility script.
-```bash
-$ cd ./docker/server
-$ ./build_release.sh 6.2.0
-```
-The script assumes that you have an [authenticated](https://cli.github.com/manual/gh_auth_login)
-GitHub CLI session.
+
+The Iron Bank [Dockerfile](./server/Dockerfile.ironbank) uses a different,
+hardened [base image](https://ironbank.dso.mil/repomap/details;registry1Path=opensource%252Fnodejs%252Fdebian%252Fnodejs)
+from  US DoD's [Iron Bank](https://ironbank.dso.mil/about) repository.  The
+Dockerfile builds exactly the same as the standard Dockerfile.
 
 ## Docker Compose
 

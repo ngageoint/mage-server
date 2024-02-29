@@ -1852,9 +1852,7 @@ describe('observations use case interactions', function() {
 
       expect(res.success).to.be.null
       expect(err).to.be.instanceOf(MageError)
-      expect(err.code).to.equal(ErrEntityNotFound)
-      expect(err.data.entityId).to.equal(req.attachmentId)
-      expect(err.data.entityType).to.equal('Attachment')
+      expect(err.code).to.equal(ErrInvalidInput)
       store.didNotReceive().saveContent(Arg.all())
       obsRepo.didNotReceive().save(Arg.all())
     })
@@ -1877,13 +1875,11 @@ describe('observations use case interactions', function() {
       }
       obsRepo.findById(obs.id).resolves(obs)
       const res = await storeAttachmentContent(req)
-      const err = res.error as EntityNotFoundError
+      const err = res.error as InvalidInputError
 
       expect(res.success).to.be.null
       expect(err).to.be.instanceOf(MageError)
-      expect(err.code).to.equal(ErrEntityNotFound)
-      expect(err.data.entityId).to.equal(req.attachmentId)
-      expect(err.data.entityType).to.equal('Attachment')
+      expect(err.code).to.equal(ErrInvalidInput)
       store.didNotReceive().saveContent(Arg.all())
       obsRepo.didNotReceive().save(Arg.all())
     })

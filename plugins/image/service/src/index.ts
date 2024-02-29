@@ -16,7 +16,7 @@ const consoleOverrides = logMethods.reduce((overrides, fn) => {
     ...overrides,
     [fn]: {
       writable: false,
-      value: (...args: any[]) => {
+      value: (...args: any[]): void => {
         globalThis.console[fn](new Date().toISOString(), '-', logPrefix, ...args)
       }
     }

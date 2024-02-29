@@ -27,7 +27,7 @@ const observationModel = Observation.observationModel;
 require('../../lib/models/export');
 const ExportModel = mongoose.model('Export');
 
-const exporterFactory = require('../../lib/export/exporterFactory')
+const { exportFactory } = require('../../lib/export')
 const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
 const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
@@ -169,8 +169,8 @@ describe("export tests", function () {
         relativePath: 'mock/path'
       }]);
 
-    sinon.mock(exporterFactory)
-      .expects('createExporter')
+    sinon.mock(exportFactory)
+      .expects('createExportTransform')
       .returns({
         export() {
           console.info('MOCK EXPORT')

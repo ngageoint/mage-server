@@ -124,7 +124,6 @@ exports.count = function (options) {
 
 exports.updateExport = function (id, exp) {
   return Export.findByIdAndUpdate(id, exp, {new: true}).exec();
-
 };
 
 exports.removeExport = function (id) {

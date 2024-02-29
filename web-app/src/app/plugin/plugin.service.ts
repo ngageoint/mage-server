@@ -111,7 +111,7 @@ export class PluginService {
   private plugins: Promise<PluginsById> | null = null
 
   constructor(
-    private http: HttpClient,
+    private webClient: HttpClient,
     private compiler: Compiler,
     private injector: Injector,
     @Inject(SYSTEMJS)
@@ -197,7 +197,7 @@ export class PluginService {
     }
     const token = this.localStorageService.getToken()
     this.plugins = new Promise(resolve => {
-      this.http.get<string[]>('/ui_plugins').subscribe(async (moduleIds) => {
+      this.webClient.get<string[]>('/ui_plugins').subscribe(async (moduleIds) => {
         const imports = moduleIds.map(moduleId => {
           return this.system.import<PluginBundleModule>(`/ui_plugins/${moduleId}?access_token=${token}`).then<[string, PluginBundleModule | null], [string, null]>(
             pluginModule => {
