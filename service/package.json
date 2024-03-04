@@ -24,8 +24,8 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 12.4",
-    "npm": ">= 6.x"
+    "node": ">= 16.x",
+    "npm": ">= 8.x"
   },
   "dependencies": {
     "@ngageoint/geopackage": "^4.2.4",
