@@ -15,3 +15,7 @@ pnpm-debug.log
 scratch/
 *.scratch/
 *.scratch.*
+/docker/auth-idp/ldap/config/*
+/docker/auth-idp/ldap/db/*
+# this line must be last
+!.gitkeep

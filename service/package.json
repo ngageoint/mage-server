@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.10-beta.3",
+  "version": "6.2.10",
   "displayName": "MAGE Service",
   "description": "MAGE is a geospatial situational awareness and data collection platform.  The MAGE Service is the ReST service API that the MAGE client apps use to interact with MAGE data.",
   "keywords": [
@@ -24,8 +24,8 @@
   ],
   "homepage": "https://www.nga.mil",
   "engines": {
-    "node": ">= 12.4",
-    "npm": ">= 6.x"
+    "node": ">= 16.x",
+    "npm": ">= 8.x"
   },
   "dependencies": {
     "@ngageoint/geopackage": "^4.2.4",
@@ -67,7 +67,7 @@
     "passport": "^0.6.0",
     "passport-anonymous": "1.0.1",
     "passport-http-bearer": "1.0.1",
-    "passport-ldapauth": "2.1.3",
+    "passport-ldapauth": "^3.0.1",
     "passport-local": "1.0.0",
     "passport-oauth2": "1.6.0",
     "passport-openidconnect": "0.1.1",
