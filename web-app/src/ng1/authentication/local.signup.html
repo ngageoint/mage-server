@@ -1,13 +1,13 @@
 <div class="row">
   <div class="col-md-12">
-    <form name="account" class="bottom-gap-l" autocomplete="off" novalidate>
+    <form name="account" class="bottom-gap-l" method="post" autocomplete="off" novalidate>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-        <input type="text" 
-          id="username" 
-          name="username" 
-          placeholder="i.e. jappleseed" 
-          autocomplete="new-password" 
+        <input type="text"
+          id="username"
+          name="username"
+          placeholder="i.e. jappleseed"
+          autocomplete="new-password"
           autocapitalize="off"
           ng-model="$ctrl.account.username"
           ng-blur="$ctrl.getCaptcha()"
@@ -23,13 +23,13 @@
       </div>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-          <input type="text" 
-            id="displayName" 
-            name="displayName" 
-            placeholder="Johnny Appleseed" 
+          <input type="text"
+            id="displayName"
+            name="displayName"
+            placeholder="Johnny Appleseed"
             autocomplete="none"
             autocapitalize="off"
-            ng-model="$ctrl.account.displayName" 
+            ng-model="$ctrl.account.displayName"
             required="true"
             class="mdc-text-field__input">
         <div class="mdc-notched-outline">
@@ -42,13 +42,13 @@
       </div>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-          <input type="email" 
-            id="signup-email" 
-            name="signup-email" 
-            placeholder="johnny@appleseed.com" 
+          <input type="email"
+            id="signup-email"
+            name="signup-email"
+            placeholder="johnny@appleseed.com"
             autocomplete="none"
             autocapitalize="off"
-            ng-model="$ctrl.account.email" 
+            ng-model="$ctrl.account.email"
             class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
@@ -60,12 +60,12 @@
       </div>
 
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
-          <input type="tel" 
-            id="signup-phone" 
-            name="signup-phone" 
+          <input type="tel"
+            id="signup-phone"
+            name="signup-phone"
             autocomplete="none"
             autocapitalize="off"
-            ng-model="$ctrl.account.phone" 
+            ng-model="$ctrl.account.phone"
             class="mdc-text-field__input">
         <div class="mdc-notched-outline">
           <div class="mdc-notched-outline__leading"></div>
@@ -87,7 +87,7 @@
           <div class="mdc-notched-outline__trailing"></div>
         </div>
       </div>
-      
+
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
         <input type="password" id="passwordconfirm" name="passwordconfirm" autocomplete="new-password" autocapitalize="off"
           ng-model="$ctrl.account.passwordconfirm" required="true" class="mdc-text-field__input">
@@ -102,7 +102,7 @@
       <div class="mdc-text-field-helper-line">
         <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Passwords do not match</div>
       </div>
-      
+
       <div>
         <div class="muted">Password Strength: <span
             class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></div>
@@ -144,7 +144,7 @@
           <button ng-if="$ctrl.captcha.uri" class="mdc-icon-button material-icons" ng-click="$ctrl.getCaptcha()">refresh</button>
         </div>
       </div>
-      
+
       <div class="top-gap mdc-text-field mdc-text-field--outlined" style="width: 100%">
         <input type="text" id="captchaText" name="captchaText" placeholder="Enter text from image above" autocapitalize="off"
           ng-model="$ctrl.account.captchaText" required="true" class="mdc-text-field__input">

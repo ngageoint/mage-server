@@ -1,11 +1,12 @@
 import mongoose from 'mongoose'
 import { GetDbConnection } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.db'
 import { EventProcessingState, FindUnprocessedImageAttachments, UnprocessedAttachmentReference } from './processor'
+import { ObjectId } from 'mongodb'
 
 export function FindUnprocessedAttachments(getDbConn: GetDbConnection, console: Console): FindUnprocessedImageAttachments {
   return async (eventProcessingStates: EventProcessingState[], lastModifiedAfter: number | null, lastModifiedBefore: number | null, limit: number | null): Promise<AsyncIterable<UnprocessedAttachmentReference>> => {
     return {
-      [Symbol.asyncIterator]: async function * () {
+      [Symbol.asyncIterator]: async function * (): AsyncGenerator<UnprocessedAttachmentReference> {
         limit = Number(limit)
         let remainingCount = limit > 0 ? limit : Number.POSITIVE_INFINITY
         const conn = await getDbConn()
@@ -18,9 +19,9 @@ export function FindUnprocessedAttachments(getDbConn: GetDbConnection, console: 
           }
           console.info(`query unprocessed attachments from event ${eventId} (${eventState.event.name}) newer than ${new Date(eventState.latestAttachmentProcessedTimestamp).toISOString()}`)
           const collection = conn.collection(eventState.collectionName)
-          const cursor = await collection.aggregate<UnprocessedAttachmentReference>(queryStages)
+          const cursor = await collection.aggregate<UnprocessedAttachmentReferenceDocument>(queryStages)
           for await (const doc of cursor) {
-            yield { eventId: eventState.event.id, observationId: doc.observationId, attachmentId: doc.attachmentId }
+            yield { eventId: eventState.event.id, observationId: doc.observationId.toString(), attachmentId: doc.attachmentId.toString() }
             if (--remainingCount === 0) {
               console.info(`reached unprocessed attachment limit ${limit}; cancelling query iteration`)
               return await cursor.close().then(_ => eventStateCursor.return!(null)).then(_ => null)
@@ -31,6 +32,8 @@ export function FindUnprocessedAttachments(getDbConn: GetDbConnection, console: 
     }
   }
 }
+
+type UnprocessedAttachmentReferenceDocument = Record<keyof UnprocessedAttachmentReference, ObjectId>
 
 async function * eventStatesWithCollectionNames(conn: mongoose.Connection, eventStates: Iterable<EventProcessingState>, console: Console): AsyncIterableIterator<EventProcessingState & { collectionName: string }> {
   for (const eventState of eventStates) {

@@ -3,7 +3,7 @@ module.exports = function(app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , {defaultHandler: upload} = require('../upload')
-    , DOMParser = require('xmldom').DOMParser
+    , DOMParser = require('@xmldom/xmldom').DOMParser
     , toGeoJson = require('../utilities/togeojson');
 
   const passport = security.authentication.passport;
@@ -21,7 +21,9 @@ module.exports = function(app, security) {
       if (err) return next(err);
 
       const kml = new DOMParser({
-        errorHandler: () => { /* ignore */ }
+        errorHandler: (level, message) => {
+          console.log('kml parsing', level, req.file.filename, message)
+        }
       }).parseFromString(data);
 
       if (!kml || kml.documentElement.nodeName !== 'kml') {

@@ -37,6 +37,9 @@ export type UserJson = Omit<UserDocument, '_id' | 'avatar' | 'roleId' | 'authent
 
 export declare const Model: mongoose.Model<UserDocument>
 
+export function getUserById(id: mongoose.Types.ObjectId): Promise<UserDocument | null>
+export function getUserById(id: mongoose.Types.ObjectId, callback: (err: null | any, result: UserDocument | null) => any): void
+
 type RoleReferenced = {
   roleId: string,
   role: never

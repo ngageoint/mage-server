@@ -1,24 +1,19 @@
+
 function AuthenticationConfigurationService($http, $httpParamSerializer) {
-
-    const service = {
-        getAllConfigurations: getAllConfigurations,
-        updateConfiguration: updateConfiguration,
-        deleteConfiguration: deleteConfiguration,
-        createConfiguration: createConfiguration,
-        countUsers: countUsers
-    };
-
-    return service;
 
     function getAllConfigurations(options) {
         options = options || {};
-
         return $http.get('/api/authentication/configuration/', { params: options });
     }
 
+    /**
+     * TODO: why is this using form encoding instead of straight json?
+     */
     function updateConfiguration(config) {
-        return $http.put('/api/authentication/configuration/' + config._id, $httpParamSerializer(config), {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        return $http.put('/api/authentication/configuration/' + config._id, config, {
+            headers: {
+                'content-type': 'application/json'
+            }
         });
     }
 
@@ -27,14 +22,24 @@ function AuthenticationConfigurationService($http, $httpParamSerializer) {
     }
 
     function createConfiguration(config) {
-        return $http.post('/api/authentication/configuration/', $httpParamSerializer(config), {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        return $http.post('/api/authentication/configuration/', config, {
+            headers: {
+                'content-type': 'application/json'
+            }
         });
     }
 
     function countUsers(id) {
         return $http.get('/api/authentication/configuration/count/' + id);
     }
+
+    return {
+        getAllConfigurations,
+        updateConfiguration,
+        deleteConfiguration,
+        createConfiguration,
+        countUsers
+    };
 };
 
 module.exports = AuthenticationConfigurationService;

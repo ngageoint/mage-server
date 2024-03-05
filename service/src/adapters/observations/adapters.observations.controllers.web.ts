@@ -173,7 +173,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
     .put(async (req, res, next) => {
       const body = req.body
       const observationId = req.params.observationId
-      if (body.hasOwnProperty('id') && body.id !== observationId) {
+      if (Object.prototype.hasOwnProperty.call(body, 'id') && body.id !== observationId) {
         return res.status(400).json({ message: 'Body observation ID does not match path observation ID' })
       }
       const mod = exoObservationModFromJson({ ...body, id: observationId })
@@ -181,7 +181,7 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
         return next(mod)
       }
       const appReq: SaveObservationRequest = createAppRequest(req, { observation: mod })
-      if (body.hasOwnProperty('eventId') && body.eventId !== appReq.context.mageEvent.id) {
+      if (Object.prototype.hasOwnProperty.call(body, 'eventId') && body.eventId !== appReq.context.mageEvent.id) {
         return res.status(400).json({ message: 'Body event ID does not match path event ID' })
       }
       const appRes = await app.saveObservation(appReq)

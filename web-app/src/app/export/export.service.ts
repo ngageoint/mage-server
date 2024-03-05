@@ -34,29 +34,29 @@ export interface ExportResponse {
 })
 export class ExportService {
 
-  constructor(private http: HttpClient) { }
+  constructor(private webClient: HttpClient) { }
 
   getExports(): Observable<Export[]> {
-    return this.http.get<Export[]>('/api/exports/myself');
+    return this.webClient.get<Export[]>('/api/exports/myself');
   }
 
   getAllExports(): Observable<Export[]> {
-    return this.http.get<Export[]>('/api/exports');
+    return this.webClient.get<Export[]>('/api/exports');
   }
 
   export(request: ExportRequest): Observable<ExportResponse> {
-    return this.http.post<ExportResponse>('/api/exports', request, {
+    return this.webClient.post<ExportResponse>('/api/exports', request, {
       headers: { "Content-Type": "application/json" }
     });
   }
 
   deleteExport(exportId: string): Observable<Object> {
     const url = "/api/exports/" + exportId;
-    return this.http.delete(url);
+    return this.webClient.delete(url);
   }
 
   retryExport(retry: Export): Observable<ExportResponse> {
-    return this.http.post<ExportResponse>(`/api/exports/${retry.id}/retry`, {}, {
+    return this.webClient.post<ExportResponse>(`/api/exports/${retry.id}/retry`, {}, {
       headers: { "Content-Type": "application/json" }
     });
   }

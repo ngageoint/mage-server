@@ -9,7 +9,6 @@ import { ZoomDirection } from '../../app/map/controls/zoom.component';
 import { GARSLayer } from '../leaflet-extensions/grid/gars/GARSLayer';
 import { MGRSLayer } from '../leaflet-extensions/grid/mgrs/MGRSLayer';
 
-require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
 require('leaflet.markercluster');
 

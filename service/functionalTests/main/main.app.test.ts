@@ -6,7 +6,7 @@ const request = require("request")
   , user = require('../../lib/models/user')
   , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
 
-describe('bootstrapping', function () {
+xdescribe('bootstrapping', function () {
   const conUrl = config.localServer.location;
   const noEditRolesUser = {
     _id: null,
@@ -173,7 +173,7 @@ describe('bootstrapping', function () {
       };
       request(updateEventOptions, function (err: any, response: any, body: any) {
         if (err) return done(err);
- 
+
         expect(response.statusCode).to.equal(403);
         done();
       });

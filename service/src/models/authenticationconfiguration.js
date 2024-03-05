@@ -57,7 +57,7 @@ function DbAuthenticationConfigurationToObject(config, ret, options) {
   }
 
   ret.icon = ret.icon ? ret.icon.toString('base64') : null;
-};
+}
 
 exports.transform = DbAuthenticationConfigurationToObject;
 exports.secureMask = secureMask;

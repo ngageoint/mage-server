@@ -1,8 +1,8 @@
 import { Component, Input, Inject, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
-import { MapService } from '../../upgrade/ajs-upgraded-providers';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
-import { contentPathOfIcon } from '@ngageoint/mage.web-core-lib/static-icon'
+import { MomentPipe } from 'src/app/moment/moment.pipe';
+import { MapService } from 'src/app/upgrade/ajs-upgraded-providers';
 
 @Component({
   selector: 'feed-item',
@@ -14,13 +14,17 @@ export class FeedItemComponent implements OnChanges {
   @Input() item: StyledFeature;
 
   hasContent = false
-  timestamp: number
+  date: string
   primary: string
   secondary: string
   mapFeature: StyledFeature
   properties = []
 
-  constructor(private feedPanelService: FeedPanelService, @Inject(MapService) private mapService: any) {}
+  constructor(
+    private feedPanelService: FeedPanelService,
+    private momentPipe: MomentPipe,
+    @Inject(MapService) private mapService: any
+    ) {}
 
   ngOnChanges(_changes: SimpleChanges): void {
     this.updateItem()
@@ -38,7 +42,7 @@ export class FeedItemComponent implements OnChanges {
     }
 
     if (this.feed.itemTemporalProperty && this.item.properties[this.feed.itemTemporalProperty] != null) {
-      this.timestamp = this.item.properties[this.feed.itemTemporalProperty];
+      this.date = this.momentPipe.transform(this.item.properties[this.feed.itemTemporalProperty]);
       this.hasContent = true;
     }
 
@@ -53,11 +57,17 @@ export class FeedItemComponent implements OnChanges {
     }
 
     if (this.item.properties) {
+      const schemaProperties = this.feed?.itemPropertiesSchema?.properties
+
       this.properties = Object.keys(this.item.properties).map(key => {
-        const schemaProperties = this.feed?.itemPropertiesSchema?.properties
+        let value = this.item.properties[key]
+        if (key === this.feed.itemTemporalProperty) {
+          value = this.momentPipe.transform(value)
+        }
+
         return {
           key: schemaProperties[key]?.title || key,
-          value: this.item.properties[key]
+          value: value
         }
       });
     }
