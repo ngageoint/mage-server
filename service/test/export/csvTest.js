@@ -7,10 +7,17 @@ const stream = require('stream')
 const util = require('util')
 const JSZip = require('jszip')
 const { Csv: CsvExporter } = require('../../lib/export/csv')
-const MockToken = require('../mockToken')
-const TokenModel = mongoose.model('Token')
+const createToken = require('../mockToken')
 
 require('sinon-mongoose');
+
+const TokenModel = require('../../lib/models/token');
+const UserModel = require('../../lib/models/user');
+const DeviceModel = require('../../lib/models/device');
+const Observation = require('../../lib/models/observation');
+
+require('../../lib/models/event');
+const EventModel = mongoose.model('Event');
 
 require('../../lib/models/team');
 const TeamModel = mongoose.model('Team');

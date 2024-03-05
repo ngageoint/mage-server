@@ -47,7 +47,7 @@ describe('saml settings migration', function() {
 
   afterEach(async function() {
     const col = db.collection(collectionName)
-    await col.remove({})
+    await col.deleteMany({})
   })
 
   it('has a migration id', function() {
@@ -112,7 +112,7 @@ describe('saml settings migration', function() {
 
       const postDocsByName = (await col.find().toArray()).reduce((byName, doc) => {
         return { ...byName, [doc.name]: doc }
-      }, {} as { [name: string]: object })
+      }, {} as { [name: string]: any })
 
       for (const preDoc of preDocs) {
         const postDoc = postDocsByName[preDoc.name]
@@ -141,14 +141,14 @@ describe('saml settings migration', function() {
       const col = db.collection(collectionName)
       const insertResult = await col.insertOne(preDoc)
 
-      expect(insertResult.insertedCount).to.equal(1)
+      expect(insertResult.insertedId).to.exist
 
       await migrateUp()
 
       const postDoc = await col.findOne({})
 
-      expect(postDoc.settings).to.exist
-      expect(postDoc.settings.options).not.to.exist
+      expect(postDoc?.settings).to.exist
+      expect(postDoc?.settings.options).not.to.exist
       expect(postDoc).to.deep.equal({
         _id: insertResult.insertedId,
         type: 'saml',
@@ -244,7 +244,7 @@ describe('saml settings migration', function() {
 
       const postDocsByName = await col.find({}).toArray().then(postDocs => {
         return postDocs.reduce((byName, doc) => ({ ...byName, [doc.name]: doc }), {})
-      })
+      }) as { [name: string]: Document }
 
       expect(Object.entries(postDocsByName).length).to.equal(3)
       for (const preDoc of preDocs) {
@@ -335,7 +335,7 @@ describe('saml settings migration', function() {
 
       const postDocsByName = await col.find({}).toArray().then(postDocs => {
         return postDocs.reduce((byName, doc) => ({ ...byName, [doc.name]: doc }), {})
-      })
+      }) as { [name: string]: Document }
 
       expect(Object.entries(postDocsByName).length).to.equal(3)
       for (const preDoc of preDocs) {
