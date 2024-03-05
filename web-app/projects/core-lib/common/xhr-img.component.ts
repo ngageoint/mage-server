@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, InjectionToken, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
+import { Component, Inject, InjectionToken, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser'
 import { Subscription } from 'rxjs'
@@ -64,9 +64,9 @@ export class XhrImgComponent implements OnChanges, OnDestroy {
   private blobUrl: string
   private subscription: Subscription
 
-  constructor(@Inject(OBJECT_URL_SERVICE) private objectUrlService: ObjectUrlService, private http: HttpClient, private sanitizer: DomSanitizer) {}
+  constructor(@Inject(OBJECT_URL_SERVICE) private objectUrlService: ObjectUrlService, private webClient: HttpClient, private sanitizer: DomSanitizer) {}
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     if (!changes.sourceUrl) {
       return
     }
@@ -77,7 +77,7 @@ export class XhrImgComponent implements OnChanges, OnDestroy {
     if (!this.sourceUrl) {
       return
     }
-    this.subscription = this.http.get(this.sourceUrl, { responseType: 'blob' })
+    this.subscription = this.webClient.get(this.sourceUrl, { responseType: 'blob' })
       .subscribe(x => {
         this.objectUrlService.revokeObjectURL(this.blobUrl)
         this.blobUrl = this.objectUrlService.createObjectURL(x)
@@ -85,15 +85,15 @@ export class XhrImgComponent implements OnChanges, OnDestroy {
       })
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.disposeCurrent()
   }
 
-  onImgLoad() {
+  onImgLoad(): void {
     this.disposeCurrent()
   }
 
-  private disposeCurrent() {
+  private disposeCurrent(): void {
     if (this.blobUrl) {
       this.objectUrlService.revokeObjectURL(this.blobUrl)
     }

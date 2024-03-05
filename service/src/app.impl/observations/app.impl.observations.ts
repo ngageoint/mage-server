@@ -4,7 +4,7 @@ import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/observations/app.api.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, patchAttachment, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, removeAttachment, thumbnailIndexForTargetDimension, validationResultMessage } from '../../entities/observations/entities.observations'
 import { UserId, UserRepository } from '../../entities/users/entities.users'
 
 export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
@@ -65,7 +65,8 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
     }
     const content = req.content
     if (content.mediaType !== attachmentBefore.contentType || content.name !== attachmentBefore.name) {
-      return AppResponse.error(entityNotFound(req.attachmentId, 'Attachment'))
+      const errorMessage = `attachment upload error - uploaded content name and media type ${content.name}|${content.mediaType} must match attachment ${attachmentBefore.name}|${attachmentBefore.contentType}`
+      return AppResponse.error(invalidInput(errorMessage))
     }
     const denied = await permissionService.ensureStoreAttachmentContentPermission(req.context, obsBefore, attachmentBefore.id)
     if (denied) {

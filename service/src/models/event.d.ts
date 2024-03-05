@@ -21,7 +21,7 @@ export type TeamDocument = Omit<Team, 'acl' | 'userIds'> & mongoose.Document & {
   }
 }
 
-export type MageEventDocument = Omit<mongoose.Document, '_id' | 'id'> & Omit<MageEventAttrs, 'id' | 'teamIds' | 'layerIds' | 'acl'> & {
+export type MageEventDocument = Omit<mongoose.Document, '_id' | 'id'> & Omit<MageEventAttrs, 'id' | 'forms' | 'teamIds' | 'layerIds' | 'acl'> & {
   _id: number
   id: number
   /**
@@ -29,6 +29,7 @@ export type MageEventDocument = Omit<mongoose.Document, '_id' | 'id'> & Omit<Mag
    * stores observations for the event.
    */
   collectionName: string
+  forms: FormDocument[]
   teamIds: mongoose.Types.ObjectId[] | TeamDocument[]
   layerIds: mongoose.Types.ObjectId[]
   acl: MageEventDocumentAcl
@@ -40,8 +41,9 @@ export interface MageEventDocumentAcl {
   [userId: string]: EventRole
 }
 
-export type FormDocument = Form & mongoose.Document & {
+export type FormDocument = Omit<Form, 'fields'> & mongoose.Document & {
   _id: number
+  fields: FormFieldDocument[]
 }
 export type FormFieldDocument = FormField & mongoose.Document & {
   _id: never

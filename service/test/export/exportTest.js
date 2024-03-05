@@ -1,21 +1,5 @@
 'use strict';
 
-const request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , mockfs = require('mock-fs')
-  , path = require('path')
-  , createToken = require('../mockToken')
-  , DeviceModel = require('../../lib/models/device')
-  , IconModel = require('../../lib/models/icon')
-  , TokenModel = require('../../lib/models/token')
-  , UserModel = require('../../lib/models/user')
-  , ExporterFactory = require('../../lib/export/exporterFactory')
-  , SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender')
-  , AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration')
-  , { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events')
-  , { EventAccessType } = require('../../lib/entities/events/entities.events');
-
 require('sinon-mongoose');
 
 require('../../lib/models/event');
@@ -26,6 +10,12 @@ const observationModel = Observation.observationModel;
 
 require('../../lib/models/export');
 const ExportModel = mongoose.model('Export');
+
+const { exportFactory } = require('../../lib/export')
+const SecurePropertyAppender = require('../../lib/security/utilities/secure-property-appender');
+const AuthenticationConfiguration = require('../../lib/models/authenticationconfiguration');
+const { defaultEventPermissionsService: eventPermissions } = require('../../lib/permissions/permissions.events');
+const { EventAccessType } = require('../../lib/entities/events/entities.events');
 
 describe("export tests", function () {
 
@@ -159,8 +149,8 @@ describe("export tests", function () {
         relativePath: 'mock/path'
       }]);
 
-    sinon.mock(ExporterFactory)
-      .expects('createExporter')
+    sinon.mock(exportFactory)
+      .expects('createExportTransform')
       .returns({
         export() {
           console.info('MOCK EXPORT')

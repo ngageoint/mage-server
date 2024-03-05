@@ -1,7 +1,7 @@
 "use strict";
 
 const mongoose = require('mongoose')
-  , async = require("async")
+  , async = require('async')
   , hasher = require('../utilities/pbkdf2')()
   , User = require('./user')
   , Token = require('./token')

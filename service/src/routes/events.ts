@@ -1,9 +1,9 @@
-const  api = require('../api')
-  , async = require('async')
-  , util = require('util')
-  , fileType = require('file-type')
-  , userTransformer = require('../transformers/user');
+const api = require('../api')
+const userTransformer = require('../transformers/user')
 
+import async from 'async'
+import util from 'util'
+import fileType from 'file-type'
 import EventModel, { FormDocument, MageEventDocument } from '../models/event'
 import express from 'express'
 import access from '../access'
@@ -27,7 +27,7 @@ declare module 'express-serve-static-core' {
   }
 }
 
-function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction) {
+function determineReadAccess(req: express.Request, res: express.Response, next: express.NextFunction): void {
   if (!access.userHasPermission(req.user, MageEventPermission.READ_EVENT_ALL)) {
     req.access = { user: req.user, permission: EventAccessType.Read };
   }
@@ -137,7 +137,7 @@ const parseForm: express.RequestHandler = function parseRequestBodyAsForm(req, r
       if (typeof primaryStyleIn === 'object') {
         const primaryTree: any = reduceStyle(primaryStyleIn)
         for (const secondaryTitle of secondaryChoices) {
-          let secondaryStyleIn = primaryStyleIn[secondaryTitle]
+          const secondaryStyleIn = primaryStyleIn[secondaryTitle]
           if (typeof secondaryStyleIn === 'object') {
             primaryTree[secondaryTitle] = reduceStyle(secondaryStyleIn)
           }
@@ -168,10 +168,16 @@ function reduceStyle(style: any): LineStyle {
 
 
 
-function EventRoutes(app: express.Application, security: { authentication: authentication.AuthLayer }) {
+function EventRoutes(app: express.Application, security: { authentication: authentication.AuthLayer }): void {
 
   const passport = security.authentication.passport;
 
+  /*
+  TODO: this just sends whatever is in the body straight through the API level
+  and to the DB model with no sanitization and minimal validation.  this
+  bypasses ID/name generation for forms and fields.  the model has some
+  validation rules for those but
+  */
   app.post(
     '/api/events',
     passport.authenticate('bearer'),
@@ -282,11 +288,11 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         return next();
       }
 
-      function validateForm(callback: any) {
+      function validateForm(callback: any): void {
         new api.Form().validate(req.file, callback);
       }
 
-      function updateEvent(form: FormDocument, callback: any) {
+      function updateEvent(form: FormDocument, callback: any): void {
         form.name = req.param('name');
         form.color = req.param('color');
         new api.Event(req.event).addForm(form, function(err: any, form: FormDocument) {
@@ -294,7 +300,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         });
       }
 
-      function importIcons(form: FormDocument, callback: any) {
+      function importIcons(form: FormDocument, callback: any): void {
         new api.Form(req.event).importIcons(req.file, form, function(err: any) {
           callback(err, form);
         });
@@ -304,7 +310,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         validateForm,
         updateEvent,
         importIcons
-      ], function (err: any, form: FormDocument) {
+      ], function (err: any, form?: FormDocument) {
         if (err) {
           return next(err);
         }
@@ -324,17 +330,17 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) return next(err);
 
         async.parallel([
-          function(done: any) {
+          function(done: any): void {
             new api.Icon(req.event!._id, form._id).saveDefaultIconToEventForm(function(err: any) {
               done(err);
             });
           },
-          function(done: any) {
+          function(done: any): void {
             new api.Form(req.event, form).populateUserFields(function(err: any) {
               done(err);
             });
           }
-        ], function(err: any) {
+        ], function(err: any): void {
           if (err) return next(err);
           res.status(201).json(form.toJSON());
         });
@@ -489,7 +495,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
                 formId: icon.formId,
                 primary: icon.primary,
                 variant: icon.variant,
-                icon: util.format('data:%s;base64,%s', dataType.mime, data.toString('base64'))
+                icon: util.format('data:%s;base64,%s', dataType?.mime, data.toString('base64'))
               });
             });
           }
@@ -700,7 +706,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
       }).catch(err => next(err));
     }
   );
-};
+}
 
 export = EventRoutes
 

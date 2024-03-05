@@ -47,7 +47,7 @@ export class AuthenticationCreateComponent implements OnInit {
       oauth: ['clientSecret', 'clientID', 'authorizationURL', 'tokenURL', 'profileURL'],
       openidconnect: ['clientSecret', 'clientID', 'issuer', 'authorizationURL', 'tokenURL', 'profileURL'],
       ldap: ['url'],
-      saml: ['entryPoint']
+      saml: ['entryPoint', 'cert']
    }
 
    constructor(

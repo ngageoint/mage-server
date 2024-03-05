@@ -1,18 +1,14 @@
 'use strict';
 
 const sinon = require('sinon')
-  , expect = require('chai').expect
-  , mongoose = require('mongoose')
-  , stream = require('stream')
-  , util = require('util')
-  , JSZip = require('jszip')
-  , createToken = require('../mockToken')
-  , CsvExporter = require('../../lib/export/csv')
-  , DeviceModel = require('../../lib/models/device')
-  , EventModel = require('../../lib/models/event')
-  , Observation = require('../../lib/models/observation')
-  , TokenModel = require('../../lib/models/token')
-  , UserModel = require('../../lib/models/user');
+const expect = require('chai').expect
+const mongoose = require('mongoose')
+const stream = require('stream')
+const util = require('util')
+const JSZip = require('jszip')
+const { Csv: CsvExporter } = require('../../lib/export/csv')
+const MockToken = require('../mockToken')
+const TokenModel = mongoose.model('Token')
 
 require('sinon-mongoose');
 
@@ -30,28 +26,29 @@ const deviceId = mongoose.Types.ObjectId();
 
 describe("csv export tests", function () {
 
-  const event = {
-    _id: 1,
-    name: 'Event 1',
-    collectionName: 'observations1',
-    forms: [],
-    acl: {}
-  };
-
-  const user = {
-    _id: userId,
-    username: 'csv.export.test',
-    displayName: 'CSV Export Test'
-  }
-
-  const device = {
-    _id: deviceId,
-    uid: '123456'
-  }
+  let event
+  let user
+  let device
 
   beforeEach(function () {
+    event = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      forms: [],
+      acl: {}
+    })
+    user = {
+      _id: userId,
+      username: 'csv.export.test',
+      displayName: 'CSV Export Test'
+    }
+    device = {
+      _id: deviceId,
+      uid: '123456'
+    }
     sinon.mock(EventModel)
-      .expects('getById')
+      .expects('findById')
       .yields(null, event);
 
     sinon.mock(UserModel)
@@ -103,9 +100,9 @@ describe("csv export tests", function () {
     devices[device0.id] = device0;
 
     const options = {
-      event: event,
-      users: users,
-      devices: devices,
+      event,
+      users,
+      devices,
       filter: {
         exportObservations: false,
         exportLocations: false
@@ -136,7 +133,7 @@ describe("csv export tests", function () {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
     const options = {
-      event: event,
+      event,
       filter: {
         exportObservations: true,
         exportLocations: false
@@ -189,7 +186,7 @@ describe("csv export tests", function () {
     mockTokenWithPermission('READ_LOCATION_ALL');
 
     const options = {
-      event: event,
+      event,
       filter: {
         exportObservations: false,
         exportLocations: true

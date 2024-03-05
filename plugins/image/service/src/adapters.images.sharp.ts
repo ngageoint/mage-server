@@ -51,7 +51,7 @@ class ImageOperation {
   }
 }
 
-const defaultOptions: sharp.SharpOptions & { failOn: 'none' | 'truncated' | 'error' | 'warning' } = {
+const defaultOptions: sharp.SharpOptions = {
   failOn: 'error'
 }
 

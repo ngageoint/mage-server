@@ -3,8 +3,7 @@ module.exports = function(app, security) {
     path = require('path'),
     request = require('superagent'),
     WMSCapabilities = require('wms-capabilities'),
-    DOMParser = require('xmldom').DOMParser,
-    Event = require('../models/event'),
+    DOMParser = require('@xmldom/xmldom').DOMParser,
     access = require('../access'),
     api = require('../api'),
     environment = require('../environment/env'),
@@ -265,34 +264,40 @@ module.exports = function(app, security) {
     }
   );
 
+  /**
+   * TODO:
+   * This always returns image/png media type, but should return the media type
+   * that matches the image format in the geopackage table when the table type
+   * is tile.
+   */
+  function handleGeoPackageXYZTileRequest(req, res, next) {
+    const tileParams = {
+      x: Number(req.params.x),
+      y: Number(req.params.y),
+      z: Number(req.params.z)
+    };
+    const style = {
+      stroke: req.query.stroke,
+      fill: req.query.fill,
+      width: req.query.width
+    };
+    const table = req.layer.tables.find(table => table.name === req.params.tableName);
+    if (!table) {
+      return res.status(404).send('Table does not exist in layer.');
+    }
+    GeoPackageUtility.getInstance()
+    .tile(req.layer, req.params.tableName, style, tileParams)
+    .then(tile => {
+      if (!tile) return res.sendStatus(404);
+      res.contentType('image/png');
+      res.send(Buffer.from(tile.split(',')[1], 'base64'))
+    })
+    .catch(err => next(err));
+  }
+
   app.get('/api/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
     access.authorize('READ_LAYER_ALL'),
-    function(req, res, next) {
-      const tileParams = {
-        x: Number(req.params.x),
-        y: Number(req.params.y),
-        z: Number(req.params.z)
-      };
-
-      const style = {
-        stroke: req.query.stroke,
-        fill: req.query.fill,
-        width: req.query.width
-      };
-
-      const table = req.layer.tables.find(table => table.name === req.params.tableName);
-      if (!table) {
-        return res.status(404).send('Table does not exist in layer.');
-      }
-      GeoPackageUtility.getInstance()
-        .tile(req.layer, req.params.tableName, style, tileParams)
-        .then(tile => {
-          if (!tile) return res.sendStatus(404);
-          res.contentType('image/png');
-          res.send(Buffer.from(tile.split(',')[1], 'base64'))
-        })
-        .catch(err => next(err));
-    }
+    handleGeoPackageXYZTileRequest
   );
 
   app.get('/api/events/:eventId/layers',
@@ -375,50 +380,7 @@ module.exports = function(app, security) {
   app.get('/api/events/:eventId/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
     passport.authenticate('bearer'),
     validateEventAccess,
-    function(req, res, next) {
-      const tileBuffer = 8;
-      const tileParams = {
-        x: Number(req.params.x),
-        y: Number(req.params.y),
-        z: Number(req.params.z)
-      };
-
-      const style = {
-        stroke: req.query.stroke,
-        fill: req.query.fill,
-        width: req.query.width
-      };
-
-      const table = req.layer.tables.find(table => table.name === req.params.tableName);
-      if (!table) {
-        return res.status(404).send('Table does not exist in layer.');
-      }
-
-      if (req.params.format === 'pbf') {
-        if (table.type !== 'feature') {
-          return res.status(400).send('Cannot request vector tile from a tile layer');
-        }
-
-        GeoPackageUtility.getInstance().features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
-          if (err) return next(err);
-
-          const tileIndex = geojsonvt(featureCollection, { buffer: tileBuffer * 8, maxZoom: tileParams.z });
-          const tile = tileIndex.getTile(tileParams.z, tileParams.x, tileParams.y);
-          const vectorTile = vtpbf.fromGeojsonVt({ [table.name]: tile || { features: [] } });
-          res.contentType('application/x-protobuf');
-          res.send(Buffer.from(vectorTile));
-        });
-      } else {
-        GeoPackageUtility.getInstance()
-        .tile(req.layer, req.params.tableName, style, tileParams)
-        .then(tile => {
-          if (!tile) return res.status(404);
-          res.contentType('image/png');
-          res.send(Buffer.from(tile.split(',')[1], 'base64'))
-        })
-        .catch(err => next(err));
-      }
-    }
+    handleGeoPackageXYZTileRequest
   );
 
   // get features for layer (must be a feature layer)

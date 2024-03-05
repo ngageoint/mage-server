@@ -1,13 +1,12 @@
 module.exports = function(app, security) {
-  var moment = require('moment')
-    , Location = require('../api').Location
-    , Team = require('../models/team')
-    , Event = require('../models/event')
-    , access = require('../access')
-    , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
+  const moment = require('moment');
+  const Location = require('../api').Location;
+  const Team = require('../models/team');
+  const access = require('../access');
+  const { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
-  var passport = security.authentication.passport;
-  var location = new Location();
+  const passport = security.authentication.passport;
+  const location = new Location();
 
   async function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {

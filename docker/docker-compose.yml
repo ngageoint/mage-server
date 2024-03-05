@@ -22,6 +22,7 @@ services:
       # dockerfile: Dockerfile-debug
       args:
         MAGE_VERSION: "${MAGE_VERSION:-6.2.0}"
+    platform: linux/amd64
     volumes:
       - ./server/resources:/var/lib/mage
     # Comment the ports block to disallow connections directly to the node

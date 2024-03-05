@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { PluginResourceUrl } from '../../lib/entities/entities.global'
+import { copyLineStyleAttrs, LineStyle, PluginResourceUrl } from '../../lib/entities/entities.global'
 
 describe('PluginResourceUrl', function() {
 
@@ -95,5 +95,30 @@ describe('PluginResourceUrl', function() {
     expect(String(url)).to.equal(`${PluginResourceUrl.pluginProtocol}///leading/resource/`)
     expect(url.pluginModuleName).to.equal('leading')
     expect(url.pluginResourcePath).to.equal('resource/')
+  })
+})
+
+describe('copying line styles', function() {
+
+  it('copies only line style entries', function() {
+
+    const omitExtra = {
+      extra1: 'omit',
+      extra2: false,
+      extra3: NaN,
+      extra4: new Date()
+    }
+    const style: Required<LineStyle> = {
+      fill: '#12ab34',
+      fillOpacity: 0.5,
+      stroke: '#11ee22',
+      strokeOpacity: 0.75,
+      strokeWidth: 2.2
+    }
+    const merged = { ...omitExtra, ...style }
+    const copy = copyLineStyleAttrs(merged)
+
+    expect(copy).to.deep.equal(style)
+    expect(copy).not.to.have.keys('extra1', 'extra2', 'extra3', 'extra4')
   })
 })

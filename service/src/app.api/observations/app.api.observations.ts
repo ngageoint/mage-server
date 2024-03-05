@@ -135,7 +135,7 @@ export function exoObservationFor(from: ObservationAttrs, users?: { creator?: Us
 
 export function exoAttachmentFor(from: Attachment): ExoAttachment {
   const { thumbnails, contentLocator, ...exo } = from
-  return { ...exo, contentStored: !!from.contentLocator }
+  return { ...exo, contentStored: !!contentLocator }
 }
 
 export function exoAttachmentForThumbnail(replacementThumbnailIndex: number, base: Attachment): ExoAttachment {

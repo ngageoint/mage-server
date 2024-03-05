@@ -1,0 +1,54 @@
+services:
+
+  mage-idp-saml:
+    container_name: mage-idp-saml
+    image: kristophjunge/test-saml-idp
+    environment:
+      - "SIMPLESAMLPHP_SP_ENTITY_ID=http://localhost:4242"
+      - "SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:4242/auth/saml/callback"
+      - "SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:8080/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp"
+    ports:
+      - 8080:8080
+      - 8443:8443
+    volumes:
+      - type: bind
+        source: ./saml/authsources.php
+        target: /var/www/simplesamlphp/config/authsources.php
+
+  mage-idp-ldap:
+    container_name: mage-idp-ldap
+    image: osixia/openldap:1.5.0
+    environment:
+      - "LDAP_ORGANISATION=World's Greatest Detectives Inc."
+      - "LDAP_DOMAIN=wgd.com"
+      - "LDAP_ADMIN_PASSWORD=i found something"
+    ports:
+      - 389:389
+      - 636:636
+    volumes:
+      - type: bind
+        source: ./ldap/db
+        target: /var/lib/ldap
+      - type: bind
+        source: ./ldap/config
+        target: /etc/ldap/slapd.d
+    networks:
+      - ldap.mage.net
+
+  mage-idp-ldap-ui:
+    container_name: mage-idp-ldap-ui
+    image: osixia/phpldapadmin:latest
+    depends_on:
+      - mage-idp-ldap
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=mage-idp-ldap
+    ports:
+      - 6480:80
+      - 6443:443
+    networks:
+      - ldap.mage.net
+
+networks:
+  ldap.mage.net:
+    driver: bridge
+
