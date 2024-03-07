@@ -26,6 +26,7 @@ LocationSchema.index({ 'properties.timestamp': 1, _id: 1 });
 LocationSchema.index({ 'userId': 1 });
 // TODO: should add _id to the end of the index for consistent ordering
 LocationSchema.index({ 'properties.user': 1, 'properties.timestamp': 1 });
+LocationSchema.index({ eventId: 1, userId: 1, 'properties.timestamp': 1, _id: 1 }, { background: true });
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
