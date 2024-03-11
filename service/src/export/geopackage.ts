@@ -304,7 +304,7 @@ export class GeoPackage extends Exporter {
           dataColumn: {
             column_name: field.name,
             table_name: 'Form_' + form.id,
-            name: field.title,
+            name: field.name,
             title: field.title
           },
           name: field.name,

@@ -123,6 +123,19 @@ export const formsSeed: MageFormCreateRequest[] = [
           { id: 3, value: 3, title: 'gold' },
         ]
       },
+      {
+        id: 5,
+        archived: true,
+        name: 'form1/dropdown3',
+        required: false,
+        title: 'Choice 2',
+        type: FormFieldType.Dropdown,
+        choices: [
+          { id: 1, value: 1, title: 'red' },
+          { id: 2, value: 2, title: 'green' },
+          { id: 3, value: 3, title: 'gold' },
+        ]
+      }
     ]
   },
   {

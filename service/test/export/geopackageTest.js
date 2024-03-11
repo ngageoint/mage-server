@@ -74,7 +74,7 @@ describe("geopackage export tests", function () {
         const writable = new TestWritableStream();
         writable.on('finish', async () => {
             const zip = await JSZip.loadAsync(writable.byteArray);
-            const jsobj = zip.files['mage-' + event.name + '.gpkg'];
+            const jsobj = zip.files['MAGE ' + event.name + '.gpkg'];
             expect(jsobj).to.be.not.undefined;
 
             const gpkg = await jsobj.async('nodebuffer');
