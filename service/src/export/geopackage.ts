@@ -20,8 +20,6 @@ import { Exporter } from './exporter'
 import api from '../api'
 import environment from '../environment/env'
 import User, { UserDocument } from '../models/user'
-import { UserLocationDocument } from '../models/location'
-import { UserId } from '../entities/users/entities.users'
 import { FormFieldType, FormId } from '../entities/events/entities.events.forms'
 import { AttachmentDocument } from '../models/observation'
 import { IconRow } from '@ngageoint/geopackage/dist/lib/extension/style/iconRow'
@@ -47,14 +45,12 @@ export class GeoPackage extends Exporter {
 
   async export(streamable: NodeJS.WritableStream): Promise<void> {
     log.info(`export geopackage for event ${this._event.id} - ${this._event.name}:\n`, this._filter)
-    const downloadedFileName = 'mage-' + this._event.name
+    const downloadedFileName = `MAGE ${this._event.name}`
     const archive = archiver('zip')
     archive.pipe(streamable)
     try {
       const filePath = await createGeoPackageFile();
       const gp = await GeoPackageAPI.create(filePath);
-      await this.createUserTable(gp);
-      await createUserFeatureTableStyles(gp);
       if (this._filter.exportObservations) {
         await this.addFormDataToGeoPackage(gp);
         await this.createFormAttributeTables(gp);
@@ -137,133 +133,148 @@ export class GeoPackage extends Exporter {
     geopackage.createMediaTable('Attachments', columns);
   }
 
-  async addUserToUsersTable(geopackage: GPKG.GeoPackage, user: UserDocument, usersLastLocation: UserLocationDocument, zoomToEnvelope: Envelope): Promise<void> {
-    log.info(`add user ${user.username} to users table`)
-    const feature: geojson.Feature = {
-      type: 'Feature',
-      geometry: usersLastLocation.geometry,
-      properties: {
-        timestamp: usersLastLocation.properties.timestamp,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        phones: user.phones.join(', '),
-        userId: user._id.toString()
-      }
-    }
-    const userRowId = geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Users')
-    const iconPath = user.icon.relativePath ? path.join(environment.userBaseDirectory, user.icon.relativePath) : null
-    if (iconPath) {
-      const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, 'Users')
-      const iconRow = featureTableStyles.getIconDao().newRow()
-      try {
-        const iconBuffer = await fs_async.readFile(iconPath)
-        iconRow.data = iconBuffer
-        iconRow.contentType = 'image/png'
-        iconRow.name = user.username
-        iconRow.description = `Icon for user ${user.username}`
-        iconRow.width = 20
-        iconRow.anchorU = 0.5
-        iconRow.anchorV = 1.0
-        featureTableStyles.setIconDefault(userRowId, iconRow)
-      }
-      catch (err) {
-        log.error(`error reading user icon for geopackage export: ${iconPath}`, err)
-        return void(0)
-      }
-    }
-    const featureDao = geopackage.getFeatureDao('Users')
-    const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao)
-    rtreeIndex.create()
-    if (zoomToEnvelope) {
-      setContentBounds(geopackage, featureDao, zoomToEnvelope)
-    }
-  }
-
-  async createLocationTableForUser(geopackage: GPKG.GeoPackage, userId: UserId): Promise<void> {
+  async createLocationTable(geopackage: GPKG.GeoPackage, table: string): Promise<void> {
     const columns = [];
 
     columns.push({
-      name: 'mageId',
+      name: 'Location Id',
       dataType: 'TEXT'
     });
     columns.push({
-      name: 'userId',
+      name: 'User Id',
       dataType: 'TEXT'
     });
     columns.push({
-      name: 'timestamp',
+      name: 'Username',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'Display Name',
+      dataType: 'TEXT'
+    });
+    columns.push({
+      name: 'Date/Time',
       dataType: 'DATETIME'
     });
     columns.push({
-      name: 'deviceId',
+      name: 'Device Id',
       dataType: 'TEXT'
     });
     columns.push({
-      name: 'accuracy',
+      name: 'Accuracy',
+      dataType: 'REAL'
+    });
+    columns.push({
+      name: 'Altitude',
+      dataType: 'REAL'
+    });
+    columns.push({
+      name: 'Bearing',
+      dataType: 'REAL'
+    });
+    columns.push({
+      name: 'Speed',
       dataType: 'REAL'
     });
 
-    await geopackage.createFeatureTableFromProperties('Locations_' + userId, columns);
+    await geopackage.createFeatureTableFromProperties(table, columns);
+  }
+
+  async createLocationTableStyles(geopackage: GPKG.GeoPackage, table: string): Promise<GPKG.FeatureTableStyles> {
+    const featureTableName = table;
+    const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
+    await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
+    await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
+    await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
+    featureTableStyles.createRelationships();
+
+    return featureTableStyles
   }
 
   async addLocationsToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
-    log.info('fetching locations');
-    const { startDate, endDate } = this._filter
-    const cursor = this.requestLocations({ startDate, endDate });
-    let numLocations = 0;
-    let user: UserDocument | null = null;
-    let userLastLocation: UserLocationDocument | null = null;
-    let zoomToEnvelope: Envelope | null = null;
-    return cursor.eachAsync(async location => {
+    log.info('fetching locations')
+    const table = 'Locations'
+    await this.createLocationTable(geopackage, table)
+    const featureTableStyles = await this.createLocationTableStyles(geopackage, table)
 
-      if (!user || user._id.toString() !== location.userId.toString()) {
-        if (zoomToEnvelope) {
-          // Switching user, so update location
-          const featureDao = geopackage.getFeatureDao('Locations_' + user!._id.toString());
-          setContentBounds(geopackage, featureDao, zoomToEnvelope);
-          await this.addUserToUsersTable(geopackage, user!, userLastLocation!, zoomToEnvelope);
-        }
-        zoomToEnvelope = null;
+    const { startDate, endDate } = this._filter
+    const cursor = this.requestLocations({ startDate, endDate })
+    let numLocations = 0
+    let user: UserDocument | null = null
+    const userIconRows: Map<string, IconRow> = new Map()
+    let zoomToEnvelope: Envelope | null = null
+    return cursor.eachAsync(async location => {
+      if (user?._id.toString() !== location.userId.toString()) {
         user = await User.getUserById(location.userId);
-        await this.createLocationTableForUser(geopackage, location.userId.toString());
       }
 
-      zoomToEnvelope = calculateBounds(location.geometry, zoomToEnvelope);
-      userLastLocation = location;
+      zoomToEnvelope = calculateBounds(location.geometry, zoomToEnvelope)
 
-      const properties = location.properties || {}
+      const properties = location.properties || {} as geojson.Feature<geojson.Point, any>
       const feature: geojson.Feature<geojson.Point, any> = {
         type: 'Feature',
         geometry: location.geometry,
-        properties
-      };
-      feature.properties.mageId = location._id.toString()
-      feature.properties.userId = location.userId?.toString()
-      feature.properties.deviceId = properties.deviceId ? properties.deviceId.toString() : undefined
-
-      if (feature.properties.id) {
-        delete feature.properties.id;
+        properties: {
+          'Location Id': location._id.toString(),
+          'User Id': location.userId?.toString(),
+          'Username': user?.username,
+          'Display Name': user?.displayName,
+          'Device Id': properties.deviceId ? properties.deviceId.toString() : undefined,
+          'Date/Time': properties.timestamp,
+          'Accuracy': properties.accuracy,
+          'Altitude': properties.altitude,
+          'Bearing': properties.bearing,
+          'Speed': properties.speed
+        }
       }
 
-      await geopackage.addGeoJSONFeatureToGeoPackage(feature, 'Locations_' + location.userId.toString());
+      delete feature.properties.id;
+      
+      const rowId = await geopackage.addGeoJSONFeatureToGeoPackage(feature, table)
+      const iconPath = user?.icon.relativePath ? path.join(environment.userBaseDirectory, user.icon.relativePath) : null
+      if (user && iconPath) {
+        let iconRow = userIconRows.get(user.id)
+        if (iconRow === undefined) {
+          try {
+            iconRow = featureTableStyles.getIconDao().newRow()
+            const iconBuffer = await fs_async.readFile(iconPath)
+            iconRow.data = iconBuffer
+            iconRow.contentType = 'image/png'
+            iconRow.name = user.username
+            iconRow.description = `Icon for user ${user.username}`
+            iconRow.width = 20
+            iconRow.anchorU = 0.5
+            iconRow.anchorV = 1.0
+            featureTableStyles.setIconDefault(rowId, iconRow)
+            userIconRows.set(user.id, iconRow)
+          } catch (err) {
+            log.error(`error reading user icon for geopackage export: ${iconPath}`, err)
+            return void (0)
+          }
+        } else {
+          featureTableStyles.setIconDefault(rowId, iconRow)
+        }
+      }
 
-      numLocations++;
+      numLocations++
     }).then(async () => {
       if (cursor) {
-        cursor.close();
+        cursor.close()
       }
 
+      const featureDao = geopackage.getFeatureDao(table);
       if (zoomToEnvelope && user) {
-        //Process the last user, since it was missed in the loop above
-        const featureDao = geopackage.getFeatureDao('Locations_' + user._id.toString());
-        setContentBounds(geopackage, featureDao, zoomToEnvelope);
-        await this.addUserToUsersTable(geopackage, user, userLastLocation!, zoomToEnvelope);
+        // Process the last user, since it was missed in the loop above
+        const featureDao = geopackage.getFeatureDao('Locations')
+        setContentBounds(geopackage, featureDao, zoomToEnvelope)
       }
 
-      log.info(`wrote ${numLocations} locations to geopackage`);
+      const rtreeIndex = new GPKG.RTreeIndex(geopackage, featureDao);
+      rtreeIndex.create();
+
+      log.info(`wrote ${numLocations} locations to geopackage`)
     })
-    .catch(err => { log.warn(err) });
+    .catch(err => { log.warn(err) })
   }
 
   async createFormAttributeTables(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -315,37 +326,6 @@ export class GeoPackage extends Exporter {
       default:
         return 'TEXT'
     }
-  }
-
-  async createUserTable(geopackage: GPKG.GeoPackage): Promise<void> {
-    const columns = [];
-    columns.push({
-      name: 'username',
-      dataType: 'TEXT'
-    });
-    columns.push({
-      name: 'displayName',
-      dataType: 'TEXT'
-    });
-    columns.push({
-      name: 'email',
-      dataType: 'TEXT'
-    });
-    columns.push({
-      name: 'phones',
-      dataType: 'TEXT'
-    });
-    columns.push({
-      name: 'userId',
-      dataType: 'TEXT'
-    });
-    columns.push({
-      name: 'timestamp',
-      dataType: 'DATETIME'
-    });
-    await geopackage.createFeatureTableFromProperties('Users', columns)
-    log.info('create user avatar table');
-    await geopackage.createMediaTable('UserAvatars', void(0) as any /* really is optional */);
   }
 
   async addFormDataToGeoPackage(geopackage: GPKG.GeoPackage): Promise<void> {
@@ -740,15 +720,6 @@ async function addAttachments(geopackage: GPKG.GeoPackage, attachments: Attachme
       });
     }
   }
-}
-
-async function createUserFeatureTableStyles(geopackage: GPKG.GeoPackage): Promise<void> {
-  const featureTableName = 'Users';
-  const featureTableStyles = new GPKG.FeatureTableStyles(geopackage, featureTableName);
-  await geopackage.featureStyleExtension.getOrCreateExtension(featureTableName);
-  await geopackage.featureStyleExtension.getRelatedTables().getOrCreateExtension();
-  await geopackage.featureStyleExtension.getContentsId().getOrCreateExtension();
-  featureTableStyles.createRelationships();
 }
 
 function setContentBounds(geopackage: GPKG.GeoPackage, featureDao: FeatureDao<FeatureRow>, zoomToEnvelope: Envelope): void {
