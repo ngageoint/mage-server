@@ -121,7 +121,7 @@ describe('exports', function() {
     })
   }
 
-  it.only('removes unsafe file system characters from geopackage export', async function() {
+  it('removes unsafe file system characters from geopackage export', async function() {
 
     const pendingExport = await rootSession.startExport(
       fixture.eventWithUnsafeName.id,
