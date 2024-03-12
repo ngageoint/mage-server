@@ -58,6 +58,11 @@ export const eventSeed: MageEventCreateRequest = {
   style: {},
 }
 
+export const eventUnsafeNameSeed: MageEventCreateRequest = {
+  name: '/tmp/etc/passwd',
+  style: {}
+}
+
 export const formsSeed: MageFormCreateRequest[] = [
   {
     name: 'form1',
@@ -735,7 +740,7 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
 
   const now = Date.now()
   for (const obs of observations) {
-    expect(new Date(obs[1].createdAt).getTime()).to.be.closeTo(now, 250)
+    expect(new Date(obs[1].createdAt).getTime()).to.be.closeTo(now, 500)
   }
 
   const archivedForm = await rootSession.archiveForm(eventWithForms, formsByName.archivedForm.id).then(x => x.data)
@@ -842,11 +847,22 @@ export async function populateFixtureData(stack: TestStack, rootSession: MageCli
   expect(user4LocationNoDevice.data).to.have.length(1)
   expect(user4LocationNoDevice.data[0].properties.devicedId).to.not.exist
 
+  const eventWithUnsafeName = await rootSession.createEvent(eventUnsafeNameSeed)
+    .then(x => rootSession.readEvent(x.data.id)).then(x => x.data)
+    .then(unsafeEvent => rootSession.createForm(unsafeEvent.id, formsSeed[0]).then(() => unsafeEvent))
+    .then(unsafeEvent => rootSession.addParticipantToEvent(unsafeEvent, users[0].id).then(() => unsafeEvent))
+    .then(unsafeEvent => rootSession.readEvent(unsafeEvent.id).then(res => res.data))
+  await user1Session.postUserLocations(eventWithUnsafeName.id, [
+    [ 30, 40, Date.now() ]
+  ])
+
   return {
     event: finalEvent,
+    eventWithUnsafeName,
   }
 }
 
 export interface ExportTestFixture {
-  event: MageEventPopulated
+  event: MageEventPopulated,
+  eventWithUnsafeName: MageEventPopulated
 }

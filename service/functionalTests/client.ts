@@ -266,8 +266,8 @@ export class MageClientSession {
     return this.http.get<ExportInfo[]>('/api/exports/myself').then(x => x.data)
   }
 
-  downloadExport(exportId: ExportId): Promise<buffer.Buffer> {
-    return this.http.get<buffer.Buffer>(`/api/exports/${exportId}`).then(x => x.data)
+  downloadExport(exportId: ExportId): Promise<NodeJS.ReadableStream> {
+    return this.http.get<NodeJS.ReadableStream>(`/api/exports/${exportId}`, { responseType: 'stream' }).then(x => x.data)
   }
 
   /**

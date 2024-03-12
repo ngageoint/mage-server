@@ -45,7 +45,8 @@ export class GeoPackage extends Exporter {
 
   async export(streamable: NodeJS.WritableStream): Promise<void> {
     log.info(`export geopackage for event ${this._event.id} - ${this._event.name}:\n`, this._filter)
-    const downloadedFileName = `MAGE ${this._event.name}`
+    const safeEventName = this._event.name.replace(/\W/g, '').replace(/\s+/g, ' ').trim()
+    const downloadedFileName = `MAGE ${safeEventName || 'Event ' + this._event.id}`
     const archive = archiver('zip')
     archive.pipe(streamable)
     try {
@@ -229,7 +230,7 @@ export class GeoPackage extends Exporter {
       }
 
       delete feature.properties.id;
-      
+
       const rowId = await geopackage.addGeoJSONFeatureToGeoPackage(feature, table)
       const iconPath = user?.icon.relativePath ? path.join(environment.userBaseDirectory, user.icon.relativePath) : null
       if (user && iconPath) {
