@@ -1,7 +1,11 @@
+import path from 'path'
+import fs from 'fs'
+import fs_async from 'fs/promises'
 import { expect } from 'chai'
 import { ExportInfo, ExportFormat, MageClientSession, ExportStatus, SignInResult } from '../client'
 import { ChildProcessTestStackRef, launchTestStack } from '../stack'
 import * as Fixture from './fixture'
+import Zip from 'jszip'
 
 
 describe('exports', function() {
@@ -102,5 +106,37 @@ describe('exports', function() {
 
     expect(finishedExport instanceof Error, 'geojson export error').to.be.false
     expect(finishedExport.status).to.equal(ExportStatus.Completed, 'geopackage export incomplete')
+  })
+
+  for (const format of Object.values(ExportFormat)) {
+    it(`${format} export tolerates an event name with unsafe file system characters`, async function() {
+      const pendingExport = await rootSession.startExport(
+        fixture.eventWithUnsafeName.id,
+        { exportType: format, observations: true, locations: true, attachments: true }
+      )
+      const finishedExport = await rootSession.waitForMyExport(pendingExport.id, 5000) as ExportInfo
+
+      expect(finishedExport instanceof Error, `${format} export error`).to.be.false
+      expect(finishedExport.status).to.equal(ExportStatus.Completed, `${format} export incomplete`)
+    })
+  }
+
+  it('removes unsafe file system characters from geopackage export', async function() {
+
+    const pendingExport = await rootSession.startExport(
+      fixture.eventWithUnsafeName.id,
+      { exportType: ExportFormat.GeoPackage, observations: true, locations: true, attachments: true }
+    )
+    const finishedExport = await rootSession.waitForMyExport(pendingExport.id, 5000) as ExportInfo
+    const downloadDir = path.join(stack.baseDirPath, 'download')
+    const downloadPath = path.join(downloadDir, 'unsafe_gp_name.zip')
+    fs.mkdirSync(downloadDir)
+    const exportContent = await rootSession.downloadExport(finishedExport.id)
+    await fs_async.writeFile(downloadPath, exportContent)
+    const downloadZip = await Zip.loadAsync(fs.readFileSync(downloadPath))
+    const entryNames = Object.keys(downloadZip.files)
+
+    expect(entryNames).to.have.length(1)
+    expect(entryNames[0].replace(/\.gpkg$/, '')).to.match(/^[\w ]+$/)
   })
 })

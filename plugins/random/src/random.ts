@@ -67,13 +67,13 @@ export class RandomConnection implements FeedServiceConnection {
       latitude += Math.random() * .001
       longitude += Math.random() * .001
     }
-
+    const titlePrefix = typeof params?.titlePrefix === 'string' ? params.titlePrefix : topic
     const feature: Feature = {
       type: 'Feature',
       id: "1",
       properties: {
         timestamp: new Date(),
-        title: 'Random point'
+        title: `${titlePrefix} random point`
       },
       geometry: {
         type: 'Point',
@@ -89,7 +89,13 @@ export class RandomConnection implements FeedServiceConnection {
       status: 200,
       body: { feature }
     }
-    return topicModule.transformResponse(res)
+
+    const delay = parseFloat(String(params?.fetchDelay)) || 0
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(topicModule.transformResponse(res))
+      }, delay * 1000)
+    })
   }
 }
 

@@ -21,6 +21,17 @@ export const topicDescriptor: FeedTopic = {
       move: {
         type: 'boolean',
         default: false
+      },
+      titlePrefix: {
+        type: 'string',
+        title: 'Item Title Prefix',
+        description: 'Prepend the given string to the title of each item in this feed.'
+      },
+      fetchDelay: {
+        type: 'number',
+        title: 'Fetch Delay (s)',
+        description: 'Delay for the given number of seconds before returning any data.',
+        default: 0.0
       }
     }
   },
@@ -66,6 +77,7 @@ export interface RandomTopicParams {
   latitude: number,
   longitude: number,
   move?: boolean
+  fetchDelay?: number
 }
 
 export const transformResponse = (res: RandomResponse): FeedTopicContent => {
