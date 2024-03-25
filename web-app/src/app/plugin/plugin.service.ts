@@ -1,3 +1,4 @@
+import * as ngAnimations from '@angular/animations'
 import * as ngCore from '@angular/core'
 import * as ngCommon from '@angular/common'
 import * as ngCommonHttp from '@angular/common/http'
@@ -120,6 +121,7 @@ export class PluginService {
     private localStorageService: LocalStorageService) {
     const shareLib = (libId: string, lib: any) => registerSharedLibInContext(system, libId, lib)
     const providedLibs = {
+      '@angular/animations': ngAnimations,
       '@angular/core': ngCore,
       '@angular/common': ngCommon,
       '@angular/common/http': ngCommonHttp,

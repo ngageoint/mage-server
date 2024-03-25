@@ -50,7 +50,7 @@ class AdminController {
         }
         const stateNameSuffix = cleanNameOfPlugin(pluginId)
         const stateName = `admin.plugin-${stateNameSuffix}`
-        pluginTabs = pluginTabs.concat({ title: adminTab.title, state: stateName })
+        pluginTabs = pluginTabs.concat({ title: adminTab.title, state: stateName, icon: adminTab.icon })
         if (this.$stateRegistry.states[stateName]) {
           return pluginTabs
         }
