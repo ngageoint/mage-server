@@ -23,6 +23,7 @@ export interface SystemInfo {
    * Package version string straight from package.json
    */
   environment: EnvironmentInfo
+  initial: boolean // is in initial setup with no users
   disclaimer: any // mongoose Document type
   contactInfo: any
 }

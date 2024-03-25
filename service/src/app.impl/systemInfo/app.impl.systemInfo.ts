@@ -2,6 +2,7 @@ import { AppResponse } from '../../app.api/app.api.global';
 import * as api from '../../app.api/systemInfo/app.api.systemInfo';
 import { EnvironmentService } from '../../entities/systemInfo/entities.systemInfo';
 import * as Settings from '../../models/setting';
+import * as Users from '../../models/user';
 import * as AuthenticationConfiguration from '../../models/authenticationconfiguration';
 import AuthenticationConfigurationTransformer from '../../transformers/authenticationconfiguration';
 import { ExoPrivilegedSystemInfo, ExoRedactedSystemInfo, ExoSystemInfo, SystemInfoPermissionService } from '../../app.api/systemInfo/app.api.systemInfo';
@@ -54,9 +55,18 @@ export function CreateReadSystemInfo(
   ): Promise<api.ReadSystemInfoResponse> {
     const isAuthenticated = req.context.requestingPrincipal() != null;
 
+	// FIXME: Replace this with Robert's first-run secret implementation when available
+	const legacyUsers = Users as any;   
+    const userCount = await new Promise(resolve => {
+      legacyUsers.count({}, (err:any, count:any) => {
+	    resolve(count)
+	  });
+    });
+    
     // Initialize with base system info
-    let systemInfoResponse: ExoRedactedSystemInfo = {
-      version: versionInfo,
+    let systemInfoResponse: ExoRedactedSystemInfo = {	  
+      version: versionInfo,	  
+	  initial: userCount == 0,
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
       contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
     };
