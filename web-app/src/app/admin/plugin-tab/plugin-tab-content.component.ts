@@ -1,6 +1,5 @@
 
 import { Component, Input, NgModuleRef, OnChanges, OnInit, SimpleChanges, TemplateRef, Type, ViewChild, ViewContainerRef } from '@angular/core'
-import { PluginHooks } from '@ngageoint/mage.web-core-lib/plugin/plugin.model'
 
 @Component({
   selector: 'mage-admin-plugin-tab-content',
