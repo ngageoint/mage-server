@@ -60,6 +60,7 @@ describe('SystemInfo web controller', () => {
           nodeVersion: 'test',
           mongodbVersion: 'test'
         },
+		initial: true,
         disclaimer: {},
         contactInfo: {},
         version: {
