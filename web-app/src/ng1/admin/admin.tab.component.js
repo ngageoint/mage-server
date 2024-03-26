@@ -7,10 +7,6 @@ class AdminTabController {
     this.token = LocalStorageService.getToken()
   }
 
-  $onChanges() {
-    console.log('changes plugin tabs', this.pluginTabs)
-  }
-
   hasPermission(permission) {
     return _.contains(this.UserService.myself.role.permissions, permission);
   }
