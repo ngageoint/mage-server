@@ -67,7 +67,7 @@
     <div class="admin-action" ng-repeat="pluginTab in $ctrl.pluginTabs" ng-class="{'admin-action-selected': $ctrl.stateName === pluginTab.state}" ng-click="$ctrl.tabChanged(pluginTab.state)">
       <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === pluginTab.state}"></div>
       <div ng-if="pluginTab.icon.path">
-        <img class="admin-plugin-icon" ng-src="/ui_plugins/@ngageoint/mage.nerd.web/{{pluginTab.icon.path}}?access_token={{$ctrl.token}}">
+        <img class="admin-plugin-icon" ng-src="/ui_plugins/{{pluginTab.id}}/{{pluginTab.icon.path}}?access_token={{$ctrl.token}}">
       </div>
       <i ng-if="pluginTab.icon.className" class="{{pluginTab.icon.className}}"></i>
       <i ng-if="!pluginTab.icon.path && !pluginTab.icon.className" class="fa fa-plug"></i>
