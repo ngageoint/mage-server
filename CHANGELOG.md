@@ -9,6 +9,23 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 
+## [6.2.11](https://github.com/ngageoint/mage-server/releases/tag/6.2.11)
+#### Features
+* Core web app now shares `@angular/animations` to web plugins.
+* Web plugins can specify a custom admin tab icon.
+* GeoPackage exports now
+  * have a single table for the locations of all users
+  * have an R-tree index on the user location table
+  * do not have a table for the latest location of all users
+  * save the user name, display name, accuracy, altitude, bearing, and speed for user locations
+  * add the correct icons for user locations
+
+#### Bug Fixes
+* The feed panel would show items from the incorrect feed when multiple feeds were active.
+* GeoPackage export used a non-unique value for column names mapped from fields.
+* GeoPackage export did not scrub file system special characters from export file names.
+* The locations MongoDB collection was missing indexes that caused memory errors for exports.
+
 ## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10)
 
 #### Database Migrations
