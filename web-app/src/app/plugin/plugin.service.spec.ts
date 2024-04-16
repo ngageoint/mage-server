@@ -47,6 +47,7 @@ describe('PluginService', () => {
   it('registers shared libraries', async () => {
 
     const sharedLibs = [
+      '@angular/animations',
       '@angular/core',
       '@angular/common',
       '@angular/common/http',

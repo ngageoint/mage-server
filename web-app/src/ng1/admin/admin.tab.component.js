@@ -1,9 +1,10 @@
 import _ from 'underscore';
 
 class AdminTabController {
-  constructor($state, UserService) {
+  constructor($state, UserService, LocalStorageService) {
     this.$state = $state;
     this.UserService = UserService;
+    this.token = LocalStorageService.getToken()
   }
 
   hasPermission(permission) {
@@ -12,11 +13,10 @@ class AdminTabController {
 
   tabChanged(state) {
     this.$state.go(state);
-    console.log('state changes', state)
   }
 }
 
-AdminTabController.$inject = ['$state', 'UserService'];
+AdminTabController.$inject = ['$state', 'UserService', 'LocalStorageService'];
 
 export default {
   template: require('./admin.tab.html'),

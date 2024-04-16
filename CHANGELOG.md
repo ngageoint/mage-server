@@ -8,27 +8,39 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-
-- **System Info**:
-  - Introduced a new section to display system information on the about page. Provides users with insights into system-related details.
-- **Permissions**:
-  - Enhanced the role-based access control by introducing new permissions related to system info:
-    - `READ_SYSTEM_INFO`: Allows users with the right roles to view system information.
-- Support for Mongoose 6.x.
-- [mongodb-migrations](https://github.com/gillandk/mongodb-migrations) support for Mongo 4.x.
-- Support for Webpack 5.x.
-- Support for Angular 14.x.
-- MAGE_MONGO_TLS_INSECURE added as env var to help with possible issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
-- [GARS](https://github.com/ngageoint/gars-js) grid overlay.
-- [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay.
+- The _About_ page displays system information, including Node and MongoDB versions.
+  - The new `READ_SYSTEM_INFO` role restricts access to system information.
+- Support for Mongoose 6.x
+- Support for Webpack 5.x
+- Support for Angular 14.x
+- [mongodb-migrations](https://www.npmjs.com/package/@ngageoint/mongodb-migrations) support for Mongo 4.x.
+- The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
+- [GARS](https://github.com/ngageoint/gars-js) grid overlay
+- [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
 
 ##### Bug fixes
-
-- Fix single observation download.
+- Single observation download bug
 - Protect against disabling all authentications.
-- Fixing problem with oauth web login.
+- Problem with OAuth web login
 
-## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10) (unreleased)
+## [6.2.11](https://github.com/ngageoint/mage-server/releases/tag/6.2.11)
+#### Features
+* Core web app now shares `@angular/animations` to web plugins.
+* Web plugins can specify a custom admin tab icon.
+* GeoPackage exports now
+  * have a single table for the locations of all users
+  * have an R-tree index on the user location table
+  * do not have a table for the latest location of all users
+  * save the user name, display name, accuracy, altitude, bearing, and speed for user locations
+  * add the correct icons for user locations
+
+#### Bug Fixes
+* The feed panel would show items from the incorrect feed when multiple feeds were active.
+* GeoPackage export used a non-unique value for column names mapped from fields.
+* GeoPackage export did not scrub file system special characters from export file names.
+* The locations MongoDB collection was missing indexes that caused memory errors for exports.
+
+## [6.2.10](https://github.com/ngageoint/mage-server/releases/tag/6.2.10)
 
 #### Database Migrations
 * [SAML settings](./service/src/migrations/030-saml-settings.js)
