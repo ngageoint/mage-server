@@ -18,15 +18,6 @@ export class RandomServiceType implements FeedServiceType {
   readonly configSchema: JSONSchema4 = {}
 
   async validateServiceConfig(config: Json): Promise<null | InvalidServiceConfigError> {
-    if (typeof config !== 'string') {
-      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be a url string')
-    }
-    try {
-      new URL(config)
-    }
-    catch (err) {
-      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'invalid service url')
-    }
     return null
   }
 
