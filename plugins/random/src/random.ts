@@ -60,41 +60,43 @@ export class RandomConnection implements FeedServiceConnection {
   }
 
   async fetchTopicContent(topic: string, params?: JsonObject | undefined): Promise<FeedTopicContent> {
-    let latitude: number = params?.latitude as number || 0.0
-    let longitude: number = params?.longitude as number || 0.0
-    const move: boolean = params?.move as boolean || false
-    if (move) {
-      latitude += Math.random() * .001
-      longitude += Math.random() * .001
-    }
-    const titlePrefix = typeof params?.titlePrefix === 'string' ? params.titlePrefix : topic
-    const feature: Feature = {
-      type: 'Feature',
-      id: "1",
-      properties: {
-        timestamp: new Date(),
-        title: `${titlePrefix} random point`
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [longitude, latitude]
+    const typedParams = Random.resolveFetchParametersJson(params)
+    const itemIds: string[] = Array.from({ length: typedParams.maxItems }).map((_, index) => String(index))
+    const itemCount = Math.trunc(Math.random() * (typedParams.maxItems - typedParams.minItems + 1)) + typedParams.minItems
+    const { latitude, longitude } = typedParams
+    const features: Feature[] = Array.from({ length: itemCount }).map(_ => {
+      const coordinates = [
+        typedParams.scatterDegrees * (Math.random() * 2 - 1) + longitude,
+        typedParams.scatterDegrees * (Math.random() * 2 - 1) + latitude
+      ]
+      const nextId = typedParams.randomOrder ? itemIds.splice(Math.trunc(Math.random() * itemIds.length), 1)[0] : itemIds.shift()
+      const titlePrefix = typeof params?.titlePrefix === 'string' ? params.titlePrefix : topic
+      return {
+        type: 'Feature',
+        id: nextId,
+        properties: {
+          timestamp: new Date(),
+          title: `${titlePrefix} random point`
+        },
+        geometry: {
+          type: 'Point',
+          coordinates
+        }
       }
-    }
-
+    })
     const topicModule = this.topics.get(topic)
     if (!topicModule) {
       throw new Error(`unknown topic: ${topic}`)
     }
     const res: RandomResponse = {
       status: 200,
-      body: { feature }
+      body: { features }
     }
-
-    const delay = parseFloat(String(params?.fetchDelay)) || 0
+    const delay = typedParams.fetchDelay
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(topicModule.transformResponse(res))
-      }, delay * 1000)
+      }, Math.trunc(delay * 1000))
     })
   }
 }
@@ -109,7 +111,7 @@ export interface RandomRequest {
 export interface RandomResponse {
   status: number
   body: {
-    feature: Feature
+    features: Feature[]
   }
 }
 
