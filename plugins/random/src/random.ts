@@ -61,13 +61,13 @@ export class RandomConnection implements FeedServiceConnection {
         typedParams.scatterDegrees * (Math.random() * 2 - 1) + latitude
       ]
       const nextId = typedParams.randomOrder ? itemIds.splice(Math.trunc(Math.random() * itemIds.length), 1)[0] : itemIds.shift()
-      const titlePrefix = typeof params?.titlePrefix === 'string' ? params.titlePrefix : topic
+      const titlePrefix = typeof params?.titlePrefix === 'string' ? params.titlePrefix : 'Wut'
       return {
         type: 'Feature',
         id: nextId,
         properties: {
           timestamp: new Date(),
-          title: `${titlePrefix} random point`
+          title: `${titlePrefix} random point ${nextId}`
         },
         geometry: {
           type: 'Point',
