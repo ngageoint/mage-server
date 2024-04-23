@@ -19,5 +19,8 @@
   "dependencies": {
     "@types/geojson": "^7946.0.7",
     "tslib": "^2.0.0"
+  },
+  "exports": {
+    "./devkit/*": "./devkit/*"
   }
 }
