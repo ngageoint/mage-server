@@ -43,16 +43,5 @@
     "ng-packagr": "^14.2.0",
     "rollup": "^2.78.0",
     "rxjs": "6.6.7"
-  },
-  "devDependencies": {
-    "@angular-devkit/architect": "../node_modules/@angular-devkit/architect",
-    "@angular-devkit/build-angular": "../node_modules/@angular-devkit",
-    "@angular-devkit/core": "../node_modules/@angular-devkit/core",
-    "@angular-devkit/schematics": "../node_modules/@angular-devkit/schematics",
-    "@rollup/plugin-node-resolve": "../node_modules/@rollup/plugin-node-resolve",
-    "@schematics/angular": "../node_modules/@schematics/angular",
-    "ng-packagr": "../node_modules/ng-packagr",
-    "rxjs": "../node_modules/rxjs",
-    "husky": "^7.0.4"
   }
 }

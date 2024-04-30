@@ -125,6 +125,8 @@
     "@angular/cli": "^14.2.10",
     "@angular/compiler-cli": "^14.2.12",
     "@angular/language-service": "^14.2.12",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@schematics/angular": "^14.2.13",
     "@types/angular": "^1.8.1",
     "@types/geojson": "7946.0.7",
     "@types/hammerjs": "^2.0.36",
