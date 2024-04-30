@@ -1,0 +1,22 @@
+<mat-expansion-panel [expanded]="expanded" (opened)="opened.emit()" (closed)="closed()" hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Configure Feed Item Properties</mat-panel-title>
+    <mat-panel-description>
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <div class="item-property-list" [formGroup]="schemaForm">
+    <span class="item-property-key-heading">Property Key (Type)</span><span class="item-property-title-heading">Display Title</span>
+    <ng-container *ngFor="let propertyForm of schemaForm.controls">
+      <span class="item-property-key">{{propertyForm.value.key}} ({{propertyForm.value.schema.type}}):</span>
+      <div class="item-property-title">
+        <mat-form-field>
+          <input type="text" matInput [formControl]="propertyForm.get(['schema', 'title'])"/>
+        </mat-form-field>
+      </div>
+    </ng-container>
+  </div>
+  <mat-action-row>
+    <button mat-button color="warn" (click)="prevStep()">Previous</button>
+    <button mat-button color="primary" (click)="nextStep()">Next</button>
+  </mat-action-row>
+</mat-expansion-panel>

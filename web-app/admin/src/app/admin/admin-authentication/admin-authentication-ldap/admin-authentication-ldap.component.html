@@ -1,0 +1,154 @@
+<div class="ldap-settings">
+  <div class="mat-subheading-2">Server</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>URL</mat-label>
+    <input matInput type="url" required [readonly]="!editable" [(ngModel)]="strategy.settings.url"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      This is the location of the LDAP server. Begins with the prefix of ldap or ldaps.
+    </mat-hint>
+  </mat-form-field>
+
+  <div class="mat-subheading-2">Authentication</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Bind DN</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindDN" (click)="setDirty(true)">
+    <mat-hint align="end">
+      The bind DN is basically the credential you are using to authenticate against an LDAP. When using a bind DN it
+      usually comes with a password associated with it, which is set in the bind credentials.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Bind Credentials</mat-label>
+    <input matInput type="password" [readonly]="!editable" [(ngModel)]="strategy.settings.bindCredentials"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      Password used to authenticate against an LDAP.
+    </mat-hint>
+  </mat-form-field>
+
+  <div class="mat-subheading-2">User Search</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Search Base</mat-label>
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.searchBase"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      The base DN from which to search for users by username.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Search Filter</mat-label>
+    <input matInput type="text" required [readonly]="!editable" [(ngModel)]="strategy.settings.searchFilter"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      LDAP search filter with which to find a user by username. This requires knowledge of
+      the LDAP search filter grammar.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Search Scope</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.searchScope" [disabled]="!editable" (selectionChange)="setDirty(true)">
+      <mat-option *ngFor="let scope of scopes" [value]="scope.value">
+        {{scope.viewValue}}
+      </mat-option>
+    </mat-select>
+    <mat-hint align="end">
+      Scope of the search. Default of sub.
+    </mat-hint>
+  </mat-form-field>
+
+  <div class="mat-subheading-2">Group Search</div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Base</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchBase"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      The base DN from which to search for groups.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Filter</mat-label>
+    <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupSearchFilter"
+      (click)="setDirty(true)">
+    <mat-hint align="end">
+      LDAP search filter for groups. This requires knowledge of the LDAP search filter grammar.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Group Search Scope</mat-label>
+    <mat-select [(ngModel)]="strategy.settings.groupSearchScope" [disabled]="!editable"
+      (selectionChange)="setDirty(true)">
+      <mat-option *ngFor="let scope of scopes" [value]="scope.value">
+        {{scope.viewValue}}
+      </mat-option>
+    </mat-select>
+    <mat-hint align="end">
+      Scope of the search. Default of sub.
+    </mat-hint>
+  </mat-form-field>
+
+  <mat-accordion class="accordian-section">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Advanced
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="mat-subheading-1">Authentication</div>
+      <mat-form-field appearance="outline">
+        <mat-label>User Bind Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.bindProperty"
+          (click)="setDirty(true)">
+        <mat-hint align="end">
+          Property of the LDAP user object to use when binding to verify the password. Default: dn.
+        </mat-hint>
+      </mat-form-field>
+      <div class="mat-subheading-1">Interpolation</div>
+      <mat-form-field appearance="outline">
+        <mat-label>Group DN Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.groupDnProperty"
+          (click)="setDirty(true)">
+        <mat-hint align="end">
+          The property of user object to use in 'dn' interpolation of groupSearchFilter. Default: 'dn'
+        </mat-hint>
+      </mat-form-field>
+
+
+      <div class="mat-subheading-1">User Profile</div>
+      <mat-form-field appearance="outline">
+        <mat-label>Profile ID Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.id"
+          (click)="setDirty(true)">
+        <mat-hint align="end">
+          The id property that is returned in the user profile. Defaults to 'cn'.
+        </mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Display Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.displayName"
+          (click)="setDirty(true)">
+        <mat-hint align="end">
+          The display name property that is returned in the user profile. Defaults to 'givenname'.
+        </mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Email Name Property</mat-label>
+        <input matInput type="text" [readonly]="!editable" [(ngModel)]="strategy.settings.profile.email"
+          (click)="setDirty(true)">
+        <mat-hint align="end">
+          The email property that is returned in the user profile. Defaults to 'mail'.
+        </mat-hint>
+      </mat-form-field>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

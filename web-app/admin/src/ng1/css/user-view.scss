@@ -1,0 +1,75 @@
+.user-view-avatar {
+  margin-top: -62px;
+  z-index: 1;
+  position: relative;
+  text-align: center;
+}
+
+.user-avatar-border {
+  border: 5px #FFFFFF solid;
+}
+
+.user-view-body {
+  background-color: #FFFFFF;
+}
+
+.user-view-row {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 8px;
+}
+
+.user-view-icon {
+  height: 24px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding-right: 16px;
+  padding-left: 16px;
+}
+
+.user-view-row-text {
+  margin-top: auto;
+  margin-bottom: auto;
+  font-size: 1.2em;
+  color: rgba(30, 136, 229, 0.87);
+}
+
+.user-view-row-text a {
+  color: rgba(30, 136, 229, 0.87);
+}
+
+.user-view-name-row {
+  padding-left: 72px;
+  font-weight: 500;
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.54)
+}
+
+.user-view-divider-row {
+  margin-left: 72px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.user-view-location-icon {
+  color: #1E88E5;
+  color: var(--md-blue-600);
+}
+
+.user-view-location-accuracy {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.user-view-email-icon {
+  color: #00B0FF;
+  color: var(--md-light-blue-a400);
+}
+
+.user-view-phone-icon {
+  color: #43A047;
+  color: var(--md-green-600);
+}

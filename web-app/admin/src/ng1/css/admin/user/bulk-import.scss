@@ -1,0 +1,77 @@
+.#{admin-user-import-} {
+  &content {
+    margin: 16px 32px;
+  }
+
+  &team {
+    margin-right: 16px;
+  }
+
+  &team-description {
+      color: #777777;
+      margin-bottom: 8px;
+  }
+
+  &role {
+    margin-right: 16px;
+  }
+
+  &role-description {
+      color: #777777;
+      margin-bottom: 8px;
+  }
+
+  &file-button {
+    margin: 0;
+  }
+
+  &input {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 32px;
+  }
+
+  &file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
+
+  &mapping-error {
+    margin-bottom: 16px;
+  }
+
+  &textfield {
+    margin: 16px 0;
+  }
+
+  &table {
+    width: 100%;
+    min-height: 445px;
+    margin-bottom: 64px;
+  }
+
+  &table-no-border {
+    border: 0;
+  }
+
+  &error {
+    color: rgba(176, 0, 32, 1.0);
+  }
+
+  &toolbar__muted {
+    background-color: #EEEEEE;
+    color: rgba(0, 0, 0, 0.87);
+    display: flex;
+    position: unset;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    width: 100%;
+    z-index: 4;
+  }
+
+}

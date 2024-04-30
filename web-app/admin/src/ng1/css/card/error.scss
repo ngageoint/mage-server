@@ -1,0 +1,41 @@
+.error-card {
+    display: flex;
+    transition: ease-in-out 350ms max-height;
+}
+
+.error-card.ng-leave {
+    max-height: 200px;
+}
+
+.error-card.ng-leave-active {
+    max-height: 0px;
+}
+
+.error-card.ng-enter {
+    max-height: 0px;
+}
+
+.error-card.ng-enter.ng-enter-active {
+    max-height: 200px;
+}
+
+.error-card__primary {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1rem;
+}
+
+.error-card--title {
+    margin-bottom: 4px;
+    font-size: 18px;
+    color: rgba(176, 0, 32, 1);
+}
+
+.error-card--subtitle {
+    color: rgba(0, 0, 0, .87);
+}
+
+.error-card__action--icon {
+    color: rgba(0, 0, 0, .54);
+}

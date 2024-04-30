@@ -1,0 +1,61 @@
+.media {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.media-chip {
+  position: relative;
+  float: right;
+  margin-right: 16px;
+  margin-top: 16px;
+}
+
+.media-unknown {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #eee;
+  background-color: #555;
+}
+
+.media__icon {
+  width: 75px;
+  height: 75px;
+  font-size: 75px;
+  margin-bottom: 8px;
+}
+
+.media-delete__mask {
+  opacity: 0.5;
+}
+
+.attachment__video:focus {
+  outline: none;
+}
+
+.attachment__delete {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}
+
+.media__crop {
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.media__link {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}

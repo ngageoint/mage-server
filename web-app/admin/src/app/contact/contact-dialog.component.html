@@ -1,0 +1,13 @@
+<section class="mat-typography">
+    <div class="mat-title">{{statusTitle}}</div>
+</section>
+<section class="mat-typography">
+    <mat-dialog-content>
+        <div [innerHTML]="statusMessage" class="mat-body"></div>
+    </mat-dialog-content>
+</section>
+<section class="mat-typography">
+    <mat-dialog-actions>
+        <button mat-button (click)="close()" cdkFocusInitial>OK</button>
+    </mat-dialog-actions>
+</section>

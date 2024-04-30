@@ -1,0 +1,14 @@
+<section class="mat-typography">
+    <div mat-dialog-title>Unsaved Changes</div>
+  </section>
+  <section class="mat-typography">
+    <mat-dialog-content>
+        You have made changes that have not been saved.
+    </mat-dialog-content>
+  </section>
+  <section class="mat-typography">
+    <mat-dialog-actions>
+      <button mat-button (click)="stay()" cdkFocusInitial>STAY HERE</button>
+      <button mat-button (click)="discard()">DISCARD CHANGES</button>
+    </mat-dialog-actions>
+  </section>

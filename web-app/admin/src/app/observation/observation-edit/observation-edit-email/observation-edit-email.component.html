@@ -1,0 +1,8 @@
+<div [formGroup]="formGroup">
+  <mat-form-field appearance="fill">
+    <mat-label>{{definition.title}}</mat-label>
+    <input matInput type="email" formControlName="{{definition.name}}" [required]="definition.required" email>
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('required')">You must enter a value</mat-error>
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('email')">Not a valid email</mat-error>
+  </mat-form-field>
+</div>

@@ -1,0 +1,92 @@
+<div class="page">
+  <admin-breadcrumb [breadcrumbs]="breadcrumbs"></admin-breadcrumb>
+
+  <div class="page-container">
+    <div class="content">
+      <mat-card>
+        <mat-tab-group color="primary" mat-stretch-tabs>
+          <mat-tab label="Feeds">
+            <ng-template matTabContent>
+        
+              <div class="actions">
+                <div class="feed__action--search">
+                  <mat-form-field appearance="outline" class="search">
+                    <input matInput type="text" placeholder="Search Feeds" [(ngModel)]="feedSearch"
+                      (input)="onFeedSearchChange()">
+                    <mat-icon matPrefix>search</mat-icon>
+                    <button class="cancel" mat-icon-button matSuffix (click)="clearFeedSearch()" *ngIf="feedSearch">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+                <div class="feed__action--new">
+                  <button mat-flat-button color="primary" (click)="newFeed()">
+                    <mat-icon>add</mat-icon>
+                    <span>New Feed</span>
+                  </button>
+                </div>
+              </div>
+        
+              <mat-nav-list>
+                <ng-container *ngFor="let feed of feeds | slice:(feedPage*itemsPerPage):((feedPage+1)*itemsPerPage);">
+        
+                  <mat-list-item (click)="goToFeed(feed)">
+                    <mat-icon class="feed__icon" mat-list-icon>rss_feed</mat-icon>
+                    <div mat-line>{{feed.title}}</div>
+                    <div mat-line>{{feed.summary}}</div>
+                    <button mat-icon-button (click)="deleteFeed($event, feed)" *ngIf="hasFeedDeletePermission">
+                      <mat-icon class="action__icon">delete_outline</mat-icon>
+                    </button>
+                  </mat-list-item>
+        
+                  <mat-divider></mat-divider>
+        
+                </ng-container>
+        
+                <mat-paginator class="feed__action--paging" [length]="feeds.length" [pageSize]="itemsPerPage"
+                  (page)="feedPage = $event.pageIndex"></mat-paginator>
+              </mat-nav-list>
+            </ng-template>
+          </mat-tab>
+          <mat-tab label="Services">
+            <ng-template matTabContent>
+        
+              <div class="actions">
+                <mat-form-field appearance="outline" class="feed__action--search">
+                  <input matInput type="text" placeholder="Search Services" [(ngModel)]="serviceSearch"
+                    (input)="onServiceSearchChange()">
+                  <mat-icon matPrefix>search</mat-icon>
+                  <button class="cancel" mat-icon-button matSuffix (click)="clearServiceSearch()" *ngIf="serviceSearch">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-form-field>
+              </div>
+        
+              <mat-nav-list>
+                <ng-container
+                  *ngFor="let service of services | slice:(servicePage*itemsPerPage):((servicePage+1)*itemsPerPage);">
+        
+                  <mat-list-item (click)="goToService(service)">
+                    <mat-icon class="feed__icon" mat-list-icon>cloud_queue</mat-icon>
+                    <div mat-line>{{service.title}}</div>
+                    <div mat-line>{{service.summary}}</div>
+                    <button mat-icon-button (click)="deleteService($event, service)" *ngIf="hasFeedDeletePermission">
+                      <mat-icon class="action__icon">delete_outline</mat-icon>
+                    </button>
+                  </mat-list-item>
+        
+                  <mat-divider></mat-divider>
+        
+                </ng-container>
+              </mat-nav-list>
+        
+              <mat-paginator [length]="services.length" [pageSize]="itemsPerPage" (page)="servicePage = $event.pageIndex">
+              </mat-paginator>
+            </ng-template>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

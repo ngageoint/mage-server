@@ -1,0 +1,36 @@
+<mat-expansion-panel [expanded]="expanded" (opened)="opened.emit()" hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Create A New Service
+    </mat-panel-title>
+    <mat-panel-description>
+
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-form-field appearance="outline">
+    <mat-label>Select A Service Type</mat-label>
+    <mat-select [(ngModel)]="selectedServiceType" (selectionChange)="serviceTypeSelected()">
+      <mat-option>
+        <ngx-mat-select-search [formControl]="searchControl" placeholderLabel="Select A Service Type"
+          noEntriesFoundLabel=""></ngx-mat-select-search>
+      </mat-option>
+      <mat-option *ngFor="let serviceType of serviceTypes" [value]="serviceType">
+        {{serviceType.title}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div *ngIf="selectedServiceType && serviceFormReady">
+    <mage-json-schema-form framework="material-design"
+      [schema]="serviceTitleSummarySchema" [options]="formOptions"
+      (onChanges)="serviceTitleSummaryChanged($event)">
+    </mage-json-schema-form>
+    <mage-json-schema-form framework="material-design"
+      [schema]="selectedServiceType.configSchema" [options]="formOptions"
+      (onChanges)="serviceConfigurationChanged($event)">
+    </mage-json-schema-form>
+  </div>
+  <mat-action-row>
+    <button mat-button *ngIf="services?.length !== 0" color="warn" (click)="cancel()">Cancel</button>
+    <button mat-button [disabled]="!selectedServiceType" color="primary" (click)="createService()">Create Service</button>
+  </mat-action-row>
+</mat-expansion-panel>

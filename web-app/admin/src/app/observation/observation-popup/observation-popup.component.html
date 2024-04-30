@@ -1,0 +1,53 @@
+<div class="item">
+  <div class="item-header">
+    <div class="item-header-content">
+      <div class="item-overline">
+        <div>
+          <span>{{observation?.user?.displayName}}</span>
+          <span>·</span>
+          <span>{{observation?.properties?.timestamp | moment}}</span>
+        </div>
+      </div>
+
+      <div *ngIf="primaryField?.value">
+        <div class="item-header-text">
+          <span [ngSwitch]="primaryField?.field?.type">
+            <span *ngSwitchCase="'geometry'">
+              {{primaryField?.value | geometry:5}}
+            </span>
+            <span *ngSwitchDefault>
+              {{primaryField?.value}}
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="secondaryField?.value">
+        <div class="item-subhead">
+          <span [ngSwitch]="secondaryField?.field?.type">
+            <span *ngSwitchCase="'geometry'">
+              {{secondaryField?.value | geometry:5}}
+            </span>
+            <span *ngSwitchDefault>
+              {{secondaryField?.value}}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="action-buttons">
+      <button mat-button color="primary" (click)="onZoom()" class="actions__location-button">
+        <mat-icon class="actions__location-icon">my_location</mat-icon> {{observation?.geometry | geometry:5}}
+      </button>
+    </div>
+
+    <div class="actions-icons">
+      <button mat-icon-button (click)="onInfo()" class="actions--inactive">
+        <mat-icon>info_outline</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,26 @@
+<div class="signin-container">
+  <div class="wand-container bottom-gap" ng-if="!$ctrl.hideSignup">
+    <img class="mage-wand" src="/assets/images/bluewand.png"/>
+  </div>
+  <local-signin ng-if="$ctrl.localAuthenticationStrategy" 
+    strategy="$ctrl.localAuthenticationStrategy" 
+    hide-signup="$ctrl.hideSignup" 
+    on-signup="$ctrl.onSignup({strategy: $ctrl.localAuthenticationStrategy})" 
+    on-signin="$ctrl.signin($event)"></local-signin>
+  <div ng-if=" $ctrl.localAuthenticationStrategy && $ctrl.thirdPartyStrategies.length">
+    <div class="or-container">
+      <hr class="or-hr">
+      <div id="or">or</div>
+    </div>
+  </div>
+  <div ng-repeat="strategy in $ctrl.thirdPartyStrategies">
+    <div ng-class="{'bottom-gap': $index < $ctrl.thirdPartyStrategies.length - 1}">
+      <ng-switch on="strategy.type">
+        <idp-signin ng-switch-when="oauth" strategy="strategy" on-signin="$ctrl.signin($event)"></idp-signin>
+        <idp-signin ng-switch-when="saml" strategy="strategy" on-signin="$ctrl.signin($event)"></idp-signin>
+        <idp-signin ng-switch-when="openidconnect" strategy="strategy" on-signin="$ctrl.signin($event)"></idp-signin>
+        <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="$ctrl.signin($event)"></ldap-signin>
+      </ng-switch>
+    </div>
+  </div>
+</div>

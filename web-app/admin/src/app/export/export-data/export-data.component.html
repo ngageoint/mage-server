@@ -1,0 +1,74 @@
+<div class="export">
+
+  <div class="export-panel">
+    <div class="export-panel-container">
+      <div class="mat-headline" mat-dialog-title>Export Data</div>
+
+      <mat-dialog-content class="export-content">
+        <div class="mat-subheading-2">What to Export</div>
+        <div class="export-options">
+          <mat-checkbox [(ngModel)]="exportObservations" color="primary">Observations
+          </mat-checkbox>
+          <mat-checkbox [(ngModel)]="exportLocations" color="primary">Locations</mat-checkbox>
+        </div>
+
+        <div class="mat-subheading-2">Export Format</div>
+        <div class="export-format">
+          <mat-chip-list [(ngModel)]="exportFormat">
+            <mat-chip *ngFor="let format of exportFormats" [value]="format" (click)="changeFormat(format)"
+              color="primary">
+              {{format}}
+            </mat-chip>
+          </mat-chip-list>
+        </div>
+
+
+        <div class="mat-subheading-2">Time</div>
+        <mat-form-field class="time-field" appearance="outline">
+          <mat-label>Time Range</mat-label>
+          <mat-select [(ngModel)]="exportTime">
+            <mat-option *ngFor="let option of exportTimeOptions" [value]="option.key">{{option.label}} </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div *ngIf="exportTime === 'custom'">
+          <datetime-picker title="Start" required="true" [datetime]="defaultStartDate"
+            (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          <datetime-picker title="End" required="true" [datetime]="defaultEndDate" (dateTimeChange)="onEndDate($event)">
+          </datetime-picker>
+        </div>
+
+        <div class="advanced">
+          <div class="advanced-header">
+            <div class="advanced-header__title mat-subheading-2">More Options</div>
+            <button mat-icon-button (click)="onAdvanced()">
+              <mat-icon [@rotate]="showAdvanced">expand_more</mat-icon>
+            </button>
+          </div>
+
+          <div class="advanced-content" *ngIf="showAdvanced" [@expand] #advanced>
+            <p>
+              <mat-checkbox [(ngModel)]="excludeObservationsAttachments" color="primary">Exclude all attachments
+              </mat-checkbox>
+            </p>
+            <p>
+              <mat-checkbox [(ngModel)]="exportFavoriteObservations" color="primary">Export only your favorite
+                observations</mat-checkbox>
+            </p>
+            <p>
+              <mat-checkbox [(ngModel)]="exportImportantObservations" color="primary">Export only observations flagged
+                important</mat-checkbox>
+            </p>
+          </div>
+        </div>
+
+      </mat-dialog-content>
+
+      <mat-divider class="actions-divider"></mat-divider>
+      <mat-dialog-actions class="export-actions">
+        <button mat-button color="primary" mat-dialog-close="closeAction">CANCEL</button>
+        <button mat-button color="primary" (click)="exportData()" cdkFocusInitial>OK</button>
+      </mat-dialog-actions>
+    </div>
+  </div>
+</div>

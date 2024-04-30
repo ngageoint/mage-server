@@ -1,0 +1,24 @@
+<section class="mat-typography">
+    <div class="mat-body; contact-info-summary">
+        When e-mail and/or phone is populated, MAGE will present users with the option to contact an
+        administrator to enable accounts, register devices or to report issues.
+    </div>
+</section>
+<section class="mat-typography">
+    <mat-form-field appearance="outline" id="email">
+        <mat-label>MAGE Administrator E-Mail</mat-label>
+        <mat-icon matPrefix>mail</mat-icon>
+        <input matInput type="email" [(ngModel)]="contactinfo.email" (click)="setDirty(true)">
+        <button *ngIf="contactinfo.email" matSuffix mat-icon-button (click)="contactinfo.email=''; setDirty(true)">
+            <mat-icon>close</mat-icon>
+        </button>
+    </mat-form-field>
+    <mat-form-field appearance="outline" id="phone">
+        <mat-label>MAGE Administrator Phone</mat-label>
+        <mat-icon matPrefix>phone</mat-icon>
+        <input matInput type="tel" [(ngModel)]="contactinfo.phone" (click)="setDirty(true)">
+        <button *ngIf="contactinfo.phone" matSuffix mat-icon-button (click)="contactinfo.phone=''; setDirty(true)">
+            <mat-icon>close</mat-icon>
+        </button>
+    </mat-form-field>
+</section>

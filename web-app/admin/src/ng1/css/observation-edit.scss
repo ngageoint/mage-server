@@ -1,0 +1,129 @@
+.observation-edit-toolbar {
+  position: sticky;
+  display: flex;
+  top: 0;
+  z-index: 10;
+}
+
+.observation-edit-toolbar__title {
+  flex: 1 1 auto;
+  padding-left: 20px;
+}
+
+.observation-edit-toolbar__progress circle {
+  stroke: white;
+}
+
+geometry-edit {
+  display: inline-block;
+}
+
+.geometry-edit__active {
+  position: relative;
+  z-index: 1;
+}
+
+.geometry-edit__active:after {
+  position: absolute;
+  background: var(--mdc-theme-surface);
+  border-radius: 4px;
+  top: -8px;
+  bottom: -4px;
+  right: -4px;
+  left: -6px;
+  content: "";
+  z-index: -1;
+}
+
+.edit-location__geometry-type {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.edit-location__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-location__actions > button + button {
+  margin-left: 8px;
+}
+
+.edit-location__coordinates {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.edit-location__coordinates-select {
+  width: 130px;
+}
+
+.edit-location-button {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1;
+  transition: opacity ease-in-out 150ms;
+}
+
+.edit-location-button.ng-enter,
+.edit-location-button.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+.edit-location-button.ng-leave,
+.edit-location-button.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+.feed .mdc-top-app-bar {
+  width: 450px;
+  position: sticky;
+}
+.feed .mdc-top-app-bar .mdc-button:not(:disabled) {
+  color: white;
+}
+
+.delete-dialog .modal-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.delete-button.mdc-button:not(:disabled) {
+  color: white;
+  background-color: #D32F2F !important;
+}
+
+.observation-feed-container > .slide-left.ng-animate {
+  position:relative;
+  width: 100%;
+  flex:1;
+  height:100%;
+}
+
+.record.ng-anchor-out {
+  background:blue;
+}
+
+.add-attachment-button.mdc-button:not(:disabled) {
+  background-color: #1E88E5 !important;
+  color: white;
+  width: 100%;
+}
+
+.add-attachment-button-container {
+  padding-right: 4px;
+  margin: 16px;
+}
+
+.add-attachment-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}

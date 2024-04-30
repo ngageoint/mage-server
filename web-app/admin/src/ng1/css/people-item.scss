@@ -1,0 +1,113 @@
+.user-card {
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-item-content {
+  flex: 1;
+  margin-right: 10px;
+  margin-left: 10px;
+  min-width: 0;
+}
+
+.user-item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-header {
+  display: flex;
+  flex-direction: row;
+  padding-top: 16px;
+  flex: 1;
+}
+
+.user-header-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-header-content-right {
+  padding-right: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.user-thumbnail {
+  flex: 0 0 72px;
+  margin-top: auto;
+  margin-bottom: auto;
+  text-align: center;
+}
+
+.user-thumbnail img {
+  max-width: 40px;
+}
+
+.user-header-text {
+  font-size: 16px;
+  color: rgba(30, 136, 229, 0.87);
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.user-subhead {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.user-link {
+  color: rgba(30, 136, 229, 0.87) !important;
+  cursor: pointer;
+}
+
+.user-supporting-text-container {
+  padding: 16px;
+}
+
+.user-supporting-text-container i {
+}
+
+.user-supporting-text {
+  color: rgba(0, 0, 0, 0.6)
+}
+
+.user-time {
+  font-size: .8rem;
+  font-weight: 400;
+}
+
+.user-media {
+  height: 194px;
+  /* position: relative; */
+}
+
+.user-media img {
+  height: 194px;
+}
+
+.user-actions {
+
+}
+
+.user-icons {
+
+}
+
+.attachment-number {
+  top: unset;
+  left: unset;
+  bottom: 5px;
+  right: 5px;
+}
+
+.edit-button {
+  font-size: 1rem;
+}

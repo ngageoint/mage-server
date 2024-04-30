@@ -1,0 +1,87 @@
+<div class="filter-panel mdc-dialog"
+role="alertdialog"
+aria-modal="true"
+aria-labelledby="my-dialog-title"
+aria-describedby="my-dialog-content">
+  <div class="mdc-dialog__container">
+    <div class="mdc-dialog__surface">
+      <div class="modal-header">
+          <h2 style="color: white;" class="mdc-dialog__title"><i class="fa fa-filter"></i> Filter</h2>
+      </div>
+      <div class="mdc-dialog__content" id="my-dialog-content">
+        <form>
+          <div class="top-gap">
+            <typeahead-select
+              options="$ctrl.events"
+              hoist-menu-to-body
+              field-label="Events"
+              initial-value="$ctrl.filterEvent.selected"
+              display-property="name"
+              secondary-display-property="description"
+              id-property="id"
+              on-select="$ctrl.eventSelected(event)"
+              width="350px"/>
+          </div>
+          <div class="top-gap">
+            <multiselect
+              options="$ctrl.filterEvent.selected.teams"
+              field-label="Team"
+              display-property="name"
+              id-property="id"
+              on-select="$ctrl.teamsSelected(options)"/>
+          </div>
+
+          <div class="top-gap">
+            <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.intervalChoice.label}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list" >
+                  <li
+                    ng-repeat="intervalChoice in $ctrl.intervalChoices"
+                    ng-class="{'mdc-list-item--selected': $ctrl.intervalChoice.label === intervalChoice.label}"
+                    class="mdc-list-item"
+                    data-value="{{intervalChoice.label}}">
+                    {{intervalChoice.label}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label class="mdc-floating-label">Time</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+              </div>
+            </div>
+          </div>
+          <div ng-show="$ctrl.intervalChoice.filter === 'custom'">
+            <div class="top-gap">
+              <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
+            </div>
+            <div class="top-gap">
+              <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <footer class="mdc-dialog__actions">
+        <button type="button"
+          class="mdc-button mdc-dialog__button"
+          data-mdc-dialog-action="close">
+          <span class="mdc-button__label">Cancel</span>
+        </button>
+        <button type="button"
+          class="mdc-button mdc-dialog__button set-filter-button"
+          data-mdc-dialog-action="yes"
+          ng-click="$ctrl.performFilter()"
+          tabindex="1">
+          <span class="mdc-button__label">Filter</span>
+        </button>
+      </footer>
+    </div>
+  </div>
+  <div class="mdc-dialog__scrim"></div>
+</div>

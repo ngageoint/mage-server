@@ -1,0 +1,31 @@
+<form ng-show="$ctrl.showAuthorize" class="form" method="post" autocomplete="off" ng-submit="$ctrl.authorize()">
+  <h2>Enter your device ID to continue to MAGE</h2>
+
+  <p class="top-gap">To access MAGE you will need to enter a device ID.  If you do not have a device ID please ask you MAGE administrator to provide you with one.</p>
+
+  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+    <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+      <input type="text" 
+        id="uid" 
+        name="uid" 
+        placeholder="Device ID" 
+        autocapitalize="off"
+        ng-model="$ctrl.uid" 
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="uid" class="mdc-floating-label">Device ID</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-button-container device-id-button-container">
+    <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Continue to MAGE</button>
+  </div>
+
+</form>
+
+<contact ng-if="$ctrl.contactOpen" [open]="$ctrl.contactOpen" [api]="$ctrl.api" [strategy]="$ctrl.strategy"
+  [info]="$ctrl.info" (on-contact-close)="$ctrl.onContactClose()"></contact>

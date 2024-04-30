@@ -1,0 +1,31 @@
+<div ng-style="{width: $ctrl.width}" class="multi-select team-select mdc-select mdc-select--outlined filter-dropdown">
+  <input type="hidden" name="enhanced-select">
+  <i class="mdc-select__dropdown-icon"></i>
+  <div class="mdc-select__selected-text"></div>
+  <div class="mdc-select__selected-text-mine">
+      <div class="mdc-chip-set mdc-chip-set--input">
+          <div class="mdc-chip" ng-repeat="option in $ctrl.optionsSelected">
+            <div class="mdc-chip__text">{{option[$ctrl.displayProperty]}}</div>
+            <i class="material-icons mdc-chip__icon mdc-chip__icon--trailing" tabindex="0" role="button" ng-click="$ctrl.removeOption($index)">cancel</i>
+          </div>
+        </div>
+    </div>
+  <div ng-style="{width: $ctrl.width}" class="mdc-select__menu mdc-menu mdc-menu-surface multi-select-list filter-dropdown">
+    <ul class="mdc-list" >
+      <li
+        ng-repeat="option in $ctrl.filteredOptions()"
+        ng-class="{'mdc-list-item--disabled': $ctrl.isOptionChosen(option[$ctrl.idProperty])}"
+        class="mdc-list-item"
+        data-value="{{option[$ctrl.idProperty]}}">
+        {{option[$ctrl.displayProperty]}}
+      </li>
+    </ul>
+  </div>
+  <div class="mdc-notched-outline">
+  <div class="mdc-notched-outline__leading"></div>
+  <div class="mdc-notched-outline__notch">
+    <label class="mdc-floating-label">{{$ctrl.fieldLabel}}</label>
+  </div>
+  <div class="mdc-notched-outline__trailing"></div>  
+  </div>
+</div>

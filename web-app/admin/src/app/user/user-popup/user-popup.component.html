@@ -1,0 +1,38 @@
+<div class="item-header">
+  <div class="item-thumbnail">
+    <user-avatar [user]="user" avatarWidth="40" avatarHeight="40"></user-avatar>
+  </div>
+
+  <div class="item-header-content">
+    <div class="item-title">
+      <div>
+        <span>{{user?.displayName}}</span>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="item-subtitle">
+      {{location?.properties?.timestamp | moment}}
+    </div>
+
+    <div class="item-subtitle">
+      {{location?.geometry | geometry:5}}
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <div class="action-buttons">
+    <button *ngIf="followingUser.id !== user.id" mat-button color="primary" (click)="onFollow()">FOLLOW</button>
+    <button *ngIf="followingUser.id === user.id" mat-flat-button color="primary" (click)="onFollow()">FOLLOWING</button>
+  </div>
+
+  <div class="actions-icons">
+    <button mat-icon-button (click)="onZoom()">
+      <mat-icon>my_location</mat-icon>
+    </button>
+    <button mat-icon-button (click)="onInfo()">
+      <mat-icon>info_outline</mat-icon>
+    </button>
+  </div>
+</div>

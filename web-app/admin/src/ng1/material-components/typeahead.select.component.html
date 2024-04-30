@@ -1,0 +1,39 @@
+<div class="mdc-menu-surface--anchor">
+  <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+    <input
+      type="text"
+      autocomplete="off"
+      ng-model="$ctrl.selectedOptionDisplay"
+      class="mdc-text-field__input"
+      ng-change="$ctrl.typeaheadChange()"
+      ng-click="$ctrl.openDropdown()">
+    <div class="mdc-notched-outline">
+      <div class="mdc-notched-outline__leading"></div>
+      <div class="mdc-notched-outline__notch">
+        <label class="mdc-floating-label">{{$ctrl.fieldLabel}}</label>
+      </div>
+      <div class="mdc-notched-outline__trailing"></div>
+    </div>
+  </div>
+
+  <div class="mdc-text-field-helper-line">
+    <p ng-if="$ctrl.helperText" class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent mdc-text-field-helper-text--validation-msg">{{$ctrl.helperText}}</p>
+  </div>
+
+  <div ng-style="{width: $ctrl.width}" class="mdc-menu-surface typeahead-dropdown-menu">
+    <ul class="mdc-list" role="menu">
+      <li
+        ng-repeat="option in $ctrl.filteredOptions()"
+        class="mdc-list-item"
+        ng-class="{'mdc-list-item--two-line': option[$ctrl.secondaryDisplayProperty]}"
+        data-value="{{option[$ctrl.idProperty]}}"
+        ng-click="$ctrl.setSelectedOption(option)">
+        <span class="mdc-list-item__text">
+          <span ng-class="{'mdc-list-item__primary-text': option[$ctrl.secondaryDisplayProperty], 'mdc-list-item__text': !option[$ctrl.secondaryDisplayProperty]}">{{option[$ctrl.displayProperty]}}</span>
+          <span class="mdc-list-item__secondary-text" ng-if="option[$ctrl.secondaryDisplayProperty]">{{option[$ctrl.secondaryDisplayProperty]}}</span>
+        </span>
+      </li>
+    </ul>
+  </div>
+
+</div>

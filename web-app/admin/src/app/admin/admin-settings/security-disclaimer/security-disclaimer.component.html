@@ -1,0 +1,29 @@
+<section class="mat-typography">
+    <div class="mat-body; disclaimer-summary">
+        MAGE can present a disclaimer after login. If the disclaimer is shown users will
+        have to accept to continue into MAGE. The disclaimer will be shown on all clients, i.e.
+        Android, iOS, and the Web.
+    </div>
+</section>
+<section class="mat-typography">
+    <div class="show-section">
+        <mat-checkbox [(ngModel)]="disclaimer.show" [checked]="disclaimer.show" color="primary"
+            (change)="setDirty(true)">
+        </mat-checkbox>
+        <mat-label for="show-disclaimer">Show Disclaimer</mat-label>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label for="disclaimerTitle">Disclaimer Title</mat-label>
+            <input matInput [(ngModel)]="disclaimer.title" [disabled]="!disclaimer.show"
+                (click)="setDirty(true)">
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label for="disclaimerText">Disclaimer Text</mat-label>
+            <textarea matInput [(ngModel)]="disclaimer.text" [disabled]="!disclaimer.show"
+                (click)="setDirty(true)"> </textarea>
+        </mat-form-field>
+    </div>
+</section>

@@ -1,0 +1,41 @@
+<div class="upload-file">
+  <span class="input-group-btn">
+    <span class="btn btn-file">
+      <div ng-show="$ctrl.preview && !$ctrl.uploadImageMissing" class="row bottom-gap-s">
+        <div class="col-md-12">
+          <div class="preview" style="float:left;">
+            <img class="preview-image" ng-src="{{$ctrl.icon || $ctrl.url}}"/>
+          </div>
+        </div>
+      </div>
+      <input type="file" multiple>
+    </span>
+  </span>
+
+  <div class="row">
+    <div class="col-md-12">
+      <span class="file-input btn btn-default btn-file" ng-show="$ctrl.type == 'button'">
+        Browse&hellip; <input type="file" multiple>
+      </span>
+
+      <div class="input-group" ng-show="$ctrl.type == 'detail'">
+        <input type="text" class="form-control" ng-value="$ctrl.file.name" placeholder="{{$ctrl.placeholder}}" readonly>
+        <span class="input-group-btn">
+          <span class="btn btn-default btn-file">
+              Browse&hellip; <input type="file" multiple>
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-s" ng-show="$ctrl.uploading || $ctrl.uploadStatus">
+    <div class="col-md-12">
+      <div class="progress" ng-show="$ctrl.uploading">
+        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" style="width: {{$ctrl.uploadProgress}}%;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

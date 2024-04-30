@@ -1,0 +1,7 @@
+<div class="tab">
+  <div *ngIf="tab?.iconUrl" class="img" [ngClass]="{'img__active': active}" [ngStyle]="imageStyle"></div>
+  <mat-icon *ngIf="tab?.icon" [ngClass]="{'icon__active': active, 'icon': true }">{{tab.icon}}</mat-icon>
+
+  <span class="tab--title" [ngClass]="{'tab--title__active': active }">{{tab?.title}}</span>
+</div>
+

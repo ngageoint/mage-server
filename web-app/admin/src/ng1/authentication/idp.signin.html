@@ -1,0 +1,22 @@
+<div class="text-center">
+
+  <button class="mdc-button mdc-button--raised third-party-button" 
+    ng-style="{'background-color': $ctrl.strategy.buttonColor, 'border-color': $ctrl.strategy.buttonColor}" 
+    ng-click="$ctrl.signin($ctrl.strategy)">
+
+    <span class="third-party-button-content">
+      <span ng-if="!$ctrl.strategy.icon" class="third-party-logo">
+        <i class="fa fa-lg fa-shield" ng-style="{'color': $ctrl.strategy.buttonColor}"></i>
+      </span>
+      <span ng-if="$ctrl.strategy.icon" class="third-party-logo">
+        <img data-ng-src="data:image/png;base64,{{$ctrl.strategy.icon}}"></img>
+      </span>
+
+      <span class="third-party-button-text" ng-style="{color: $ctrl.strategy.textColor}">Sign In With {{$ctrl.strategy.title}}</span>
+    </span>
+
+  </button>
+</div>
+
+<contact ng-if="$ctrl.contactOpen" [open]="$ctrl.contactOpen" [api]="$ctrl.api" [strategy]="$ctrl.strategy"
+  [info]="$ctrl.info" (on-contact-close)="$ctrl.onContactClose()"></contact>

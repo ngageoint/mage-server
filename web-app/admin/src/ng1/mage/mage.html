@@ -1,0 +1,21 @@
+<div class="filter-banner hidden-xs">
+  <div class="filter-text">
+    <div class="col-xs-12 text-center">
+      <span class="filter-event">{{$ctrl.filteredEvent.name}}</span>
+      <span ng-if="$ctrl.filteredTeams" class="filter-teams"><span> > {{$ctrl.filteredTeams}}</span></span>
+      <span ng-if="$ctrl.filteredInterval" class="filter-interval"> {{$ctrl.filteredInterval}}</span>
+    </div>
+  </div>
+</div>
+
+<div class="main-container">
+  <feed-panel class="feed ng-animatable"
+    ng-hide="$ctrl.hideFeed"
+    [event]="$ctrl.filteredEvent"
+    [observation-location]="$ctrl.newObservation"
+    (toggle)="$ctrl.onToggleFeed($event)"></feed-panel>
+
+  <div class="map">
+    <map-leaflet (on-map-available)="$ctrl.onMapAvailable($event)" (on-add-observation)="$ctrl.onAddObservation($event)" (on-add-layer)="$ctrl.onAddLayer($event)" (on-remove-layer)="$ctrl.onRemoveLayer($event)"></map-leaflet>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+.opacity > mat-label {
+  display: block;
+}
+
+.opacity-label {
+  margin-bottom: -12px;
+  font: 400 12px/24px Roboto, "Helvetica Neue", sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.opacity-slider {
+  width: 100%;
+}
+
+color-picker {
+  display: block;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.style {
+  margin-top: 16px;
+}
+
+.style-actions {
+  margin-left: -8px;
+}
+
+.style-actions > button {
+  padding: 0 8px;
+}
+
+.style-actions > .mat-button > span  {
+  background: yellowgreen;
+}
+
+:host ::ng-deep.mat-icon {
+  height: 18px;
+  width: 18px;
+  line-height: 18px;
+  margin-right: 8px;
+  font-size: 18px;
+}

@@ -1,0 +1,30 @@
+@import "theme.scss";
+/* You can add global styles to this file, and also import other style files */
+@import "@ng-select/ng-select/themes/material.theme.css";
+@import "./roboto.scss";
+@import "./ng1/css/style.scss";
+@import "./ng1/css/map.scss";
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: unset;
+}
+
+bootstrap {
+  height: 100%;
+}
+
+mat-bottom-sheet-container.feed-panel {
+  position: absolute;
+  left: 0;
+  bottom:0;
+  width: 450px;
+  min-width: 450px;
+}
+
+.form-remove-snackbar {
+  position: absolute;
+  left: 29px;
+  bottom:0;
+}

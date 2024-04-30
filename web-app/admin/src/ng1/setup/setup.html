@@ -1,0 +1,147 @@
+<div class="setup-container">
+  <div class="wand-container">
+    <img class="mage-wand" src="/assets/images/bluewand.png"/>
+  </div>
+  <div ng-show="$ctrl.page == 'account'">
+    <h2>You will need to create an initial account to access and administer MAGE.</h2>
+
+    <div class="tap-gap">
+      <form name="$ctrl.form.account" class="form" method="post" autocomplete="off" novalidate>
+
+        <div class="top-gap-xl" ng-class="{'has-error': $ctrl.form.account.$submitted && $ctrl.form.account.username.$invalid}">
+          <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+            <input type="text" 
+              id="uid" 
+              name="username" 
+              autocomplete="new-password"
+              placeholder="Username" 
+              autocapitalize="off"
+              ng-model="$ctrl.account.username" 
+              class="mdc-text-field__input"
+              required>
+            <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label for="uid" class="mdc-floating-label">Username</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+            </div>
+          </div>
+          <div class="mdc-text-field-helper-line">
+            <div class="mdc-text-field-helper-text"></div>
+          </div>
+        </div>
+
+        <div class="top-gap" ng-class="{'has-error': $ctrl.form.account.$submitted && $ctrl.form.account.password.$invalid}">
+          <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+            <input type="password" 
+              id="password" 
+              name="password" 
+              autocomplete="new-password"
+              placeholder="Password" 
+              autocapitalize="off"
+              ng-model="$ctrl.account.password" 
+              class="mdc-text-field__input"
+              ng-change="$ctrl.onPasswordChange()"
+              required>
+            <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label for="password" class="mdc-floating-label">Password</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="top-gap" ng-class="{'has-error': $ctrl.form.account.$submitted && $ctrl.form.account.password.$invalid}">
+          <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+            <input type="password" 
+              id="passwordconfirm" 
+              name="passwordconfirm" 
+              autocomplete="new-password"
+              placeholder="Confirm Password" 
+              autocapitalize="off"
+              ng-model="$ctrl.account.passwordconfirm" 
+              class="mdc-text-field__input"
+              ng-change="$ctrl.onPasswordConfirmChange()"
+              required>
+            <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label for="passwordconfirm" class="mdc-floating-label">Confirm Password</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+            </div>
+          </div>
+          <div class="mdc-text-field-helper-line">
+            <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Passwords do not match</div>
+          </div>
+        </div>
+
+        <div class="top-gap">
+          <div class="muted">Password Strength: <span class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></div>
+          <div role="progressbar" class="top-gap-s mdc-linear-progress" ng-class="'progress-bar-' + $ctrl.passwordStrengthType">
+            <div class="mdc-linear-progress__buffering-dots"></div>
+            <div class="mdc-linear-progress__buffer"></div>
+            <div class="mdc-linear-progress__bar mdc-linear-progress__primary-bar">
+              <span class="mdc-linear-progress__bar-inner"></span>
+            </div>
+            <div class="mdc-linear-progress__bar mdc-linear-progress__secondary-bar">
+              <span class="mdc-linear-progress__bar-inner"></span>
+            </div>
+          </div>
+        </div>
+    
+        <div class="auth-button-container top-gap-l">
+          <div></div>
+          <button type="submit" class="top-gap mdc-button mdc-button--raised primary-button" ng-click="$ctrl.next()">Next</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div ng-show="$ctrl.page == 'device'">
+    <h2>You will need to create an initial device ID to access and administer MAGE.</h2>
+
+    <div class="top-gap-l">
+      <form name="$ctrl.form.device" class="form" novalidate>
+        
+        <div class="top-gap-xl" ng-class="{'has-error': form.device.$submitted && form.device.uid.$invalid}">
+          <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+            <input type="text" 
+              id="uid" 
+              name="uid" 
+              autocomplete="new-password"
+              placeholder="UID" 
+              autocapitalize="off"
+              ng-model="$ctrl.account.uid" 
+              class="mdc-text-field__input"
+              required>
+            <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label for="password" class="mdc-floating-label">UID</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-button-container top-gap-l">
+          <div></div>
+          <button type="submit" class="top-gap mdc-button mdc-button--raised primary-button" ng-click="$ctrl.finish()">Finish</button>
+        </div>
+        <div class="mdc-snackbar">
+          <div class="mdc-snackbar__surface">
+            <div class="mdc-snackbar__label" role="status">
+              <h4>{{$ctrl.statusTitle}}</h4>
+              {{$ctrl.statusMessage}}
+            </div>
+            <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+@import "./user/index.scss";
+@import "./team/index.scss";
+@import "./event/index.scss";
+
+.app-fab--absolute-center {
+  position: absolute !important;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  bottom: 1rem;
+}

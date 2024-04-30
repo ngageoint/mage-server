@@ -1,0 +1,8 @@
+<div [formGroup]="formGroup">
+  <mat-form-field appearance="fill">
+    <mat-label>{{definition.title}}</mat-label>
+    <textarea matInput formControlName="{{definition.name}}" [required]="definition.required"></textarea>
+    <mat-error *ngIf="formGroup.get(definition.name).hasError('required')">You must enter a value</mat-error>
+  </mat-form-field>
+</div>
+

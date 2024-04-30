@@ -1,0 +1,4 @@
+<button mat-mini-fab  color="default" matTooltip="Map Layers" matTooltipPosition="left" (click)="toggleLayerMenu()">
+  <mat-icon color="primary" [hidden]="showClose" [@rotatedState]='state' (@rotatedState.done)="onDone($event)">layers</mat-icon>
+  <mat-icon color="primary" [hidden]="!showClose" [@rotatedStateClose]='stateClosed' (@rotatedStateClose.done)="onCloseDone($event)">close</mat-icon>
+</button>

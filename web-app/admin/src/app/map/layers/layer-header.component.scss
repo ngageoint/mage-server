@@ -1,0 +1,28 @@
+:host {
+  width: 100%;
+}
+
+.item-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+}
+
+.item-content {
+  flex: 1;
+  padding: 12px 0 12px 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-action {
+  margin-right: 8px;
+  pointer-events: all;
+}
+
+.item-action__icon {
+  transition: 250ms ease-out;
+  transform: rotate(0deg);
+}

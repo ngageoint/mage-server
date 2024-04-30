@@ -1,0 +1,81 @@
+.mage-tooltip {
+  position: relative; 
+  display: inline-block;
+}
+
+.mage-tooltip span:last-child.tooltiptext,
+.mage-tooltip span:first-child.tooltiptext {
+  visibility: hidden;
+  opacity: 0;
+  background-color: #555;
+  color: white;
+  text-align: center;
+  border-radius: 4px;
+  position: absolute;
+  z-index: 1;
+  padding-right: 8px;
+  font-size: 10px;
+  height: 24px;
+  padding-left: 8px;
+  padding-top: 5px;
+  white-space: nowrap;
+  left: 50%;
+  -moz-transform: translateX(-50%) scale(.5);
+  -webkit-transform: translateX(-50%) scale(.5);
+  transform: translateX(-50%) scale(.5);
+  -moz-transition: all .075s ease-in-out;
+  -webkit-transition: all .075s ease-in-out;
+  transition: all .075s ease-in-out;
+}
+
+.mage-tooltip span:first-child.tooltiptext {
+  bottom: 100%;
+} 
+.mage-tooltip span:last-child.tooltiptext {
+  top: 100%;
+} 
+
+.mage-tooltip:hover span.tooltiptext {
+  visibility: visible;
+  opacity: 1;
+  -moz-transform: translateX(-50%) scale(1.0);
+  -webkit-transform: translateX(-50%) scale(1.0);
+  transform: translateX(-50%) scale(1.0);
+  -moz-animation: showTooltipAnimation .15s ease-in forwards, hideTooltipAnimation .075s ease-in 1.5s forwards;
+  -webkit-animation: showTooltipAnimation .15s ease-in forwards, hideTooltipAnimation .075s ease-in 1.5s forwards;
+  animation: showTooltipAnimation .15s ease-in forwards, hideTooltipAnimation .075s ease-in 1.5s forwards;
+}
+
+.mage-tooltip span:last-child.tooltiptext::after {
+  content: " ";
+  position: absolute;
+  bottom: 100%;
+  right: 50%;
+  margin-right: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #555 transparent;
+}
+
+.mage-tooltip span:first-child.tooltiptext::after {
+  content: " ";
+  position: absolute;
+  right: 50%;
+  margin-right: -5px;
+  border-width: 5px;
+  border-style: solid;
+  top: 100%;
+  border-color: #555 transparent transparent transparent;
+}
+@keyframes showTooltipAnimation {
+  to {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+@keyframes hideTooltipAnimation {
+  to {
+    visibility: hidden;
+    opacity: 0;
+  }
+}

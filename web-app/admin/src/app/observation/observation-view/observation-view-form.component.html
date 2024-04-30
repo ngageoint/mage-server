@@ -1,0 +1,56 @@
+<mat-card>
+  <div class="form-header">
+
+    <div class="form-header-summary">
+      <div class="form-header-title">
+        <mat-icon class="form-header-title__icon" [style.color]="form.color">description</mat-icon>
+        <div class="form-header-title__text">{{form?.name}}</div>
+      </div>
+      <div *ngIf="primaryField?.value" class="form-header-summary__primary">
+        <span [ngSwitch]="primaryField?.type">
+          <span *ngSwitchCase="'geometry'">
+            {{primaryField?.value | geometry:5}}
+          </span>
+          <span *ngSwitchDefault>
+            {{primaryField?.value}}
+          </span>
+        </span>
+      </div>
+      <div *ngIf="secondaryField?.value" class="form-header-summary__secondary">
+        <span [ngSwitch]="secondaryField?.type">
+          <span *ngSwitchCase="'geometry'">
+            {{secondaryField?.value | geometry:5}}
+          </span>
+          <span *ngSwitchDefault>
+            {{secondaryField?.value}}
+          </span>
+        </span>
+      </div>
+    </div>
+
+    <div class="form-header-actions">
+      <button mat-icon-button (click)="expand = !expand" *ngIf="hasContent()">
+        <mat-icon [@rotate]="expand">expand_more</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="expand" @expand class="form-content">
+    <div *ngFor="let field of nonArchivedFields(form.fields)">
+      <div [ngSwitch]="field.type" class="field">
+        <observation-view-attachment *ngSwitchCase="'attachment'" [form]="form" [field]="field" [attachments]="attachments"></observation-view-attachment>
+        <observation-view-geometry *ngSwitchCase="'geometry'" [field]="field"></observation-view-geometry>
+        <observation-view-date *ngSwitchCase="'date'" [field]="field"></observation-view-date>
+        <observation-view-checkbox *ngSwitchCase="'checkbox'" [field]="field"></observation-view-checkbox>
+        <observation-view-text *ngSwitchCase="'dropdown'" [field]="field"></observation-view-text>
+        <observation-view-text *ngSwitchCase="'email'" [field]="field"></observation-view-text>
+        <observation-view-text *ngSwitchCase="'numberfield'" [field]="field"></observation-view-text>
+        <observation-view-text *ngSwitchCase="'radio'" [field]="field"></observation-view-text>
+        <observation-view-text *ngSwitchCase="'textfield'" [field]="field"></observation-view-text>
+        <observation-view-textarea *ngSwitchCase="'textarea'" [field]="field"></observation-view-textarea>
+        <observation-view-password *ngSwitchCase="'password'" [field]="field"></observation-view-password>
+        <observation-view-multiselectdropdown *ngSwitchCase="'multiselectdropdown'" [field]="field"></observation-view-multiselectdropdown>
+      </div>
+    </div>
+  </div>
+</mat-card>

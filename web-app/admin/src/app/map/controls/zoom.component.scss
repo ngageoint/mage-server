@@ -1,0 +1,8 @@
+.zoom {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+button:not(:last-child) {
+  margin-bottom: 8px;
+}

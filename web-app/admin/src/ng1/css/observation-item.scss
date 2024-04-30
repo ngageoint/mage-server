@@ -1,0 +1,230 @@
+
+.observation-card {
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+}
+
+.observation-header {
+  display: flex;
+  flex-direction: row;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.leaflet-popup-content .observation-header {
+  padding-bottom: 0px;
+}
+
+.observation-important {
+  padding: 8px 0;
+  display: flex;
+  background: #FF9103;
+}
+
+.observation-important--icon {
+  margin: 0 16px;
+  align-self: center;
+  font-size: 32px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.observation-important--overline {
+  color: rgba(0, 0, 0, .6);
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .16667em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.observation-important--description {
+  margin-top: 8px;
+  color: rgba(0, 0, 0, .87);
+}
+
+.observation-header-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-left: 16px;
+}
+
+.observation-header-content-right {
+  padding-right: 16px;
+  width: 150px;
+  text-align: right;
+}
+
+.leaflet-popup-content .observation-header-content-right {
+  padding-right: 0px;
+  padding-top: 6px;
+}
+
+.leaflet-popup-content .mdc-card__actions {
+  padding-right: 0px;
+}
+
+.observation-thumbnail {
+  width: 72px;
+  margin-bottom: auto;
+  text-align: center;
+}
+
+.observation-thumbnail img {
+  /* margin-left: 16px; */
+  max-width: 40px;
+  /* max-height: 40px; */
+}
+
+.observation-header-text {
+  font-size: 24px;
+  color: rgba(30, 136, 229, 0.87);
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+
+.observation-subhead {
+  color: rgba(0, 0, 0, 0.6);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.observation-subhead-geometry {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.observation-subhead-geometry > .material-icons {
+  font-size: 12px;
+  margin-right: 6px;
+  margin-left: -1px;
+}
+
+.observation-overline {
+  color: rgba(0, 0, 0, 0.6);
+  font-family: Roboto, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .16667em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.observation-subhead-divider {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.observation-supporting-text-container {
+  padding: 16px;
+}
+
+.observation-supporting-text-container i {
+}
+
+.observation-supporting-text {
+  color: rgba(0, 0, 0, 0.54)
+}
+
+.observation-time {
+  font-size: .8rem;
+  font-weight: 400;
+}
+
+.observation-media {
+  height: 194px;
+  /* position: relative; */
+}
+
+.observation-media img {
+  height: 194px;
+}
+
+.observation-media-double img {
+  height: 194px;
+  width: 194px;
+}
+
+.observation-actions {
+
+}
+
+.observation-icons {
+
+}
+
+.attachment-number {
+  top: unset;
+  left: unset;
+  bottom: 5px;
+  right: 5px;
+}
+
+.label-chip {
+  float: right;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+.image-text-protection {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, .6);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: 16px;
+  padding-right: 4px;
+}
+
+.image-text-label {
+  color: #FFFFFF;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  z-index: 1;
+}
+
+.image-action-icons {
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.upload-progress-bar {
+  background-color: rgba(0, 0, 0, 0.87);
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: ''
+}
+
+.delete-attachment-button:not(:disabled) {
+  color: rgba(255, 0, 0, .9) !important;
+}
+
+.edit-button {
+  font-size: 1rem;
+}

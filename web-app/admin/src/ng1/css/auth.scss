@@ -1,0 +1,388 @@
+$bg-mask-color: rgba(16, 69, 130, .5);
+$primary-dark: #1565C0;
+$password-strengths: ('danger': #d9534f, 'warning': #f0ad4e, 'info': #5bc0de, 'primary': #1E88E5, 'success': #5cb85c);
+$background-images: '1', '2', '3', '4';
+$small-screen-breakpoint: 1025px;
+
+@each $image in $background-images {
+  .mage-#{$image}-bg {
+    background-image: url('/assets/images/splash/#{$image}.jpg');
+  }
+}
+
+.sliding-bg {
+  width: 100%;
+  background-size: cover;
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  animation: bg-slide 400s linear infinite;
+  z-index: -1;
+}
+
+.outer-container {
+  display:inline;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.authentication-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.mage-info-container {
+  min-height: 100%;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  background-color: $bg-mask-color;
+}
+
+mage-info {
+  width: 80%;
+}
+
+authentication {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.authentication-info-container {
+  min-height: 100%;
+  width: 50%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mage-info-feature {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 30px;
+  padding-top: 30px;
+}
+
+.mage-info-title {
+  font-size: 8rem;
+  letter-spacing: 1rem;
+}
+
+@media all and (max-width: $small-screen-breakpoint) {
+  .sliding-bg {
+    animation: none;
+  }
+
+  .authentication-container {
+    display: inline;
+  }
+
+  .mage-info-container {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    position: relative;
+  }
+
+  .authentication-info-container {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .mage-feature-list {
+    display: none;
+  }
+
+  .mage-info-title {
+    font-size: 4rem;
+    letter-spacing: none;
+  }
+}
+
+.mage-feature-list {
+  margin-top: 44px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 60%;
+}
+
+.mage-info-title-container {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.mage-info-subtitle {
+  margin-top: -10px;
+  font-size: 1.5rem;
+}
+
+.mage-info-feature-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 16px;
+  i {
+    font-size: 3.5rem;
+    stroke: white;
+  }
+}
+
+.mage-info-feature-description {
+  display: flex;
+  flex-direction: column;
+}
+
+.mage-info-feature-title {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.mage-info-feature-subtitle {
+  font-size: 1rem;
+}
+
+.about-link {
+  padding: 16px;
+}
+
+.app-store-container {
+  padding-top: 64px;
+  padding-bottom: 16px;
+  text-align: center;
+}
+
+.app-store-badges {
+  flex-direction: row;
+  display: flex;
+  justify-content: center;
+}
+
+.app-store-badge {
+  margin: 8px;
+}
+
+.section-container {
+  flex: 1;
+  text-align: center;
+  display: flex;
+}
+
+.disclaimer-info-container,
+.device-id-container,
+.setup-container,
+.inactive-account-container {
+  width: 75%;
+  min-width: 285px;
+  padding-bottom: 16px;
+  margin: auto;
+}
+
+.about-container {
+  width: 90%;
+  height: 100%;
+  overflow-y: scroll;
+  color: black;
+  margin: auto;
+}
+
+.signup-container, 
+signin {
+  min-width: 285px;
+  width: 75%;
+  margin: auto;
+  text-align: left;
+}
+
+.wand-container {
+  text-align: center;
+  .mage-wand {
+    margin-top: 36px;
+    width: 97px;
+    height: 97px;
+    margin-bottom: 36px;
+  }
+}
+
+.auth-button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.auth-button-third-party {
+  position: relative;
+  width: 100%;
+}
+
+.auth-captcha-container {
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, .4);
+  border-radius: 4px;
+  padding: 4px;
+  width:100%;
+  height: 80px;
+}
+
+.auth-captcha {
+  position: absolute;
+  right: 56px;
+  left: 56px;
+  top: 4px;
+  bottom: 4px;
+}
+
+.auth-captcha-progress {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.auth-captcha-progress__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 64px;
+  width: 100%;
+}
+
+.auth-captcha-progress--text {
+  color: rgba(0, 0, 0, .6);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.auth-captcha-refresh {
+  position: absolute;
+  right: 8px;
+  top: 16px;
+}
+
+.device-id-button-container {
+  justify-content: flex-end;
+}
+
+.signup-container .mdc-snackbar,
+.signin-container .mdc-snackbar,
+.setup-container .mdc-snackbar,
+.device-id-container .mdc-snackbar {
+  transform: translateX(25%)
+}
+
+.mdc-button--raised:not(:disabled).return-to-login-button {
+  background-color: $primary-dark;
+  width: 100%;
+}
+
+.mdc-button--raised:not(:disabled).primary-button {
+  background-color: $primary-dark;
+  width: 48%;
+}
+
+.mdc-button--raised:not(:disabled).secondary-button {
+  background-color: white;
+  color: $primary-dark;
+  width: 48%;
+}
+
+.mdc-button--raised:not(:disabled) {
+  &.return-to-login-button {
+    background-color: $primary-dark;
+    width: 100%;
+  }
+  &.primary-button {
+    background-color: $primary-dark;
+    width: 48%;
+  }
+  &.secondary-button {
+    background-color: white;
+    color: $primary-dark;
+    width: 48%;
+  }
+}
+
+.or-container {
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 30px;
+  color: #808080;
+  font-variant: small-caps;
+}
+
+.or-hr {
+  margin-bottom: -23px;
+  height: 0;
+  border: 0;
+  border-top: 2px solid #e6e6e6;
+}
+
+#or {
+  display: inline-block;
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+}
+
+.third-party-button {
+  flex-direction: row;
+  justify-content: space-between !important;
+  width: 100%;
+}
+
+.third-party-button-content {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 1px;
+  left: 1px;
+  bottom: 1px;
+  right: 1px;
+}
+
+.third-party-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FFFFFF;
+  border-radius: 3px;
+  width: 42px;
+  height: 100%;
+  padding: 4px;
+
+  img {
+    width: 60%;
+  }
+}
+
+.third-party-button-text {
+  text-align: center;
+  flex: 1;
+}
+
+@each $name, $color in $password-strengths {
+  .progress-bar-#{$name} .mdc-linear-progress__bar-inner {
+    background-color: $color;
+  }
+}
+
+@keyframes bg-slide {
+  from { transform: translateX(0); }
+  50% { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}

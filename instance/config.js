@@ -33,13 +33,8 @@ module.exports = {
     },
     plugins: {
       servicePlugins: [
-        '@ngageoint/mage.arcgis',
-        '@ngageoint/mage.image.service',
-        '@ngageoint/mage.nga-msi',
-        '@ngageoint/mage.random',
       ],
       webUIPlugins: [
-        '@ngageoint/mage.arc-web'
       ],
     },
   }

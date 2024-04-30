@@ -640,7 +640,8 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   try {
     const webappPackagePath = require.resolve('@ngageoint/mage.web-app/package.json')
     const webappDir = path.dirname(webappPackagePath)
-    webController.use(express.static(webappDir))
+    webController.use(express.static(webappDir + '/app'))
+    webController.use('/admin', express.static(webappDir + '/admin'))
   }
   catch (err) {
     console.warn('failed to load mage web app package', err)

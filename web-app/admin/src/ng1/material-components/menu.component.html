@@ -1,0 +1,25 @@
+<div>
+  <div class="pointer" data-toggle="dropdown" ng-click="$ctrl.toggleMenu()">
+    {{$ctrl.title}}
+    <i class="material-icons ng-scope vertical-middle">arrow_drop_down</i>
+  </div>
+
+  <div class="mdc-menu-surface--anchor" >
+    <div class="mdc-menu mdc-menu-surface">
+      <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
+        <li ng-repeat="option in $ctrl.options" class="mdc-list-item" ng-click="$ctrl.optionSelected(option)">
+          <span class="mdc-list-item__graphic mdc-menu__selection-group-icon">
+            <div class="mdc-radio">
+              <input class="mdc-radio__native-control" type="radio" ng-checked="$ctrl.isOptionSelected(option)">
+              <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+              </div>
+            </div>
+          </span>
+          <span class="mdc-list-item__text">{{option.title}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

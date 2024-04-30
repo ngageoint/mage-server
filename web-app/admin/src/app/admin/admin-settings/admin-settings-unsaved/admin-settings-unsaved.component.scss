@@ -1,0 +1,12 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
+button {
+    margin-left: 8px; 
+    color: mat.get-color-from-palette($app-primary);
+}
+
+mat-dialog-actions {
+    display: flex;
+    justify-content: right;
+}

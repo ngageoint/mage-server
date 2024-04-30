@@ -1,0 +1,145 @@
+<div class="container top-gap-xl">
+
+  <div class="row">
+    <div class="col-sm-10">
+      <div class="card">
+        <div class="card-content">
+          <h3 style="display: inline;">Account Information</h3>
+
+          <div class="row top-gap-l">
+            <div class="col-md-12">
+              <form ng-submit="$ctrl.saveUser()" class="form-horizontal">
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Avatar</label>
+                    <div class="col-sm-8">
+                      <user-avatar-edit user="$ctrl.user" on-avatar-changed="$ctrl.avatarChanged($event)"/>
+                    </div>
+                  </div>
+
+                  <div class="form-group" ng-show="$ctrl.user.authentication.type == 'local'">
+                    <label class="control-label col-sm-2">Username</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="i.e. jappleseed" ng-model="$ctrl.user.username" autocapitalize="off" class="form-control" disabled/>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Display Name</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="Johnny Appleseed" ng-model="$ctrl.user.displayName" name="displayName" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Email</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="johnny@appleseed.com" ng-model="$ctrl.user.email" name="email" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Phone</label>
+                    <div class="col-sm-10">
+                      <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="$ctrl.user.phones[0].number" name="phone" class="form-control">
+                    </div>
+                  </div>
+
+                  <span class="pull-right">
+                    <button type="button" class="btn btn-default btn-inverse" ng-click="$ctrl.cancel()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                  </span>
+              </form>
+            </div>
+
+            <div class="col-md-10 col-md-offset-2 form-group" ng-show="$ctrl.showUserStatus">
+              <div class="alert alert-block" ng-class="$ctrl.statusLevel">
+                <button type="button" class="close" ng-click="$ctrl.showUserStatus = false">&times;</button>
+                <h4>{{$ctrl.statusTitle}}</h4>
+                {{$ctrl.statusMessage}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-l" ng-show="$ctrl.user.authentication.type === 'local'">
+    <div class="col-sm-10">
+
+      <div class="card">
+        <div class="card-content">
+          <div class="admin-password-container">
+            <div>
+              <i class="fa fa-fw fa-2x muted fa-lock"></i>
+            </div>
+            <div class="admin-password-text">
+              <div><span>Reset Password</span></div>
+              <div><span class="muted">It's a good idea to use a strong password that you're not using elsewhere.</span></div>
+            </div>
+            <div>
+              <button class="btn btn-default pull-right" ng-click="$ctrl.editPassword = !$ctrl.editPassword">{{$ctrl.editPassword ? 'Close' : 'Edit'}}</button>
+            </div>
+          </div>
+
+          <div ng-show="$ctrl.editPassword">
+            <hr>
+            <form ng-submit="$ctrl.updatePassword($ctrl.form.authentication)" name="$ctrl.form.authentication" class="form-horizontal clearfix" method="post" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label class="control-label col-sm-2">Current</label>
+                <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.password.$invalid}">
+                  <input type="password" ng-model="$ctrl.authentication.password" ng-change="$ctrl.passwordChanged()" name="password" placeholder="Current" class="form-control" required>
+                  <div class="help-block" ng-messages="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.password.$error" ng-if="$ctrl.form.authentication.password.$invalid">
+                    <div ng-message="required">Current password is required</div>
+                    <div ng-message="invalid">Invalid password</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2">New</label>
+                <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$invalid}">
+                  <input type="password" ng-model="$ctrl.authentication.newPassword" ng-change="$ctrl.newPasswordChanged($ctrl.authentication.newPassword)" name="newPassword" class="form-control" required>
+                  <div class="help-block" ng-messages="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPassword.$error" ng-if="$ctrl.form.authentication.newPassword.$invalid">
+                    <div ng-message="required">New password is required</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2">Re-type new</label>
+                <div class="col-sm-10" ng-class="{'has-error': $ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPasswordConfirm.$invalid}">
+                  <input type="password" ng-model="$ctrl.authentication.newPasswordConfirm" name="newPasswordConfirm" class="form-control" required>
+                  <div class="help-block" ng-messages="$ctrl.form.authentication.newPasswordConfirm.$error" ng-if="$ctrl.form.authentication.$submitted && $ctrl.form.authentication.newPasswordConfirm.$invalid">
+                    <div ng-message="required">New password confirmation is required</div>
+                    <div ng-messages="nomatch">Passwords do not match</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-2 col-sm-10">
+                  <div><strong class="muted">Password Strength: <span class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></strong></div>
+                  <uib-progressbar max="5" value="$ctrl.passwordStrengthScore" type="{{$ctrl.passwordStrengthType}}"></uib-progressbar>
+                </div>
+              </div>
+
+              <span class="top-gap clearfix">
+                <button type="submit" class="btn btn-primary pull-right">Change password</button>
+              </span>
+
+              <div class="form-group">
+                <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="$ctrl.passwordStatus.msg">
+                  <div class="alert alert-{{$ctrl.passwordStatus.status}}">
+                    <p>{{$ctrl.passwordStatus.msg}}<p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

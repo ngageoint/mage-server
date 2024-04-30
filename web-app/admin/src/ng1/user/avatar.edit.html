@@ -1,0 +1,19 @@
+<div class="clearfix">
+  <div class="user-icon-container">
+    <div class="user-icon">
+      <user-avatar [user]="$ctrl.user" avatar-width="75" avatar-height="75"></user-avatar>
+    </div>
+
+    <div class="user-icon-input" style="line-height: 100%">
+      <div class="input-group">
+        <input type="text" class="form-control" ng-value="$ctrl.fileName" readonly></input>
+        <span class="input-group-btn">
+          <span class="btn btn-default btn-file">
+              Browse&hellip; <input type="file" multiple></input>
+          </span>
+        </span>
+      </div>
+    </div>
+
+  </div>
+</div>

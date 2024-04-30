@@ -1,0 +1,34 @@
+<div class="opacity">
+  <mat-label class="opacity-label">Opacity</mat-label>
+  <mat-slider class="opacity-slider" 
+    color="primary" 
+    min="0" 
+    max="100" 
+    step="1" 
+    value=100 
+    thumbLabel
+    [displayWith]="formatOpacity"
+    (change)="opacityChanged($event)">
+  </mat-slider>
+</div>
+
+<div *ngIf="layer.layer.type === 'GeoPackage' && layer.layer.table.type === 'feature'">
+
+  <div class="style-actions">
+    <button mat-button color="primary" (click)="toggleStyle()">
+      <mat-icon>palette</mat-icon>{{style ? 'Reset To Default' : 'Override Style'}}
+    </button>
+  </div>
+
+  <div class="style" *ngIf="style" @visibility>
+    <color-picker label="Stroke" [hexColor]="style.stroke" (onColorChanged)="colorChanged($event, 'stroke')"></color-picker>
+    <color-picker label="Fill" [hexColor]="style.fill" (onColorChanged)="colorChanged($event, 'fill')"></color-picker>
+    <mat-form-field dense appearance="outline">
+      <mat-label>Stroke Width</mat-label>
+      <input matInput type="number" [ngModel]="style.width" (ngModelChange)="widthChanged($event)">
+    </mat-form-field>
+  </div>
+
+</div>
+
+

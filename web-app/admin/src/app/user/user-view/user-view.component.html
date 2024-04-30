@@ -1,0 +1,68 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row class="navigation">
+    <button mat-icon-button class="navigation__icon" (click)="onClose()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="navigation__title">
+      <span>{{user.user.displayName}}</span>
+    </div>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<div class="user-container">
+  <mat-card class="user-card">
+    <div class="user-map">
+      <div class="user-map__view">
+        <map-clip [feature]="user.location" [accuracy]="accuracy"></map-clip>
+      </div>
+    </div>
+
+    <div class="user-avatar">
+      <div class="user-avatar__border"></div>
+      <div class="user-avatar__img">
+        <user-avatar [user]="user.user" avatarWidth="110" avatarHeight="110"></user-avatar>
+      </div>
+    </div>
+
+    <div class="user__name">
+      {{user.user.displayName}}
+    </div>
+
+    <div class="user__divider"></div>
+
+    <div class="user__row" (click)="onUserLocationClick()" matRipple>
+      <mat-icon class="user__icon user__icon--location">my_location</mat-icon>
+      <div class="user__text">
+        <span>{{user.location.geometry | geometry:5}}</span>
+      </div>
+      <span class="user__location--accuracy">
+        <span class="user__location--provider">{{user.location.properties.provider}} </span>
+        <span>&#177;</span>
+        <span> {{user.location.properties.accuracy | number:'0.0-5'}}m</span>
+      </span>
+    </div>
+
+    <a class="user__row" href="tel:{{user.user.phones[0].number}}" *ngIf="user.user?.phones?.length">
+      <mat-icon class="user__icon user__icon--phone">phone</mat-icon>
+      <div class="user__text">
+        {{user.user.phones[0].number}}
+      </div>
+    </a>
+
+    <a class="user__row" href="mailto:{{user.user.email}}" *ngIf="user.user.email">
+      <mat-icon class="user__icon user__icon--email">email</mat-icon>
+      <div class="user__text">
+        {{user.user.email}}
+      </div>
+    </a>
+  </mat-card>
+
+  <!-- <div class="user-observations">
+    <div class="user-observations__subheader">Observations</div>
+    <cdk-virtual-scroll-viewport itemSize="50" class="listViewPort">
+      <div *cdkVirtualFor="let observation of userObservations; trackBy: trackObservationById" class="user-observation">
+        <observation-list-item [observation]="observation" [event]="event" [form]="event.form"></observation-list-item>
+      </div>
+    </cdk-virtual-scroll-viewport>
+  </div> -->
+</div>

@@ -1,0 +1,262 @@
+@import "~leaflet/dist/leaflet.css";
+@import "~leaflet.markercluster/dist/MarkerCluster.css";
+@import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+.foo-bar-nope {
+  background-color: #000;
+}
+
+.leaflet-control-geocoder-icon {
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background-color: white;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  color: #1E88E5;
+}
+
+.leaflet-control-geocoder-icon::before {
+   font-family: "FontAwesome";
+   content: "\f002";
+   font-size: 1.1em;
+   margin-left: 2px;
+}
+
+.leaflet-control-geocoder-throbber .leaflet-control-geocoder-icon {
+ background-image: none;
+}
+
+.leaflet-control-geocoder-throbber .leaflet-control-geocoder-icon::before {
+  font-family: "FontAwesome";
+  font-size: 1.1em;
+  content: "\f110";
+  display: block;
+  margin-top: 4px;
+  -webkit-animation: fa-spin 1s infinite steps(8);
+  animation: fa-spin 1s infinite steps(8);
+}
+
+.leaflet-control-geocoder-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.leaflet-bar a, .leaflet-bar a:hover {
+    color: #1E88E5;
+}
+
+.leaflet-control-inverse, a.leaflet-control-inverse {
+  background: #1E88E5;
+}
+
+@-ms-viewport {
+	width: device-width;
+}
+
+.geojson-popup {
+  margin: 16px;
+}
+
+.user-popup {
+  display: flex;
+}
+
+.user-popup-content {
+  flex: 1 1 auto;
+  margin-left: 15px;
+  max-width: 200px;
+}
+
+.user-popup-actions {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.observation-popup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.observation-popup-content {
+  flex: 1 1 auto;
+  max-width: 200px;
+}
+
+.observation-popup-actions {
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.uploaded {
+  padding: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+  border-image: initial;
+}
+
+.mage-icon {
+	margin-left: -17px;
+}
+
+.mage-icon-image {
+  transform: translate(0, -100%);
+  image-rendering: -moz-crisp-edges;         /* Firefox */
+  image-rendering:   -o-crisp-edges;         /* Opera */
+  image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+}
+
+.marker-tooltip {
+  transform: translate(0, -100%);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: gray;
+  color: white;
+  margin-left: 40px;
+  opacity: .87;
+  border-radius: 3px;
+  height: 50px;
+  width: 200px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.overlay-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: gray;
+  color: white;
+  opacity: 0.87;
+  padding: 10px;
+  border-radius: 3px;
+  height: 50px;
+  width: 200px;
+  border: none;
+}
+
+.leaflet-tooltip-left.overlay-tooltip::before {
+  border-left-color: transparent;
+}
+
+.leaflet-tooltip-right.overlay-tooltip::before {
+  border-right-color: transparent;
+}
+
+.leaflet-vertex-icon {
+  background: #fff;
+  height: 12px !important;
+  width: 12px !important;
+  margin-left: -6px !important;
+  margin-top: -6px !important;
+  border-radius: 6px;
+  border: 1px solid #999;
+}
+
+.leaflet-middle-icon {
+  background: #fff;
+  height: 12px !important;
+  width: 12px !important;
+  margin-left: -6px !important;
+  margin-top: -6px !important;
+  border-radius: 6px;
+  border: 1px solid #999;
+}
+
+.marker-icon {
+  border: 1px solid #777;
+}
+
+.marker-icon:focus {
+  border: 1px solid #000;
+  background-color: transparent;
+}
+
+.selected-marker {
+  border: 1px solid #999;
+  background-color: #00e976 !important;
+}
+
+.cursor-marker:after {
+  content: 'Click to draw vertex';
+  background-color: rgba(128, 128, 128 ,.2);
+  font-size: 1.3em;
+  display: block;
+  width: 155px;
+  margin-left: 20px;
+  margin-top: -4px;
+  border-radius: 3px;
+  padding-left: 5px;
+}
+
+.user-map-icon {
+  font-family: RobotoMono;
+  font-weight: 500;
+}
+
+.location-popup {
+	color: #1E88E5;
+	width: 265px;
+}
+
+.location-popup-info i {
+	font-size: 17px;
+	color: #1E88E5;
+}
+
+.leaflet-mage-icon {
+  color: #1E88E5;
+  font-size: 1.6em;
+  background-image: none;
+  line-height: unset;
+}
+
+.leaflet-mage-icon-inverse {
+  color: #FEFEFE;
+  font-size: 1.6em;
+  background-image: none;
+  line-height: unset;
+}
+
+.map-content {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-controls-left {
+  position: absolute;
+  z-index: 1000;
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
+mat-drawer-content {
+  overflow: unset;
+}
+
+.mat-drawer-content {
+  overflow: hidden !important;
+}

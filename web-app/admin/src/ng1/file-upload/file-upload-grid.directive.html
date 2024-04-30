@@ -1,0 +1,46 @@
+<div class="media-tile mdc-card__media observation-media" ng-if="(attachmentsToUpload % 2) === 1">
+  <div class="attachment-media">
+    <div class="preview">
+      <img class="center-crop attachment-media" ng-src="{{firstFile.preview}}"/>
+    </div>
+    <div class="image-text-protection">
+      <div class="upload-progress-bar" ng-style="{width: firstFile.uploadProgress+'%'}"></div>
+      <span class="image-text-label mdc-typography--subtitle1"><span ng-if="firstFile.uploading">Upload Progress: {{firstFile.uploadProgress | number: 0}}%</span></span>
+      <div class="image-action-icons mdc-typography--subtitle1">
+        <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
+          title="Delete" 
+          ng-if="!firstFile.uploading"
+          ng-disabled="attachment.markedForDelete"
+          ng-click="removeAttachment(firstFile.id)">
+          <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="attachments">
+  <div class="attachment media-tile" ng-repeat="(id, fileInfo) in files" ng-if="!$first || ((attachmentsToUpload % 2) === 0)">
+    <div class="preview">
+      <img class="center-crop attachment-media" ng-src="{{fileInfo.preview}}"/>
+    </div>
+    <div class="image-text-protection">
+      <div class="upload-progress-bar" ng-style="{width: fileInfo.uploadProgress+'%'}"></div>
+      <span class="image-text-label mdc-typography--subtitle1"><span ng-if="fileInfo.uploading">Upload Progress: {{fileInfo.uploadProgress | number: 0}}%</span></span>
+      <div class="image-action-icons mdc-typography--subtitle1">
+        <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
+          title="Delete" 
+          ng-disabled="attachment.markedForDelete"
+          ng-click="removeAttachment(id)">
+          <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="add-attachment-button-container">
+  <input name="attachment-input" id="attachment-input" class="add-attachment-input" type="file" multiple>
+  <label class="mdc-button add-attachment-button" for="attachment-input">
+    Add Attachments
+  </label>
+</div>
