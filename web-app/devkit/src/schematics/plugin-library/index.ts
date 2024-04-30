@@ -28,16 +28,18 @@ function addPluginHookToEntryPoint(options: PluginLibraryOptions): Rule {
     const entryFilePath = `${project.sourceRoot}/${entryFile}.ts`
     const entryFileText = tree.readText(entryFilePath)
     const entrySource = ts.createSourceFile(entryFilePath, entryFileText, ts.ScriptTarget.Latest, true)
-    const importCoreChange = insertImport(entrySource, entryFilePath, 'EgPlugin', '@ng-plugins/eg-core-lib')
+    const importCoreChange = insertImport(entrySource, entryFilePath, 'PluginHooks', '@ngageoint/mage.web-core-lib/plugins')
     const importComponentChange = componentClassName ? insertImport(entrySource, entryFilePath, componentClassName, `./lib/${componentFileName.slice(0, -3)}`) : new NoopChange()
     const packageJson = tree.readJson(`${project.root}/package.json`) as JsonObject
     const packageName = packageJson.name as string
     const pluginExport =
 `
-export const plugin: EgPlugin = {
-  id: '${packageName}',
-  title: '${packageName}',
-  component: ${componentClassName},
+export const MAGE_WEB_HOOKS: PluginHooks = {
+  module: null, // TODO: add module name or remove module requirement
+  adminTab: {
+    title: '${packageName}',
+    component: ${componentClassName},
+  }
 }
 `
     type ExportNodes = ts.ExportAssignment | ts.ExportDeclaration | ts.ExportSpecifier | ts.NamedExports
@@ -57,7 +59,12 @@ export const plugin: EgPlugin = {
   }
 }
 
-function usePluginBuilder(options: PluginLibraryOptions): Rule {
+function addCorePeerDependency(): Rule {
+  // TODO: add a peer dependency on mage.web-app to the generated library's package.json
+  return tree => tree
+}
+
+function useCustomBuilder(options: PluginLibraryOptions): Rule {
   return updateWorkspace(workspace => {
     const projName = options.name
     const project = workspace.projects.get(projName)
@@ -67,22 +74,22 @@ function usePluginBuilder(options: PluginLibraryOptions): Rule {
     const target = project.targets.get('build')
     project.targets.set('build', {
       ...target,
-      builder: '@ng-plugins/eg-plugin-builder:amd'
+      builder: '@ngageoint/mage.web-core-lib:amd'
     })
     workspace.projects.set(projName, project)
   })
 }
 
-export function egPluginLib(options: PluginLibraryOptions): Rule {
+export function mageWebPluginLibrary(options: PluginLibraryOptions): Rule {
   if (!options.name) {
-    throw new SchematicsException('missing name')
+    throw new SchematicsException('missing name of the library to generate')
   }
   return chain([
     (_tree, context) => {
-      context.logger.info(`creating EgPluginLibrary ${options.name}`)
+      context.logger.info(`creating MAGE web plugin library ${options.name}`)
     },
     externalSchematic('@schematics/angular', 'library', options),
-    usePluginBuilder(options),
+    useCustomBuilder(options),
     addPluginHookToEntryPoint(options),
   ])
 }
