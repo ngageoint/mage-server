@@ -91,6 +91,7 @@ export function mageWebPluginLibrary(options: PluginLibraryOptions): Rule {
     externalSchematic('@schematics/angular', 'library', options),
     useCustomBuilder(options),
     addPluginHookToEntryPoint(options),
+    addCorePeerDependency(),
   ])
 }
 
