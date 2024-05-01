@@ -44,8 +44,8 @@
     "ci:test": "npm-run-all test-headless:core-lib test-headless",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "pack:app": "cd dist && cd app && npm pack",
-    "pack:core-lib": "cd dist && cd core-lib && npm pack",
+    "pack:app": "npm pack ./dist/app",
+    "pack:core-lib": "npm pack ./dist/core-lib",
     "bundle-report": "webpack-bundle-analyzer dist/stats.json"
   },
   "files": [],
