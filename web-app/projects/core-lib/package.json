@@ -5,8 +5,8 @@
     "type": "git",
     "url": "https://github.com/ngageoint/mage-server.git"
   },
-  "builders": "builders.json",
-  "schematics": "schematics/collection.json",
+  "builders": "angular-cli/builders.json",
+  "schematics": "angular-cli/collection.json",
   "ng-add": {
     "save": "devDependencies"
   },
