@@ -22,8 +22,7 @@ export class AdminPluginTabContentComponent implements OnInit, OnChanges {
       this.pluginView.clear()
       if (this.pluginTab) {
         this.pluginView.clear()
-        const componentFactory = this.pluginTab.module.componentFactoryResolver.resolveComponentFactory(this.pluginTab.tabContentComponent)
-        this.pluginView.createComponent(componentFactory)
+        this.pluginView.createComponent(this.pluginTab.tabContentComponent, { ngModuleRef: this.pluginTab.module })
       }
     }
   }
