@@ -28,7 +28,7 @@ function addPluginHookToEntryPoint(options: PluginLibraryOptions): Rule {
     const entryFilePath = `${project.sourceRoot}/${entryFile}.ts`
     const entryFileText = tree.readText(entryFilePath)
     const entrySource = ts.createSourceFile(entryFilePath, entryFileText, ts.ScriptTarget.Latest, true)
-    const importCoreChange = insertImport(entrySource, entryFilePath, 'PluginHooks', '@ngageoint/mage.web-core-lib/plugins')
+    const importCoreChange = insertImport(entrySource, entryFilePath, 'PluginHooks', '@ngageoint/mage.web-core-lib/plugin')
     const importComponentChange = componentClassName ? insertImport(entrySource, entryFilePath, componentClassName, `./lib/${componentFileName.slice(0, -3)}`) : new NoopChange()
     const packageJson = tree.readJson(`${project.root}/package.json`) as JsonObject
     const packageName = packageJson.name as string
@@ -38,7 +38,7 @@ export const MAGE_WEB_HOOKS: PluginHooks = {
   module: null, // TODO: add module name or remove module requirement
   adminTab: {
     title: '${packageName}',
-    component: ${componentClassName},
+    tabContentComponent: ${componentClassName},
   }
 }
 `

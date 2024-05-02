@@ -5,10 +5,13 @@
     "type": "git",
     "url": "https://github.com/ngageoint/mage-server.git"
   },
-  "builders": "angular-cli/builders.json",
-  "schematics": "angular-cli/collection.json",
+  "builders": "./angular-cli/builders.json",
+  "schematics": "./angular-cli/collection.json",
   "ng-add": {
     "save": "devDependencies"
+  },
+  "exports": {
+    "./angular-cli/*": "./angular-cli/*"
   },
   "peerDependencies": {
     "@angular/animations": "^14.2.12",
