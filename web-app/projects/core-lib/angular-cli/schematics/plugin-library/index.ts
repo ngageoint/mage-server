@@ -1,4 +1,4 @@
-import { Rule, chain, externalSchematic, SchematicsException,  } from '@angular-devkit/schematics'
+import { Rule, chain, externalSchematic, SchematicsException, DirEntry, Tree,  } from '@angular-devkit/schematics'
 import { Schema as BaseLibraryOptions } from '@schematics/angular/library/schema'
 import { getWorkspace, updateWorkspace,  } from '@schematics/angular/utility/workspace'
 import { insertImport, insertAfterLastOccurrence, findNodes } from '@schematics/angular/utility/ast-utils'
@@ -19,23 +19,22 @@ function addPluginHookToEntryPoint(options: PluginLibraryOptions): Rule {
     }
     const libDirPath = `${project.sourceRoot}/lib`
     const libDir = tree.getDir(libDirPath)
-    const componentFileName = libDir.subfiles.find(x => /\.component\.ts$/.test(x)) || ''
-    const componentFilePath = `${libDirPath}/${componentFileName}`
-    const componentFileText = tree.readText(`${libDirPath}/${componentFileName}`)
-    const componentSource = ts.createSourceFile(componentFilePath, componentFileText, ts.ScriptTarget.Latest, true)
-    const componentClassDecl = findNodes(componentSource, ts.SyntaxKind.ClassDeclaration)[0] as ts.ClassDeclaration
-    const componentClassName = componentClassDecl.name?.text
+    const module = findLibraryNgModule(tree, libDir)
+    const moduleClassName = module.classDecl.name?.text
+    const component = findLibraryComponent(tree, libDir)
+    const componentClassName = component.classDecl.name?.text
     const entryFilePath = `${project.sourceRoot}/${entryFile}.ts`
     const entryFileText = tree.readText(entryFilePath)
     const entrySource = ts.createSourceFile(entryFilePath, entryFileText, ts.ScriptTarget.Latest, true)
     const importCoreChange = insertImport(entrySource, entryFilePath, 'PluginHooks', '@ngageoint/mage.web-core-lib/plugin')
-    const importComponentChange = componentClassName ? insertImport(entrySource, entryFilePath, componentClassName, `./lib/${componentFileName.slice(0, -3)}`) : new NoopChange()
+    const importModuleChange = moduleClassName ? insertImport(entrySource, entryFilePath, moduleClassName, `./lib/${module.sourceFile.fileName.slice(0, -3)}`) : new NoopChange()
+    const importComponentChange = componentClassName ? insertImport(entrySource, entryFilePath, componentClassName, `./lib/${component.sourceFile.fileName.slice(0, -3)}`) : new NoopChange()
     const packageJson = tree.readJson(`${project.root}/package.json`) as JsonObject
     const packageName = packageJson.name as string
     const pluginExport =
 `
 export const MAGE_WEB_HOOKS: PluginHooks = {
-  module: null, // TODO: add module name or remove module requirement
+  module: ${moduleClassName},
   adminTab: {
     title: '${packageName}',
     tabContentComponent: ${componentClassName},
@@ -54,9 +53,27 @@ export const MAGE_WEB_HOOKS: PluginHooks = {
     .sort((a, b) => a.getStart() - b.getStart())
     const pluginExportChange = insertAfterLastOccurrence(exportNodes, pluginExport, entryFilePath, entrySource.end)
     const edit = tree.beginUpdate(entryFilePath)
-    applyToUpdateRecorder(edit, [ importCoreChange, importComponentChange, pluginExportChange ].filter(x => !!x))
+    applyToUpdateRecorder(edit, [ importCoreChange, importModuleChange, importComponentChange, pluginExportChange ].filter(x => !!x))
     tree.commitUpdate(edit)
   }
+}
+
+function findLibraryNgModule(tree: Tree, baseDir: DirEntry): { sourceFile: ts.SourceFile, classDecl: ts.ClassDeclaration } {
+  const fileName = baseDir.subfiles.find(x => /\.module\.ts$/.test(x)) || ''
+  const filePath = `${baseDir.path}/${fileName}`
+  const fileText = tree.readText(filePath)
+  const source = ts.createSourceFile(fileName, fileText, ts.ScriptTarget.Latest, true)
+  const classDecl = findNodes(source, ts.SyntaxKind.ClassDeclaration)[0] as ts.ClassDeclaration
+  return { sourceFile: source, classDecl: classDecl }
+}
+
+function findLibraryComponent(tree: Tree, baseDir: DirEntry): { sourceFile: ts.SourceFile, classDecl: ts.ClassDeclaration } {
+  const fileName = baseDir.subfiles.find(x => /\.component\.ts$/.test(x)) || ''
+  const filePath = `${baseDir.path}/${fileName}`
+  const fileText = tree.readText(filePath)
+  const source = ts.createSourceFile(fileName, fileText, ts.ScriptTarget.Latest, true)
+  const classDecl = findNodes(source, ts.SyntaxKind.ClassDeclaration)[0] as ts.ClassDeclaration
+  return { sourceFile: source, classDecl: classDecl }
 }
 
 function addCorePeerDependency(): Rule {
