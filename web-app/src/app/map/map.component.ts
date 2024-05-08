@@ -3,21 +3,20 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
 import { MapService } from '../upgrade/ajs-upgraded-providers';
-import { I } from '@angular/cdk/keycodes';
 
 @Component({
-  selector: 'app-leaflet',
-  templateUrl: './leaflet.component.html',
-  styleUrls: ['./leaflet.component.scss'],
+  selector: 'map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss'],
   providers: [LayerService]
 })
-export class LeafletComponent {
+export class MapComponent {
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
-  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
+  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
 
   @Output() onLayerPanelToggle = new EventEmitter<void>();
   @Output() onAddObservation = new EventEmitter<void>();
@@ -27,32 +26,32 @@ export class LeafletComponent {
 
   constructor(layerServive: LayerService, @Inject(MapService) private mapService: any) {
     this.groups['base'] = {
-      offset: LeafletComponent.BASE_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
     this.groups['MAGE'] = {
-      offset: LeafletComponent.MAGE_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
     this.groups['feed'] = {
-      offset: LeafletComponent.MAGE_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
     this.groups['tile'] = {
-      offset: LeafletComponent.TILE_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
     this.groups['feature'] = {
-      offset: LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
     this.groups['grid'] = {
-      offset: LeafletComponent.GRID_PANE_Z_INDEX_OFFSET,
+      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
       layers: []
     };
 
@@ -78,7 +77,7 @@ export class LeafletComponent {
 
     const groupName = this.getGroup($event);
     const group = this.groups[groupName];
-    $event.zIndex = group.offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
+    $event.zIndex = group.offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
     const pane = this.map.getPanes()[$event.layer.pane];
     pane.style.zIndex = $event.zIndex;
     group.layers.push($event);
@@ -151,11 +150,11 @@ export class LeafletComponent {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex);
     const offset =
       $event.type === 'feature'
-        ? LeafletComponent.FEATURE_PANE_Z_INDEX_OFFSET
-        : LeafletComponent.TILE_PANE_Z_INDEX_OFFSET;
+        ? MapComponent.FEATURE_PANE_Z_INDEX_OFFSET
+        : MapComponent.TILE_PANE_Z_INDEX_OFFSET;
 
     $event.layers.forEach((layer: any, index: number) => {
-      layer.zIndex = offset + LeafletComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1);
+      layer.zIndex = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1);
       const pane = this.map.getPanes()[layer.layer.pane];
       pane.style.zIndex = layer.zIndex;
     });

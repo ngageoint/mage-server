@@ -1,0 +1,21 @@
+<form class="form">
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Username</mat-label>
+      <input matInput placeholder="Username" [formControl]="username" required>
+    </mat-form-field>
+  </div>
+  
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput placeholder="Password" type="password" [formControl]="password" required>
+    </mat-form-field>
+  </div>
+
+  <div class="auth-button-container">
+    <div *ngIf="hideSignup"></div>
+    <button *ngIf="!hideSignup" class="mdc-button mdc-button--raised secondary-button" (click)="signup()" type="button">Sign Up</button>
+    <button class="mdc-button mdc-button--raised primary-button" (click)="signin()">Sign In</button>
+  </div>
+</form>

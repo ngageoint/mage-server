@@ -1,7 +1,6 @@
 import _ from 'underscore';
 import angular from 'angular';
 import mage from './mage/mage.component';
-import about from './about/about.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import uiRouter from "@uirouter/angularjs";
@@ -9,6 +8,9 @@ import { SwaggerComponent } from "../app/swagger/swagger.component";
 import { downgradeComponent, downgradeInjectable } from '@angular/upgrade/static';
 
 import { BootstrapComponent } from "../app/bootstrap/bootstrap.component"
+
+import { AboutComponent } from '../app/about/about.component';
+import { LandingComponent } from '../app/landing/landing.component';
 
 import { ZoomComponent } from '../app/map/controls/zoom.component';
 import { SearchComponent } from '../app/map/controls/search.component';
@@ -65,6 +67,8 @@ app
 
 // Downgraded Angular components
 app
+  .directive('about', downgradeComponent({ component: AboutComponent }))
+  .directive('landing', downgradeComponent({ component: LandingComponent }))
   .directive('feedPanel', downgradeComponent({ component: FeedPanelComponent }))
   .directive('observationPopup', downgradeComponent({ component: ObservationPopupComponent }))
   .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
@@ -86,7 +90,6 @@ app
   .component('dateTime', require('./datetime/datetime.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
   .component('setup', require('./setup/setup.controller'))
-  .component('about', about)
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
   .component('mage', mage)

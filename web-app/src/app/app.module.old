@@ -58,7 +58,7 @@ import { SearchComponent } from './map/controls/search.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LayersComponent } from './map/layers/layers.component'
 import { LayersControlComponent } from './map/controls/layers-control.component';
-import { LeafletComponent } from './map/leaflet.component';
+import { LeafletComponent } from './map/map.component';
 import { LeafletDirective } from './map/leaflet.upgrade.component';
 import { LayerHeaderComponent } from './map/layers/layer-header.component';
 import { LayerContentComponent } from './map/layers/layer-content.component';
@@ -356,7 +356,9 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     authenticationConfigurationServiceProvider,
     userPagingServiceProvider,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
-  ]
+  ],
+  schemas: [NO_ERRORS_SCHEMA]
+
 })
 export class AppModule implements DoBootstrap {
   // eslint-disable-next-line @typescript-eslint/no-empty-function

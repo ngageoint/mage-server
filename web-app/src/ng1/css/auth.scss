@@ -10,17 +10,6 @@ $small-screen-breakpoint: 1025px;
   }
 }
 
-.sliding-bg {
-  width: 100%;
-  background-size: cover;
-  position:absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  animation: bg-slide 400s linear infinite;
-  z-index: -1;
-}
-
 .outer-container {
   display:inline;
   min-height: 100%;
@@ -63,23 +52,7 @@ authentication {
   flex-direction: column;
 }
 
-.mage-info-feature {
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 30px;
-  padding-top: 30px;
-}
-
-.mage-info-title {
-  font-size: 8rem;
-  letter-spacing: 1rem;
-}
-
 @media all and (max-width: $small-screen-breakpoint) {
-  .sliding-bg {
-    animation: none;
-  }
-
   .authentication-container {
     display: inline;
   }
@@ -98,58 +71,6 @@ authentication {
     flex: 1;
     overflow: auto;
   }
-
-  .mage-feature-list {
-    display: none;
-  }
-
-  .mage-info-title {
-    font-size: 4rem;
-    letter-spacing: none;
-  }
-}
-
-.mage-feature-list {
-  margin-top: 44px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 60%;
-}
-
-.mage-info-title-container {
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.mage-info-subtitle {
-  margin-top: -10px;
-  font-size: 1.5rem;
-}
-
-.mage-info-feature-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-right: 16px;
-  i {
-    font-size: 3.5rem;
-    stroke: white;
-  }
-}
-
-.mage-info-feature-description {
-  display: flex;
-  flex-direction: column;
-}
-
-.mage-info-feature-title {
-  font-size: 1.6rem;
-  font-weight: 400;
-  margin-bottom: 10px;
-}
-
-.mage-info-feature-subtitle {
-  font-size: 1rem;
 }
 
 .about-link {

@@ -1,20 +1,20 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="utf-8">
   <title>MAGE</title>
-  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
+    rel="stylesheet">
 </head>
 
-<body class="mdc-typography">
-  <bootstrap>
-    <div class="application" ng-controller="NavController as $ctrl">
-      <banner ng-if="myself" class="banner" type="header"></banner>
-      <navbar myself="myself" ng-show="myself" on-feed-toggle="$ctrl.feedToggle()"></navbar>
-      <ui-view class="route-content" toggle-feed="$ctrl.toggleFeed"></ui-view>
-      <banner ng-if="myself" class="banner" type="footer"></banner>
-    </div>
-  </bootstrap>
+<body>
+  <app></app>
 </body>
 
 </html>
