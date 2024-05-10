@@ -13,9 +13,11 @@
     </mat-form-field>
   </div>
 
-  <div class="auth-button-container">
-    <div *ngIf="hideSignup"></div>
-    <button *ngIf="!hideSignup" class="mdc-button mdc-button--raised secondary-button" (click)="signup()" type="button">Sign Up</button>
-    <button class="mdc-button mdc-button--raised primary-button" (click)="signin()">Sign In</button>
+  <div>
+    <button class="auth-button" mat-flat-button color="primary" (click)="signin()">Sign In</button>
+  </div>
+  <div class="signup">
+    <span class="signup-text">New to MAGE?</span>
+    <a *ngIf="!hideSignup" class="signup-button"(click)="signup()">Sign Up Now</a>
   </div>
 </form>

@@ -7,6 +7,8 @@ import { Observable } from 'rxjs'
 })
 export class UserService {
 
+  myself: any
+
   constructor(private httpClient: HttpClient) { }
 
   signin(username: string,  password: string): Observable<any> {

@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api, AuthenticationStrategy } from '../api/api.entity';
 import * as _ from 'underscore';
 import { UserService } from '../user/user-service.service';
+import { relative } from 'path';
 
 @Component({
   selector: 'authentication',
@@ -56,7 +57,7 @@ export class AuthenticationComponent implements OnInit {
         }
       },
       error: () => {
-        this.router.navigate(['authorize'], { queryParams: { token: $event.token }, relativeTo: this.route.parent });
+        this.router.navigate(['authorize'], { state: { token: $event.token }, relativeTo: this.route.parent })
       }
     })
   }

@@ -1,3 +1,26 @@
+@use '@angular/material' as mat;
+@import "variables.scss";
+
 mat-form-field {
   width: 100%;
+}
+
+.auth-button {
+  width: 100%;
+}
+
+.signup {
+  display: flex;
+  margin-top: 32px;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signup-text {
+  opacity: 60%;
+}
+
+.signup-button {
+  cursor: pointer;
+  color: mat.get-color-from-palette($app-primary);
 }

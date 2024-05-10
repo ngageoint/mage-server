@@ -1,0 +1,32 @@
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  flex: 1;
+  overflow: auto;
+}
+
+.feed {
+  background: #e1e2e1;
+  order: 1;
+  width: 500px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  transition: margin-left .3s linear;
+  z-index: 1;
+}
+
+.map {
+  flex: 2;
+  position: relative;
+  order: 2;
+  z-index: 4;
+}

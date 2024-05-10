@@ -1,6 +1,13 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
+.container {
+  min-width: 285px;
+  width: 75%;
+  margin: auto;
+  text-align: left;
+}
+
 .title {
   font: 400 34px / 40px Roboto, "Helvetica Neue", sans-serif;
   color: mat.get-color-from-palette($app-primary);
@@ -10,6 +17,7 @@
 .subtitle {
   font: 400 16px / 20px Roboto,"Helvetica Neue",sans-serif;
   margin-bottom: 32px;
+  opacity: 60%;
 }
 
 .authorize {

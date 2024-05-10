@@ -1,8 +1,9 @@
-import { Component, Output, EventEmitter, Inject } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
-import { MapService } from '../upgrade/ajs-upgraded-providers';
+import { MapService } from './map.service';
+import { map, latLng, tileLayer, MapOptions, LatLng } from "leaflet";
 
 @Component({
   selector: 'map',
@@ -10,7 +11,7 @@ import { MapService } from '../upgrade/ajs-upgraded-providers';
   styleUrls: ['./map.component.scss'],
   providers: [LayerService]
 })
-export class MapComponent {
+export class MapComponent implements OnInit {
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
   public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
@@ -24,7 +25,10 @@ export class MapComponent {
   map: any;
   groups = {};
 
-  constructor(layerServive: LayerService, @Inject(MapService) private mapService: any) {
+  constructor(
+    layerServive: LayerService,
+    private mapService: MapService
+  ) {
     this.groups['base'] = {
       offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
       layers: []
@@ -59,6 +63,24 @@ export class MapComponent {
     layerServive.zoom$.subscribe(event => this.zoom(event));
     layerServive.opacity$.subscribe(event => this.opacityChanged(event));
     layerServive.style$.subscribe(event => this.styleChanged(event));
+  }
+
+  ngOnInit(): void {
+    this.map = map('map', {
+      center: new LatLng(0.0, 0.0),
+      zoom: 3,
+      zoomControl: false,
+      minZoom: 0,
+      maxZoom: 18,
+      trackResize: true,
+      worldCopyJump: true,
+      // editable: true // turn on Leaflet.Editable
+    });
+
+    tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(this.map);
   }
 
   onMapAvailable($event: any): void {
@@ -110,7 +132,7 @@ export class MapComponent {
     event.layer.selected = true;
     this.map.addLayer(event.layer.layer);
 
-    this.mapService.selectBaseLayer(event.layer);
+    this.mapService.selectBaseLayer(event.layer)
   }
 
   overlayToggled(event: ToggleEvent): void {

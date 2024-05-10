@@ -24,3 +24,10 @@ mat-sidenav {
   min-width: 350px;
   max-width: 400px;
 }
+
+.leaflet-map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #c0d9e4;
+}

@@ -1,7 +1,28 @@
 $small-screen-breakpoint: 1025px;
+$background-images: '1', '2', '3', '4';
 
 :host {
   width: 80%;
+}
+
+@each $image in $background-images {
+  .mage-#{$image}-bg {
+    background-image: url('/assets/images/splash/#{$image}.jpg');
+  }
+}
+
+@keyframes bg-slide {
+  from {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .slide {

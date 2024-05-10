@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { UserService } from '../user/user-service.service';
 
 @Component({
@@ -8,20 +8,15 @@ import { UserService } from '../user/user-service.service';
   templateUrl: './authorize.component.html',
   styleUrls: ['./authorize.component.scss']
 })
-export class AuthorizeComponent implements OnInit {
+export class AuthorizeComponent {
   token: string
   deviceId = new FormControl('', [Validators.required]);
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private userService: UserService
-  ) { }
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe((params: Params) => {
-      this.token = params['token']
-    })
+  ) {
+    this.token = this.router.getCurrentNavigation()?.extras?.state?.token
   }
 
   authorize(): void {
@@ -29,7 +24,7 @@ export class AuthorizeComponent implements OnInit {
       next: () => {
         // TODO set token event"
         // $rootScope.$broadcast('event:user', {user: service.myself, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
-        this.router.navigate(['map']);
+        this.router.navigate(['mage']);
       },
       error: () => {
         // TODO show error message

@@ -1,11 +1,11 @@
-<form>
-  <div class="title">Enter your device ID to continue to MAGE</div>
-  <div class="subtitle">To access MAGE you will need to enter a device ID. If you do not have a device ID please ask you MAGE administrator to provide you with one.</div>
+<div class="container">
+  <div class="title">Access Code</div>
+  <div class="subtitle">Please enter your MAGE access code. If you do not have an access code please ask you MAGE administrator to provide you with one.</div>
 
   <div>
     <mat-form-field appearance="fill">
-      <mat-label>Device ID</mat-label>
-      <input matInput placeholder="Device ID" type="deviceId" [formControl]="deviceId" required>
+      <mat-label>Access Code</mat-label>
+      <input matInput placeholder="Access Code" type="deviceId" [formControl]="deviceId" required>
     </mat-form-field>
   </div>
 
@@ -13,4 +13,4 @@
     <button mat-flat-button color="primary" (click)="authorize()">Continue to MAGE</button>
   </div>
 
-</form>
+</div>

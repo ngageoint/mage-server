@@ -11,7 +11,7 @@ export class ApiResolver implements Resolve<Api> {
   resolve(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): Observable<Api> | Promise<Api> | Api {
+  ): Observable<Api> {
     return this.service.getApi()
   }
 }

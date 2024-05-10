@@ -8,9 +8,15 @@ import { Component } from '@angular/core';
 export class MageComponent {
   map: any
   hideFeed: boolean
+  filteredEvent: any
+  newObservation: any
 
   onMapAvailable($event: any): void {
     this.map = $event.map;
+  }
+
+  onToggleFeed($event) {
+    this.hideFeed = $event.hidden;
   }
 
   onAddObservation($event) {

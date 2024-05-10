@@ -4,3 +4,14 @@
   margin: auto;
   text-align: left;
 }
+
+.wand-container {
+  text-align: center;
+
+  .mage-wand {
+    margin-top: 36px;
+    width: 97px;
+    height: 97px;
+    margin-bottom: 36px;
+  }
+}

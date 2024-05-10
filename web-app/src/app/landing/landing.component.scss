@@ -1,0 +1,31 @@
+.outer-container {
+  display: inline;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.authentication-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.authentication-info-container {
+  min-height: 100%;
+  width: 50%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mage-info-container {
+  min-height: 100%;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  background-color: rgba(16, 69, 130, .5);
+}

@@ -1,11 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTabGroup } from '@angular/material/tabs';
 import * as moment from 'moment';
-import { EventService, FilterService, MapService, UserService } from '../upgrade/ajs-upgraded-providers';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { MapService } from '../map/map.service';
+import { UserService } from '../user/user-service.service';
+import { FilterService } from '../filter/filter.service';
+import { EventService } from '../event/event.service';
 
 @Component({
   selector: 'feed-panel',
@@ -24,7 +27,6 @@ import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
   ]
 })
 export class FeedPanelComponent implements OnInit, OnChanges {
-  @Input() event: any
   @Input() observationLocation: any
   @Input() observationsChanged: any
 
@@ -32,6 +34,8 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
   @ViewChild('tabGroup') tabGroup: MatTabGroup
   @ViewChild('permissionDialog') permissionDialog: TemplateRef<any>
+
+  event: any
 
   defaultTabs = [{
     id: 'observations',
@@ -69,15 +73,14 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     public dialog: MatDialog,
     private feedService: FeedService,
     private feedPanelService: FeedPanelService,
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(EventService) private eventService: any) { }
+    private mapService: MapService,
+    private userService: UserService,
+    private filterService: FilterService,
+    private eventService: EventService) { }
 
   ngOnInit(): void {
     this.currentTab = this.tabs[0]
 
-    this.eventService.addObservationsChangedListener(this)
     this.feedService.feeds.subscribe(feeds => this.onFeedsChanged(feeds));
     this.feedPanelService.item$.subscribe(event => this.onFeedItemEvent(event));
 
@@ -109,7 +112,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
       this.edit = true;
 
       const observation = event.observation;
-      const formMap = this.eventService.getForms(observation).reduce((map, form) => {
+      const formMap = this.eventService.getForms(observation).reduce((map: any, form: any) => {
         map[form.id] = form
         return map
       }, {})
@@ -132,7 +135,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
         forms: []
       }
 
-      observation.properties.forms.forEach(propertyForm => {
+      observation.properties.forms.forEach((propertyForm: any) => {
         const observationForm = this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
         form.forms.push(observationForm)
       })
@@ -140,10 +143,19 @@ export class FeedPanelComponent implements OnInit, OnChanges {
       this.editForm = form
       this.editObservation = observation
     })
-  }
 
-  ngOnDestroy(): void {
-    this.eventService.removeObservationsChangedListener(this)
+    this.filterService.event$.subscribe((event: any) => {
+      this.event = event
+    })
+
+    this.eventService.observations$.subscribe((changed: any) => {
+      if (!this.firstObservationChange && this.currentTab.id !== 'observations') {
+        if (changed.added && changed.added.length) this.observationBadge += changed.added.length
+        if (changed.updated && changed.updated.length) this.observationBadge += changed.updated.length
+      }
+
+      this.firstObservationChange = false
+    }) 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -174,18 +186,8 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.feedItem = null;
   }
 
-  onObservationsChanged(changed): void {
-    if (!this.firstObservationChange && this.currentTab.id !== 'observations') {
-      if (changed.added && changed.added.length) this.observationBadge += changed.added.length
-      if (changed.updated && changed.updated.length) this.observationBadge += changed.updated.length
-    }
-
-    this.firstObservationChange = false
-  }
-
   createNewObservation(location: any): void {
-    const event = this.filterService.getEvent()
-    if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
+    if (!this.eventService.isUserInEvent(this.userService.myself, this.event)) {
       this.info = {
         statusTitle: this.statusTitle,
         statusMessage: this.statusMessage,
@@ -198,7 +200,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
 
     const observation = {
       id: 'new',
-      eventId: event.id,
+      eventId: this.event.id,
       type: 'Feature',
       geometry: {
         type: 'Point',
@@ -210,7 +212,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
       }
     }
 
-    this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
+    this.eventService.getFormsForEvent(this.event, { archived: false }).forEach(form => {
       for (let i = 0; i < form.min || 0; i++) {
         observation.properties.forms.push({ formId: form.id })
       }

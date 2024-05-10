@@ -1,4 +1,4 @@
-import { NO_ERRORS_SCHEMA, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { ApiResolver } from './authentication/api.resolver';
@@ -28,7 +28,7 @@ const appRoutes: Routes = [{
     component: AuthorizeComponent,
   }]
 },{
-  path: 'mage',
+  path: 'map',
   component: MageComponent
 }];
 
@@ -36,12 +36,11 @@ const appRoutes: Routes = [{
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      // { enableTracing: true } // <-- debugging purposes only
+      { enableTracing: true } // <-- debugging purposes only
     )
   ],
   exports: [
     RouterModule
-  ],
-  schemas: [NO_ERRORS_SCHEMA]
+  ]
 })
 export class AppRoutingModule { }
