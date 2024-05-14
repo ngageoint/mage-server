@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
-import { ApiResolver } from './authentication/api.resolver';
 import { AuthenticationComponent } from './authentication/authentication.component';
 import { AuthorizeComponent } from './authentication/authorize.component';
 import { MageComponent } from './mage/mage.component';
+import { ApiResolver } from './api/api.resolver';
 
 const appRoutes: Routes = [{
   path: '',
@@ -28,7 +28,7 @@ const appRoutes: Routes = [{
     component: AuthorizeComponent,
   }]
 },{
-  path: 'map',
+  path: 'mage',
   component: MageComponent
 }];
 

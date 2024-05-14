@@ -31,4 +31,8 @@ export class UserService {
       headers: { 'Authorization': `Bearer ${token}`}
     })
   }
+
+  addRecentEvent(event: any): Observable<any> {
+    return this.httpClient.post<any>(`/api/users/${this.myself.id}/events/${event.id}/recent`, {})
+  }
 }

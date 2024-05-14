@@ -81,23 +81,6 @@ import { UserListComponent } from './user/user-list/user-list.component';
 import { FeedListComponent } from './feed/feed-list/feed-list.component';
 import { FeedPanelComponent } from './feed-panel/feed-panel.component';
 
-// import {
-//   mapServiceProvider,
-//   eventResourceProvider,
-//   eventServiceProvider,
-//   localStorageServiceProvider,
-//   geometryServiceProvider,
-//   observationServiceProvider,
-//   filterServiceProvider,
-//   locationServiceProvider,
-//   userServiceProvider,
-//   settingsProvider,
-//   teamProvider,
-//   eventProvider,
-//   authenticationConfigurationServiceProvider,
-//   userPagingServiceProvider
-// } from './upgrade/ajs-upgraded-providers';
-
 import {
   ObservationViewCheckboxComponent,
   ObservationViewDateComponent,
@@ -179,6 +162,7 @@ import { AuthorizeComponent } from './authentication/authorize.component';
 import { LocalComponent } from './authentication/local/local.component';
 import { MageComponent } from './mage/mage.component';
 import { AppRoutingModule } from './routing.module';
+import { TokenInterceptorService } from './http/token.interceptor';
 
 @NgModule({
   declarations: [
@@ -360,7 +344,7 @@ import { AppRoutingModule } from './routing.module';
     // eventProvider,
     // authenticationConfigurationServiceProvider,
     // userPagingServiceProvider,
-    // { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
   ],
   bootstrap: [AppComponent]
 })
