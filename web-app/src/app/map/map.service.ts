@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 import { EventService } from "../event/event.service";
 import { MapPopupService } from "./map-popup.service";
-import * as _ from 'underscore';
 import { LocationService } from "../location/location.service";
 import { LocalStorageService } from "../http/local-storage.service";
 import { FeatureService } from "../layer/feature.service";
@@ -26,32 +25,17 @@ export class MapService {
   observationsById = {};
   usersById = {};
 
-  layersChangedListener = {
-    onLayersChanged: this.onLayersChanged
-  }
-
-  feedItemsChangedListenner = {
-    onFeedItemsChanged: this.onFeedItemsChanged
-  }
-
-  usersChangedListener = {
-    onUsersChanged: this.onUsersChanged
-  }
-
-  observationsChangedListener = {
-    onObservationsChanged: this.onObservationsChanged
-  }
-
   constructor(
     private eventService: EventService,
     private locationService: LocationService,
     private mapPopupService: MapPopupService,
+    private featureService: FeatureService,
     private localStorageService: LocalStorageService
   ) {
-    eventService.addObservationsChangedListener(this.observationsChangedListener);
-    eventService.addUsersChangedListener(this.usersChangedListener);
-    eventService.addLayersChangedListener(this.layersChangedListener);
-    eventService.addFeedItemsChangedListener(this.feedItemsChangedListenner)
+    eventService.addObservationsChangedListener(this);
+    eventService.addUsersChangedListener(this);
+    eventService.addLayersChangedListener(this);
+    eventService.addFeedItemsChangedListener(this)
 
     const observationLayer = {
       id: 'observations',
@@ -128,7 +112,7 @@ export class MapService {
 
   onLayersChanged(changed, event) {
     let baseLayerFound = false;
-    _.each(changed.added, function (layer) {
+    changed.added.forEach((layer: any) => {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
       if (layer.type === 'Imagery' && layer.url.indexOf('private') === 0) {
@@ -172,11 +156,11 @@ export class MapService {
         layer.eventId = event.id;
         this.createRasterLayer(layer);
       }
-    });
+    })
 
-    _.each(changed.removed, function (layer) {
+    changed.removed.forEach((layer: any) => {
       this.removeLayer(layer);
-    });
+    })
   }
 
   onFeedItemsChanged(changed) {
@@ -234,48 +218,48 @@ export class MapService {
   }
 
   onObservationsChanged(changed) {
-    _.each(changed.added, function (added) {
+    changed.added.forEach((added: any) => {
       this.observationsById[added.id] = added;
-    });
+    })
     if (changed.added.length) this.addFeaturesToLayer(changed.added, 'observations');
 
-    _.each(changed.updated, function (updated) {
+    changed.updated.forEach((updated: any) => {
       const observation = this.observationsById[updated.id];
       if (observation) {
         this.observationsById[updated.id] = updated;
         this.updateFeatureForLayer(updated, 'observations');
       }
-    });
+    })
 
-    _.each(changed.removed, function (removed) {
+    changed.removed.forEach((removed: any) => {
       delete this.observationsById[removed.id];
 
       this.removeFeatureFromLayer(removed, 'observations');
-    });
+    })
   }
 
   onUsersChanged(changed) {
-    _.each(changed.added, function (added) {
+    changed.added.forEach((added: any) => {
       this.usersById[added.id] = added;
       this.addFeaturesToLayer([added.location], 'people');
-    });
+    })
 
-    _.each(changed.updated, function (updated) {
+    changed.updated.forEach((updated: any) => {
       const user = this.usersById[updated.id];
       if (user) {
         this.usersById[updated.id] = updated;
         this.updateFeatureForLayer(updated.location, 'people');
 
         // pan/zoom map to user if this is the user we are following
-        if (this.followFeatureInLayer.layer === 'people' && user.id === this.followFeatureInLayer.id)
+        if (this.followedFeature.layer === 'people' && user.id === this.followedFeature.id)
           this.zoomToFeatureInLayer(user, 'people');
       }
-    });
+    })
 
-    _.each(changed.removed, function (removed) {
+    changed.removed.forEach((removed: any) => {
       delete this.usersById[removed.id];
       this.removeFeatureFromLayer(removed.location, 'people');
-    });
+    })
   }
 
   setDelegate(theDelegate) {
@@ -285,24 +269,24 @@ export class MapService {
   addListener(listener) {
     this.listeners.push(listener);
 
-    if (_.isFunction(listener.onLayersChanged)) {
-      const layers = _.values(this.rasterLayers).concat(_.values(this.vectorLayers)).concat(_.values(this.gridLayers));
+    if (typeof listener.onLayersChanged === 'function') {
+      const layers = Object.values(this.rasterLayers).concat(Object.values(this.vectorLayers)).concat(Object.values(this.gridLayers));
       listener.onLayersChanged({ added: layers });
     }
 
-    if (_.isFunction(listener.onFeaturesChanged)) {
-      _.each(_.values(this.vectorLayers), function (vectorLayer) {
-        listener.onFeaturesChanged({ id: vectorLayer.id, added: _.values(vectorLayer.featuresById) });
-      });
+    if (typeof listener.onFeaturesChanged === 'function') {
+      Object.values(this.vectorLayers).forEach((vectorLayer: any) => {
+        listener.onFeaturesChanged({ id: vectorLayer.id, added: Object.values(vectorLayer.featuresById) });
+      })
     }
 
-    if (_.isFunction(listener.onBaseLayerSelected) && this.baseLayer) {
+    if (typeof listener.onBaseLayerSelected === 'function') {
       listener.onBaseLayerSelected(this.baseLayer);
     }
   }
 
   removeListener(listener) {
-    this.listeners = _.reject(this.listeners, function (l) { return l === listener; });
+    this.listeners = this.listeners.filter((l: any) => l !== listener)
   }
 
   getRasterLayers() {
@@ -348,15 +332,16 @@ export class MapService {
     this.feedLayers[layer.id] = layer;
   }
 
-  createFeature(feature, style, listeners) {
+  createFeature(feature, style, listeners?: any) {
     if (this.delegate) return this.delegate.createFeature(feature, style, listeners);
   }
 
   addFeaturesToLayer(features, layerId) {
     const vectorLayer = this.vectorLayers[layerId];
-    _.each(features, function (feature) {
+    features.forEach((feature: any) => {
       vectorLayer.featuresById[feature.id] = feature;
-    });
+
+    })
 
     this.featuresChanged({
       id: layerId,
@@ -382,19 +367,19 @@ export class MapService {
   }
 
   deselectFeatureInLayer(feature, layerId) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onFeatureDeselect)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onFeatureDeselect === 'function') {
         listener.onFeatureDeselect({
           id: layerId,
           feature: feature
         });
       }
-    });
+    })
   }
 
   zoomToFeatureInLayer(feature, layerId) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onFeatureZoom)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onFeatureZoom === 'function') {
         listener.onFeatureZoom({
           id: layerId,
           feature: feature
@@ -415,47 +400,47 @@ export class MapService {
   }
 
   onLocation(location) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onLocation)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onLocation === 'function') {
         listener.onLocation(location);
       }
     });
   }
 
   onLocationStop() {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onLocationStop)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onLocationStop === 'function') {
         listener.onLocationStop();
       }
     });
   }
 
   onBroadcastLocation(callback) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onBroadcastLocation)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onBroadcastLocation === 'function') {
         listener.onBroadcastLocation(callback);
       }
     });
   }
 
   featuresChanged(changed) {
-    _.each(this.listeners, function (listener) {
+    this.listeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onFeaturesChanged)) {
+      if (typeof listener.onFeaturesChanged === 'function') {
         listener.onFeaturesChanged(changed);
       }
     });
   }
 
   layersChanged(changed) {
-    _.each(this.listeners, function (listener) {
+    this.listeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onLayersChanged)) {
+      if (typeof listener.onLayersChanged === 'function') {
         listener.onLayersChanged(changed);
       }
     });
@@ -463,34 +448,34 @@ export class MapService {
 
   selectBaseLayer(layer) {
     this.baseLayer = layer;
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onBaseLayerSelected)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onBaseLayerSelected === 'function') {
         listener.onBaseLayerSelected(layer);
       }
     });
   }
 
   overlayAdded(overlay) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onOverlayAdded)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onOverlayAdded === 'function') {
         listener.onOverlayAdded(overlay);
       }
     });
   }
 
   destroy() {
-    _.each(_.values(this.vectorLayers), function (layerInfo) {
-      _.each(this.listeners, function (listener) {
-        if (_.isFunction(listener.onLayerRemoved)) {
+    Object.values(this.vectorLayers).forEach((layerInfo: any) => {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
           listener.onLayerRemoved(layerInfo);
         }
       });
     });
     this.vectorLayers = {};
 
-    _.each(_.values(this.rasterLayers), function (layerInfo) {
-      _.each(this.listeners, function (listener) {
-        if (_.isFunction(listener.onLayerRemoved)) {
+    Object.values(this.rasterLayers).forEach((layerInfo: any) => {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
           listener.onLayerRemoved(layerInfo);
         }
       });
@@ -499,17 +484,17 @@ export class MapService {
 
     this.listeners = [];
 
-    this.eventService.removeLayersChangedListener(this.layersChangedListener);
-    this.eventService.removeObservationsChangedListener(this.observationsChangedListener);
-    this.eventService.removeUsersChangedListener(this.usersChangedListener);
-    this.eventService.removeFeedItemsChangedListener(this.feedItemsChangedListenner);
+    this.eventService.removeLayersChangedListener(this);
+    this.eventService.removeObservationsChangedListener(this);
+    this.eventService.removeUsersChangedListener(this);
+    this.eventService.removeFeedItemsChangedListener(this);
   }
 
   removeLayer(layer) {
     const vectorLayer = this.vectorLayers[layer.id];
     if (vectorLayer) {
-      _.each(this.listeners, function (listener) {
-        if (_.isFunction(listener.onLayerRemoved)) {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
           listener.onLayerRemoved(vectorLayer);
         }
       });
@@ -519,8 +504,8 @@ export class MapService {
 
     const rasterLayer = this.rasterLayers[layer.id];
     if (rasterLayer) {
-      _.each(this.listeners, function (listener) {
-        if (_.isFunction(listener.onLayerRemoved)) {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
           listener.onLayerRemoved(rasterLayer);
         }
       });
@@ -532,8 +517,8 @@ export class MapService {
   removeFeed(feed) {
     const feedLayer = this.feedLayers[feed.id];
     if (feedLayer) {
-      _.each(this.listeners, function (listener) {
-        if (_.isFunction(listener.onFeedRemoved)) {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onFeedRemoved === 'function') {
           listener.onFeedRemoved(feedLayer);
         }
       });
@@ -543,8 +528,8 @@ export class MapService {
   }
 
   hideFeed(hide) {
-    _.each(this.listeners, function (listener) {
-      if (_.isFunction(listener.onHideFeed)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onHideFeed === 'function') {
         listener.onHideFeed(hide);
       }
     });

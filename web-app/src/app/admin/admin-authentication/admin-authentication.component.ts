@@ -1,10 +1,15 @@
 import _ from 'underscore'
-import { Component, OnInit, Inject, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Team, Event, LocalStorageService, AuthenticationConfigurationService, UserService } from '../../upgrade/ajs-upgraded-providers';
+import { Component, OnInit, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StateService } from '@uirouter/angular';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
+import { LocalStorageService } from '../../http/local-storage.service';
+import { UserService } from '../../user/user.service';
+import { EventService } from '../../event/event.service';
+import { firstValueFrom } from 'rxjs';
+import { TeamService } from '../../user/team.service';
+import { AdminAuthenticationService } from './admin-authentication.service';
 
 @Component({
   selector: 'admin-authentication',
@@ -27,23 +32,18 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
   constructor(
     private dialog: MatDialog,
     private stateService: StateService,
-    @Inject(Team)
-    public team: any,
-    @Inject(Event)
-    public event: any,
-    @Inject(LocalStorageService)
-    public localStorageService: any,
-    @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any,
-    @Inject(UserService)
-    private userService: { myself: { role: { permissions: Array<string> } } }) {
-    this.hasAuthConfigEditPermission = _.contains(this.userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG');
+    public teamService: TeamService,
+    public eventService: EventService,
+    public localStorageService: LocalStorageService,
+    private authenticationConfigurationService: AdminAuthenticationService,
+    private userService: UserService) {
+    this.hasAuthConfigEditPermission = _.contains(this.userService.myself.role.permissions, 'UPDATE_AUTH_CONFIG')
   }
 
   ngOnInit(): void {
-    const configsPromise = this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
-    const teamsPromise = this.team.query({ state: 'all', populate: false }).$promise;
-    const eventsPromise = this.event.query({ state: 'all', populate: false }).$promise;
+    const configsPromise = firstValueFrom(this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }))
+    const teamsPromise = firstValueFrom(this.teamService.getTeams({ state: 'all', populate: false }))
+    const eventsPromise = firstValueFrom(this.eventService.query({ state: 'all', populate: false }))
 
     Promise.all([configsPromise, teamsPromise, eventsPromise]).then(result => {
       // Remove event teams
@@ -90,25 +90,28 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     const promises = [];
     this.strategies.forEach(strategy => {
       if (strategy.isDirty) {
-        promises.push(this.authenticationConfigurationService.updateConfiguration(strategy));
+        promises.push(firstValueFrom(this.authenticationConfigurationService.updateConfiguration(strategy)));
       }
     });
 
     if (promises.length > 0) {
       Promise.all(promises).then(() => {
         return this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true });
-      }).then(strategies => {
+      }).then((strategies: any) => {
         this.processUnsortedStrategies(strategies.data);
         this.saveComplete.emit(true);
       }).catch(err => {
         console.log(err);
-        this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then((newStrategies: { data: Strategy[]; }) => {
-          this.processUnsortedStrategies(newStrategies.data);
-          this.saveComplete.emit(false);
-        }).catch((err2: any) => {
-          console.log(err2);
-          this.saveComplete.emit(false);
-        });
+        this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).subscribe({
+          next: (newStrategies: { data: Strategy[]; }) => {
+            this.processUnsortedStrategies(newStrategies.data);
+            this.saveComplete.emit(false);
+          },
+          error: (err2: any) => {
+            console.log(err2);
+            this.saveComplete.emit(false);
+          }
+        })
       });
     }
     this.onStrategyDirty(false);
@@ -121,12 +124,15 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
       autoFocus: false
     }).afterClosed().subscribe(result => {
       if (result === 'delete') {
-        this.authenticationConfigurationService.getAllConfigurations().then(configs => {
-          this.processUnsortedStrategies(configs.data);
-          this.deleteComplete.emit(true);
-        }).catch((err: any) => {
-          console.error(err);
-          this.deleteComplete.emit(false);
+        this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).subscribe({
+          next: (newStrategies: { data: Strategy[]; }) => {
+            this.processUnsortedStrategies(newStrategies.data);
+            this.saveComplete.emit(false);
+          },
+          error: (err: any) => {
+            console.log(err);
+            this.saveComplete.emit(false);
+          }
         })
       } else if (result === 'error') {
         this.deleteComplete.emit(false);

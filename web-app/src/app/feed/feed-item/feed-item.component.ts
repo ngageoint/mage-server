@@ -1,8 +1,8 @@
-import { Component, Input, Inject, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Feed, StyledFeature } from '@ngageoint/mage.web-core-lib/feed';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
-import { MomentPipe } from 'src/app/moment/moment.pipe';
-import { MapService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { MapService } from '../../map/map.service';
+import { MomentPipe } from '../../moment/moment.pipe';
 
 @Component({
   selector: 'feed-item',
@@ -23,7 +23,7 @@ export class FeedItemComponent implements OnChanges {
   constructor(
     private feedPanelService: FeedPanelService,
     private momentPipe: MomentPipe,
-    @Inject(MapService) private mapService: any
+    private mapService: MapService
     ) {}
 
   ngOnChanges(_changes: SimpleChanges): void {

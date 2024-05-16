@@ -1,6 +1,5 @@
 import _ from 'underscore'
-import { Component, OnInit, Inject } from '@angular/core'
-import { UserService } from '../../upgrade/ajs-upgraded-providers'
+import { Component, OnInit } from '@angular/core'
 import { Feed, Service, FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { StateService } from '@uirouter/angular'
 import { MatDialog } from '@angular/material/dialog'
@@ -8,6 +7,7 @@ import { forkJoin } from 'rxjs'
 import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-feed-delete.component'
 import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component'
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model'
+import { UserService } from '../../user/user.service'
 
 @Component({
   selector: 'admin-feeds',
@@ -42,7 +42,7 @@ export class AdminFeedsComponent implements OnInit {
     private feedService: FeedService,
     private stateService: StateService,
     public dialog: MatDialog,
-    @Inject(UserService) userService: { myself: { role: {permissions: Array<string>}}}
+    private userService: UserService
   ) {
     this.hasServiceDeletePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_SERVICE')
     this.hasFeedCreatePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')

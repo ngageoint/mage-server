@@ -1,5 +1,4 @@
-Feed Panel Here
-<!-- <div class="feeds-nav">
+<div class="feeds-nav">
   <div *ngFor="let tab of tabs" (click)="onTabSwitched(tab)">
     <feed-panel-tab [tab]="tab" [active]="tab.id === currentTab?.id"></feed-panel-tab>
   </div>
@@ -29,4 +28,4 @@ Feed Panel Here
   <observation-list class="feed-container" *ngIf="currentTab.id === 'observations'"></observation-list>
   <user-list class="feed-container" *ngIf="currentTab.id === 'people'"></user-list>
   <feed-list class="feed-container" [feed]="currentTab.feed" *ngIf="currentTab.feed"></feed-list>
-</div> -->
+</div>

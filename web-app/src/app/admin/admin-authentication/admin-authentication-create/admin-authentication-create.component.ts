@@ -1,11 +1,11 @@
-import { Component, Inject, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { TypeChoice } from './admin-create.model';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { CdkStepper, STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { StateService } from '@uirouter/core';
-import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { AdminAuthenticationService } from '../admin-authentication.service';
 
 @Component({
    selector: 'admin-authentication-create',
@@ -53,15 +53,14 @@ export class AuthenticationCreateComponent implements OnInit {
    constructor(
       private readonly stateService: StateService,
       private readonly snackBar: MatSnackBar,
-      @Inject(AuthenticationConfigurationService)
-      private readonly authenticationConfigurationService: any) {
+      private readonly authenticationConfigurationService: AdminAuthenticationService) {
 
       this.breadcrumbs.push({ title: 'New' });
       this.reset();
    }
 
    ngOnInit(): void {
-      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).then(response => {
+      this.authenticationConfigurationService.getAllConfigurations({ includeDisabled: true }).subscribe(response => {
          const strategies = response.data
          strategies.forEach(strategy => {
             let idx = -1;
@@ -123,15 +122,18 @@ export class AuthenticationCreateComponent implements OnInit {
    }
 
    save(): void {
-      this.authenticationConfigurationService.createConfiguration(this.strategy).then(() => {
-         this.stateService.go('admin.settings');
-      }).catch((err: any) => {
-         console.error(err);
-         this.snackBar.open('An error occured while creating ' + this.strategy.title, null, {
-            duration: 2000,
-         })
-         this.stateService.go('admin.settings');
-      });
+      this.authenticationConfigurationService.createConfiguration(this.strategy).subscribe({
+         next: () => {
+            this.stateService.go('admin.settings');
+         },
+         error: (err: any) => {
+            console.error(err);
+            this.snackBar.open('An error occured while creating ' + this.strategy.title, null, {
+               duration: 2000,
+            })
+            this.stateService.go('admin.settings');
+         }
+      })
    }
 
    isValid(): boolean {

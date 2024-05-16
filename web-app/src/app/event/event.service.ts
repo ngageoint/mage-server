@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { Observable, catchError, finalize, of, tap, zip } from "rxjs";
-import * as _ from 'underscore';
 import * as moment from 'moment'
 import { FilterService } from "../filter/filter.service";
 import { PollingService } from "./polling.service";
@@ -9,6 +8,8 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { LayerService } from "../layer/layer.service";
 import { FeedService } from "core-lib-src/feed";
 import { LocationService } from "../location/location.service";
+import { LocalStorageService } from "../http/local-storage.service";
+import * as _ from 'lodash'
 
 @Injectable({
   providedIn: 'root'
@@ -31,10 +32,24 @@ export class EventService {
     private layerService: LayerService,
     private filterService: FilterService,
     private locationService: LocationService,
-    private observationService: ObservationService
+    private observationService: ObservationService,
+    private localStorageService: LocalStorageService
   ) {
     filterService.addListener(this);
     pollingService.addListener(this);
+  }
+
+  query(options?: any): Observable<any> {
+    options = options || {};
+    return this.httpClient.get<any>('/api/events/', options)
+  }
+
+  addFeed(eventId: string, feed: any): Observable<any> {
+    return this.httpClient.post<any>(`/api/events/${eventId}/feeds`, feed)
+  }
+
+  removeFeed(eventId: string, feedId: string): Observable<any> {
+    return this.httpClient.delete<any>(`/api/events/${eventId}/feeds/${feedId}`)
   }
 
   onFilterChanged(filter: any) {
@@ -54,7 +69,7 @@ export class EventService {
   }
 
   onEventChanged(event: any) {
-    _.each(event.added, function (added: any) {
+    event.added.forEach((added: any) => {
       if (!this.eventsById[added.id]) {
         this.eventsById[added.id] = (JSON.parse(JSON.stringify(added)));
 
@@ -66,15 +81,15 @@ export class EventService {
 
       this.fetchLayers(added);
       this.fetchFeeds(added);
-    });
+    })
 
-    _.each(event.removed, function (removed) {
-      this.observationsChanged({ removed: _.values(this.eventsById[removed.id].filteredObservationsById) });
-      this.usersChanged({ removed: _.values(this.eventsById[removed.id].filteredUsersById) });
-      this.layersChanged({ removed: _.values(this.eventsById[removed.id].layersById) }, removed);
-      this.feedItemsChanged({ removed: _.values(this.eventsById[removed.id].feedsById).map((feed: any) => ({ feed })) }, removed);
+    event.removed.forEach((removed: any) => {
+      this.observationsChanged({ removed: Object.values(this.eventsById[removed.id].filteredObservationsById) });
+      this.usersChanged({ removed: Object.values(this.eventsById[removed.id].filteredUsersById) });
+      this.layersChanged({ removed: Object.values(this.eventsById[removed.id].layersById) }, removed);
+      this.feedItemsChanged({ removed: Object.values(this.eventsById[removed.id].feedsById).map((feed: any) => ({ feed })) }, removed);
       delete this.eventsById[removed.id];
-    });
+    })
   }
 
   onTeamsChanged() {
@@ -86,7 +101,7 @@ export class EventService {
 
     // remove observations that are not part of filtered teams
     const observationsRemoved = [];
-    _.each(teamsEvent.filteredObservationsById, function (observation: any) {
+    Object.values(teamsEvent.filteredObservationsById).forEach((observation: any) => {
       if (!this.filterService.isUserInTeamFilter(observation.userId)) {
         delete teamsEvent.filteredObservationsById[observation.id];
         observationsRemoved.push(observation);
@@ -95,7 +110,7 @@ export class EventService {
 
     // remove users that are not part of filtered teams
     const usersRemoved = [];
-    _.each(teamsEvent.filteredUsersById, function (user: any) {
+    Object.values(teamsEvent.filteredUsersById).forEach((user: any) => {
       if (!this.filterService.isUserInTeamFilter(user.id)) {
         delete teamsEvent.filteredUsersById[user.id];
         usersRemoved.push(user);
@@ -104,7 +119,7 @@ export class EventService {
 
     // add any observations that are part of the filtered teams
     const observationsAdded = [];
-    _.each(teamsEvent.observationsById, function (observation) {
+    Object.values(teamsEvent.observationsById).forEach((observation: any) => {
       if (this.filterService.isUserInTeamFilter(observation.userId) && !teamsEvent.filteredObservationsById[observation.id]) {
         observationsAdded.push(observation);
         teamsEvent.filteredObservationsById[observation.id] = observation;
@@ -113,7 +128,7 @@ export class EventService {
 
     // add any users that are part of the filtered teams
     const usersAdded = [];
-    _.each(teamsEvent.usersById, function (user) {
+    Object.values(teamsEvent.usersById).forEach((user: any) => {
       if (this.filterService.isUserInTeamFilter(user.id) && !teamsEvent.filteredUsersById[user.id]) {
         usersAdded.push(user);
         teamsEvent.filteredUsersById[user.id] = user;
@@ -131,7 +146,7 @@ export class EventService {
     const actionEvent = this.eventsById[event.id];
 
     const observationsRemoved = [];
-    _.each(actionEvent.filteredObservationsById, function (observation: any) {
+    Object.values(actionEvent.filteredObservationsById).forEach((observation: any) => {
       if (!this.filterService.observationInFilter(observation)) {
         delete actionEvent.filteredObservationsById[observation.id];
         observationsRemoved.push(observation);
@@ -140,7 +155,7 @@ export class EventService {
 
     const observationsAdded = [];
     // add any observations that are part of the filtered actions
-    _.each(actionEvent.observationsById, function (observation) {
+    Object.values(actionEvent.observationsById).forEach((observation: any) => {
       if (!actionEvent.filteredObservationsById[observation.id] && this.filterService.observationInFilter(observation)) {
         observationsAdded.push(observation);
         actionEvent.filteredObservationsById[observation.id] = observation;
@@ -174,41 +189,41 @@ export class EventService {
   addObservationsChangedListener(listener: any) {
     this.observationsChangedListeners.push(listener);
 
-    if (_.isFunction(listener.onObservationsChanged)) {
-      _.each(_.values(this.eventsById), function (event: any) {
-        listener.onObservationsChanged({ added: _.values(event.observationsById) });
+    if (typeof listener.onObservationsChanged === 'function') {
+      Object.values(this.eventsById).forEach((event: any) => {
+        listener.onObservationsChanged({ added: Object.values(event.observationsById) });
       });
     }
   }
 
   removeObservationsChangedListener(listener) {
-    this.observationsChangedListeners = _.reject(this.observationsChangedListeners, function (l) {
-      return listener === l;
+    this.observationsChangedListeners = this.observationsChangedListeners.filter((l: any) => {
+      return listener !== l;
     });
   }
 
   addUsersChangedListener(listener) {
     this.usersChangedListeners.push(listener);
 
-    if (_.isFunction(listener.onUsersChanged)) {
-      _.each(_.values(this.eventsById), function (event) {
-        listener.onUsersChanged({ added: _.values(event.usersById) });
+    if (typeof listener.onUsersChanged === 'function') {
+      Object.values(this.eventsById).forEach((event: any) => {
+        listener.onUsersChanged({ added: Object.values(event.usersById) });
       });
     }
   }
 
   removeUsersChangedListener(listener) {
-    this.usersChangedListeners = _.reject(this.usersChangedListeners, function (l) {
-      return listener === l;
+    this.usersChangedListeners = this.usersChangedListeners.forEach((l: any) => {
+      return listener !== l;
     });
   }
 
   addLayersChangedListener(listener) {
     this.layersChangedListeners.push(listener);
 
-    if (_.isFunction(listener.onLayersChanged)) {
-      _.each(_.values(this.eventsById), function (event) {
-        listener.onLayersChanged({ added: _.values(event.layersById) }, event); // TODO this could be old layers, admin panel might have changed layers
+    if (typeof listener.onLayersChanged === 'function') {
+      Object.values(this.eventsById).forEach((event: any) => {
+        listener.onLayersChanged({ added: Object.values(event.layersById) }, event); // TODO this could be old layers, admin panel might have changed layers
       });
     }
   }
@@ -216,8 +231,8 @@ export class EventService {
   addFeedItemsChangedListener(listener) {
     this.feedItemsChangedListeners.push(listener);
 
-    if (_.isFunction(listener.onFeedItemsChanged)) {
-      _.each(_.values(this.eventsById), function (event) {
+    if (typeof listener.onFeedItemsChanged === 'function') {
+      Object.values(this.eventsById).forEach((event: any) => {
         // TODO what do I send here?
         // listener.onFeedItemsChanged({ added: _.values(event.feedsById) }, event);
       });
@@ -229,20 +244,20 @@ export class EventService {
   }
 
   removePollListener(listener) {
-    this.pollListeners = _.reject(this.pollListeners, function (l) {
-      return listener === l;
+    this.pollListeners = this.pollListeners.filter((l: any) => {
+      return listener !== l;
     });
   }
 
   removeLayersChangedListener(listener) {
-    this.layersChangedListeners = _.reject(this.layersChangedListeners, function (l) {
-      return listener === l;
+    this.layersChangedListeners = this.layersChangedListeners.filter((l: any) => {
+      return listener !== l;
     });
   }
 
   removeFeedItemsChangedListener(listener) {
-    this.feedItemsChangedListeners = _.reject(this.feedItemsChangedListeners, function (l) {
-      return listener === l;
+    this.feedItemsChangedListeners = this.feedItemsChangedListeners.filter((l: any) => {
+      return listener !== l;
     });
   }
 
@@ -293,28 +308,37 @@ export class EventService {
     return observable;
   }
 
-  markObservationAsImportant(observation, important) {
+  markObservationAsImportant(observation, important): Observable<any> {
     var event = this.eventsById[observation.eventId];
-    return this.observationService.markObservationAsImportantForEvent(event, observation, important).subscribe((updatedObservation: any) => {
+    const observable = this.observationService.markObservationAsImportantForEvent(event, observation, important)
+    observable.subscribe((updatedObservation: any) => {
       event.observationsById[updatedObservation.id] = updatedObservation;
       this.observationsChanged({ updated: [updatedObservation] });
-    });
+    })
+
+    return observable
   }
 
-  clearObservationAsImportant(observation) {
+  clearObservationAsImportant(observation): Observable<any> {
     var event = this.eventsById[observation.eventId];
-    return this.observationService.clearObservationAsImportantForEvent(event, observation).subscribe((updatedObservation: any) => {
+    const observable = this.observationService.clearObservationAsImportantForEvent(event, observation)
+    observable.subscribe((updatedObservation: any) => {
       event.observationsById[updatedObservation.id] = updatedObservation;
       this.observationsChanged({ updated: [updatedObservation] });
-    });
+    })
+
+    return observable
   }
 
-  archiveObservation(observation) {
-    var event = this.eventsById[observation.eventId];
-    return this.observationService.archiveObservationForEvent(event, observation).subscribe((archivedObservation: any) => {
-      delete event.observationsById[archivedObservation.id];
-      this.observationsChanged({ removed: [archivedObservation] });
-    });
+  archiveObservation(observation): Observable<any> {
+    var event = this.eventsById[observation.eventId]
+    const observable = this.observationService.archiveObservationForEvent(event, observation)
+    observable.subscribe((archivedObservation: any) => {
+      delete event.observationsById[archivedObservation.id]
+      this.observationsChanged({ removed: [archivedObservation] })
+    })
+
+    return observable
   }
 
   addAttachmentToObservation(observation, attachment) {
@@ -331,7 +355,7 @@ export class EventService {
   }
 
   getFormField(form, fieldName) {
-    return _.find(form.fields, function (field) { return field.name === fieldName; });
+    return form.fields.find((field: any) => field.name === fieldName);
   }
 
   getForms(observation, options?: any) {
@@ -339,13 +363,11 @@ export class EventService {
     return this.getFormsForEvent(event, options);
   }
 
-  getFormsForEvent(event, options) {
+  getFormsForEvent(event, options?: any) {
     options = options || {};
     var forms = event.forms;
     if (options.archived === false) {
-      forms = _.filter(forms, function (form) {
-        return !form.archived;
-      });
+      forms = forms.filter((form: any) => !form.archived);
     }
 
     return forms;
@@ -358,8 +380,8 @@ export class EventService {
 
     const existingPropertyFields = [];
 
-    _.each(observationForm, function (value, key) {
-      const field = this.service.getFormField(form, key);
+    for (const [key, value] of Object.entries(observationForm)) {
+      const field = this.getFormField(form, key);
       if (field) {
         if (field.type === 'date' && field.value) {
           field.value = moment(value).toDate();
@@ -368,7 +390,7 @@ export class EventService {
         }
         existingPropertyFields.push(field);
       }
-    });
+    }
 
     if (viewModel) {
       observationForm.fields = _.intersection(observationForm.fields, existingPropertyFields);
@@ -381,57 +403,54 @@ export class EventService {
     return this.httpClient.get<any>(`/api/event/${event.id}/form.zip`)
   }
 
-  isUserInEvent(user, event) {
+  isUserInEvent(user, event): boolean {
     if (!event) return false;
-
-    return _.some(event.teams, function (team) {
-      return _.contains(team.userIds, user.id);
-    });
+    return event.teams.some((team: any) => team.userIds.includes(user.id));
   }
 
   usersChanged(changed) {
-    _.each(this.usersChangedListeners, function (listener) {
+    this.usersChangedListeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onUsersChanged)) {
+      if (typeof listener.onUsersChanged === 'function') {
         listener.onUsersChanged(changed);
       }
     });
   }
 
   observationsChanged(changed) {
-    _.each(this.observationsChangedListeners, function (listener) {
+    this.observationsChangedListeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onObservationsChanged)) {
+      if (typeof listener.onObservationsChanged === 'function') {
         listener.onObservationsChanged(changed);
       }
     });
   }
 
   layersChanged(changed, event) {
-    _.each(this.layersChangedListeners, function (listener) {
+    this.layersChangedListeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onLayersChanged)) {
+      if (typeof listener.onLayersChanged === 'function') {
         listener.onLayersChanged(changed, event);
       }
     });
   }
 
   feedItemsChanged(changed, event) {
-    _.each(this.feedItemsChangedListeners, function (listener) {
+    this.feedItemsChangedListeners.forEach((listener: any) => {
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onFeedItemsChanged)) {
+      if (typeof listener.onFeedItemsChanged === 'function') {
         listener.onFeedItemsChanged(changed, event);
       }
     });
@@ -458,19 +477,15 @@ export class EventService {
 
   fetchLayers(event) {
     return this.layerService.getLayersForEvent(event).subscribe((layers: any) => {
-      const added = _.filter(layers, function (l) {
-        return !_.some(this.eventsById[event.id].layersById, function (layer, layerId) {
-          return l.id === layerId;
-        });
-      });
+      const added = layers.filter((l) => {
+        return !Object.keys(this.eventsById[event.id].layersById || {}).some((layerId: any) => l.id === layerId)
+      })
 
-      const removed = _.filter(this.eventsById[event.id].layersById, function (layer, layerId) {
-        return !_.some(layers, function (l) {
-          return l.id === layerId;
-        });
-      });
+      const removed = Object.keys(this.eventsById[event.id].layersById || {}).filter((layerId: any) => {
+        return !layers.some((l: any) => l.id === layerId);
+      })
 
-      this.eventsById[event.id].layersById = _.indexBy(layers, 'id');
+      this.eventsById[event.id].layersById = _.groupBy(layers, 'id');
       this.layersChanged({ added: added, removed: removed }, event);
     });
   }
@@ -486,7 +501,7 @@ export class EventService {
         })
       }, event);
 
-      this.eventsById[event.id].feedsById = _.indexBy(feeds, 'id');
+      this.eventsById[event.id].feedsById = _.groupBy(feeds, 'id');
       this.feedSyncStates = feeds.map(feed => {
         return {
           id: feed.id,
@@ -507,7 +522,7 @@ export class EventService {
 
       var observationsById = {};
       var filteredObservationsById = this.eventsById[event.id].filteredObservationsById;
-      _.each(observations, function (observation) {
+      observations.forEach((observation: any) => {
         // Check if this observation passes the current filter
         if (this.filterService.observationInFilter(observation)) {
           // Check if we already have this observation, if so update, otherwise add
@@ -536,9 +551,9 @@ export class EventService {
       });
 
       // remaining elements were not pulled from the server, hence we should remove them
-      removed = _.values(filteredObservationsById);
+      removed = Object.values(filteredObservationsById);
 
-      this.eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+      this.eventsById[event.id].observationsById = _.groupBy(observations, 'id');
       this.eventsById[event.id].filteredObservationsById = observationsById;
 
       this.observationsChanged({ added: added, updated: updated, removed: removed });
@@ -556,7 +571,7 @@ export class EventService {
 
       const usersById = {};
       const filteredUsersById = this.eventsById[event.id].filteredUsersById;
-      _.each(userLocations, function (userLocation) {
+      userLocations.forEach((userLocation: any) => {
         // Track each location feature by users id,
         // so update the locations id to match the usersId
         const location = userLocation.locations[0];
@@ -598,7 +613,7 @@ export class EventService {
       // remaining elements were not pulled from the server, hence we should remove them
       const removed = _.values(filteredUsersById);
 
-      this.eventsById[event.id].usersById = _.indexBy(userLocations, 'id');
+      this.eventsById[event.id].usersById = _.groupBy(userLocations, 'id');
       this.eventsById[event.id].filteredUsersById = usersById;
 
       this.usersChanged({ added: added, updated: updated, removed: removed });
@@ -612,13 +627,13 @@ export class EventService {
       return;
     }
     this.fetch().subscribe(() => {
-      _.each(this.pollListeners, function (listener) {
-        if (_.isFunction(listener.onPoll)) {
+      this.pollListeners.forEach((listener: any) => {
+        if (typeof listener.onPoll === 'function') {
           listener.onPoll();
         }
       });
 
-      this.pollingTimeout = setTimeout(function () {
+      this.pollingTimeout = setTimeout(() => {
         this.poll(interval);
       }, interval)
     });
@@ -658,7 +673,9 @@ export class EventService {
     const feed = this.getNextFeed(event);
     const scheduleNextPoll = () => {
       const delayMillis = this.getFeedFetchDelay(event);
-      this.feedPollTimeout = setTimeout(this.pollFeeds, delayMillis)
+      this.feedPollTimeout = setTimeout(() => {
+        this.pollFeeds()
+      }, delayMillis)
     };
     if (!feed) {
       return scheduleNextPoll();

@@ -5,7 +5,6 @@ import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnInit, 
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { DomSanitizer } from '@angular/platform-browser'
 import { first } from 'rxjs/operators'
-import { EventService, FilterService, LocalStorageService, MapService, ObservationService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
 import { ObservationEditFormPickerComponent } from './observation-edit-form-picker.component'
 import * as moment from 'moment';
 import { ObservationEditDiscardComponent } from './observation-edit-discard/observation-edit-discard.component'
@@ -16,6 +15,12 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet'
 import { AttachmentService, AttachmentUploadEvent, AttachmentUploadStatus } from '../attachment/attachment.service'
 import { FileUpload } from '../attachment/attachment-upload/attachment-upload.component'
 import { AttachmentAction } from './observation-edit-attachment/observation-edit-attachment-action'
+import { LocalStorageService } from '../../http/local-storage.service'
+import { MapService } from 'src/app/map/map.service'
+import { UserService } from 'src/app/user/user.service'
+import { EventService } from 'src/app/event/event.service'
+import { FilterService } from 'src/app/filter/filter.service'
+import { ObservationService } from '../observation.service'
 
 export type ObservationFormControl = UntypedFormControl & { definition: any }
 
@@ -102,12 +107,12 @@ export class ObservationEditComponent implements OnInit, OnChanges {
     private snackBar: MatSnackBar,
     private attachmentService: AttachmentService,
     @Inject(DOCUMENT) private document: Document,
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(FilterService) private filterService: any,
-    @Inject(EventService) private eventService: any,
-    @Inject(ObservationService) private observationService: any,
-    @Inject(LocalStorageService) private localStorageService: any) {
+    private mapService: MapService,
+    private userService: UserService,
+    private filterService: FilterService,
+    private eventService: EventService,
+    private observationService: ObservationService,
+    private localStorageService: LocalStorageService) {
 
     matIconRegistry.addSvgIcon('handle', sanitizer.bypassSecurityTrustResourceUrl('assets/images/handle-24px.svg'));
   }
@@ -256,55 +261,58 @@ export class ObservationEditComponent implements OnInit, OnChanges {
       delete form.id
     }
 
-    this.eventService.saveObservation(form).then(observation => {
-      // If this feature was added to the map as a new observation, remove it
-      // as the event service will add it back to the map based on it new id
-      // if it passes the current filter.
-      if (id === 'new') {
-        this.mapService.removeFeatureFromLayer({ id: id }, 'observations')
-      }
+    this.eventService.saveObservation(form).subscribe({
+      next: (observation: any) => {
+        // If this feature was added to the map as a new observation, remove it
+        // as the event service will add it back to the map based on it new id
+        // if it passes the current filter.
+        if (id === 'new') {
+          this.mapService.removeFeatureFromLayer({ id: id }, 'observations')
+        }
 
-      this.error = null
-      this.observation = observation
-      this.formGroup.get('id').setValue(observation.id)
+        this.error = null
+        this.observation = observation
+        this.formGroup.get('id').setValue(observation.id)
 
-      form.properties.forms.forEach(form => {
-        const formDefinition = this.formDefinitions[form.formId];
-        Object.keys(form).forEach(fieldName => {
-          const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
-          const value = form[fieldName];
-          if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
-            value.forEach(fieldAttachment => {
-              const attachment = observation.attachments.find(attachment => {
-                return !attachment.url &&
-                  attachment.name === fieldAttachment.name &&
-                  attachment.contentType == fieldAttachment.contentType
-              });
+        form.properties.forms.forEach(form => {
+          const formDefinition = this.formDefinitions[form.formId];
+          Object.keys(form).forEach(fieldName => {
+            const fieldDefinition = formDefinition.fields.find(field => field.name === fieldName);
+            const value = form[fieldName];
+            if (fieldDefinition && fieldDefinition.type === 'attachment' && Array.isArray(value)) {
+              value.forEach(fieldAttachment => {
+                const attachment = observation.attachments.find(attachment => {
+                  return !attachment.url &&
+                    attachment.name === fieldAttachment.name &&
+                    attachment.contentType == fieldAttachment.contentType
+                });
 
-              if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
-                fieldAttachment.attachmentId = attachment.id
-                this.uploads.push(attachment)
-              }
-            })
-          }
+                if (fieldAttachment.file && fieldAttachment.action === AttachmentAction.ADD && attachment) {
+                  fieldAttachment.attachmentId = attachment.id
+                  this.uploads.push(attachment)
+                }
+              })
+            }
+          })
         })
-      })
 
-      if (this.uploads.length) {
-        this.attachmentUrl = observation.url
-      } else {
-        this.close.emit(this.observation)
-      }
-    }, err => {
-      this.formGroup.markAllAsTouched()
+        if (this.uploads.length) {
+          this.attachmentUrl = observation.url
+        } else {
+          this.close.emit(this.observation)
+        }
+      },
+      error: (err) => {
+        this.formGroup.markAllAsTouched()
 
-      if (id === 'new') {
-        this.observation.id = 'new'
-      }
+        if (id === 'new') {
+          this.observation.id = 'new'
+        }
 
-      this.saving = false;
-      this.error = {
-        message: err.data.message
+        this.saving = false;
+        this.error = {
+          message: err.data.message
+        }
       }
     })
   }

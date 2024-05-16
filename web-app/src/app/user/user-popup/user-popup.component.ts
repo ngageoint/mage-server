@@ -1,7 +1,7 @@
-import { Component, Inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { MapService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
 import * as moment from 'moment';
+import { MapService } from '../../map/map.service';
 
 @Component({
   selector: 'user-popup',
@@ -18,7 +18,7 @@ export class UserPopupComponent implements OnInit, OnChanges {
 
   constructor(
     private feedPanelService: FeedPanelService,
-    @Inject(MapService) private mapService: any) { }
+    private mapService: MapService) { }
 
   ngOnInit(): void {
     this.updateView()

@@ -1,16 +1,16 @@
-import { Inject, Pipe, PipeTransform } from '@angular/core'
+import { Pipe, PipeTransform } from '@angular/core'
 import * as turfCenter from '@turf/center'
 import { Feature, Point } from 'geojson'
 import * as mgrs from 'mgrs'
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers'
 import * as DMS from './geometry-dms'
+import { LocalStorageService } from '../http/local-storage.service'
 
 @Pipe({
   name: 'geometry'
 })
 export class GeometryPipe implements PipeTransform {
 
-  constructor(@Inject(LocalStorageService) private localStorageService: any) { }
+  constructor(private localStorageService: LocalStorageService) { }
 
   transform(value: any, format?: number): any {
     if (value === undefined) return

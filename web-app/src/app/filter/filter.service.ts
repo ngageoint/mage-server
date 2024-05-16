@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
-import { UserService } from "../user/user-service.service";
-import * as moment from 'moment';
-import * as _ from 'underscore';
+import { UserService } from "../user/user.service";
 import { LocalStorageService } from "../http/local-storage.service";
+import * as moment from 'moment';
+import * as _ from 'lodash'
 
 @Injectable({
   providedIn: 'root'
@@ -51,10 +51,10 @@ export class FilterService {
   addListener(listener: any) {
     this.listeners.push(listener);
 
-    if (_.isFunction(listener.onFilterChanged)) {
+    if (typeof listener.onFilterChanged === 'function') {
       listener.onFilterChanged({
         event: this.event,
-        teams: _.values(this.teamsById),
+        teams: Object.values(this.teamsById),
         timeInterval: {
           choice: this.interval.choice
         }
@@ -63,7 +63,7 @@ export class FilterService {
   }
 
   removeListener(listener: any) {
-    this.listeners = _.reject(this.listeners, function (l: any) { return l === listener; });
+    this.listeners = this.listeners.filter((l: any) => l !== listener );
   }
 
   setFilter(filter: any) {
@@ -155,21 +155,21 @@ export class FilterService {
     var added = [];
     var removed = [];
 
-    _.each(newTeams, function (team) {
+    newTeams.forEach((team: any) => {
       if (!this.teamsById[team.id]) {
         added.push(team);
       }
-    });
+    })
 
-    var newTeamsById = _.indexBy(newTeams, 'id');
-    _.each(this.teamsById, function (team) {
+    var newTeamsById = _.groupBy(newTeams, 'id');
+    Object.values(this.teamsById).forEach((team: any) => {
       if (!newTeamsById[team.id]) {
         removed.push(team);
       }
     });
 
     this.teamsById = newTeamsById;
-    this.localStorageService.setTeams(_.keys(this.teamsById));
+    this.localStorageService.setTeams(Object.keys(this.teamsById));
 
     return {
       added: added,
@@ -178,7 +178,7 @@ export class FilterService {
   }
 
   getTeams() {
-    return _.values(this.teamsById);
+    return Object.values(this.teamsById);
   }
 
   getTeamsById() {
@@ -221,7 +221,7 @@ export class FilterService {
       return false;
     }
 
-    if (this.actionFilter === 'favorite' && !_.contains(o.favoriteUserIds, this.userService.myself.id)) {
+    if (this.actionFilter === 'favorite' && !o.favoriteUserIds.includes(this.userService.myself.id)) {
       return false;
     }
 
@@ -249,11 +249,8 @@ export class FilterService {
   }
 
   isUserInTeamFilter(userId: any) {
-    if (_.isEmpty(this.teamsById)) return true;
-
-    return _.some(this.teamsById, function (team: any) {
-      return _.contains(team.userIds, userId);
-    });
+    if (Object.keys(this.teamsById).length === 0) return true
+    return this.teamsById.some((team: any) => team.userIds.includes(userId))
   }
 
   formatInterval(interval: any) {
@@ -286,8 +283,8 @@ export class FilterService {
   }
 
   filterChanged(filter: any) {
-    _.each(this.listeners, function (listener: any) {
-      if (_.isFunction(listener.onFilterChanged)) {
+    this.listeners.forEach((listener: any) => {
+      if (typeof listener.onFilterChanged === 'function') {
         listener.onFilterChanged(filter);
       }
     });

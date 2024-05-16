@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
 import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 import { MapService } from '../map/map.service';
-import { UserService } from '../user/user-service.service';
+import { UserService } from '../user/user.service';
 import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 

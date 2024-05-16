@@ -101,7 +101,7 @@ export class ObservationService {
     if (!_.isArray(observations)) observations = [observations];
 
     var formMap = _.indexBy(event.forms, 'id');
-    _.each(observations, function (observation) {
+    observations.forEach((observation: any) => {
       let form: any;
       if (observation.properties.forms.length) {
         form = formMap[observation.properties.forms[0].formId];
@@ -113,7 +113,9 @@ export class ObservationService {
       } else if (observation.geometry.type === 'LineString') {
         this.minimizeLineString(observation.geometry.coordinates);
       }
-    });
+    })
+
+    return observations
   }
 
   minimizePolygon(polygon) {

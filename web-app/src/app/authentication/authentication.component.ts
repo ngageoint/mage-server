@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api, AuthenticationStrategy } from '../api/api.entity';
 import * as _ from 'underscore';
-import { UserService } from '../user/user-service.service';
+import { UserService } from '../user/user.service';
 import { relative } from 'path';
 
 @Component({

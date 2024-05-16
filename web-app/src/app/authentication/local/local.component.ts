@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AuthenticationStrategy } from '../../api/api.entity';
-import { UserService } from '../../user/user-service.service';
+import { UserService } from '../../user/user.service';
 import { FormControl, Validators } from '@angular/forms';
 
 @Component({

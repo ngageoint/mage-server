@@ -1,10 +1,9 @@
 import _ from 'underscore'
-import { Component, OnInit, Inject, ElementRef, ViewChild } from '@angular/core'
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core'
 import { UntypedFormControl } from '@angular/forms'
 import { Observable } from 'rxjs'
 import { map, startWith } from 'rxjs/operators'
 import { StateService } from '@uirouter/angular'
-import { UserService, Event } from '../../../upgrade/ajs-upgraded-providers'
 import { ServiceType, FeedTopic, Service, FeedExpanded, FeedService } from '@ngageoint/mage.web-core-lib/feed'
 import { MatDialog } from '@angular/material/dialog'
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
@@ -12,6 +11,8 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { trigger, state, transition, style, animate } from '@angular/animations'
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model'
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component'
+import { UserService } from '../../../user/user.service'
+import { EventService } from '../../../event/event.service'
 
 @Component({
   selector: 'app-admin-feed',
@@ -73,8 +74,8 @@ export class AdminFeedComponent implements OnInit {
     private stateService: StateService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
-    @Inject(UserService) private userService: { myself: { id: string, role: {permissions: Array<string>}}},
-    @Inject(Event) private eventResource: any
+    private userService: UserService,
+    private eventService: EventService
     ) {
       this.hasFeedCreatePermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
       this.hasFeedEditPermission = _.contains(userService.myself.role.permissions, 'FEEDS_CREATE_FEED')
@@ -101,7 +102,7 @@ export class AdminFeedComponent implements OnInit {
       });
   }
 
-    this.eventResource.query(events => {
+    this.eventService.query().subscribe((events: any) => {
       this.events = events.sort((a: {name: string}, b: {name: string}) => {
         if (a.name < b.name) { return -1; }
         if (a.name > b.name) { return 1; }
@@ -161,7 +162,7 @@ export class AdminFeedComponent implements OnInit {
   }
 
   addFeedToEvent($event: MatAutocompleteSelectedEvent): void {
-    this.eventResource.addFeed({ id: $event.option.id }, `"${this.feed.id}"`, event => {
+    this.eventService.addFeed($event.option.id, `"${this.feed.id}"`).subscribe((event: any) => {
       this.feedEvents.push(event);
       this.nonFeedEvents = _.reject(this.nonFeedEvents, e => {
         return e.id === event.id
@@ -180,7 +181,7 @@ export class AdminFeedComponent implements OnInit {
   removeFeedFromEvent($event: MouseEvent, event: any): void {
     $event.stopPropagation();
 
-    this.eventResource.removeFeed({ id: event.id, feedId: this.feed.id }, removed => {
+    this.eventService.removeFeed(event.id, this.feed.id).subscribe((removed: any) => {
       this.feedEvents = _.reject(this.feedEvents, e => {
         return e.id === event.id
       });

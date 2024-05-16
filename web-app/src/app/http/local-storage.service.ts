@@ -130,7 +130,7 @@ export class LocalStorageService {
         return localStorage.getItem(key)
       }
     } catch (e) {
-      return false
+      return undefined
     }
   }
 
@@ -140,7 +140,7 @@ export class LocalStorageService {
         return localStorage.setItem(key, value)
       }
     } catch (e) {
-      return false
+      return undefined
     }
   }
 

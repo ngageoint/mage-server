@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { NgModel } from '@angular/forms';
-import { LocalStorageService } from '../upgrade/ajs-upgraded-providers';
 import * as moment from 'moment'
+import { LocalStorageService } from '../http/local-storage.service';
 
 @Component({
   selector: 'datetime-picker',
@@ -22,7 +22,7 @@ export class DatetimePickerComponent implements OnChanges {
   time: moment.Moment
   timeZone: string
 
-  constructor(@Inject(LocalStorageService) localStorageService: any) {
+  constructor(localStorageService: LocalStorageService) {
     this.timeZone = localStorageService.getTimeZoneEdit();
   }
 

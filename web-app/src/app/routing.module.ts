@@ -5,6 +5,7 @@ import { AuthenticationComponent } from './authentication/authentication.compone
 import { AuthorizeComponent } from './authentication/authorize.component';
 import { MageComponent } from './mage/mage.component';
 import { ApiResolver } from './api/api.resolver';
+import { UserResolver } from './authentication/user.resolver';
 
 const appRoutes: Routes = [{
   path: '',
@@ -28,8 +29,11 @@ const appRoutes: Routes = [{
     component: AuthorizeComponent,
   }]
 },{
-  path: 'mage',
-  component: MageComponent
+  path: 'map',
+  component: MageComponent,
+  resolve: {
+    user: UserResolver
+  }
 }];
 
 @NgModule({

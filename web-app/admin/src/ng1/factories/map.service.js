@@ -291,7 +291,7 @@ function MapService(EventService, LocationService, FeatureService, LocalStorageS
         service.updateFeatureForLayer(updated.location, 'people');
 
         // pan/zoom map to user if this is the user we are following
-        if (followFeatureInLayer.layer === 'people' && user.id === followFeatureInLayer.id)
+        if (this.followFeature.layer === 'people' && user.id === this.followFeature.id)
           service.zoomToFeatureInLayer(user, 'people');
       }
     });

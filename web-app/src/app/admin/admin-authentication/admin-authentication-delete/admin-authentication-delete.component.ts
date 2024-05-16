@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Inject } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
-import { AuthenticationConfigurationService } from 'src/app/upgrade/ajs-upgraded-providers';
+import { AdminAuthenticationService } from '../admin-authentication.service';
 
 @Component({
   selector: 'admin-authentication-delete',
@@ -14,15 +14,17 @@ export class AuthenticationDeleteComponent implements AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<AuthenticationDeleteComponent>,
     @Inject(MAT_DIALOG_DATA) public strategy: Strategy,
-    @Inject(AuthenticationConfigurationService)
-    private authenticationConfigurationService: any) {
+    private authenticationConfigurationService: AdminAuthenticationService) {
   }
 
   ngAfterViewInit(): void {
-    this.authenticationConfigurationService.countUsers(this.strategy._id).then(result => {
-      this.userCount = result.data.count;
-    }).catch((err: any) => {
-      console.error(err);
+    this.authenticationConfigurationService.countUsers(this.strategy._id).subscribe({
+      next: (result) => {
+        this.userCount = result.data.count;
+      },
+      error: (err: any) => {
+        console.error(err);
+      }
     })
   }
 
@@ -31,11 +33,14 @@ export class AuthenticationDeleteComponent implements AfterViewInit {
   }
 
   delete(): void {
-    this.authenticationConfigurationService.deleteConfiguration(this.strategy).then(() => {
-      this.dialogRef.close('delete');
-    }).catch((err: any) => {
-      console.error(err);
-      this.dialogRef.close('error');
-    });
+    this.authenticationConfigurationService.deleteConfiguration(this.strategy).subscribe({
+      next: (result) => {
+        this.dialogRef.close('delete');
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.dialogRef.close('error');
+      }
+    })
   }
 }

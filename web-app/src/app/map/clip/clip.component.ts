@@ -1,7 +1,8 @@
 import { Component, Input, ElementRef, Inject, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
 import { Feature } from 'geojson'
 import { Map, GeoJSON, PathOptions, Layer, FixedWidthMarker, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
-import { LocalStorageService, MapService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { MapService } from '../map.service'
+import { LocalStorageService } from '../../http/local-storage.service'
 
 interface FeatureWithStyle extends Feature {
   style?: any
@@ -35,8 +36,8 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   constructor(
-    @Inject(MapService) private mapService: any,
-    @Inject(LocalStorageService) private localStorageService: any) {
+    private mapService: MapService,
+    private localStorageService: LocalStorageService) {
   }
 
   ngOnInit(): void {

@@ -1,9 +1,12 @@
-import { Component, Inject, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
-import { EventService, LocalStorageService, MapService, UserService } from 'src/app/upgrade/ajs-upgraded-providers'
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'
 import * as moment from 'moment'
 import { MatRipple } from '@angular/material/core';
 import { animate, style, transition, trigger } from '@angular/animations'
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service'
+import { FeedPanelService } from '../../feed-panel/feed-panel.service'
+import { MapService } from '../../map/map.service';
+import { UserService } from '../../user/user.service';
+import { EventService } from '../../event/event.service';
+import { LocalStorageService } from '../../http/local-storage.service';
 
 @Component({
   selector: 'observation-list-item',
@@ -48,13 +51,11 @@ export class ObservationListItemComponent implements OnChanges {
   attachments = []
 
   constructor(
-    @Inject(MapService) private mapService: any,
-    @Inject(UserService) private userService: any,
-    @Inject(EventService) private eventService: any,
-    @Inject(LocalStorageService) private localStorageService: any,
-    private feedPanelService: FeedPanelService) {
-
-  }
+    private mapService: MapService,
+    private userService: UserService,
+    private eventService: EventService,
+    private localStorageService: LocalStorageService,
+    private feedPanelService: FeedPanelService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.event?.currentValue || changes.form?.currentValue || changes.observation?.currentValue) {
@@ -69,13 +70,13 @@ export class ObservationListItemComponent implements OnChanges {
 
   toggleFavorite(): void {
     if (this.isUserFavorite) {
-      this.eventService.removeObservationFavorite(this.observation).then(observation => {
+      this.eventService.removeObservationFavorite(this.observation).subscribe(observation => {
         this.observation.favoriteUserIds = observation.favoriteUserIds
         this.isUserFavorite = false
         this.updateFavorites()
       })
     } else {
-      this.eventService.addObservationFavorite(this.observation).then(observation => {
+      this.eventService.addObservationFavorite(this.observation).subscribe(observation => {
         this.observation.favoriteUserIds = observation.favoriteUserIds
         this.isUserFavorite = true
         this.updateFavorites()
@@ -88,13 +89,13 @@ export class ObservationListItemComponent implements OnChanges {
   }
 
   markAsImportant(): void {
-    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).then(() => {
+    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(() => {
       this.importantEditor.open = false
     })
   }
 
   clearImportant(): void {
-    this.eventService.clearObservationAsImportant(this.observation).then(() => {
+    this.eventService.clearObservationAsImportant(this.observation).subscribe(() => {
       this.importantEditor.open = false
       delete this.importantEditor.description
     })
@@ -129,7 +130,7 @@ export class ObservationListItemComponent implements OnChanges {
     const aclPermissions = myAccess.permissions || []
     this.canEditImportant = this.userService.myself.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
 
-    const formMap = this.eventService.getFormsForEvent(this.event).reduce((map, form) => {
+    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce((map, form) => {
       map[form.id] = form
       return map
     }, {})

@@ -33,3 +33,27 @@ user-feed {
   display: block;
   height: 100%;
 }
+
+.feeds-nav {
+  position: absolute;
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.20);
+  width: 57px;
+  height: 100%;
+  padding-top: 8px;
+  z-index: 10;
+  overflow-y: auto;
+  -webkit-transition: width .3s linear;
+  transition: width .3s linear;
+  -webkit-transform: translateZ(0) scale(1, 1);
+}
+
+.feeds-nav:hover {
+  width: 240px;
+}
+
+.feeds-content {
+  position: relative;
+  margin-left: 56px;
+  width: 100%;
+}
