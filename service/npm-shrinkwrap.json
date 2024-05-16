@@ -52,7 +52,7 @@
         "passport-oauth2": "1.6.0",
         "passport-openidconnect": "0.1.1",
         "pem-jwk": "1.5.1",
-        "pem2jwk": "1.0.1",
+        "pem2jwk": "1.0.2",
         "pug": "^3.0.2",
         "rfc5646": "^3.0.0",
         "superagent": "^8.0.0",
@@ -3693,9 +3693,9 @@
       "integrity": "sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0="
     },
     "node_modules/elliptic": {
-      "version": "6.5.4",
-      "resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.4.tgz",
-      "integrity": "sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==",
+      "version": "6.5.5",
+      "resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.5.tgz",
+      "integrity": "sha512-7EjbcmUm17NQFu4Pmgmq2olYMj8nwMnpcddByChSUjArp8F5DQWcIcpriwO4ZToLNAJig0yiyjswfyGNje/ixw==",
       "dependencies": {
         "bn.js": "^4.11.9",
         "brorand": "^1.1.0",
@@ -9369,12 +9369,13 @@
       "optional": true
     },
     "node_modules/pem2jwk": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/pem2jwk/-/pem2jwk-1.0.1.tgz",
-      "integrity": "sha512-OAPoqXBz01G4yL3tAHvLiC2TCIVKuzsg90zpw23GWGDz6i9Wsf1M8n1mcVmIAX2pG3JF0Oi8MehDr8PVL3K0QA==",
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/pem2jwk/-/pem2jwk-1.0.2.tgz",
+      "integrity": "sha512-/PsYvI1FljaxOeqrvbWgjE6KiFz87aPYr2lgUaADbzBKihRX0FVg7StXx3Cakd7qYL8e+TTANPKOsRH0HGjndw==",
       "dependencies": {
         "elliptic": "^6.4.0",
-        "parse-asn1": "^5.1.0"
+        "parse-asn1": "^5.1.0",
+        "safe-buffer": "^5.1.2"
       }
     },
     "node_modules/pend": {
@@ -15290,9 +15291,9 @@
       "integrity": "sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0="
     },
     "elliptic": {
-      "version": "6.5.4",
-      "resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.4.tgz",
-      "integrity": "sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==",
+      "version": "6.5.5",
+      "resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.5.tgz",
+      "integrity": "sha512-7EjbcmUm17NQFu4Pmgmq2olYMj8nwMnpcddByChSUjArp8F5DQWcIcpriwO4ZToLNAJig0yiyjswfyGNje/ixw==",
       "requires": {
         "bn.js": "^4.11.9",
         "brorand": "^1.1.0",
@@ -19695,12 +19696,13 @@
       }
     },
     "pem2jwk": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/pem2jwk/-/pem2jwk-1.0.1.tgz",
-      "integrity": "sha512-OAPoqXBz01G4yL3tAHvLiC2TCIVKuzsg90zpw23GWGDz6i9Wsf1M8n1mcVmIAX2pG3JF0Oi8MehDr8PVL3K0QA==",
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/pem2jwk/-/pem2jwk-1.0.2.tgz",
+      "integrity": "sha512-/PsYvI1FljaxOeqrvbWgjE6KiFz87aPYr2lgUaADbzBKihRX0FVg7StXx3Cakd7qYL8e+TTANPKOsRH0HGjndw==",
       "requires": {
         "elliptic": "^6.4.0",
-        "parse-asn1": "^5.1.0"
+        "parse-asn1": "^5.1.0",
+        "safe-buffer": "^5.1.2"
       }
     },
     "pend": {

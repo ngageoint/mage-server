@@ -72,7 +72,7 @@
     "passport-oauth2": "1.6.0",
     "passport-openidconnect": "0.1.1",
     "pem-jwk": "1.5.1",
-    "pem2jwk": "1.0.1",
+    "pem2jwk": "1.0.2",
     "pug": "^3.0.2",
     "rfc5646": "^3.0.0",
     "superagent": "^8.0.0",
