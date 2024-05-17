@@ -9,6 +9,17 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 
+## [6.2.12](https://github.com/ngageoint/mage-server/releases/tag/6.2.12)
+#### Security
+* [CVE-2022-36313](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-36313).
+  * Upgrade [`file-type`](https://www.npmjs.com/package/file-type).
+  * Upgrade [`@ngageoint/geopackage`](https://www.npmjs.com/package/@ngageoint/geopackage) dependency which upgrades `file-type`.
+* [CVE-2020-28498](http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28498)
+  * Upgrade [`elliptic`](https://npmjs.com/package/elliptic) via [`pem2jwk`](https://www.npmjs.com/package/pem2jwk).
+* Change _About_ page links to HTTPS.
+* Use SHA-256 for token hash.
+
+
 ## [6.2.11](https://github.com/ngageoint/mage-server/releases/tag/6.2.11)
 #### Features
 * Core web app now shares `@angular/animations` to web plugins.
