@@ -17,11 +17,11 @@ class AdminFormMapEditController {
     this.unSavedChanges = false;
     this.unSavedUploads = false;
     this.token = LocalStorageService.getToken();
-  
+
     this.icons = {};
     this.iconMap = {};
     this.styleMap = {};
-  
+
     this.formSaved = false;
     this.filesToUpload = [];
     this.saveTime = 0;
@@ -33,7 +33,7 @@ class AdminFormMapEditController {
   $onInit() {
     this.Event.get({id: this.$stateParams.eventId}, event => {
       this.event = event;
-  
+
       if (this.$stateParams.formId) {
         var form = _.find(event.forms, form => {
           return form.id.toString() === this.$stateParams.formId;
@@ -52,18 +52,18 @@ class AdminFormMapEditController {
         this.form.fields = [];
         this.form.userFields = [];
       }
-  
+
       this.mapStyles();
       this.fetchIcons(this.$stateParams.eventId, this.$stateParams.formId);
       this.populateVariants();
     });
 
-    this.$transitions.onStart({}, transition => { 
+    this.$transitions.onStart({}, transition => {
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
           component: 'adminEventFormEditUnsaved'
         });
-  
+
         modalInstance.result.then(() => {
           this.unSavedChanges = false;
           transition.run();

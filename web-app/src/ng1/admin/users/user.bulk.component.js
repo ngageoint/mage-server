@@ -39,7 +39,7 @@ class AdminUserBulkController {
 
     this.team = { selected: null };
     this.role = { selected: null };
-  
+
     this.edit = {};
     this.columnMap = {};
     this.unmappedFields = [];
@@ -56,7 +56,7 @@ class AdminUserBulkController {
     this.UserService.getRoles().success(roles => {
       this.roles = roles;
     });
-  
+
     this.Team.query(teams => {
       this.teams = _.reject(teams, team => { return team.teamEventId; });
     });

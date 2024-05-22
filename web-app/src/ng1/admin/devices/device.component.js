@@ -12,7 +12,7 @@ class AdminDeviceController {
     this.UserService = UserService;
     this.LoginService = LoginService;
     this.UserPagingService = UserPagingService;
-    
+
     this.token = LocalStorageService.getToken();
 
     this.hasDeviceEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
@@ -41,7 +41,7 @@ class AdminDeviceController {
     this.DeviceService.getDevice(this.$stateParams.deviceId).then(device => {
       this.device = device;
     });
-  
+
     this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
       this.loginPage = loginPage;
       if (loginPage.logins.length) {
@@ -77,7 +77,7 @@ class AdminDeviceController {
       }
 
       this.isSearching = false;
-  
+
       return this.loginSearchResults;
     });
   }
@@ -184,7 +184,7 @@ class AdminDeviceController {
 
     this.login.endDateOpened = true;
   }
-  
+
   loginResultsLimitChanged() {
     this.filterLogins();
   }
