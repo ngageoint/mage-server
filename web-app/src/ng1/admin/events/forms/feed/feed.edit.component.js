@@ -143,7 +143,9 @@ class FormFeedController {
         forms: [this.createForm(formId)]
       },
       type: 'Feature',
-      user: user
+      user: user,
+      favoriteUserIds: [],
+      attachments: [],
     };
   }
 
