@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.service",
-  "version": "6.2.11",
+  "version": "6.2.12-beta.1",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
