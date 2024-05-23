@@ -153,12 +153,13 @@ require('./user');
 require('./admin');
 require('./material-components');
 
-config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$urlServiceProvider', '$animateProvider'];
+config.$inject = ['$httpProvider', '$locationProvider', '$stateProvider', '$urlRouterProvider', '$urlServiceProvider', '$animateProvider'];
 
-function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServiceProvider, $animateProvider) {
+function config($httpProvider, $locationProvider, $stateProvider, $urlRouterProvider, $urlServiceProvider, $animateProvider) {
   $httpProvider.defaults.withCredentials = true;
-  $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
-
+  $httpProvider.defaults.headers.post  = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  // TODO: this is the default hash prefix for angularjs 1.6+
+  $locationProvider.hashPrefix('!');
   $animateProvider.classNameFilter(/ng-animatable/);
 
   function resolveLogin() {
