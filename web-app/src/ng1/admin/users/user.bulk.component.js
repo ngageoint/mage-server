@@ -53,7 +53,7 @@ class AdminUserBulkController {
   }
 
   $onInit() {
-    this.UserService.getRoles().success(roles => {
+    this.UserService.getRoles().then(roles => {
       this.roles = roles;
     });
 

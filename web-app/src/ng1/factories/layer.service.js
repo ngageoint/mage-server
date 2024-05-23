@@ -32,19 +32,14 @@ function LayerService($q, Layer, FilterService, LocalStorageService) {
   }
 
   function makeAvailable(layerId) {
-    const theDeferred = $q.defer();
-    $http
+    return $http
       .get('/api/layers/' + layerId + '/available', {
         headers: { 'Content-Type': 'application/json' },
       })
-      .success(function(layer) {
-        theDeferred.resolve(layer);
-      })
-      .error(function(e) {
-        theDeferred.reject(e.responseJSON);
+      .then(res => res.data)
+      .catch(err => {
+        throw err.responseJSON;
       });
-
-    return theDeferred.promise;
   }
 
   function uploadGeopackage(data) {

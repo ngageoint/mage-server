@@ -102,21 +102,23 @@ class UserController {
     };
 
     const self = this;
-    this.UserService.updateMyPassword(authentication).success(() => {
+    this.UserService.updateMyPassword(authentication)
+    .then(() => {
       self.authentication.password = "";
       self.authentication.newPassword = "";
       self.authentication.newPasswordConfirm = "";
       self.form.authentication.$setPristine();
-      self.passwordStatus = {status: "success", msg: "Password successfully updated, you will be redirected to the login page."};
-
+      self.passwordStatus = { status: "success", msg: "Password successfully updated, you will be redirected to the login page." };
       self.$timeout(function() {
         self.$state.go('landing');
       }, 5000);
-    }).error((data, status) => {
+    })
+    .catch(({ data, status }) => {
       if (status === 401) {
         form.password.$setValidity('invalid', false);
-      } else {
-        self.passwordStatus = {status: "danger", msg: data};
+      }
+      else {
+        self.passwordStatus = { status: "danger", msg: data };
       }
     });
   }
@@ -154,7 +156,7 @@ class UserController {
     this.form.authentication.password.$setValidity('invalid', true);
   }
 
-  newPasswordChanged(password) {    
+  newPasswordChanged(password) {
     const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
     this.passwordStrengthScore = score + 1;
     this.passwordStrengthType = this.passwordStrengthMap[score].type;

@@ -63,7 +63,7 @@ class AdminUserController {
       });
     });
 
-    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).then(loginPage => {
       this.loginPage = loginPage;
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
@@ -212,7 +212,7 @@ class AdminUserController {
   }
 
   pageLogin(url) {
-    this.LoginService.query({url: url, filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this.LoginService.query({url: url, filter: this.filter, limit: this.loginResultsLimit}).then(loginPage => {
       if (loginPage.logins.length) {
         this.loginPage = loginPage;
         this.showNext = loginPage.logins.length !== 0;
@@ -250,7 +250,7 @@ class AdminUserController {
       this.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
 
-    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).then(loginPage => {
       this.showNext = loginPage.logins.length !== 0;
       this.showPrevious = false;
       this.loginPage = loginPage;
