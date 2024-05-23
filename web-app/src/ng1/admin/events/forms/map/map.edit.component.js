@@ -35,16 +35,9 @@ class AdminFormMapEditController {
       this.event = event;
 
       if (this.$stateParams.formId) {
-        var form = _.find(event.forms, form => {
-          return form.id.toString() === this.$stateParams.formId;
-        });
+        const form = event.forms.find(form => form.id.toString() === this.$stateParams.formId);
         this.form = new this.Form(form);
-  
-        _.each(this.form.fields, field => {
-          if (field.name === this.form.primaryField) {
-            this.primaryField = field;
-          }
-        });
+        this.primaryField = this.form.fields.find(field => field.name === this.form.primaryField)
       } else {
         this.form = new this.Form();
         this.form.archived = false;
@@ -367,8 +360,8 @@ class AdminFormMapEditController {
 
   symbologyFilter(otherFilterField, currentFilterField) {
     return function(field) {
-      return field.type === 'dropdown' && 
-        (!otherFilterField || otherFilterField.name !== field.name) && 
+      return field.type === 'dropdown' &&
+        (!otherFilterField || otherFilterField.name !== field.name) &&
         ((currentFilterField && field.name === currentFilterField.name) || !field.archived);
     };
   }
