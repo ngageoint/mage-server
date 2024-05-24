@@ -1,12 +1,12 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { LocalAuthenticationComponent } from './local.component';
+import { IdpAuthenticationComponent } from './idp.component';
 
-describe('Local Authentication Component', () => {
-  let component: LocalAuthenticationComponent;
+describe('Idp Authentication Component', () => {
+  let component: IdpAuthenticationComponent;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LocalAuthenticationComponent]
+      declarations: [IdpAuthenticationComponent]
     })
     .compileComponents();
   }));

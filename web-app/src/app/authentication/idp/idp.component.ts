@@ -1,0 +1,54 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { AuthenticationStrategy } from 'src/app/api/api.entity';
+import { UserService } from '../../user/user.service';
+@Component({
+  selector: 'idp-authentication',
+  templateUrl: './idp.component.html',
+  styleUrls: ['./idp.component.scss']
+})
+export class IdpAuthenticationComponent implements OnInit {
+  @Input() strategy: AuthenticationStrategy
+  @Output() onSignin = new EventEmitter<any>()
+
+  error: {
+    title: string,
+    message: string
+  }
+
+  constructor(
+    private userService: UserService
+  ) {}
+
+  ngOnInit(): void {
+    console.log('strat init is ', this.strategy)
+  }
+
+  signin() {
+    this.userService.idpSignin(this.strategy.name).subscribe({
+      next: (response: any) => {
+        if (!response.token || !response.user) {
+          let message = 'There was a problem signing in, Please contact a MAGE administrator for assistance.'
+          if (response.user) {
+            if (!response.user.active) {
+              message = 'Your account has been created but it is not active. A MAGE administrator needs to activate your account before you can log in.'
+            } else if (!response.user.enabled) {
+              message = 'Your account has been disabled, please contact a MAGE administrator for assistance.'
+            }
+          }
+
+          this.error.title = 'Signin Failed'
+          this.error.message = message
+          return;
+        }
+
+        this.onSignin.emit(response)
+      },
+      error: (error: any) => {
+        this.error = {
+          title: 'Error signing in',
+          message: error.data || 'Please check your username and password and try again.'
+        };
+      }
+    })
+  }
+}

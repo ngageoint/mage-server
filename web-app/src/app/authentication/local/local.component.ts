@@ -8,7 +8,7 @@ import { FormControl, Validators } from '@angular/forms';
   templateUrl: './local.component.html',
   styleUrls: ['./local.component.scss']
 })
-export class LocalComponent implements OnInit {
+export class LocalAuthenticationComponent implements OnInit {
   @Input() strategy: AuthenticationStrategy
   @Input() hideSignup: boolean
 

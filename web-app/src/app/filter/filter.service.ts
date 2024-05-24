@@ -161,7 +161,7 @@ export class FilterService {
       }
     })
 
-    var newTeamsById = _.groupBy(newTeams, 'id');
+    var newTeamsById = _.keyBy(newTeams, 'id');
     Object.values(this.teamsById).forEach((team: any) => {
       if (!newTeamsById[team.id]) {
         removed.push(team);

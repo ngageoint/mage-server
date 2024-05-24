@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
-import { Observable } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,29 @@ export class UserService {
     }
 
     return this.httpClient.post<any>('/auth/local/signin', body)
+  }
+
+  idpSignin(strategy: string): Observable<any> {
+    let subject = new Subject<any>();
+
+    const url = "/auth/" + strategy + "/signin";
+    const authWindow = window.open(url, "_blank");
+
+    function onMessage(event: any) {
+      window.removeEventListener('message', onMessage, false);
+
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      subject.next(event.data)
+
+      authWindow.close();
+    }
+
+    window.addEventListener('message', onMessage, false);
+
+    return subject.asObservable()
   }
 
   authorize(token: string, deviceId: string): Observable<any> {

@@ -18,14 +18,14 @@
     </div>
   </div>
 
-  <div ng-repeat="strategy in thirdPartyStrategies">
-    <div ng-class="{'bottom-gap': $index < thirdPartyStrategies.length - 1}">
-      <!-- <ng-switch on="strategy.type">
-        <idp-signin ng-switch-when="oauth" strategy="strategy" on-signin="signin($event)"></idp-signin>
-        <idp-signin ng-switch-when="saml" strategy="strategy" on-signin="signin($event)"></idp-signin>
-        <idp-signin ng-switch-when="openidconnect" strategy="strategy" on-signin="signin($event)"></idp-signin>
-        <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="signin($event)"></ldap-signin>
-      </ng-switch> -->
+  <div *ngFor='let strategy of thirdPartyStrategies; index as i'>
+    <div [ngClass]="{'spacer': i < thirdPartyStrategies.length - 1}">
+      <ng-container [ngSwitch]="strategy?.type">
+        <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy" onSignin="signin($event)"></idp-authentication>
+        <idp-authentication *ngSwitchCase="'saml'" [strategy]="strategy" onSignin="signin($event)"></idp-authentication>
+        <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy" onSignin="signin($event)"></idp-authentication>
+        <!-- <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="signin($event)"></ldap-signin> -->
+      </ng-container>
     </div>
   </div>
 </div>

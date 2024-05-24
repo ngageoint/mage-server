@@ -485,7 +485,7 @@ export class EventService {
         return !layers.some((l: any) => l.id === layerId);
       })
 
-      this.eventsById[event.id].layersById = _.groupBy(layers, 'id');
+      this.eventsById[event.id].layersById = _.keyBy(layers, 'id');
       this.layersChanged({ added: added, removed: removed }, event);
     });
   }
@@ -501,7 +501,7 @@ export class EventService {
         })
       }, event);
 
-      this.eventsById[event.id].feedsById = _.groupBy(feeds, 'id');
+      this.eventsById[event.id].feedsById = _.keyBy(feeds, 'id');
       this.feedSyncStates = feeds.map(feed => {
         return {
           id: feed.id,
@@ -553,7 +553,7 @@ export class EventService {
       // remaining elements were not pulled from the server, hence we should remove them
       removed = Object.values(filteredObservationsById);
 
-      this.eventsById[event.id].observationsById = _.groupBy(observations, 'id');
+      this.eventsById[event.id].observationsById = _.keyBy(observations, 'id');
       this.eventsById[event.id].filteredObservationsById = observationsById;
 
       this.observationsChanged({ added: added, updated: updated, removed: removed });
@@ -613,7 +613,7 @@ export class EventService {
       // remaining elements were not pulled from the server, hence we should remove them
       const removed = _.values(filteredUsersById);
 
-      this.eventsById[event.id].usersById = _.groupBy(userLocations, 'id');
+      this.eventsById[event.id].usersById = _.keyBy(userLocations, 'id');
       this.eventsById[event.id].filteredUsersById = usersById;
 
       this.usersChanged({ added: added, updated: updated, removed: removed });

@@ -144,7 +144,7 @@ export class ObservationListItemComponent implements OnChanges {
       timestampField: {
         title: '',
         type: 'date',
-        value: moment(this.observation.properties.timestamp).toDate()
+        value: moment(this.observation?.properties?.timestamp).toDate()
       },
       forms: []
     }

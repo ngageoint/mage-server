@@ -159,10 +159,11 @@ import { LandingComponent } from './landing/landing.component';
 import { InfoComponent } from './landing/info.component';
 import { AuthenticationComponent } from './authentication/authentication.component';
 import { AuthorizeComponent } from './authentication/authorize.component';
-import { LocalComponent } from './authentication/local/local.component';
+import { LocalAuthenticationComponent } from './authentication/local/local.component';
 import { MageComponent } from './mage/mage.component';
 import { AppRoutingModule } from './routing.module';
 import { TokenInterceptorService } from './http/token.interceptor';
+import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
 
 @NgModule({
   declarations: [
@@ -174,8 +175,9 @@ import { TokenInterceptorService } from './http/token.interceptor';
     LandingComponent,
     InfoComponent,
     AuthenticationComponent,
+    IdpAuthenticationComponent,
+    LocalAuthenticationComponent,
     AuthorizeComponent,
-    LocalComponent,
     MageComponent,
     MapComponent,
     LayersControlComponent,
