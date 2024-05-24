@@ -3,7 +3,7 @@
   aria-modal="true"
   aria-labelledby="my-dialog-title"
   aria-describedby="my-dialog-content">
-  
+
   <div class="mdc-dialog__container">
     <div class="mdc-dialog__surface">
       <div class="modal-header">
@@ -15,12 +15,12 @@
             <form name="$ctrl.generalForm" >
               <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid}">
                 <label class="control-label">Name</label>
-                <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true"/>
+                <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true">
                 <span class="help-block" ng-if=" $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid">Name is required</span>
               </div>
               <div class="top-gap">
                 <label class="control-label">Description</label>
-                <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
+                <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"></textarea>
               </div>
 
               <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
@@ -39,13 +39,13 @@
         </div>
       </div>
       <footer class="mdc-dialog__actions">
-        <button type="button" 
-          class="mdc-button mdc-dialog__button" 
+        <button type="button"
+          class="mdc-button mdc-dialog__button"
           data-mdc-dialog-action="close">
           <span class="mdc-button__label">Cancel</span>
         </button>
-        <button type="button" 
-          class="mdc-button mdc-dialog__button mdc-button--raised" 
+        <button type="button"
+          class="mdc-button mdc-dialog__button mdc-button--raised"
           ng-click="$ctrl.upload()"
           tabindex="1">
           <span class="mdc-button__label">Create Form</span>
@@ -59,7 +59,7 @@
             <div class="error-card--subtitle mdc-typography mdc-typography--body2">{{$ctrl.error}}</div>
           </div>
 
-          <div class="error-card__actions">  
+          <div class="error-card__actions">
             <button class="material-icons mdc-icon-button error-card__action--icon" ng-click="$ctrl.error = null">close</button>
           </div>
         </div>

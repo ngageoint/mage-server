@@ -14,22 +14,24 @@ class AuthorizeController {
 
   $onInit() {
     this.showAuthorize = false;
-    this._UserService.authorize(this.token, null).success(() => {
+    this._UserService.authorize(this.token, null).then(() => {
       this.onAuthorized();
-    }).error(() => {
+    }).catch(() => {
       this.showAuthorize = true;
     });
   }
 
   authorize() {
     const token = this._$stateParams.token || this.token;
-    this._UserService.authorize(token, this.uid).success(data => {
-      if (data.device.registered) {
-        this.onAuthorized({device: data});
-      } else {
-        this.status = status;
+    this._UserService.authorize(token, this.uid)
+    .then(authz => {
+      if (authz.device.registered) {
+        this.onAuthorized({ device: authz });
+      }
+      else {
+        this.status = authz.status;
         this.statusTitle = 'Invalid Device ID';
-        this.statusMessage = data.errorMessage || 'Device ID is invalid, please check your device ID, and try again.';
+        this.statusMessage = authz.errorMessage || 'Device ID is invalid, please check your device ID, and try again.';
         this.deviceIdField.valid = false;
         this.statusLevel = 'alert-warning';
         this.info = {
@@ -39,14 +41,15 @@ class AuthorizeController {
         };
         this.contactOpen = { opened: true };
       }
-    }).error((data, status) => {
-      if (status === 403) {
-        this.status = status;
+    })
+    .catch(res => {
+      if (res.status === 403) {
+        this.status = res.status;
         this.statusTitle = 'Invalid Device ID';
-        this.statusMessage = data.errorMessage || 'Device ID is invalid, please check your device ID, and try again.';
+        this.statusMessage = res.errorMessage || 'Device ID is invalid, please check your device ID, and try again.';
         this.deviceIdField.valid = false;
         this.statusLevel = 'alert-warning';
-      } else if (status === 401) {
+      } else if (res.status === 401) {
         this.onCancel();
       }
       this.info = {

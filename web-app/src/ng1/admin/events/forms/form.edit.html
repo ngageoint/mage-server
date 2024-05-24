@@ -3,7 +3,7 @@
     <ol class="breadcrumb">
       <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
       <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
-      <li class="active">{{$ctrl.form.name}}
+      <li class="active">{{$ctrl.form.name}}</li>
     </ol>
   </div>
 </div>
@@ -22,18 +22,18 @@
       <form name="$ctrl.generalForm">
         <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid}">
           <label class="control-label">Name</label>
-            <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true"/>
-            <span class="help-block" ng-if="$ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid">Name is required</span>
+          <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true"/>
+          <span class="help-block" ng-if="$ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid">Name is required</span>
         </div>
         <div class="top-gap">
           <label class="control-label">Description</label>
-          <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
+          <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"></textarea>
         </div>
 
         <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
           <label class="control-label">Color</label>
-            <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="$ctrl.form.color" name="color" ng-required="true">
-            <span class="help-block" ng-if="$ctrl.generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+          <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="$ctrl.form.color" name="color" ng-required="true">
+          <span class="help-block" ng-if="$ctrl.generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
         </div>
 
         <div class="top-gap">
