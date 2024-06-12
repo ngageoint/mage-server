@@ -58,18 +58,17 @@
       <div>Map</div>
     </div>
 
-    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
-      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.settings'}"></div>
-      <i class="fa fa-wrench"></i>
-      <div>Settings</div>
-    </div>
-
-    <div class="admin-action"
-      ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.authentication'}"
+    <div class="admin-action" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.authentication'}"
       ng-click="$ctrl.tabChanged('admin.authentication')">
       <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.authentication'}"></div>
       <i class="fa fa-lock"></i>
       <div>Authentication</div>
+    </div>
+
+    <div class="admin-action" ng-if="$ctrl.hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': $ctrl.stateName === 'admin.settings'}" ng-click="$ctrl.tabChanged('admin.settings')">
+      <div ng-class="{'admin-action-arrow-left': $ctrl.stateName === 'admin.settings'}"></div>
+      <i class="fa fa-wrench"></i>
+      <div>Settings</div>
     </div>
 
     <div class="admin-action" ng-repeat="pluginTab in $ctrl.pluginTabs" ng-class="{'admin-action-selected': $ctrl.stateName === pluginTab.state}" ng-click="$ctrl.tabChanged(pluginTab.state)">
