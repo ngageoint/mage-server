@@ -1,7 +1,7 @@
 export interface AdminChoice {
     title: string,
     description: string,
-    value: boolean
+    value?: boolean
 }
 
 export interface Strategy {

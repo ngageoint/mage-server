@@ -1,7 +1,5 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy, AdminChoice } from '../../../admin-authentication/admin-settings.model';
-import { MaxLock } from './account-lock.model';
-
 
 @Component({
     selector: 'account-lock',
@@ -10,42 +8,35 @@ import { MaxLock } from './account-lock.model';
 })
 export class AccountLockComponent implements OnInit {
     @Input() strategy: Strategy;
-    @Output() strategyDirty = new EventEmitter<boolean>();
+    accountLockState: AdminChoice
+    maxLockState: AdminChoice
 
-    readonly accountLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not lock MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Lock MAGE user accounts for defined time \n after defined number of invalid login attempts.',
+    readonly accountLockEnabled: AdminChoice = {
+        title: 'Enabled',
+        description: 'Lock MAGE user accounts for defined time after defined number of invalid login attempts.',
         value: true
-    }];
-    maxLock: MaxLock = {
-        enabled: false
-    };
-    readonly maxLockChoices: AdminChoice[] = [{
-        title: 'Off',
-        description: 'Do not disable MAGE user accounts.',
-        value: false
-    }, {
-        title: 'On',
-        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
-        value: true
-    }];
-
-    ngOnInit(): void {
-        if (this.strategy.type === 'local') {
-            this.maxLock.enabled = this.strategy.settings.accountLock && this.strategy.settings.accountLock.max !== undefined;
-
-            if (!this.maxLock.enabled) {
-                delete this.strategy.settings.accountLock.max;
-            }
-        }
     }
 
-    setDirty(isDirty: boolean): void {
-        this.strategy.isDirty = isDirty;
-        this.strategyDirty.emit(isDirty);
+    readonly accountLockDisabled: AdminChoice = {
+        title: 'Disabled',
+        description: 'Do not lock MAGE user accounts.',
+        value: false
+    }
+
+    readonly maxLockEnabled: AdminChoice = {
+        title: 'Enabled',
+        description: 'Disable MAGE user accounts after account has been locked defined number of times.',
+        value: true
+    }
+
+    readonly maxLockDisabled: AdminChoice = {
+        title: 'Disabled',
+        description: 'Do not disable MAGE user accounts.',
+        value: false
+    }
+
+    ngOnInit(): void {
+        this.accountLockState = this.strategy.settings.accountLock?.enabled ? this.accountLockEnabled : this.accountLockDisabled
+        this.maxLockState = this.strategy.settings.accountLock.max ? this.accountLockEnabled : this.accountLockDisabled
     }
 }

@@ -48,13 +48,13 @@ import { UserReadService } from '@ngageoint/mage.web-core-lib/user';
 
 import { ContactComponent } from '../app/contact/contact.component';
 
+import { AdminAuthenticationComponent } from '../app/admin/admin-authentication/admin-authentication.component';
 import { AdminSettingsComponent } from '../app/admin/admin-settings/admin-settings.component';
 import { AdminMapComponent } from '../app/admin/admin-map/admin-map.component';
 import { AdminFeedsComponent } from '../app/admin/admin-feeds/admin-feeds.component';
 import { AdminFeedComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed.component';
 import { AdminServiceComponent } from '../app/admin/admin-feeds/admin-service/admin-service.component'
 import { AdminFeedEditComponent } from '../app/admin/admin-feeds/admin-feed/admin-feed-edit/admin-feed-edit.component';
-import { AuthenticationCreateComponent } from '../app/admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 import { AdminEventFormPreviewComponent } from '../app/admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 
 require('angular-minicolors');
@@ -114,7 +114,7 @@ app
   .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
-  .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))
+  .directive('upgradedAdminAuthentication', downgradeComponent({ component: AdminAuthenticationComponent }))
   .directive('contact', downgradeComponent({ component: ContactComponent }))
   .directive('adminEventFormPreview', downgradeComponent({ component: AdminEventFormPreviewComponent }));
 
@@ -446,6 +446,13 @@ function config($httpProvider, $locationProvider, $stateProvider, $urlRouterProv
   $stateProvider.state('admin.map', {
     url: '/map',
     component: "upgradedAdminMapSettings",
+    resolve: resolveAdmin()
+  });
+
+  // Admin authentication routes
+  $stateProvider.state('admin.authentication', {
+    url: '/settings',
+    component: "upgradedAdminAuthentication",
     resolve: resolveAdmin()
   });
 

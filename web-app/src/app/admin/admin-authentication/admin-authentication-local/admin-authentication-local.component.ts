@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -7,12 +7,5 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
   styleUrls: ['./admin-authentication-local.component.scss']
 })
 export class AdminAuthenticationLocalComponent {
-
   @Input() strategy: Strategy
-  @Input() editable = true
-  @Output() strategyDirty = new EventEmitter<boolean>();
-
-  onStrategyDirty(isDirty: boolean): void {
-    this.strategyDirty.emit(isDirty);
-}
 }

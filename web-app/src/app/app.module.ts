@@ -159,17 +159,13 @@ import { PasswordPipe } from './observation/observation-view/observation-view-pa
 import { ContactComponent } from './contact/contact.component';
 import { ContactDialogComponent } from "./contact/contact-dialog.component";
 import { AdminAuthenticationOidcComponent } from './admin/admin-authentication/admin-authentication-oidc/admin-authentication-oidc.component';
-import { AuthenticationDeleteComponent } from './admin/admin-authentication/admin-authentication-delete/admin-authentication-delete.component';
 import { AdminAuthenticationLocalComponent } from './admin/admin-authentication/admin-authentication-local/admin-authentication-local.component';
 import { PasswordPolicyComponent } from './admin/admin-authentication/admin-authentication-local//password-policy/password-policy.component';
 import { AccountLockComponent } from './admin/admin-authentication/admin-authentication-local//account-lock/account-lock.component';
 import { AdminAuthenticationComponent } from './admin/admin-authentication/admin-authentication.component';
-import { IconUploadComponent } from './admin/admin-authentication/admin-authentication-create/icon-upload/icon-upload.component';
-import { AuthenticationCreateComponent } from './admin/admin-authentication/admin-authentication-create/admin-authentication-create.component';
 import { AdminAuthenticationOAuth2Component } from './admin/admin-authentication/admin-authentication-oauth2/admin-authentication-oauth2.component';
 import { AdminAuthenticationLDAPComponent } from './admin/admin-authentication/admin-authentication-ldap/admin-authentication-ldap.component';
 import { AdminAuthenticationSAMLComponent } from './admin/admin-authentication/admin-authentication-saml/admin-authentication-saml.component';
-import { ButtonPreviewComponent } from './admin/admin-authentication/admin-authentication-create/button-preview/button-preview.component';
 import { AdminAuthenticationSettingsComponent } from './admin/admin-authentication/admin-authentication-settings.component';
 import { AdminSettingsUnsavedComponent } from './admin/admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
 import { ExportDataComponent } from './export/export-data/export-data.component';
@@ -177,7 +173,6 @@ import { NoExportsComponent } from './export/empty-state/no-exports.component';
 import { AdminEventFormPreviewComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview.component';
 import { AdminEventFormPreviewDialogComponent } from './admin/admin-event/admin-event-form/admin-event-form-preview/admin-event-form-preview-dialog.component';
 import { AdminMapComponent } from './admin/admin-map/admin-map.component';
-
 
 @NgModule({
   declarations: [
@@ -244,11 +239,8 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     AdminSettingsComponent,
     PasswordPolicyComponent,
     AccountLockComponent,
-    AuthenticationCreateComponent,
-    AuthenticationDeleteComponent,
     SecurityBannerComponent,
     SecurityDisclaimerComponent,
-    IconUploadComponent,
     ContactInfoComponent,
     DatetimePickerComponent,
     ExportComponent,
@@ -267,7 +259,6 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
     AdminAuthenticationOAuth2Component,
     AdminAuthenticationLDAPComponent,
     AdminAuthenticationSAMLComponent,
-    ButtonPreviewComponent,
     AdminAuthenticationSettingsComponent,
     AdminSettingsUnsavedComponent,
     AdminEventFormPreviewComponent,

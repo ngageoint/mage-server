@@ -19,7 +19,6 @@ export class AdminSettingsComponent implements OnInit {
     onSave = {};
     isBannerDirty = false;
     isDisclaimerDirty = false;
-    isAuthenticationDirty = false;
     isContactInfoDirty = false;
 
     constructor(
@@ -86,25 +85,8 @@ export class AdminSettingsComponent implements OnInit {
         this.isContactInfoDirty = false;
     }
 
-    onAuthenticationDirty(isDirty: boolean): void {
-        this.isAuthenticationDirty = isDirty;
-    }
-
-    onAuthenticationSaved(status: boolean): void {
-        if (status) {
-            this.snackBar.open('Authentication successfully saved', null, {
-                duration: 2000,
-            });
-        } else {
-            this.snackBar.open('1 or more authentications failed to save correctly', null, {
-                duration: 2000,
-            });
-        };
-        this.isAuthenticationDirty = false;
-    }
-
     isDirty(): boolean {
-        return this.isDisclaimerDirty || this.isAuthenticationDirty || this.isBannerDirty || this.isContactInfoDirty;
+        return this.isDisclaimerDirty || this.isBannerDirty || this.isContactInfoDirty;
     }
 
     onUnsavedChanges(): Promise<boolean> {
@@ -113,7 +95,6 @@ export class AdminSettingsComponent implements OnInit {
 
             return ref.afterClosed().toPromise().then(result => {
                 if (result.discard) {
-                    this.isAuthenticationDirty = false;
                     this.isBannerDirty = false;
                     this.isDisclaimerDirty = false;
                     this.isContactInfoDirty = false;

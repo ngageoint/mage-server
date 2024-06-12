@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 interface SignatureAlgorithm {
@@ -19,8 +19,6 @@ interface RACComparison {
 export class AdminAuthenticationSAMLComponent implements OnInit {
 
   @Input() strategy: Strategy
-  @Input() editable = true
-  @Output() strategyDirty = new EventEmitter<boolean>();
 
   signatureAlgorithms: SignatureAlgorithm[] = [
     {value: 'sha1', viewValue: 'SHA-1'},
@@ -43,10 +41,5 @@ export class AdminAuthenticationSAMLComponent implements OnInit {
     if (!this.strategy.settings.profile) {
       this.strategy.settings.profile = {};
     }
-  }
-
-  setDirty(isDirty: boolean): void {
-    this.strategy.isDirty = isDirty;
-    this.strategyDirty.emit(isDirty);
   }
 }

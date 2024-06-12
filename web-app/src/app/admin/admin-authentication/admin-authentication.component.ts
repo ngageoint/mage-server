@@ -4,7 +4,7 @@ import { Team, Event, LocalStorageService, AuthenticationConfigurationService, U
 import { Strategy } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StateService } from '@uirouter/angular';
-import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
+import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 
 @Component({
     selector: 'admin-authentication',
@@ -15,6 +15,11 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
     @Output() saveComplete = new EventEmitter<boolean>();
     @Output() onDirty = new EventEmitter<boolean>();
     @Input() beginSave: any;
+
+    readonly breadcrumbs: AdminBreadcrumb[] = [{
+        title: 'Authentication',
+        icon: 'lock'
+    }];
 
     teams: any[] = [];
     events: any[] = [];
@@ -107,32 +112,7 @@ export class AdminAuthenticationComponent implements OnInit, OnChanges {
         this.onStrategyDirty(false);
     }
 
-    deleteStrategy(strategy: Strategy): void {
-        this.dialog.open(AuthenticationDeleteComponent, {
-            width: '500px',
-            data: strategy,
-            autoFocus: false
-        }).afterClosed().subscribe(result => {
-            if (result === 'delete') {
-                this.authenticationConfigurationService.getAllConfigurations().then(configs => {
-                    this.processUnsortedStrategies(configs.data);
-                }).catch(err => {
-                    console.error(err);
-                })
-            }
-        });
-    }
-
-    createAuthentication(): void {
-        this.stateService.go('admin.authenticationCreate')
-    }
-
     onStrategyDirty(isDirty: boolean): void {
         this.onDirty.emit(isDirty);
-    }
-
-    onAuthenticationToggled(strategy: Strategy): void {
-        strategy.isDirty = true;
-        this.onStrategyDirty(true)
     }
 }

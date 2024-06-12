@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
 
 @Component({
@@ -9,8 +9,6 @@ import { Strategy } from '../../admin-authentication/admin-settings.model';
 export class AdminAuthenticationOidcComponent implements OnInit {
 
   @Input() strategy: Strategy
-  @Input() editable = true
-  @Output() strategyDirty = new EventEmitter<boolean>();
 
   ngOnInit(): void {
     if (!this.strategy.settings.scope) {
@@ -23,10 +21,5 @@ export class AdminAuthenticationOidcComponent implements OnInit {
     if (!this.strategy.settings.profile) {
       this.strategy.settings.profile = {};
     }
-  }
-
-  setDirty(isDirty: boolean): void {
-    this.strategy.isDirty = isDirty;
-    this.strategyDirty.emit(isDirty);
   }
 }
