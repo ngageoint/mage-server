@@ -2,7 +2,7 @@
   <div class="mat-subheading-2">Identity Provider (IdP)</div>
   <mat-form-field appearance="outline">
     <mat-label>Entry Point</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.entryPoint">
+    <input matInput readonly [value]="strategy.settings.entryPoint">
     <mat-hint align="end">
       Location of the IdP. This can be the location of the single sign-on identity provider.
     </mat-hint>
@@ -10,7 +10,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Issuer</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.issuer">
+    <input matInput readonly [value]="strategy.settings.issuer">
     <mat-hint align="end">
       This is given to the IdP.
     </mat-hint>
@@ -50,7 +50,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Signature Algorithm</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.signatureAlgorithm">
+    <input matInput readonly [value]="strategy.settings.signatureAlgorithm">
     <mat-hint align="end">
       Signature algorithm for signing requests. Default of SHA-1.
     </mat-hint>
@@ -62,7 +62,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>IdP Issuer</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.idpIssuer">
+    <input matInput readonly [value]="strategy.settings.idpIssuer">
     <mat-hint align="end">
       The IdP issuer will be validated for incoming Logout Requests/Responses.
     </mat-hint>
@@ -81,8 +81,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Request ID Expiration Period</mat-label>
-    <input matInput type="number" readonly
-      [value]="strategy.settings.requestIdExpirationPeriodMs">
+    <input matInput readonly [value]="strategy.settings.requestIdExpirationPeriodMs">
     <div class="suffix-spacing" matSuffix>Milliseconds</div>
     <mat-hint align="end">
       Defines the expiration time when a Request ID generated for a SAML request will not be valid if seen in a SAML
@@ -94,7 +93,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Logout URL</mat-label>
-    <input matInput type="url" readonly [value]="strategy.settings.logoutUrl">
+    <input matInput readonly [value]="strategy.settings.logoutUrl">
     <mat-hint align="end">
       Base address to call with logout requests. Default is Entry Point.
     </mat-hint>
@@ -104,7 +103,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Audience</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.audience">
+    <input matInput readonly [value]="strategy.settings.audience">
     <mat-hint align="end">
       Expected response Audience.
     </mat-hint>
@@ -112,7 +111,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Identifier Format</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.identifierFormat">
+    <input matInput readonly [value]="strategy.settings.identifierFormat">
     <mat-hint align="end">
       Name identifier format to request from identity provider.
     </mat-hint>
@@ -120,7 +119,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Clock Skew</mat-label>
-    <input matInput type="number" readonly [value]="strategy.settings.acceptedClockSkewMs">
+    <input matInput readonly [value]="strategy.settings.acceptedClockSkewMs">
     <div class="suffix-spacing" matSuffix>Milliseconds</div>
     <mat-hint align="end">
       Time in milliseconds of skew that is acceptable between client and server when checking NotBefore and NotOnOrAfter
@@ -131,7 +130,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Attribute Consuming Service Index</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.attributeConsumingServiceIndex">
+    <input matInput readonly [value]="strategy.settings.attributeConsumingServiceIndex">
     <mat-hint align="end">
       Instructs the IDP which attribute set to attach to the response.
     </mat-hint>
@@ -149,7 +148,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Authhentication Context</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.authnContext">
+    <input matInput readonly [value]="strategy.settings.authnContext">
     <mat-hint align="end">
       Name identifier format to request auth context.
     </mat-hint>
@@ -173,7 +172,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Authentication Request Binding</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.authnRequestBinding">
+    <input matInput readonly [value]="strategy.settings.authnRequestBinding">
     <mat-hint align="end">
       If set to HTTP-POST, will request authentication from IDP via HTTP POST binding, otherwise defaults to HTTP
       Redirect.
@@ -183,7 +182,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>RAC Comparison</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.RACComparison">
+    <input matInput readonly [value]="strategy.settings.RACComparison">
     <mat-hint align="end">
       Requested Authentication Context comparison type. Default is Exact.
     </mat-hint>
@@ -191,7 +190,7 @@
 
   <mat-form-field appearance="outline">
     <mat-label>Provider Name</mat-label>
-    <input matInput type="text" readonly [value]="strategy.settings.providerName">
+    <input matInput readonly [value]="strategy.settings.providerName">
     <mat-hint align="end">
       Human-readable name of the requester for use by the presenter's user agent or the identity provider.
     </mat-hint>
@@ -208,21 +207,21 @@
       <div class="mat-subheading-1">User Profile</div>
       <mat-form-field appearance="outline">
         <mat-label>Profile ID Property</mat-label>
-        <input matInput type="text" readonly [value]="strategy.settings.profile.id">
+        <input matInput readonly [value]="strategy.settings.profile.id">
         <mat-hint align="end">
           The id property that is returned in the user profile. Defaults to 'uid'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Display Name Property</mat-label>
-        <input matInput type="text" readonly [value]="strategy.settings.profile.displayName">
+        <input matInput readonly [value]="strategy.settings.profile.displayName">
         <mat-hint align="end">
           The display name property that is returned in the user profile. Defaults to 'email'.
         </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Email Name Property</mat-label>
-        <input matInput type="text" readonly [value]="strategy.settings.profile.email">
+        <input matInput readonly [value]="strategy.settings.profile.email">
         <mat-hint align="end">
           The email property that is returned in the user profile. Defaults to 'email'.
         </mat-hint>
