@@ -19,71 +19,34 @@ function DeviceService($http, $q, $httpParamSerializer) {
 
   function count(options) {
     options = options || {};
-
-    return $http.get('/api/devices/count', { params: options });
+    return $http.get('/api/devices/count', { params: options }).then(res => res.data)
   }
 
   function getAllDevices(options) {
     options = options || {};
-
-    var deferred = $q.defer();
-
-    $http.get('/api/devices', { params: options })
-      .success(function (devices) {
-        deferred.resolve(devices);
-      });
-
-    return deferred.promise;
+    return $http.get('/api/devices', { params: options }).then(res => res.data)
   }
 
   function getDevice(id, options) {
     options = options || {};
-
-    var deferred = $q.defer();
-    $http.get('/api/devices/' + id, { params: { expand: 'user' } }).success(function (device) {
-      deferred.resolve(device);
-    }).error(function () {
-      deferred.reject();
-    });
-
-    return deferred.promise;
+    return $http.get('/api/devices/' + id, { params: { expand: 'user' } }).then(res => res.data)
   }
 
   function createDevice(device) {
-    var deferred = $q.defer();
-
-    $http.post('/api/devices', $httpParamSerializer(device), {
+    return $http.post('/api/devices', $httpParamSerializer(device), {
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
-    }).success(function (updatedDevice) {
-      deferred.resolve(updatedDevice);
-    }).error(function () {
-      deferred.reject();
-    });
-
-    return deferred.promise;
+    })
+    .then(res => res.data)
   }
 
   function updateDevice(device) {
-    var deferred = $q.defer();
-
-    $http.put('/api/devices/' + device.id, $httpParamSerializer(device), {
+    return $http.put('/api/devices/' + device.id, $httpParamSerializer(device), {
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
-    }).success(function () {
-      deferred.resolve(device);
-    }).error(function () {
-      deferred.reject();
-    });
-
-    return deferred.promise;
+    })
+    .then(res => res.data)
   }
 
   function deleteDevice(device) {
-    var deferred = $q.defer();
-
-    $http.delete('/api/devices/' + device.id).success(function () {
-      deferred.resolve(device);
-    });
-
-    return deferred.promise;
+    return $http.delete('/api/devices/' + device.id).then(res => res.data)
   }
 }

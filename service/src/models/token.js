@@ -18,6 +18,7 @@ var TokenSchema = new Schema({
   versionKey: false
 });
 
+// TODO: index token
 TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 
 // Creates the Model for the User Schema
@@ -30,7 +31,7 @@ exports.getToken = function(token, callback) {
       path: 'authenticationId',
       model: 'Authentication'
     }
-  }).exec(function(err, token) {    
+  }).exec(function(err, token) {
     if (err) return callback(err);
 
     if (!token || !token.userId) {
@@ -44,16 +45,14 @@ exports.getToken = function(token, callback) {
 };
 
 exports.createToken = function(options, callback) {
-  var seed = crypto.randomBytes(20);
-  var token = crypto.createHash('sha1').update(seed).digest('hex');
-
-  var query = {userId: options.userId};
+  const seed = crypto.randomBytes(20);
+  const token = crypto.createHash('sha256').update(seed).digest('hex');
+  const query = {userId: options.userId};
   if (options.device) {
     query.deviceId = options.device._id;
   }
-
-  var now = Date.now();
-  var update = {
+  const now = Date.now();
+  const update = {
     token: token,
     expirationDate: new Date(now + tokenExpiration)
   };

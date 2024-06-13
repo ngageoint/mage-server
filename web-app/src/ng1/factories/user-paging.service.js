@@ -178,23 +178,12 @@ function UserPagingService(UserService, $q) {
   }
 
   function performNewSearch(data, userSearch) {
-    // Store the current items in case the search yields no results
-    const currentItems = data.pageInfo.items;
     data.searchFilter = userSearch;
-
     // Reset pageIndex to 0 for a new search
     data.userFilter.pageIndex = 0;
-
-    const filter = { ...data.userFilter };
-    filter.term = userSearch;
-
+    const filter = { ...data.userFilter, term: userSearch };
     return UserService.getAllUsers(filter).then((pageInfo) => {
       data.pageInfo = pageInfo;
-      if (pageInfo.items && pageInfo.items.length === 0) {
-        // If no search results, return the current items and do not change pageIndex
-        data.userFilter.pageIndex = data.pageInfo.pageIndex; // Reset pageIndex to its original state
-        return $q.resolve(currentItems); // Return the current items
-      }
       return $q.resolve(pageInfo.items);
     });
   }

@@ -3,7 +3,7 @@
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
       <a class="material-icons mdc-top-app-bar__navigation-icon mobile-only" ng-click="$ctrl.openMenu = !$ctrl.openMenu">menu</a>
       <button class="material-icons mdc-icon-button" ng-if="$ctrl.state === 'map'" ng-click="$ctrl.toggleFeed()">menu</button>
-      <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/map'">
+      <button class="mdc-button top-app-bar-button" onclick="window.location.href='#!/map'">
         <span class="mdc-top-app-bar__title">MAGE</span>
       </button>
     </section>
@@ -15,7 +15,7 @@
     </section>
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
       <div class="mage-tooltip">
-        <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/profile'">
+        <button class="mdc-button top-app-bar-button" onclick="window.location.href='#!/profile'">
           <span class="mdc-button__icon">
             <user-avatar [user]="$ctrl.myself" avatar-width="25" avatar-height="25"></user-avatar>
           </span>
@@ -25,14 +25,14 @@
       </div>
       <div class="mage-tooltip" ng-if="$ctrl.hasAdminPermission">
         <button class="material-icons mdc-icon-button"
-          aria-label="Admin" 
-          data-tooltip="Admin" 
-          onclick="window.location.href='#/admin'">settings
+          aria-label="Admin"
+          data-tooltip="Admin"
+          onclick="window.location.href='#!/admin'">settings
         </button>
         <span class="tooltiptext">Administration Options</span>
       </div>
       <div class="mage-tooltip">
-        <button class="material-icons mdc-icon-button" aria-label="About" onclick="window.location.href='#/about'">info</button>
+        <button class="material-icons mdc-icon-button" aria-label="About" onclick="window.location.href='#!/about'">info</button>
         <span class="tooltiptext">About MAGE</span>
       </div>
       <div class="mage-tooltip">

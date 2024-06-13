@@ -75,17 +75,16 @@ class SetupController {
   }
 
   finish() {
-    this._$http.post('/api/setup', this.account, {headers: { 'Content-Type': 'application/json' }}).success(() => {
+    this._$http.post('/api/setup', this.account, {headers: { 'Content-Type': 'application/json' }}).then(() => {
       // Login the user after setup is complete
-      this._UserService.signin({username: this.account.username, password: this.account.password}).then(response => {
-        this._UserService.authorize(response.token, this.account.uid).success(data => {
-          this.onSetupComplete({device: data});
+      this._UserService.signin({username: this.account.username, password: this.account.password}).then(authn => {
+        this._UserService.authorize(authn.token, this.account.uid).then(device => {
+          this.onSetupComplete({ device });
         })
-      }, response => {
-        this.showError(response.data || 'Please check server logs for more information.')
-      });
-    }).error(data => {
-      this.showError(data || 'Please check server logs for more information.')
+      })
+    })
+    .catch(err => {
+      this.showError(err.data || 'Please check server logs for more information.')
     });
   }
 

@@ -12,7 +12,7 @@ class AdminDeviceController {
     this.UserService = UserService;
     this.LoginService = LoginService;
     this.UserPagingService = UserPagingService;
-    
+
     this.token = LocalStorageService.getToken();
 
     this.hasDeviceEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
@@ -41,8 +41,8 @@ class AdminDeviceController {
     this.DeviceService.getDevice(this.$stateParams.deviceId).then(device => {
       this.device = device;
     });
-  
-    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+
+    this.LoginService.query({filter: this.filter, limit: this.loginResultsLimit}).then(loginPage => {
       this.loginPage = loginPage;
       if (loginPage.logins.length) {
         this.firstLogin = loginPage.logins[0];
@@ -77,7 +77,7 @@ class AdminDeviceController {
       }
 
       this.isSearching = false;
-  
+
       return this.loginSearchResults;
     });
   }
@@ -148,7 +148,7 @@ class AdminDeviceController {
   }
 
   pageLogin(url) {
-    this.LoginService.query({url: url, filter: this.filter, limit: this.loginResultsLimit}).success(loginPage => {
+    this.LoginService.query({url: url, filter: this.filter, limit: this.loginResultsLimit}).then(loginPage => {
       if (loginPage.logins.length) {
         this.loginPage = loginPage;
         this.showNext = loginPage.logins.length !== 0;
@@ -164,7 +164,7 @@ class AdminDeviceController {
       this.filter.endDate = moment(this.login.endDate).endOf('day').toDate();
     }
 
-    this.LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).success(loginPage => {
+    this.LoginService.query({ filter: this.filter, limit: this.loginResultsLimit }).then(loginPage => {
       this.showNext = loginPage.logins.length !== 0;
       this.showPrevious = false;
       this.loginPage = loginPage;
@@ -184,7 +184,7 @@ class AdminDeviceController {
 
     this.login.endDateOpened = true;
   }
-  
+
   loginResultsLimitChanged() {
     this.filterLogins();
   }

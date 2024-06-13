@@ -48,12 +48,12 @@
             style="$ctrl.styleMap.style"
             icon="$ctrl.iconMap.icon"
             on-style-changed="$ctrl.onStyleChanged($event)"
-            on-icon-added="$ctrl.onIconAdded($event)"/>
+            on-icon-added="$ctrl.onIconAdded($event)"></admin-event-form-map-symbology>
         </div>
 
         <hr>
 
-        <strong>Choose a field to be used for map symbology:</strong>
+        <strong>Choose a primary field for map symbology:</strong>
         <div class="row bottom-gap">
           <div class="col-md-2">
             <div class="field form-group">
@@ -100,7 +100,7 @@
         </div> -->
 
         <div ng-show="$ctrl.form.primaryField">
-          <strong>Choose a secondary field to be used for map symbology:</strong>
+          <strong>Choose a variant field for map symbology:</strong>
           <div class="row bottom-gap">
             <div class="col-md-2">
               <div class="field form-group">
@@ -114,7 +114,7 @@
             </div>
           </div>
           <div ng-show="$ctrl.showNumberVariants" class="bottom-gap">
-            <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
+            <h4>Define the date ranges for each variant.</h4>
             <div ng-repeat="variant in $ctrl.variants" class="row bottom-gap">
               <div class="col-md-12">
                 <span class="strong">{{variant.title}}
@@ -155,23 +155,23 @@
             </div>
           </div>
           <div class="row bottom-gap-l">
-            <admin-event-form-map-symbology 
+            <admin-event-form-map-symbology
               title="Default"
               style="$ctrl.styleMap[option.title].style"
               icon="$ctrl.iconMap[option.title].icon"
               primary="{{option.title}}"
               on-style-changed="$ctrl.onStyleChanged($event)"
-              on-icon-added="$ctrl.onIconAdded($event)"/>
+              on-icon-added="$ctrl.onIconAdded($event)"></admin-event-form-map-symbology>
 
             <div ng-repeat="variant in $ctrl.variants">
-              <admin-event-form-map-symbology 
+              <admin-event-form-map-symbology
                 title="{{variant.title}}"
                 style="$ctrl.styleMap[option.title][variant.title].style"
                 icon="$ctrl.iconMap[option.title][variant.title].icon"
                 primary="{{option.title}}"
                 variant="{{variant.title}}"
                 on-style-changed="$ctrl.onStyleChanged($event)"
-                on-icon-added="$ctrl.onIconAdded($event)"/>
+                on-icon-added="$ctrl.onIconAdded($event)"></admin-event-form-map-symbology>
             </div>
           </div>
           <hr>

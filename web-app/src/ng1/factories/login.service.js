@@ -34,6 +34,6 @@ function LoginService($http, $httpParamSerializer) {
     }
 
 
-    return $http.get(options.url || '/api/logins?' + $httpParamSerializer(parameters));
+    return $http.get(options.url || '/api/logins?' + $httpParamSerializer(parameters)).then(res => res.data);
   }
 }

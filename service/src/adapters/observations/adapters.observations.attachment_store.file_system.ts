@@ -194,8 +194,8 @@ export async function intializeAttachmentStore(baseDirPath: string): Promise<Fil
   baseDirPath = path.resolve(baseDirPath)
   const pendingDirPath = path.resolve(baseDirPath, 'pending')
   await mkdir(pendingDirPath, { recursive: true }).catch(err => {
-    console.error(`error creating attachment store base direcgtory ${baseDirPath}:`, err)
-    return new FileSystemAttachmentStoreInitError(`error creating attachment store base direcgtory ${baseDirPath}: ${String(err)}`)
+    console.error(`error creating attachment store base directory ${baseDirPath}:`, err)
+    return new FileSystemAttachmentStoreInitError(`error creating attachment store base directory ${baseDirPath}: ${String(err)}`)
   })
   return new FileSystemAttachmentStore(FileSystemAttachmentStoreConstructorToken, baseDirPath, pendingDirPath)
 }

@@ -4,8 +4,8 @@ import { ObservationRepositoryToken } from '@ngageoint/mage.service/lib/plugins.
 import { MageEventRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.events'
 import { UserRepositoryToken } from '@ngageoint/mage.service/lib/plugins.api/plugins.api.users'
 import { SettingPermission } from '@ngageoint/mage.service/lib/entities/authorization/entities.permissions'
-import express, { query } from 'express'
-import { ArcGISPluginConfig, defaultArcGISPluginConfig } from './ArcGISPluginConfig'
+import express from 'express'
+import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { ObservationProcessor } from './ObservationProcessor'
 import {HttpClient} from './HttpClient'
 import { FeatureServiceResult } from './FeatureServiceResult'
@@ -50,7 +50,7 @@ const arcgisPluginHooks: InitPluginHook<typeof InjectedServices> = {
     const processor = new ObservationProcessor(stateRepo, eventRepo, obsRepoForEvent, userRepo, console);
     processor.start();
     return {
-      webRoutes(requestContext: GetAppRequestContext): express.Router {
+      webRoutes(requestContext: GetAppRequestContext) {
         const routes = express.Router()
           .use(express.json())
           .use(async (req, res, next) => {
