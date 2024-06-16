@@ -5,6 +5,7 @@ import { insertImport, insertAfterLastOccurrence, findNodes } from '@schematics/
 import { applyToUpdateRecorder, NoopChange } from '@schematics/angular/utility/change'
 import * as ts from '@schematics/angular/third_party/github.com/Microsoft/TypeScript/lib/typescript'
 import { JsonObject } from '@angular-devkit/core'
+import { parse as semverParse } from 'semver'
 
 function addPluginHookToEntryPoint(options: PluginLibraryOptions): Rule {
   const entryFile = options.entryFile
@@ -76,11 +77,6 @@ function findLibraryComponent(tree: Tree, baseDir: DirEntry): { sourceFile: ts.S
   return { sourceFile: source, classDecl: classDecl }
 }
 
-function addCorePeerDependency(): Rule {
-  // TODO: add a peer dependency on mage.web-app to the generated library's package.json
-  return tree => tree
-}
-
 function useCustomBuilder(options: PluginLibraryOptions): Rule {
   return updateWorkspace(workspace => {
     const projName = options.name
@@ -97,6 +93,29 @@ function useCustomBuilder(options: PluginLibraryOptions): Rule {
   })
 }
 
+function addCorePeerDependency(options: PluginLibraryOptions): Rule {
+  return async (tree, _context) => {
+    const corePkg = require('@ngageoint/mage.web-core-lib/package.json')
+    const coreVersion = semverParse(corePkg.version)
+    const coreVersionConstraint = !!coreVersion ? `^${coreVersion.major}.${coreVersion.minor}.${coreVersion.patch}` : null
+    const workspace = await getWorkspace(tree)
+    const project = workspace.projects.get(options.name)
+    if (!project) {
+      throw new SchematicsException(`project not found in workspace: ${options.name}`)
+    }
+    const packageJsonPath = `${project.root}/package.json`
+    const packageJson = tree.readJson(packageJsonPath) as JsonObject
+    const packageJsonMod = {
+      ...packageJson,
+      dependencies: {},
+      peerDependencies: {
+        '@ngageoint/mage.web-app': coreVersionConstraint
+      }
+    }
+    tree.overwrite(packageJsonPath, JSON.stringify(packageJsonMod, null, 2))
+  }
+}
+
 export function mageWebPluginLibrary(options: PluginLibraryOptions): Rule {
   if (!options.name) {
     throw new SchematicsException('missing name of the library to generate')
@@ -108,7 +127,7 @@ export function mageWebPluginLibrary(options: PluginLibraryOptions): Rule {
     externalSchematic('@schematics/angular', 'library', options),
     useCustomBuilder(options),
     addPluginHookToEntryPoint(options),
-    addCorePeerDependency(),
+    addCorePeerDependency(options),
   ])
 }
 
