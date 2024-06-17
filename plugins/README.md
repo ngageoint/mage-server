@@ -163,6 +163,16 @@ command to create a package tarball of your plugin.  This will create a file lik
 Copy the package tarball to a persistent location, like where you have [installed](../README.md#install-mage-server-packages)
 the MAGE server packages.
 
+#### Install the plugin
+
+You install plugin packages as dependencies of your[MAGE instance](../README.md#install-mage-server-packages) package,
+alongside the MAGE core packages.  Assuming you instance package resides in a directory called `mage`, copy your plugin
+package tarball to the `mage` directory.  Then, from the `mage` directory, run the following.
+```
+npm install --omit dev ./examples-mage-service-plugins-1.0.0.tgz
+```
+Your plugin package files should now be present in `mage/node_modules/@examples/mage-service-plugins`.
+
 #### Enable the plugin
 
 To enable your plugin, add the ID of the module that exports your `PluginInitHook` to the `servicePlugins` array in your [configuration object](../README.md#configuration-merging).  You can do this a few ways.
@@ -287,6 +297,7 @@ Below are the basic steps to create a MAGE web UI plugin.
    `example-mage-plugins.plugin1-0.0.1.tgz`, which contains the AMD module bundle that the MAGE web app can load.  You
    can publish this tarball to NPM or install the tarball directly to your MAGE instance.
 1. Install your plugin to your MAGE instance.
+   TODO: ref above
 
 
 ### Hooks
