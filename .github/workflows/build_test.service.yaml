@@ -44,6 +44,8 @@ jobs:
           cd plugins/nga-msi
           npm ci
           npm link ../../service
+          npm ls @ngageoint/mage.service
+          npm ls fsevents
           npm run build
           npm test
       - name: pack nga-msi
