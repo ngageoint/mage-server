@@ -43,6 +43,7 @@ jobs:
         run: |
           cd plugins/nga-msi
           npm ci
+          npm link ../../service
           npm run build
           npm test
       - name: pack nga-msi
@@ -51,6 +52,7 @@ jobs:
         run: |
           cd plugins/image/service
           npm ci
+          npm link ../../../service
           npm run build
           npm test
       - name: pack plugin image.service
