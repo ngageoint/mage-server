@@ -37,7 +37,6 @@ describe('PluginService', () => {
     }
     service = new PluginService(
       mockClient as unknown as HttpClient,
-      compiler as unknown as Compiler,
       injector as unknown as Injector,
       system as unknown as SystemJS.Registry,
       localStorageService

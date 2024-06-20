@@ -152,18 +152,6 @@
             "scripts": [],
             "codeCoverage": true
           }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "app:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "app:serve:production"
-            }
-          }
         }
       }
     },
@@ -308,18 +296,6 @@
               "projects/core-lib-showcase/src/styles.scss"
             ],
             "scripts": []
-          }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/core-lib-showcase/e2e/protractor.conf.js",
-            "devServerTarget": "core-lib-showcase:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "core-lib-showcase:serve:production"
-            }
           }
         }
       }

@@ -65,7 +65,7 @@ import * as mageCorePaging from '@ngageoint/mage.web-core-lib/paging'
 import * as mageCoreStaticIcon from '@ngageoint/mage.web-core-lib/static-icon'
 import * as mageCoreUser from '@ngageoint/mage.web-core-lib/user'
 
-import { Inject, Injectable, Injector, NgModuleRef, Compiler } from '@angular/core'
+import { Inject, Injectable, Injector, NgModuleRef, createNgModule } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { SystemJS, SYSTEMJS } from './systemjs.service'
 import { PluginHooks } from '@ngageoint/mage.web-core-lib/plugin'
@@ -113,7 +113,6 @@ export class PluginService {
 
   constructor(
     private webClient: HttpClient,
-    private compiler: Compiler,
     private injector: Injector,
     @Inject(SYSTEMJS)
     private system: SystemJS.Registry,
@@ -231,8 +230,7 @@ export class PluginService {
       throw Error('plugin not found: ' + pluginId)
     }
     const hooks = plugin.MAGE_WEB_HOOKS
-    const moduleFactory = await this.compiler.compileModuleAsync(hooks.module)
-    const moduleRef = moduleFactory.create(this.injector)
+    const moduleRef = createNgModule(hooks.module, this.injector)
     return moduleRef
   }
 }

@@ -5,6 +5,14 @@
     "type": "git",
     "url": "https://github.com/ngageoint/mage-server.git"
   },
+  "builders": "./angular-cli/builders.json",
+  "schematics": "./angular-cli/collection.json",
+  "ng-add": {
+    "save": "devDependencies"
+  },
+  "exports": {
+    "./angular-cli/*": "./angular-cli/*"
+  },
   "peerDependencies": {
     "@angular/animations": "^14.2.12",
     "@angular/cdk": "^14.2.7",
@@ -14,7 +22,16 @@
     "@angular/material": "^14.2.7",
     "@angular/platform-browser": "^14.2.12",
     "@ng-select/ng-select": "9.1.0",
-    "rxjs": "~7.6.0"
+    "@angular-devkit/architect": ">= 0.1400.0, < 0.1500.0",
+    "@angular-devkit/build-angular": "^14.2.0",
+    "@angular-devkit/core": "^14.2.0",
+    "@angular-devkit/schematics": "^14.2.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@schematics/angular": "^14.2.0",
+    "ng-packagr": "^14.2.0",
+    "rollup": "^2.78.0",
+    "rxjs": "6.6.7"
   },
   "dependencies": {
     "@types/geojson": "^7946.0.7",
