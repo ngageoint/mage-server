@@ -674,7 +674,7 @@
           <mat-label>Interval</mat-label>
           <input type="number" min="0" matInput value="{{editConfig.intervalSeconds}}"
             (keyup)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)"
-            (change)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
+            (input)="setNumberField('intervalSeconds', intervalSecondsField.value, 0)" #intervalSecondsField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
           (click)="showInfo('Interval', 'Observation query and processing frequency time interval in seconds')">
@@ -686,7 +686,7 @@
           <mat-label>Startup Interval</mat-label>
           <input type="number" min="0" matInput value="{{editConfig.startupIntervalSeconds}}"
             (keyup)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
-            (change)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
+            (input)="setNumberField('startupIntervalSeconds', startupIntervalSecondsField.value, 0)"
             #startupIntervalSecondsField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
@@ -699,7 +699,7 @@
           <mat-label>Update Interval</mat-label>
           <input type="number" min="0" matInput value="{{editConfig.updateIntervalSeconds}}"
             (keyup)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
-            (change)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
+            (input)="setNumberField('updateIntervalSeconds', updateIntervalSecondsField.value, 0)"
             #updateIntervalSecondsField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
@@ -712,7 +712,7 @@
           <mat-label>Batch Size</mat-label>
           <input type="number" min="1" matInput value="{{editConfig.batchSize}}"
             (keyup)="setNumberField('batchSize', batchSizeField.value, 1)"
-            (change)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
+            (input)="setNumberField('batchSize', batchSizeField.value, 1)" #batchSizeField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
           (click)="showInfo('Batch Size', 'Maximum number of observations to process during a single time interval')">
@@ -724,7 +724,7 @@
           <mat-label>Attachment Tolerance</mat-label>
           <input type="number" min="0" matInput value="{{editConfig.attachmentModifiedTolerance}}"
             (keyup)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
-            (change)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
+            (input)="setNumberField('attachmentModifiedTolerance', attachmentModifiedToleranceField.value, 0)"
             #attachmentModifiedToleranceField />
         </mat-form-field>
         <button class="info-button" mat-icon-button
