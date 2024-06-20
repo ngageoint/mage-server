@@ -29,18 +29,6 @@
             "karmaConfig": "mage-arc-web/karma.conf.js",
             "preserveSymlinks": true
           }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "mage-arc-web/tsconfig.lib.json",
-              "mage-arc-web/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
         }
       }
     }
