@@ -30,7 +30,7 @@
     "zone.js": "~0.10.2"
   },
   "peerDependencies": {
-    "@ngageoint/mage.web-core-lib": "^6.2.0 || ^6.3.0-beta"
+    "@ngageoint/mage.web-core-lib": "^6.3.0-beta"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.1102.19",
