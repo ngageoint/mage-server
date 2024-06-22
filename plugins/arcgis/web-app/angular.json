@@ -10,7 +10,7 @@
       "prefix": "arc",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@ngageoint/mage.web-core-lib:amd",
           "options": {
             "tsConfig": "mage-arc-web/tsconfig.lib.json",
             "project": "mage-arc-web/ng-package.json"
