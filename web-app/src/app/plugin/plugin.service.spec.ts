@@ -105,6 +105,7 @@ describe('PluginService', () => {
       '@angular/material/tree',
       'rxjs',
       'rxjs/operators',
+      '@ng-select/ng-select',
       '@ngageoint/mage.web-core-lib',
       '@ngageoint/mage.web-core-lib/common',
       '@ngageoint/mage.web-core-lib/feed',
