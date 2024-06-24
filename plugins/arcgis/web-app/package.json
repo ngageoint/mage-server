@@ -24,12 +24,10 @@
     "@angular/platform-browser": "^14.3.0",
     "@angular/platform-browser-dynamic": "^14.3.0",
     "@angular/router": "^14.3.0",
-    "rxjs": "~6.6.7",
+    "@ngageoint/mage.web-core-lib": "^6.3.0-beta.4",
+    "rxjs": "~7.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.4"
-  },
-  "peerDependencies": {
-    "@ngageoint/mage.web-core-lib": "^6.3.0-beta"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^14.2.13",
