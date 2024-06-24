@@ -26,15 +26,14 @@
     "@angular-devkit/build-angular": "^14.2.0",
     "@angular-devkit/core": "^14.2.0",
     "@angular-devkit/schematics": "^14.2.0",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
     "@schematics/angular": "^14.2.0",
     "ng-packagr": "^14.2.0",
-    "rollup": "^2.78.0",
-    "rxjs": "6.6.7"
+    "rollup": "^2.78.0"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.7",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rxjs": "^7.0.0",
     "tslib": "^2.0.0"
   }
 }
