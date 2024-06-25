@@ -80,7 +80,7 @@ async function rollupFesmToAmd(buildInfo: BuildInfo): Promise<BuilderOutput> {
           resolveOnly: moduleId => {
             const external = false
               || moduleId.startsWith('@angular/')
-              || moduleId.startsWith('@ng-plugins/')
+              || moduleId.startsWith('@ng-select/')
               || /^rxjs(\/.+)?/.test(moduleId)
             return !external
           },

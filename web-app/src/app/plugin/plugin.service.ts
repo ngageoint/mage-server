@@ -57,6 +57,7 @@ import * as ngMatTooltip from '@angular/material/tooltip'
 import * as ngMatTree from '@angular/material/tree'
 import * as rxjs from 'rxjs'
 import * as rxjsOperators from 'rxjs/operators'
+import * as ngSelect from '@ng-select/ng-select'
 import * as mageCore from '@ngageoint/mage.web-core-lib'
 import * as mageCoreCommon from '@ngageoint/mage.web-core-lib/common'
 import * as mageCoreFeed from '@ngageoint/mage.web-core-lib/feed'
@@ -179,6 +180,7 @@ export class PluginService {
       '@angular/material/tree': ngMatTree,
       'rxjs': rxjs,
       'rxjs/operators': rxjsOperators,
+      '@ng-select/ng-select': ngSelect,
       '@ngageoint/mage.web-core-lib': mageCore,
       '@ngageoint/mage.web-core-lib/common': mageCoreCommon,
       '@ngageoint/mage.web-core-lib/feed': mageCoreFeed,
