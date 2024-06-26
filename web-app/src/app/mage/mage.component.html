@@ -1,3 +1,5 @@
+<navigation (onFeedToggle)="drawer.toggle()"></navigation>
+
 <div class="filter-banner">
   <div class="filter-text">
     <div class="col-xs-12 text-center">
@@ -8,16 +10,15 @@
   </div>
 </div>
 
-<div class="main-container">
-  <feed-panel
-    class="feed"
-    [hidden]="hideFeed"
-    [observationLocation]="newObservation"
-    (toggle)="onToggleFeed($event)">
-  </feed-panel>
+<mat-sidenav-container class="main-container" hasBackdrop="false">
+  <mat-sidenav #drawer mode="slide" position="start" opened>
+    <feed-panel class="feed" [observationLocation]="newObservation">
+    </feed-panel>
+  </mat-sidenav>
 
-  <div class="map">
+  <mat-sidenav-content>
     <map></map>
-  </div>
-</div>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
 

@@ -13,6 +13,8 @@ export class DatetimePickerComponent implements OnChanges {
   @Input() title: string
   @Input() required: boolean
   @Input() datetime: Date
+  @Input() timezone: 'local' | 'gmt'
+
   @Output() dateTimeChange = new EventEmitter<Date>()
 
   @ViewChild('dateModel') dateModel: NgModel
@@ -20,11 +22,6 @@ export class DatetimePickerComponent implements OnChanges {
 
   date: moment.Moment
   time: moment.Moment
-  timeZone: string
-
-  constructor(localStorageService: LocalStorageService) {
-    this.timeZone = localStorageService.getTimeZoneEdit();
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.datetime && changes.datetime.currentValue) {
@@ -58,7 +55,7 @@ export class DatetimePickerComponent implements OnChanges {
       second: this.time ? this.time.get('second') : 0,
     })
 
-    if (this.timeZone === 'gmt') {
+    if (this.timezone === 'gmt') {
       date.utc(true)
     }
 

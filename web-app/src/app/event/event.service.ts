@@ -651,6 +651,7 @@ export class EventService {
         return true;
       }
     }) || {};
+    // console.log('get next feed event', event.id) 
     return this.eventsById[event.id].feedsById[nextFeed.id];
   }
 
@@ -665,7 +666,8 @@ export class EventService {
       const frequencyMillis = feed.updateFrequencySeconds * 1000;
       return frequencyMillis - elapsed;
     });
-    return Math.max(1000, Math.min(...delays));
+
+    return delays.length > 0 ? Math.min(...delays) : 60 * 1000
   }
 
   pollFeeds() {
@@ -673,13 +675,16 @@ export class EventService {
     const feed = this.getNextFeed(event);
     const scheduleNextPoll = () => {
       const delayMillis = this.getFeedFetchDelay(event);
+      clearTimeout(this.feedPollTimeout)
       this.feedPollTimeout = setTimeout(() => {
         this.pollFeeds()
       }, delayMillis)
     };
+
     if (!feed) {
       return scheduleNextPoll();
     }
+    
     this.feedService.fetchFeedItems(event, feed).pipe(
       tap((content: any) => {
         // TODO is this really created or updated, maybe just create as empty when,

@@ -164,10 +164,13 @@ import { MageComponent } from './mage/mage.component';
 import { AppRoutingModule } from './routing.module';
 import { TokenInterceptorService } from './http/token.interceptor';
 import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
+import { NavigationComponent } from './navigation/navigation.component';
+import { FilterComponent } from './filter/filter.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    NavigationComponent,
     ZoomComponent,
     AddObservationComponent,
     LocationComponent,
@@ -180,6 +183,7 @@ import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
     AuthorizeComponent,
     MageComponent,
     MapComponent,
+    FilterComponent,
     LayersControlComponent,
     LayersComponent,
     LayerHeaderComponent,

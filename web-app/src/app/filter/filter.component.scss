@@ -1,0 +1,62 @@
+mat-form-field {
+  width: 100%;
+}
+
+mat-button {
+  width: 100%;
+}
+
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mat-select-panel mat-option.mat-option {
+  height: 72px;
+}
+
+.mat-option-text.mat-option-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 24px;
+  margin: 8px 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.option-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.option-description {
+  font: 400 12px / 16px Roboto, "Helvetica Neue", sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: .6;
+}
+
+.datetime {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.date {
+  flex: 1;
+}
+
+.time {
+  flex: 1;
+}
+
+.timezone {
+  margin-top: 58px;
+}
+
+.timezone__button {
+  width: 120px;
+}

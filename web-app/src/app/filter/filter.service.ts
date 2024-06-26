@@ -75,7 +75,7 @@ export class FilterService {
     if (filter.teams) {
       teamsChanged = this.setTeams(filter.teams);
     }
-
+  
     if (filter.event) {
       eventChanged = this.setEvent(filter.event);
 
@@ -133,8 +133,9 @@ export class FilterService {
       var added = [newEvent];
       var removed = this.event ? [this.event] : [];
 
-      // Tell server that user is using this event
-      this.userService.addRecentEvent(newEvent);
+      this.userService.addRecentEvent(newEvent).subscribe({
+        error: e => console.error('Error adding recent event', e)
+      });
 
       this.event = newEvent;
 
@@ -250,7 +251,7 @@ export class FilterService {
 
   isUserInTeamFilter(userId: any) {
     if (Object.keys(this.teamsById).length === 0) return true
-    return this.teamsById.some((team: any) => team.userIds.includes(userId))
+    return Object.values(this.teamsById).some((team: any) => team.userIds.includes(userId))
   }
 
   formatInterval(interval: any) {

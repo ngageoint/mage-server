@@ -645,18 +645,18 @@ export class MapComponent implements OnInit {
   }
 
   removeGeoPackage(layer) {
-    layer.tables.forEach(table => {
-      const id = layer.id + table.name;
-      const layerInfo = this.layers[id];
-      if (layerInfo) {
-        this.map.removeLayer(table.layer);
-        delete this.layers[id];
+    // layer.tables.forEach(table => {
+    //   const id = layer.id + table.name;
+    //   const layerInfo = this.layers[id];
+    //   if (layerInfo) {
+    //     this.map.removeLayer(table.layer);
+    //     delete this.layers[id];
 
-        // this.onRemoveLayer({ // TODO
-        //   layer: table
-        // });
-      }
-    });
+    //     // this.onRemoveLayer({ // TODO
+    //     //   layer: table
+    //     // });
+    //   }
+    // });
   }
 
   onHideFeed() {

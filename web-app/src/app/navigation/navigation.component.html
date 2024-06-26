@@ -1,0 +1,28 @@
+<mat-toolbar color="primary">
+
+  <div class="container">
+    <div>
+      <button mat-icon-button class="navigation-options" (click)="openMenu()">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      
+      <button mat-icon-button *ngIf="state === 'map'" (click)="toggleFeed()">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="title">MAGE</span>
+    </div>
+    
+    <div>
+      <button mat-button (click)="onFilter()">
+        <mat-icon>filter_alt</mat-icon> Filter
+      </button>
+    </div>
+
+    <div>
+      <button mat-button (click)="onFilter()">
+        <mat-icon>filter_alt</mat-icon> Filter
+      </button>
+    </div>
+  </div>
+</mat-toolbar>

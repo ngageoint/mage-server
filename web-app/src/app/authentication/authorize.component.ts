@@ -30,6 +30,7 @@ export class AuthorizeComponent {
         this.router.navigate(['map']);
       },
       error: () => {
+        console.log('Error authentication')
         // TODO show error message
       }
     })

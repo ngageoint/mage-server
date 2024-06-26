@@ -14,7 +14,7 @@ import { PollingService } from '../event/polling.service';
 export class MageComponent implements OnInit, OnChanges, OnDestroy {
 
   map: any
-  hideFeed: boolean
+  hideFeed: boolean = false
   filteredEvent: any = {}
   filteredTeams: any
   filteredInterval: any
@@ -30,17 +30,6 @@ export class MageComponent implements OnInit, OnChanges, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // TODO figure this out
-    // this.$animate.on('addClass', this.$document.find('.feed'), ($mapPane, animationPhase) => {
-    //   this.resolveMapAfterFeaturesPaneTransition(animationPhase);
-    // });
-    // this.$animate.on('removeClass', this.$document.find('.feed'), ($mapPane, animationPhase) => {
-    //   this.resolveMapAfterFeaturesPaneTransition(animationPhase);
-    // });
-
-    // TODO this is in contructor, do we need this anymore
-    // this.mapService.initialize();
-
     this.filterService.addListener(this);
     this.mapService.addListener(this);
 
@@ -105,10 +94,6 @@ export class MageComponent implements OnInit, OnChanges, OnDestroy {
         this.filteredInterval = null;
       }
     }
-  }
-
-  onToggleFeed($event) {
-    this.hideFeed = $event.hidden;
   }
 
   showFeed() {
