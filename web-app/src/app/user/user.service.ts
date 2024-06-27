@@ -1,6 +1,8 @@
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http'
 import { Injectable } from '@angular/core'
+import { Router } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
+import { LocalStorageService } from '../http/local-storage.service'
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +12,11 @@ export class UserService {
   myself: any
   amAdmin: boolean
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(
+    private router: Router,
+    private httpClient: HttpClient,
+    private localStorageService: LocalStorageService
+  ) { }
 
   signin(username: string, password: string): Observable<any> {
     const body = {
@@ -99,5 +105,22 @@ export class UserService {
   getRecentEventId() {
     var recentEventIds = this.myself.recentEventIds;
     return recentEventIds.length > 0 ? recentEventIds[0] : null;
+  }
+
+  logout() {
+    const observable = this.httpClient.post('/api/logout', null, { responseType: 'text' })
+    observable.subscribe(() => {
+      console.log('logged out user')
+      this.clearUser();
+      this.router.navigate(['landing']);
+    })
+
+    return observable;
+  }
+
+  private clearUser() {
+    this.myself = null;
+    this.amAdmin = null;
+    this.localStorageService.removeToken();
   }
 }

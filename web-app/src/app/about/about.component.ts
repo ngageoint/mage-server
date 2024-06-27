@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { ApiService } from '../api/api.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'about',
@@ -19,6 +20,7 @@ export class AboutComponent implements OnInit {
   mongoVersion: string
 
   constructor(
+    private router: Router,
     @Inject(ApiService) public apiService: ApiService
   ) {}
 
@@ -30,5 +32,9 @@ export class AboutComponent implements OnInit {
       this.nodeVersion = api.environment.nodeVersion;
       this.mongoVersion = api.environment.mongodbVersion;
     })
+  }
+
+  onBack(): void {
+    this.router.navigate(['map']);
   }
 }

@@ -26,12 +26,12 @@
     
     <mat-divider class="divider"></mat-divider>
     
-    <div matRipple class="preference-item">
+    <div matRipple class="preference-item" (click)="onAbout()">
       <mat-icon class="material-icons-outlined">info</mat-icon>
       <div>About</div>
     </div>
     
-    <div matRipple class="preference-item">
+    <div matRipple class="preference-item" (click)="onLogout()">
       <mat-icon>logout</mat-icon>
       <div>Logout</div>
     </div>

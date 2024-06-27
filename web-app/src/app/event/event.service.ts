@@ -69,7 +69,8 @@ export class EventService {
   }
 
   onEventChanged(event: any) {
-    event.added.forEach((added: any) => {
+    const { added = [], removed = [], foo = [] } = event 
+    added.forEach((added: any) => {
       if (!this.eventsById[added.id]) {
         this.eventsById[added.id] = (JSON.parse(JSON.stringify(added)));
 
@@ -83,7 +84,7 @@ export class EventService {
       this.fetchFeeds(added);
     })
 
-    event.removed.forEach((removed: any) => {
+    removed.forEach((removed: any) => {
       this.observationsChanged({ removed: Object.values(this.eventsById[removed.id].filteredObservationsById) });
       this.usersChanged({ removed: Object.values(this.eventsById[removed.id].filteredUsersById) });
       this.layersChanged({ removed: Object.values(this.eventsById[removed.id].layersById) }, removed);

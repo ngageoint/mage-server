@@ -69,10 +69,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.eventService.destroy();
   }
 
-  openMenu(): void {
-    
-  }
-
   toggleFeed(): void {
     this.onFeedToggle.emit()
   }

@@ -171,10 +171,12 @@ import { PollingIntervalComponent } from './preferences/polling-interval/polling
 import { TimeFormatComponent } from './preferences/time-format/time-format.component';
 import { TimeZoneComponent } from './preferences/time-zone/time-zone.component';
 import { CoordinateSystemComponent } from './preferences/coordinate-system/coordinate-system.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AboutComponent,
     NavigationComponent,
     ZoomComponent,
     AddObservationComponent,
