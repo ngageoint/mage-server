@@ -1,31 +1,17 @@
-
 :host {
   height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+.preferences-toolbar {
+  display: flex;
+  align-items: end;
 }
 
 .main-container {
   height: 100%;
-}
-
-.filter-banner {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
-  font-size: 16px;
-  background-color: #1565C0;
-  color: #fff;
-  padding: 10px 0px;
-}
-
-.filter-text {
-  flex: 1;
-}
-
-.text-center {
-  text-align: center;
 }
 
 .feed {

@@ -1,0 +1,39 @@
+<div>
+  <div class="profile">
+    <user-avatar class="profile-avatar" [user]="user" [avatarWidth]="80" [avatarHeight]="80"></user-avatar>
+    <div class="profile-info">{{user.displayName}}</div>
+    <div class="profile-info">{{user.email}}</div>
+    <div class="profile-info">{{user.phone}}</div>
+  </div>
+
+  <div class="preferences">
+    <div class="header mat-body-2">Preferences</div>
+    <div class="preference">
+      <polling-interval></polling-interval>
+    </div>
+    
+    <div class="preference">
+      <time-format class="preference"></time-format>
+    </div>
+    
+    <div class="preference">
+      <time-zone class="preference"></time-zone>
+    </div>
+    
+    <div class="preference">
+      <coordinate-system class="preference"></coordinate-system>
+    </div>
+    
+    <mat-divider class="divider"></mat-divider>
+    
+    <div matRipple class="preference-item">
+      <mat-icon class="material-icons-outlined">info</mat-icon>
+      <div>About</div>
+    </div>
+    
+    <div matRipple class="preference-item">
+      <mat-icon>logout</mat-icon>
+      <div>Logout</div>
+    </div>
+  </div>
+</div>

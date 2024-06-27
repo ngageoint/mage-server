@@ -1,0 +1,12 @@
+<div class="header">
+  <mat-icon>language</mat-icon>
+  <div class="mat-body-2">Time Zone</div>
+</div>
+
+<mat-form-field>
+  <mat-select [(value)]="timezoneOption" (selectionChange)="updateTimeZone($event)" [compareWith]="compareOption">
+    <mat-option *ngFor="let option of timezoneOptions" [value]="option">
+      {{option.title}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>

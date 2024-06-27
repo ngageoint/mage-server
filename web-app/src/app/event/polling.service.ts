@@ -13,7 +13,7 @@ export class PollingService {
   constructor(
     private localStorageService: LocalStorageService
   ) {
-    this.pollingInterval = localStorageService.getPollingInterval();
+    this.pollingInterval = parseInt(localStorageService.getPollingInterval())
 
     if (!this.pollingInterval || parseInt(this.pollingInterval) === 0 || Number.isNaN(parseInt(this.pollingInterval))) {
       this.pollingInterval = 30000;
@@ -32,10 +32,8 @@ export class PollingService {
     this.listeners = _.reject(this.listeners, function (l: any) { return listener === l; });
   }
 
-  setPollingInterval(interval: any) {
-    if (parseInt(interval) !== 0) {
-      this.pollingInterval = interval;
-    }
+  setPollingInterval(interval: number) {
+    this.pollingInterval = interval;
     this.localStorageService.setPollingInterval(interval);
     _.each(this.listeners, function (listener: any) {
       if (_.isFunction(listener.onPollingIntervalChanged)) {

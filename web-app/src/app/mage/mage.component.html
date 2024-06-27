@@ -1,24 +1,15 @@
-<navigation (onFeedToggle)="drawer.toggle()"></navigation>
-
-<div class="filter-banner">
-  <div class="filter-text">
-    <div class="col-xs-12 text-center">
-      <span class="filter-event">{{filteredEvent.name}}</span>
-      <span *ngIf="filteredTeams" class="filter-teams"><span> > {{filteredTeams}}</span></span>
-      <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
-    </div>
-  </div>
-</div>
+<navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
-  <mat-sidenav #drawer mode="slide" position="start" opened>
-    <feed-panel class="feed" [observationLocation]="newObservation">
-    </feed-panel>
+  <mat-sidenav #feed mode="slide" position="start" opened>
+    <feed-panel class="feed" [observationLocation]="newObservation"></feed-panel>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-    <map></map>
-  </mat-sidenav-content>
+  <mat-sidenav #preferences mode="slide" position="end" disableClose="true">
+    <preferences></preferences>
+  </mat-sidenav>
+
+  <map></map>
 
 </mat-sidenav-container>
 

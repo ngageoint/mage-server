@@ -166,6 +166,11 @@ import { TokenInterceptorService } from './http/token.interceptor';
 import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { FilterComponent } from './filter/filter.component';
+import { PreferencesComponent } from './preferences/preferences.component';
+import { PollingIntervalComponent } from './preferences/polling-interval/polling-interval.component';
+import { TimeFormatComponent } from './preferences/time-format/time-format.component';
+import { TimeZoneComponent } from './preferences/time-zone/time-zone.component';
+import { CoordinateSystemComponent } from './preferences/coordinate-system/coordinate-system.component';
 
 @NgModule({
   declarations: [
@@ -183,7 +188,12 @@ import { FilterComponent } from './filter/filter.component';
     AuthorizeComponent,
     MageComponent,
     MapComponent,
+    PreferencesComponent,
     FilterComponent,
+    PollingIntervalComponent,
+    TimeFormatComponent,
+    TimeZoneComponent,
+    CoordinateSystemComponent,
     LayersControlComponent,
     LayersComponent,
     LayerHeaderComponent,

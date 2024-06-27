@@ -1,52 +1,30 @@
-import { Component, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { MapService } from '../map/map.service';
 import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { UserService } from '../user/user.service';
 import * as _ from 'underscore';
-import { PollingService } from '../event/polling.service';
 
 @Component({
   selector: 'mage',
   templateUrl: './mage.component.html',
   styleUrls: ['./mage.component.scss']
 })
-export class MageComponent implements OnInit, OnChanges, OnDestroy {
+export class MageComponent implements OnInit, OnChanges {
 
   map: any
   hideFeed: boolean = false
-  filteredEvent: any = {}
-  filteredTeams: any
-  filteredInterval: any
   newObservation: any
-  feedChangedUsers = {}
 
   constructor(
     private mapService: MapService,
     private userService: UserService,
     private eventService: EventService,
-    private filterService: FilterService,
-    private pollingService: PollingService
+    private filterService: FilterService
   ) {}
 
   ngOnInit(): void {
-    this.filterService.addListener(this);
     this.mapService.addListener(this);
-
-    this.eventService.query().subscribe(events => {
-      const recentEventId = this.userService.getRecentEventId();
-      const recentEvent = _.find(events, event => { return event.id === recentEventId; });
-      if (recentEvent) {
-        this.filterService.setFilter({ event: recentEvent });
-        this.pollingService.setPollingInterval(this.pollingService.getPollingInterval());
-      } else if (events.length > 0) {
-        // TODO 'welcome to MAGE dialog'
-        this.filterService.setFilter({ event: events[0] });
-        this.pollingService.setPollingInterval(this.pollingService.getPollingInterval());
-      } else {
-        // TODO welcome to mage, sorry you have no events
-      }
-    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -55,45 +33,8 @@ export class MageComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.filterService.removeListener(this);
-    this.filterService.removeFilters();
-
-    this.pollingService.setPollingInterval(0);
-
-    this.mapService.destroy();
-
-    this.eventService.destroy();
-  }
-
   onMap($event) {
     this.map = $event.map;
-  }
-
-  onFilterChanged(filter) {
-    this.feedChangedUsers = {};
-
-    if (filter.event) {
-      this.filteredEvent = this.filterService.getEvent();
-
-      // Stop broadcasting location if the event switches
-      this.mapService.onLocationStop();
-    }
-
-    if (filter.teams) this.filteredTeams = _.map(this.filterService.getTeams(), t => { return t.name; }).join(', ');
-    if (filter.timeInterval) {
-      const intervalChoice = this.filterService.getIntervalChoice();
-      if (intervalChoice.filter !== 'all') {
-        if (intervalChoice.filter === 'custom') {
-          // TODO format custom time interval
-          this.filteredInterval = 'Custom time interval';
-        } else {
-          this.filteredInterval = intervalChoice.label;
-        }
-      } else {
-        this.filteredInterval = null;
-      }
-    }
   }
 
   showFeed() {

@@ -1,5 +1,4 @@
 <mat-toolbar color="primary">
-
   <div class="container">
     <div>
       <button mat-icon-button class="navigation-options" (click)="openMenu()">
@@ -12,17 +11,30 @@
 
       <span class="title">MAGE</span>
     </div>
+
+    <div>
+      <span class="filter-event">{{filteredEvent.name}}</span>
+      <span *ngIf="filteredTeams" class="filter-teams"><span> > {{filteredTeams}}</span></span>
+      <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
+    </div>
     
     <div>
       <button mat-button (click)="onFilter()">
-        <mat-icon>filter_alt</mat-icon> Filter
+        <mat-icon>filter_alt</mat-icon>
       </button>
-    </div>
 
-    <div>
-      <button mat-button (click)="onFilter()">
-        <mat-icon>filter_alt</mat-icon> Filter
+      <button mat-button (click)="onExport()">
+        <mat-icon>file_download</mat-icon>
       </button>
+
+      <button mat-button>
+        <mat-icon>admin_panel_settings</mat-icon>
+      </button>
+
+      <button mat-button (click)="togglePreferences()">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
     </div>
   </div>
 </mat-toolbar>
