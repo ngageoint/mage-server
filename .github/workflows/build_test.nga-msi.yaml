@@ -1,4 +1,4 @@
-name: build and test nga-msi plugin
+name: test and package nga-msi plugin
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/config.yaml
 
   test:
-    name: test plugin image.service
+    name: test plugin nga-msi
     needs: [ config ]
     runs-on: ubuntu-latest
     strategy:
@@ -38,14 +38,10 @@ jobs:
           npm test
 
   package:
-    name: package plugin image.service
+    name: package plugin nga-msi
     needs: [ config, test ]
     runs-on: ubuntu-latest
     steps:
-      # TODO: maybe not necessary
-      # - name: install system libs
-      #   run: |
-      #     sudo apt-get install build-essential
       - name: checkout
         uses: actions/checkout@v3
       - name: setup node

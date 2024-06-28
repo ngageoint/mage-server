@@ -1,4 +1,4 @@
-name: build and test image plugin
+name: test and package image service plugin
 
 on:
   workflow_dispatch:
@@ -42,10 +42,6 @@ jobs:
     needs: [ config, test ]
     runs-on: ubuntu-latest
     steps:
-      # TODO: maybe not necessary
-      # - name: install system libs
-      #   run: |
-      #     sudo apt-get install build-essential
       - name: checkout
         uses: actions/checkout@v3
       - name: setup node
