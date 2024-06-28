@@ -5,8 +5,8 @@ on:
   workflow_call:
   push:
     paths:
-      - .github/workflows/config.yaml
       - .github/workflows/build_test.service.yaml
+      - .github/workflows/config.yaml
       - service/**
 
 jobs:

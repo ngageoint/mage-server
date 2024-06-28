@@ -5,9 +5,9 @@ on:
   workflow_call:
   push:
     paths:
-      - plugins/nga-msi/**
-      - .github/workflows/build_test.service.yaml
+      - .github/workflows/build_test.nga-msi.yaml
       - .github/workflows/config.yaml
+      - plugins/nga-msi/**
 
 jobs:
 

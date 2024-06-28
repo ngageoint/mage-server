@@ -5,9 +5,9 @@ on:
   workflow_call:
   push:
     paths:
-      - web-app/**
       - .github/workflows/build_test.web-app.yaml
       - .github/workflows/config.yaml
+      - web-app/**
 
 jobs:
   config:
