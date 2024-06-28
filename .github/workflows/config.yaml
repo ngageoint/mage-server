@@ -15,7 +15,13 @@ on:
         value: ${{ jobs.main.outputs.node_versions-pre_latest-json }}
 
 env:
-  MAGE_NODE_VERSIONS: 16 18 20
+  # space-separated list of node versions to use for testing
+  # order the versions as follows
+  # the first version in the list should be the active LTS version
+  # see https://nodejs.org/en/about/previous-releases
+  # additional versions in ascending order, latest version last
+  # e.g. 20 18 22
+  MAGE_NODE_VERSIONS: 20 18 22
 
 jobs:
 
@@ -24,34 +30,28 @@ jobs:
     outputs:
       node_versions-all: ${{ steps.node_versions.outputs.all }}
       node_versions-all-json: ${{ steps.node_versions.outputs.all-json }}
+      node_versions-lts: ${{ steps.node_versions.outputs.lts }}
       node_versions-latest: ${{ steps.node_versions.outputs.latest }}
-      node_versions-pre_latest: ${{ steps.node_versions.outputs.pre_latest }}
-      node_versions-pre_latest-json: ${{ steps.node_versions.outputs.pre_latest-json }}
     steps:
-      - id: sort_node_versions
-        name: sort versions
+      - id: node_versions_array
+        name: build node versions array
         run: |
           echo 'node_versions_lines<<EOF' >> $GITHUB_ENV
-          echo ${MAGE_NODE_VERSIONS} | tr ' ' '\n' | sort -V >> $GITHUB_ENV
+          echo ${MAGE_NODE_VERSIONS} | tr ' ' '\n' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - id: node_versions
         name: main
         run: |
           node_versions_arr=($(echo "${node_versions_lines}"))
+          node_versions_lts=${node_versions_arr}
           node_versions_latest=${node_versions_arr[-1]}
-          node_versions_pre_latest=${node_versions_arr[@]:0:${#node_versions_arr[@]}-1}
-          node_versions_pre_latest=(${node_versions_arr[@]:0:-1})
           node_versions_json=$(printf '"%s",' ${node_versions_arr[@]})
           node_versions_json="[ ${node_versions_json:0:-1} ]"
-          node_versions_pre_latest_json=$(printf '"%s",' ${node_versions_pre_latest[@]})
-          node_versions_pre_latest_json="[ ${node_versions_pre_latest_json:0:-1} ]"
           echo "node versions arr: ${node_versions_arr[@]}"
           echo "node versions json: ${node_versions_json}"
+          echo "node versions lts: ${node_versions_lts}"
           echo "node versions latest: ${node_versions_latest}"
-          echo "node versions pre_latest: ${node_versions_pre_latest}"
-          echo "node versions pre_latest json: ${node_versions_pre_latest_json}"
           echo all=${node_versions_arr} >> $GITHUB_OUTPUT
           echo all-json=${node_versions_json} >> $GITHUB_OUTPUT
+          echo lts=${node_versions_lts} >> $GITHUB_OUTPUT
           echo latest=${node_versions_latest} >> $GITHUB_OUTPUT
-          echo pre_latest=${node_versions_pre_latest} >> $GITHUB_OUTPUT
-          echo pre_latest-json=${node_versions_pre_latest_json} >> $GITHUB_OUTPUT
