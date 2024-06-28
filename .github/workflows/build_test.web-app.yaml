@@ -43,6 +43,6 @@ jobs:
       - name: upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
           path: |
             ngageoint-mage.*.tgz

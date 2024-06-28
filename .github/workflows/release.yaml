@@ -75,14 +75,14 @@ jobs:
           node-version: ${{ needs.config.outputs.node_versions-latest }}
       - name: install json util
         run: npm i -g json
-      - name: download service packages
+      - name: download service artifacts
         uses: actions/download-artifact@v3
         with:
-          name: mage_service_packages
-      - name: download web-app packages
+          name: mage.service-artifacts
+      - name: download web-app artifacts
         uses: actions/download-artifact@v3
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
       - name: generate instance package.json
         run: |
           (
@@ -121,11 +121,11 @@ jobs:
       - name: download service packages
         uses: actions/download-artifact@v3
         with:
-          name: mage_service_packages
+          name: mage.service-artifacts
       - name: download web-app packages
         uses: actions/download-artifact@v3
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
       - name: publish to package registry
         env:
           NPM_CONFIG_USERCONFIG: "${{ runner.temp }}/gitlab.npmrc"
