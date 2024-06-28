@@ -22,7 +22,7 @@
         "async": "^3.2.4",
         "async-lock": "^1.4.1",
         "base-64": "1.0.0",
-        "better-sqlite3": "^8.6.0",
+        "better-sqlite3": "^9.6.0",
         "body-parser": "~1.19.0",
         "busboy": "^1.6.0",
         "cfenv": "1.0.3",
@@ -1396,17 +1396,6 @@
       "version": "7946.0.8",
       "resolved": "https://registry.npmjs.org/@types/geojson/-/geojson-7946.0.8.tgz",
       "integrity": "sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA=="
-    },
-    "node_modules/@ngageoint/geopackage/node_modules/better-sqlite3": {
-      "version": "9.6.0",
-      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-9.6.0.tgz",
-      "integrity": "sha512-yR5HATnqeYNVnkaUTf4bOP2dJSnyhP4puJN/QPRyx4YkBEEUxib422n2XzPqDEHjQQqazoYoADdAm5vE15+dAQ==",
-      "hasInstallScript": true,
-      "optional": true,
-      "dependencies": {
-        "bindings": "^1.5.0",
-        "prebuild-install": "^7.1.1"
-      }
     },
     "node_modules/@ngageoint/mongodb-migrations": {
       "version": "1.0.0",
@@ -3539,9 +3528,9 @@
       "integrity": "sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ=="
     },
     "node_modules/better-sqlite3": {
-      "version": "8.7.0",
-      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-8.7.0.tgz",
-      "integrity": "sha512-99jZU4le+f3G6aIl6PmmV0cxUIWqKieHxsiF7G34CVFiE+/UabpYqkU0NJIkY/96mQKikHeBjtR27vFfs5JpEw==",
+      "version": "9.6.0",
+      "resolved": "https://registry.npmjs.org/better-sqlite3/-/better-sqlite3-9.6.0.tgz",
+      "integrity": "sha512-yR5HATnqeYNVnkaUTf4bOP2dJSnyhP4puJN/QPRyx4YkBEEUxib422n2XzPqDEHjQQqazoYoADdAm5vE15+dAQ==",
       "hasInstallScript": true,
       "dependencies": {
         "bindings": "^1.5.0",

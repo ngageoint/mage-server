@@ -42,7 +42,7 @@
     "async": "^3.2.4",
     "async-lock": "^1.4.1",
     "base-64": "1.0.0",
-    "better-sqlite3": "^8.6.0",
+    "better-sqlite3": "^9.6.0",
     "body-parser": "~1.19.0",
     "busboy": "^1.6.0",
     "cfenv": "1.0.3",
