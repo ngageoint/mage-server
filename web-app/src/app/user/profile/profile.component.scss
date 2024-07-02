@@ -1,19 +1,4 @@
 // Custom Theming for Angular Material
-@use '@angular/material' as mat;
-@import "variables.scss";
-@import '@mat-datetimepicker/core/datetimepicker/datetimepicker-theme.scss';
-
-.error-theme {
-  $primary: mat.define-palette(mat.$red-palette);
-  $theme: mat.define-light-theme($primary, $primary, $primary);
-  
-  @include mat.core-theme($theme);
-  @include mat.all-component-colors($theme);
-  @include mat.all-component-themes($theme);
-  @include mat.all-component-typographies($theme);
-  @include mat.all-component-themes($theme);
-}
-
 mat-form-field {
   width: 100%;
   margin-bottom: 8px;

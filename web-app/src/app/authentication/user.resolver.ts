@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from "@angular/router";
-import { Observable } from "rxjs";
+import { Observable, catchError, of } from "rxjs";
 import { Api } from "../api/api.entity";
 import { UserService } from "../user/user.service";
 
@@ -12,6 +12,8 @@ export class UserResolver implements Resolve<any> {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<Api> {
-    return this.service.getMyself()
+    return this.service.getMyself().pipe(
+      catchError(() => { return of(null); })
+    )
   }
 }
