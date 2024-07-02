@@ -1,0 +1,148 @@
+// Custom Theming for Angular Material
+@use '@angular/material' as mat;
+@import "variables.scss";
+@import '@mat-datetimepicker/core/datetimepicker/datetimepicker-theme.scss';
+
+.error-theme {
+  $primary: mat.define-palette(mat.$red-palette);
+  $theme: mat.define-light-theme($primary, $primary, $primary);
+  
+  @include mat.core-theme($theme);
+  @include mat.all-component-colors($theme);
+  @include mat.all-component-themes($theme);
+  @include mat.all-component-typographies($theme);
+  @include mat.all-component-themes($theme);
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mat-h1 {
+  margin: unset;
+}
+
+.mat-caption {
+  opacity: .6;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.navigation-title {
+  margin-left: 16px;
+}
+
+.container {
+  position: relative;
+}
+
+.cards {
+  margin: auto;
+  max-width: 1200px;
+  padding: 16px 0;
+}
+
+.card {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.avatar-container {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 60px;
+}
+
+.avatar-container__button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgb(245, 245, 245);
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.avatar-add__background {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background-color: rgb(245, 245, 245);
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.avatar-add__icon {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  justify-content: end;
+}
+
+.password-strength {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.error {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  color: rgb(171, 48, 34);
+}
+
+.error__text {
+  flex: 1;
+}
+
+.mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, .1);
+}

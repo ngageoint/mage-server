@@ -26,4 +26,8 @@ export class PreferencesComponent implements OnInit  {
   onLogout(): void {
     this.userService.logout()
   }
+
+  onProfile(): void {
+    this.router.navigate(['profile']);
+  }
 }

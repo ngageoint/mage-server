@@ -18,6 +18,7 @@ mat-icon {
   align-items: start;
   justify-content: end;
   opacity: 1;
+  cursor: pointer;
   background-color: mat.get-color-from-palette($app-primary);
 }
 

@@ -172,6 +172,8 @@ import { TimeFormatComponent } from './preferences/time-format/time-format.compo
 import { TimeZoneComponent } from './preferences/time-zone/time-zone.component';
 import { CoordinateSystemComponent } from './preferences/coordinate-system/coordinate-system.component';
 import { AboutComponent } from './about/about.component';
+import { ProfileComponent } from './user/profile/profile.component';
+import { PasswordResetSuccessDialog } from './user/password/password-reset-success-dialog';
 
 @NgModule({
   declarations: [
@@ -190,6 +192,7 @@ import { AboutComponent } from './about/about.component';
     AuthorizeComponent,
     MageComponent,
     MapComponent,
+    PasswordResetSuccessDialog,
     PreferencesComponent,
     FilterComponent,
     PollingIntervalComponent,
@@ -247,6 +250,7 @@ import { AboutComponent } from './about/about.component';
     UserViewComponent,
     UserListItemComponent,
     UserListComponent,
+    ProfileComponent,
     ObservationPopupComponent,
     UserPopupComponent,
     AdminSettingsComponent,

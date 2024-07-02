@@ -7,6 +7,7 @@ import { MageComponent } from './mage/mage.component';
 import { ApiResolver } from './api/api.resolver';
 import { UserResolver } from './authentication/user.resolver';
 import { AboutComponent } from './about/about.component';
+import { ProfileComponent } from './user/profile/profile.component';
 
 const appRoutes: Routes = [{
   path: '',
@@ -38,6 +39,12 @@ const appRoutes: Routes = [{
 },{
   path: 'about',
   component: AboutComponent
+},{
+  path: 'profile',
+  component: ProfileComponent,
+  resolve: {
+    user: UserResolver
+  }
 }];
 
 @NgModule({

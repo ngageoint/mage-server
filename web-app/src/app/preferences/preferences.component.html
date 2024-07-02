@@ -1,5 +1,5 @@
 <div>
-  <div class="profile">
+  <div matRipple class="profile" (click)="onProfile()">
     <user-avatar class="profile-avatar" [user]="user" [avatarWidth]="80" [avatarHeight]="80"></user-avatar>
     <div class="profile-info">{{user.displayName}}</div>
     <div class="profile-info">{{user.email}}</div>

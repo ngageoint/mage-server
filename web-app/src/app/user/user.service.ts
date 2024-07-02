@@ -1,8 +1,9 @@
-import { HttpClient, HttpEvent, HttpResponse } from '@angular/common/http'
+import { HttpClient, HttpContext, HttpEvent, HttpHeaders, HttpResponse } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
+import { BYPASS_TOKEN } from '../http/token.interceptor'
 
 @Injectable({
   providedIn: 'root'
@@ -116,6 +117,32 @@ export class UserService {
     })
 
     return observable;
+  }
+
+  saveProfile(user: any): Observable<HttpEvent<any>> {
+    const formData = new FormData();
+    for (var property in user) {
+      if (user[property] != null) {
+        formData.append(property, user[property]);
+      }
+    }
+
+    return this.httpClient.put<any>('/api/users/myself', formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
+  }
+
+  updatePassword(password: string, newPassword): Observable<any> {
+    return this.httpClient.put(`/api/users/myself/password`, {
+      username: this.myself.username,
+      password: password,
+      newPassword: newPassword,
+      newPasswordConfirm: newPassword
+    }, {
+      context: new HttpContext().set(BYPASS_TOKEN, true),
+      responseType: 'text'
+    });
   }
 
   private clearUser() {
