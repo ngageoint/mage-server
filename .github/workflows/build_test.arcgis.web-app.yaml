@@ -1,0 +1,50 @@
+name: test and package arcgis web plugin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - .github/workflows/build_test.arcgis.web-app.yaml
+      - .github/workflows/config.yaml
+      - plugins/arcgis/web-app/**
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  build:
+    name: build plugin mage.arcgis.web-app
+    needs: config
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          cache: npm
+          cache-dependency-path: plugins/arcgis/web-app/package-lock.json
+      - name: build
+        run: |
+          cd plugins/arcgis/web-app
+          npm ci
+          npm run build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+      - name: test
+        run: |
+          cd plugins/arcgis/web-app
+          npm run test-headless
+      - name: pack
+        run: |
+          npm pack ./plugins/arcgis/web-app/dist/main
+      - name: upload packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: mage.arcgis.web-app-artifacts
+          path: |
+            ngageoint-mage.arcgis.web-app-*.tgz
+
