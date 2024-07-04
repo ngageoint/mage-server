@@ -1,8 +1,8 @@
 {
-  "name": "@ngageoint/mage.arc-web",
+  "name": "@ngageoint/mage.arcgis.web-app",
   "version": "1.0.0",
   "peerDependencies": {
-    "@ngageoint/mage.web-app": "^6.2.0"
+    "@ngageoint/mage.web-app": "^6.2.9 || ^6.3.0-beta"
   },
   "dependencies": {
     "tslib": "^2.0.0"

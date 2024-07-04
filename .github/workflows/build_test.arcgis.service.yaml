@@ -1,0 +1,66 @@
+name: test and package arcgis service plugin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - .github/workflows/build_test.arcgis.service.yaml
+      - .github/workflows/config.yaml
+      - plugins/arcgis/service/**
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  test:
+    name: test plugin arcgis.service
+    needs: [ config ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/arcgis/service/package-lock.json
+      - name: test with node ${{ matrix.node }}
+        run: |
+          cd plugins/arcgis/service
+          npm ci
+          npm test
+
+  package:
+    name: package plugin arcgis.service
+    needs: [ config, test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/arcgis/service/package-lock.json
+      - name: build
+        run: |
+          cd plugins/arcgis/service
+          npm ci
+          npm run build
+      - name: pack
+        run: npm pack ./plugins/arcgis/service
+      - name: upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: arcgis.service-artifacts
+          path: |
+            ngageoint-mage.*.tgz

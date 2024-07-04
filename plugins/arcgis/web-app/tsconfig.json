@@ -21,8 +21,8 @@
       "DOM"
     ],
     "paths": {
-      "mage-arc-web": [
-        "dist/mage-arc-web"
+      "@@main": [
+        "./dist/main"
       ],
       "@ngageoint/mage.web-core-lib/*": [
         "./node_modules/@ngageoint/mage.web-core-lib/*"

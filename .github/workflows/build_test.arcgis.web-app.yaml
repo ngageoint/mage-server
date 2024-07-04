@@ -1,19 +1,21 @@
-name: build and test web-app
+name: test and package arcgis web plugin
 
 on:
   workflow_dispatch:
   workflow_call:
   push:
     paths:
-      - .github/workflows/build_test.web-app.yaml
+      - .github/workflows/build_test.arcgis.web-app.yaml
       - .github/workflows/config.yaml
-      - web-app/**
+      - plugins/arcgis/web-app/**
 
 jobs:
+
   config:
     uses: ./.github/workflows/config.yaml
-  main:
-    name: build mage web app
+
+  build:
+    name: build plugin mage.arcgis.web-app
     needs: config
     runs-on: ubuntu-latest
     steps:
@@ -24,25 +26,25 @@ jobs:
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
           cache: npm
-          cache-dependency-path: web-app/package-lock.json
+          cache-dependency-path: plugins/arcgis/web-app/package-lock.json
       - name: build
         run: |
-          cd web-app
+          cd plugins/arcgis/web-app
           npm ci
-          npm run build:prod
+          npm run build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: test
         run: |
-          cd web-app
-          npm run ci:test
+          cd plugins/arcgis/web-app
+          npm run test-headless
       - name: pack
         run: |
-          npm pack ./web-app/dist/core-lib
-          npm pack ./web-app/dist/app
+          npm pack ./plugins/arcgis/web-app/dist/main
       - name: upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: mage.web-app-artifacts
+          name: arcgis.web-app-artifacts
           path: |
-            ngageoint-mage.*.tgz
+            ngageoint-mage.arcgis.web-app-*.tgz
+

@@ -1,0 +1,66 @@
+name: test and package nga-msi plugin
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - .github/workflows/build_test.nga-msi.yaml
+      - .github/workflows/config.yaml
+      - plugins/nga-msi/**
+
+jobs:
+
+  config:
+    uses: ./.github/workflows/config.yaml
+
+  test:
+    name: test plugin nga-msi
+    needs: [ config ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.config.outputs.node_versions-all-json) }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/nga-msi/package-lock.json
+      - name: test with node ${{ matrix.node }}
+        run: |
+          cd plugins/nga-msi
+          npm ci
+          npm test
+
+  package:
+    name: package plugin nga-msi
+    needs: [ config, test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
+          cache: npm
+          cache-dependency-path: |
+            plugins/nga-msi/package-lock.json
+      - name: build
+        run: |
+          cd plugins/nga-msi
+          npm ci
+          npm run build
+      - name: pack
+        run: npm pack ./plugins/nga-msi
+      - name: upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: nga-msi-artifacts
+          path: |
+            ngageoint-mage.*.tgz
