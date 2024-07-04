@@ -44,7 +44,7 @@ jobs:
       - name: upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: mage.arcgis.web-app-artifacts
+          name: arcgis.web-app-artifacts
           path: |
             ngageoint-mage.arcgis.web-app-*.tgz
 
