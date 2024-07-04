@@ -38,7 +38,7 @@
   "peerDependencies": {
     "@ngageoint/mage.service": "^6.3.0-beta",
     "express": "~4.17.0",
-    "mongoose": "^6.12.0"
+    "mongoose": "^6.13.0"
   },
   "devDependencies": {
     "@types/bson": "^4.0.2",
@@ -51,6 +51,6 @@
     "lodash": "^4.17.21",
     "npm-run-all": "^4.1.5",
     "rimraf": "^5.0.5",
-    "typescript": "~4.6.0"
+    "typescript": "^4.9.5"
   }
 }
