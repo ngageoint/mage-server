@@ -37,13 +37,12 @@ $background-images: '1', '2', '3', '4';
 }
 
 .title-container {
-  margin-bottom: 16px;
+  margin: 16px 0;
   text-align: center;
 }
 
 .title {
   font-size: 8rem;
-  letter-spacing: 1rem;
 }
 
 .subtitle {
@@ -53,9 +52,9 @@ $background-images: '1', '2', '3', '4';
 
 .features {
   margin-top: 44px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .feature {
@@ -63,6 +62,7 @@ $background-images: '1', '2', '3', '4';
   flex-direction: row;
   padding-bottom: 30px;
   padding-top: 30px;
+  width: 600px;
 }
 
 .feature-icon {
@@ -100,6 +100,10 @@ $background-images: '1', '2', '3', '4';
   .title {
     font-size: 4rem;
     letter-spacing: none;
+  }
+
+  .subtitle {
+    display: none;
   }
 
   .features {

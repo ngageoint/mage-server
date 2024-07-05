@@ -22,5 +22,32 @@ mat-form-field {
 
 .signup-button {
   cursor: pointer;
-  color: mat.get-color-from-palette($app-primary);
+  color: $primary;
+}
+
+.error-container {
+  overflow: hidden;
+}
+
+.error {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  color: rgb(96 17 10);
+  background-color: rgb(249 220 215);
+  border-radius: 4px;
+  // margin-bottom: 16px;
+  padding: 0 16px;
+}
+
+.error__icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.error__message {
+  flex: 1;
 }

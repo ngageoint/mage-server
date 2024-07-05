@@ -137,113 +137,113 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
     };
   }
 
-  $urlRouterProvider.otherwise('/home');
+  $urlRouterProvider.otherwise('/');
 
-  $stateProvider.state('home', {
-    redirectTo: 'home.dashboard',
-    url: '/home',
+  $stateProvider.state('admin', {
+    redirectTo: 'admin.dashboard',
+    url: '/admin',
     component: 'admin'
   });
 
-  $stateProvider.state('home.dashboard', {
+  $stateProvider.state('admin.dashboard', {
     url: '/dashboard',
     component: 'adminDashboard',
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.users', {
+  $stateProvider.state('admin.users', {
     url: '/users',
     component: 'adminUsers',
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.createUser', {
+  $stateProvider.state('admin.createUser', {
     url: '/users/new',
     component: 'adminUserEdit',
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.bulkUser', {
+  $stateProvider.state('admin.bulkUser', {
     url: '/users/bulk',
     component: "adminUserBulk",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.user', {
+  $stateProvider.state('admin.user', {
     url: '/users/:userId',
     component: "adminUser",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.editUser', {
+  $stateProvider.state('admin.editUser', {
     url: '/users/:userId/edit',
     component: "adminUserEdit",
     resolve: resolveAdmin()
   });
 
   // Admin team routes
-  $stateProvider.state('home.teams', {
+  $stateProvider.state('admin.teams', {
     url: '/teams',
     component: "adminTeams",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.createTeam', {
+  $stateProvider.state('admin.createTeam', {
     url: '/teams/new',
     component: "adminTeamEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.team', {
+  $stateProvider.state('admin.team', {
     url: '/teams/:teamId',
     component: "adminTeam",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.editTeam', {
+  $stateProvider.state('admin.editTeam', {
     url: '/teams/:teamId/edit',
     component: "adminTeamEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.teamAccess', {
+  $stateProvider.state('admin.teamAccess', {
     url: '/teams/:teamId/access',
     component: "adminTeamAccess",
     resolve: resolveAdmin()
   });
 
   // Admin event routes
-  $stateProvider.state('home.events', {
+  $stateProvider.state('admin.events', {
     url: '/events',
     component: "adminEvents",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.eventCreate', {
+  $stateProvider.state('admin.eventCreate', {
     url: '/events/new',
     component: "adminEventEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.event', {
+  $stateProvider.state('admin.event', {
     url: '/events/:eventId',
     component: "adminEvent",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.eventEdit', {
+  $stateProvider.state('admin.eventEdit', {
     url: '/events/:eventId/edit',
     component: "adminEventEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.eventAccess', {
+  $stateProvider.state('admin.eventAccess', {
     url: '/events/:eventId/access',
     component: "adminEventAccess",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.fieldsCreate', {
+  $stateProvider.state('admin.fieldsCreate', {
     url: '/events/:eventId/forms/new',
     component: "adminEventFormFieldsEdit",
     params: {
@@ -252,124 +252,124 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.formEdit', {
+  $stateProvider.state('admin.formEdit', {
     url: '/events/:eventId/forms/:formId',
     component: "adminEventFormEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.formFieldsEdit', {
+  $stateProvider.state('admin.formFieldsEdit', {
     url: '/events/:eventId/forms/:formId/fields',
     component: "adminEventFormFieldsEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.formMapEdit', {
+  $stateProvider.state('admin.formMapEdit', {
     url: '/events/:eventId/forms/:formId/map',
     component: "adminEventFormMapEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.formFeedEdit', {
+  $stateProvider.state('admin.formFeedEdit', {
     url: '/events/:eventId/forms/:formId/feed',
     component: "adminEventFormFeedEdit",
     resolve: resolveAdmin()
   });
 
   // Admin device routes
-  $stateProvider.state('home.devices', {
+  $stateProvider.state('admin.devices', {
     url: '/devices',
     component: "adminDevices",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.deviceCreate', {
+  $stateProvider.state('admin.deviceCreate', {
     url: '/devices/new',
     component: "adminDeviceEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.device', {
+  $stateProvider.state('admin.device', {
     url: '/devices/:deviceId',
     component: "adminDevice",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.deviceEdit', {
+  $stateProvider.state('admin.deviceEdit', {
     url: '/devices/:deviceId/edit',
     component: "adminDeviceEdit",
     resolve: resolveAdmin()
   });
 
   // Admin layer routes
-  $stateProvider.state('home.layers', {
+  $stateProvider.state('admin.layers', {
     url: '/layers',
     component: "adminLayers",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.layerCreate', {
+  $stateProvider.state('admin.layerCreate', {
     url: '/layers/new',
     component: "adminLayerEdit",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.layer', {
+  $stateProvider.state('admin.layer', {
     url: '/layers/:layerId',
     component: "adminLayer",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.layerEdit', {
+  $stateProvider.state('admin.layerEdit', {
     url: '/layers/:layerId/edit',
     component: "adminLayerEdit",
     resolve: resolveAdmin()
   });
 
   // Admin feed routes
-  $stateProvider.state('home.feeds', {
+  $stateProvider.state('admin.feeds', {
     url: '/feeds',
     component: "adminFeeds",
     resolve: resolveAdmin()
   });
-  $stateProvider.state('home.feed', {
+  $stateProvider.state('admin.feed', {
     url: '/feeds/:feedId',
     component: "adminFeed",
     resolve: resolveAdmin()
   });
-  $stateProvider.state('home.feedCreate', {
+  $stateProvider.state('admin.feedCreate', {
     url: '/feeds/new',
     component: "feedEdit",
     resolve: resolveAdmin()
   });
-  $stateProvider.state('home.feedEdit', {
+  $stateProvider.state('admin.feedEdit', {
     url: '/feeds/:feedId/edit',
     component: "feedEdit",
     resolve: resolveAdmin()
   });
 
   // Admin service routes
-  $stateProvider.state('home.service', {
+  $stateProvider.state('admin.service', {
     url: '/services/:serviceId',
     component: "adminService",
     resolve: resolveAdmin()
   });
 
   // Admin map routes
-  $stateProvider.state('home.map', {
+  $stateProvider.state('admin.map', {
     url: '/map',
     component: "upgradedAdminMapSettings",
     resolve: resolveAdmin()
   });
 
   // Admin settings routes
-  $stateProvider.state('home.settings', {
+  $stateProvider.state('admin.settings', {
     url: '/settings',
     component: "upgradedAdminSettings",
     resolve: resolveAdmin()
   });
 
-  $stateProvider.state('home.authenticationCreate', {
+  $stateProvider.state('admin.authenticationCreate', {
     url: '/settings/new',
     component: "authenticationCreate",
     resolve: resolveAdmin()

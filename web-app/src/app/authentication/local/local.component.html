@@ -1,23 +1,37 @@
-<form class="form">
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>Username</mat-label>
-      <input matInput placeholder="Username" [formControl]="username" required>
-    </mat-form-field>
-  </div>
+<div class="container">
+  <form>
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput placeholder="Username" [formControl]="username" required>
+      </mat-form-field>
+    </div>
   
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>Password</mat-label>
-      <input matInput placeholder="Password" type="password" [formControl]="password" required>
-    </mat-form-field>
-  </div>
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput placeholder="Password" type="password" [formControl]="password" required>
+      </mat-form-field>
+    </div>
+  
+    <div>
+      <button class="auth-button" mat-flat-button color="primary" (click)="signin()">Sign In</button>
+    </div>
 
-  <div>
-    <button class="auth-button" mat-flat-button color="primary" (click)="signin()">Sign In</button>
-  </div>
-  <div class="signup">
-    <span class="signup-text">New to MAGE?</span>
-    <a *ngIf="!hideSignup" class="signup-button"(click)="signup()">Sign Up Now</a>
-  </div>
-</form>
+    <div *ngIf="error" class="error-container" [@slide]>
+      <div class="error" >
+        <mat-icon class="error__icon">error</mat-icon>
+        <div class="error__message">
+          <p>{{error?.message}}</p>
+          <p *ngIf="contact" [innerHTML]="contact"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="signup">
+      <span class="signup-text">New to Mage?</span>
+      <a *ngIf="!hideSignup" class="signup-button" (click)="signup()">Sign Up Now</a>
+    </div>
+
+  </form>
+</div>

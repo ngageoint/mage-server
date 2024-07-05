@@ -12,20 +12,33 @@
 
 .authentication-info-container {
   min-height: 100%;
-  width: 50%;
   background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  flex: 1;
 }
 
 .mage-info-container {
   min-height: 100%;
-  width: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1;
   color: #fff;
   background-color: rgba(16, 69, 130, .5);
+}
+
+@media (max-width: 1025px) {
+  .authentication-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .authentication-info-container {
+    width: 100%;
+  }
 }

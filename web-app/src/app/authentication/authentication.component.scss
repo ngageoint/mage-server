@@ -1,44 +1,63 @@
+@import "variables.scss";
+
+:host {
+  height: 100%;
+  width: 100%;
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  color: $primary;
+  height: 30vh;
+}
+
+.welcome__title {
+  margin-bottom: 16px;
+  font: 400 45px / 48px Roboto, "Helvetica Neue", sans-serif;
+}
+
+.welcome__message {
+  font: 500 20px / 32px Roboto, "Helvetica Neue", sans-serif
+}
+
+.authentications {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
 .signin-container {
   min-width: 285px;
+  max-width: 600px;
   width: 75%;
   margin: auto;
   text-align: left;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
 }
 
-.wand-container {
-  text-align: center;
-
-  .mage-wand {
-    margin-top: 36px;
-    width: 97px;
-    height: 97px;
-    margin-bottom: 36px;
-  }
+.or {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 36px 0;
 }
 
-.or-container {
-  text-align: center;
-  margin-top: 50px;
-  margin-bottom: 30px;
-  color: grey;
-  font-variant: small-caps;
+.or__text {
+  opacity: .6;
 }
 
-.or-hr {
-  margin-bottom: -23px;
-  height: 0;
-  border: 0;
-  border-top: 2px solid #e6e6e6;
-}
-
-#or {
-  display: inline-block;
-  position: relative;
-  padding-left: 20px;
-  padding-right: 20px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  background-color: #fff;
+.or__divider {
+  flex: 1;
+  height: 2px;
+  background-color: rgba(0, 0, 0, .15);
+  border-radius: 1px;
 }
 
 .spacer {

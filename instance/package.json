@@ -26,6 +26,6 @@
   "homepage": "https://github.com/ngageoint/mage-server",
   "dependencies": {
     "@ngageoint/mage.service": "../service",
-    "@ngageoint/mage.web-app": "file:../web-app/dist/ngageoint-mage.web-app-6.3.0-beta.3.tgz"
+    "@ngageoint/mage.web-app": "file:../web-app/dist"
   }
 }
