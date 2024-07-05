@@ -74,7 +74,7 @@
           <input matInput type="password" placeholder="Current Password" [formControl]="password.controls.currentPassword">
           <mat-error *ngIf="password.controls.currentPassword.hasError('required')">Current password is required</mat-error>
           <mat-error *ngIf="password.controls.currentPassword.hasError('invalid')">Invalid password</mat-error>
-          <div *ngIf="password.controls.currentPassword['required']">Name is required.</div>
+          <div *ngIf="password.controls.currentPassword['required']">Password is required.</div>
         </mat-form-field>
         
         <mat-form-field appearance="fill">

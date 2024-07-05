@@ -8,12 +8,7 @@ import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import { MatDialog } from '@angular/material/dialog';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
-
-interface PasswordStrength {
-  color: string,
-  text: string,
-  value: string
-}
+import { PasswordStrength, passwordStrengthScores } from 'src/app/entities/password/entities.password';
 
 @Component({
   selector: 'profile',
@@ -40,33 +35,6 @@ export class ProfileComponent implements OnInit {
   })
   passwordError?: string
 
-  passwordStrengthMap: { [key: number]: PasswordStrength} = {
-    0: {
-      color: '#F44336',
-      text: 'Weak',
-      value: '0'
-    },
-    1: {
-      color: '#F44336',
-      text: 'Fair',
-      value: '25'
-    },
-    2: {
-      color: '#F44336',
-      text: 'Good',
-      value: '50'
-    },
-    3: {
-      color: '#F44336',
-      text: 'Strong',
-      value: '75'
-    },
-    4: {
-      color: '#F44336',
-      text: 'Excellent',
-      value: '100'
-    }
-  }
   passwordStrength?: PasswordStrength
 
   constructor(
@@ -120,9 +88,9 @@ export class ProfileComponent implements OnInit {
   onPasswordChanged(password: string) {
     if (password && password.length > 0) {
       const score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
-      this.passwordStrength = this.passwordStrengthMap[score]
+      this.passwordStrength = passwordStrengthScores[score]
     } else {
-      this.passwordStrength = this.passwordStrengthMap[0]
+      this.passwordStrength = passwordStrengthScores[0]
     }
   }
 

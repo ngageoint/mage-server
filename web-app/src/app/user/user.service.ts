@@ -19,14 +19,29 @@ export class UserService {
     private localStorageService: LocalStorageService
   ) { }
 
+  signup(username: string): Observable<any>  {
+    return this.httpClient.post<any>('/api/users/signups', {
+      username
+    },{
+      context: new HttpContext().set(BYPASS_TOKEN, true)
+    })
+  }
+
+  signupVerify(data: any, token: string): Observable<any> {
+    return this.httpClient.post<any>('/api/users/signups/verifications', data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      context: new HttpContext().set(BYPASS_TOKEN, true)
+    })
+  }
+
   signin(username: string, password: string): Observable<any> {
-    const body = {
+    return this.httpClient.post<any>('/auth/local/signin', {
       username,
       password,
       appVersion: 'Web Client'
-    }
-
-    return this.httpClient.post<any>('/auth/local/signin', body)
+    })
   }
 
   idpSignin(strategy: string): Observable<any> {
@@ -139,7 +154,7 @@ export class UserService {
       password: password,
       newPassword: newPassword,
       newPasswordConfirm: newPassword
-    }, {
+    },{
       context: new HttpContext().set(BYPASS_TOKEN, true),
       responseType: 'text'
     });

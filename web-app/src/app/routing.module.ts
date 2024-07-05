@@ -8,6 +8,8 @@ import { ApiResolver } from './api/api.resolver';
 import { UserResolver } from './authentication/user.resolver';
 import { AboutComponent } from './about/about.component';
 import { ProfileComponent } from './user/profile/profile.component';
+import { SignupComponent } from './authentication/local/signup.component';
+import { StatusComponent } from './authentication/local/status/status.component';
 
 const appRoutes: Routes = [{
   path: '',
@@ -26,6 +28,15 @@ const appRoutes: Routes = [{
     resolve: {
       api: ApiResolver
     }
+  },{
+    path: 'signup',
+    component: SignupComponent,
+    resolve: {
+      api: ApiResolver
+    }
+  },{
+    path: 'signup/status',
+    component: StatusComponent,
   },{
     path: 'authorize',
     component: AuthorizeComponent,

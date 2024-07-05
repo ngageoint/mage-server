@@ -5,6 +5,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { ApiService } from 'src/app/api/api.service';
 import { LinkGenerator } from 'src/app/contact/utilities/link-generator';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'local-authentication',
@@ -41,6 +42,7 @@ export class LocalAuthenticationComponent implements OnInit {
   contact: string
 
   constructor(
+    private router: Router,
     private apiService: ApiService,
     private userService: UserService
   ) {}
@@ -70,6 +72,6 @@ export class LocalAuthenticationComponent implements OnInit {
   }
 
   signup(): void {
-    this.onSignup.emit()
+    this.router.navigate(['landing', 'signup']);
   }
 }

@@ -1,0 +1,97 @@
+<div class="container">
+  <div class="welcome">
+    <div class="welcome__title">New to Mage?</div>
+    <div class="welcome__message">Let's setup your account.</div>
+  </div>
+
+  <form [formGroup]="signup">
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput placeholder="Username" [formControl]="signup.controls.username" required (change)="getCaptcha()">
+        <mat-error *ngIf="signup.controls.username.hasError('required')">Username is required</mat-error>
+        <mat-error *ngIf="signup.controls.username.hasError('exists')">Username already exists</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Display Name</mat-label>
+        <input matInput placeholder="Display Name" type="text" [formControl]="signup.controls.displayName" required>
+        <mat-error *ngIf="signup.controls.displayName.hasError('required')">Display name is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput placeholder="Email" type="text" [formControl]="signup.controls.email">
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput placeholder="Phone" type="text" [formControl]="signup.controls.phone">
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput placeholder="Password" type="password" [formControl]="signup.controls.password" required>
+        <mat-error *ngIf="signup.controls.password.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="signup.controls.password.hasError('match')">Passwords must match</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput placeholder="Comfirm Password" type="password" [formControl]="signup.controls.passwordconfirm" required>
+        <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <div class="password-strength">
+        <div class="mat-body-1">Password Strengh</div>
+        <div class="mat-body-2">{{passwordStrength?.text}}</div>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="passwordStrength?.value"></mat-progress-bar>
+    </div>
+
+    <div class="auth-captcha-container">
+      <div *ngIf="loadingCaptcha" class="auth-captcha-progress">
+        <div class="auth-captcha-progress__container">
+          <div class="auth-captcha-progress-text">Generating Captcha...</div>
+          <mat-progress-bar mode="indeterminate" class="auth-captcha-progressbar"></mat-progress-bar>
+        </div>
+      </div>
+      <div class="auth-captcha" *ngIf="captcha.uri && !loadingCaptcha">
+        <img alt="" width="100%" height="100%" src="{{captcha.uri}}">
+      </div>
+
+      <div class="auth-captcha-refresh" *ngIf="captcha.uri">
+        <button mat-icon-button (click)="getCaptcha()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Captcha</mat-label>
+        <input matInput placeholder="Captcha" type="text" [formControl]="signup.controls.captchaText" required>
+          <mat-error *ngIf="signup.controls.captchaText.hasError('required')">Captcha is required</mat-error>
+          <mat-error *ngIf="signup.controls.captchaText.hasError('invalid')">Invalid captcha</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button class="actions__button" (click)="onCancel()">Cancel</button>
+      <button mat-flat-button color="primary" class="actions__button" (click)="onSignup()">Signup</button>
+    </div>
+
+  </form>
+</div>

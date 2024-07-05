@@ -174,6 +174,8 @@ import { CoordinateSystemComponent } from './preferences/coordinate-system/coord
 import { AboutComponent } from './about/about.component';
 import { ProfileComponent } from './user/profile/profile.component';
 import { PasswordResetSuccessDialog } from './user/password/password-reset-success-dialog';
+import { SignupComponent } from './authentication/local/signup.component';
+import { StatusComponent } from './authentication/local/status/status.component';
 
 @NgModule({
   declarations: [
@@ -189,6 +191,8 @@ import { PasswordResetSuccessDialog } from './user/password/password-reset-succe
     AuthenticationComponent,
     IdpAuthenticationComponent,
     LocalAuthenticationComponent,
+    SignupComponent,
+    StatusComponent,
     AuthorizeComponent,
     MageComponent,
     MapComponent,
