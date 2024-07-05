@@ -6,6 +6,7 @@
     <mat-form-field appearance="fill">
       <mat-label>Access Code</mat-label>
       <input matInput placeholder="Access Code" type="deviceId" [formControl]="deviceId" required>
+      <mat-error *ngIf="deviceId.hasError('invalid')">Invalid access code</mat-error>
     </mat-form-field>
   </div>
 

@@ -11,7 +11,7 @@ import { LocalStorageService } from '../http/local-storage.service';
 })
 export class AuthorizeComponent {
   token: string
-  deviceId = new FormControl('', [Validators.required]);
+  deviceId = new FormControl('', [Validators.required])
 
   constructor(
     private router: Router,
@@ -22,6 +22,7 @@ export class AuthorizeComponent {
   }
 
   authorize(): void {
+    this.deviceId.setErrors(null)
     this.userService.authorize(this.token, this.deviceId.value).subscribe({
       next: (response) => {
         // TODO set token event"
@@ -31,6 +32,7 @@ export class AuthorizeComponent {
       },
       error: () => {
         console.log('Error authentication')
+        this.deviceId.setErrors({ invalid: true})
         // TODO show error message
       }
     })
