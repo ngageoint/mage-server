@@ -40,7 +40,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: check project
@@ -72,7 +72,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: download service artifacts
@@ -115,7 +115,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: download service packages
