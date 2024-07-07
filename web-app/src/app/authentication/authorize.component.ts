@@ -25,8 +25,6 @@ export class AuthorizeComponent {
     this.deviceId.setErrors(null)
     this.userService.authorize(this.token, this.deviceId.value).subscribe({
       next: (response) => {
-        // TODO set token event"
-        // $rootScope.$broadcast('event:user', {user: service.myself, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
         this.localStorageService.setToken(response.token)
         this.router.navigate(['map']);
       },

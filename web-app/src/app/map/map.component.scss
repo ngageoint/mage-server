@@ -10,6 +10,15 @@
   right: 0;
 }
 
+.map-controls-left {
+  position: absolute;
+  z-index: 1000;
+  display: inline-flex;
+  flex-direction: column;
+  margin-top: 16px;
+  margin-left: 16px;
+}
+
 .map-controls-right {
   position: absolute;
   right: 0;

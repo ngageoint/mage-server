@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
 import { LocationState } from '../../app/map/controls/location.component';
 import { ZoomDirection } from '../../app/map/controls/zoom.component';
 import { LayerService } from '../layer/layer.service';
@@ -24,7 +24,7 @@ require('leaflet.markercluster');
   styleUrls: ['./map.component.scss'],
   providers: [LayerService]
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements AfterViewInit {
 
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
   public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
@@ -32,6 +32,8 @@ export class MapComponent implements OnInit {
   public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
   public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
+
+  @Output() addObservation = new EventEmitter<any>();
 
   map: any
   groups: any = {}
@@ -85,7 +87,7 @@ export class MapComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
+  ngAfterViewInit() {
     let mapPosition = this.localStorageService.getMapPosition();
     if (!mapPosition) {
       this.localStorageService.setMapPosition({
@@ -267,6 +269,13 @@ export class MapComponent implements OnInit {
 
   onPoll() {
     this.adjustTemporalLayers();
+  }
+  
+  onAddObservation() {
+    console.log('map add observation')
+    this.addObservation.emit({
+      latLng: this.map.getCenter()
+    })
   }
 
   onLocate($event) {

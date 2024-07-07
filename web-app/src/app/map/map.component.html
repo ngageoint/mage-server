@@ -20,10 +20,10 @@
   <mat-sidenav-content>
     <div id="map" class="leaflet-map">
       <div class="map-controls-left">
-        <!-- <map-control-zoom (on-zoom)="onZoom($event)"></map-control-zoom>
-        <map-control-search (on-search)="onSearch($event)" (on-search-clear)="onSearchClear($event)"></map-control-search>
-        <map-control-location (on-locate)="onLocate($event)" (on-broadcast)="onBroadcast($event)"></map-control-location>
-        <map-control-add-observation (on-add-observation)="onAddObservation({latLng: map.getCenter()})"></map-control-add-observation> -->
+        <map-control-zoom (onZoom)="onZoom($event)"></map-control-zoom>
+        <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
+        <map-control-location (onLocate)="onLocate($event)" (onBroadcast)="onBroadcast($event)"></map-control-location>
+        <map-control-add-observation (onAddObservation)="onAddObservation()"></map-control-add-observation>
       </div>
     </div>
 

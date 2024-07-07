@@ -1,7 +1,7 @@
 <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
-  <mat-sidenav #feed mode="slide" position="start" opened>
+  <mat-sidenav #feed mode="side" position="start" opened>
     <feed-panel class="feed" [observationLocation]="newObservation"></feed-panel>
   </mat-sidenav>
 
@@ -9,7 +9,7 @@
     <preferences></preferences>
   </mat-sidenav>
 
-  <map></map>
+  <map (addObservation)="onAddObservation($event)"></map>
 
 </mat-sidenav-container>
 

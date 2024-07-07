@@ -13,12 +13,11 @@ app {
   height: 100%
 }
 
-mat-bottom-sheet-container.feed-panel {
-  position: absolute;
+.feed-panel .mat-bottom-sheet-container {
+  position: absolute !important;
   left: 0;
-  bottom:0;
-  width: 450px;
-  min-width: 450px;
+  bottom: 0;
+  min-width: 468px;
 }
 
 .form-remove-snackbar {

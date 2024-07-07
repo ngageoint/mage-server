@@ -42,6 +42,7 @@ export class MageComponent implements OnInit, OnChanges {
   }
 
   onAddObservation($event) {
+    console.log('trying to add a mage component')
     if (this.hideFeed) {
       this.showFeed();
     }
