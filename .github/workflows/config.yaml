@@ -9,10 +9,8 @@ on:
         value: ${{ jobs.main.outputs.node_versions-all-json }}
       node_versions-latest:
         value: ${{ jobs.main.outputs.node_versions-latest }}
-      node_versions-pre_latest:
-        value: ${{ jobs.main.outputs.node_versions-pre_latest }}
-      node_versions-pre_latest-json:
-        value: ${{ jobs.main.outputs.node_versions-pre_latest-json }}
+      node_versions-lts:
+        value: ${{ jobs.main.outputs.node_versions-lts }}
 
 env:
   # space-separated list of node versions to use for testing
