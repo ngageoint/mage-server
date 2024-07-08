@@ -7,7 +7,7 @@ export interface UsersAppLayer {
   searchUsers: SearchUsers
 }
 
-export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestFactory) {
+export function UsersRoutes(app: UsersAppLayer, createAppRequest: WebAppRequestFactory): express.Router {
 
   const routes = express.Router()
 
