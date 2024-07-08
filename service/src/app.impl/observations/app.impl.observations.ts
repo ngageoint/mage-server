@@ -163,7 +163,7 @@ export function registerDeleteRemovedAttachmentsHandler(domainEvents: EventEmitt
  * attachments should move to {@link Observation.assignTo()} so that method can
  * generate appropriate domain events, but that will require some API changes
  * in the entity layer, i.e., some alternative to the pre-generated ID
- * requirements for new form entries and attachments.  That could be soemthing
+ * requirements for new form entries and attachments.  That could be something
  * like generating pending identifiers that are easily distinguished from
  * persistence layer identifiers; maybe a `PendingId` class or `Id` class with
  * an `isPending` property.  That should be reasonable to implement, but no
