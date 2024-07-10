@@ -26,8 +26,10 @@ export interface StyleEvent {
   style: SimpleStyle;
 }
 
-@Injectable()
-export class LayerService {
+@Injectable({
+  providedIn: 'root'
+})
+export class MapLayerService {
   private toggleSource = new Subject<ToggleEvent>();
   private zoomSource = new Subject<ZoomEvent>();
   private opacitySource = new Subject<OpacityEvent>();

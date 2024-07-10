@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { EventService } from "../event/event.service";
 import { MapPopupService } from "./map-popup.service";
-import { LocationService } from "../location/location.service";
+import { LocationService } from "../user/location/location.service";
 import { LocalStorageService } from "../http/local-storage.service";
 import { FeatureService } from "../layer/feature.service";
 

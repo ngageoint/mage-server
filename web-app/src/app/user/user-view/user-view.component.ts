@@ -5,7 +5,7 @@ import * as moment from 'moment'
 import { EventService } from '../../event/event.service';
 import { MapService } from '../../map/map.service';
 import { FilterService } from '../../filter/filter.service';
-import { LocationService } from '../../location/location.service';
+import { LocationService } from '../location/location.service';
 
 @Component({
   selector: 'user-view',

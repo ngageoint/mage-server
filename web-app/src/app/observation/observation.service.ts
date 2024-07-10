@@ -22,14 +22,14 @@ export class ObservationService {
     return this.client.get<any>(`/api/events/${eventId}/observations/${observationId}`);
   }
 
-  getObservationsForEvent(event, options): Observable<any> {
+  getObservationsForEvent(event: any, options: any): Observable<any> {
     const parameters: any = { eventId: event.id, states: 'active', populate: 'true' };
     if (options.interval) {
       parameters.observationStartDate = options.interval.start;
       parameters.observationEndDate = options.interval.end;
     }
 
-    return this.client.get<any>(`/api/events/${event.id}/observations`).pipe(
+    return this.client.get<any>(`/api/events/${event.id}/observations`, { params: parameters }).pipe(
       map((observations: any) => {
         return this.transformObservations(observations, event)
       })

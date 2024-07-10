@@ -1,22 +1,25 @@
-import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { LocationState } from '../../app/map/controls/location.component';
 import { ZoomDirection } from '../../app/map/controls/zoom.component';
 import { LayerService } from '../layer/layer.service';
+import { ToggleEvent } from './layers/layer.service'
 import { MapService } from './map.service';
 import { LocalStorageService } from '../http/local-storage.service';
 import { EventService } from '../event/event.service';
-// import { default as countries } from './countries-land-10km.geo.json';
-import _ from 'underscore';
-import * as moment from 'moment'
-import { map, latLng, popup,tileLayer, Util, marker, TileLayer, geoJSON, latLngBounds } from "leaflet";
+import { default as countries } from './countries-land-10km.geo.json';
+import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng } from "leaflet";
 import { OpacityEvent, ZoomEvent } from './layers/layer.service';
 import { ReorderEvent } from './layers/layers.component';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
+import _ from 'underscore';
+import * as moment from 'moment'
+import { FeatureCollection } from 'geojson';
+import { locationMarker } from './marker/LocationMarker';
 
 require('leaflet-editable');
 require('leaflet.markercluster');
 
-// L.Icon.Default.imagePath = '/'; // TODO
+Icon.Default.imagePath = '/'
 
 @Component({
   selector: 'map',
@@ -24,16 +27,17 @@ require('leaflet.markercluster');
   styleUrls: ['./map.component.scss'],
   providers: [LayerService]
 })
-export class MapComponent implements AfterViewInit {
+export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
 
-  public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000;
-  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
-  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE;
-
-  @Output() addObservation = new EventEmitter<any>();
+  public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000
+  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
+  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
+  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
+  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
+  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
+  
+  @Input() mapSize: number
+  @Output() addObservation = new EventEmitter<any>()
 
   map: any
   groups: any = {}
@@ -53,7 +57,6 @@ export class MapComponent implements AfterViewInit {
   constructor(
     private mapService: MapService,
     private eventService: EventService,
-    private layerService: LayerService,
     private localStorageService: LocalStorageService
   ) {
     this.groups['base'] = {
@@ -85,6 +88,16 @@ export class MapComponent implements AfterViewInit {
       offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
       layers: []
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // if (changes.mapSize && this.mapSize) {
+    //   this.map.invalidateSize({ pan: false });
+    // }
+  }
+
+  ngOnDestroy(): void {
+    this.mapService.removeListener(this)
   }
 
   ngAfterViewInit() {
@@ -128,21 +141,22 @@ export class MapComponent implements AfterViewInit {
     const FALLBACK_LAYER_PANE = 'fallbackLayerPane';
     this.map.createPane(FALLBACK_LAYER_PANE);
     this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = 1;
-    // this.map.addLayer(
-    //   L.geoJSON(countries, {
-    //     interactive: false,
-    //     style: function () {
-    //       return {
-    //         color: '#BBBBBB',
-    //         weight: 0.5,
-    //         fill: true,
-    //         fillColor: '#F9F9F6',
-    //         fillOpacity: 1
-    //       };
-    //     },
-    //     pane: FALLBACK_LAYER_PANE
-    //   })
-    // );
+
+    this.map.addLayer(
+      geoJSON(countries as FeatureCollection, {
+        interactive: false,
+        style: function () {
+          return {
+            color: '#BBBBBB',
+            weight: 0.5,
+            fill: true,
+            fillColor: '#F9F9F6',
+            fillOpacity: 1
+          };
+        },
+        pane: FALLBACK_LAYER_PANE
+      })
+    )
 
     // TODO output
     // this.onMapAvailable({ map: this.map });
@@ -170,22 +184,22 @@ export class MapComponent implements AfterViewInit {
     // );
 
     this.map.on('baselayerchange', baseLayer => {
-      const layer = this.layers[baseLayer.id];
-      this.mapService.selectBaseLayer(layer);
+      const layer = this.layers[baseLayer.id]
+      this.mapService.selectBaseLayer(layer)
     });
 
     this.map.on('overlayadd', overlay => {
-      const layer = this.layers[overlay.id];
-      this.mapService.overlayAdded(layer);
+      const layer = this.layers[overlay.id]
+      this.mapService.overlayAdded(layer)
     });
 
-    this.mapService.addListener(this);
-    this.mapService.setDelegate(this);
+    this.mapService.setDelegate(this)
+    this.mapService.addListener(this)
 
     this.pollListener = {
       onPoll: this.onPoll.bind(this)
     };
-    this.eventService.addPollListener(this.pollListener);
+    this.eventService.addPollListener(this.pollListener)
   }
 
   saveMapPosition() {
@@ -296,11 +310,11 @@ export class MapComponent implements AfterViewInit {
   }
 
   onLocation(location) {
-    // no need to do anything if the location has not changed
+    // skip if the location has not changed
     if (
       this.currentLocation &&
-      this.currentLocation.lat === location.latlng.lat &&
-      this.currentLocation.lng === location.latlng.lng &&
+      this.currentLocation.latitude === location.latlng.lat &&
+      this.currentLocation.longitude === location.latlng.lng &&
       this.currentLocation.accuracy === location.accuracy
     ) {
       return;
@@ -308,10 +322,10 @@ export class MapComponent implements AfterViewInit {
 
     this.currentLocation = location;
     this.map.fitBounds(location.bounds);
-    this.locationLayer.setLatLng(location.latlng).setAccuracy(location.accuracy);
-    if (!this.map.hasLayer(this.locationLayer)) {
-      this.map.addLayer(this.locationLayer);
-    }
+    // this.locationLayer.setLatLng(location.latlng).setAccuracy(location.accuracy);
+    // if (!this.map.hasLayer(this.locationLayer)) {
+    //   this.map.addLayer(this.locationLayer);
+    // }
 
     if (this.broadcast === LocationState.ON) {
       this.mapService.onLocation(location);
@@ -337,7 +351,7 @@ export class MapComponent implements AfterViewInit {
     added.forEach(added => {
       switch (added.type) {
         case 'GeoPackage':
-          this.createGeoPackageLayer(added);
+          // this.createGeoPackageLayer(added);
           break;
         case 'Imagery':
           this.createRasterLayer(added);
@@ -367,15 +381,15 @@ export class MapComponent implements AfterViewInit {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
-    let pane = this.BASE_LAYER_PANE;
+    let paneName = this.BASE_LAYER_PANE;
     if (!layerInfo.base) {
-      pane = `pane-${layerInfo.id}`;
-      this.map.createPane(pane);
+      paneName = `pane-${layerInfo.id}`;
+      this.map.createPane(paneName);
     }
 
     let options: any = {};
     if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
-      options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: pane };
+      options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: paneName };
       layerInfo.layer = tileLayer(layerInfo.url, options);
     } else if (layerInfo.format === 'WMS') {
       options = {
@@ -383,18 +397,16 @@ export class MapComponent implements AfterViewInit {
         version: layerInfo.wms.version,
         format: layerInfo.wms.format,
         transparent: layerInfo.wms.transparent,
-        pane: pane
+        pane: paneName
       };
 
       if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
       layerInfo.layer = new TileLayer.WMS(layerInfo.url, options);
     }
 
-    layerInfo.layer.pane = pane;
+    layerInfo.layer.pane = paneName;
     this.layers[layerInfo.id] = layerInfo;
-
-    //TODO output
-    // this.onAddLayer(layerInfo);
+    this.addLayer(layerInfo)
   }
 
   createGeoPackageLayer(layerInfo) {
@@ -420,38 +432,39 @@ export class MapComponent implements AfterViewInit {
 
   createGeoJsonLayer(layerInfo) {
     const pane = `pane-${layerInfo.id}`;
-    // this.map.createPane(pane);
-    // this.featurePanes.push(pane);
+    this.map.createPane(pane);
+    this.featurePanes.push(pane);
 
-    // layerInfo.featureIdToLayer = {};
-    // const geojson = this.createGeoJsonForLayer(layerInfo.geojson, layerInfo, pane);
+    layerInfo.featureIdToLayer = {};
+    const geojson = this.createGeoJsonForLayer(layerInfo.geojson, layerInfo, pane);
 
-    // if (layerInfo.options.cluster) {
-    //   // TODO cluster with typescript
-    //   layerInfo.layer = L.markerClusterGroup({
-    //     pane: pane,
-    //     clusterPane: pane
-    //   }).addLayer(geojson);
+    if (layerInfo.options.cluster) {
+      // TODO cluster with typescript
+      // layerInfo.layer = L.markerClusterGroup({
+      //   pane: pane,
+      //   clusterPane: pane
+      // }).addLayer(geojson);
 
-    //   layerInfo.layer.on('spiderfied', function () {
-    //     if (this.spiderfyState) {
-    //       this.spiderfyState.layer.openPopup();
-    //     }
-    //   });
-    // } else {
-    //   layerInfo.layer = geojson;
-    // }
+      // layerInfo.layer.on('spiderfied', function () {
+      //   if (this.spiderfyState) {
+      //     this.spiderfyState.layer.openPopup();
+      //   }
+      // });
+      return;
+    } else {
+      layerInfo.layer = geojson;
+    }
 
-    // layerInfo.layer.pane = pane;
-    // this.layers[layerInfo.id] = layerInfo;
+    layerInfo.layer.pane = pane;
+    this.layers[layerInfo.id] = layerInfo;
 
-    // if (layerInfo.options.temporal) {
-    //   this.temporalLayers.push(layerInfo);
-    // }
+    if (layerInfo.options.temporal) {
+      this.temporalLayers.push(layerInfo);
+    }
 
-    // if (!layerInfo.options.hidden) {
-    //   // this.onAddLayer(layerInfo);  // TODO output
-    // }
+    if (!layerInfo.options.hidden) {
+      this.addLayer(layerInfo)
+    }
   }
 
   createGeoJsonForLayer(json, layerInfo, pane, editMode?: any) {
@@ -481,7 +494,7 @@ export class MapComponent implements AfterViewInit {
         }
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
-      pointToLayer: (feature: any, latlng) => {
+      pointToLayer: (feature: any, latlng: LatLng) => {
         let marker;
 
         if (layerInfo.options.temporal) {
@@ -493,7 +506,7 @@ export class MapComponent implements AfterViewInit {
           if (feature.style && feature.style.iconUrl) {
             temporalOptions.iconUrl = feature.style.iconUrl;
           }
-          // marker = L.locationMarker(latlng, temporalOptions); // TODO location maker w/ typescript
+          marker = locationMarker(latlng, temporalOptions)
         } else {
           const options: any = {
             pane: pane,
@@ -542,37 +555,55 @@ export class MapComponent implements AfterViewInit {
     // this.onAddLayer(layerInfo);
   }
 
+  addLayer(layerInfo: any) {
+    if (this.isSelected(layerInfo)) {
+      layerInfo.selected = true;
+      const toggleEvent: ToggleEvent = {
+        layer: layerInfo,
+        value: true
+      }
+      this.layerTogged(toggleEvent);
+    }
+
+    const groupName = this.getGroup(layerInfo);
+    const group = this.groups[groupName];
+    layerInfo.zIndex = group.offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1);
+    const pane = this.map.getPanes()[layerInfo.layer.pane];
+    pane.style.zIndex = layerInfo.zIndex;
+    group.layers.push(layerInfo);
+  }
+
   onFeaturesChanged({ id, added = [], updated = [], removed = [] }) {
-    // const featureLayer = this.layers[id];
-    // const pane = featureLayer.layer.pane;
-    // added.forEach(feature => {
-    //   if (featureLayer.options.cluster) {
-    //     featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
-    //   } else {
-    //     featureLayer.layer.addData(feature);
-    //   }
-    // });
+    const featureLayer = this.layers[id];
+    const pane = featureLayer.layer.pane;
+    added.forEach(feature => {
+      if (featureLayer.options.cluster) {
+        featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
+      } else {
+        featureLayer.layer.addData(feature);
+      }
+    });
 
-    // updated.forEach(feature => {
-    //   const layer = featureLayer.featureIdToLayer[feature.id];
-    //   if (layer) {
-    //     featureLayer.layer.removeLayer(layer);
-    //   };
+    updated.forEach(feature => {
+      const layer = featureLayer.featureIdToLayer[feature.id];
+      if (layer) {
+        featureLayer.layer.removeLayer(layer);
+      };
 
-    //   if (featureLayer.options.cluster) {
-    //     featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
-    //   } else {
-    //     featureLayer.layer.addData(feature);
-    //   }
-    // });
+      if (featureLayer.options.cluster) {
+        featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane));
+      } else {
+        featureLayer.layer.addData(feature);
+      }
+    });
 
-    // removed.forEach(feature => {
-    //   const layer = featureLayer.featureIdToLayer[feature.id];
-    //   if (layer) {
-    //     delete featureLayer.featureIdToLayer[feature.id];
-    //     featureLayer.layer.removeLayer(layer);
-    //   }
-    // });
+    removed.forEach(feature => {
+      const layer = featureLayer.featureIdToLayer[feature.id];
+      if (layer) {
+        delete featureLayer.featureIdToLayer[feature.id];
+        featureLayer.layer.removeLayer(layer);
+      }
+    });
   }
 
   onFeatureZoom(zoom) {
@@ -763,5 +794,52 @@ export class MapComponent implements AfterViewInit {
       const mapPane = this.map.getPanes()[pane];
       mapPane.style.opacity = opacities[index];
     });
+  }
+
+  layerTogged(event: ToggleEvent): void {
+    if (event.layer.base) {
+      this.baseToggled(event);
+    } else {
+      this.overlayToggled(event);
+    }
+  }
+
+  baseToggled(event: ToggleEvent): void {
+    const baseLayers = this.groups['base'].layers;
+    const previousBaseLayer = baseLayers.find((layer: any) => layer.selected);
+    if (previousBaseLayer) {
+      previousBaseLayer.selected = false;
+      this.map.removeLayer(previousBaseLayer.layer);
+    }
+
+    event.layer.selected = true;
+    this.map.addLayer(event.layer.layer);
+
+    this.mapService.selectBaseLayer(event.layer);
+  }
+
+  overlayToggled(event: ToggleEvent): void {
+    if (event.value) {
+      this.map.addLayer(event.layer.layer);
+    } else {
+      this.map.removeLayer(event.layer.layer);
+    }
+  }
+
+  private getGroup(layer): string {
+    switch (layer.type) {
+      case 'GeoPackage':
+        return layer.layer.table.type === 'tile' ? 'tile' : 'feature';
+      case 'Imagery':
+        return layer.base ? 'base' : 'tile';
+      case 'geojson':
+        return layer.group;
+      case 'grid':
+        return layer.group;
+    }
+  }
+
+  private isSelected(layer): boolean {
+    return layer.options && layer.options.selected;
   }
 }
