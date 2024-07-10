@@ -99,7 +99,6 @@ export const UserSchema = new mongoose.Schema<UserDocumentAttrs>(
     active: { type: Boolean, required: true },
     enabled: { type: Boolean, default: true, required: true },
     roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
-    status: { type: String, required: false, index: 'sparse' },
     recentEventIds: [ { type: Number, ref: 'Event' } ],
     authenticationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Authentication', required: true }
   },

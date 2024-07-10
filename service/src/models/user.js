@@ -218,13 +218,6 @@ exports.validLogin = async function (user) {
   await user.authentication.save();
 };
 
-exports.setStatusForUser = function (user, status, callback) {
-  const update = { status: status };
-  User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {
-    callback(err, user);
-  });
-};
-
 exports.setRoleForUser = function (user, role, callback) {
   const update = { role: role };
   User.findByIdAndUpdate(user._id, update, { new: true }, function (err, user) {

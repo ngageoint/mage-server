@@ -419,35 +419,6 @@ module.exports = function (app, security) {
     }
   );
 
-  // update status for myself
-  app.put(
-    '/api/users/myself/status',
-    passport.authenticate('bearer'),
-    function (req, res) {
-      var status = req.param('status');
-      if (!status) return res.status(400).send("Missing required parameter 'status'");
-      req.user.status = status;
-
-      new api.User().update(req.user, function (err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
-      });
-    }
-  );
-
-  // remove status for myself
-  app.delete(
-    '/api/users/myself/status',
-    passport.authenticate('bearer'),
-    function (req, res) {
-      req.user.status = undefined;
-      new api.User().update(req.user, function (err, updatedUser) {
-        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
-        res.json(updatedUser);
-      });
-    }
-  );
-
   // get user by id
   app.get(
     '/api/users/:userId',

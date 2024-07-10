@@ -461,36 +461,6 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
-  /api/users/myself/status:
-    put:
-      tags: [ User ]
-      description: Update the status of the requesting user.
-      operationId: updateMyStatus
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status:
-                  type: string
-              required: [ status ]
-      responses:
-        200:
-          description: Successful status update
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/User' }
-    delete:
-      tags: [ User ]
-      description: Delete the status of the requesting user.
-      operationId: deleteMyStatus
-      responses:
-        200:
-          description: Successfully deleted status
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/User' }
   /api/users/{userId}:
     parameters:
       - { $ref: '#/components/parameters/userIdInPath' }
@@ -3063,8 +3033,6 @@ components:
         username:
           type: string
         displayName:
-          type: string
-        status:
           type: string
         email:
           type: string
