@@ -14,10 +14,17 @@ export interface Team {
    * that MAGE creates for each event.  When an event manager or administrator
    * adds participant users to an event individually, as opposed to an entire
    * team, MAGE places the users in the event's _event team_.
+   *
+   * TODO: this should perhaps be an encapsulated detail of the data layer,
+   * i.e., the notion that an event has an implicit team to manage direct/adhoc
+   * user membership.
    */
   teamEventId?: MageEventId
 }
 
+/**
+ * TODO: move to permission/authorization module
+ */
 export interface TeamAcl {
   [userId: string]: {
     role: TeamMemberRole,
