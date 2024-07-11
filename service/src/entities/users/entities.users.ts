@@ -1,6 +1,7 @@
 import { PagingParameters, PageOf } from '../entities.global'
 import { Role } from '../authorization/entities.authorization'
 import { Authentication } from '../authentication/entities.authentication'
+import { MageEventId } from '../events/entities.events'
 
 export type UserId = string
 
@@ -16,6 +17,14 @@ export interface User {
   phones: Phone[]
   roleId: string
   authenticationId: string
+  avatar: Avatar
+  icon: UserIcon
+  /**
+   * TODO: this could move to another entity like `UserExperience` or
+   * `UserSettings` to eliminate the cyclic reference between the user and
+   * event modules.
+   */
+  recentEventIds: MageEventId[]
   // TODO: the rest of the properties
 }
 
