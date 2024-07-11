@@ -3,7 +3,6 @@ import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent } from '../
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
-import { Team } from '../../entities/teams/entities.teams'
 
 export const MageEventModelName = 'Event'
 
