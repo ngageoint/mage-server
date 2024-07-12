@@ -100,6 +100,7 @@ export function generateKMLFolderStart(name: string): string {
   return `<Folder><name>${name}</name>`;
 }
 
+// TODO: users-next
 export function generateUserStyle(user: UserDocument): string {
   if (user.icon && user.icon.relativePath) {
     return fragment({

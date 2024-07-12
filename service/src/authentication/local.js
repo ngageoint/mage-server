@@ -11,6 +11,7 @@ function configure() {
   log.info('Configuring local authentication');
   passport.use(new LocalStrategy(
     function (username, password, done) {
+      // TODO: users-next
       User.getUserByUsername(username, function (err, user) {
         if (err) { return done(err); }
 
@@ -49,11 +50,13 @@ function configure() {
           if (err) return done(err);
 
           if (isValid) {
+            // TODO: users-next
             User.validLogin(user)
               .then(() => done(null, user))
               .catch(err => done(err));
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
+            // TODO: users-next
             User.invalidLogin(user)
               .then(() => done(null, false, { message: 'Please check your username and password and try again.' }))
               .catch(err => done(err));

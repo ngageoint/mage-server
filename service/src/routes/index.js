@@ -33,6 +33,7 @@ module.exports = function(app, security) {
     if (!/^[0-9a-f]{24}$/.test(userId)) {
       return res.status(400).send('Invalid user ID in request path');
     }
+    // TODO: users-next
     new api.User().getById(userId, function(err, user) {
       if (!user) return res.status(404).send('User not found');
       req.userParam = user;

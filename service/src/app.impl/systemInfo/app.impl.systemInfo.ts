@@ -54,19 +54,19 @@ export function CreateReadSystemInfo(
   req: api.ReadSystemInfoRequest
   ): Promise<api.ReadSystemInfoResponse> {
     const isAuthenticated = req.context.requestingPrincipal() != null;
-
-	// FIXME: Replace this with Robert's first-run secret implementation when available
-	const legacyUsers = Users as any;   
+    // FIXME: Replace this with Robert's first-run secret implementation when available
+    // TODO: users-next
+    const legacyUsers = Users as any;
     const userCount = await new Promise(resolve => {
       legacyUsers.count({}, (err:any, count:any) => {
-	    resolve(count)
-	  });
+        resolve(count)
+      });
     });
-    
+
     // Initialize with base system info
-    let systemInfoResponse: ExoRedactedSystemInfo = {	  
-      version: versionInfo,	  
-	  initial: userCount == 0,
+    let systemInfoResponse: ExoRedactedSystemInfo = {
+      version: versionInfo,
+      initial: userCount == 0,
       disclaimer: (await settingsModule.getSetting('disclaimer')) || {},
       contactInfo: (await settingsModule.getSetting('contactInfo')) || {}
     };

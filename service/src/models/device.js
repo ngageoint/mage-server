@@ -29,6 +29,7 @@ DeviceSchema.path('userId').validate(async function (userId) {
   let isValid = true;
 
   try {
+    // TODO: users-next
     const user = await User.getUserById(userId);
     if (!user) {
       isValid = false;
@@ -181,6 +182,7 @@ async function queryUsersAndDevicesThenPage(options, conditions) {
     registered = conditions.registered;
     delete conditions.registered;
   }
+  // TODO: users-next
   const count = await User.Model.count(conditions);
   return User.Model.find(conditions, "_id").populate({ path: 'authenticationId', populate: { path: 'authenticationConfigurationId' } }).exec().then(data => {
     const ids = [];

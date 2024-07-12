@@ -205,6 +205,7 @@ export class GeoPackage extends Exporter {
     const userIconRows: Map<string, IconRow> = new Map()
     let zoomToEnvelope: Envelope | null = null
     return cursor.eachAsync(async location => {
+      // TODO: users-next
       if (user?._id.toString() !== location.userId.toString()) {
         user = await User.getUserById(location.userId);
       }

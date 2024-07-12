@@ -8,6 +8,7 @@ import { AnyPermission } from '../entities/authorization/entities.permissions'
  * TODO: This should not be statically linked to the Mongoose Document type but
  * for now this is the quick and dirty way because the legacy web adapter layer
  * puts the user Mongoose document on the request.
+ * TODO: users-next
  */
 export type UserWithRole = UserDocument & {
   roleId: RoleDocument

@@ -7,6 +7,7 @@ module.exports = function (app, security) {
     , AuthenticationConfiguration = require('../models/authenticationconfiguration');
 
   function authorizeSetup(req, res, next) {
+    // TODO: users-next
     User.count(function (err, count) {
       if (err) next(err);
 
@@ -87,6 +88,7 @@ module.exports = function (app, security) {
           });
         },
         function (done) {
+          // TODO: users-next
           User.createUser(req.user, function (err, user) {
             done(err, user);
           });

@@ -28,4 +28,5 @@ export function removeUserFromAclForEventTeam(eventId: any, userId: any, callbac
 export function removeUserFromAllAcls(user: any, callback: any): void;
 declare var Team: mongoose.Model<mongoose.Document>;
 import mongoose = require("mongoose");
+// TODO: users-next
 import User from './user'

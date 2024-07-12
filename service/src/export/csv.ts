@@ -143,8 +143,10 @@ export class Csv extends Exporter {
       ...observation.properties
     } as any
 
+    // TODO: users-next
     if (!cache.user || cache.user._id.toString() !== observation.userId?.toString()) {
       if (observation.userId) {
+        // TODO: users-next
         cache.user = await User.getUserById(observation.userId!)
       }
     }
@@ -243,6 +245,7 @@ export class Csv extends Exporter {
       mgrs: mgrs.forward(location.geometry.coordinates),
     } as UserLocationDocumentProperties & { user?: string, device?: string }
     if (!cache.user || cache.user._id.toString() !== location.userId.toString()) {
+      // TODO: users-next
       cache.user = await User.getUserById(location.userId)
     }
     if (!cache.device || cache.device._id.toString() !== flat.deviceId?.toString()) {

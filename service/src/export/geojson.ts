@@ -127,6 +127,7 @@ export class GeoJson extends Exporter {
       this.mapObservationProperties(observation, archive);
 
       if (observation.userId) {
+        // TODO: users-next
         if (!user || user._id.toString() !== String(observation.userId)) {
           user = await User.getUserById(observation.userId)
         }

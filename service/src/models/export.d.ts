@@ -36,6 +36,7 @@ export type ExportAttrs = {
 export type ExportDocument = ExportAttrs & mongoose.Document
 
 export type ExportDocumentPopulated = Omit<ExportDocument, 'userId' | 'options'> & {
+  // TODO: users-next
   userId: UserDocument | null,
   options: Omit<ExportOptions, 'eventId'> & {
     event: { _id: number, name: string }

@@ -12,6 +12,7 @@ import { UserId } from '../entities/users/entities.users'
 import { MongooseMageEventRepository } from '../adapters/events/adapters.events.db.mongoose'
 import { TeamId } from '../entities/teams/entities.teams'
 
+// TODO: users-next
 export interface EventRequestContext extends AppRequestContext<UserDocument> {
   readonly event: MageEventAttrs | MageEventDocument
 }

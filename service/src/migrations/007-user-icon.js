@@ -6,6 +6,7 @@ exports.id = '007-user-icon';
 exports.up = function(done) {
   this.log('updating user icons');
 
+  // TODO: users-next
   User.getUsers(function(err, users) {
     if (err) return done(err);
 

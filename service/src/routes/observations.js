@@ -142,7 +142,7 @@ module.exports = function (app, security) {
   function getUserForObservation(req, res, next) {
     var userId = req.observation.userId;
     if (!userId) return next();
-
+    // TODO: users-next
     new api.User().getById(userId, function (err, user) {
       if (err) return next(err);
 

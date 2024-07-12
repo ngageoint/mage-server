@@ -124,6 +124,7 @@ LocalSchema.pre('save', function (next) {
 
   async.waterfall([
     function (done) {
+      // TODO: users-next
       User.getUserByAuthenticationId(authentication._id, function (err, user) {
         done(err, user);
       });

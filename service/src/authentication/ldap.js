@@ -27,6 +27,7 @@ function configure(strategy) {
   },
     function (profile, done) {
       const username = profile[strategy.settings.profile.id ];
+      // TODO: users-next
       User.getUserByAuthenticationStrategy(strategy.type, username, function (err, user) {
         if (err) return done(err);
 
@@ -49,7 +50,7 @@ function configure(strategy) {
                 }
               }
             };
-
+            // TODO: users-next
             new api.User().create(user).then(newUser => {
               if (!newUser.authentication.authenticationConfiguration.enabled) {
                 log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");

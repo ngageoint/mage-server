@@ -130,6 +130,7 @@ Event.prototype.deleteEvent = async function(callback) {
         });
       },
       recentEventIds: function(done) {
+        // TODO: users-next
         User.removeRecentEventForUsers(event, function(err) {
           done(err);
         });

@@ -22,15 +22,17 @@ class AuthenticationInitializer {
     AuthenticationInitializer.passport = passport;
     AuthenticationInitializer.provision = provision;
 
-    const BearerStrategy = require('passport-http-bearer').Strategy
-      , User = require('../models/user')
-      , Token = require('../models/token');
+    const BearerStrategy = require('passport-http-bearer').Strategy;
+    // TODO: users-next
+    const User = require('../models/user');
+    const Token = require('../models/token');
 
     passport.serializeUser(function (user, done) {
       done(null, user._id);
     });
 
     passport.deserializeUser(function (id, done) {
+      // TODO: users-next
       User.getUserById(id, function (err, user) {
         done(err, user);
       });
@@ -64,6 +66,7 @@ class AuthenticationInitializer {
 
       AuthenticationInitializer.tokenService.verifyToken(token, expectation)
         .then(payload => {
+          // TODO: users-next
           User.getUserById(payload.subject)
             .then(user => done(null, user))
             .catch(err => done(err));
@@ -92,7 +95,7 @@ class AuthenticationInitializer {
           userAgent: req.headers['user-agent'],
           appVersion: req.param('appVersion')
         };
-
+        // TODO: users-next
         new api.User().login(req.user, req.provisionedDevice, options, function (err, token) {
           if (err) return next(err);
 

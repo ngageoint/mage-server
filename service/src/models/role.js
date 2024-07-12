@@ -21,7 +21,7 @@ const RoleSchema = new Schema(
 
 RoleSchema.pre('remove', function (next) {
   const role = this;
-
+  // TODO: users-next
   User.removeRoleFromUsers(role, function (err) {
     next(err);
   });

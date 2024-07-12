@@ -36,6 +36,7 @@ export = Object.freeze({
     }
   },
 
+  // TODO: users-next
   userHasPermission(user: UserDocument, permission: AnyPermission) {
     if (!user || !user.roleId) {
       return false

@@ -81,6 +81,7 @@ function configure(strategy) {
       return done('Failed to load user id from SAML profile');
     }
 
+    // TODO: users-next
     User.getUserByAuthenticationStrategy(strategy.type, uid, function (err, user) {
       if (err) return done(err);
 
@@ -103,7 +104,7 @@ function configure(strategy) {
               }
             }
           };
-
+          // TODO: users-next
           new api.User().create(user).then(newUser => {
             if (!newUser.authentication.authenticationConfiguration.enabled) {
               log.warn(newUser.authentication.authenticationConfiguration.title + " authentication is not enabled");
@@ -304,6 +305,7 @@ function initialize(strategy) {
     provision.check(strategy.name),
     parseLoginMetadata,
     function (req, res, next) {
+      // TODO: users-next
       new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
         if (err) return next(err);
 

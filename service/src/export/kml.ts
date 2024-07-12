@@ -107,6 +107,7 @@ export class Kml extends Exporter {
         }
         locationString = '';
         lastUserId = location.userId.toString();
+        // TODO: users-next
         lastUser = await User.getUserById(location.userId);
         if (lastUser) {
           userStyles += writer.generateUserStyle(lastUser);

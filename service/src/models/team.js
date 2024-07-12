@@ -186,6 +186,7 @@ exports.getMembers = async function (teamId, options) {
 
     // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
     // add _id to sort to ensure consistent ordering
+    // TODO: users-next
     const members = await User.Model.find(params)
       .sort('displayName _id')
       .limit(options.pageSize)
@@ -199,6 +200,7 @@ exports.getMembers = async function (teamId, options) {
 
     const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
     if (includeTotalCount) {
+      // TODO: users-next
       page.totalCount = await User.Model.count(params);
     }
 
