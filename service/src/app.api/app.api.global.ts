@@ -9,6 +9,7 @@ export interface AppRequestContext<Principal = unknown> {
    * variable that a Java application would use.  Node does not use the model
    * of one thread per request, so some unique value is necessary to track a
    * request context across multiple asynchronous operations.
+   * TODO: Node introduced async context tracking: https://nodejs.org/docs/latest-v18.x/api/async_context.html
    */
   readonly requestToken: unknown
   requestingPrincipal(): Principal
