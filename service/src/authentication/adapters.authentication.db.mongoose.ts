@@ -1,94 +1,76 @@
 import crypto from 'crypto'
 import mongoose, { Schema } from 'mongoose'
-import { UserModel, UserDocument } from '../adapters/users/adapters.users.db.mongoose'
-import environment = require('../environment/env');
+import { UserDocumentExpanded } from '../adapters/users/adapters.users.db.mongoose'
+import { UserId } from '../entities/users/entities.users'
 
-export interface TokenDocumentAttrs {
+export interface SessionDocument {
   token: string
   expirationDate: Date
   userId?: mongoose.Types.ObjectId | undefined
   deviceId?: mongoose.Types.ObjectId | undefined
 }
-
-export type TokenDocument = mongoose.Document<mongoose.Types.ObjectId, any, TokenDocumentAttrs> & TokenDocumentAttrs
-export type TokenDocumentPopulated = TokenDocument & {
-  userId: UserDocument
+export type SessionDocumentExpanded = SessionDocument & {
+  userId: UserDocumentExpanded
+  deviceId?: mongoose.Document
 }
+export type SessionModel = mongoose.Model<SessionDocument>
 
-// Token expiration in msecs
-const tokenExpiration = environment.tokenExpiration * 1000
-
-// Collection to hold users
-const TokenSchema = new Schema<TokenDocumentAttrs>(
+const SessionSchema = new Schema<SessionDocument, SessionModel>(
   {
+    token: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
     expirationDate: { type: Date, required: true },
-    token: { type: String, required: true }
   },
   { versionKey: false }
 )
 
 // TODO: index token
-TokenSchema.index({ token: 1 })
-TokenSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
+SessionSchema.index({ token: 1 })
+SessionSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 })
 
-const Token = mongoose.model('Token', TokenSchema)
-
-export type SessionExpanded = {
-  token: TokenDocument,
-  user: UserDocument,
-  deviceId: mongoose.Types.ObjectId | null,
+export interface SessionRepository {
+  readonly model: SessionModel
+  createOrRefreshSession(userId: UserId, deviceId?: string): Promise<SessionDocumentExpanded>
+  removeSession(token: string): Promise<void>
+  removeSessionsForUser(userId: UserId): Promise<number>
+  removeSessionForDevice(deviceId: string): Promise<number>
 }
 
-export async function lookupSession(token: string): Promise<SessionExpanded | null> {
-  // TODO: try to eliminate these populate join queries here or elsewhere; something is doing redundant queries
-  const tokenDoc = await Token.findOne({ token }).populate({
-    path: 'userId',
-    // populate: {
-    //   path: 'authenticationId',
-    //   model: 'Authentication'
-    // }
+const populateSessionUserRole: mongoose.PopulateOptions = {
+  path: 'userId',
+  populate: 'roleId'
+}
+
+export function createSessionRepository(conn: mongoose.Connection, collectionName: string, sessionTimeoutSeconds: number): SessionRepository {
+  const model = conn.model('Token', SessionSchema, collectionName)
+  return Object.freeze({
+    model,
+    async createOrRefreshSession(userId: UserId, deviceId?: string): Promise<mongoose.HydratedDocument<SessionDocumentExpanded>> {
+      const seed = crypto.randomBytes(20)
+      const token = crypto.createHash('sha256').update(seed).digest('hex')
+      const query: any = { userId: new mongoose.Types.ObjectId(userId) }
+      if (deviceId) {
+        query.deviceId = new mongoose.Types.ObjectId(deviceId)
+      }
+      const now = Date.now()
+      const update = {
+        token,
+        expirationDate: new Date(now + sessionTimeoutSeconds * 1000)
+      }
+      return await model.findOneAndUpdate(query, update,
+        { upsert: true, new: true, populate: populateSessionUserRole })
+    },
+    async removeSession(token: string): Promise<void> {
+      await model.deleteOne({ token })
+    },
+    async removeSessionsForUser(userId: UserId): Promise<number> {
+      const { deletedCount } = await model.deleteMany({ userId: new mongoose.Types.ObjectId(userId) })
+      return deletedCount
+    },
+    async removeSessionForDevice(deviceId: string): Promise<number> {
+      const { deletedCount } = await model.deleteMany({ deviceId: new mongoose.Types.ObjectId(deviceId) })
+      return deletedCount
+    }
   })
-  if (!tokenDoc || !tokenDoc.userId) {
-    return null
-  }
-  tokenDoc.userId.populate('roleId', function(err, user) {
-    return callback(err, {user: user, deviceId: tokenDoc.deviceId, token: tokenDoc });
-  });
 }
-
-exports.createToken = function(options, callback) {
-  const seed = crypto.randomBytes(20);
-  const token = crypto.createHash('sha256').update(seed).digest('hex');
-  const query: any = { userId: options.userId };
-  if (options.device) {
-    query.deviceId = options.device._id;
-  }
-  const now = Date.now();
-  const update = {
-    token: token,
-    expirationDate: new Date(now + tokenExpiration)
-  };
-  Token.findOneAndUpdate(query, update, {upsert: true, new: true}, function(err, newToken) {
-    callback(err, newToken);
-  });
-};
-
-exports.removeToken = function(token, callback) {
-  Token.findByIdAndRemove(token._id, function(err) {
-    callback(err);
-  });
-};
-
-exports.removeTokensForUser = function(user, callback) {
-  Token.remove({userId: user._id}, function(err, numberRemoved) {
-    callback(err, numberRemoved);
-  });
-};
-
-exports.removeTokenForDevice = function(device, callback) {
-  Token.remove({deviceId: device._id}, function(err, numberRemoved) {
-    callback(err, numberRemoved);
-  });
-};
