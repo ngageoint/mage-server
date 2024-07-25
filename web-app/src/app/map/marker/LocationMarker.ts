@@ -62,8 +62,6 @@ export class LocationMarker extends Layer {
   }
 
   bindPopup(content: ((layer: Layer) => Content) | Content | Popup, options?: PopupOptions): this {
-    console.log('bind the location marker ')
-
     options = options || {}
     if (this.iconMarker) {
       options.offset = [0, 0]
