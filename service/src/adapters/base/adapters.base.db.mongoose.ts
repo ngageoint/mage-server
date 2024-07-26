@@ -74,6 +74,11 @@ export class BaseMongooseRepository<DocType extends mongoose.AnyObject, Model ex
     return doc ? this.entityForDocument(doc) : null as any
   }
 
+  /**
+   * _NOTE_ this currently only explicitly supports 'string' and 'number' IDs, though Mongoose will implicitly
+   * [cast](https://mongoosejs.com/docs/6.x/docs/tutorials/query_casting.html) a filter's `_id` entry to `ObjectID`
+   * before sending the query through the driver.
+   */
   async findAllByIds<ID>(ids: ID[]): Promise<ID extends string ? { [id: string]: Entity | null } : ID extends number ? { [id: number]: Entity | null } : never> {
     if (!ids.length) {
       return {} as any
