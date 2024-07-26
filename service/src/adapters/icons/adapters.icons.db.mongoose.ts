@@ -5,12 +5,13 @@ import { EntityIdFactory, pageOf, PageOf, PagingParameters, UrlResolutionError, 
 import { StaticIcon, StaticIconStub, StaticIconId, StaticIconRepository, LocalStaticIconStub, StaticIconReference, StaticIconContentStore, StaticIconImportFetch } from '../../entities/icons/entities.icons'
 import { BaseMongooseRepository, pageQuery } from '../base/adapters.base.db.mongoose'
 
-export type StaticIconDocument = Omit<StaticIcon, 'sourceUrl'> & mongoose.Document & {
+export type StaticIconDocument = Omit<StaticIcon, 'sourceUrl'> & {
+  _id: string
   sourceUrl: string
 }
 export type StaticIconModel = mongoose.Model<StaticIconDocument>
 export const StaticIconModelName = 'StaticIcon'
-export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
+export const StaticIconSchema = new mongoose.Schema<StaticIconDocument, StaticIconModel>(
   {
     _id: { type: String, required: true },
     sourceUrl: { type: String, required: true, unique: true },
@@ -38,7 +39,7 @@ export const StaticIconSchema = new mongoose.Schema<StaticIconDocument>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: StaticIconDocument, json: any & StaticIcon, options: mongoose.SchemaOptions): void => {
+      transform: (doc: StaticIconDocument, json: any & StaticIcon): void => {
         delete json._id
         json.sourceUrl = new URL(doc.sourceUrl)
       }
@@ -85,24 +86,20 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
       const _id = await this.idFactory.nextId()
       doc = await this.model.create({ _id, registeredTimestamp: Date.now(), ...stub })
     }
-    switch (fetch) {
-      case StaticIconImportFetch.EagerAwait:
-        const stored = await this.fetchAndStore(doc)
-        if (stored instanceof UrlResolutionError) {
-          return stored
-        }
-        doc = stored
-        break
-      case StaticIconImportFetch.Eager:
-        this.fetchAndStore(doc)
-        break
-      case StaticIconImportFetch.Lazy:
-      default:
+    if (fetch === StaticIconImportFetch.EagerAwait) {
+      const stored = await this.fetchAndStore(doc)
+      if (stored instanceof UrlResolutionError) {
+        return stored
+      }
+      doc = stored
+    }
+    else if (StaticIconImportFetch.Eager) {
+      this.fetchAndStore(doc)
     }
     return this.entityForDocument(doc)
   }
 
-  private async fetchAndStore(iconDoc: StaticIconDocument): Promise<StaticIconDocument | UrlResolutionError> {
+  private async fetchAndStore(iconDoc: mongoose.HydratedDocument<StaticIconDocument>): Promise<mongoose.HydratedDocument<StaticIconDocument> | UrlResolutionError> {
     if (typeof iconDoc.resolvedTimestamp === 'number') {
       return iconDoc
     }
@@ -193,12 +190,12 @@ export class MongooseStaticIconRepository extends BaseMongooseRepository<StaticI
     return pageOf(items, paging, counted.totalCount)
   }
 
-  private async findDocBySourceUrl(url: URL): Promise<StaticIconDocument | null> {
+  private async findDocBySourceUrl(url: URL): Promise<mongoose.HydratedDocument<StaticIconDocument> | null> {
     return await this.model.findOne({ sourceUrl: url.toString() })
   }
 }
 
-async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository, registered: StaticIconDocument, stub: StaticIconStub): Promise<StaticIconDocument> {
+async function updateRegisteredIconIfChanged(this: MongooseStaticIconRepository, registered: mongoose.HydratedDocument<StaticIconDocument>, stub: StaticIconStub): Promise<mongoose.HydratedDocument<StaticIconDocument>> {
   /*
   TODO: some of this logic could potentially be captured as an entity layer
   function, such as which properties a client is allowed to update when

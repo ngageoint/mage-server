@@ -1,9 +1,8 @@
 
-import mongoose, { Model, SchemaOptions } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
 import { FeedServiceType, FeedService, FeedServiceTypeId, RegisteredFeedServiceType, FeedRepository, Feed, FeedServiceId } from '../../entities/feeds/entities.feeds'
 import { FeedServiceTypeRepository, FeedServiceRepository } from '../../entities/feeds/entities.feeds'
-import { FeedServiceDescriptor } from '../../app.api/feeds/app.api.feeds'
 import { EntityIdFactory } from '../../entities/entities.global'
 
 
@@ -13,28 +12,26 @@ export const FeedsModels = {
   Feed: 'Feed',
 }
 
-export type FeedServiceTypeIdentity = Pick<FeedServiceType, 'pluginServiceTypeId'> & {
-  id: string
+export type FeedServiceTypeIdentityDocument = Pick<FeedServiceType, 'pluginServiceTypeId'> & {
+  _id: mongoose.Types.ObjectId
   moduleName: string
 }
-export type FeedServiceTypeIdentityDocument = FeedServiceTypeIdentity & mongoose.Document
 export type FeedServiceTypeIdentityModel = Model<FeedServiceTypeIdentityDocument>
-//TODO remove cast to any
-export const FeedServiceTypeIdentitySchema = new mongoose.Schema<any>({
+export const FeedServiceTypeIdentitySchema = new mongoose.Schema<FeedServiceTypeIdentityDocument, FeedServiceTypeIdentityModel>({
   pluginServiceTypeId: { type: String, required: true },
   moduleName: { type: String, required: true }
 })
 export function FeedServiceTypeIdentityModel(conn: mongoose.Connection, collection?: string): FeedServiceTypeIdentityModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types') as any
+  return conn.model(FeedsModels.FeedServiceTypeIdentity, FeedServiceTypeIdentitySchema, collection || 'feed_service_types')
 }
 
-export type FeedServiceDocument = Omit<FeedServiceDescriptor, 'serviceType'> & mongoose.Document & {
+export type FeedServiceDocument = Omit<FeedService, 'id' | 'serviceType' | 'config'> & {
+  _id: mongoose.Types.ObjectId
   serviceType: mongoose.Types.ObjectId
+  config: object
 }
 export type FeedServiceModel = Model<FeedServiceDocument>
-//TODO remove cast to any
-export const FeedServiceSchema = new mongoose.Schema<any>(
+export const FeedServiceSchema = new mongoose.Schema<FeedServiceDocument, FeedServiceModel>(
   {
     serviceType: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedServiceTypeIdentity },
     title: { type: String, required: true },
@@ -45,7 +42,7 @@ export const FeedServiceSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: FeedServiceDocument, json: any & FeedService, options: SchemaOptions): void => {
+      transform: (doc: FeedServiceDocument, json: any & FeedService): void => {
         delete json._id
         json.serviceType = doc.serviceType.toHexString()
       }
@@ -56,13 +53,20 @@ export function FeedServiceModel(conn: mongoose.Connection, collection?: string)
   return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services') as any
 }
 
-export type FeedDocument = Omit<Feed, 'service' | 'icon'> & mongoose.Document & {
-  service: mongoose.Types.ObjectId,
+export type FeedDocument = Omit<Feed, 'id' | 'service' | 'icon' | 'constantParams'> & {
+  _id: string
+  service: mongoose.Types.ObjectId
   icon?: string
+  /**
+   * This extra definition with `object` avoids the following TS error on the `FeedSchema` `constantParams` member
+   * below.
+   *
+   * _Type instantiation is excessively deep and possibly infinite.ts(2589)_
+   */
+  constantParams: object
 }
 export type FeedModel = Model<FeedDocument>
-//TODO remove cast to any
-export const FeedSchema = new mongoose.Schema<any>(
+export const FeedSchema = new mongoose.Schema<FeedDocument, FeedModel>(
   {
     _id: { type: String, required: true },
     service: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: FeedsModels.FeedService },
@@ -86,7 +90,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     toJSON: {
       getters: true,
       versionKey: false,
-      transform: (doc: FeedDocument, json: any & Feed, options: SchemaOptions): void => {
+      transform: (doc: FeedDocument, json: any & Feed): void => {
         delete json._id
         json.service = doc.service.toHexString()
         if (doc.icon) {
@@ -96,8 +100,7 @@ export const FeedSchema = new mongoose.Schema<any>(
     }
   })
 export function FeedModel(conn: mongoose.Connection, collection?: string): FeedModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds') as any
+  return conn.model(FeedsModels.Feed, FeedSchema, collection || 'feeds')
 }
 
 export class MongooseFeedServiceTypeRepository implements FeedServiceTypeRepository {
@@ -148,7 +151,16 @@ export class MongooseFeedServiceRepository extends BaseMongooseRepository<FeedSe
 export class MongooseFeedRepository extends BaseMongooseRepository<FeedDocument, FeedModel, Feed> implements FeedRepository {
 
   constructor(model: FeedModel, private readonly idFactory: EntityIdFactory) {
-    super(model, { entityToDocStub: e => ({ ...e, icon: e.icon?.id  }) })
+    super(model, {
+      entityToDocStub: e => {
+        return {
+          ...e,
+          _id: e.id,
+          service: new mongoose.Types.ObjectId(e.service!),
+          icon: e.icon?.id
+        }
+      }
+    })
   }
 
   async create(attrs: Partial<Feed>): Promise<Feed> {
