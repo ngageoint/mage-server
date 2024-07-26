@@ -1,4 +1,4 @@
-import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
+import { BaseMongooseRepository, DocumentMapping } from '../base/adapters.base.db.mongoose'
 import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent } from '../../entities/events/entities.events'
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
@@ -10,34 +10,38 @@ export type MageEventDocument = legacy.MageEventDocument
 export type MageEventModel = mongoose.Model<legacy.MageEventDocument>
 export const MageEventSchema = legacy.Model.schema
 
-export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEventAttrs, MageEvent> implements MageEventRepository {
+const docToEntity: DocumentMapping<MageEventDocument, MageEvent> = doc => {
+  if (doc instanceof mongoose.Document) {
+    return new MageEvent(doc.toJSON())
+  }
+  // TODO: might need to implement this
+  throw new Error('event document mapping only support hydrated model instances')
+}
+
+export class MongooseMageEventRepository extends BaseMongooseRepository<MageEventDocument, MageEventModel, MageEvent> implements MageEventRepository {
 
   constructor(model: MageEventModel) {
-    super(model)
+    super(model, { docToEntity })
   }
 
-  async create(): Promise<MageEventAttrs> {
+  async create(): Promise<MageEvent> {
     throw new Error('method not allowed')
   }
 
-  async update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEventAttrs | null> {
+  async update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEvent | null> {
     throw new Error('method not allowed')
   }
 
   async findById(id: MageEventId): Promise<MageEvent | null> {
-    const attrs = await super.findById(id)
-    if (attrs) {
-      return new MageEvent(attrs)
-    }
-    return null
+    return await super.findById(id)
   }
 
   async findActiveEvents(): Promise<MageEventAttrs[]> {
-    const docs: legacy.MageEventDocument[] = await this.model.find({ complete: { $in: [ null, false ] }}).exec()
+    const docs = await this.model.find({ complete: { $in: [ null, false ] }})
     return docs.map(this.entityForDocument)
   }
 
-  async addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null> {
+  async addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null> {
     const updated = await this.model.findByIdAndUpdate(
       event,
       {
@@ -49,7 +53,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return updated ? this.entityForDocument(updated) : null
   }
 
-  async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null> {
+  async removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null> {
     const updated = await this.model.findByIdAndUpdate(
       event,
       {
