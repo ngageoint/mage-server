@@ -2,9 +2,9 @@ import mongoose from 'mongoose'
 import { EnsureJson } from '../../entities/entities.json_types'
 import { PluginStateRepository } from '../../plugins.api'
 
-export type PluginStateDocument<State extends object> = mongoose.Document & {
+export type PluginStateDocument<State extends object> = {
   _id: 'string',
-  state: State
+  state: State | null
 }
 
 const SCHEMA_SPEC = {
@@ -14,18 +14,19 @@ const SCHEMA_SPEC = {
 
 export class MongoosePluginStateRepository<State extends object> implements PluginStateRepository<State> {
 
-  //TODO remove cast to any, was mongoose.Model<PluginStateDocument<State>>
-  readonly model: mongoose.Model<any>
+  readonly model: mongoose.Model<PluginStateDocument<State>>
 
   constructor(public readonly pluginId: string, public readonly mongoose: mongoose.Mongoose) {
     const collectionName = `plugin_state_${pluginId}`
     const modelNames = mongoose.modelNames()
-    this.model = modelNames.includes(collectionName) ? mongoose.model(collectionName) : mongoose.model(collectionName, new mongoose.Schema(SCHEMA_SPEC), collectionName)
+    this.model = modelNames.includes(collectionName) ?
+      mongoose.model<PluginStateDocument<State>>(collectionName) :
+      mongoose.model(collectionName, new mongoose.Schema<PluginStateDocument<State>>(SCHEMA_SPEC), collectionName)
   }
 
-  async put(state: EnsureJson<State>): Promise<EnsureJson<State>> {
+  async put(state: EnsureJson<State> | null): Promise<EnsureJson<State>> {
     const updated = await this.model.findByIdAndUpdate(this.pluginId, { state }, { new: true, upsert: true, setDefaultsOnInsert: false })
-    return updated.toJSON().state
+    return updated.toJSON().state as any
   }
 
   async patch(state: Partial<EnsureJson<State>>): Promise<EnsureJson<State>> {
@@ -40,11 +41,11 @@ export class MongoosePluginStateRepository<State extends object> implements Plug
       return update
     }, {} as any)
     const patched = await this.model.findByIdAndUpdate(this.pluginId, update, { new: true, upsert: true, setDefaultsOnInsert: false })
-    return patched.toJSON().state
+    return patched.toJSON().state as any
   }
 
   async get(): Promise<EnsureJson<State> | null> {
     const doc = await this.model.findById(this.pluginId)
-    return doc?.toJSON().state || null
+    return doc?.toJSON().state as any || null
   }
 }
