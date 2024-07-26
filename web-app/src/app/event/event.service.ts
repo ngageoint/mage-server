@@ -652,7 +652,6 @@ export class EventService {
         return true;
       }
     }) || {};
-    // console.log('get next feed event', event.id) 
     return this.eventsById[event.id].feedsById[nextFeed.id];
   }
 

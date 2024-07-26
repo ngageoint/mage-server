@@ -29,7 +29,6 @@ export class AuthorizeComponent {
         this.router.navigate(['map']);
       },
       error: () => {
-        console.log('Error authentication')
         this.deviceId.setErrors({ invalid: true})
         // TODO show error message
       }

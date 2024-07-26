@@ -1,78 +1,43 @@
-import { setOptions, DivIcon, DivIconOptions, DomUtil, Icon, icon } from "leaflet";
+import { DivIcon, DivIconOptions, DomUtil } from "leaflet";
 
 export interface FixedWidthDivIconOptions extends DivIconOptions {
-  tooltip: boolean
-  iconWidth: number
-  onIconLoad?(icon: FixedWidthIcon, height: number, width: number): void;
+  iconUrl: string
+  iconWidth?: number
 }
 
 export class FixedWidthIcon extends DivIcon {
-  tooltip = false
   options: FixedWidthDivIconOptions
 
   onIconLoad?(icon: FixedWidthIcon, height: number, width: number): void
 
   constructor(options?: FixedWidthDivIconOptions) {
+    options.iconWidth = options.iconWidth || 35
+    options.iconUrl = options.iconUrl || '/assets/images/default_marker.png'
+
     super(options)
-
-    setOptions(this, options)
-
-    if (options.iconWidth) {
-      options.iconWidth = 35
-    }
-
-    if (options.iconUrl) {
-      options.iconUrl = '/assets/images/default_marker.png'
-    }
   }
 
   createIcon(oldIcon?: HTMLElement): HTMLElement {
-    if (!oldIcon) {
-      console.log('create new icon')
+    const div = DomUtil.create('div', 'observation-edit-marker')
 
-      // get icon width/height
-      const img = new Image()
-      img.src = this.options.iconUrl
+    const img = document.createElement('img')
+    img.className = "mage-icon-image"
+    img.style.width = this.options.iconWidth + 'px'
+    img.src = this.options.iconUrl;
 
-      img.onload = (icon: any) => {
-        console.log('on load called to get icon width/height')
-        // if (this.onIconLoad) {
-          // this.onIconLoad(this, icon.srcElement.height, icon.srcElement.width)
-        // }
-        setOptions(this, {
-          iconAnchor: [0, icon.srcElement.height],
-          opacity: .2
-        })
-        this.createIcon(img)
-      }
+    img.onload = (event: any) => {
+      div.style.marginTop = -(event.srcElement.height) + 'px'
+      div.style.marginLeft = -(event.srcElement.width / 2) + 'px'
+    }
 
-      return img;
-    } else {
-      console.log('we have an icon with a width/height')
-      const icon = new Icon({
-        iconUrl: this.options.iconUrl,
-        iconSize: [44, 44],
-        iconAnchor: [0, 44],
-        opacity: .2
-      })
-      
-      // const div = DivIcon.prototype.createIcon.call(this);
-      // div.style["margin-left"] = (this.options.iconWidth / -2) + 'px';
+    div.appendChild(img)
+    if (this.options.html) {
+      const tooltip = DomUtil.create('div', 'observation-edit-marker__tooltip')
+      tooltip.innerHTML = this.options.html.toString()
+      div.appendChild(tooltip)
+    }
 
-      // const img = new Image();
-      // img.src = this.options.iconUrl
-      // // img.className = "mage-icon-image";
-      // img.style.width = this.options.iconWidth + 'px';
-
-      // div.appendChild(img)
-      // if (this.tooltip) {
-      //   const tooltip = DomUtil.create('div', 'marker-tooltip')
-      //   tooltip.innerHTML = '<b>Edit Observation</b><div>Drag this marker to re-position</div>'
-      //   div.insertBefore(tooltip, div.firstChild)
-      // }
-
-      return icon.createIcon()
-    } 
+    return div
   }
 }
 

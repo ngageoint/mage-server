@@ -127,7 +127,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 		})
 
 		ref.afterDismissed().subscribe(event => {
-			console.log('CODE = snackbar dismissed', event)
 			if (event.dismissedByAction) {
 				exports.splice(index, 0, exp);
 				this.dataSource.data = exports

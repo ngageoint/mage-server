@@ -1,8 +1,9 @@
-import { Component, Input, ElementRef, Inject, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
+import { Component, Input, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
 import { Feature } from 'geojson'
-import { Map, GeoJSON, PathOptions, Layer, FixedWidthMarker, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
+import { Map, GeoJSON, PathOptions, Layer, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
 import { MapService } from '../map.service'
 import { LocalStorageService } from '../../http/local-storage.service'
+import { fixedWidthMarker } from '../marker/FixedWidthMarker'
 
 interface FeatureWithStyle extends Feature {
   style?: any
@@ -119,7 +120,7 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
 
     this.layer = new GeoJSON(this.feature, {
       pointToLayer: function (feature: FeatureWithStyle, latlng): Layer {
-        return new FixedWidthMarker(latlng, {
+        return fixedWidthMarker(latlng, {
           iconUrl: feature.style ? feature.style.iconUrl : ''
         })
       },

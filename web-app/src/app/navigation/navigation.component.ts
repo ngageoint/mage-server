@@ -85,7 +85,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
       // TODO filter change should happen here
     });
   }

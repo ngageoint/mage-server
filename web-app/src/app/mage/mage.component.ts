@@ -16,9 +16,10 @@ export class MageComponent implements OnInit, OnDestroy, OnChanges {
 
   map: any
   mapSize: number
+  event: any
   hideFeed: boolean = false
   newObservation: any
-
+  
   @ViewChild('feed') feed: MatSidenav
 
   constructor(
@@ -30,10 +31,12 @@ export class MageComponent implements OnInit, OnDestroy, OnChanges {
   ) {}
 
   ngOnInit(): void {
+    this.filterService.addListener(this)
     this.mapService.addListener(this)
   }
 
   ngOnDestroy(): void {
+    this.filterService.removeListener(this)
     this.mapService.removeListener(this)
   }
 
@@ -46,6 +49,10 @@ export class MageComponent implements OnInit, OnDestroy, OnChanges {
 
   onMap($event) {
     this.map = $event.map
+  }
+
+  onFilterChanged(filter: any) {
+    this.event = filter.event?.added?.length ? filter.event.added[0] : null
   }
 
   onFeedToggle(): void {

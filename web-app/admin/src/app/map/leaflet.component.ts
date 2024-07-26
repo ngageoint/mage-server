@@ -3,7 +3,6 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ReorderEvent } from './layers/layers.component';
 import { LayerService, ToggleEvent, ZoomEvent, OpacityEvent, StyleEvent } from './layers/layer.service';
 import { MapService } from '../upgrade/ajs-upgraded-providers';
-import { I } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-leaflet',

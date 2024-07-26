@@ -14,3 +14,45 @@
 .leaflet-material-popup .leaflet-popup-content {
   margin: 13px 19px;
 }
+
+.overlay-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: gray;
+  color: white;
+  opacity: 0.87;
+  border-radius: 3px;
+  border: none;
+}
+
+.leaflet-tooltip-left.overlay-tooltip::before {
+  border-left-color: transparent;
+}
+
+.leaflet-tooltip-right.overlay-tooltip::before {
+  border-right-color: transparent;
+}
+
+.observation-edit-marker {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.observation-edit-marker__tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: grey;
+  color: #fff;
+  opacity: .87;
+  height: 50px;
+  width: 200px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .4)
+}
+

@@ -1,4 +1,4 @@
-import { LatLngExpression, Circle, circle, Map, Marker, marker } from "leaflet";
+import { LatLngExpression, Circle, circle, Map } from "leaflet";
 import { FixedWidthMarker, FixedWidthMarkerOptions } from "./FixedWidthMarker";
 
 export interface ObservationMarkerOptions extends FixedWidthMarkerOptions {
@@ -35,6 +35,7 @@ export class ObservationMarker extends FixedWidthMarker {
   }
 
   onRemove(map: Map): this {
+    super.onRemove(map)
     map.removeLayer(this.accuracyCircle)
     return this
   }

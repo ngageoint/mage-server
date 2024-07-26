@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AuthenticationStrategy } from 'src/app/api/api.entity';
 import { UserService } from '../../user/user.service';
 @Component({
@@ -6,7 +6,7 @@ import { UserService } from '../../user/user.service';
   templateUrl: './idp.component.html',
   styleUrls: ['./idp.component.scss']
 })
-export class IdpAuthenticationComponent implements OnInit {
+export class IdpAuthenticationComponent {
   @Input() strategy: AuthenticationStrategy
   @Output() onSignin = new EventEmitter<any>()
 
@@ -18,10 +18,6 @@ export class IdpAuthenticationComponent implements OnInit {
   constructor(
     private userService: UserService
   ) {}
-
-  ngOnInit(): void {
-    console.log('strat init is ', this.strategy)
-  }
 
   signin() {
     this.userService.idpSignin(this.strategy.name).subscribe({

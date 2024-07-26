@@ -126,7 +126,7 @@
       </mat-card-actions>
     </mat-card>
 
-    <div class="form-card" *ngFor="let form of observationForm.forms; let i = index">
+    <div class="form-card" *ngFor="let form of observationForm?.forms; let i = index">
       <observation-view-form [form]="form" [attachments]="observation.attachments" [expand]="i === 0"></observation-view-form>
     </div>
   </div>

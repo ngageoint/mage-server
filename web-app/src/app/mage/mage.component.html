@@ -2,7 +2,7 @@
 
 <mat-sidenav-container class="main-container" hasBackdrop="false">
   <mat-sidenav #feed mode="side" position="start" opened>
-    <feed-panel class="feed" [observationLocation]="newObservation"></feed-panel>
+    <feed-panel class="feed" [event]="event" [observationLocation]="newObservation"></feed-panel>
   </mat-sidenav>
 
   <mat-sidenav #preferences mode="slide" position="end" disableClose="true">

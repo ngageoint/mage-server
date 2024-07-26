@@ -1,18 +1,38 @@
-import { Layer, setOptions, featureGroup, Circle, circle, LatLngExpression, CircleMarker, CircleMarkerOptions, Marker, Map, LatLng, circleMarker, FeatureGroup, Content, Popup, PopupOptions, Point, PointExpression } from "leaflet";
+import { Circle, circle, LatLngExpression, CircleMarker, CircleMarkerOptions, LatLng, circleMarker, FeatureGroup, Layer, Marker } from "leaflet";
 import { fixedWidthMarker } from "./FixedWidthMarker";
 
-export class LocationMarker extends Layer {
-  private group: FeatureGroup
+export interface LocationMarkerOptions extends CircleMarkerOptions {
+  accuracy?: number
+  iconUrl?: string
+  color?: string
+}
+
+export class LocationMarker extends FeatureGroup {
   private accuracyCircle: Circle
-  private iconMarker: Marker
   private locationMarker: CircleMarker
 
-  constructor(latLng: LatLngExpression, options?: CircleMarkerOptions & { accuracy: number, iconUrl : string } ) {
-    super(options)
+  constructor(latLng: LatLngExpression, options?: LocationMarkerOptions ) {
+    const layers = []
 
-    setOptions(this, options)
+    if (options?.iconUrl) {
+      layers.push(fixedWidthMarker(latLng, {
+        pane: options.pane,
+        iconUrl: options.iconUrl,
+        iconWidth: 42
+      }))
+    }
 
-    this.group = featureGroup()
+    layers.push(circleMarker(latLng, {
+      color: options?.color,
+      fillColor: options?.color,
+      fillOpacity: 0.7,
+      weight: 2,
+      opacity: 0.9,
+      radius: 5,
+      pane: options?.pane
+    }))
+    
+    super(layers, {})
 
     this.accuracyCircle = circle(latLng, 0, {
       interactive: false,
@@ -24,77 +44,36 @@ export class LocationMarker extends Layer {
       pane: options?.pane
     })
 
-    this.locationMarker = circleMarker(latLng, {
-      // interactive: options.iconUrl ? false : true,
-      color: options?.color,
-      fillColor: options?.color,
-      fillOpacity: 0.7,
-      weight: 2,
-      opacity: 0.9,
-      radius: 5,
-      pane: options?.pane
-    })
-    this.locationMarker.addEventParent(this)
-    this.group.addLayer(this.locationMarker)
-
-    if (options?.iconUrl) {
-      this.iconMarker = fixedWidthMarker(latLng, {
-        pane: options.pane,
-        iconUrl: options.iconUrl,
-        iconWidth: 42
-      })
-
-      this.iconMarker.addEventParent(this)
-      this.group.addLayer(this.iconMarker)
-    }
-
     this.on('popupopen', () => {
       if (options?.accuracy) {
         this.accuracyCircle.setRadius(options.accuracy)
       }
 
-      this.group.addLayer(this.accuracyCircle)
+      this.addLayer(this.accuracyCircle)
     })
 
     this.on('popupclose', () => {
-      this.group.removeLayer(this.accuracyCircle)
+      this.removeLayer(this.accuracyCircle)
     })
-  }
-
-  bindPopup(content: ((layer: Layer) => Content) | Content | Popup, options?: PopupOptions): this {
-    options = options || {}
-    if (this.iconMarker) {
-      options.offset = [0, 0]
-
-      let yAnchor: number
-      const radius = this.locationMarker.getRadius()
-      const iconAnchor: PointExpression = this.iconMarker.getIcon().options.iconAnchor
-      if (iconAnchor instanceof Point) {
-        yAnchor = iconAnchor.y 
-      } else {
-        yAnchor = iconAnchor[1]
-      }
-      options.offset = [0, -(yAnchor - radius)]
-
-    }
-    super.bindPopup(content, options)
-
-    return this
-  }
-
-  onAdd(map: Map): this {
-    this._map = map;
-    map.addLayer(this.group)
-    return this
-  }
-
-  onRemove(map: Map): this {
-    map.removeLayer(this.group)
-    return this
   }
   
   getLatLng(): LatLng {
     return this.locationMarker.getLatLng()
+  }
+
+  setLatLng(latLng: LatLng): this {
+    this.accuracyCircle.setLatLng(latLng);
+    this.getLayers().forEach((layer: Layer) => {
+      if (layer instanceof Circle) {
+        layer.setLatLng(latLng)
+      } else if (layer instanceof CircleMarker) {
+        layer.setLatLng(latLng)
+      } else if (layer instanceof Marker) {
+        layer.setLatLng(latLng)
+      }
+    })
+
+    return this
   }
 
   setAccuracy(accuracy: number): this {
@@ -116,6 +95,6 @@ export class LocationMarker extends Layer {
   }
 }
 
-export function locationMarker(latlng: LatLngExpression, options?: CircleMarkerOptions & { accuracy: number, iconUrl: string } ): LocationMarker {
+export function locationMarker(latlng: LatLngExpression, options?: LocationMarkerOptions ): LocationMarker {
   return new LocationMarker(latlng, options)
 }

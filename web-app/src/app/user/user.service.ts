@@ -126,7 +126,6 @@ export class UserService {
   logout() {
     const observable = this.httpClient.post('/api/logout', null, { responseType: 'text' })
     observable.subscribe(() => {
-      console.log('logged out user')
       this.clearUser();
       this.router.navigate(['landing']);
     })

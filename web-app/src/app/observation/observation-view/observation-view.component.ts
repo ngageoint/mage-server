@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
@@ -47,7 +47,6 @@ export class ObservationViewComponent implements OnChanges {
     description?: string
   } = { open: false }
 
-  // TODO: define types for these
   observationForm: any
   primaryFeedField: any = {}
   secondaryFeedField: any = {}

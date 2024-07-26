@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core'
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core'
 import { LocationState } from '../../app/map/controls/location.component'
 import { ZoomDirection } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
-import { ToggleEvent } from './layers/layer.service'
+import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
@@ -17,8 +17,9 @@ import { default as countries } from './countries-land-10km.geo.json'
 import _ from 'underscore'
 import * as moment from 'moment'
 
-// require('leaflet-editable')
+import 'leaflet-editable'
 import 'leaflet.markercluster'
+import { FeatureEditor } from './edit/FeatureEditor'
 
 Icon.Default.imagePath = '/'
 
@@ -28,7 +29,7 @@ Icon.Default.imagePath = '/'
   styleUrls: ['./map.component.scss'],
   providers: [LayerService]
 })
-export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
+export class MapComponent implements OnDestroy, AfterViewInit {
 
   public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000
   public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
@@ -46,7 +47,7 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
   temporalLayers: any = []
   spiderfyState: any = null
   currentLocation: any = null
-  locationLayer: any //= L.locationMarker([0, 0], { color: '#136AEC' }) TODO
+  locationLayer = locationMarker([0, 0], { color: '#136AEC' })
   locate = LocationState.OFF
   broadcast = LocationState.OFF
   searchMarker: any
@@ -57,6 +58,7 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
 
   constructor(
     private mapService: MapService,
+    layerService: MapLayerService,
     private eventService: EventService,
     private localStorageService: LocalStorageService
   ) {
@@ -89,12 +91,11 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
       offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
       layers: []
     }
-  }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // if (changes.mapSize && this.mapSize) {
-    //   this.map.invalidateSize({ pan: false })
-    // }
+    layerService.toggle$.subscribe(event => this.layerTogged(event));
+    layerService.zoom$.subscribe(event => this.zoom(event));
+    layerService.opacity$.subscribe(event => this.opacityChanged(event));
+    layerService.style$.subscribe(event => this.styleChanged(event));
   }
 
   ngOnDestroy(): void {
@@ -122,7 +123,7 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
       maxZoom: 18,
       trackResize: true,
       worldCopyJump: true,
-      // editable: true // turn on Leaflet.Editable // TODO
+      editable: true // turn on Leaflet.Editable
     })
 
     // Spread out map panes
@@ -211,10 +212,10 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
     })
   }
 
-  // $onDestroy() {
-  //   this.mapService.removeListener(this.listener)
-  //   this.eventService.removePollListener(this.pollListener)
-  // }
+  $onDestroy() {
+    this.mapService.removeListener(this.listener)
+    this.eventService.removePollListener(this.pollListener)
+  }
 
   opacityChanged(event: OpacityEvent): void {
     const pane = this.map.getPanes()[event.layer.layer.pane]
@@ -222,6 +223,10 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
     if (event.layer.layer.setOpacity) {
       event.layer.layer.setOpacity(event.opacity)
     }
+  }
+
+  styleChanged(event: StyleEvent): void {
+    event.layer.layer.setStyle(event.style);
   }
 
   reorder($event: ReorderEvent): void {
@@ -287,7 +292,6 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
   }
   
   onAddObservation() {
-    console.log('map add observation')
     this.addObservation.emit({
       latLng: this.map.getCenter()
     })
@@ -323,10 +327,10 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
 
     this.currentLocation = location
     this.map.fitBounds(location.bounds)
-    // this.locationLayer.setLatLng(location.latlng).setAccuracy(location.accuracy)
-    // if (!this.map.hasLayer(this.locationLayer)) {
-    //   this.map.addLayer(this.locationLayer)
-    // }
+    this.locationLayer.setLatLng(location.latlng).setAccuracy(location.accuracy)
+    if (!this.map.hasLayer(this.locationLayer)) {
+      this.map.addLayer(this.locationLayer)
+    }
 
     if (this.broadcast === LocationState.ON) {
       this.mapService.onLocation(location)
@@ -577,7 +581,8 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
     const pane = featureLayer.layer.pane
     added.forEach(feature => {
       if (featureLayer.options.cluster) {
-        featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane))
+        const layer = this.createGeoJsonForLayer(feature, featureLayer, pane)
+        featureLayer.layer.addLayer(layer)
       } else {
         featureLayer.layer.addData(feature)
       }
@@ -732,52 +737,51 @@ export class MapComponent implements OnDestroy, AfterViewInit, OnChanges {
   }
 
   createFeature(feature, delegate) {
-    // TODO edit
-    // // TODO put Observations in its own pane maybe??
-    // // TODO pass in layer collection id 'Observations'
-    // let featureEdit = new MageFeatureEdit(this.map, feature, delegate)
+    // TODO put Observations in its own pane maybe??
+    // TODO pass in layer collection id 'Observations'
+    let editor = new FeatureEditor(this.map, feature, delegate)
 
-    // // TODO save feature pane opacitis
-    // const featurePaneOpacities = this.featurePanes.map(pane => {
-    //   const mapPane = this.map.getPanes()[pane]
-    //   return mapPane.style.opacity || 1
-    // })
-    // this.setPaneOpacity(this.featurePanes, 0.5)
+    // TODO save feature pane opacitis
+    const featurePaneOpacities = this.featurePanes.map(pane => {
+      const mapPane = this.map.getPanes()[pane]
+      return mapPane.style.opacity || 1
+    })
+    this.setPaneOpacity(this.featurePanes, 0.5)
 
-    // const layer = this.layers['observations'].featureIdToLayer[feature.id]
-    // if (layer) {
-    //   this.map.removeLayer(layer)
-    // }
+    const layer = this.layers['observations'].featureIdToLayer[feature.id]
+    if (layer) {
+      this.map.removeLayer(layer)
+    }
 
-    // return {
-    //   update: feature => {
-    //     featureEdit.stopEdit()
-    //     featureEdit = new MageFeatureEdit(this.map, feature, delegate)
-    //   },
-    //   cancel: () => {
-    //     featureEdit.stopEdit()
-    //     if (layer) {
-    //       this.onFeaturesChanged({
-    //         id: 'observations',
-    //         updated: [layer.feature]
-    //       })
-    //     }
+    return {
+      update: feature => {
+        editor.stopEdit()
+        editor = new FeatureEditor(this.map, feature, delegate)
+      },
+      cancel: () => {
+        editor.stopEdit()
+        if (layer) {
+          this.onFeaturesChanged({
+            id: 'observations',
+            updated: [layer.feature]
+          })
+        }
 
-    //     this.resetPaneOpacity(this.featurePanes, featurePaneOpacities)
-    //   },
-    //   save: () => {
-    //     const newFeature = featureEdit.stopEdit()
-    //     if (layer) {
-    //       layer.feature.geometry = newFeature.geometry
-    //       this.onFeaturesChanged({
-    //         id: 'observations',
-    //         updated: [layer.feature]
-    //       })
-    //     }
+        this.resetPaneOpacity(this.featurePanes, featurePaneOpacities)
+      },
+      save: () => {
+        const newFeature = editor.stopEdit()
+        if (layer) {
+          layer.feature.geometry = newFeature.geometry
+          this.onFeaturesChanged({
+            id: 'observations',
+            updated: [layer.feature]
+          })
+        }
 
-    //     this.resetPaneOpacity(this.featurePanes, featurePaneOpacities)
-    //   }
-    // }
+        this.resetPaneOpacity(this.featurePanes, featurePaneOpacities)
+      }
+    }
   }
 
   setPaneOpacity(panes, opacityFactor) {
