@@ -11,7 +11,7 @@ export type DocumentMapping<DocType extends mongoose.AnyObject, E extends object
  * Map entities to objects suitable to create Mongoose `Model` `Document` instances, as
  * in `new mongoose.Model(stub)`.
  */
-export type EntityMapping<DocType extends mongoose.AnyObject, E extends object> = (entity: Partial<E>) => DocType
+export type EntityMapping<DocType extends mongoose.AnyObject, E extends object> = (entity: Partial<E>) => Partial<DocType>
 
 /**
  * Return a document mapping that calls {@link mongoose.Document.toObject()} on the given `Document`
