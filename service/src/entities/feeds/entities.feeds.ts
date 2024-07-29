@@ -422,7 +422,7 @@ export function validateSchemaPropertyReferencesForFeed<T extends Feed | FeedCre
     return feed
   }
   const referencedProps = [ feed.itemPrimaryProperty, feed.itemSecondaryProperty, feed.itemTemporalProperty ]
-  if (referencedProps.every(key => key ? schemaProps.hasOwnProperty(key) : true)) {
+  if (referencedProps.every(key => key ? Object.prototype.hasOwnProperty.call(schemaProps, key) : true)) {
     return feed
   }
   return new FeedsError(ErrInvalidFeedAttrs, { invalidKeys: [ 'itemPropertiesSchema' ] },

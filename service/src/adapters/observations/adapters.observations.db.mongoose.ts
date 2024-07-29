@@ -118,11 +118,11 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async nextFormEntryIds(count: number = 1): Promise<FormEntryId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 
   async nextAttachmentIds(count: number = 1): Promise<AttachmentId[]> {
-    return Array.from({ length: count }).map(_ => (new mongoose.Types.ObjectId()).toHexString())
+    return Array.from({ length: count }).map(() => (new mongoose.Types.ObjectId()).toHexString())
   }
 }
 
