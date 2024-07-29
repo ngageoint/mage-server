@@ -17,7 +17,7 @@ describe('mongoose adapter layer base', function() {
     squee?: boolean
     noo?: number
   }
-  type BaseDocument = BaseEntity & mongoose.Document
+  type BaseDocument = BaseEntity
   type BaseModel = mongoose.Model<BaseDocument>
 
   const collection = 'base'
