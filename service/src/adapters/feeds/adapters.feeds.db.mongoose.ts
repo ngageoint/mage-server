@@ -49,8 +49,7 @@ export const FeedServiceSchema = new mongoose.Schema<FeedServiceDocument, FeedSe
     }
   })
 export function FeedServiceModel(conn: mongoose.Connection, collection?: string): FeedServiceModel {
-  //TODO remove cast to any
-  return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services') as any
+  return conn.model(FeedsModels.FeedService, FeedServiceSchema, collection || 'feed_services')
 }
 
 export type FeedDocument = Omit<Feed, 'id' | 'service' | 'icon' | 'constantParams'> & {
