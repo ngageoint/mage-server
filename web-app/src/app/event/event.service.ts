@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, catchError, finalize, of, tap, zip } from "rxjs";
+import { Observable, ObservableInput, catchError, finalize, forkJoin, of, tap, zip } from "rxjs";
 import * as moment from 'moment'
 import { FilterService } from "../filter/filter.service";
 import { PollingService } from "./polling.service";
@@ -214,7 +214,7 @@ export class EventService {
   }
 
   removeUsersChangedListener(listener) {
-    this.usersChangedListeners = this.usersChangedListeners.forEach((l: any) => {
+    this.usersChangedListeners = this.usersChangedListeners.filter((l: any) => {
       return listener !== l;
     });
   }
@@ -459,9 +459,7 @@ export class EventService {
 
   fetch(): Observable<any> {
     const event = this.filterService.getEvent();
-    if (!event) {
-      return of()
-    }
+    if (!event) { return of()}
 
     const parameters: any = {};
     const interval = this.filterService.getInterval();
@@ -470,10 +468,10 @@ export class EventService {
       parameters.interval = time;
     }
 
-    return zip(
-      this.fetchObservations(event, parameters),
-      this.fetchLocations(event, parameters)
-    )
+    return forkJoin({
+      locations: this.fetchLocations(event, parameters),
+      observations: this.fetchObservations(event, parameters)
+    })
   }
 
   fetchLayers(event) {
@@ -558,6 +556,8 @@ export class EventService {
       this.eventsById[event.id].filteredObservationsById = observationsById;
 
       this.observationsChanged({ added: added, updated: updated, removed: removed });
+
+      console.log('got observations', observations.length)
     });
 
     return observable
@@ -618,6 +618,9 @@ export class EventService {
       this.eventsById[event.id].filteredUsersById = usersById;
 
       this.usersChanged({ added: added, updated: updated, removed: removed });
+
+      console.log('got locations', userLocations.length)
+
     });
 
     return observable

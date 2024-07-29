@@ -20,6 +20,8 @@ import * as moment from 'moment'
 import 'leaflet-editable'
 import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
+import GeoPackageLayers from './geopackage/GeoPackageLayers'
+import { FilterService } from '../filter/filter.service'
 
 Icon.Default.imagePath = '/'
 
@@ -44,6 +46,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   map: any
   groups: any = {}
   layers: any = {}
+  geoPackageLayers: any
   temporalLayers: any = []
   spiderfyState: any = null
   currentLocation: any = null
@@ -58,8 +61,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     private mapService: MapService,
-    layerService: MapLayerService,
+    private layerService: MapLayerService,
     private eventService: EventService,
+    private filterService: FilterService,
     private localStorageService: LocalStorageService
   ) {
     this.groups['base'] = {
@@ -103,6 +107,10 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    const screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth;
+    console.log(`height ${screenHeight} width ${screenWidth}`);
+
     let mapPosition = this.localStorageService.getMapPosition()
     if (!mapPosition) {
       this.localStorageService.setMapPosition({
@@ -177,13 +185,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
     this.map.on('moveend', saveMapPosition, this)
 
-    // this.geoPackageLayers = new GeoPackageLayers(
-    //   this.map,
-    //   this.layerControl,
-    //   this.LayerService,
-    //   this.FilterService,
-    //   this.LocalStorageService
-    // )
+    this.geoPackageLayers = new GeoPackageLayers(
+      this.map,
+      this.layerService,
+      this.filterService,
+      this.localStorageService
+    )
 
     this.map.on('baselayerchange', baseLayer => {
       const layer = this.layers[baseLayer.id]
@@ -356,7 +363,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     added.forEach(added => {
       switch (added.type) {
         case 'GeoPackage':
-          // this.createGeoPackageLayer(added)
+          this.createGeoPackageLayer(added)
           break
         case 'Imagery':
           this.createRasterLayer(added)
@@ -386,6 +393,11 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
+    console.log('create raster layer', layerInfo)
+    const screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth;
+    console.log(`create raster layer height ${screenHeight} width ${screenWidth}`);
+
     let paneName = this.BASE_LAYER_PANE
     if (!layerInfo.base) {
       paneName = `pane-${layerInfo.id}`
@@ -422,16 +434,10 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         this.featurePanes.push(pane)
       }
 
-      // table.layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane)
+      table.layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane)
       this.layers[layerInfo.id + table.name] = table
 
-      // TODO output
-      // this.onAddLayer({
-      //   type: 'GeoPackage',
-      //   name: table.name,
-      //   table: table,
-      //   layer: table.layer
-      // })
+      this.addLayer(layerInfo)
     })
   }
 
@@ -689,18 +695,18 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   removeGeoPackage(layer) {
-    // layer.tables.forEach(table => {
-    //   const id = layer.id + table.name
-    //   const layerInfo = this.layers[id]
-    //   if (layerInfo) {
-    //     this.map.removeLayer(table.layer)
-    //     delete this.layers[id]
+    layer.tables.forEach(table => {
+      const id = layer.id + table.name
+      const layerInfo = this.layers[id]
+      if (layerInfo) {
+        this.map.removeLayer(table.layer)
+        delete this.layers[id]
 
-    //     // this.onRemoveLayer({ // TODO
-    //     //   layer: table
-    //     // })
-    //   }
-    // })
+        // this.onRemoveLayer({ // TODO
+        //   layer: table
+        // })
+      }
+    })
   }
 
   onHideFeed() {
@@ -807,7 +813,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  baseToggled(event: ToggleEvent): void {
+  baseToggled(event: ToggleEvent): void {    
     const baseLayers = this.groups['base'].layers
     const previousBaseLayer = baseLayers.find((layer: any) => layer.selected)
     if (previousBaseLayer) {

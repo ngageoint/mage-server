@@ -52,6 +52,6 @@ export class PollingIntervalComponent implements OnInit, OnDestroy  {
   }
 
   public compareOption = function (option, value): boolean {
-    return option.interval === value.interval
+    return option?.interval === value?.interval
   }
 }
