@@ -175,21 +175,21 @@ export interface Acl {
 export type MageEventCreateAttrs = Pick<MageEventAttrs, 'name' | 'description'>
 
 export interface MageEventRepository {
-  findAll(): Promise<MageEventAttrs[]>
+  findAll(): Promise<MageEvent[]>
   findById(id: MageEventId): Promise<MageEvent | null>
-  findAllByIds(ids: MageEventId[]): Promise<{ [id: number]: MageEventAttrs | null }>
+  findAllByIds(ids: MageEventId[]): Promise<{ [id: number]: MageEvent | null }>
   /**
    * Return all the MAGE events that are not {@link MageEventAttrs.complete | complete}.
    */
-  findActiveEvents(): Promise<MageEventAttrs[]>
+  findActiveEvents(): Promise<MageEvent[]>
   /**
    * Add a reference to the given feed ID on the given event.
    * @param event an Event ID
    * @param feed a Feed ID
    */
-  addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null>
+  addFeedsToEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null>
   findTeamsInEvent(event: MageEventId): Promise<Team[] | null>
-  removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEventAttrs | null>
+  removeFeedsFromEvent(event: MageEventId, ...feeds: FeedId[]): Promise<MageEvent | null>
   /**
    * Remove the given feeds from any events that reference the feed.  Return the
    * count of events the operation modified.

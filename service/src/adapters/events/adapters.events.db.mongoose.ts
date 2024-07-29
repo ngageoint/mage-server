@@ -36,7 +36,7 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
     return await super.findById(id)
   }
 
-  async findActiveEvents(): Promise<MageEventAttrs[]> {
+  async findActiveEvents(): Promise<MageEvent[]> {
     const docs = await this.model.find({ complete: { $in: [ null, false ] }})
     return docs.map(this.entityForDocument)
   }

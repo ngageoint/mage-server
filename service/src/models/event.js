@@ -10,7 +10,6 @@ const mongoose = require('mongoose')
   , log = require('winston')
 const { rolesWithPermission, EventRolePermissions } = require('../entities/events/entities.events');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const OptionSchema = new Schema({
@@ -158,8 +157,7 @@ EventSchema.pre('init', function (event) {
   instance during the pre-init hook's execution.
   */
   if (event.forms) {
-    populateUserFields(event, function () {
-    });
+    populateUserFields(event, function () {});
   }
 });
 
@@ -208,6 +206,7 @@ function transform(event, ret, options) {
   }
 
   // if read only permissions in event acl, only return users acl
+  // TODO: move this business logic
   if (options.access) {
     const roleOfUserOnEvent = ret.acl[options.access.user._id];
     const rolesThatCanModify = rolesWithPermission('update').concat(rolesWithPermission('delete'));
@@ -234,21 +233,11 @@ function transform(event, ret, options) {
   }
 }
 
-FormSchema.set("toJSON", {
-  transform: transformForm
-});
+FormSchema.set("toJSON", { transform: transformForm });
+FormSchema.set("toObject", { transform: transformForm });
 
-FormSchema.set("toObject", {
-  transform: transformForm
-});
-
-EventSchema.set("toJSON", {
-  transform: transform
-});
-
-EventSchema.set("toObject", {
-  transform: transform
-});
+EventSchema.set("toJSON", { transform });
+EventSchema.set("toObject", { transform });
 
 // Creates the Model for the Layer Schema
 const Event = mongoose.model('Event', EventSchema);
