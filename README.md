@@ -67,7 +67,7 @@ but be aware some path-separator related bugs may exist
 The MAGE server is a [Node.js](https://nodejs.org) application, so of course you'll need to install Node on your
 platform of choice.  [Node Version Manager](https://github.com/nvm-sh/nvm) is a nice tool to use for installing and
 managing different versions of Node, as opposed to various package managers.  At the time of this writing, MAGE
-requires Node >= 14.15.x.  Developers should use the latest LTS, 20.x at the time of this writing.
+requires Node > 18.x.  Developers should use the latest LTS, 20.x at the time of this writing.
 
 ### Install MongoDB
 
