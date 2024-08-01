@@ -18,7 +18,7 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <div id="map" class="leaflet-map">
+    <div id="map">
       <div class="map-controls-left">
         <map-control-zoom (onZoom)="onZoom($event)"></map-control-zoom>
         <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
@@ -26,13 +26,6 @@
         <map-control-add-observation (onAddObservation)="onAddObservation()"></map-control-add-observation>
       </div>
     </div>
-
-    <!-- <leaflet 
-      (onMapAvailable)="onMapAvailable($event)" 
-      (onAddObservation)="onAddObservation.emit($event)"
-      (onAddLayer)="addLayer($event)"
-      (onRemoveLayer)="removeLayer($event)">
-    </leaflet> -->
   </mat-sidenav-content>
 
 </mat-sidenav-container>

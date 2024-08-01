@@ -31,11 +31,13 @@ export class MapService {
     private mapPopupService: MapPopupService,
     private featureService: FeatureService,
     private localStorageService: LocalStorageService
-  ) {
-    eventService.addObservationsChangedListener(this);
-    eventService.addUsersChangedListener(this);
-    eventService.addLayersChangedListener(this);
-    eventService.addFeedItemsChangedListener(this)
+  ) {}
+
+  init () {
+    this.eventService.addObservationsChangedListener(this);
+    this.eventService.addUsersChangedListener(this);
+    this.eventService.addLayersChangedListener(this);
+    this.eventService.addFeedItemsChangedListener(this)
 
     const observationLayer = {
       id: 'observations',
@@ -108,6 +110,33 @@ export class MapService {
       }
     }
     this.createGridLayer(mgrsOverlay);
+  }
+
+  destroy() {
+    Object.values(this.vectorLayers).forEach((layerInfo: any) => {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
+          listener.onLayerRemoved(layerInfo);
+        }
+      });
+    });
+    this.vectorLayers = {};
+
+    Object.values(this.rasterLayers).forEach((layerInfo: any) => {
+      this.listeners.forEach((listener: any) => {
+        if (typeof listener.onLayerRemoved === 'function') {
+          listener.onLayerRemoved(layerInfo);
+        }
+      });
+    });
+    this.rasterLayers = {};
+
+    this.listeners = [];
+
+    this.eventService.removeLayersChangedListener(this);
+    this.eventService.removeObservationsChangedListener(this);
+    this.eventService.removeUsersChangedListener(this);
+    this.eventService.removeFeedItemsChangedListener(this);
   }
 
   onLayersChanged(changed, event) {
@@ -461,33 +490,6 @@ export class MapService {
         listener.onOverlayAdded(overlay);
       }
     });
-  }
-
-  destroy() {
-    Object.values(this.vectorLayers).forEach((layerInfo: any) => {
-      this.listeners.forEach((listener: any) => {
-        if (typeof listener.onLayerRemoved === 'function') {
-          listener.onLayerRemoved(layerInfo);
-        }
-      });
-    });
-    this.vectorLayers = {};
-
-    Object.values(this.rasterLayers).forEach((layerInfo: any) => {
-      this.listeners.forEach((listener: any) => {
-        if (typeof listener.onLayerRemoved === 'function') {
-          listener.onLayerRemoved(layerInfo);
-        }
-      });
-    });
-    this.rasterLayers = {};
-
-    this.listeners = [];
-
-    this.eventService.removeLayersChangedListener(this);
-    this.eventService.removeObservationsChangedListener(this);
-    this.eventService.removeUsersChangedListener(this);
-    this.eventService.removeFeedItemsChangedListener(this);
   }
 
   removeLayer(layer) {

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core'
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
 import { LocationState } from '../../app/map/controls/location.component'
 import { ZoomDirection } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
@@ -13,7 +13,8 @@ import { moveItemInArray } from '@angular/cdk/drag-drop'
 import { FeatureCollection } from 'geojson'
 import { locationMarker } from './marker/LocationMarker'
 import { observationMarker } from './marker/ObservationMarker'
-import { default as countries } from './countries-land-10km.geo.json'
+import { COUNTRIES as countries } from './layers/static/layers'
+
 import _ from 'underscore'
 import * as moment from 'moment'
 
@@ -22,6 +23,8 @@ import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
 import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
+import { GARSLayer } from './layers/gars/GARSLayer'
+import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 
 Icon.Default.imagePath = '/'
 
@@ -44,7 +47,32 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   @Output() addObservation = new EventEmitter<any>()
 
   map: any
-  groups: any = {}
+  groups: any = {
+    'base': {
+      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    },
+    'MAGE': {
+      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    },
+    'feed': {
+      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    },
+    'tile': {
+      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    },
+    'feature': {
+      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
+      layers: []
+    },
+    'grid': {
+      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
+      layers: []
+    }
+  }
   layers: any = {}
   geoPackageLayers: any
   temporalLayers: any = []
@@ -66,36 +94,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     private filterService: FilterService,
     private localStorageService: LocalStorageService
   ) {
-    this.groups['base'] = {
-      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
-    this.groups['MAGE'] = {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
-    this.groups['feed'] = {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
-    this.groups['tile'] = {
-      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
-    this.groups['feature'] = {
-      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
-    this.groups['grid'] = {
-      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
-
     layerService.toggle$.subscribe(event => this.layerTogged(event));
     layerService.zoom$.subscribe(event => this.zoom(event));
     layerService.opacity$.subscribe(event => this.opacityChanged(event));
@@ -107,17 +105,10 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const screenHeight = window.innerHeight;
-    const screenWidth = window.innerWidth;
-    console.log(`height ${screenHeight} width ${screenWidth}`);
-
     let mapPosition = this.localStorageService.getMapPosition()
     if (!mapPosition) {
       this.localStorageService.setMapPosition({
-        center: {
-          lng: 0,
-          lat: 0
-        },
+        center: { lng: 0, lat: 0 },
         zoom: 3
       })
       mapPosition = this.localStorageService.getMapPosition()
@@ -153,7 +144,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = 1
 
     this.map.addLayer(
-      geoJSON(countries as FeatureCollection, {
+      geoJSON(countries, {
         interactive: false,
         style: function () {
           return {
@@ -167,9 +158,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         pane: FALLBACK_LAYER_PANE
       })
     )
-
-    // TODO output
-    // this.onMapAvailable({ map: this.map })
 
     this.map.on('locationfound', this.onLocation, this)
     this.map.on('locationerror', function (err) {
@@ -201,14 +189,17 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       const layer = this.layers[overlay.id]
       this.mapService.overlayAdded(layer)
     })
-
-    this.mapService.setDelegate(this)
-    this.mapService.addListener(this)
-
     this.pollListener = {
       onPoll: this.onPoll.bind(this)
     }
-    this.eventService.addPollListener(this.pollListener)
+
+    // Ensure that any changes made by listener callbacks are processed in a digest cycle
+    // TODO this can be removed when the services use rxjs rather than custom change detection w/  callbacks
+    setTimeout(() => {
+      this.mapService.setDelegate(this)
+      this.mapService.addListener(this)
+      this.eventService.addPollListener(this.pollListener)
+    })
   }
 
   saveMapPosition() {
@@ -383,21 +374,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         this.map.removeLayer(layer.layer)
         delete layer.layer
         delete this.layers[removed.layerId]
-        // TODO output
-        // this.onRemoveLayer({
-        //   layer: layer
-        // })
+        this.removeLayer(layer)
       }
     })
   }
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo) {
-    console.log('create raster layer', layerInfo)
-    const screenHeight = window.innerHeight;
-    const screenWidth = window.innerWidth;
-    console.log(`create raster layer height ${screenHeight} width ${screenWidth}`);
-
     let paneName = this.BASE_LAYER_PANE
     if (!layerInfo.base) {
       paneName = `pane-${layerInfo.id}`
@@ -437,7 +420,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       table.layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane)
       this.layers[layerInfo.id + table.name] = table
 
-      this.addLayer(layerInfo)
+      this.addLayer({
+        type: 'GeoPackage',
+        name: table.name,
+        table: table,
+        layer: table.layer
+      })
     })
   }
 
@@ -549,19 +537,19 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGridLayer(layerInfo) {
-    // TODO
-    // const pane = `pane-${layerInfo.id}`
-    // this.map.createPane(pane)
+    const pane = `pane-${layerInfo.id}`
+    this.map.createPane(pane)
 
-    // this.layers[layerInfo.id] = layerInfo
-    // if (layerInfo.id === 'gars') {
-    //   layerInfo.layer = new GARSLayer()
-    //   layerInfo.layer.pane = pane
-    // } else if (layerInfo.id === 'mgrs') {
-    //   layerInfo.layer = new MGRSLayer()
-    //   layerInfo.layer.pane = pane
-    // }
-    // this.onAddLayer(layerInfo)
+    this.layers[layerInfo.id] = layerInfo
+    if (layerInfo.id === 'gars') {
+      layerInfo.layer = new GARSLayer()
+      layerInfo.layer.pane = pane
+    } else if (layerInfo.id === 'mgrs') {
+      layerInfo.layer = new MGRSLayer()
+      layerInfo.layer.pane = pane
+    }
+
+    this.addLayer(layerInfo)
   }
 
   addLayer(layerInfo: any) {
@@ -665,11 +653,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   onFeedRemoved(feed) {
     const layerInfo = this.layers[feed.id]
     if (layerInfo) {
-      this.map.removeLayer(layerInfo.layer)
-      // delete this.layers[this.onFeedRemoved.id] TODO how does this work?
-      // this.onRemoveLayer({ TODO
-      //   layer: layerInfo
-      // })
+      this.removeLayer(layerInfo)
     }
   }
 
@@ -688,9 +672,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer)
       delete this.layers[layer.id]
-      // this.onRemoveLayer({ // TODO
-      //   layer: layer
-      // })
+
+      Object.values(this.groups).forEach((group: any) => {
+        group.layers = group.layers.filter(layer => {
+          return layer.layer !== layer.layer;
+        });
+      });
     }
   }
 
@@ -701,10 +688,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       if (layerInfo) {
         this.map.removeLayer(table.layer)
         delete this.layers[id]
-
-        // this.onRemoveLayer({ // TODO
-        //   layer: table
-        // })
+        this.removeLayer(layerInfo)
       }
     })
   }

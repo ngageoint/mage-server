@@ -26,7 +26,7 @@ export class EventService {
   private feedSyncStates: any = {};
 
   constructor(
-    pollingService: PollingService,
+    private pollingService: PollingService,
     private httpClient: HttpClient,
     private feedService: FeedService,
     private layerService: LayerService,
@@ -34,9 +34,21 @@ export class EventService {
     private locationService: LocationService,
     private observationService: ObservationService,
     private localStorageService: LocalStorageService
-  ) {
-    filterService.addListener(this);
-    pollingService.addListener(this);
+  ) {}
+
+  init() {
+    this.filterService.addListener(this)
+    this.pollingService.addListener(this)
+  }
+
+  destroy() {
+    if (this.pollingTimeout) {
+      clearTimeout(this.pollingTimeout)
+    }
+
+    if (this.feedPollTimeout) {
+      clearTimeout(this.feedPollTimeout)
+    }
   }
 
   query(options?: any): Observable<any> {
@@ -175,16 +187,6 @@ export class EventService {
     this.pollingTimeout = setTimeout(() => {
       this.poll(interval);
     }, interval)
-  }
-
-  destroy() {
-    if (this.pollingTimeout) {
-      clearTimeout(this.pollingTimeout)
-    }
-
-    if (this.feedPollTimeout) {
-      clearTimeout(this.feedPollTimeout)
-    }
   }
 
   addObservationsChangedListener(listener: any) {
@@ -556,8 +558,6 @@ export class EventService {
       this.eventsById[event.id].filteredObservationsById = observationsById;
 
       this.observationsChanged({ added: added, updated: updated, removed: removed });
-
-      console.log('got observations', observations.length)
     });
 
     return observable
@@ -618,9 +618,6 @@ export class EventService {
       this.eventsById[event.id].filteredUsersById = usersById;
 
       this.usersChanged({ added: added, updated: updated, removed: removed });
-
-      console.log('got locations', userLocations.length)
-
     });
 
     return observable

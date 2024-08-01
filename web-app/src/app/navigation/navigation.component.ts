@@ -9,12 +9,6 @@ import { PollingService } from '../event/polling.service';
 import * as _ from 'underscore';
 import { ExportDialogComponent } from '../export/export-dialog.component';
 
-interface Food {
-  value: string;
-  viewValue: string;
-}
-
-
 @Component({
   selector: 'navigation',
   templateUrl: './navigation.component.html',
@@ -56,17 +50,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
         // TODO welcome to mage, sorry you have no events
       }
     });
+
+    this.mapService.init()
+    this.eventService.init()
   }
 
   ngOnDestroy(): void {
-    this.filterService.removeListener(this);
-    this.filterService.removeFilters();
+    this.filterService.removeListener(this)
+    this.filterService.removeFilters()
 
-    this.pollingService.setPollingInterval(0);
+    this.pollingService.setPollingInterval(0)
 
-    this.mapService.destroy();
+    this.mapService.destroy()
 
-    this.eventService.destroy();
+    this.eventService.destroy()
   }
 
   toggleFeed(): void {

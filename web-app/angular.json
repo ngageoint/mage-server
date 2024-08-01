@@ -36,7 +36,6 @@
             "styles": [
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
-              "./node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
