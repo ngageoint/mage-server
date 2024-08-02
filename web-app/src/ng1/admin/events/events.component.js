@@ -12,6 +12,7 @@ class AdminEventsController {
     this.filter = 'active'; // possible values all, active, complete
     this.page = 0;
     this.itemsPerPage = 10;
+    this.eventSearch = '';
 
     this.projection = {
       name: true,
