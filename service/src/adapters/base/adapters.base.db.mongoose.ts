@@ -3,6 +3,10 @@ import { PagingParameters } from '../../entities/entities.global'
 
 type EntityReference = { id: string | number }
 
+export type MongooseDefaultVersionKey = '__v'
+export const MongooseDefaultVersionKey: MongooseDefaultVersionKey = '__v'
+export type WithMongooseDefaultVersionKey = { [MongooseDefaultVersionKey]: number }
+
 /**
  * Map Mongoose `Document` instances to plain entity objects.
  */

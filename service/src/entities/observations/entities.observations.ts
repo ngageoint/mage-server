@@ -31,6 +31,10 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
    *   a unique id
    */
   states: readonly ObservationState[]
+  /**
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  url?: string
 }
 
 export interface ObservationFeatureProperties {
@@ -69,6 +73,10 @@ export interface ObservationState {
   id: string | PendingEntityId
   name: 'active' | 'archived'
   userId?: UserId | undefined
+  /**
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  url?: string
 }
 
 export type FormEntryId = string
@@ -145,6 +153,10 @@ export interface Attachment {
    */
   oriented: boolean
   thumbnails: Thumbnail[]
+  /**
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  url?: string
 }
 
 export interface Thumbnail {

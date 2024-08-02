@@ -1,6 +1,6 @@
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
-import { BaseMongooseRepository, DocumentMapping, pageQuery } from '../base/adapters.base.db.mongoose'
+import { MageEvent, MageEventAttrs, MageEventId } from '../../entities/events/entities.events'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { BaseMongooseRepository, DocumentMapping, pageQuery, WithMongooseDefaultVersionKey } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
@@ -8,19 +8,248 @@ import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global
 import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
 
-export type ObservationIdDocument = mongoose.Document
+const Schema = mongoose.Schema
+
+export type ObservationIdDocument = { _id: mongoose.Types.ObjectId }
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
 
-export class MongooseObservationRepository extends BaseMongooseRepository<legacy.ObservationDocument, legacy.ObservationModel, ObservationAttrs> implements EventScopedObservationRepository {
+export type ObservationDocument = Omit<ObservationAttrs, 'id' | 'eventId' | 'userId' | 'deviceId' | 'important' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'>
+  & {
+    _id: mongoose.Types.ObjectId
+    userId?: mongoose.Types.ObjectId
+    deviceId?: mongoose.Types.ObjectId
+    important?: ObservationDocumentImportantFlag
+    favoriteUserIds: mongoose.Types.ObjectId[]
+    states: ObservationStateDocument[]
+    attachments: AttachmentDocument[]
+    properties: ObservationDocumentFeatureProperties
+  }
+  & WithMongooseDefaultVersionKey
+export type ObservationSubdocuments = {
+  states: mongoose.Types.DocumentArray<ObservationStateDocument>
+  attachments: mongoose.Types.DocumentArray<AttachmentDocument>
+}
+export type ObservationModelOverrides = ObservationSubdocuments & {
+  toObject(options?: ObservationTransformOptions): ObservationAttrs
+  toJSON(options?: ObservationTransformOptions): ObservationDocumentJson
+}
+export type ObservationSchema = mongoose.Schema<ObservationDocument>
+export type ObservationModel = mongoose.Model<ObservationDocument, object, ObservationModelOverrides>
+export type ObservationModelInstance = mongoose.HydratedDocument<ObservationDocument, ObservationModelOverrides>
+export type ObservationDocumentJson = Omit<ObservationAttrs, 'id' | 'eventId' | 'attachments' | 'states'> & {
+  id: mongoose.Types.ObjectId
+  eventId?: number
+  /**
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  url: string
+  attachments: AttachmentDocumentJson[]
+  states: ObservationStateDocumentJson[]
+}
 
-  readonly eventScope: MageEventId
-  readonly idModel: ObservationIdModel
+/**
+ * This interface defines the options that one can supply to the `toJSON()`
+ * method of the Mongoose Document instances of the Observation model.
+ */
+export interface ObservationTransformOptions extends mongoose.ToObjectOptions {
+  /**
+   * The database schema does not include the event ID for observation
+   * documents.  Use this option to add the `eventId` property to the
+   * observation JSON document.
+   */
+  event?: MageEventDocument | MageEventAttrs | { id: MageEventId, [others: string]: any }
+  /**
+   * If the `path` option is present, the JSON transormation will prefix the
+   * `url` property of the observation JSON object with the value of `path`.
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  path?: string
+}
+export type ObservationDocumentFeatureProperties = Omit<ObservationFeatureProperties, 'forms'> & {
+  forms: ObservationDocumentFormEntry[]
+}
 
-  constructor(eventDoc: Pick<MageEventDocument, 'id' | 'collectionName'>, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
-    // TODO: do not bind to the default mongoose instance and connection
-    super(legacy.observationModel(eventDoc), { docToEntity: createDocumentMapping(eventDoc.id) })
-    this.eventScope = eventDoc.id
-    this.idModel = legacy.ObservationId
+export type ObservationDocumentFormEntry = Omit<FormEntry, 'id'> & {
+  _id: mongoose.Types.ObjectId
+}
+export type ObservationDocumnetFormEntryJson = Omit<FormEntry, 'id'> & {
+  id: ObservationDocumentFormEntry['_id']
+}
+
+export type AttachmentDocument = Omit<Attachment, 'id' | 'observationFormId' | 'contentLocator' | 'thumbnails'> & {
+  _id: mongoose.Types.ObjectId
+  observationFormId: mongoose.Types.ObjectId
+  relativePath?: string
+  thumbnails: ThumbnailDocument[]
+}
+export type AttachmentDocumentJson = Omit<Attachment, 'id' | 'contentLocator' | 'thumbnails'> & {
+  id: AttachmentDocument['_id']
+  relativePath?: string
+  /**
+   * @deprecated TODO: confine URLs to the web layer
+   */
+  url?: string
+}
+
+export type ThumbnailDocument = Omit<Thumbnail, 'id' | 'contentLocator'> & {
+  _id: mongoose.Types.ObjectId
+  relativePath?: string
+}
+
+export type ObservationDocumentImportantFlag = Omit<ObservationImportantFlag, 'userId'> & {
+  userId?: mongoose.Types.ObjectId
+}
+
+export type ObservationStateDocument = Omit<ObservationState, 'id' | 'userId'> & {
+  _id: mongoose.Types.ObjectId
+  userId?: mongoose.Types.ObjectId
+}
+export type ObservationStateDocumentJson = Omit<ObservationState, 'id'> & {
+  id: string
+  // TODO: url should move to web layer
+  url: string
+}
+
+export const ObservationIdSchema = new Schema<ObservationIdDocument, ObservationIdModel>()
+
+function hasOwnProperty(wut: any, property: PropertyKey): boolean {
+  return Object.prototype.hasOwnProperty.call(wut, property)
+}
+
+function transformObservationModelInstance(modelInstance: mongoose.HydratedDocument<ObservationDocument, ObservationSubdocuments>, result: any, options: ObservationTransformOptions): ObservationAttrs {
+  result.id = modelInstance._id.toHexString()
+  delete result._id
+  delete result.__v
+  const event = options.event || {} as any
+  if (hasOwnProperty(event, '_id')) {
+    result.eventId = event?._id
+  }
+  else if (hasOwnProperty(event, 'id')) {
+    result.eventId = event.id
+  }
+  const path = options.path || ''
+  result.url = `${path}/${result.id}`
+  if (result.states && result.states.length) {
+    const currentState = result.states[0]
+    const currentStateId = currentState._id.toHexString()
+    result.state = {
+      id: currentStateId,
+      name: currentState.name,
+      userId: currentState.userId?.toHexString(),
+      url: `${result.url}/states/${currentStateId}`
+    }
+    delete result.states
+  }
+  if (result.properties && result.properties.forms) {
+    result.properties.forms = result.properties.forms.map((formEntry: AttachmentDocument) => {
+      const mapped: any = formEntry
+      mapped.id = formEntry._id.toHexString()
+      delete mapped._id
+      return mapped
+    })
+  }
+  if (result.attachments) {
+    result.attachments = modelInstance.attachments.map(doc => {
+      const entity = attachmentAttrsForDoc(doc) as Partial<Attachment>
+      delete entity.thumbnails
+      entity.url = `${result.url}/attachments/${entity.id}`
+      return entity
+    })
+  }
+  const populatedUserId = modelInstance.populated('userId')
+  if (populatedUserId) {
+    result.user = result.userId
+    // TODO Update mobile clients to handle observation.userId or observation.user.id
+    // Leave userId as mobile clients depend on it for observation create/update,
+    result.userId = populatedUserId
+  }
+  const populatedImportantUserId = modelInstance.populated('important.userId')
+  if (populatedImportantUserId && result.important) {
+    result.important.user = result.important.userId
+    delete result.important.userId
+  }
+  return result
+}
+
+ObservationIdSchema.set("toJSON", { transform: transformObservationModelInstance })
+
+export const StateSchema = new Schema({
+  name: { type: String, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }
+});
+
+export const ThumbnailSchema = new Schema(
+  {
+    minDimension: { type: Number, required: true },
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    name: { type: String, required: false },
+    width: { type: Number, required: false },
+    height: { type: Number, required: false },
+    relativePath: { type: String, required: false },
+  },
+  { strict: false }
+)
+
+export const AttachmentSchema = new Schema(
+  {
+    observationFormId: { type: Schema.Types.ObjectId, required: true },
+    fieldName: { type: String, required: true },
+    lastModified: { type: Date, required: false },
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    name: { type: String, required: false },
+    relativePath: { type: String, required: false },
+    width: { type: Number, required: false },
+    height: { type: Number, required: false },
+    oriented: { type: Boolean, required: true, default: false },
+    thumbnails: [ThumbnailSchema]
+  },
+  { strict: false }
+)
+
+export const ObservationSchema = new Schema(
+  {
+    type: { type: String, enum: ['Feature'], required: true },
+    lastModified: { type: Date, required: false },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true },
+    deviceId: { type: Schema.Types.ObjectId, required: false, sparse: true },
+    geometry: Schema.Types.Mixed,
+    properties: Schema.Types.Mixed,
+    attachments: [AttachmentSchema],
+    states: [StateSchema],
+    important: {
+      userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+      timestamp: { type: Date, required: false },
+      description: { type: String, required: false }
+    },
+    favoriteUserIds: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+  },
+  {
+    strict: false,
+    timestamps: {
+      createdAt: 'createdAt',
+      updatedAt: 'lastModified'
+    }
+  }
+)
+
+ObservationSchema.index({ geometry: '2dsphere' })
+ObservationSchema.index({ lastModified: 1 })
+ObservationSchema.index({ userId: 1 })
+ObservationSchema.index({ deviceId: 1 })
+ObservationSchema.index({ 'properties.timestamp': 1 })
+ObservationSchema.index({ 'states.name': 1 })
+ObservationSchema.index({ 'attachments.lastModified': 1 })
+ObservationSchema.index({ 'attachments.oriented': 1 })
+ObservationSchema.index({ 'attachments.contentType': 1 })
+ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 })
+
+export class MongooseObservationRepository extends BaseMongooseRepository<ObservationDocument, ObservationModel, ObservationAttrs> implements EventScopedObservationRepository {
+
+  constructor(model: ObservationModel, readonly idModel: ObservationIdModel, readonly eventScope: MageEventId, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {
+    super(model, { docToEntity: createDocumentMapping(eventScope) })
+    this.idModel = mongoose.model('ObservationId')
   }
 
   async allocateObservationId(): Promise<ObservationId> {
@@ -64,7 +293,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
       }
       beforeDoc = new this.model(docSeed)
     }
-    const savedDoc = await beforeDoc!.save() as legacy.ObservationDocument
+    const savedDoc = await beforeDoc!.save() as ObservationDocument
     const savedAttrs = this.entityForDocument(savedDoc)
     const saved = Observation.evaluate(savedAttrs, observation.mageEvent)
     for (const e of observation.pendingEvents) {
@@ -143,14 +372,14 @@ export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventR
   }
 }
 
-export function docToEntity(doc: legacy.ObservationDocument, eventId: MageEventId): ObservationAttrs {
+export function docToEntity(doc: ObservationDocument, eventId: MageEventId): ObservationAttrs {
   return createDocumentMapping(eventId)(doc)
 }
 
-function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.ObservationDocument, ObservationAttrs> {
+function createDocumentMapping(eventId: MageEventId): DocumentMapping<ObservationDocument, ObservationAttrs> {
   return doc => {
     const attrs: ObservationAttrs = {
-      id: doc.id,
+      id: doc._id.toHexString(),
       eventId,
       createdAt: doc.createdAt,
       lastModified: doc.lastModified,
@@ -172,9 +401,9 @@ function createDocumentMapping(eventId: MageEventId): DocumentMapping<legacy.Obs
   }
 }
 
-function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationImportantFlag | undefined {
+function importantFlagAttrsForDoc(doc: ObservationDocument): ObservationImportantFlag | undefined {
   /*
-  because the observation schema defines `important` as a nested documnet
+  because the observation schema defines `important` as a nested document
   instead of a subdocument schema, a mongoose observation document instance
   always returns a value for `observation.important`, even if the `important`
   key is undefined in the database.  so, if `important` is undefined in the
@@ -189,12 +418,12 @@ function importantFlagAttrsForDoc(doc: legacy.ObservationDocument): ObservationI
       description: docImportant.description
     }
   }
-  return void (0)
+  return void(0)
 }
 
-function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
+function attachmentAttrsForDoc(doc: AttachmentDocument): Attachment {
   return {
-    id: doc.id,
+    id: doc._id.toHexString(),
     observationFormId: doc.observationFormId.toHexString(),
     fieldName: doc.fieldName,
     lastModified: doc.lastModified ? new Date(doc.lastModified) : undefined,
@@ -209,7 +438,7 @@ function attachmentAttrsForDoc(doc: legacy.AttachmentDocument): Attachment {
   }
 }
 
-function thumbnailAttrsForDoc(doc: legacy.ThumbnailDocument): Thumbnail {
+function thumbnailAttrsForDoc(doc: ThumbnailDocument): Thumbnail {
   return {
     // TODO: is id necessary for thumnails? needs cleanup
     contentLocator: doc.relativePath,
@@ -222,7 +451,7 @@ function thumbnailAttrsForDoc(doc: legacy.ThumbnailDocument): Thumbnail {
   }
 }
 
-function stateAttrsForDoc(doc: legacy.ObservationStateDocument): ObservationState {
+function stateAttrsForDoc(doc: ObservationStateDocument): ObservationState {
   return {
     id: doc.id,
     name: doc.name,
@@ -230,7 +459,7 @@ function stateAttrsForDoc(doc: legacy.ObservationStateDocument): ObservationStat
   }
 }
 
-function formEntryForDoc(doc: legacy.ObservationDocumentFormEntry): FormEntry {
+function formEntryForDoc(doc: ObservationDocumentFormEntry): FormEntry {
   const { _id, ...withoutDbId } = doc
   return {
     ...withoutDbId,
@@ -247,15 +476,15 @@ function assignMongoIdToDocAttrs(attrs: { id?: any, [other: string]: any }): { _
   return withoutId
 }
 
-function attachmentDocSeedForEntity(attrs: Attachment): legacy.AttachmentDocAttrs {
+function attachmentDocSeedForEntity(attrs: Attachment): AttachmentDocument {
   const seed = assignMongoIdToDocAttrs(attrs)
   seed.relativePath = attrs.contentLocator
   delete seed['contentLocator']
   seed.thumbnails = attrs.thumbnails.map(thumbnailDocSeedForEntity)
-  return seed as legacy.AttachmentDocAttrs
+  return seed as AttachmentDocument
 }
 
-function thumbnailDocSeedForEntity(attrs: Thumbnail): legacy.ThumbnailDocAttrs {
+function thumbnailDocSeedForEntity(attrs: Thumbnail): ThumbnailDocument {
   return {
     _id: new mongoose.Types.ObjectId(),
     relativePath: attrs.contentLocator,
