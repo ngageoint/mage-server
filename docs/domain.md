@@ -44,6 +44,9 @@ Many MAGE customers have enterprise data sources available to them that are rele
 
 ## Core Terms
 
+### User
+A user is a human that interacts with the Mage application to support or accomplish a business goal.
+
 ### Feature
 A feature represents a physical object or occurrence that has spatial and/or temporal attributes.  A spatial attribute is the geographic location and shape of a feature and includes single points, (e.g. latitude and longitude), and geographic geometry structures such as lines and polygon shapes.  A temporal attribute could be a single instantaneous timestamp (e.g., 1 January 2020 at 10:35:40.555 AM) or a temporal duration (e.g., 2020-01-01 through 2020-01-31).  See **feature** from https://www.ogc.org/ogc/glossary/f.
 
@@ -97,13 +100,13 @@ An event is a scope to manage users, the data they collect, and the data they ar
 An event defines the observation data participants can submit.  Events may define one or more forms into which participants enter observation data about a subject.  Each form defines one or more form fields of varying types into which a participant enters a data value of the field's type, such as a date, text, number, email, etc.  An event may impose validation rules on submitted observations, such as minimum and/or maximum number of entries for a given form.  Form fields may impose validation rules on individual data values, such as required vs. optional, minimum and/or maximum numeric values, text input patterns, or allowed attachment media types.
 
 ### Participant
-A participant is a user that has access to the data associated with a specific event, as well as to submit observations for the event.
+A participant is a user that has access to the data associated with a specific event, as well as access to submit observations for the event.
 
 ### Field Participant
 A field participant is a participant of an event that is actively collecting observations for the event using a mobile device.
 
 ### Monitor
-A monitor is a participant of an event that is not actively collecting data for the event in the field.
+A monitor is a user that has access to view data associated with an event, but not to create or modify data for the event.
 
 ### Location
 A location is the reported geospatial position of a field participant.  Locations, therefore, only exist within the scope of an event.
