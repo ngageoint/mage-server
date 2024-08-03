@@ -20,8 +20,6 @@ import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissi
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web'
 import { WebAppRequestFactory } from './adapters/adapters.controllers.web'
 import { AppRequest, AppRequestContext } from './app.api/app.api.global'
-// TODO: users-next
-import { UserDocument } from './models/user'
 import SimpleIdFactory from './adapters/adapters.simple_id_factory'
 import { JsonSchemaService, JsonValidator, JSONSchema4 } from './entities/entities.json_types'
 import { MageEventModel, MongooseMageEventRepository } from './adapters/events/adapters.events.db.mongoose'
@@ -50,11 +48,11 @@ import { RoleBasedUsersPermissionService } from './permissions/permissions.users
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose'
 import path from 'path'
 import { MageEventDocument } from './models/event'
-import { parseAcceptLanguageHeader } from './entities/entities.i18n'
+import { Locale, parseAcceptLanguageHeader } from './entities/entities.i18n'
 import { ObservationRoutes, ObservationWebAppRequestFactory } from './adapters/observations/adapters.observations.controllers.web'
 import { UserWithRole } from './permissions/permissions.role-based.base'
 import { AttachmentStore, EventScopedObservationRepository, ObservationRepositoryForEvent } from './entities/observations/entities.observations'
-import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose'
+import { createObservationIdModel, MongooseObservationRepository, ObservationIdModel, ObservationSchema } from './adapters/observations/adapters.observations.db.mongoose'
 import { FileSystemAttachmentStoreInitError, intializeAttachmentStore } from './adapters/observations/adapters.observations.attachment_store.file_system'
 import { AttachmentStoreToken, ObservationRepositoryToken } from './plugins.api/plugins.api.observations'
 import { GetDbConnection, MongooseDbConnectionToken } from './plugins.api/plugins.api.db'
@@ -228,6 +226,9 @@ type DatabaseLayer = {
   events: {
     event: MageEventModel
   }
+  observations: {
+    observationId: ObservationIdModel
+  }
   icons: {
     staticIcon: StaticIconModel
   },
@@ -312,6 +313,9 @@ async function initDatabase(): Promise<DatabaseLayer> {
     events: {
       event: require('./models/event').Model
     },
+    observations: {
+      observationId: createObservationIdModel(conn)
+    },
     icons: {
       staticIcon: StaticIconModel(conn)
     },
@@ -388,7 +392,15 @@ async function initRepositories(models: DatabaseLayer, config: BootConfig): Prom
       eventRepo
     },
     observations: {
-      obsRepoFactory: createObservationRepositoryFactory(eventRepo, DomainEvents),
+      obsRepoFactory: async (eventId): Promise<EventScopedObservationRepository> => {
+        const eventModelInstance = await models.events.event.findById(eventId)
+        if (!eventModelInstance) {
+          throw new Error(`unexpected error: event not found for id ${eventId}`)
+        }
+        const modelName = eventModelInstance.collectionName
+        const obsModel = models.conn.models[eventModelInstance.collectionName] || models.conn.model(modelName, ObservationSchema)
+        return new MongooseObservationRepository(obsModel, models.observations.observationId, eventId, eventRepo.findById.bind(eventRepo), DomainEvents)
+      },
       attachmentStore
     },
     icons: {
@@ -527,7 +539,7 @@ async function initSettingsAppLayer(repos: Repositories): Promise<AppLayer['sett
   }
 }
 
-interface MageEventRequestContext extends AppRequestContext<UserDocument> {
+interface MageEventRequestContext extends AppRequestContext<UserExpanded> {
   event: MageEventDocument | MageEvent | undefined
 }
 
@@ -539,7 +551,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   const webLayer = await import('./express')
   const webController = webLayer.app
   const webAuth = webLayer.auth
-  const appRequestFactory: WebAppRequestFactory = <Params>(req: express.Request, params: Params): AppRequest<UserDocument, MageEventRequestContext> & Params => {
+  const appRequestFactory: WebAppRequestFactory = <Params>(req: express.Request, params: Params): AppRequest<UserExpanded, MageEventRequestContext> & Params => {
     return {
       ...params,
       context: {
@@ -623,15 +635,15 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   const pluginAppRequestContext: GetAppRequestContext = (req: express.Request) => {
     return {
       requestToken: Symbol(),
-      requestingPrincipal() {
+      requestingPrincipal(): UserExpanded {
         /*
-        TODO: this should ideally change so that the existing passport login
+        TODO: users-next: this should ideally change so that the existing passport login
         middleware applies the entity form of a user on the request rather than
         the mongoose document instance
         */
         return { ...req.user.toJSON(), id: req.user._id.toHexString() } as UserExpanded
       },
-      locale() {
+      locale(): Locale | null {
         return Object.freeze({
           languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
         })
@@ -648,7 +660,7 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
   }
   return {
     webController,
-    addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
+    addAuthenticatedPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']): void => {
       const routes = initPluginRoutes(pluginAppRequestContext)
       webController.use(`/plugins/${pluginId}`, [ bearerAuth, routes ])
     }
@@ -658,10 +670,10 @@ async function initWebLayer(repos: Repositories, app: AppLayer, webUIPlugins: st
 function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
-    requestingPrincipal() {
+    requestingPrincipal(): UserWithRole {
       return req.user as UserWithRole
     },
-    locale() {
+    locale(): Locale | null {
       return Object.freeze({
         languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
       })
@@ -670,7 +682,7 @@ function baseAppRequestContext(req: express.Request): AppRequestContext<UserWith
 }
 
 function ensureObservationEventScope(eventRepo: MageEventRepository, createObsRepo: ObservationRepositoryForEvent) {
-  return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  return async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<any> => {
     const eventIdFromPath = req.params[observationEventScopeKey]
     const eventId: MageEventId = parseInt(eventIdFromPath)
     const mageEvent = Number.isInteger(eventId) ? await eventRepo.findById(eventId) : null
