@@ -1,17 +1,20 @@
 import { MageEvent, MageEventAttrs, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery, WithMongooseDefaultVersionKey } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
-import * as legacy from '../../models/observation'
 import { MageEventDocument } from '../../models/event'
 import { pageOf, PageOf, PagingParameters } from '../../entities/entities.global'
-import { MongooseMageEventRepository } from '../events/adapters.events.db.mongoose'
 import { EventEmitter } from 'events'
 
 const Schema = mongoose.Schema
 
 export type ObservationIdDocument = { _id: mongoose.Types.ObjectId }
 export type ObservationIdModel = mongoose.Model<ObservationIdDocument>
+export const ObservationIdModelName: string = 'ObservationId'
+export const ObservationIdSchema = new Schema<ObservationIdDocument, ObservationIdModel>()
+export function createObservationIdModel(conn: mongoose.Connection): ObservationIdModel {
+  return conn.model(ObservationIdModelName, ObservationIdSchema)
+}
 
 export type ObservationDocument = Omit<ObservationAttrs, 'id' | 'eventId' | 'userId' | 'deviceId' | 'important' | 'favoriteUserIds' | 'attachments' | 'states' | 'properties'>
   & {
@@ -110,13 +113,11 @@ export type ObservationStateDocumentJson = Omit<ObservationState, 'id'> & {
   url: string
 }
 
-export const ObservationIdSchema = new Schema<ObservationIdDocument, ObservationIdModel>()
-
 function hasOwnProperty(wut: any, property: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(wut, property)
 }
 
-function transformObservationModelInstance(modelInstance: mongoose.HydratedDocument<ObservationDocument, ObservationSubdocuments>, result: any, options: ObservationTransformOptions): ObservationAttrs {
+function transformObservationModelInstance(modelInstance: mongoose.HydratedDocument<ObservationDocument, ObservationSubdocuments> | mongoose.HydratedDocument<ObservationIdDocument>, result: any, options: ObservationTransformOptions): ObservationAttrs {
   result.id = modelInstance._id.toHexString()
   delete result._id
   delete result.__v
@@ -149,7 +150,7 @@ function transformObservationModelInstance(modelInstance: mongoose.HydratedDocum
     })
   }
   if (result.attachments) {
-    result.attachments = modelInstance.attachments.map(doc => {
+    result.attachments = result.attachments.map((doc: AttachmentDocument) => {
       const entity = attachmentAttrsForDoc(doc) as Partial<Attachment>
       delete entity.thumbnails
       entity.url = `${result.url}/attachments/${entity.id}`
@@ -355,23 +356,6 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
   }
 }
 
-export const createObservationRepositoryFactory = (eventRepo: MongooseMageEventRepository, domainEvents: EventEmitter): ObservationRepositoryForEvent => {
-  return async (eventId: MageEventId): Promise<EventScopedObservationRepository> => {
-    const event = await eventRepo.model.findById(eventId)
-    if (event) {
-      return new MongooseObservationRepository(
-        { id: eventId, collectionName: event.collectionName },
-        async mageEventId => {
-          return await eventRepo.findById(mageEventId)
-        },
-        domainEvents)
-    }
-    const err = new Error(`unexpected error: event not found for id ${event}`)
-    console.error(err)
-    throw err
-  }
-}
-
 export function docToEntity(doc: ObservationDocument, eventId: MageEventId): ObservationAttrs {
   return createDocumentMapping(eventId)(doc)
 }
@@ -453,7 +437,7 @@ function thumbnailAttrsForDoc(doc: ThumbnailDocument): Thumbnail {
 
 function stateAttrsForDoc(doc: ObservationStateDocument): ObservationState {
   return {
-    id: doc.id,
+    id: doc._id.toHexString(),
     name: doc.name,
     userId: doc.userId?.toHexString()
   }
@@ -462,8 +446,8 @@ function stateAttrsForDoc(doc: ObservationStateDocument): ObservationState {
 function formEntryForDoc(doc: ObservationDocumentFormEntry): FormEntry {
   const { _id, ...withoutDbId } = doc
   return {
-    ...withoutDbId,
-    id: _id.toHexString()
+    ...withoutDbId as any,
+    id: _id.toHexString(),
   }
 }
 
