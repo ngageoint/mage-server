@@ -1,7 +1,7 @@
 "use strict";
 
-const config = require('../config.js'),
-  log = require('winston');
+const config = require('../config.js');
+const log = require('winston');
 
 exports.id = 'set-default-password-policy';
 

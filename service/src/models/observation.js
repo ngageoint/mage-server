@@ -3,160 +3,8 @@ const mongoose = require('mongoose')
   , Event = require('./event')
   , log = require('winston');
 
-const Schema = mongoose.Schema;
 
-// Collection to hold unique observation ids
-const ObservationIdSchema = new Schema();
-ObservationIdSchema.set("toJSON", { transform });
-const ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
-
-exports.ObservationIdSchema = ObservationIdSchema;
-exports.ObservationId = ObservationId;
-
-const StateSchema = new Schema({
-  name: { type: String, required: true },
-  userId: { type: Schema.Types.ObjectId, ref: 'User' }
-});
-
-const ThumbnailSchema = new Schema({
-  minDimension: { type: Number, required: true },
-  contentType: { type: String, required: false },
-  size: { type: Number, required: false },
-  name: { type: String, required: false },
-  width: { type: Number, required: false },
-  height: { type: Number, required: false },
-  relativePath: { type: String, required: false },
-}, {
-  strict: false
-});
-
-const AttachmentSchema = new Schema({
-  observationFormId: { type: Schema.Types.ObjectId, required: true },
-  fieldName: { type: String, required: true },
-  lastModified: { type: Date, required: false },
-  contentType: { type: String, required: false },
-  size: { type: Number, required: false },
-  name: { type: String, required: false },
-  relativePath: { type: String, required: false },
-  width: { type: Number, required: false },
-  height: { type: Number, required: false },
-  oriented: { type: Boolean, required: true, default: false },
-  thumbnails: [ThumbnailSchema]
-}, {
-  strict: false
-});
-
-// Creates the Schema for the Attachments object
-const ObservationSchema = new Schema({
-  type: { type: String, enum: ['Feature'], required: true },
-  lastModified: { type: Date, required: false },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false, sparse: true },
-  deviceId: { type: Schema.Types.ObjectId, required: false, sparse: true },
-  geometry: Schema.Types.Mixed,
-  properties: Schema.Types.Mixed,
-  attachments: [AttachmentSchema],
-  states: [StateSchema],
-  important: {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
-    timestamp: { type: Date, required: false },
-    description: { type: String, required: false }
-  },
-  favoriteUserIds: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-}, {
-  strict: false,
-  timestamps: {
-    createdAt: 'createdAt',
-    updatedAt: 'lastModified'
-  }
-});
-
-ObservationSchema.index({ geometry: '2dsphere' });
-ObservationSchema.index({ lastModified: 1 });
-ObservationSchema.index({ userId: 1 });
-ObservationSchema.index({ deviceId: 1 });
-ObservationSchema.index({ 'properties.timestamp': 1 });
-ObservationSchema.index({ 'states.name': 1 });
-ObservationSchema.index({ 'attachments.lastModified': 1 });
-ObservationSchema.index({ 'attachments.oriented': 1 });
-ObservationSchema.index({ 'attachments.contentType': 1 });
-ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 });
-
-function transformAttachment(attachment, observation) {
-  attachment.id = attachment._id;
-  delete attachment._id;
-  delete attachment.thumbnails;
-
-  /*
-  TODO: is this actually checking if the attachment is stored?
-  ANSWER: yes it is. the clients depend on it. the web client will not upload
-    if the url property is present on an attachment.
-    stop sending absolute urls to the clients.
-  */
-  if (attachment.relativePath) {
-    attachment.url = [observation.url, "attachments", attachment.id].join("/");
-  }
-
-  return attachment;
-}
-
-function transformState(state, observation) {
-  state.id = state._id;
-  delete state._id;
-
-  state.url = [observation.url, "states", state.id].join("/");
-  return state;
-}
-
-function transform(observation, ret, options) {
-  ret.id = ret._id;
-  delete ret._id;
-  delete ret.__v;
-
-  if (options.event) {
-    ret.eventId = options.event._id;
-  }
-
-  const path = options.path ? options.path : "";
-  ret.url = [path, observation.id].join("/");
-
-  if (observation.states && observation.states.length) {
-    ret.state = transformState(ret.states[0], ret);
-    delete ret.states;
-  }
-
-  if (observation.properties && observation.properties.forms) {
-    ret.properties.forms = ret.properties.forms.map(observationForm => {
-      observationForm.id = observationForm._id;
-      delete observationForm._id;
-      return observationForm;
-    });
-  }
-
-  if (observation.attachments) {
-    ret.attachments = ret.attachments.map(function (attachment) {
-      return transformAttachment(attachment, ret);
-    });
-  }
-
-  const populatedUserId = observation.populated('userId');
-  if (populatedUserId) {
-    ret.user = ret.userId;
-    // TODO Update mobile clients to handle observation.userId or observation.user.id
-    // Leave userId as mobile clients depend on it for observation create/update,
-    ret.userId = populatedUserId;
-  }
-
-  const populatedImportantUserId = observation.populated('important.userId')
-  if (populatedImportantUserId && ret.important) {
-    ret.important.user = ret.important.userId
-    delete ret.important.userId;
-  }
-}
-
-ObservationSchema.set('toJSON', { transform });
-ObservationSchema.set('toObject', { transform });
-
-const models = {};
+// TODO: are these necessary?
 mongoose.model('Attachment', AttachmentSchema);
 mongoose.model('Thumbnail', ThumbnailSchema);
 mongoose.model('State', StateSchema);
@@ -200,21 +48,6 @@ function parseFields(fields) {
     return { states: { $slice: 1 } };
   }
 }
-
-function observationModel(event) {
-  const name = event.collectionName;
-  let model = models[name];
-  if (!model) {
-    // Creates the Model for the Observation Schema
-    model = mongoose.model(name, ObservationSchema, name);
-    // TODO: mongoose should be caching these models so this seems unnecessary
-    models[name] = model;
-  }
-
-  return model;
-}
-
-exports.observationModel = observationModel;
 
 exports.getObservations = function (event, o, callback) {
   const conditions = {};
@@ -296,20 +129,6 @@ exports.getObservations = function (event, o, callback) {
   } else {
     query.exec(callback);
   }
-};
-
-exports.createObservationId = function (callback) {
-  ObservationId.create({}, callback);
-};
-
-exports.getObservationId = function (id, callback) {
-  ObservationId.findById(id, function (err, doc) {
-    callback(err, doc ? doc._id : null);
-  });
-};
-
-exports.getLatestObservation = function (event, callback) {
-  observationModel(event).findOne({}, { lastModified: true }, { sort: { "lastModified": -1 }, limit: 1 }, callback);
 };
 
 exports.getObservationById = function (event, observationId, options, callback) {

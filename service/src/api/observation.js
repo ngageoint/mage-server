@@ -44,6 +44,11 @@ Observation.prototype.getAll = function(options, callback) {
   }
 };
 
+/**
+ * TODO: this can be deleted when these refs go away
+ * * routes/index.js
+ * * routes/observations.js
+ */
 Observation.prototype.getById = function(observationId, options, callback) {
   if (typeof options === 'function') {
     callback = options;
@@ -175,23 +180,6 @@ Observation.prototype.validate = function(observation) {
     err.errors = errors;
     return err;
   }
-};
-
-Observation.prototype.createObservationId = function(callback) {
-  ObservationModel.createObservationId(callback);
-};
-
-Observation.prototype.validateObservationId = function(id, callback) {
-  ObservationModel.getObservationId(id, function(err, id) {
-    if (err) return callback(err);
-
-    if (!id) {
-      err = new Error();
-      err.status = 404;
-    }
-
-    callback(err, id);
-  });
 };
 
 // TODO create is gone, do I need to figure out if this is an observation create?
