@@ -2,7 +2,6 @@ import { EntityNotFoundError, InfrastructureError, InvalidInputError, Permission
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
 import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
-import _ from 'lodash'
 import { User, UserId } from '../../entities/users/entities.users'
 
 
@@ -31,6 +30,13 @@ export interface SaveObservation {
 }
 export interface SaveObservationRequest extends ObservationRequest {
   observation: ExoObservationMod
+}
+
+export interface ReadObservationRequest extends ObservationRequest {
+  observationId: ObservationId
+}
+export interface ReadObservation {
+  (req: ReadObservationRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError>>
 }
 
 export interface StoreAttachmentContent {

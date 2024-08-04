@@ -166,6 +166,13 @@ describe('observations web controller', function () {
     })
   })
 
+  describe('GET /observations/{observationId}', function() {
+
+    it('has tests', async function() {
+      expect.fail('todo')
+    })
+  })
+
   describe('PUT /observations/{observationId}', function() {
 
     it('saves the observation for a mod request', async function() {

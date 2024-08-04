@@ -8,7 +8,7 @@ import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreat
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
-import { User, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
+import { User, UserIconType, UserId, UserRepository } from '../../../lib/entities/users/entities.users'
 import { pipeline, Readable } from 'stream'
 import util from 'util'
 import { BufferWriteable } from '../../utils'
@@ -343,7 +343,8 @@ describe('observations use case interactions', function() {
           { minDimension: 200, contentLocator: void(0), size: 2000, contentType: 'image/jpeg', width: 200, height: 300, name: 'rainbow@200.jpg' },
           { minDimension: 300, contentLocator: void(0), size: 3000, contentType: 'image/jpeg', width: 300, height: 400, name: 'rainbow@300.jpg' },
           { minDimension: 400, contentLocator: void(0), size: 4000, contentType: 'image/jpeg', width: 400, height: 500, name: 'rainbow@400.jpg' },
-        ]
+        ],
+        url: '/remove/me'
       }
 
       expect(api.exoAttachmentForThumbnail(0, att)).to.deep.equal({
@@ -497,6 +498,9 @@ describe('observations use case interactions', function() {
         phones: [],
         roleId: uniqid(),
         username: 'populate.me',
+        avatar: {},
+        icon: { type: UserIconType.None },
+        recentEventIds: []
       }
       const req: api.SaveObservationRequest = {
         context,
@@ -530,6 +534,9 @@ describe('observations use case interactions', function() {
         phones: [],
         roleId: uniqid(),
         username: 'populate.me',
+        recentEventIds: [],
+        avatar: {},
+        icon: { type: UserIconType.None }
       }
       const req: api.SaveObservationRequest = {
         context,
@@ -567,6 +574,9 @@ describe('observations use case interactions', function() {
         phones: [],
         roleId: uniqid(),
         username: 'user1',
+        recentEventIds: [],
+        avatar: {},
+        icon: { type: UserIconType.None }
       }
       const importantFlagger: User = {
         id: uniqid(),
@@ -579,6 +589,9 @@ describe('observations use case interactions', function() {
         phones: [],
         roleId: uniqid(),
         username: 'user2',
+        recentEventIds: [],
+        avatar: {},
+        icon: { type: UserIconType.None }
       }
       const req: api.SaveObservationRequest = {
         context,
@@ -1526,6 +1539,21 @@ describe('observations use case interactions', function() {
         expect(saved).to.deep.equal(api.exoObservationFor(obsAfter))
         obsRepo.received(1).save(Arg.is(validObservation()))
         obsRepo.received(1).save(Arg.is(equalToObservationIgnoringDates(obsAfter, 'repository save argument')))
+      })
+    })
+  })
+
+  describe('reading observations', function() {
+
+    describe('reading by id', function() {
+      it('has tests', async function() {
+        expect.fail('todo')
+      })
+    })
+
+    describe('searching', function() {
+      it('has tests', async function() {
+        expect.fail('todo')
       })
     })
   })

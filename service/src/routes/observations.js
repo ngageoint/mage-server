@@ -1,21 +1,15 @@
-const { attachmentTypeIsValidForField } = require('../entities/events/entities.events.forms');
-
 module.exports = function (app, security) {
 
-  const async = require('async')
-    , api = require('../api')
+  const api = require('../api')
     , log = require('winston')
     , archiver = require('archiver')
     , path = require('path')
     , environment = require('../environment/env')
-    , fs = require('fs-extra')
     , moment = require('moment')
-    , Team = require('../models/team')
     , access = require('../access')
     , { default: turfCentroid } = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
-    , FileType = require('file-type')
     , passport = security.authentication.passport
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
 
@@ -42,74 +36,17 @@ module.exports = function (app, security) {
     res.sendStatus(403);
   }
 
-  function validateObservationCreateAccess(validateObservationId) {
-    return function (req, res, next) {
-
+  function validateObservationCreateAccess() {
+    return async (req, res, next) => {
       if (!access.userHasPermission(req.user, 'CREATE_OBSERVATION')) {
         return res.sendStatus(403);
       }
-
-      var tasks = [];
-      if (validateObservationId) {
-        tasks.push(function (done) {
-          /*
-          TODO: this is validating the id from body document, but should it
-          validate the id from the url path instead? the path id is the one
-          that is passed down to the update operation
-          */
-          new api.Observation().validateObservationId(req.param('id'), done);
-        });
+      const isParticipant = await eventPermissions.userIsParticipantInEvent(req.event, req.user.id)
+      if (isParticipant) {
+        return next()
       }
-
-      tasks.push(function (done) {
-        Team.teamsForUserInEvent(req.user, req.event, function (err, teams) {
-          if (err) return next(err);
-
-          if (teams.length === 0) {
-            return res.status(403).send('Cannot submit an observation for an event that you are not part of.');
-          }
-
-          done();
-        });
-      });
-
-      async.series(tasks, next);
-    };
-  }
-
-  async function validateObservationUpdateAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_ALL')) {
-      return next();
+      res.status(403).send('You must be an event participant to perform this operation.')
     }
-    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
-      // Make sure I am part of this event
-      const hasPermission = await eventPermissions.userHasEventPermission(req.event, req.user.id, 'read')
-      if (hasPermission) {
-        return next();
-      }
-    }
-    res.sendStatus(403);
-  }
-
-  function validateAttachmentFile(req, res, next) {
-    FileType.fromFile(req.file.path).then(fileType => {
-      const attachment = req.observation.attachments.find(attachment => attachment._id.toString() === req.params.attachmentId);
-      const observationForm = req.observation.properties.forms.find(observationForm => {
-        return observationForm._id.toString() === attachment.observationFormId.toString()
-      });
-      if (!observationForm) {
-        return res.status(400).send('Attachment form not found');
-      }
-      const formDefinition = req.event.forms.find(form => form._id === observationForm.formId);
-      const fieldDefinition = formDefinition.fields.find(field => field.name === attachment.fieldName);
-      if (!fieldDefinition) {
-        return res.status(400).send('Attachment field not found');
-      }
-      if (!attachmentTypeIsValidForField(fieldDefinition, fileType.mime)) {
-        return res.status(400).send(`Invalid attachment '${attachment.name}', type must be one of ${fieldDefinition.allowedAttachmentTypes.join(' or ')}`);
-      }
-      next();
-    });
   }
 
   function authorizeEventAccess(collectionPermission, aclPermission) {
@@ -298,26 +235,6 @@ module.exports = function (app, security) {
         }
 
         archive.finalize();
-      });
-    }
-  );
-
-  app.get(
-    '/api/events/:eventId/observations/:observationIdInPath',
-    passport.authenticate('bearer'),
-    validateObservationReadAccess,
-    parseQueryParams,
-    function (req, res, next) {
-      const options = { fields: req.parameters.fields };
-      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function (err, observation) {
-        if (err) {
-          return next(err);
-        }
-        if (!observation) {
-          return res.sendStatus(404);
-        }
-        const response = observationXform.transform(observation, transformOptions(req));
-        res.json(response);
       });
     }
   );

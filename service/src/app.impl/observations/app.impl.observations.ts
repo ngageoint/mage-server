@@ -52,6 +52,21 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
+export function ReadObservation(permissionService: api.ObservationPermissionService): api.ReadObservation {
+  return async function readObservation(req: api.ReadObservationRequest): ReturnType<api.ReadObservation> {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    const obs = await req.context.observationRepository.findById(req.observationId)
+    if (obs instanceof Observation) {
+      const exoObs = api.exoObservationFor(obs)
+      return AppResponse.success(exoObs)
+    }
+    return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
+  }
+}
+
 export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
     const obsRepo = req.context.observationRepository
