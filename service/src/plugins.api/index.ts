@@ -54,7 +54,7 @@ import { EnsureJson } from '../entities/entities.json_types'
  * state the plugin requires.
  */
 export interface PluginStateRepository<State extends object> {
-  put(state: EnsureJson<State>): Promise<EnsureJson<State>>
+  put(state: EnsureJson<State> | null): Promise<EnsureJson<State> | null>
   patch(state: Partial<EnsureJson<State>>): Promise<EnsureJson<State>>
   get(): Promise<EnsureJson<State> | null>
 }
