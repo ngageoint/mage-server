@@ -140,7 +140,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   const appLayer = await initAppLayer(repos)
   const { webController, addAuthenticatedPluginRoutes } = await initWebLayer(repos, appLayer, config.plugins?.webUIPlugins || [])
   const routesForPluginId: { [pluginId: string]: WebRoutesHooks['webRoutes'] } = {}
-  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']) => {
+  const collectPluginRoutesToSort = (pluginId: string, initPluginRoutes: WebRoutesHooks['webRoutes']): void => {
     routesForPluginId[pluginId] = initPluginRoutes
   }
   const globalScopeServices = new Map<InjectionToken<any>, any>([
@@ -250,6 +250,7 @@ type AppLayer = {
   observations: {
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
+    readObservation: observationsApi.ReadObservation
     storeAttachmentContent: observationsApi.StoreAttachmentContent
     readAttachmentContent: observationsApi.ReadAttachmentContent
   },
@@ -462,6 +463,7 @@ async function initObservationsAppLayer(repos: Repositories): Promise<AppLayer['
   return {
     allocateObservationId: observationsImpl.AllocateObservationId(obsPermissionsService),
     saveObservation: observationsImpl.SaveObservation(obsPermissionsService, repos.users.userRepo),
+    readObservation: observationsImpl.ReadObservation(obsPermissionsService),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(obsPermissionsService, repos.observations.attachmentStore),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(obsPermissionsService, repos.observations.attachmentStore)
   }

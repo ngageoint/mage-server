@@ -15,7 +15,11 @@ export interface ObservationRequestContext<Principal = unknown> extends AppReque
    * probably be a user-device pair, eventually.
    */
   userId: UserId
-  deviceId: string
+  /**
+   * TODO: device id: The `None` device provisioning strategy returns a dummy "device"
+   * object that has no ID.
+   */
+  deviceId?: string
   observationRepository: EventScopedObservationRepository
 }
 export interface ObservationRequest<Principal = unknown> extends AppRequest<Principal, ObservationRequestContext<Principal>> {}

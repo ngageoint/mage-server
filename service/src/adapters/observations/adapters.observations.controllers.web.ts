@@ -1,6 +1,6 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservation, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
 import { AttachmentStore, EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
 import busboy from 'busboy'
@@ -16,6 +16,7 @@ declare module 'express-serve-static-core' {
 export interface ObservationAppLayer {
   allocateObservationId: AllocateObservationId
   saveObservation: SaveObservation
+  readObservation: ReadObservation
   storeAttachmentContent: StoreAttachmentContent
   readAttachmentContent: ReadAttachmentContent
 }
@@ -70,8 +71,8 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       },
       async (req, res, next) => {
         const afterUploadStreamEvent = 'afterUploadStream'
-        const sendInvalidRequestStructure = () => next(invalidInput(`request must contain only one file part named 'attachment'`))
-        const afterUploadStream = (finishResponse: () => void) => {
+        const sendInvalidRequestStructure = (): void => next(invalidInput(`request must contain only one file part named 'attachment'`))
+        const afterUploadStream = (finishResponse: () => void): void => {
           if (req.attachmentUpload?.listenerCount(afterUploadStreamEvent)) {
             return
           }
@@ -185,6 +186,15 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
         return res.status(400).json({ message: 'Body event ID does not match path event ID' })
       }
       const appRes = await app.saveObservation(appReq)
+      if (appRes.success) {
+        return res.json(jsonForObservation(appRes.success, qualifiedBaseUrl(req)))
+      }
+      next(appRes.error)
+    })
+    .get(async (req, res, next) => {
+      const observationId = req.params.observationId
+      const appReq = createAppRequest(req, { observationId })
+      const appRes = await app.readObservation(appReq)
       if (appRes.success) {
         return res.json(jsonForObservation(appRes.success, qualifiedBaseUrl(req)))
       }
