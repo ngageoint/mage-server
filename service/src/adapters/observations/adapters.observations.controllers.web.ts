@@ -218,6 +218,13 @@ export type WebAttachment = ExoAttachment & {
   url?: string
 }
 
+/**
+ * Map the given observation to a {@link WebObservation} JSON object which has extra URL
+ * entries based on the current base URL of the web app.
+ * @deprecated TODO: abs url: Stop using absolute URLs with FQDN.  Clients should constuct
+ * requests based on the ReST API definition or using relative URLs appended to the base
+ * URL of the server.
+ */
 export function jsonForObservation(o: ExoObservation, baseUrl: string): WebObservation {
   const obsUrl = `${baseUrl}/${o.id}`
   return {

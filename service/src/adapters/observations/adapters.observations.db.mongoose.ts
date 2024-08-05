@@ -117,6 +117,12 @@ function hasOwnProperty(wut: any, property: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(wut, property)
 }
 
+/**
+ * @deprecated TODO: obs types: This exists for backward compatibility, but should be viable to remove when all
+ * observation routes that return observation json transition to DI architecture in the adapter layer, as the newer
+ * `WebObservation` type mapping handles adding the `url` key to observation documents in the observation
+ * [web controller](./adapters.observations.controllers.web.ts).
+ */
 function transformObservationModelInstance(modelInstance: mongoose.HydratedDocument<ObservationDocument, ObservationSubdocuments> | mongoose.HydratedDocument<ObservationIdDocument>, result: any, options: ObservationTransformOptions): ObservationAttrs {
   result.id = modelInstance._id.toHexString()
   delete result._id
@@ -172,7 +178,7 @@ function transformObservationModelInstance(modelInstance: mongoose.HydratedDocum
   return result
 }
 
-ObservationIdSchema.set("toJSON", { transform: transformObservationModelInstance })
+ObservationIdSchema.set('toJSON', { transform: transformObservationModelInstance })
 
 export const StateSchema = new Schema({
   name: { type: String, required: true },
