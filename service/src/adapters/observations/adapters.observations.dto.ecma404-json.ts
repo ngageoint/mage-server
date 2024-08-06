@@ -3,7 +3,6 @@ import moment from 'moment'
 import { invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import { ExoObservationMod } from '../../app.api/observations/app.api.observations'
 import { Json } from '../../entities/entities.json_types'
-import { ObservationId } from '../../entities/observations/entities.observations'
 
 /*
  * NOTE: This file is named ecma404-json to avoid any potential problems with
