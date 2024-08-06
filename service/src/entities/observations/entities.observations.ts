@@ -71,7 +71,7 @@ export interface ObservationImportantFlag {
 
 export interface ObservationState {
   id: string | PendingEntityId
-  name: 'active' | 'archived'
+  name: 'active' | 'archive'
   userId?: UserId | undefined
   /**
    * @deprecated TODO: confine URLs to the web layer
@@ -668,7 +668,7 @@ export function removeFormEntry(observation: Observation, formEntryId: FormEntry
   return Observation.assignTo(observation, mod) as Observation
 }
 
-export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified'>
+export type AttachmentCreateAttrs = Omit<Attachment, 'id' | 'observationFormId' | 'fieldName' | 'lastModified' | 'url'>
 export type AttachmentPatchAttrs = Partial<AttachmentCreateAttrs>
 export type AttachmentContentPatchAttrs = Required<Pick<Attachment, 'contentLocator' | 'size'>>
 export type ThumbnailContentPatchAttrs = Required<Pick<Thumbnail, 'contentLocator' | 'size'>> & Thumbnail

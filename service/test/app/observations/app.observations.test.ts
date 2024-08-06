@@ -290,7 +290,7 @@ describe('observations use case interactions', function() {
       expect(exo.state).to.be.undefined
 
       const states: ObservationState[] = [
-        { id: uniqid(), name: 'archived', userId: uniqid() },
+        { id: uniqid(), name: 'archive', userId: uniqid() },
         { id: uniqid(), name: 'active', userId: uniqid() }
       ]
       from.states = states.map(copyObservationStateAttrs)
@@ -1418,7 +1418,7 @@ describe('observations use case interactions', function() {
           id: uniqid(),
           states: [
             { id: uniqid(), name: 'active', userId: uniqid() },
-            { id: uniqid(), name: 'archived', userId: uniqid() }
+            { id: uniqid(), name: 'archive', userId: uniqid() }
           ]
         }, mageEvent) as Observation
         const obsAfter = Observation.assignTo(obsBefore, {

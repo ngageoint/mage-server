@@ -3,13 +3,12 @@ import { expect } from 'chai'
 import mongoose from 'mongoose'
 import _ from 'lodash'
 import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
-import { MongooseObservationRepository } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
+import { MongooseObservationRepository, ObservationModel } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
 import { MageEventDocument } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
-import { ObservationDocument, ObservationModel } from '../../../src/models/observation'
 import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
@@ -153,7 +152,7 @@ describe('mongoose observation repository', function() {
 
       expect(id).to.be.a.string
       expect(id).to.not.be.empty
-      expect(parsed.equals(found?._id)).to.be.true
+      expect(parsed.equals(found?._id || '')).to.be.true
       expect(idCount).to.equal(1)
     })
   })
@@ -247,7 +246,7 @@ describe('mongoose observation repository', function() {
           },
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'archived',
+            name: 'archive',
             userId: undefined
           }
         ]
@@ -326,7 +325,7 @@ describe('mongoose observation repository', function() {
           coordinates: [ 12, 34 ]
         }
         putAttrs.states = [
-          { name: 'archived', id: PendingEntityId }
+          { name: 'archive', id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -412,7 +411,7 @@ describe('mongoose observation repository', function() {
       state1Stub.states = [
         {
           id: PendingEntityId,
-          name: 'archived',
+          name: 'archive',
           userId: (new mongoose.Types.ObjectId()).toHexString()
         }
       ]
