@@ -166,6 +166,45 @@ describe('observations web controller', function () {
     })
   })
 
+  describe('GET /observations', function() {
+
+    describe('query string parsing', function() {
+
+      it('parses bbox as a json string', async function() {
+        // TODO: this format should be deprecated
+        expect.fail('todo')
+      })
+
+      it('parses bbox as csv', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses min last modified date', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses max last modified date', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses min timestamp', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses max timestamp', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses populate flag', async function() {
+        expect.fail('todo')
+      })
+
+      it('parses sort field', async function() {
+        expect.fail('todo')
+      })
+    })
+  })
+
   describe('GET /observations/{observationId}', function() {
 
     it('has tests', async function() {

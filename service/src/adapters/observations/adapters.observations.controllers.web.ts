@@ -1,11 +1,12 @@
 import express from 'express'
 import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservation, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
-import { AttachmentStore, EventScopedObservationRepository, ObservationState } from '../../entities/observations/entities.observations'
+import { AllocateObservationId, ExoAttachment, ExoIncomingAttachmentContent, ExoObservation, ObservationRequest, ReadAttachmentContent, ReadAttachmentContentRequest, ReadObservation, ReadObservations, ReadObservationsRequest, SaveObservation, SaveObservationRequest, StoreAttachmentContent, StoreAttachmentContentRequest } from '../../app.api/observations/app.api.observations'
+import { AttachmentStore, EventScopedObservationRepository, ObservationState, ObservationStateName } from '../../entities/observations/entities.observations'
 import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import busboy from 'busboy'
 import { invalidInput } from '../../app.api/app.api.errors'
 import { exoObservationModFromJson } from './adapters.observations.dto.ecma404-json'
+import busboy from 'busboy'
+import moment from 'moment'
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -16,6 +17,7 @@ declare module 'express-serve-static-core' {
 export interface ObservationAppLayer {
   allocateObservationId: AllocateObservationId
   saveObservation: SaveObservation
+  readObservations: ReadObservations
   readObservation: ReadObservation
   storeAttachmentContent: StoreAttachmentContent
   readAttachmentContent: ReadAttachmentContent
@@ -201,7 +203,129 @@ export function ObservationRoutes(app: ObservationAppLayer, attachmentStore: Att
       next(appRes.error)
     })
 
+  routes.route('/')
+    .get(async (req, res, next) => {
+      const readSpec: Pick<ReadObservationsRequest, 'filter' | 'sort' | 'populate'> = parseObservationQueryParams(req)
+      const appReq = createAppRequest(req, readSpec)
+      const appRes = await app.readObservations(appReq)
+      if (appRes.success) {
+        return res.json(appRes.success.map(x => jsonForObservation(x, qualifiedBaseUrl(req))))
+      }
+      next(appRes.error)
+    })
+
   return routes.use(compatibilityMageAppErrorHandler)
+}
+
+/**
+ * Attempt to parse the given string to an array of numbers that represents a
+ * bounding box of the form [ xMin, yMin, xMax, yMax ].  This does not validate
+ * lat/lon bounds, only array length and number type.  The string can be a
+ * JSON string number array (deprecated), e.g., `'[ 1, 2, 3, 4 ]'`, or a comma-
+ * separated list, e.g., `'1,2,3,4'`.
+ */
+function parseBBox(maybeBBoxString: any): number[] | null {
+  if (typeof maybeBBoxString !== 'string') {
+    return null
+  }
+  let parsed: number[] = []
+  try {
+    // TODO: move this geometryFormat.parse() call down to mongodb repository
+    // filter.geometries = geometryFormat.parse('bbox', bbox)
+    // TODO: would be better not to embed json strings in query parameters; use csv instead
+    parsed = JSON.parse(maybeBBoxString)
+    if (!Array.isArray(parsed)) {
+      return null
+    }
+    return null
+  }
+  catch(err) {
+    console.debug('invalid json string from query parameter `bbox`', maybeBBoxString, err)
+  }
+  // try csv instead of json
+  // TODO: this should be the only supported format
+  if (!parsed) {
+    parsed = maybeBBoxString.split(',').map(parseFloat)
+  }
+  if (parsed.length !== 4 && parsed.some(x => typeof x !== 'number' || isNaN(x))) {
+    return null
+  }
+  return parsed
+}
+
+/**
+ * Parse {@link ObservationStateName} strings from the given input string.  This expects the input string to be
+ * comma-separated values with no spaces.  Only parse the first N state names, where N is number of valid state names.
+ * Return null if the input is not a string or contains no valid state names.
+ */
+function parseStatesParam(maybeStatesString: any): ObservationStateName[] | null {
+  if (typeof maybeStatesString !== 'string') {
+    return null
+  }
+  const allStateNames = Object.values(ObservationStateName)
+  const states = maybeStatesString.split(',', allStateNames.length).reduce((states: Set<ObservationStateName>, stateName: any) => {
+    if (allStateNames.includes(stateName) && !states.has(stateName)) {
+      return states.add(stateName)
+    }
+    return states
+  }, new Set<ObservationStateName>())
+  return states.size > 0 ? Array.from(states.values()) : null
+}
+
+const allowedSortFields = {
+  lastModified: true,
+  timestamp: true,
+} as Record<string, true>
+
+/**
+ * Parse a sort field specification of the form `field+order`, where `field` is the name of an observation field,
+ * and `order` is `desc`, `-`, or `-1`, to indicate a descending sort.  The default sort order is ascending.  Only the
+ * first valid sort field is used
+ */
+function parseSortParam(maybeSortString: any): ReadObservationsRequest['sort'] | null {
+  if (typeof maybeSortString !== 'string') {
+    return null
+  }
+  const sort = maybeSortString.split(',').reduce<{ field: string, order: 1 | -1 }[]>((sort, sortFieldSpec) => {
+    const [ name, orderString ] = sortFieldSpec.split('+')
+    const order = orderString?.toLowerCase() === 'desc' || orderString === '-' || orderString === '-1' ? -1 : 1
+    if (allowedSortFields[name] === true) {
+      return [ ...sort, { field: name, order } ]
+    }
+    return sort
+  }, [] as { field: string, order: 1 | -1 }[])[0]
+  return sort || null
+}
+
+function parseObservationQueryParams(req: express.Request): Pick<ReadObservationsRequest, 'filter' | 'sort' | 'populate'> {
+  const filter: ReadObservationsRequest['filter'] = {}
+  const startDate = req.query.startDate
+  if (startDate) {
+    filter.lastModifiedAfter = moment(String(startDate)).utc().toDate()
+  }
+  const endDate = req.query.endDate
+  if (endDate) {
+    filter.lastModifiedBefore = moment(String(endDate)).utc().toDate()
+  }
+  const observationStartDate = req.query.observationStartDate
+  if (observationStartDate) {
+    filter.timestampAfter = moment(String(observationStartDate)).utc().toDate()
+  }
+  const observationEndDate = req.query.observationEndDate
+  if (observationEndDate) {
+    filter.timestampBefore = moment(String(observationEndDate)).utc().toDate()
+  }
+  const bboxParam = parseBBox(req.query.bbox)
+  if (!bboxParam) {
+    console.warn('invalid bbox query parameter', req.query.bbox)
+  }
+  const states = parseStatesParam(req.query.states)
+  if (states) {
+    filter.states = states
+  }
+  const sort = parseSortParam(req.query.sort) || void(0)
+  const populate = req.query.populate === 'true'
+  return { filter, sort, populate }
 }
 
 export type WebObservation = Omit<ExoObservation, 'attachments' | 'state'> & {

@@ -183,7 +183,7 @@ ObservationIdSchema.set('toJSON', { transform: transformObservationModelInstance
 export const StateSchema = new Schema({
   name: { type: String, required: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User' }
-});
+})
 
 export const ThumbnailSchema = new Schema(
   {
@@ -252,6 +252,9 @@ ObservationSchema.index({ 'attachments.oriented': 1 })
 ObservationSchema.index({ 'attachments.contentType': 1 })
 ObservationSchema.index({ 'attachments.thumbnails.minDimension': 1 })
 
+/**
+ * TODO: add support for mongoose `lean()` queries
+ */
 export class MongooseObservationRepository extends BaseMongooseRepository<ObservationDocument, ObservationModel, ObservationAttrs> implements EventScopedObservationRepository {
 
   constructor(model: ObservationModel, readonly idModel: ObservationIdModel, readonly eventScope: MageEventId, readonly eventLookup: (eventId: MageEventId) => Promise<MageEvent | null>, readonly domainEvents: EventEmitter) {

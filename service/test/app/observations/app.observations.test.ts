@@ -1545,13 +1545,13 @@ describe('observations use case interactions', function() {
 
   describe('reading observations', function() {
 
-    describe('reading by id', function() {
+    describe('finding one by id', function() {
       it('has tests', async function() {
         expect.fail('todo')
       })
     })
 
-    describe('searching', function() {
+    describe('reading many', function() {
       it('has tests', async function() {
         expect.fail('todo')
       })

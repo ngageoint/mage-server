@@ -5,15 +5,11 @@ module.exports = function (app, security) {
     , archiver = require('archiver')
     , path = require('path')
     , environment = require('../environment/env')
-    , moment = require('moment')
     , access = require('../access')
     , { default: turfCentroid } = require('@turf/centroid')
-    , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , passport = security.authentication.passport
     , { defaultEventPermissionsService: eventPermissions } = require('../permissions/permissions.events');
-
-  const sortColumnWhitelist = ["lastModified"];
 
   function transformOptions(req) {
     return {
@@ -113,84 +109,6 @@ module.exports = function (app, security) {
     });
   }
 
-  function parseQueryParams(req, res, next) {
-    // setup defaults
-    const parameters = {
-      filter: {
-      }
-    };
-
-    const fields = req.query.fields;
-    if (fields) {
-      parameters.fields = JSON.parse(fields);
-    }
-
-    const startDate = req.query.startDate;
-    if (startDate) {
-      parameters.filter.startDate = moment(startDate).utc().toDate();
-    }
-
-    const endDate = req.query.endDate;
-    if (endDate) {
-      parameters.filter.endDate = moment(endDate).utc().toDate();
-    }
-
-    const observationStartDate = req.query.observationStartDate;
-    if (observationStartDate) {
-      parameters.filter.observationStartDate = moment(observationStartDate).utc().toDate();
-    }
-
-    const observationEndDate = req.query.observationEndDate;
-    if (observationEndDate) {
-      parameters.filter.observationEndDate = moment(observationEndDate).utc().toDate();
-    }
-
-    const bbox = req.query.bbox;
-    if (bbox) {
-      parameters.filter.geometries = geometryFormat.parse('bbox', bbox);
-    }
-
-    const geometry = req.query.geometry;
-    if (geometry) {
-      parameters.filter.geometries = geometryFormat.parse('geometry', geometry);
-    }
-
-    const states = req.query.states;
-    if (states) {
-      parameters.filter.states = states.split(',');
-    }
-
-    const sort = req.query.sort;
-    if (sort) {
-      const columns = {};
-      let err = null;
-      sort.split(',').every(function (column) {
-        const sortParams = column.split('+');
-        // Check sort column is in whitelist
-        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
-          err = `Cannot sort on column '${sortParams[0]}'`;
-          return false; // break
-        }
-        // Order can be nothing (ASC by default) or ASC, DESC
-        let direction = 1; // ASC
-        if (sortParams.length > 1 && sortParams[1] === 'DESC') {
-          direction = -1; // DESC
-        }
-        columns[sortParams[0]] = direction;
-      });
-      if (err) {
-        return res.status(400).send(err);
-      }
-      parameters.sort = columns;
-    }
-
-    parameters.populate = req.query.populate === 'true';
-
-    req.parameters = parameters;
-
-    next();
-  }
-
   app.get(
     '/api/events/:eventId/observations/(:observationId).zip',
     passport.authenticate('bearer'),
@@ -235,26 +153,6 @@ module.exports = function (app, security) {
         }
 
         archive.finalize();
-      });
-    }
-  );
-
-  app.get(
-    '/api/events/:eventId/observations',
-    passport.authenticate('bearer'),
-    validateObservationReadAccess,
-    parseQueryParams,
-    function (req, res, next) {
-      const options = {
-        filter: req.parameters.filter,
-        fields: req.parameters.fields,
-        sort: req.parameters.sort,
-        populate: req.parameters.populate
-      };
-
-      new api.Observation(req.event).getAll(options, function (err, observations) {
-        if (err) return next(err);
-        res.json(observationXform.transform(observations, transformOptions(req)));
       });
     }
   );

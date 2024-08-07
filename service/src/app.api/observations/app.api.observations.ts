@@ -43,6 +43,29 @@ export interface ReadObservation {
   (req: ReadObservationRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError>>
 }
 
+export interface ReadObservationsRequest extends ObservationRequest {
+  filter: {
+    lastModifiedAfter?: Date | undefined,
+    lastModifiedBefore?: Date | undefined,
+    timestampAfter?: Date | undefined,
+    timestampBefore?: Date | undefined,
+    bbox?: GeoJSON.BBox,
+    states?: ObservationState['name'][] | undefined,
+  },
+  sort?: {
+    field: string,
+    order?: 1 | -1,
+  },
+  /**
+   * If `true`, populate the user names for the observation {@link ObservationAttrs.userId creator} and
+   * {@link ObservationImportantFlag.userId important flag}.
+   */
+  populate?: boolean | undefined
+}
+export interface ReadObservations {
+  (req: ReadObservationsRequest): Promise<AppResponse<ExoObservation[], PermissionDeniedError | InvalidInputError>>
+}
+
 export interface StoreAttachmentContent {
   (req: StoreAttachmentContentRequest): Promise<AppResponse<ExoObservation, PermissionDeniedError | EntityNotFoundError | InvalidInputError | InfrastructureError>>
 }

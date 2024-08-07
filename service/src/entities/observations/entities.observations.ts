@@ -16,6 +16,9 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
   // TODO: should be a strongly typed id-type
   deviceId?: string
   createdAt: Date
+  /**
+   * The last modified timestamp is the time of the latest edit of the observation's data.
+   */
   lastModified: Date
   attachments: readonly Attachment[]
   important?: Readonly<ObservationImportantFlag> | undefined
@@ -69,9 +72,23 @@ export interface ObservationImportantFlag {
   description?: string
 }
 
+export enum ObservationStateName {
+  Active = 'active',
+  /**
+   * This state essentially marks the observation as deleted.  The mobile apps use this so the server still returns
+   * deleted observations in queries and the mobile apps can delete their local records, or at least mark them deleted
+   * and hide them from view.
+   * TODO: actually delete the observation data and return only deleted observation IDs to clients
+   */
+  Archived = 'archive',
+}
+
+/**
+ * TODO: State changes should have a timestamp if we are bothering to track them.
+ */
 export interface ObservationState {
   id: string | PendingEntityId
-  name: 'active' | 'archive'
+  name: ObservationStateName
   userId?: UserId | undefined
   /**
    * @deprecated TODO: confine URLs to the web layer
