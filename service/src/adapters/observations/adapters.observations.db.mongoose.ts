@@ -349,11 +349,14 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
     if (where.stateIsAnyOf) {
       dbFilter['states.0.name'] = { $in: where.stateIsAnyOf }
     }
+    if (Array.isArray(where.geometryIntersects)) {
+      dbFilter.$geoIntersects = { $geometry: where.geometryIntersects }
+    }
     if (typeof where.isFlaggedImportant === 'boolean') {
       dbFilter.important = { $exists: where.isFlaggedImportant }
     }
-    if (Array.isArray(where.isFavoriteOfUsers) && where.isFavoriteOfUsers.length > 0) {
-      dbFilter.favoriteUserIds = { $in: where.isFavoriteOfUsers }
+    if (where.isFavoriteOfUser) {
+      dbFilter.favoriteUserIds = where.isFavoriteOfUser
     }
     const dbSort = {} as any
     const order = typeof orderBy?.order === 'number' ? orderBy.order : 1

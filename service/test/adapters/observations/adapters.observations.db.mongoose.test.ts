@@ -2,7 +2,7 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import mongoose from 'mongoose'
 import _ from 'lodash'
-import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
+import { MageEventModel, MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
 import { MongooseObservationRepository, ObservationDocument, ObservationModel } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
@@ -56,7 +56,7 @@ describe('mongoose observation repository', function() {
 
   beforeEach('initialize model', async function() {
     //TODO remove cast to any, was mongoose.Model<MageEventDocument>
-    const MageEventModel = legacyEvent.Model as any
+    const MageEventModel = legacyEvent.Model
     const eventRepo = new MongooseMageEventRepository(MageEventModel)
     createEvent = (attrs: Partial<MageEventAttrs>): Promise<MageEventDocument> => {
       return new Promise<MageEventDocument>((resolve, reject) => {
@@ -122,7 +122,7 @@ describe('mongoose observation repository', function() {
       userFields: []
     })
     domainEvents = Substitute.for<EventEmitter>()
-    model = legacy.observationModel(eventDoc)
+    model = MageEventModel.
     repo = new MongooseObservationRepository(eventDoc, eventRepo.findById.bind(eventRepo), domainEvents)
     event = new MageEvent(eventRepo.entityForDocument(eventDoc))
 

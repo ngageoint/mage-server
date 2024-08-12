@@ -4,7 +4,7 @@ import uniqid from 'uniqid'
 import * as api from '../../../lib/app.api/observations/app.api.observations'
 import { AllocateObservationId, registerDeleteRemovedAttachmentsHandler, ReadAttachmentContent, SaveObservation, StoreAttachmentContent } from '../../../lib/app.impl/observations/app.impl.observations'
 import { copyMageEventAttrs, MageEvent } from '../../../lib/entities/events/entities.events'
-import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
+import { addAttachment, Attachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyAttachmentAttrs, copyObservationAttrs, copyObservationStateAttrs, EventScopedObservationRepository, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, ObservationStateName, patchAttachment, putAttachmentThumbnailForMinDimension, removeAttachment, removeFormEntry, StagedAttachmentContentRef } from '../../../lib/entities/observations/entities.observations'
 import { permissionDenied, MageError, ErrPermissionDenied, ErrEntityNotFound, EntityNotFoundError, InvalidInputError, ErrInvalidInput, PermissionDeniedError, InfrastructureError, ErrInfrastructure } from '../../../lib/app.api/app.api.errors'
 import { FormFieldType } from '../../../lib/entities/events/entities.events.forms'
 import _ from 'lodash'
@@ -290,8 +290,8 @@ describe('observations use case interactions', function() {
       expect(exo.state).to.be.undefined
 
       const states: ObservationState[] = [
-        { id: uniqid(), name: 'archive', userId: uniqid() },
-        { id: uniqid(), name: 'active', userId: uniqid() }
+        { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() },
+        { id: uniqid(), name: ObservationStateName.Active, userId: uniqid() }
       ]
       from.states = states.map(copyObservationStateAttrs)
       exo = api.exoObservationFor(from)
@@ -1417,8 +1417,8 @@ describe('observations use case interactions', function() {
           ...copyObservationAttrs(obsBefore),
           id: uniqid(),
           states: [
-            { id: uniqid(), name: 'active', userId: uniqid() },
-            { id: uniqid(), name: 'archive', userId: uniqid() }
+            { id: uniqid(), name: ObservationStateName.Active, userId: uniqid() },
+            { id: uniqid(), name: ObservationStateName.Archived, userId: uniqid() }
           ]
         }, mageEvent) as Observation
         const obsAfter = Observation.assignTo(obsBefore, {

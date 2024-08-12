@@ -919,14 +919,14 @@ export interface FindObservationsSpec {
      * A series of lon/lat coordinates in the order [ west, south, east, north ] as in
      * https://datatracker.ietf.org/doc/html/rfc7946#section-5.
      */
-    locationIntersects?: [ number, number, number, number ]
+    geometryIntersects?: [ number, number, number, number ]
     stateIsAnyOf?: ObservationStateName[]
     /**
      * Specifying a boolean value finds only observations conforming to the value, whereas omitting or specifiying
      * `null` causes the query to disregard the important flag.
      */
     isFlaggedImportant?: boolean | null,
-    isFavoriteOfUsers?: UserId[],
+    isFavoriteOfUser?: UserId,
   }
   /**
    * If `true`, populate the display names from related user documents on the observation creator and important flag.
