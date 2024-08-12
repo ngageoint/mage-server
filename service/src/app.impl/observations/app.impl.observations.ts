@@ -52,6 +52,23 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
+export function ReadObservations(permissionService: api.ObservationPermissionService): api.ReadObservations {
+  return async function readObservations(req: api.ReadObservationsRequest): ReturnType<api.ReadObservations> {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    const mapping = (x: ObservationAttrs): any => (typeof req.mapping === 'function' ? req.mapping(api.exoObservationFor(x)) : api.exoObservationFor(x))
+    try {
+      const results = await req.context.observationRepository.findSome(req.findSpec, mapping)
+      return AppResponse.success(results)
+    }
+    catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
+  }
+}
+
 export function ReadObservation(permissionService: api.ObservationPermissionService): api.ReadObservation {
   return async function readObservation(req: api.ReadObservationRequest): ReturnType<api.ReadObservation> {
     const denied = await permissionService.ensureReadObservationPermission(req.context)

@@ -3,13 +3,13 @@ import { expect } from 'chai'
 import mongoose from 'mongoose'
 import _ from 'lodash'
 import { MongooseMageEventRepository } from '../../../lib/adapters/events/adapters.events.db.mongoose'
-import { MongooseObservationRepository, ObservationModel } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
+import { MongooseObservationRepository, ObservationDocument, ObservationModel } from '../../../lib/adapters/observations/adapters.observations.db.mongoose'
 import * as legacy from '../../../lib/models/observation'
 import * as legacyEvent from '../../../lib/models/event'
 import { MageEventDocument } from '../../../src/models/event'
 
 import { MageEvent, MageEventAttrs, MageEventCreateAttrs, MageEventId } from '../../../lib/entities/events/entities.events'
-import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent } from '../../../lib/entities/observations/entities.observations'
+import { ObservationAttrs, ObservationId, Observation, ObservationRepositoryError, ObservationRepositoryErrorCode, copyObservationAttrs, AttachmentContentPatchAttrs, copyAttachmentAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, removeAttachment, validationResultMessage, ObservationDomainEventType, ObservationEmitted, PendingObservationDomainEvent, AttachmentsRemovedDomainEvent, ObservationStateName, EventScopedObservationRepository } from '../../../lib/entities/observations/entities.observations'
 import { AttachmentPresentationType, FormFieldType, Form, AttachmentMediaTypes } from '../../../lib/entities/events/entities.events.forms'
 import util from 'util'
 import { PendingEntityId } from '../../../lib/entities/entities.global'
@@ -157,6 +157,19 @@ describe('mongoose observation repository', function() {
     })
   })
 
+  describe('reading observations', function() {
+
+    describe('finding some', function() {
+
+      it('has tests', async function() {
+
+        const some = await repo.findSome({ where: {} })
+
+        expect.fail('todo')
+      })
+    })
+  })
+
   describe('saving observations', function() {
 
     describe('new observations', function() {
@@ -241,12 +254,12 @@ describe('mongoose observation repository', function() {
         attrs.states = [
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'active',
+            name: ObservationStateName.Active,
             userId: (new mongoose.Types.ObjectId()).toHexString()
           },
           {
             id: (new mongoose.Types.ObjectId()).toHexString(),
-            name: 'archive',
+            name: ObservationStateName.Archived,
             userId: undefined
           }
         ]
@@ -292,7 +305,7 @@ describe('mongoose observation repository', function() {
           }
         ]
         origAttrs.states = [
-          { id: (new mongoose.Types.ObjectId()).toHexString(), name: 'active', userId: (new mongoose.Types.ObjectId()).toHexString() }
+          { id: (new mongoose.Types.ObjectId()).toHexString(), name: ObservationStateName.Active, userId: (new mongoose.Types.ObjectId()).toHexString() }
         ]
         origAttrs.properties.forms = [
           {
@@ -325,7 +338,7 @@ describe('mongoose observation repository', function() {
           coordinates: [ 12, 34 ]
         }
         putAttrs.states = [
-          { name: 'archive', id: PendingEntityId }
+          { name: ObservationStateName.Archived, id: PendingEntityId }
         ]
         putAttrs.properties.forms = [
           {
@@ -411,7 +424,7 @@ describe('mongoose observation repository', function() {
       state1Stub.states = [
         {
           id: PendingEntityId,
-          name: 'archive',
+          name: ObservationStateName.Archived,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         }
       ]
@@ -422,7 +435,7 @@ describe('mongoose observation repository', function() {
       state2Stub.states = [
         {
           id: PendingEntityId,
-          name: 'active',
+          name: ObservationStateName.Active,
           userId: (new mongoose.Types.ObjectId()).toHexString()
         },
         state1Saved.states[0],

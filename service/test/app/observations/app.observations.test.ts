@@ -1553,6 +1553,13 @@ describe('observations use case interactions', function() {
 
     describe('reading many', function() {
       it('has tests', async function() {
+
+        const req: api.ReadObservationsRequest = {
+          context,
+          findSpec: {
+            where: {}
+          }
+        }
         expect.fail('todo')
       })
     })

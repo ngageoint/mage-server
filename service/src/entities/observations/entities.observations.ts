@@ -1,4 +1,4 @@
-import { UserId } from '../users/entities.users'
+import { User, UserId } from '../users/entities.users'
 import { BBox, Feature, Geometry } from 'geojson'
 import { MageEvent, MageEventAttrs, MageEventId } from '../events/entities.events'
 import { PageOf, PagingParameters, PendingEntityId } from '../entities.global'
@@ -630,10 +630,10 @@ export function validationResultMessage(result: ObservationValidationResult): st
   if (totalFormCountError) {
     errList.push(`${bulletPoint} ${totalFormCountError.message()}`)
   }
-  for (const [ formId, err ] of formCountErrors) {
+  for (const [ , err ] of formCountErrors) {
     errList.push(`${bulletPoint} ${err.message()}`)
   }
-  for (const [ formEntryId, formEntryErr ] of formEntryErrors) {
+  for (const [ , formEntryErr ] of formEntryErrors) {
     errList.push(`${bulletPoint} Form entry ${formEntryErr.formEntryPosition + 1} (${formEntryErr.formName}) is invalid.`)
     for (const fieldErr of formEntryErr.fieldErrors.values()) {
       errList.push(`  ${bulletPoint} ${fieldErr.message}`)
@@ -857,7 +857,13 @@ export interface EventScopedObservationRepository {
    * @returns an `Observation` object or `null`
    */
   findLatest(): Promise<ObservationAttrs | null>
+  /**
+   * @deprecated TODO: `findSome()` makes this obsolete.  One of the plugins might use this one.
+   */
   findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>>
+  findSome<T = ObservationAttrs>(findSpec: FindObservationsSpecUnpopulated, mapping?: (o: ObservationAttrs) => T): Promise<PageOf<T>>
+  findSome<T = UsersExpandedObservationAttrs>(findSpec: FindObservationsSpecPopulated, mapping?: (o: UsersExpandedObservationAttrs) => T): Promise<PageOf<T>>
+  findSome<T = ObservationAttrs>(findSpec: FindObservationsSpec, mapping?: (o: ObservationAttrs | UsersExpandedObservationAttrs) => T): Promise<PageOf<T>>
   /**
    * Update the specified attachment with the given attributes.  This
    * persistence function exists alongside the {@link save} method to prevent
@@ -891,8 +897,59 @@ export interface EventScopedObservationRepository {
   nextAttachmentIds(count?: number): Promise<AttachmentId[]>
 }
 
-export class ObservationRepositoryError extends Error {
+export type FindObservationsSortField = 'lastModified' | 'timestamp'
 
+export interface FindObservationsSort {
+  /**
+   * The default sort field is `lastModified`.
+   */
+  field: FindObservationsSortField
+  /**
+   * `1` indicates ascending, `-1` indicates descending.  Ascending is the default order.
+   */
+  order?: 1 | -1
+}
+export interface FindObservationsSpec {
+  where: {
+    lastModifiedAfter?: Date
+    lastModifiedBefore?: Date
+    timestampAfter?: Date
+    timestampBefore?: Date
+    /**
+     * A series of lon/lat coordinates in the order [ west, south, east, north ] as in
+     * https://datatracker.ietf.org/doc/html/rfc7946#section-5.
+     */
+    locationIntersects?: [ number, number, number, number ]
+    stateIsAnyOf?: ObservationStateName[]
+    /**
+     * Specifying a boolean value finds only observations conforming to the value, whereas omitting or specifiying
+     * `null` causes the query to disregard the important flag.
+     */
+    isFlaggedImportant?: boolean | null,
+    isFavoriteOfUsers?: UserId[],
+  }
+  /**
+   * If `true`, populate the display names from related user documents on the observation creator and important flag.
+   * This results in adding `user: { id: string, displayName: string }` entries on the observation document and
+   * important sub-document.
+   */
+  populateUserNames?: boolean
+  orderBy?: FindObservationsSort
+  paging?: PagingParameters
+}
+type FindObservationsSpecPopulated = FindObservationsSpec & { populateUserNames: true }
+type FindObservationsSpecUnpopulated = Omit<FindObservationsSpec, 'populateUserNames'> | (FindObservationsSpec & { populateUserNames: false })
+
+export type ObservationUserExpanded = Pick<User, 'id' | 'displayName'>
+
+export type UsersExpandedObservationAttrs = ObservationAttrs & {
+  user?: ObservationUserExpanded
+  important?: UserExpandedObservationImportantFlag
+}
+
+export type UserExpandedObservationImportantFlag = ObservationImportantFlag & { user?: ObservationUserExpanded }
+
+export class ObservationRepositoryError extends Error {
   constructor(readonly code: ObservationRepositoryErrorCode, message?: string) {
     super(message)
   }
@@ -1186,7 +1243,7 @@ const FieldTypeValidationRules: { [type in FormFieldType]: FormFieldValidationRu
   [FormFieldType.Email]: validateRequiredThen(context => fields.email.EmailFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Geometry]: validateRequiredThen(context => fields.geometry.GeometryFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   // TODO: no validation at all? legacy validation code did nothing for hidden fields
-  [FormFieldType.Hidden]: context => null,
+  [FormFieldType.Hidden]: () => null,
   [FormFieldType.MultiSelectDropdown]: validateRequiredThen(context => fields.multiselect.MultiSelectFormFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Numeric]: validateRequiredThen(context => fields.numeric.NumericFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),
   [FormFieldType.Password]: validateRequiredThen(context => fields.text.TextFieldValidation(context.field, context.fieldEntry, FormFieldValidationResult(context))),

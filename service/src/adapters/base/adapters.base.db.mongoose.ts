@@ -10,7 +10,7 @@ export type WithMongooseDefaultVersionKey = { [MongooseDefaultVersionKey]: numbe
 /**
  * Map Mongoose `Document` instances to plain entity objects.
  */
-export type DocumentMapping<DocType extends mongoose.AnyObject, E extends object> = (doc: DocType | mongoose.HydratedDocument<DocType>) => E
+export type DocumentMapping<DocType extends mongoose.AnyObject, E extends object> = (doc: DocType | mongoose.HydratedDocument<DocType> | mongoose.LeanDocument<DocType>) => E
 /**
  * Map entities to objects suitable to create Mongoose `Model` `Document` instances, as
  * in `new mongoose.Model(stub)`.

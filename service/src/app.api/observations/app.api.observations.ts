@@ -1,8 +1,9 @@
 import { EntityNotFoundError, InfrastructureError, InvalidInputError, PermissionDeniedError } from '../app.api.errors'
 import { AppRequest, AppRequestContext, AppResponse } from '../app.api.global'
-import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, copyObservationAttrs, EventScopedObservationRepository, FindObservationsSpec, FormEntry, FormFieldEntry, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationState, StagedAttachmentContentRef, Thumbnail, thumbnailIndexForTargetDimension } from '../../entities/observations/entities.observations'
 import { MageEvent } from '../../entities/events/entities.events'
 import { User, UserId } from '../../entities/users/entities.users'
+import { PageOf } from '../../entities/entities.global'
 
 
 
@@ -44,26 +45,11 @@ export interface ReadObservation {
 }
 
 export interface ReadObservationsRequest extends ObservationRequest {
-  filter: {
-    lastModifiedAfter?: Date | undefined,
-    lastModifiedBefore?: Date | undefined,
-    timestampAfter?: Date | undefined,
-    timestampBefore?: Date | undefined,
-    bbox?: GeoJSON.BBox,
-    states?: ObservationState['name'][] | undefined,
-  },
-  sort?: {
-    field: string,
-    order?: 1 | -1,
-  },
-  /**
-   * If `true`, populate the user names for the observation {@link ObservationAttrs.userId creator} and
-   * {@link ObservationImportantFlag.userId important flag}.
-   */
-  populate?: boolean | undefined
+  findSpec: FindObservationsSpec,
+  mapping?: <T>(x: ExoObservation) => T
 }
 export interface ReadObservations {
-  (req: ReadObservationsRequest): Promise<AppResponse<ExoObservation[], PermissionDeniedError | InvalidInputError>>
+  (req: ReadObservationsRequest): Promise<AppResponse<PageOf<ExoObservation[]>, PermissionDeniedError | InvalidInputError | InfrastructureError>>
 }
 
 export interface StoreAttachmentContent {

@@ -1,5 +1,5 @@
 import { MageEvent, MageEventAttrs, MageEventId } from '../../entities/events/entities.events'
-import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, Thumbnail } from '../../entities/observations/entities.observations'
+import { Attachment, AttachmentId, AttachmentNotFoundError, AttachmentPatchAttrs, copyObservationAttrs, EventScopedObservationRepository, UsersExpandedObservationAttrs, FindObservationsSpec, FormEntry, FormEntryId, Observation, ObservationAttrs, ObservationFeatureProperties, ObservationId, ObservationImportantFlag, ObservationRepositoryError, ObservationRepositoryErrorCode, ObservationState, patchAttachment, Thumbnail, UserExpandedObservationImportantFlag } from '../../entities/observations/entities.observations'
 import { BaseMongooseRepository, DocumentMapping, pageQuery, WithMongooseDefaultVersionKey } from '../base/adapters.base.db.mongoose'
 import mongoose from 'mongoose'
 import { MageEventDocument } from '../../models/event'
@@ -293,8 +293,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
         console.warn(`attempted to modify create timestamp on observation ${beforeDoc.id} from ${beforeDoc.createdAt} to ${docSeed.createdAt}`)
         docSeed.createdAt = new Date(beforeDoc.createdAt)
       }
-      //TODO remove any, was as legacy.ObservationDocument
-      beforeDoc = beforeDoc.set(docSeed) as any
+      beforeDoc = beforeDoc.set(docSeed)
     }
     else {
       const idVerified = await this.idModel.findById(dbId)
@@ -329,6 +328,63 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
     return latest ? this.entityForDocument(latest) : null
   }
 
+  async findSome<
+    FindSpec extends FindObservationsSpec = FindObservationsSpec,
+    T = FindSpec extends { populateUserNames: true } ? UsersExpandedObservationAttrs : ObservationAttrs
+  >(findSpec: FindSpec, mapping?: (x: ObservationAttrs | UsersExpandedObservationAttrs) => T): Promise<PageOf<T>> {
+    const { where, orderBy, paging: specPaging } = findSpec
+    const dbFilter = {} as any
+    if (where.lastModifiedAfter) {
+      dbFilter.lastModified = { $gte: where.lastModifiedAfter }
+    }
+    if (where.lastModifiedBefore) {
+      dbFilter.lastModified = { ...dbFilter.lastModified, $lt: where.lastModifiedBefore }
+    }
+    if (where.timestampAfter) {
+      dbFilter['properties.timestamp'] = { $gte: where.timestampAfter }
+    }
+    if (where.timestampBefore) {
+      dbFilter['properties.timestamp'] = { ...dbFilter['properties.timestamp'], $lt: where.timestampBefore }
+    }
+    if (where.stateIsAnyOf) {
+      dbFilter['states.0.name'] = { $in: where.stateIsAnyOf }
+    }
+    if (typeof where.isFlaggedImportant === 'boolean') {
+      dbFilter.important = { $exists: where.isFlaggedImportant }
+    }
+    if (Array.isArray(where.isFavoriteOfUsers) && where.isFavoriteOfUsers.length > 0) {
+      dbFilter.favoriteUserIds = { $in: where.isFavoriteOfUsers }
+    }
+    const dbSort = {} as any
+    const order = typeof orderBy?.order === 'number' ? orderBy.order : 1
+    if (orderBy?.field === 'lastModified') {
+      dbSort.lastModified = order
+    }
+    else if (orderBy?.field === 'timestamp') {
+      dbSort['properties.timestamp'] = order
+    }
+    // add _id to sort for consistent ordering
+    dbSort._id = orderBy?.order || -1
+    const populatedUserNullSafetyTransform = (user: object | null, _id: mongoose.Types.ObjectId): object => user ? user : { _id }
+    const options: mongoose.QueryOptions<ObservationDocument> = dbSort ? { sort: dbSort } : {}
+    const paging: PagingParameters = specPaging || { includeTotalCount: false, pageSize: Number.MAX_SAFE_INTEGER, pageIndex: 0 }
+    const counted = await pageQuery(
+      this.model.find(dbFilter, null, options)
+        .lean(true)
+        .populate([
+          // TODO: something smarter than a mongoose join would be good here
+          // maybe just store the display name on the observation document
+          { path: 'userId', select: 'displayName', transform: populatedUserNullSafetyTransform },
+          { path: 'important.userId', select: 'displayName', transform: populatedUserNullSafetyTransform }
+        ]),
+      paging
+    )
+    const mapResult = typeof mapping === 'function' ? mapping : ((x: any): T => x as T)
+    const items = await counted.query
+    const mappedItems = items.map(doc => mapResult(this.entityForDocument(doc)))
+    return pageOf(mappedItems, paging, counted.totalCount)
+  }
+
   async findLastModifiedAfter(timestamp: number, paging: PagingParameters): Promise<PageOf<ObservationAttrs>> {
     const match = { lastModified: {$gte: new Date(timestamp)} }
     const counted = await pageQuery(this.model.find(match), paging)
@@ -336,7 +392,6 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
     for await (const doc of counted.query.cursor()) {
       observations.push(this.entityForDocument(doc))
     }
-
     return pageOf(observations, paging, counted.totalCount)
   }
 
@@ -365,36 +420,47 @@ export class MongooseObservationRepository extends BaseMongooseRepository<Observ
   }
 }
 
-export function docToEntity(doc: ObservationDocument, eventId: MageEventId): ObservationAttrs {
-  return createDocumentMapping(eventId)(doc)
+type PopulatedUserDocument = { _id: mongoose.Types.ObjectId, displayName: string }
+type ObservationDocumentPopulated = Omit<ObservationDocument, 'userId' | 'important'> & {
+  userId: PopulatedUserDocument
+  important: Omit<ObservationDocumentImportantFlag, 'userId'> & { userId: PopulatedUserDocument }
 }
 
-function createDocumentMapping(eventId: MageEventId): DocumentMapping<ObservationDocument, ObservationAttrs> {
+function createDocumentMapping(eventId: MageEventId): DocumentMapping<ObservationDocument | ObservationDocumentPopulated, ObservationAttrs> {
   return doc => {
-    const attrs: ObservationAttrs = {
+    const attrs: UsersExpandedObservationAttrs = {
       id: doc._id.toHexString(),
       eventId,
       createdAt: doc.createdAt,
       lastModified: doc.lastModified,
       type: doc.type,
       geometry: doc.geometry,
-      bbox: doc.bbox,
+      bbox: doc.bbox as GeoJSON.BBox,
       states: doc.states.map(stateAttrsForDoc),
       properties: {
         ...doc.properties,
         forms: doc.properties.forms.map(formEntryForDoc)
       },
+      important: importantFlagAttrsForDoc(doc) as any,
       attachments: doc.attachments.map(attachmentAttrsForDoc),
-      userId: doc.userId?.toHexString(),
       deviceId: doc.deviceId?.toHexString(),
-      important: importantFlagAttrsForDoc(doc),
       favoriteUserIds: doc.favoriteUserIds?.map(x => x.toHexString()),
+    }
+    if (doc.userId instanceof mongoose.Types.ObjectId) {
+      attrs.userId = doc.userId.toHexString()
+    }
+    else if (doc.userId?._id) {
+      attrs.userId = doc.userId._id.toHexString()
+      attrs.user = {
+        id: attrs.userId,
+        displayName: doc.userId.displayName
+      }
     }
     return attrs
   }
 }
 
-function importantFlagAttrsForDoc(doc: ObservationDocument): ObservationImportantFlag | undefined {
+function importantFlagAttrsForDoc(doc: ObservationDocument | ObservationDocumentPopulated | mongoose.LeanDocument<ObservationDocument | ObservationDocumentPopulated>): ObservationImportantFlag | UserExpandedObservationImportantFlag | undefined {
   /*
   because the observation schema defines `important` as a nested document
   instead of a subdocument schema, a mongoose observation document instance
@@ -405,11 +471,21 @@ function importantFlagAttrsForDoc(doc: ObservationDocument): ObservationImportan
   */
   const docImportant = doc.important
   if (docImportant?.userId || docImportant?.timestamp || docImportant?.description) {
-    return {
-      userId: docImportant.userId?.toHexString(),
+    const important: UserExpandedObservationImportantFlag = {
       timestamp: docImportant.timestamp,
       description: docImportant.description
     }
+    if (docImportant.userId instanceof mongoose.Types.ObjectId) {
+      important.userId = docImportant.userId.toHexString()
+    }
+    else if (docImportant.userId?._id instanceof mongoose.Types.ObjectId) {
+      important.userId = docImportant.userId._id.toHexString()
+      important.user = {
+        id: docImportant.userId._id.toHexString(),
+        displayName: docImportant.userId.displayName
+      }
+    }
+    return important
   }
   return void(0)
 }
