@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AuthenticationStrategy } from 'src/app/api/api.entity';
-import { UserService } from '../../user/user.service';
+import { AuthenticationStrategy } from '../../../../app/api/api.entity';
+import { UserService } from '../../../../app/user/user.service';
 @Component({
   selector: 'idp-authentication',
   templateUrl: './idp.component.html',
@@ -8,7 +8,7 @@ import { UserService } from '../../user/user.service';
 })
 export class IdpAuthenticationComponent {
   @Input() strategy: AuthenticationStrategy
-  @Output() onSignin = new EventEmitter<any>()
+  @Output() authenticated = new EventEmitter<any>()
 
   error: {
     title: string,
@@ -37,7 +37,7 @@ export class IdpAuthenticationComponent {
           return;
         }
 
-        this.onSignin.emit(response)
+        this.authenticated.emit(response)
       },
       error: (error: any) => {
         this.error = {

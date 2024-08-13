@@ -4,7 +4,9 @@
       <info></info>
     </div>
     <div class="authentication-info-container">
-      <router-outlet></router-outlet>
+      <div class="authentication">
+        <ingress landing="true" [api]="api" (complete)="onIngress()"></ingress>
+      </div>
     </div>
   </div>
 </div>

@@ -1,30 +1,29 @@
 <div class="signin-container">
-  <div class="welcome">
+  <div *ngIf="landing" class="welcome">
     <div class="welcome__title">Welcome to Mage</div>
     <div class="welcome__message">Sign in to your account</div>
   </div>
 
   <div class="authentications">
-    <local-authentication *ngIf="localAuthenticationStrategy" strategy="localAuthenticationStrategy"
-      [hideSignup]="hideSignup" (onSignup)="onSignup({strategy: localAuthenticationStrategy})"
-      (onSignin)="onSignin($event)">
-    </local-authentication>
-    
-    <div *ngIf=" localAuthenticationStrategy && thirdPartyStrategies.length">
+    <local-authentication *ngIf="localAuthenticationStrategy" strategy="localAuthenticationStrategy" [landing]="landing" (authenticated)="signin($event)"></local-authentication>
+
+    <div *ngIf="localAuthenticationStrategy && thirdPartyStrategies.length">
       <div class="or">
         <div class="or__divider"></div>
         <div class="or__text">or</div>
         <div class="or__divider"></div>
       </div>
     </div>
-    
+
     <div *ngFor='let strategy of thirdPartyStrategies; index as i'>
       <div [ngClass]="{'spacer': i < thirdPartyStrategies.length - 1}">
         <ng-container [ngSwitch]="strategy?.type">
-          <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy" onSignin="signin($event)"></idp-authentication>
-          <idp-authentication *ngSwitchCase="'saml'" [strategy]="strategy" onSignin="signin($event)"></idp-authentication>
+          <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy"
+            (authenticated)="signin($event)"></idp-authentication>
+          <idp-authentication *ngSwitchCase="'saml'" [strategy]="strategy"
+            (authenticated)="signin($event)"></idp-authentication>
           <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy"
-            onSignin="signin($event)"></idp-authentication>
+            (authenticated)="signin($event)"></idp-authentication>
           <!-- <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="signin($event)"></ldap-signin> -->
         </ng-container>
       </div>

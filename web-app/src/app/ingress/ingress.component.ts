@@ -1,0 +1,145 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
+import { Api, AuthenticationStrategy } from '../api/api.entity'
+import { ActivatedRoute, Router } from '@angular/router'
+import { UserService } from '../user/user.service'
+import { AuthorizationEvent } from './authorization/authorization.component'
+import { LocalStorageService } from '../http/local-storage.service'
+import { User } from '../entities/user/entities.user'
+import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component'
+import { animate, style, transition, trigger } from '@angular/animations'
+import * as _ from 'underscore'
+
+enum IngressState {
+  Setup,
+  Signin,
+  Authorization,
+  Disclaimer,
+  ActiveAccount,
+  DisabledAccount,
+  InactiveAccount
+}
+
+class Ingress {
+  state: IngressState
+}
+
+class Signin extends Ingress {
+  state = IngressState.Signin
+}
+
+class Authenticated extends Ingress {
+  state = IngressState.Authorization
+  readonly authenticationToken: string
+
+  constructor(authenticationToken: string) {
+    super()
+    this.authenticationToken = authenticationToken
+  }
+}
+
+class Authorized extends Ingress {
+  state = IngressState.Disclaimer
+  readonly apiToken: string
+
+  constructor(apiToken: string) {
+    super()
+    this.apiToken = apiToken
+  }
+}
+
+@Component({
+  selector: 'ingress',
+  templateUrl: './ingress.component.html',
+  styleUrls: ['./ingress.component.scss'],
+  animations: [
+    trigger('disableOnEnter', [
+      transition(':enter', [])
+    ]),
+    trigger('slide', [
+      transition(':enter', [
+        style({ transform: 'translateX(100%)' }),
+        animate('250ms', style({ transform: 'translateX(0%)' })),
+      ]),
+      transition(':leave', [
+        animate('250ms', style({ transform: 'translateX(-100%)' }))
+      ])
+    ])
+  ]
+})
+export class IngressComponent implements OnInit {
+  @Input() api: Api
+  @Input() landing: boolean
+  @Output() complete = new EventEmitter<void>()
+
+  public readonly IngressState: typeof IngressState = IngressState
+
+  ingress: Ingress = new Signin()
+  strategy: any
+  thirdPartyStrategies: any
+  localAuthenticationStrategy: any
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private userService: UserService,
+    private localStorageService: LocalStorageService
+  ) { }
+
+  ngOnInit(): void {
+    this.route.data.subscribe(({ api }) => {
+      this.api = api
+
+      this.localAuthenticationStrategy = this.api?.authenticationStrategies['local'];
+      if (this.localAuthenticationStrategy) {
+        this.localAuthenticationStrategy.name = 'local';
+      }
+
+      this.thirdPartyStrategies = _.map(_.omit(this.api?.authenticationStrategies, this.localStrategyFilter), function (strategy: AuthenticationStrategy, name: string) {
+        strategy.name = name;
+        return strategy;
+      });
+    })
+  }
+
+  localStrategyFilter(_strategy: AuthenticationStrategy, name: string) {
+    return name === 'local'
+  }
+
+  getAuthenticationToken(): string | undefined {
+    return (this.ingress as Authenticated)?.authenticationToken
+  }
+
+  onAuthenticated($event: { user: User, token: string }) {
+    this.userService.authorize($event.token, null).subscribe({
+      next: (response) => {
+        this.authorized(response.token)
+      },
+      error: () => {
+        this.ingress = new Authenticated($event.token)
+      }
+    })
+  }
+
+  onAuthorized($event: AuthorizationEvent) {
+    this.authorized($event.token)
+  }
+
+  private authorized(token: string) {
+    if (this.api.disclaimer?.show === true) {
+      this.ingress = new Authorized(token)
+    } else {
+      this.localStorageService.setToken(token)
+      this.complete.emit()
+    }
+  }
+
+  onDisclaimer($event: DiscalimeCloseEvent) {
+    if ($event.reason === DiscalimerCloseReason.ACCEPT) {
+      const ingress = this.ingress as Authorized
+      this.localStorageService.setToken(ingress.apiToken)
+      this.complete.emit()
+    } else {
+      this.ingress = new Signin()
+    }
+  }
+}

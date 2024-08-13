@@ -13,7 +13,9 @@ export class UserResolver implements Resolve<any> {
     state: RouterStateSnapshot
   ): Observable<Api> {
     return this.service.getMyself().pipe(
-      catchError(() => { return of(null); })
+      catchError((err: any) => {
+        return of(null)
+      })
     )
   }
 }

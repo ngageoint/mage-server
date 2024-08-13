@@ -1,12 +1,12 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { AuthorizeComponent } from './authorize.component';
+import { AuthorizationComponent } from './authorization.component';
 
-describe('AuthorizeComponent', () => {
-  let component: AuthorizeComponent;
+describe('Authorization Component', () => {
+  let component: AuthorizationComponent;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [AuthorizeComponent]
+      declarations: [AuthorizationComponent]
     })
     .compileComponents();
   }));

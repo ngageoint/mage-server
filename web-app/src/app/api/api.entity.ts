@@ -14,11 +14,17 @@ export interface AuthenticationStrategy {
   icon: string
 }
 
+export type Disclaimer = {
+  show: boolean,
+  title: string,
+  text: string
+}
+
 export interface Api {
   version: Version,
   initial: boolean,
-  disclaimer: any,
-  contanctInfo: any,
+  disclaimer?: Disclaimer,
+  contactInfo: any,
   localAuthenticationStrategy: AuthenticationStrategy,
   authenticationStrategies: { string: AuthenticationStrategy }
 }

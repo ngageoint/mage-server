@@ -1,11 +1,11 @@
 import { Component, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { MapService } from '../map/map.service';
 import { FilterService } from '../filter/filter.service';
-import { EventService } from '../event/event.service';
-import { UserService } from '../user/user.service';
-import * as _ from 'underscore';
 import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
+import { ActivatedRoute } from '@angular/router';
+import { User } from '../entities/user/entities.user';
+import * as _ from 'underscore';
 
 @Component({
   selector: 'mage',
@@ -14,6 +14,7 @@ import { LocationService } from '../user/location/location.service';
 })
 export class MageComponent implements OnInit, OnDestroy, OnChanges {
 
+  user: User
   map: any
   mapSize: number
   event: any
@@ -24,15 +25,18 @@ export class MageComponent implements OnInit, OnDestroy, OnChanges {
 
   constructor(
     private mapService: MapService,
-    private userService: UserService,
-    private eventService: EventService,
     private filterService: FilterService,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private activatedRoute: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.filterService.addListener(this)
     this.mapService.addListener(this)
+
+    this.activatedRoute.data.subscribe(({ user }) => {
+      this.user = user
+    })
   }
 
   ngOnDestroy(): void {
@@ -92,24 +96,5 @@ export class MageComponent implements OnInit, OnDestroy, OnChanges {
         console.log('Error sending location', response.message)
       }
     })
-  }
-
-  onBroadcastLocation(callback) {
-    if (!this.eventService.isUserInEvent(this.userService.myself, this.filterService.getEvent())) {
-      // TODO make angular modal
-      // this.$uibModal.open({
-      //   template: require('../error/not.in.event.html'),
-      //   controller: 'NotInEventController',
-      //   resolve: {
-      //     title: function () {
-      //       return 'Cannot Broadcast Location';
-      //     }
-      //   }
-      // });
-
-      callback(false)
-    } else {
-      callback(true)
-    }
   }
 }

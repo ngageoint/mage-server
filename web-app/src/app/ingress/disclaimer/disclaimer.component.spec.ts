@@ -1,12 +1,12 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { LocalAuthenticationComponent } from './local.component';
+import { DisclaimerComponent } from './disclaimer.component';
 
-describe('Local Authentication Component', () => {
-  let component: LocalAuthenticationComponent;
+describe('Disclaimer Component', () => {
+  let component: DisclaimerComponent;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LocalAuthenticationComponent]
+      declarations: [DisclaimerComponent]
     })
     .compileComponents();
   }));

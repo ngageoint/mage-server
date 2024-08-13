@@ -5,6 +5,20 @@
   width: 100%;
 }
 
+.authentications {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.signin-container {
+  text-align: left;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
 .welcome {
   display: flex;
   flex-direction: column;
@@ -21,24 +35,6 @@
 
 .welcome__message {
   font: 500 20px / 32px Roboto, "Helvetica Neue", sans-serif
-}
-
-.authentications {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-}
-
-.signin-container {
-  min-width: 285px;
-  max-width: 600px;
-  width: 75%;
-  margin: auto;
-  text-align: left;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
 }
 
 .or {

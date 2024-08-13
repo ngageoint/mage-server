@@ -1,22 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UserService } from '../user/user.service';
-import { LocalStorageService } from '../http/local-storage.service';
+import { UserService } from 'src/app/user/user.service';
+
+export interface AuthorizationEvent {
+  token: string
+}
 
 @Component({
-  selector: 'authorize',
-  templateUrl: './authorize.component.html',
-  styleUrls: ['./authorize.component.scss']
+  selector: 'authorization',
+  templateUrl: './authorization.component.html',
+  styleUrls: ['./authorization.component.scss']
 })
-export class AuthorizeComponent {
-  token: string
+export class AuthorizationComponent {
+  @Input() token: string
+  @Output() authorized = new EventEmitter<AuthorizationEvent>()
+
   deviceId = new FormControl('', [Validators.required])
 
   constructor(
     private router: Router,
-    private userService: UserService,
-    private localStorageService: LocalStorageService
+    private userService: UserService
   ) {
     this.token = this.router.getCurrentNavigation()?.extras?.state?.token
   }
@@ -25,12 +29,10 @@ export class AuthorizeComponent {
     this.deviceId.setErrors(null)
     this.userService.authorize(this.token, this.deviceId.value).subscribe({
       next: (response) => {
-        this.localStorageService.setToken(response.token)
-        this.router.navigate(['map']);
+         this.authorized.emit({ token: response.token })
       },
       error: () => {
         this.deviceId.setErrors({ invalid: true})
-        // TODO show error message
       }
     })
   }

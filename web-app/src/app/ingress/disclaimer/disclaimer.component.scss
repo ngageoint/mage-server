@@ -1,11 +1,8 @@
 @use '@angular/material' as mat;
 @import "variables.scss";
 
-.container {
-  min-width: 285px;
-  width: 75%;
-  margin: auto;
-  text-align: left;
+.disclaimer {
+  overflow-y: scroll;
 }
 
 .title {
@@ -15,16 +12,19 @@
 }
 
 .subtitle {
-  font: 400 16px / 20px Roboto,"Helvetica Neue",sans-serif;
+  font: 400 16px / 20px Roboto, "Helvetica Neue", sans-serif;
   margin-bottom: 32px;
   opacity: 60%;
 }
 
-.authorize {
+.actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: row;
+  justify-content: start;
+  width: 100%;
+  gap: 16px;
 }
 
-mat-form-field {
-  width: 100%;
+.actions__button {
+  flex: 1;
 }

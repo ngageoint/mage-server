@@ -157,13 +157,9 @@ import { AdminMapComponent } from './admin/admin-map/admin-map.component';
 import { AppComponent } from './app.component';
 import { LandingComponent } from './landing/landing.component';
 import { InfoComponent } from './landing/info.component';
-import { AuthenticationComponent } from './authentication/authentication.component';
-import { AuthorizeComponent } from './authentication/authorize.component';
-import { LocalAuthenticationComponent } from './authentication/local/local.component';
 import { MageComponent } from './mage/mage.component';
 import { AppRoutingModule } from './routing.module';
 import { TokenInterceptorService } from './http/token.interceptor';
-import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { FilterComponent } from './filter/filter.component';
 import { PreferencesComponent } from './preferences/preferences.component';
@@ -174,8 +170,15 @@ import { CoordinateSystemComponent } from './preferences/coordinate-system/coord
 import { AboutComponent } from './about/about.component';
 import { ProfileComponent } from './user/profile/profile.component';
 import { PasswordResetSuccessDialog } from './user/password/password-reset-success-dialog';
-import { SignupComponent } from './authentication/local/signup.component';
-import { StatusComponent } from './authentication/local/status/status.component';
+import { AuthenticationDialogComponent } from './ingress/authentication/authentication-dialog.component';
+import { AuthenticationComponent } from './ingress/authentication/authentication.component';
+import { IdpAuthenticationComponent } from './ingress/authentication/idp/idp.component';
+import { LocalAuthenticationComponent } from './ingress/authentication/local/local-authentication.component';
+import { SignupComponent } from './ingress/authentication/local/signup.component';
+import { StatusComponent } from './ingress/authentication/local/status/status.component';
+import { AuthorizationComponent } from './ingress/authorization/authorization.component';
+import { DisclaimerComponent } from './ingress/disclaimer/disclaimer.component';
+import { IngressComponent } from './ingress/ingress.component';
 
 @NgModule({
   declarations: [
@@ -188,12 +191,15 @@ import { StatusComponent } from './authentication/local/status/status.component'
     SearchComponent,
     LandingComponent,
     InfoComponent,
+    IngressComponent,
     AuthenticationComponent,
+    AuthorizationComponent,
+    AuthenticationDialogComponent,
     IdpAuthenticationComponent,
     LocalAuthenticationComponent,
     SignupComponent,
     StatusComponent,
-    AuthorizeComponent,
+    DisclaimerComponent,
     MageComponent,
     MapComponent,
     PasswordResetSuccessDialog,
@@ -370,7 +376,9 @@ import { StatusComponent } from './authentication/local/status/status.component'
     // eventProvider,
     // authenticationConfigurationServiceProvider,
     // userPagingServiceProvider,
-    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true }
+    {
+      provide: HTTP_INTERCEPTORS, useClass: TokenInterceptorService, multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })

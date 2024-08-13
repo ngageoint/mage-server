@@ -10,7 +10,6 @@ import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, l
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
-import { FeatureCollection } from 'geojson'
 import { locationMarker } from './marker/LocationMarker'
 import { observationMarker } from './marker/ObservationMarker'
 import { COUNTRIES as countries } from './layers/static/layers'
@@ -25,6 +24,7 @@ import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
+import { UserService } from '../user/user.service'
 
 Icon.Default.imagePath = '/'
 
@@ -89,6 +89,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     private mapService: MapService,
+    private userService: UserService,
     private layerService: MapLayerService,
     private eventService: EventService,
     private filterService: FilterService,
@@ -336,12 +337,26 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   onBroadcast($event) {
-    this.broadcast = $event.state
-    if (this.locate !== LocationState.ON) {
-      this.map.locate({
-        watch: true,
-        setView: false
-      })
+    if (this.eventService.isUserInEvent(this.userService.myself, this.filterService.getEvent())) {
+      this.broadcast = $event.state
+      if (this.locate !== LocationState.ON) {
+        this.map.locate({
+          watch: true,
+          setView: false
+        })
+      }
+    } else {
+      //Dialog
+      // this.$uibModal.open({
+      //   template: require('../error/not.in.event.html'),
+      //   controller: 'NotInEventController',
+      //   resolve: {
+      //     title: function () {
+      //       return 'Cannot Broadcast Location';
+      //     }
+      //   }
+      // });
+      console.log('show not in event dialog')
     }
   }
 

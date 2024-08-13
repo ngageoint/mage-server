@@ -1,0 +1,13 @@
+<div class="container" @disableOnEnter>
+  <div class="state" *ngIf="ingress.state === IngressState.Signin" @slide>
+    <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)"></authentication>
+  </div>
+
+  <div class="state" *ngIf="ingress.state === IngressState.Authorization" @slide>
+    <authorization [token]="getAuthenticationToken()" (authorized)="onAuthorized($event)"></authorization>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.Disclaimer" @slide class="state">
+    <disclaimer [title]="api?.disclaimer?.title" [text]="api?.disclaimer?.text" (close)="onDisclaimer($event)"></disclaimer>
+  </div>
+</div>

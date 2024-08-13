@@ -1,9 +1,10 @@
-import { HttpClient, HttpContext, HttpEvent, HttpHeaders, HttpResponse } from '@angular/common/http'
+import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
+import { User } from '../entities/user/entities.user'
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +37,7 @@ export class UserService {
     })
   }
 
-  signin(username: string, password: string): Observable<any> {
+  signin(username: string, password: string): Observable<{user: User, token: string}> {
     return this.httpClient.post<any>('/auth/local/signin', {
       username,
       password,
@@ -67,13 +68,13 @@ export class UserService {
     return subject.asObservable()
   }
 
-  authorize(token: string, deviceId: string): Observable<any> {
+  authorize(token: string, deviceId: string): Observable<{ user: User, token: string}> {
     const body = {
       uid: deviceId,
       appVersion: 'Web Client'
     }
 
-    const observable = this.httpClient.post<any>('/auth/token?createDevice=false', body, {
+    const observable = this.httpClient.post<{ user: User, token: string }>('/auth/token?createDevice=false', body, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
 

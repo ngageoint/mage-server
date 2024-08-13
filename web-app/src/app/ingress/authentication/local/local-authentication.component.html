@@ -15,7 +15,7 @@
     </div>
   
     <div>
-      <button class="auth-button" mat-flat-button color="primary" (click)="signin()">Sign In</button>
+      <button class="auth-button" mat-flat-button color="primary" (click)="onSignin()">Sign In</button>
     </div>
 
     <div *ngIf="error" class="error-container" [@slide]>
@@ -28,9 +28,9 @@
       </div>
     </div>
 
-    <div class="signup">
+    <div *ngIf="landing" class="signup">
       <span class="signup-text">New to Mage?</span>
-      <a *ngIf="!hideSignup" class="signup-button" (click)="signup()">Sign Up Now</a>
+      <a class="signup-button" (click)="onSignup()">Sign Up Now</a>
     </div>
 
   </form>

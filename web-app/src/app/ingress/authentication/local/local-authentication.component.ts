@@ -1,16 +1,16 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AuthenticationStrategy } from '../../api/api.entity';
-import { UserService } from '../../user/user.service';
 import { FormControl, Validators } from '@angular/forms';
-import { ApiService } from 'src/app/api/api.service';
-import { LinkGenerator } from 'src/app/contact/utilities/link-generator';
+import { ApiService } from '../../../api/api.service';
+import { LinkGenerator } from '../../../../app/contact/utilities/link-generator';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Router } from '@angular/router';
+import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
+import { UserService } from '../../../../app/user/user.service';
 
 @Component({
   selector: 'local-authentication',
-  templateUrl: './local.component.html',
-  styleUrls: ['./local.component.scss'],
+  templateUrl: './local-authentication.component.html',
+  styleUrls: ['./local-authentication.component.scss'],
   animations: [
     trigger('slide', [
       transition(':enter', [
@@ -24,13 +24,12 @@ import { Router } from '@angular/router';
   ],
 })
 export class LocalAuthenticationComponent implements OnInit {
+  @Input() api: Api
   @Input() strategy: AuthenticationStrategy
-  @Input() hideSignup: boolean
+  @Input() landing: boolean
 
-  @Output() onSignin = new EventEmitter<any>();
-  @Output() onSignup = new EventEmitter<any>();
+  @Output() authenticated = new EventEmitter<any>();
 
-  api: any
   username = new FormControl('', [Validators.required]);
   password = new FormControl('', [Validators.required]);
 
@@ -53,10 +52,10 @@ export class LocalAuthenticationComponent implements OnInit {
     })
   }
 
-  signin() {
+  onSignin() {
     this.userService.signin(this.username.value, this.password.value).subscribe({
-      next: (response: any) => {
-        this.onSignin.emit(response)
+      next: (response) => {
+        this.authenticated.emit(response)
       },
       error: (response: any) => {
         this.error = {
@@ -71,7 +70,7 @@ export class LocalAuthenticationComponent implements OnInit {
     })
   }
 
-  signup(): void {
+  onSignup(): void {
     this.router.navigate(['landing', 'signup']);
   }
 }

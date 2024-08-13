@@ -75,14 +75,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   onFilter(): void {
-    const dialogRef = this.dialog.open(FilterComponent, {
+    this.dialog.open(FilterComponent, {
       height: '580px',
-      width: '675px',
-      data: {  }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // TODO filter change should happen here
+      width: '675px'
     });
   }
 
