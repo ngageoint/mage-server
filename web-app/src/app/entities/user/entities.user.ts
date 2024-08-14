@@ -1,4 +1,5 @@
 export interface User {
   username: string
-  displayName: string
+  displayName: string,
+  active: boolean
 }

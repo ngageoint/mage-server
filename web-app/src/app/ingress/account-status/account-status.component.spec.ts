@@ -1,14 +1,14 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { StatusComponent } from './status.component';
+import { AccountStatusComponent } from './account-status.component';
 
-describe('Signup Status Component', () => {
-  let component: StatusComponent;
+describe('Account Status Component', () => {
+  let component: AccountStatusComponent;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [StatusComponent]
+      declarations: [AccountStatusComponent]
     })
-      .compileComponents();
+    .compileComponents();
   }));
 
 

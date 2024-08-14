@@ -9,11 +9,11 @@ export class UserResolver implements Resolve<any> {
   constructor(private service: UserService) { }
 
   resolve(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    _route: ActivatedRouteSnapshot,
+    _state: RouterStateSnapshot
   ): Observable<Api> {
     return this.service.getMyself().pipe(
-      catchError((err: any) => {
+      catchError(() => {
         return of(null)
       })
     )

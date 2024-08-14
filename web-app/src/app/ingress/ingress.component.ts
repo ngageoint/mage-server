@@ -1,17 +1,20 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
 import { Api, AuthenticationStrategy } from '../api/api.entity'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute } from '@angular/router'
 import { UserService } from '../user/user.service'
 import { AuthorizationEvent } from './authorization/authorization.component'
 import { LocalStorageService } from '../http/local-storage.service'
 import { User } from '../entities/user/entities.user'
 import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component'
 import { animate, style, transition, trigger } from '@angular/animations'
+import { SignupEvent } from './authentication/local/signup.component'
+import { InitializedEvent } from './setup/initialize.component'
 import * as _ from 'underscore'
 
 enum IngressState {
-  Setup,
+  Initialize,
   Signin,
+  Signup,
   Authorization,
   Disclaimer,
   ActiveAccount,
@@ -25,6 +28,10 @@ class Ingress {
 
 class Signin extends Ingress {
   state = IngressState.Signin
+}
+
+class Signup extends Ingress {
+  state = IngressState.Signup
 }
 
 class Authenticated extends Ingress {
@@ -45,6 +52,18 @@ class Authorized extends Ingress {
     super()
     this.apiToken = apiToken
   }
+}
+
+class ActiveAccount extends Ingress {
+  state = IngressState.ActiveAccount
+}
+
+class InactiveAccount extends Ingress {
+  state = IngressState.InactiveAccount
+}
+
+class Initialize extends Ingress {
+  state = IngressState.Initialize
 }
 
 @Component({
@@ -80,7 +99,6 @@ export class IngressComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private userService: UserService,
     private localStorageService: LocalStorageService
   ) { }
@@ -88,6 +106,10 @@ export class IngressComponent implements OnInit {
   ngOnInit(): void {
     this.route.data.subscribe(({ api }) => {
       this.api = api
+
+      if (this.api.initial) {
+        this.ingress = new Initialize()
+      }
 
       this.localAuthenticationStrategy = this.api?.authenticationStrategies['local'];
       if (this.localAuthenticationStrategy) {
@@ -107,6 +129,18 @@ export class IngressComponent implements OnInit {
 
   getAuthenticationToken(): string | undefined {
     return (this.ingress as Authenticated)?.authenticationToken
+  }
+
+  onSignup(): void {
+    this.ingress = new Signup()
+  }
+
+  signup($event: SignupEvent): void {
+    if ($event.reason === 'signup') {
+      this.ingress = $event.user.active ? new ActiveAccount() : new InactiveAccount()
+    } else {
+      this.ingress = new Signin()
+    }
   }
 
   onAuthenticated($event: { user: User, token: string }) {
@@ -141,5 +175,14 @@ export class IngressComponent implements OnInit {
     } else {
       this.ingress = new Signin()
     }
+  }
+
+  onAccountStatus(): void {
+    this.ingress = new Signin()
+  }
+
+  onInitialized($event: InitializedEvent): void {
+    this.localStorageService.setToken($event.token)
+    this.complete.emit()
   }
 }

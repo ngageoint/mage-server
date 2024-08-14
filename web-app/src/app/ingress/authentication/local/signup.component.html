@@ -1,10 +1,10 @@
-<div class="container">
+<div class="signup-container">
   <div class="welcome">
     <div class="welcome__title">New to Mage?</div>
     <div class="welcome__message">Let's setup your account.</div>
   </div>
 
-  <form [formGroup]="signup">
+  <form class="signup" [formGroup]="signup">
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
@@ -48,7 +48,7 @@
     <div>
       <mat-form-field appearance="fill">
         <mat-label>Confirm Password</mat-label>
-        <input matInput placeholder="Comfirm Password" type="password" [formControl]="signup.controls.passwordconfirm" required>
+        <input matInput placeholder="Confirm Password" type="password" [formControl]="signup.controls.passwordconfirm" required>
         <mat-error *ngIf="signup.controls.passwordconfirm.hasError('required')">Password confirmation is required</mat-error>
       </mat-form-field>
     </div>

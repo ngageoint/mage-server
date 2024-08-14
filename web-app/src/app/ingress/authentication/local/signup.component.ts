@@ -1,8 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { PasswordStrength } from 'src/app/entities/password/entities.password';
-import { UserService } from 'src/app/user/user.service';
+import { PasswordStrength } from '../../../entities/password/entities.password';
+import { User } from '../../../entities/user/entities.user';
+import { UserService } from '../../../user/user.service';
+
+export interface SignupEvent {
+  reason: 'signup' | 'cancel'
+  user?: User
+}
 
 @Component({
   selector: 'signup',
@@ -10,6 +15,8 @@ import { UserService } from 'src/app/user/user.service';
   styleUrls: ['./signup.component.scss']
 })
 export class SignupComponent {
+  @Output() complete = new EventEmitter<SignupEvent>()
+
   signup = new FormGroup({
     username: new FormControl<string>('', [Validators.required]),
     displayName: new FormControl<string>('', [Validators.required]),
@@ -28,8 +35,6 @@ export class SignupComponent {
   } = {}
 
   constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
     private userService: UserService
   ) {}
 
@@ -46,7 +51,9 @@ export class SignupComponent {
   }
 
   onCancel(): void {
-    this.router.navigate(['landing', 'signin'])
+    this.complete.emit({
+      reason: 'cancel'
+    })
   }
 
   onSignup(): void {
@@ -66,12 +73,9 @@ export class SignupComponent {
     if (this.signup.valid) {
       this.userService.signupVerify(this.signup.value, this.captcha.token).subscribe({
         next: (response: any) => {
-          
-          this.router.navigate(['status'], {
-            relativeTo: this.activatedRoute,
-            queryParams: {
-              active: response.active
-            } 
+          this.complete.emit({
+            reason: 'signup',
+            user: response
           })
         },
         error: ((response: any) => {

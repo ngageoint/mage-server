@@ -5,7 +5,13 @@
   </div>
 
   <div class="authentications">
-    <local-authentication *ngIf="localAuthenticationStrategy" strategy="localAuthenticationStrategy" [landing]="landing" (authenticated)="signin($event)"></local-authentication>
+    <local-authentication
+      *ngIf="localAuthenticationStrategy"
+      strategy="localAuthenticationStrategy"
+      [landing]="landing"
+      (signup)="onSignup()"
+      (authenticated)="signin($event)">
+    </local-authentication>
 
     <div *ngIf="localAuthenticationStrategy && thirdPartyStrategies.length">
       <div class="or">

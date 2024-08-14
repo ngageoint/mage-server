@@ -175,10 +175,11 @@ import { AuthenticationComponent } from './ingress/authentication/authentication
 import { IdpAuthenticationComponent } from './ingress/authentication/idp/idp.component';
 import { LocalAuthenticationComponent } from './ingress/authentication/local/local-authentication.component';
 import { SignupComponent } from './ingress/authentication/local/signup.component';
-import { StatusComponent } from './ingress/authentication/local/status/status.component';
 import { AuthorizationComponent } from './ingress/authorization/authorization.component';
 import { DisclaimerComponent } from './ingress/disclaimer/disclaimer.component';
 import { IngressComponent } from './ingress/ingress.component';
+import { AccountStatusComponent } from './ingress/account-status/account-status.component';
+import { InitializeComponent } from './ingress/intialize/initialize.component';
 
 @NgModule({
   declarations: [
@@ -198,8 +199,9 @@ import { IngressComponent } from './ingress/ingress.component';
     IdpAuthenticationComponent,
     LocalAuthenticationComponent,
     SignupComponent,
-    StatusComponent,
+    AccountStatusComponent,
     DisclaimerComponent,
+    InitializeComponent,
     MageComponent,
     MapComponent,
     PasswordResetSuccessDialog,

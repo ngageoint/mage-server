@@ -17,6 +17,7 @@ export class AuthenticationComponent implements OnChanges {
   @Input() api: Api
   @Input() landing: boolean = false
 
+  @Output() signup = new EventEmitter<void>()
   @Output() authenticated = new EventEmitter<{ user: User, token: string}>()
 
   strategy: any
@@ -44,5 +45,9 @@ export class AuthenticationComponent implements OnChanges {
 
   signin($event: { user: User, token: string }) {
     this.authenticated.emit($event)
+  }
+
+  onSignup(): void {
+    this.signup.emit()
   }
 }

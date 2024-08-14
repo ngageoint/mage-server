@@ -2,6 +2,7 @@
 
 :host {
   width: 100%;
+  height: 100%;
 }
 
 mat-form-field {
@@ -9,16 +10,16 @@ mat-form-field {
   margin-bottom: 8px;
 }
 
-.container {
-  min-width: 285px;
-  max-width: 600px;
-  width: 75%;
-  margin: 16px auto;
-  text-align: left;
+.signup-container {
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 48px;
+  padding-top: 32px;
+}
+
+.signup {
+  padding-bottom: 16px;
 }
 
 .welcome {
@@ -27,7 +28,6 @@ mat-form-field {
   align-items: center;
   justify-content: end;
   color: $primary;
-  height: 15vh;
 }
 
 .welcome__title {

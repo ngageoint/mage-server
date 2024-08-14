@@ -1,6 +1,6 @@
 <div class="container" @disableOnEnter>
   <div class="state" *ngIf="ingress.state === IngressState.Signin" @slide>
-    <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)"></authentication>
+    <authentication [landing]="landing" [api]="api" (authenticated)="onAuthenticated($event)" (signup)="onSignup()"></authentication>
   </div>
 
   <div class="state" *ngIf="ingress.state === IngressState.Authorization" @slide>
@@ -9,5 +9,21 @@
 
   <div *ngIf="ingress.state === IngressState.Disclaimer" @slide class="state">
     <disclaimer [title]="api?.disclaimer?.title" [text]="api?.disclaimer?.text" (close)="onDisclaimer($event)"></disclaimer>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.Signup" @slide class="state">
+    <signup (complete)="signup($event)"></signup>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.ActiveAccount" @slide class="state">
+    <account-status [active]="true" (complete)="onAccountStatus()"></account-status>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.InactiveAccount" @slide class="state">
+    <account-status [active]="false" (complete)="onAccountStatus()"></account-status>
+  </div>
+
+  <div *ngIf="ingress.state === IngressState.Initialize" @slide class="state">
+    <initialize (initialized)="onInitialized($event)"></initialize>
   </div>
 </div>

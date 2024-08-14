@@ -3,7 +3,6 @@ import { FormControl, Validators } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
 import { LinkGenerator } from '../../../../app/contact/utilities/link-generator';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { Router } from '@angular/router';
 import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
 import { UserService } from '../../../../app/user/user.service';
 
@@ -21,13 +20,14 @@ import { UserService } from '../../../../app/user/user.service';
         animate('250ms ease-out', style({ 'height': '0px', opacity: 0 })),
       ])
     ]),
-  ],
+  ]
 })
 export class LocalAuthenticationComponent implements OnInit {
   @Input() api: Api
   @Input() strategy: AuthenticationStrategy
   @Input() landing: boolean
 
+  @Output() signup = new EventEmitter<void>();
   @Output() authenticated = new EventEmitter<any>();
 
   username = new FormControl('', [Validators.required]);
@@ -41,7 +41,6 @@ export class LocalAuthenticationComponent implements OnInit {
   contact: string
 
   constructor(
-    private router: Router,
     private apiService: ApiService,
     private userService: UserService
   ) {}
@@ -71,6 +70,6 @@ export class LocalAuthenticationComponent implements OnInit {
   }
 
   onSignup(): void {
-    this.router.navigate(['landing', 'signup']);
+    this.signup.emit()
   }
 }
