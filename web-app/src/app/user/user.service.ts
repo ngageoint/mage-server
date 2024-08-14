@@ -4,7 +4,7 @@ import { Router } from '@angular/router'
 import { Observable, Subject } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
-import { User } from '../entities/user/entities.user'
+import { User } from 'core-lib-src/user'
 
 @Injectable({
   providedIn: 'root'

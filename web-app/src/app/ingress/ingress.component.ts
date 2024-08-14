@@ -4,12 +4,12 @@ import { ActivatedRoute } from '@angular/router'
 import { UserService } from '../user/user.service'
 import { AuthorizationEvent } from './authorization/authorization.component'
 import { LocalStorageService } from '../http/local-storage.service'
-import { User } from '../entities/user/entities.user'
 import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component'
 import { animate, style, transition, trigger } from '@angular/animations'
 import { SignupEvent } from './authentication/local/signup.component'
-import { InitializedEvent } from './setup/initialize.component'
 import * as _ from 'underscore'
+import { User } from 'core-lib-src/user'
+import { InitializedEvent } from './intialize/initialize.component'
 
 enum IngressState {
   Initialize,

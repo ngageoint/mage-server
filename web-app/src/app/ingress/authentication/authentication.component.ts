@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core'
 import { Api, AuthenticationStrategy } from '../../api/api.entity'
-import { User } from '../../entities/user/entities.user'
+import { User } from 'core-lib-src/user'
 import * as _ from 'underscore'
 
 export interface AuthenticationEvent {

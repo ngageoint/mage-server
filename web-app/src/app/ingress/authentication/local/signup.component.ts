@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PasswordStrength } from '../../../entities/password/entities.password';
-import { User } from '../../../entities/user/entities.user';
 import { UserService } from '../../../user/user.service';
+import { User } from 'core-lib-src/user';
 
 export interface SignupEvent {
   reason: 'signup' | 'cancel'

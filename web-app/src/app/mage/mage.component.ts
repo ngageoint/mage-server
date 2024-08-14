@@ -4,7 +4,7 @@ import { FilterService } from '../filter/filter.service';
 import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
-import { User } from '../entities/user/entities.user';
+import { User } from 'core-lib-src/user';
 import * as _ from 'underscore';
 
 @Component({
