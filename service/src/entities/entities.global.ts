@@ -76,53 +76,39 @@ export interface PagingParameters {
 }
 
 export interface PageOf<T> {
-  totalCount: number | null;
-  pageSize: number;
-  pageIndex: number;
-  items: T[];
+  totalCount: number | null
+  pageSize: number
+  pageIndex: number
+  items: T[]
   links?: {
-    next: number | null;
-    prev: number | null;
-  };
+    next: number | null
+    prev: number | null
+  }
 }
 
 export interface Links {
-  next: number | null;
-  prev: number | null;
+  next: number | null
+  prev: number | null
 }
 
-export function calculateLinks( paging: PagingParameters, totalCount: number | null): Links {
-  const links: Links = {
-    next: null,
-    prev: null
-  };
-
-  const limit = paging.pageSize;
-  const start = paging.pageIndex * limit;
-
-  if (start + limit < (totalCount || 0)) {
-    links.next = paging.pageIndex + 1;
-  }
-
-  if (start > 0) {
-    links.prev = Math.max(0, paging.pageIndex - 1);
-  }
-
-  return links;
+export function calculateLinks(paging: PagingParameters, totalCount: number | null): Links {
+  const limit = paging.pageSize
+  const start = paging.pageIndex * limit
+  const next = start + paging.pageSize < (totalCount || 0) ? paging.pageIndex + 1 : null
+  const prev = paging.pageIndex > 0 ? paging.pageIndex - 1 : null
+  return { next, prev }
 }
 
 export const pageOf = <T>(items: T[], paging: PagingParameters, totalCount?: number | null): PageOf<T> => {
-  // Provide a default value for totalCount if it's undefined
   const resolvedTotalCount = totalCount || 0;
-  const links = calculateLinks(paging, resolvedTotalCount);
-
+  const links = calculateLinks(paging, resolvedTotalCount)
   return {
-    totalCount: typeof totalCount === 'number' ? totalCount : null,
-    pageSize: paging.pageSize,
+    totalCount: totalCount || null,
+    pageSize: typeof paging.pageSize === 'number' ? paging.pageSize : -1,
     pageIndex: paging.pageIndex,
     items,
     links
-  };
+  }
 }
 
 /**
