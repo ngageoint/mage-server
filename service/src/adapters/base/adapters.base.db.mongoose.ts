@@ -121,6 +121,12 @@ export class BaseMongooseRepository<DocType extends mongoose.AnyObject, Model ex
   }
 }
 
+/**
+ * Transform the given query into a paging query.  If {@link PagingParameters.includeTotalCount `includeTotalCount`}
+ * is `true`, or if `includeTotalCount` is `undefined` or `null`, and the requested page is the first page, execute
+ * a count operation before returning the paged query.  Return an object with entries for the `totalCount` and the
+ * query with the appropriate limit and skip operations applied for the requested page.
+ */
 export const pageQuery = <RT, DT>(query: mongoose.Query<RT, DT>, paging: PagingParameters): Promise<{ totalCount: number | null, query: mongoose.Query<RT, DT> }> => {
   const BaseQuery = query.toConstructor()
   const pageQuery = new BaseQuery().limit(paging.pageSize).skip(paging.pageIndex * paging.pageSize) as mongoose.Query<RT, DT>
