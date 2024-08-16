@@ -1,7 +1,7 @@
 import JWT from 'jsonwebtoken'
 import { Json } from '../entities/entities.json_types'
 
-type Payload = {
+export type Payload = {
   subject: string | null,
   assertion: TokenAssertion | null,
   expiration: number | null,
