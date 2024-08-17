@@ -1,135 +1,60 @@
-const log = require('winston');
+import express from 'express'
+import { DevicePermissionService } from '../../app.api/devices/app.api.devices'
+import { DevicePermission } from '../../entities/authorization/entities.permissions'
+import { DeviceRepository } from '../../entities/devices/entities.devices'
+import { WebAppRequestFactory } from '../adapters.controllers.web'
+const log = require('winston')
 const Device = require('../models/device');
 const access = require('../access');
 const pageInfoTransformer = require('../transformers/pageinfo.js');
 
-function DeviceResource() {}
 
-module.exports = function(app, security) {
+export function DeviceRoutes(deviceRepo: DeviceRepository, permissions: DevicePermissionService, appRequestFactory: WebAppRequestFactory): express.Router {
 
-  var passport = security.authentication.passport;
-  var resource = new DeviceResource(passport);
+  const deviceResource = express.Router()
 
-  // DEPRECATED retain old routes as deprecated until next major version.
-  /**
-   * @deprecated
-   */
-  app.post('/api/devices',
-    function authenticate(req, res, next) {
-      log.warn('DEPRECATED - The /api/devices route will be removed in the next major version, please use /auth/{auth_strategy}/devices');
-      passport.authenticate('local', function(err, user) {
-        if (err) {
-          return next(err);
-        }
-        if (!user) {
-          return next('route');
-        }
-        req.login(user, function(err) {
-          next(err);
-        });
-      })(req, res, next);
-    },
-    async function(req, res, next) {
-      const newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
-      try {
-        let device = await Device.getDeviceByUid(newDevice.uid);
-        if (!device) {
-          device = await Device.createDevice(newDevice);
-        }
-        return res.json(device)
-      }
-      catch(err) {
-        next(err);
-      }
-      next(new Error(`unknown error registering device ${newDevice.uid} for user ${newDevice.userId}`));
-    }
-  );
-
-  /**
-   * Create a new device, requires CREATE_DEVICE role
-   *
-   * @deprecated Use /auth/{strategy}/authorize instead.
-   */
-  app.post('/api/devices',
-    passport.authenticate('bearer'),
-    resource.ensurePermission('CREATE_DEVICE'),
-    resource.parseDeviceParams,
-    resource.validateDeviceParams,
-    resource.create
-  );
-
-  app.get('/api/devices/count',
-    passport.authenticate('bearer'),
+  deviceResource.get('/count',
     access.authorize('READ_DEVICE'),
     resource.count
-  );
+  )
 
-  // get all devices
-  app.get('/api/devices',
-    passport.authenticate('bearer'),
-    access.authorize('READ_DEVICE'),
-    resource.getDevices
-  );
-
-  // get device
   // TODO: check for READ_USER also
-  app.get('/api/devices/:id',
-    passport.authenticate('bearer'),
-    access.authorize('READ_DEVICE'),
-    resource.getDevice
-  );
+  deviceResource.route('/:id')
+    .get(
+      access.authorize('READ_DEVICE'),
+      resource.getDevice
+    )
+    .put(
+      access.authorize('UPDATE_DEVICE'),
+      resource.parseDeviceParams,
+      resource.updateDevice
+    )
+    .delete(
+      access.authorize('DELETE_DEVICE'),
+      resource.deleteDevice
+    )
 
-  // Update a device
-  app.put('/api/devices/:id',
-    passport.authenticate('bearer'),
-    access.authorize('UPDATE_DEVICE'),
-    resource.parseDeviceParams,
-    resource.updateDevice
-  );
+  deviceResource.route('/')
+    .post(
+      resource.ensurePermission('CREATE_DEVICE'),
+      resource.parseDeviceParams,
+      resource.validateDeviceParams,
+      resource.create
+    )
+    .get(
+      access.authorize('READ_DEVICE'),
+      resource.getDevices
+    )
+  return deviceResource
+}
 
-  // Delete a device
-  app.delete('/api/devices/:id',
-    passport.authenticate('bearer'),
-    access.authorize('DELETE_DEVICE'),
-    resource.deleteDevice
-  );
-};
-
-DeviceResource.prototype.ensurePermission = function(permission) {
+function ensurePermission(permission: DevicePermission): express.RequestHandler {
   return function(req, res, next) {
-    access.userHasPermission(req.user, permission) ? next() : res.sendStatus(403);
-  };
-};
+    access.userHasPermission(req.user, permission) ? next() : res.sendStatus(403)
+  }
+}
 
-/**
- * TODO: this should return a 201 and a location header
- *
- * @deprecated Use /auth/{strategy}/authorize instead.
- */
-DeviceResource.prototype.create = function(req, res, next) {
-  console.warn("Calling deprecated function to create device.  Call authorize instead.");
-
-  // Automatically register any device created by an ADMIN
-  req.newDevice.registered = true;
-
-  Device.createDevice(req.newDevice)
-    .then(device => {
-      res.json(device);
-    })
-    .catch(err => { 
-      next(err)
-    });
-};
-
-DeviceResource.prototype.count = function (req, res, next) {
+function count(req: express., res, next) {
   var filter = {};
 
   if(req.query) {
