@@ -1,10 +1,9 @@
 
-import mongoose from 'mongoose'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
 
 type Callback<R> = (err: any, result?: R) => any
 
-export declare interface RoleDocument extends mongoose.Document {
+export declare interface RoleDocument {
   id: string
   name: string
   description?: string
