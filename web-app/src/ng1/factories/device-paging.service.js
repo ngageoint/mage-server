@@ -22,21 +22,21 @@ function DevicePagingService(DeviceService, $q) {
         return {
             all: {
                 countFilter: {},
-                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 } },
+                deviceFilter: { limit: 10 },
                 searchFilter: '',
                 deviceCount: 0,
                 pageInfo: {}
             },
             registered: {
                 countFilter: { registered: true },
-                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 }, registered: true },
+                deviceFilter: { limit: 10, registered: true },
                 searchFilter: '',
                 deviceCount: 0,
                 pageInfo: {}
             },
             unregistered: {
                 countFilter: { registered: false },
-                deviceFilter: { limit: 10, sort: { userAgent: 1, _id: 1 }, registered: false },
+                deviceFilter: { limit: 10, registered: false },
                 searchFilter: '',
                 deviceCount: 0,
                 pageInfo: {}
@@ -153,15 +153,12 @@ function DevicePagingService(DeviceService, $q) {
             promise = $q.resolve(data.pageInfo.devices);
         } else {
             //Perform the server side searching
+            // TODO: use /next-users/search
             data.searchFilter = deviceSearch;
 
             var filter = data.deviceFilter;
             if (userSearch == null) {
-                filter.or = {
-                    userAgent: '.*' + deviceSearch + '.*',
-                    description: '.*' + deviceSearch + '.*',
-                    uid:  '.*' + deviceSearch + '.*'
-                };
+                filter.search = deviceSearch
             } else {
                 filter.or = {
                     displayName: '.*' + userSearch + '.*',
