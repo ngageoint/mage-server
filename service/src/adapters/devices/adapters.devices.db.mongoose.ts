@@ -63,6 +63,7 @@ export class DeviceMongooseRepository extends BaseMongooseRepository<DeviceDocum
   async findByUid(uid: DeviceUid): Promise<Device | null> {
     return await this.model.findOne({ uid }).then(x => x ? docToEntity(x) : null)
   }
+
   async findSome(findSpec: FindDevicesSpec): Promise<PageOf<DeviceExpanded>> {
     const filter = dbFilterForFindSpec(findSpec)
     const baseQuery = this.model.find(filter, null).lean()
@@ -76,6 +77,7 @@ export class DeviceMongooseRepository extends BaseMongooseRepository<DeviceDocum
     const devices = Array.prototype.map.call(await counted.query, docToEntity) as DeviceExpanded[]
     return pageOf(devices, findSpec.paging, counted.totalCount)
   }
+
   async countSome(findSpec: FindDevicesSpec): Promise<number> {
     const filter = dbFilterForFindSpec(findSpec)
     return await this.model.count(filter)

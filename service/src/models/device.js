@@ -43,6 +43,7 @@ DeviceSchema.path('userId').validate(async function (userId) {
 
 DeviceSchema.pre('findOneAndUpdate', function (next) {
   if (this.getUpdate() && this.getUpdate().registered === false) {
+    // TODO: users-next: new token methods
     Token.removeTokenForDevice({ _id: this.getQuery()._id }, function (err) {
       next(err);
     });
@@ -57,6 +58,7 @@ DeviceSchema.pre('findOneAndDelete', function (next) {
 
   async.parallel({
     token: function (done) {
+      // TODO: users-next: new token methods
       Token.removeTokenForDevice({ _id: query.getQuery()._id }, function (err) {
         done(err);
       });

@@ -1,162 +1,214 @@
 import express from 'express'
+import { entityNotFound, invalidInput } from '../../app.api/app.api.errors'
 import { DevicePermissionService } from '../../app.api/devices/app.api.devices'
-import { DevicePermission } from '../../entities/authorization/entities.permissions'
-import { DeviceRepository } from '../../entities/devices/entities.devices'
-import { WebAppRequestFactory } from '../adapters.controllers.web'
+import { Device, DeviceRepository, FindDevicesSpec } from '../../entities/devices/entities.devices'
+import { PageOf, PagingParameters } from '../../entities/entities.global'
+import { User, UserFindParameters, UserRepository } from '../../entities/users/entities.users'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
 const log = require('winston')
-const Device = require('../models/device');
-const access = require('../access');
-const pageInfoTransformer = require('../transformers/pageinfo.js');
 
 
-export function DeviceRoutes(deviceRepo: DeviceRepository, permissions: DevicePermissionService, appRequestFactory: WebAppRequestFactory): express.Router {
+export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserRepository, permissions: DevicePermissionService, createAppContext: WebAppRequestFactory): express.Router {
 
   const deviceResource = express.Router()
+  const ensurePermission = PermissionMiddleware(permissions, createAppContext)
 
   deviceResource.get('/count',
-    access.authorize('READ_DEVICE'),
-    resource.count
+    ensurePermission.create,
+    async (req, res, next) => {
+      const findSpec = parseDeviceFindSpec(req)
+      try {
+        const count = await deviceRepo.countSome(findSpec)
+        return res.json({ count })
+      }
+      catch (err) {
+        next(err)
+      }
+    }
   )
 
   // TODO: check for READ_USER also
+  // ... meh
   deviceResource.route('/:id')
     .get(
-      access.authorize('READ_DEVICE'),
-      resource.getDevice
+      ensurePermission.read,
+      async (req, res, next) => {
+        const id = req.params.id
+        try {
+          const device = deviceRepo.findById(id)
+          if (device) {
+            return res.json(device)
+          }
+        }
+        catch (err) {
+          next(err)
+        }
+      }
     )
     .put(
-      access.authorize('UPDATE_DEVICE'),
-      resource.parseDeviceParams,
-      resource.updateDevice
+      ensurePermission.update,
+      express.urlencoded(),
+      async (req, res, next) => {
+        const idInPath = req.params.id
+        const update = parseDeviceAttributes(req)
+        if (typeof update.id === 'string' && update.id !== idInPath) {
+          return next(invalidInput(`body id ${update.id} does not match id in path ${idInPath}`))
+        }
+        try {
+          const updated = await deviceRepo.update({ ...update, id: idInPath })
+          if (updated) {
+            return res.json(updated)
+          }
+          return next(entityNotFound(idInPath, 'Device'))
+        }
+        catch (err) {
+          next(err)
+        }
+      }
     )
     .delete(
-      access.authorize('DELETE_DEVICE'),
-      resource.deleteDevice
+      ensurePermission.delete,
+      async (req, res, next) => {
+        try {
+          const idInPath = req.params.id
+          const deleted = await deviceRepo.removeById(idInPath)
+          if (deleted) {
+            return res.json(deleted)
+          }
+          return next(entityNotFound(idInPath, 'Device'))
+        }
+        catch (err) {
+          next(err)
+        }
+      }
     )
 
   deviceResource.route('/')
     .post(
-      resource.ensurePermission('CREATE_DEVICE'),
-      resource.parseDeviceParams,
-      resource.validateDeviceParams,
-      resource.create
+      ensurePermission.create,
+      express.urlencoded(),
+      async (req, res, next) => {
+        const attrs = parseDeviceAttributes(req)
+        if (typeof attrs.uid !== 'string') {
+          return res.status(400).send('missing uid')
+        }
+        if (typeof attrs.registered !== 'boolean') {
+          attrs.registered = false
+        }
+        try {
+          const device = await deviceRepo.create(attrs as Device)
+          return res.status(201).json(device)
+        }
+        catch (err) {
+          next(err)
+        }
+      }
     )
     .get(
-      access.authorize('READ_DEVICE'),
-      resource.getDevices
+      ensurePermission.read,
+      async (req, res, next) => {
+        const findDevices = { ...parseDeviceFindSpec(req), expandUser: true } as FindDevicesSpec & { expandUser: true }
+        const userSearch: UserFindParameters | null = typeof findDevices.where.containsSearchTerm === 'string' ?
+          { nameOrContactTerm: findDevices.where.containsSearchTerm, pageIndex: 0, pageSize: Number.MAX_SAFE_INTEGER } :
+          null
+        try {
+          // TODO: would this user query be necessary if the web app's user page just showed the user's devices?
+          const usersPage: PageOf<User> = userSearch ?
+            await userRepo.find(userSearch) :
+            { pageIndex: 0, pageSize: 0, totalCount: null, items: [] }
+          const userIds = usersPage.items.map(x => x.id)
+          // TODO: hope user id list is not too big
+          if (userIds.length) {
+            findDevices.where.userIdIsAnyOf = userIds
+          }
+          const devicesPage = await deviceRepo.findSome(findDevices)
+          const { items, ...paging } = devicesPage
+          const compatibilityDevicesPage = {
+            count: paging.totalCount,
+            // web app really only uses the links entry
+            paginInfo: paging,
+            devices: items
+          }
+          return res.json(compatibilityDevicesPage)
+        }
+        catch (err) {
+          next(err)
+        }
+      }
     )
-  return deviceResource
+
+  return deviceResource.use(compatibilityMageAppErrorHandler)
 }
 
-function ensurePermission(permission: DevicePermission): express.RequestHandler {
-  return function(req, res, next) {
-    access.userHasPermission(req.user, permission) ? next() : res.sendStatus(403)
+
+
+interface PermissionMiddleware {
+  create: express.RequestHandler
+  read: express.RequestHandler
+  update: express.RequestHandler
+  delete: express.RequestHandler
+}
+
+function PermissionMiddleware(permissionService: DevicePermissionService, createAppContext: WebAppRequestFactory): PermissionMiddleware {
+  return {
+    async create(req, res, next): Promise<void> {
+      next(await permissionService.ensureCreateDevicePermission(createAppContext(req)))
+    },
+    async read(req, res, next): Promise<void> {
+      next(await permissionService.ensureReadDevicePermission(createAppContext(req)))
+    },
+    async update(req, res, next): Promise<void> {
+      next(await permissionService.ensureUpdateDevicePermission(createAppContext(req)))
+    },
+    async delete(req, res, next): Promise<void> {
+      next(await permissionService.ensureDeleteDevicePermission(createAppContext(req)))
+    }
   }
 }
 
-function count(req: express., res, next) {
-  var filter = {};
+function parseDeviceAttributes(req: express.Request): Partial<Device> {
+  const { uid, name, description, userId, registered } = req.body
+  const attrs: Record<string, any> = {}
+  if (typeof uid === 'string') {
+    attrs.uid = uid
+  }
+  if (typeof name === 'string') {
+    attrs.name = name
+  }
+  if (typeof description === 'string') {
+    attrs.description = description
+  }
+  if (typeof userId === 'string') {
+    attrs.userId = userId
+  }
+  if (typeof registered === 'boolean') {
+    attrs.registered = registered
+  }
+  return attrs
+}
 
-  if(req.query) {
-    for (let [key, value] of Object.entries(req.query)) {
-      if(key == 'populate' || key == 'limit' || key == 'start' || key == 'sort' || key == 'forceRefresh'){
-        continue;
-      }
-      filter[key] = value;
+function parseDeviceFindSpec(req: express.Request): FindDevicesSpec {
+  const { registered, search, limit, start } = req.query
+  const filter: FindDevicesSpec['where'] = {}
+  if (typeof registered === 'string') {
+    const lowerRegistered = registered.toLowerCase()
+    if (lowerRegistered === 'true') {
+      filter.registered = true
+    }
+    else if (lowerRegistered === 'false') {
+      filter.registered = false
     }
   }
-
-  Device.count({ filter: filter })
-    .then(count => res.json({count: count}))
-    .catch(err => next(err));
-};
-
-/**
- * TODO:
- * * the /users route uses the `populate` query param while this uses
- *   `expand`; should be consistent
- * * openapi supports array query parameters using the pipe `|` delimiter;
- *   use that instead of comma for the `expand` query param. on the other hand,
- *   this only actually supports a singular `expand` key, so why bother with
- *   the split anyway?
- */
-DeviceResource.prototype.getDevices = function (req, res, next) {
-
-  const { populate, expand, limit, start, sort, forceRefresh, ...filter } = req.query;
-  const expandFlags = { user: /\buser\b/i.test(expand) };
-
-  Device.getDevices({ filter, expand: expandFlags, limit, start, sort })
-    .then(result => {
-      if (!Array.isArray(result)) {
-        result = pageInfoTransformer.transform(result, req);
-      }
-      return res.json(result);
-    })
-    .catch(err => next(err));
-};
-
-DeviceResource.prototype.getDevice = function(req, res, next) {
-  var expand = {};
-  if (req.query.expand) {
-    var expandList = req.query.expand.split(",");
-    if (expandList.some(function(e) { return e === 'user';})) {
-      expand.user = true;
-    }
+  if (typeof search === 'string' && search.length > 0) {
+    filter.containsSearchTerm = search
   }
-
-  Device.getDeviceById(req.params.id, {expand: expand})
-    .then(device => res.json(device))
-    .catch(err => next(err));
-};
-
-DeviceResource.prototype.updateDevice = function(req, res, next) {
-  const update = {};
-  if (req.newDevice.uid) update.uid = req.newDevice.uid;
-  if (req.newDevice.name) update.name = req.newDevice.name;
-  if (req.newDevice.description) update.description = req.newDevice.description;
-  if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
-  if (req.newDevice.userId) update.userId = req.newDevice.userId;
-
-  Device.updateDevice(req.param('id'), update)
-    .then(device => {
-      if (!device) return res.sendStatus(404);
-
-      res.json(device);
-    })
-    .catch(err => {
-      next(err)
-    });
-};
-
-DeviceResource.prototype.deleteDevice = function(req, res, next) {
-  Device.deleteDevice(req.param('id'))
-    .then(device => {
-      if (!device) return res.sendStatus(404);
-
-      res.json(device);
-    })
-    .catch(err => next(err));
-};
-
-DeviceResource.prototype.parseDeviceParams = function(req, res, next) {
-  req.newDevice = {
-    uid: req.param('uid'),
-    name: req.param('name'),
-    description: req.param('description'),
-    userId: req.param('userId')
-  };
-
-  if (req.param('registered') !== undefined) {
-    req.newDevice.registered = req.param('registered') === 'true';
+  const limitParsed = parseInt(String(limit)) || Number.MAX_SAFE_INTEGER
+  const startParsed = parseInt(String(start)) || 0
+  const paging: PagingParameters = {
+    pageIndex: startParsed,
+    pageSize: limitParsed,
   }
+  const spec: FindDevicesSpec = { where: filter, paging }
+  return spec
+}
 
-  next();
-};
-
-DeviceResource.prototype.validateDeviceParams = function(req, res, next) {
-  if (!req.newDevice.uid) {
-    return res.status(400).send("missing required param 'uid'");
-  }
-
-  next();
-};

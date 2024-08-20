@@ -40,18 +40,26 @@ export interface FindDevicesSpec {
      * Match only devices whose `userAgent`, `description`, or `uid` contain the given search term.
      */
     containsSearchTerm?: string | null | undefined
+    /**
+     * Match devices whose `userId` is in the given array.  This constraint is independent of `containsSearchTerm`, but
+     * subject to the `registered` constraint.
+     */
+    userIdIsAnyOf?: UserId[]
   }
+  /**
+   * If `true`, return {@link DeviceExpanded results}
+   */
   expandUser?: boolean | undefined
   paging: PagingParameters
 }
 
 export interface DeviceRepository {
   create(deviceAttrs: Omit<Device, 'id'>): Promise<Device>
-  update(deviceAttrs: Partial<Device>): Promise<Device | null>
+  update(deviceAttrs: Partial<Device> & Pick<Device, 'id'>): Promise<Device | null>
   removeById(id: DeviceId): Promise<Device | null>
   findById(id: DeviceId): Promise<null | Device>
   findByUid(uid: DeviceUid): Promise<null | Device>
-  findSome(findSpec: FindDevicesSpec & { userExpanded: false | undefined | never }): Promise<PageOf<Device>>
-  findSome(findSpec: FindDevicesSpec & { userExpanded: true }): Promise<PageOf<DeviceExpanded>>
+  findSome(findSpec: FindDevicesSpec & { expandUser: false | undefined | never }): Promise<PageOf<Device>>
+  findSome(findSpec: FindDevicesSpec & { expandUser: true }): Promise<PageOf<DeviceExpanded>>
   countSome(findSpec: FindDevicesSpec): Promise<number>
 }
