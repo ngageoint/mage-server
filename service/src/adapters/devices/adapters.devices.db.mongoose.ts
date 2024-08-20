@@ -66,11 +66,11 @@ export class DeviceMongooseRepository extends BaseMongooseRepository<DeviceDocum
 
   async findSome(findSpec: FindDevicesSpec): Promise<PageOf<DeviceExpanded>> {
     const filter = dbFilterForFindSpec(findSpec)
-    const baseQuery = this.model.find(filter, null).lean()
+    const baseQuery = this.model.find(filter, null, { sort: 'userAgent _id' }).lean()
     const maybePopulateQuery = findSpec.expandUser ?
       baseQuery.populate({
         path: 'userId', select: 'displayName' ,
-        transform: (doc, _id) => doc ? doc : { _id }
+        transform: (doc, _id) => (doc ? doc : { _id })
       }) :
       baseQuery
     const counted = await pageQuery(maybePopulateQuery, findSpec.paging)
@@ -94,6 +94,15 @@ function dbFilterForFindSpec(findSpec: FindDevicesSpec): mongoose.FilterQuery<De
       { userAgent: searchRegex },
       { description: searchRegex },
     ]
+  }
+  if (Array.isArray(where.userIdIsAnyOf) && where.userIdIsAnyOf.length) {
+    const userIdFilter = { $in: where.userIdIsAnyOf }
+    if (Array.isArray(filter.$or)) {
+      filter.$or.push({ userId: userIdFilter })
+    }
+    else {
+      filter.userId = userIdFilter
+    }
   }
   if (typeof where.registered === 'boolean') {
     filter.registered = where.registered
