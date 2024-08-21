@@ -478,9 +478,8 @@ module.exports = function (app, security) {
     }
   );
 
-  // Update a specific user's password
-  // Need UPDATE_USER_PASSWORD to change a users password
-  // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+  // TODO: this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+  // TODO: updated: android is fine now.  create a migration to add UPDATE_USER_PASSWORD to the ADMIN_ROLE
   app.put(
     '/api/users/:userId/password',
     passport.authenticate('bearer'),
