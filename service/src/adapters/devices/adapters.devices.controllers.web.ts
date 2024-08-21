@@ -51,10 +51,16 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
       async (req, res, next) => {
         const idInPath = req.params.id
         const update = parseDeviceAttributes(req)
+        // TODO: if request is marking registered false, remove associated sessions like mongoose middleware
         if (typeof update.id === 'string' && update.id !== idInPath) {
           return next(invalidInput(`body id ${update.id} does not match id in path ${idInPath}`))
         }
         try {
+          if (update.registered === false) {
+            console.info(`update device ${idInPath} to unregistered`)
+            const sessionsRemovedCount = await sessionRepo.removeSessionForDevice(idInPath)
+            console.info(`removed ${sessionsRemovedCount} session(s) for device ${idInPath}`)
+          }
           const updated = await deviceRepo.update({ ...update, id: idInPath })
           if (updated) {
             return res.json(updated)
