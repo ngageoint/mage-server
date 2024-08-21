@@ -81,6 +81,8 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
           const deleted = await deviceRepo.removeById(idInPath)
           const removedSessionsCount = sessionRepo.removeSessionForDevice(idInPath)
           console.info(`removed ${removedSessionsCount} session(s) for device ${idInPath}`)
+          // TODO: the old observation model had a middleware that removed the device id from created observations,
+          // but do we really care that much
           if (deleted) {
             return res.json(deleted)
           }
