@@ -1,14 +1,14 @@
 import express from 'express'
 import { entityNotFound, invalidInput } from '../../app.api/app.api.errors'
 import { DevicePermissionService } from '../../app.api/devices/app.api.devices'
+import { SessionRepository } from '../../authentication/entities.authentication'
 import { Device, DeviceRepository, FindDevicesSpec } from '../../entities/devices/entities.devices'
 import { PageOf, PagingParameters } from '../../entities/entities.global'
 import { User, UserFindParameters, UserRepository } from '../../entities/users/entities.users'
 import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
-const log = require('winston')
 
 
-export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserRepository, permissions: DevicePermissionService, createAppContext: WebAppRequestFactory): express.Router {
+export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserRepository, sessionRepo: SessionRepository, permissions: DevicePermissionService, createAppContext: WebAppRequestFactory): express.Router {
 
   const deviceResource = express.Router()
   const ensurePermission = PermissionMiddleware(permissions, createAppContext)
@@ -71,7 +71,10 @@ export function DeviceRoutes(deviceRepo: DeviceRepository, userRepo: UserReposit
       async (req, res, next) => {
         try {
           const idInPath = req.params.id
+          console.info(`delete device`, idInPath)
           const deleted = await deviceRepo.removeById(idInPath)
+          const removedSessionsCount = sessionRepo.removeSessionForDevice(idInPath)
+          console.info(`removed ${removedSessionsCount} session(s) for device ${idInPath}`)
           if (deleted) {
             return res.json(deleted)
           }
