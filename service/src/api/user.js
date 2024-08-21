@@ -52,6 +52,10 @@ User.prototype.login = function (user, device, options, callback) {
 
       if (device) {
         // set user-agent and mage version on device
+        /*
+        TODO: users-next: don't do this - set user agent on login record and leave user agent as registered on device
+        record maybe even require re-approval if configured device policy dictates
+        */
         DeviceModel.updateDevice(device._id, { userAgent: options.userAgent, appVersion: options.appVersion }).then(() => {
           callback(null, token);
         }).catch(err => {
