@@ -17,11 +17,22 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - The `MAGE_MONGO_TLS_INSECURE` env var avoids issues with [self-signed certs](https://github.com/Automattic/mongoose/issues/9147).
 - [GARS](https://github.com/ngageoint/gars-js) grid overlay
 - [MGRS](https://github.com/ngageoint/mgrs-js) grid overlay
+- Add support for sorting observations by `timestamp`: `GET /api/observations?sort=timestamp+(asc|desc)`
 
 ##### Bug fixes
 - Single observation download bug
 - Protect against disabling all authentications.
 - Problem with OAuth web login
+
+##### Benign API Changes
+- `/api/events/{eventId}/observations`
+  - Remove support for `geometry` query parameter
+  - Remove support for `fields` query parameter
+- `/api/events/{eventId}/observations/{observationId}`
+  - Remove support for unnecessary observation query parameters
+- `/api/devices`
+  - Remove support for `sort` query parameter
+  - Remove support for `expand` query parameter
 
 ## [6.2.12](https://github.com/ngageoint/mage-server/releases/tag/6.2.12)
 ### Service
