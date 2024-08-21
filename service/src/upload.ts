@@ -6,26 +6,21 @@ import env from './environment/env'
 
 const storage = multer.diskStorage({
   destination: env.tempDirectory,
-  filename: function(req, file, cb: any) {
+  filename: function(req, file, cb: (error: Error | null, filename: string) => void): void {
     crypto.pseudoRandomBytes(16, function(err, raw) {
       if (err) {
-        return cb(err);
+        return cb(err, '')
       }
-      cb(null, raw.toString('hex') + path.extname(file.originalname));
-    });
+      cb(null, raw.toString('hex') + path.extname(file.originalname))
+    })
   }
-});
+})
 
-function Upload(limits: multer.Options['limits'] = {}) {
-  return multer({
-    storage, limits
-  });
+function UploadMiddleware(limits: multer.Options['limits'] = {}): multer.Multer {
+  return multer({ storage, limits })
 }
 
-const defaultHandler = Upload()
-
-const upload = {
-  Upload, defaultHandler
-}
+const defaultHandler = UploadMiddleware()
+const upload = Object.freeze({ defaultHandler })
 
 export = upload
