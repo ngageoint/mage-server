@@ -134,7 +134,6 @@ import { PollingIntervalComponent } from '../preferences/polling-interval/pollin
 import { TimeFormatComponent } from '../preferences/time-format/time-format.component';
 import { TimeZoneComponent } from '../preferences/time-zone/time-zone.component';
 import { CoordinateSystemComponent } from '../preferences/coordinate-system/coordinate-system.component';
-import { AboutComponent } from '../about/about.component';
 import { ProfileComponent } from '../user/profile/profile.component';
 import { PasswordResetSuccessDialog } from '../user/password/password-reset-success-dialog';
 import { HomeComponent } from '..//home/home.component';
@@ -152,7 +151,6 @@ const routes: Routes = [{
 @NgModule({
   declarations: [
     HomeComponent,
-    AboutComponent,
     NavigationComponent,
     ZoomComponent,
     AddObservationComponent,
