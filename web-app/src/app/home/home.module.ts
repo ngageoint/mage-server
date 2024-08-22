@@ -1,0 +1,296 @@
+import { NgModule } from '@angular/core';
+
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
+import { SaturationModule, HueModule, CheckboardModule, AlphaModule } from 'ngx-color';
+
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatRippleModule, MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatStepperModule } from '@angular/material/stepper';
+
+import { MatDatetimepickerModule } from '@mat-datetimepicker/core'
+import { MatMomentDatetimeModule } from '@mat-datetimepicker/moment'
+import { InputMaskModule } from '@ngneat/input-mask'
+
+import { ZoomComponent } from '../map/controls/zoom.component';
+import { AddObservationComponent } from '../map/controls/add-observation.component';
+
+import { LocationComponent } from '../map/controls/location.component';
+import { SearchComponent } from '../map/controls/search.component';
+import { LayersComponent } from '../map/layers/layers.component'
+import { LayersControlComponent } from '../map/controls/layers-control.component';
+import { MapComponent } from '../map/map.component';
+import { LayerHeaderComponent } from '../map/layers/layer-header.component';
+import { LayerContentComponent } from '../map/layers/layer-content.component';
+import { ColorPickerComponent } from '../color-picker/color-picker.component';
+import { ExportComponent } from '../export/export.component';
+import { ExportDialogComponent } from '../export/export-dialog.component'
+
+import { MapClipComponent } from '../map/clip/clip.component';
+import { GeometryModule } from '../geometry/geometry.module';
+import { ObservationDeleteComponent } from '../observation/observation-delete/observation-delete.component';
+import { ObservationListItemComponent } from '../observation/observation-list/observation-list-item.component';
+import { MomentModule } from '../moment/moment.module';
+import { AttachmentComponent } from '../observation/attachment/attachment.component';
+import { FilenamePipe } from '../filename/filename.pipe';
+import { AttachUploadComponent } from '../observation/attachment/attachment-upload/attachment-upload.component';
+import { ObservationViewFormComponent } from '../observation/observation-view/observation-view-form.component';
+import { ObservationViewComponent } from '../observation/observation-view/observation-view.component';
+import { ObservationFavoritesComponent } from '../observation/observation-favorites/observation-favorites.component';
+import { UserAvatarComponent } from '../user/user-avatar/user-avatar.component';
+import { ObservationListComponent } from '../observation/observation-list/observation-list.component';
+import { UserViewComponent } from '../user/user-view/user-view.component';
+import { UserListItemComponent } from '../user/user-list/user-list-item.component';
+import { UserListComponent } from '../user/user-list/user-list.component';
+import { FeedListComponent } from '../feed/feed-list/feed-list.component';
+import { FeedPanelComponent } from '../feed-panel/feed-panel.component';
+
+import {
+  ObservationViewCheckboxComponent,
+  ObservationViewDateComponent,
+  ObservationViewGeometryComponent,
+  ObservationViewMultiselectdropdownComponent,
+  ObservationViewTextComponent,
+  ObservationViewTextareaComponent
+} from '../observation/observation-view/observation-view';
+
+import {
+  DMSValidatorDirective,
+  MGRSValidatorDirective,
+  ObservationEditCheckboxComponent,
+  ObservationEditDateComponent,
+  ObservationEditSelectComponent,
+  ObservationEditEmailComponent,
+  ObservationEditGeometryComponent,
+  ObservationEditGeometryFormComponent,
+  ObservationEditGeometryMapComponent,
+  ObservationEditMultiselectComponent,
+  ObservationEditNumberComponent,
+  ObservationEditRadioComponent,
+  ObservationEditTextComponent,
+  ObservationEditTextareaComponent,
+  ObservationEditFormComponent,
+  ObservationEditComponent
+} from '../observation/observation-edit/observation-edit';
+
+import { FeedItemComponent } from '../feed/feed-item/feed-item.component';
+import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
+import { FeedItemSummaryModule } from '../feed/feed-item/feed-item-summary/feed-item-summary.module';
+import { FeedPanelTabComponent } from '../feed-panel/feed-panel-tab.component';
+import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
+import { UserPopupComponent } from '../user/user-popup/user-popup.component';
+import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
+import { DatetimePickerComponent } from '../datetime-picker/datetime-picker.component';
+import { CommonModule } from '@angular/common';
+import { ObservationOptionsComponent } from '../observation/observation-view/observation-options.component';
+import { ObservationEditFormPickerComponent } from '../observation/observation-edit/observation-edit-form-picker.component';
+import { ObservationEditDiscardComponent } from '../observation/observation-edit/observation-edit-discard/observation-edit-discard.component';
+import { ObservationViewAttachmentComponent } from '../observation/observation-view/observation-view-attachment/observation-view-attachment.component';
+import { ObservationEditAttachmentComponent } from '../observation/observation-edit/observation-edit-attachment/observation-edit-attachment.component';
+import { ObservationEditPasswordComponent } from '../observation/observation-edit/observation-edit-password/observation-edit-password.component';
+import { ObservationViewPasswordComponent } from '../observation/observation-view/observation-view-password/observation-view-password.component';
+import { PasswordPipe } from '../observation/observation-view/observation-view-password/password.pipe';
+import { ContactComponent } from '../contact/contact.component';
+import { ContactDialogComponent } from '../contact/contact-dialog.component';
+import { ExportDataComponent } from '../export/export-data/export-data.component';
+import { NoExportsComponent } from '../export/empty-state/no-exports.component';
+import { NavigationComponent } from '../navigation/navigation.component';
+import { FilterComponent } from '../filter/filter.component';
+import { PreferencesComponent } from '../preferences/preferences.component';
+import { PollingIntervalComponent } from '../preferences/polling-interval/polling-interval.component';
+import { TimeFormatComponent } from '../preferences/time-format/time-format.component';
+import { TimeZoneComponent } from '../preferences/time-zone/time-zone.component';
+import { CoordinateSystemComponent } from '../preferences/coordinate-system/coordinate-system.component';
+import { AboutComponent } from '../about/about.component';
+import { ProfileComponent } from '../user/profile/profile.component';
+import { PasswordResetSuccessDialog } from '../user/password/password-reset-success-dialog';
+import { HomeComponent } from '..//home/home.component';
+import { RouterModule, Routes } from '@angular/router';
+import { UserResolver } from '../ingress/user.resolver';
+
+const routes: Routes = [{
+  path: '',
+  component: HomeComponent,
+  resolve: {
+    user: UserResolver
+  }
+}];
+
+@NgModule({
+  declarations: [
+    HomeComponent,
+    AboutComponent,
+    NavigationComponent,
+    ZoomComponent,
+    AddObservationComponent,
+    LocationComponent,
+    SearchComponent,
+    MapComponent,
+    PasswordResetSuccessDialog,
+    PreferencesComponent,
+    FilterComponent,
+    PollingIntervalComponent,
+    TimeFormatComponent,
+    TimeZoneComponent,
+    CoordinateSystemComponent,
+    LayersControlComponent,
+    LayersComponent,
+    LayerHeaderComponent,
+    LayerContentComponent,
+    ColorPickerComponent,
+    DMSValidatorDirective,
+    MGRSValidatorDirective,
+    FeedItemComponent,
+    FeedItemMapPopupComponent,
+    FeedListComponent,
+    FeedPanelComponent,
+    FeedPanelTabComponent,
+    ObservationListItemComponent,
+    ObservationEditComponent,
+    ObservationDeleteComponent,
+    ObservationEditAttachmentComponent,
+    ObservationEditFormComponent,
+    ObservationEditFormPickerComponent,
+    ObservationEditMultiselectComponent,
+    ObservationEditCheckboxComponent,
+    ObservationEditSelectComponent,
+    ObservationEditEmailComponent,
+    ObservationEditNumberComponent,
+    ObservationEditTextComponent,
+    ObservationEditTextareaComponent,
+    ObservationEditRadioComponent,
+    ObservationEditGeometryComponent,
+    ObservationEditGeometryMapComponent,
+    ObservationEditGeometryFormComponent,
+    ObservationEditDateComponent,
+    ObservationViewComponent,
+    ObservationViewAttachmentComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewDateComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewMultiselectdropdownComponent,
+    ObservationViewFormComponent,
+    ObservationFavoritesComponent,
+    ObservationListComponent,
+    ObservationOptionsComponent,
+    MapComponent,
+    MapClipComponent,
+    AttachmentComponent,
+    FilenamePipe,
+    AttachUploadComponent,
+    UserAvatarComponent,
+    UserViewComponent,
+    UserListItemComponent,
+    UserListComponent,
+    ProfileComponent,
+    ObservationPopupComponent,
+    UserPopupComponent,
+    DatetimePickerComponent,
+    ExportComponent,
+    ExportDialogComponent,
+    ExportDataComponent,
+    NoExportsComponent,
+    ObservationEditDiscardComponent,
+    ObservationEditPasswordComponent,
+    ObservationViewPasswordComponent,
+    PasswordPipe,
+    ContactComponent,
+    ContactDialogComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DragDropModule,
+    MatBadgeModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    MatButtonToggleModule,
+    MatNativeDateModule,
+    MatDatepickerModule,
+    MatMomentDatetimeModule,
+    MatDatetimepickerModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatTabsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatGridListModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatInputModule,
+    MatAutocompleteModule,
+    MatSelectModule,
+    MatSliderModule,
+    MatExpansionModule,
+    MatListModule,
+    MatRippleModule,
+    MatChipsModule,
+    MatSidenavModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MomentModule,
+    GeometryModule,
+    ScrollingModule,
+    SaturationModule,
+    HueModule,
+    AlphaModule,
+    CheckboardModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatSnackBarModule,
+    MatDatepickerModule,
+    NgxMatSelectSearchModule,
+    FeedItemSummaryModule,
+    StaticIconModule,
+    MatSlideToggleModule,
+    MatStepperModule,
+    InputMaskModule.forRoot(),
+    RouterModule.forChild(routes)
+  ],
+  exports: [ RouterModule ]
+})
+export class HomeModule {
+}

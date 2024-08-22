@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { LatLng } from 'leaflet';
-import { PointAccuracy } from 'src/app/map/clip/clip.component';
+import { PointAccuracy } from '../../map/clip/clip.component';
 import * as moment from 'moment'
-import { EventService } from '../../event/event.service';
 import { MapService } from '../../map/map.service';
-import { FilterService } from '../../filter/filter.service';
 import { LocationService } from '../location/location.service';
+import { EventService } from '../../event/event.service';
+import { FilterService } from '../../filter/filter.service';
 
 @Component({
   selector: 'user-view',

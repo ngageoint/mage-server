@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { PasswordStrength } from '../../../entities/password/entities.password';
+import { PasswordStrength } from '../../../entities/entities.password';
 import { UserService } from '../../../user/user.service';
 import { User } from 'core-lib-src/user';
 

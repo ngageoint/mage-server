@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment'
 import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';

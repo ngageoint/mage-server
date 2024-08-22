@@ -1,9 +1,9 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { PasswordStrength, passwordStrengthScores } from '../../entities/password/entities.password';
+import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import { InitializeService } from './initialize.service';
-import { UserService } from 'src/app/user/user.service';
+import { UserService } from '../../user/user.service';
 import { User } from 'core-lib-src/user';
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'

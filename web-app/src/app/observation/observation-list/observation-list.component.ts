@@ -1,7 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
-import { EventService } from 'src/app/event/event.service';
-import { FilterService } from 'src/app/filter/filter.service';
+import { EventService } from '../../event/event.service';
+import { FilterService } from '../../filter/filter.service';
 
 @Component({
   selector: 'observation-list',

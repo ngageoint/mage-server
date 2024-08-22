@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
-import { PollingService } from 'src/app/event/polling.service';
+import { PollingService } from '../../event/polling.service';
 
 interface PollingOption {
   title: string

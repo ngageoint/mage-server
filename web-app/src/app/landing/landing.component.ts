@@ -21,7 +21,7 @@ export class LandingComponent {
   }
 
   onIngress(): void {
-    this.router.navigate(['map'])
+    this.router.navigate(['home'])
   }
 
 }

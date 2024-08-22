@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
-import { LinkGenerator } from '../../../../app/contact/utilities/link-generator';
+import { LinkGenerator } from '../../../contact/utilities/link-generator'
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Api, AuthenticationStrategy } from '../../../../app/api/api.entity';
-import { UserService } from '../../../../app/user/user.service';
+import { UserService } from '../../../user/user.service';
 
 @Component({
   selector: 'local-authentication',

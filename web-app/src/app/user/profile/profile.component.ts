@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../user.service';
+import { UserService } from '../../user/user.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpEvent, HttpEventType } from '@angular/common/http';
@@ -8,7 +8,7 @@ import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
 import { MatDialog } from '@angular/material/dialog';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
-import { PasswordStrength, passwordStrengthScores } from 'src/app/entities/password/entities.password';
+import { PasswordStrength, passwordStrengthScores } from '../../entities/entities.password';
 
 @Component({
   selector: 'profile',

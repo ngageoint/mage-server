@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatRipple } from '@angular/material/core';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
-import { LocalStorageService } from '../../http/local-storage.service';
 import { MapService } from '../../map/map.service';
+import { LocalStorageService } from '../../http/local-storage.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 
 @Component({
   selector: 'user-list-item',

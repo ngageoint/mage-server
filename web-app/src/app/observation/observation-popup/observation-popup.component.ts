@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FeedPanelService } from 'src/app/feed-panel/feed-panel.service';
+import { FeedPanelService } from '../../feed-panel/feed-panel.service';
 import * as moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
