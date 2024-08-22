@@ -11,6 +11,9 @@ const appRoutes: Routes =[{
     path: 'about',
     loadChildren: () => import('./about/about.module').then(m => m.AboutModule)
   },{
+    path: 'profile',
+    loadChildren: () => import('./user/profile/profile.module').then(m => m.ProfileModule)
+  },{
     path: '',
     redirectTo: 'landing',
     pathMatch: 'full'

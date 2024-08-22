@@ -70,7 +70,6 @@ import { AttachUploadComponent } from '../observation/attachment/attachment-uplo
 import { ObservationViewFormComponent } from '../observation/observation-view/observation-view-form.component';
 import { ObservationViewComponent } from '../observation/observation-view/observation-view.component';
 import { ObservationFavoritesComponent } from '../observation/observation-favorites/observation-favorites.component';
-import { UserAvatarComponent } from '../user/user-avatar/user-avatar.component';
 import { ObservationListComponent } from '../observation/observation-list/observation-list.component';
 import { UserViewComponent } from '../user/user-view/user-view.component';
 import { UserListItemComponent } from '../user/user-list/user-list-item.component';
@@ -134,11 +133,11 @@ import { PollingIntervalComponent } from '../preferences/polling-interval/pollin
 import { TimeFormatComponent } from '../preferences/time-format/time-format.component';
 import { TimeZoneComponent } from '../preferences/time-zone/time-zone.component';
 import { CoordinateSystemComponent } from '../preferences/coordinate-system/coordinate-system.component';
-import { ProfileComponent } from '../user/profile/profile.component';
 import { PasswordResetSuccessDialog } from '../user/password/password-reset-success-dialog';
 import { HomeComponent } from '..//home/home.component';
 import { RouterModule, Routes } from '@angular/router';
 import { UserResolver } from '../ingress/user.resolver';
+import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 
 const routes: Routes = [{
   path: '',
@@ -211,11 +210,9 @@ const routes: Routes = [{
     AttachmentComponent,
     FilenamePipe,
     AttachUploadComponent,
-    UserAvatarComponent,
     UserViewComponent,
     UserListItemComponent,
     UserListComponent,
-    ProfileComponent,
     ObservationPopupComponent,
     UserPopupComponent,
     DatetimePickerComponent,
@@ -231,6 +228,9 @@ const routes: Routes = [{
     ContactDialogComponent
   ],
   imports: [
+    UserAvatarModule,
+    FeedItemSummaryModule,
+    StaticIconModule,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -281,8 +281,6 @@ const routes: Routes = [{
     MatSnackBarModule,
     MatDatepickerModule,
     NgxMatSelectSearchModule,
-    FeedItemSummaryModule,
-    StaticIconModule,
     MatSlideToggleModule,
     MatStepperModule,
     InputMaskModule.forRoot(),

@@ -137,7 +137,7 @@ export class ProfileComponent implements OnInit {
   }
 
   onBack(): void {
-    this.router.navigate(['map'])
+    this.router.navigate(['home'])
   }
 
   private setInfo(user: any) {
