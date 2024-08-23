@@ -289,6 +289,7 @@ Build optional plugin packages similarly.:
 ```bash
 cd plugins/nga-msi
 npm ci
+npm link ../../service # **IMPORTANT** see below
 npm run build
 ```
 After building the core packages, install them as dependencies in the `instance` package.
@@ -299,6 +300,61 @@ npm i --omit dev ../service ../web-app/dist/app ../plugins/nga-msi
 The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
 the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
 [workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
+
+## Running from source
+
+To run the Mage server directly from your _built_ source tree, build the `service`, `web-app`, and any plugin packages 
+you want to run as described in the above section.  Then, from the `instance` directory, run
+```shell
+npm run start:dev
+```
+That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
+[configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
+your needs.
+
+### Local runtime issues
+
+You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation
+behavior and/or Node's module resolution algorithm.  For example, if you are working on a plugin within this core
+Mage repository, you may see errors as plugins initialize.  This is usually a null reference error that looks something 
+like
+```
+2024-08-23T02:42:52.783Z - [mage.image] intializing image plugin ...
+...
+/<...>/mage-server/plugins/image/service/lib/processor.js:53
+            return yield stateRepo.get().then(x => !!x ? x : stateRepo.put(exports.defaultImagePluginConfig));
+                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'get')
+    at /<...>/mage-server/plugins/image/service/lib/processor.js:53:36
+```
+This is usually because the plugin package has a peer depedency on `@ngageoint/mage.service`, which NPM pulls from the
+public [registry](https://www.npmjs.com/package/@ngageoint/mage.service) and installs into the plugin's `node_modules` 
+directory.  However, your local Mage instance is references `@ngageoint/mage.service` package from the local relative
+path.  This results in your instance having two copies of `@ngageoint/mage.service` - one from your local build linked
+in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directoey.
+In the case of the error above, this results in a discrepancy during dependency injection because the Mage service
+defines unique `Symbol` constants for plugins to indicate which elements they need from their host Mage service.  In 
+the plugin's modules, Node resolves these symbol constants and any other core `@ngageoint/mage.service` modules from
+the plugin's copy of the package, as opposed to the relative package installed at the instance level.  This is why you
+must ensure that you link the working tree core Mage service package in your plugin working tree, as the above 
+instructions state.
+```shell
+~/my_plugin % npm ci
+~/my_plugin % npm link <relative path to mage server repo>/service
+```
+Be aware that NPM's dependency resolution will delete this symbolic link every time you run `npm install`, 
+`npm install <dependency>`, or `npm ci` for the plugin, so always `npm link` your relative Mage service
+dependency again after those commands.
+
+If you encounter other unexpected issues running locally with plugins, especially reference errors, or other
+discrepancies in values the core modules define, check that the core service package is still linked properly
+in your plugin working tree.  You can check using the `npm ls` command as follows.
+```shell
+% npm ls @ngageoint/mage.service
+@ngageoint/mage.image.service@1.1.0-beta.1 /<...>/mage-server/plugins/image/service
+└── @ngageoint/mage.service@6.3.0-beta.6 -> ./../../../service
+```
 
 ## ReST API
 
