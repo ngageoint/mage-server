@@ -330,9 +330,9 @@ TypeError: Cannot read properties of undefined (reading 'get')
 ```
 This is usually because the plugin package has a peer depedency on `@ngageoint/mage.service`, which NPM pulls from the
 public [registry](https://www.npmjs.com/package/@ngageoint/mage.service) and installs into the plugin's `node_modules` 
-directory.  However, your local Mage instance is references `@ngageoint/mage.service` package from the local relative
+directory.  However, your local Mage instance references `@ngageoint/mage.service` package from the local relative
 path.  This results in your instance having two copies of `@ngageoint/mage.service` - one from your local build linked
-in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directoey.
+in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directory.
 In the case of the error above, this results in a discrepancy during dependency injection because the Mage service
 defines unique `Symbol` constants for plugins to indicate which elements they need from their host Mage service.  In 
 the plugin's modules, Node resolves these symbol constants and any other core `@ngageoint/mage.service` modules from
