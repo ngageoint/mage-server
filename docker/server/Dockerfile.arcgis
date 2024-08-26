@@ -13,6 +13,6 @@ ENTRYPOINT [ \
   "./mage.service", \
   "--plugin", "@ngageoint/mage.image.service", \
   "--plugin", "@ngageoint/mage.nga-msi", \
-  "--plugin", "@ngageoint/mage.arcgis", \
-  "--web-plugin", "@ngageoint/mage.arc-web" \
+  "--plugin", "@ngageoint/mage.arcgis.service", \
+  "--web-plugin", "@ngageoint/mage.arcgis.web-app" \
 ]
