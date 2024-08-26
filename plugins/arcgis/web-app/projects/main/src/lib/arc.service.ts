@@ -5,7 +5,7 @@ import { ArcGISPluginConfig } from './ArcGISPluginConfig'
 import { FeatureServiceResult } from './FeatureServiceResult'
 import { EventResult } from './EventsResult'
 
-export const baseUrl = '/plugins/@ngageoint/mage.arcgis'
+export const baseUrl = '/plugins/@ngageoint/mage.arcgis.service'
 export const apiBaseUrl = '/api'
 
 @Injectable({
