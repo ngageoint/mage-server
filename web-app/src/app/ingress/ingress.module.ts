@@ -13,9 +13,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { AuthorizationComponent } from './authorization/authorization.component';
 import { DisclaimerComponent } from './disclaimer/disclaimer.component';
 import { MatButtonModule } from '@angular/material/button';
-import { IdpAuthenticationComponent } from './authentication/idp/idp.component';
+import { IdpAuthenticationComponent } from './authentication/idp/idp-authentication.component';
 import { AccountStatusComponent } from './account-status/account-status.component';
 import { AuthenticationDialogComponent } from './authentication/authentication-dialog.component';
+import { LdapAuthenticationComponent } from './authentication/ldap/ldap-authentication.component';
+import { AuthenticationButtonComponent } from './authentication/button/authentication-button.component';
 
 @NgModule({
   declarations: [],
@@ -36,12 +38,14 @@ class AngularModule { }
   declarations: [
     AccountStatusComponent,
     AuthenticationComponent,
+    AuthenticationButtonComponent,
     AuthenticationDialogComponent,
     AuthorizationComponent,
     DisclaimerComponent,
     IdpAuthenticationComponent,
     IngressComponent,
     InitializeComponent,
+    LdapAuthenticationComponent,
     LocalAuthenticationComponent,
     SignupComponent
   ],

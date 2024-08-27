@@ -68,6 +68,16 @@ export class UserService {
     return subject.asObservable()
   }
 
+  ldapSignin(username: string, password: string): Observable<any> {
+    return this.httpClient.post<any>('/api/ldap/signin', {
+      username,
+      password,
+      appVersion: 'Web Client'
+    }, {
+      context: new HttpContext().set(BYPASS_TOKEN, true)
+    })
+  }
+
   authorize(token: string, deviceId: string): Observable<{ user: User, token: string}> {
     const body = {
       uid: deviceId,

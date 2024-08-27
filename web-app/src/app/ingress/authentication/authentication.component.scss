@@ -55,6 +55,8 @@
   border-radius: 1px;
 }
 
-.spacer {
-  margin-bottom: 8px;
+.strategies {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }

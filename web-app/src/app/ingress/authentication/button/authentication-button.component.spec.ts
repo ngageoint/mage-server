@@ -1,12 +1,12 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { IdpAuthenticationComponent } from './idp.component';
+import { AuthenticationButtonComponent } from './authentication-button.component';
 
-describe('Idp Authentication Component', () => {
-  let component: IdpAuthenticationComponent;
+describe('Authentication Button Component', () => {
+  let component: AuthenticationButtonComponent;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [IdpAuthenticationComponent]
+      declarations: [AuthenticationButtonComponent]
     })
     .compileComponents();
   }));

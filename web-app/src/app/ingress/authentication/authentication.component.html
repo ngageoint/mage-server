@@ -21,8 +21,8 @@
       </div>
     </div>
 
-    <div *ngFor='let strategy of thirdPartyStrategies; index as i'>
-      <div [ngClass]="{'spacer': i < thirdPartyStrategies.length - 1}">
+    <div class="strategies">
+      <div *ngFor="let strategy of thirdPartyStrategies" >
         <ng-container [ngSwitch]="strategy?.type">
           <idp-authentication *ngSwitchCase="'oauth'" [strategy]="strategy"
             (authenticated)="signin($event)"></idp-authentication>
@@ -30,7 +30,8 @@
             (authenticated)="signin($event)"></idp-authentication>
           <idp-authentication *ngSwitchCase="'openidconnect'" [strategy]="strategy"
             (authenticated)="signin($event)"></idp-authentication>
-          <!-- <ldap-signin ng-switch-when="ldap" strategy="strategy" on-signin="signin($event)"></ldap-signin> -->
+          <ldap-authentication *ngSwitchCase="'ldap'" [strategy]="strategy"
+            (authenticated)="signin($event)"></ldap-authentication>
         </ng-container>
       </div>
     </div>
