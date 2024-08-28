@@ -1647,16 +1647,6 @@ paths:
         user must have `READ_OBSERVATION_ALL` permission, or have
         `READ_OBSERVATION_EVENT` permission and an ACL entry on the event with
         `read` permission.
-      parameters: &obsQueryParams
-        - $ref: '#/components/parameters/observationQuery.fields'
-        - $ref: '#/components/parameters/observationQuery.startDate'
-        - $ref: '#/components/parameters/observationQuery.endDate'
-        - $ref: '#/components/parameters/observationQuery.observationStartDate'
-        - $ref: '#/components/parameters/observationQuery.observationEndDate'
-        - $ref: '#/components/parameters/observationQuery.bbox'
-        - $ref: '#/components/parameters/observationQuery.geometry'
-        - $ref: '#/components/parameters/observationQuery.states'
-        - $ref: '#/components/parameters/observationQuery.sort'
       responses:
         200:
           description: observation response
@@ -1703,13 +1693,11 @@ paths:
       # the update to js-yaml 4.1.x through openapi-enforcer, yaml anchors seem
       # to be broken
       parameters:
-        - $ref: '#/components/parameters/observationQuery.fields'
         - $ref: '#/components/parameters/observationQuery.startDate'
         - $ref: '#/components/parameters/observationQuery.endDate'
         - $ref: '#/components/parameters/observationQuery.observationStartDate'
         - $ref: '#/components/parameters/observationQuery.observationEndDate'
         - $ref: '#/components/parameters/observationQuery.bbox'
-        - $ref: '#/components/parameters/observationQuery.geometry'
         - $ref: '#/components/parameters/observationQuery.states'
         - $ref: '#/components/parameters/observationQuery.sort'
       responses:
@@ -4372,16 +4360,6 @@ components:
       description: The ID of the target attachment document
       required: true
       schema: { $ref: '#/components/schemas/Attachment/properties/id' }
-    observationQuery.fields:
-      in: query
-      name: fields
-      description: >
-        The form fields to project in the result observation documents (JSON)
-      explode: false
-      schema:
-        type: array
-        items:
-          type: string
     observationQuery.startDate:
       in: query
       name: startDate
@@ -4389,8 +4367,7 @@ components:
         type: string
         format: date-time
       description: >
-        The low end of the range for the observations' `lastModified`
-        property
+        The low end of the range for the observations' `lastModified` property
     observationQuery.endDate:
       in: query
       name: endDate
@@ -4398,8 +4375,7 @@ components:
         type: string
         format: date-time
       description: >
-        The high end of the range for the observations' `lastModified`
-        property
+        The high end of the range for the observations' `lastModified` property
     observationQuery.observationStartDate:
       in: query
       name: observationStartDate
@@ -4407,8 +4383,7 @@ components:
         type: string
         format: date-time
       description: >
-        The low end of the range for the observations' `timestamp`
-        property
+        The low end of the range for the observations' `timestamp` property
     observationQuery.observationEndDate:
       in: query
       name: observationEndDate
@@ -4416,8 +4391,7 @@ components:
         type: string
         format: date-time
       description: >
-        The low end of the range for the observations' `lastModified`
-        property
+        The high end of the range for the observations' `timestamp` property
     observationQuery.bbox:
       in: query
       name: bbox
@@ -4427,15 +4401,6 @@ components:
       explode: false
       schema:
         $ref: 'geojson.yaml#/definitions/boundingBox'
-    observationQuery.geometry:
-      in: query
-      name: geometry
-      description: >
-        A URL-encoded, stringified JSON object that is a GeoJSON geometry
-        as defined in geojson.yaml#/definitions/geometryObject
-      schema:
-        type: string
-        format: json
     observationQuery.states:
       in: query
       name: states
