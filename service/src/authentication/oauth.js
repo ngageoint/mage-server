@@ -74,6 +74,7 @@ function configure(strategy) {
       const profileId = profile[strategy.settings.profile.id];
 
       // TODO: users-next
+      // TODO: should be by strategy name, not strategy type
       User.getUserByAuthenticationStrategy(strategy.type, profileId, function (err, user) {
          if (err) return done(err);
 

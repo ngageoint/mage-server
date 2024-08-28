@@ -89,7 +89,7 @@ function initialize() {
       })(req, res, next);
     }
   );
-};
+}
 
 module.exports = {
   initialize
