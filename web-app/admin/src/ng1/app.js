@@ -137,7 +137,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
     };
   }
 
-  $urlRouterProvider.otherwise('/');
+  $urlRouterProvider.otherwise('/admin');
 
   $stateProvider.state('admin', {
     redirectTo: 'admin.dashboard',

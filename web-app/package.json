@@ -29,7 +29,7 @@
   "scripts": {
     "start:app": "ng serve --project=app --configuration development",
     "start:admin": "ng serve --project=admin --configuration development",
-    "build": "npm-run-all clean build:core-lib build:app:dev build:admin:dev",
+    "build": "npm-run-all clean build:core-lib build:app:dev build:admin:dev combine",
     "build:prod": "npm-run-all clean build:core-lib build:app:prod build:app:prod",
     "build:app:dev": "ng build --project=app --configuration development",
     "build:admin:dev": "ng build --project=admin --configuration development",
