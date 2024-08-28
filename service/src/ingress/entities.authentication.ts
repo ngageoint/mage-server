@@ -18,7 +18,7 @@ export type SessionExpanded = Omit<Session, 'user' | 'device'> & {
 export interface SessionRepository {
   findSessionByToken(token: string): Promise<Session | null>
   createOrRefreshSession(userId: UserId, deviceId?: string): Promise<Session>
-  removeSession(token: string): Promise<void>
+  removeSession(token: string): Promise<Session | null>
   removeSessionsForUser(userId: UserId): Promise<number>
   removeSessionsForDevice(deviceId: DeviceId): Promise<number>
 }
