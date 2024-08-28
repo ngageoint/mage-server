@@ -2,12 +2,9 @@ const SamlStrategy = require('@node-saml/passport-saml').Strategy
   , log = require('winston')
   , User = require('../models/user')
   , Role = require('../models/role')
-  , Device = require('../models/device')
   , TokenAssertion = require('./verification').TokenAssertion
   , api = require('../api')
-  , userTransformer = require('../transformers/user')
   , AuthenticationInitializer = require('./index')
-  , authenticationApiAppender = require('../utilities/authenticationApiAppender');
 
 function configure(strategy) {
   log.info('Configuring ' + strategy.title + ' authentication');
@@ -221,19 +218,19 @@ function setDefaults(strategy) {
 function initialize(strategy) {
   const app = AuthenticationInitializer.app;
   const passport = AuthenticationInitializer.passport;
-  const provision = AuthenticationInitializer.provision;
+  // const provision = AuthenticationInitializer.provision;
 
   setDefaults(strategy);
   configure(strategy);
 
-  function parseLoginMetadata(req, res, next) {
-    req.loginOptions = {
-      userAgent: req.headers['user-agent'],
-      appVersion: req.param('appVersion')
-    };
+  // function parseLoginMetadata(req, res, next) {
+  //   req.loginOptions = {
+  //     userAgent: req.headers['user-agent'],
+  //     appVersion: req.param('appVersion')
+  //   };
 
-    next();
-  }
+  //   next();
+  // }
   app.get(
     '/auth/' + strategy.name + '/signin',
     function (req, res, next) {
@@ -252,79 +249,81 @@ function initialize(strategy) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/auth/' + strategy.name + '/devices',
-    function (req, res, next) {
-      if (req.user) {
-        next();
-      } else {
-        res.sendStatus(401);
-      }
-    },
-    function (req, res, next) {
-      const newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userAgent: req.headers['user-agent'],
-        appVersion: req.param('appVersion'),
-        userId: req.user.id
-      };
+  // TODO: users-next: is this ok to remove now?
+  // app.post('/auth/' + strategy.name + '/devices',
+  //   function (req, res, next) {
+  //     if (req.user) {
+  //       next();
+  //     } else {
+  //       res.sendStatus(401);
+  //     }
+  //   },
+  //   function (req, res, next) {
+  //     const newDevice = {
+  //       uid: req.param('uid'),
+  //       name: req.param('name'),
+  //       registered: false,
+  //       description: req.param('description'),
+  //       userAgent: req.headers['user-agent'],
+  //       appVersion: req.param('appVersion'),
+  //       userId: req.user.id
+  //     };
 
-      Device.getDeviceByUid(newDevice.uid)
-        .then(device => {
-          if (device) {
-            // already exists, do not register
-            return res.json(device);
-          }
+  //     Device.getDeviceByUid(newDevice.uid)
+  //       .then(device => {
+  //         if (device) {
+  //           // already exists, do not register
+  //           return res.json(device);
+  //         }
 
-          Device.createDevice(newDevice)
-            .then(device => res.json(device))
-            .catch(err => next(err));
-        })
-        .catch(err => next(err));
-    }
-  );
+  //         Device.createDevice(newDevice)
+  //           .then(device => res.json(device))
+  //           .catch(err => next(err));
+  //       })
+  //       .catch(err => next(err));
+  //   }
+  // );
 
   // DEPRECATED session authorization, remove in next version.
-  app.post(
-    '/auth/' + strategy.name + '/authorize',
-    function (req, res, next) {
-      if (req.user) {
-        log.warn('session authorization is deprecated, please use jwt');
-        return next();
-      }
+  // TODO: users-next: is this ok to remove now? no other auth type has this
+  // app.post(
+  //   '/auth/' + strategy.name + '/authorize',
+  //   function (req, res, next) {
+  //     if (req.user) {
+  //       log.warn('session authorization is deprecated, please use jwt');
+  //       return next();
+  //     }
 
-      passport.authenticate('authorization', function (err, user, info = {}) {
-        if (!user) return res.status(401).send(info.message);
+  //     passport.authenticate('authorization', function (err, user, info = {}) {
+  //       if (!user) return res.status(401).send(info.message);
 
-        req.user = user;
-        next();
-      })(req, res, next);
-    },
-    provision.check(strategy.name),
-    parseLoginMetadata,
-    function (req, res, next) {
-      // TODO: users-next
-      new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
-        if (err) return next(err);
+  //       req.user = user;
+  //       next();
+  //     })(req, res, next);
+  //   },
+  //   provision.check(strategy.name),
+  //   parseLoginMetadata,
+  //   function (req, res, next) {
+  //     // TODO: users-next
+  //     new api.User().login(req.user, req.provisionedDevice, req.loginOptions, function (err, token) {
+  //       if (err) return next(err);
 
-        authenticationApiAppender.append(strategy.api).then(api => {
-          res.json({
-            token: token.token,
-            expirationDate: token.expirationDate,
-            user: userTransformer.transform(req.user, { path: req.getRoot() }),
-            device: req.provisionedDevice,
-            api: api
-          });
-        }).catch(err => {
-          next(err);
-        });
-      });
+  //       authenticationApiAppender.append(strategy.api).then(api => {
+  //         res.json({
+  //           token: token.token,
+  //           expirationDate: token.expirationDate,
+  //           user: userTransformer.transform(req.user, { path: req.getRoot() }),
+  //           device: req.provisionedDevice,
+  //           api: api
+  //         });
+  //       }).catch(err => {
+  //         next(err);
+  //       });
+  //     });
 
-      req.session = null;
-    }
-  );
+  //     req.session = null;
+  //   }
+  // );
 }
 
 module.exports = {
