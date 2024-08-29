@@ -1,5 +1,5 @@
-<div *ngIf="user">
-  <navigation (onFeedToggle)="onFeedToggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
+<div *ngIf="user" class="home">
+  <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
 
   <mat-sidenav-container class="main-container" hasBackdrop="false">
     <mat-sidenav #feed mode="side" position="start" opened>
@@ -10,7 +10,7 @@
       <preferences></preferences>
     </mat-sidenav>
 
-    <map [mapSize]="mapSize" (addObservation)="onAddObservation($event)"></map>
+    <map (addObservation)="onAddObservation($event)"></map>
 
   </mat-sidenav-container>
 </div>

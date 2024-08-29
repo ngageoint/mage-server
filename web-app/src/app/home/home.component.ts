@@ -1,4 +1,4 @@
-import { Component, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MapService } from '../map/map.service';
 import { FilterService } from '../filter/filter.service';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -12,11 +12,10 @@ import * as _ from 'underscore';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy, OnChanges {
+export class HomeComponent implements OnInit, OnDestroy {
 
   user: User
   map: any
-  mapSize: number
   event: any
   hideFeed: boolean = false
   newObservation: any
@@ -44,13 +43,6 @@ export class HomeComponent implements OnInit, OnDestroy, OnChanges {
     this.mapService.removeListener(this)
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.toggleFeed && !changes.toggleFeed.isFirstChange()) {
-      this.mapSize = Date.now()
-      this.hideFeed = !this.hideFeed;
-    }
-  }
-
   onMap($event) {
     this.map = $event.map
   }
@@ -59,14 +51,9 @@ export class HomeComponent implements OnInit, OnDestroy, OnChanges {
     this.event = filter.event?.added?.length ? filter.event.added[0] : null
   }
 
-  onFeedToggle(): void {
-    this.feed.toggle()
-    this.mapSize = Date.now()
-  }
-
   onAddObservation($event) {
     if (!this.feed.opened) {
-      this.onFeedToggle()
+      this.feed.toggle()
     }
 
     this.newObservation = $event

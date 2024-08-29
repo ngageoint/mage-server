@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core'
+import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
 import { LocationState } from '../../app/map/controls/location.component'
 import { ZoomDirection } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
@@ -6,7 +6,7 @@ import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer } from "leaflet"
+import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map, LeafletEvent } from "leaflet"
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -43,10 +43,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
   public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
   
-  @Input() mapSize: number
   @Output() addObservation = new EventEmitter<any>()
 
-  map: any
+  @ViewChild('map') mapElement: ElementRef<any>
+  mapReizeObserver?: ResizeObserver
+
+  map: Map
   groups: any = {
     'base': {
       offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
@@ -99,13 +101,15 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     layerService.zoom$.subscribe(event => this.zoom(event));
     layerService.opacity$.subscribe(event => this.opacityChanged(event));
     layerService.style$.subscribe(event => this.styleChanged(event));
-  }
 
-  ngOnDestroy(): void {
-    this.mapService.removeListener(this)
+    this.mapReizeObserver = new ResizeObserver(() => {
+      this.map.invalidateSize({ pan: false, debounceMoveend: true })
+    })
   }
 
   ngAfterViewInit() {
+    this.mapReizeObserver?.observe(this.mapElement.nativeElement)
+
     let mapPosition = this.localStorageService.getMapPosition()
     if (!mapPosition) {
       this.localStorageService.setMapPosition({
@@ -130,19 +134,19 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     // To easily adjust zIndex across all types of layers each feature group,
     // overlay map, etc, will be placed in its own map pane
     this.map.createPane(this.BASE_LAYER_PANE)
-    this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = 100 * 100
+    this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = `${100 * 100}`
 
-    this.map.getPane('tilePane').style.zIndex = 200 * 100
-    this.map.getPane('overlayPane').style.zIndex = 400 * 100
-    this.map.getPane('shadowPane').style.zIndex = 500 * 100
-    this.map.getPane('markerPane').style.zIndex = 600 * 100
-    this.map.getPane('tooltipPane').style.zIndex = 800 * 100
-    this.map.getPane('popupPane').style.zIndex = 900 * 100
+    this.map.getPane('tilePane').style.zIndex = `${200 * 100}`
+    this.map.getPane('overlayPane').style.zIndex = `${400 * 100}`
+    this.map.getPane('shadowPane').style.zIndex = `${500 * 100}`
+    this.map.getPane('markerPane').style.zIndex = `${600 * 100}`
+    this.map.getPane('tooltipPane').style.zIndex = `${700 * 100}`
+    this.map.getPane('popupPane').style.zIndex = `${800 * 100}`
 
     // Add in a base layer of styled GeoJSON in case the tiles do not load
     const FALLBACK_LAYER_PANE = 'fallbackLayerPane'
     this.map.createPane(FALLBACK_LAYER_PANE)
-    this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = 1
+    this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = '1'
 
     this.map.addLayer(
       geoJSON(countries, {
@@ -181,15 +185,6 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.localStorageService
     )
 
-    this.map.on('baselayerchange', baseLayer => {
-      const layer = this.layers[baseLayer.id]
-      this.mapService.selectBaseLayer(layer)
-    })
-
-    this.map.on('overlayadd', overlay => {
-      const layer = this.layers[overlay.id]
-      this.mapService.overlayAdded(layer)
-    })
     this.pollListener = {
       onPoll: this.onPoll.bind(this)
     }
@@ -201,6 +196,11 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.mapService.addListener(this)
       this.eventService.addPollListener(this.pollListener)
     })
+  }
+
+  ngOnDestroy(): void {
+    this.mapService.removeListener(this)
+    this.mapReizeObserver?.unobserve(this.mapElement.nativeElement);
   }
 
   saveMapPosition() {
@@ -218,7 +218,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   opacityChanged(event: OpacityEvent): void {
     const pane = this.map.getPanes()[event.layer.layer.pane]
-    pane.style.opacity = event.opacity
+    pane.style.opacity = `${event.opacity}`
     if (event.layer.layer.setOpacity) {
       event.layer.layer.setOpacity(event.opacity)
     }
@@ -792,8 +792,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   setPaneOpacity(panes, opacityFactor) {
     panes.forEach(pane => {
       const mapPane = this.map.getPanes()[pane]
-      const opacity = mapPane.style.opacity || 1
-      mapPane.style.opacity = opacity * opacityFactor
+      const opacity = mapPane.style.opacity || "1"
+      mapPane.style.opacity = `${parseInt(opacity)} * ${opacityFactor}`
     })
   }
 

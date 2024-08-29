@@ -18,7 +18,7 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <div id="map">
+    <div id="map" #map>
       <div class="map-controls-left">
         <map-control-zoom (onZoom)="onZoom($event)"></map-control-zoom>
         <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
