@@ -137,11 +137,11 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $animateProvi
     };
   }
 
-  $urlRouterProvider.otherwise('/admin');
+  $urlRouterProvider.otherwise('/home');
 
   $stateProvider.state('admin', {
     redirectTo: 'admin.dashboard',
-    url: '/admin',
+    url: '/home',
     component: 'admin'
   });
 
