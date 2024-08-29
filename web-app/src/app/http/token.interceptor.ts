@@ -34,6 +34,7 @@ export class TokenInterceptorService implements HttpInterceptor {
                 this.isRefreshingToken = true
                 this.dialog.open(AuthenticationDialogComponent, {
                   width: '600px',
+                  height: '400px',
                   disableClose: true,
                   autoFocus: false
                 }).afterClosed().subscribe(() => {
