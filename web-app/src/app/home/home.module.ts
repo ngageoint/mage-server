@@ -138,6 +138,7 @@ import { HomeComponent } from '..//home/home.component';
 import { RouterModule, Routes } from '@angular/router';
 import { UserResolver } from '../ingress/user.resolver';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
+import { IngressModule } from '../ingress/ingress.module';
 
 const routes: Routes = [{
   path: '',
@@ -228,6 +229,7 @@ const routes: Routes = [{
     ContactDialogComponent
   ],
   imports: [
+    IngressModule,
     UserAvatarModule,
     FeedItemSummaryModule,
     StaticIconModule,

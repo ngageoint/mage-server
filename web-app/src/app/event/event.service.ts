@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, ObservableInput, catchError, finalize, forkJoin, of, tap, zip } from "rxjs";
-import * as moment from 'moment'
+import { Observable, Subject, catchError, combineLatest, finalize, forkJoin, map, of, take, tap } from "rxjs";
 import { FilterService } from "../filter/filter.service";
 import { PollingService } from "./polling.service";
 import { ObservationService } from "../observation/observation.service";
@@ -10,6 +9,7 @@ import { FeedService } from "core-lib-src/feed";
 import { LocationService } from "../user/location/location.service";
 import { LocalStorageService } from "../http/local-storage.service";
 import * as _ from 'lodash'
+import * as moment from 'moment'
 
 @Injectable({
   providedIn: 'root'
@@ -70,13 +70,13 @@ export class EventService {
     }
 
     if (filter.event || filter.timeInterval) { // requery server
-      this.fetch();
+      this.fetch()
     } else if (filter.teams) { // filter in memory
-      this.onTeamsChanged();
+      this.onTeamsChanged()
     }
 
     if (filter.actionFilter) {
-      this.onActionFilterChanged();
+      this.onActionFilterChanged()
     }
   }
 
@@ -470,10 +470,20 @@ export class EventService {
       parameters.interval = time;
     }
 
-    return forkJoin({
-      locations: this.fetchLocations(event, parameters),
-      observations: this.fetchObservations(event, parameters)
-    })
+    return combineLatest([
+      this.locationService
+        .getUserLocationsForEvent(event, parameters)
+        .pipe(map((locations: any) => {
+          this.parseLocations(event, locations)
+        })),
+      this.observationService
+        .getObservationsForEvent(event, parameters)
+        .pipe(map((observations: any) => {
+          this.parseObservations(event, observations)
+        }))
+    ]).pipe(
+      take(1)
+    )
   }
 
   fetchLayers(event) {
@@ -514,113 +524,102 @@ export class EventService {
     });
   }
 
-  fetchObservations(event, parameters): Observable<any> {
-    const observable = this.observationService.getObservationsForEvent(event, parameters)
-    observable.subscribe((observations: any) => {
-      var added = [];
-      var updated = [];
-      var removed = [];
+  parseObservations(event: any, observations: any): any {
+    var added = [];
+    var updated = [];
+    var removed = [];
 
-      var observationsById = {};
-      var filteredObservationsById = this.eventsById[event.id].filteredObservationsById;
-      observations.forEach((observation: any) => {
-        // Check if this observation passes the current filter
-        if (this.filterService.observationInFilter(observation)) {
-          // Check if we already have this observation, if so update, otherwise add
-          var localObservation = filteredObservationsById[observation.id];
-          if (localObservation) {
-            if (localObservation.lastModified !== observation.lastModified) {
-              updated.push(observation);
-            } else if (observation.attachments) {
-              var some = _.some(observation.attachments, function (attachment) {
-                var localAttachment = _.find(localObservation.attachments, function (a) { return a.id === attachment.id; });
-                return !localAttachment || localAttachment.lastModified !== attachment.lastModified;
-              });
+    var observationsById = {};
+    var filteredObservationsById = this.eventsById[event.id].filteredObservationsById;
+    observations.forEach((observation: any) => {
+      // Check if this observation passes the current filter
+      if (this.filterService.observationInFilter(observation)) {
+        // Check if we already have this observation, if so update, otherwise add
+        var localObservation = filteredObservationsById[observation.id];
+        if (localObservation) {
+          if (localObservation.lastModified !== observation.lastModified) {
+            updated.push(observation);
+          } else if (observation.attachments) {
+            var some = _.some(observation.attachments, function (attachment) {
+              var localAttachment = _.find(localObservation.attachments, function (a) { return a.id === attachment.id; });
+              return !localAttachment || localAttachment.lastModified !== attachment.lastModified;
+            });
 
-              if (some) updated.push(observation);
-            }
-          } else {
-            added.push(observation);
+            if (some) updated.push(observation);
           }
-
-          // remove from list of observations if it came back from server
-          // remaining elements in this list will be removed
-          delete filteredObservationsById[observation.id];
-
-          observationsById[observation.id] = observation;
+        } else {
+          added.push(observation);
         }
-      });
 
-      // remaining elements were not pulled from the server, hence we should remove them
-      removed = Object.values(filteredObservationsById);
+        // remove from list of observations if it came back from server
+        // remaining elements in this list will be removed
+        delete filteredObservationsById[observation.id];
 
-      this.eventsById[event.id].observationsById = _.keyBy(observations, 'id');
-      this.eventsById[event.id].filteredObservationsById = observationsById;
-
-      this.observationsChanged({ added: added, updated: updated, removed: removed });
+        observationsById[observation.id] = observation;
+      }
     });
 
-    return observable
+    // remaining elements were not pulled from the server, hence we should remove them
+    removed = Object.values(filteredObservationsById);
+
+    this.eventsById[event.id].observationsById = _.keyBy(observations, 'id');
+    this.eventsById[event.id].filteredObservationsById = observationsById;
+
+    this.observationsChanged({ added: added, updated: updated, removed: removed });
   }
 
-  fetchLocations(event, parameters): Observable<any> {
-    const observable = this.locationService.getUserLocationsForEvent(event, parameters)
+  parseLocations(event, userLocations: any) {
+    const added = [];
+    const updated = [];
 
-    observable.subscribe((userLocations: any) => {
-      const added = [];
-      const updated = [];
+    const usersById = {};
+    const filteredUsersById = this.eventsById[event.id].filteredUsersById;
+    userLocations.forEach((userLocation: any) => {
+      // Track each location feature by users id,
+      // so update the locations id to match the usersId
+      const location = userLocation.locations[0];
+      location.id = userLocation.id;
 
-      const usersById = {};
-      const filteredUsersById = this.eventsById[event.id].filteredUsersById;
-      userLocations.forEach((userLocation: any) => {
-        // Track each location feature by users id,
-        // so update the locations id to match the usersId
-        const location = userLocation.locations[0];
-        location.id = userLocation.id;
+      userLocation.location = location;
+      delete userLocation.locations;
 
-        userLocation.location = location;
-        delete userLocation.locations;
+      if (userLocation.user.iconUrl) {
+        var params = new HttpParams();
+        params = params.append('access_token', this.localStorageService.getToken())
+        params = params.append('_dc', userLocation.user.lastUpdated)
 
-        if (userLocation.user.iconUrl) {
-          var params = new HttpParams();
-          params = params.append('access_token', this.localStorageService.getToken())
-          params = params.append('_dc', userLocation.user.lastUpdated)
+        location.style = {
+          iconUrl: `${userLocation.user.iconUrl}?${params.toString()}`
+        }
+      }
 
-          location.style = {
-            iconUrl: `${userLocation.user.iconUrl}?${params.toString()}`
+      if (this.filterService.isUserInTeamFilter(userLocation.id)) {
+        // Check if we already have this user, if so update, otherwise add
+        const localUser = filteredUsersById[userLocation.id];
+        if (localUser) {
+
+          if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) {
+            updated.push(userLocation);
           }
+        } else {
+          added.push(userLocation);
         }
 
-        if (this.filterService.isUserInTeamFilter(userLocation.id)) {
-          // Check if we already have this user, if so update, otherwise add
-          const localUser = filteredUsersById[userLocation.id];
-          if (localUser) {
+        // remove from list of observations if it came back from server
+        // remaining elements in this list will be removed
+        delete filteredUsersById[userLocation.id];
 
-            if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) {
-              updated.push(userLocation);
-            }
-          } else {
-            added.push(userLocation);
-          }
-
-          // remove from list of observations if it came back from server
-          // remaining elements in this list will be removed
-          delete filteredUsersById[userLocation.id];
-
-          usersById[userLocation.id] = userLocation;
-        }
-      });
-
-      // remaining elements were not pulled from the server, hence we should remove them
-      const removed = _.values(filteredUsersById);
-
-      this.eventsById[event.id].usersById = _.keyBy(userLocations, 'id');
-      this.eventsById[event.id].filteredUsersById = usersById;
-
-      this.usersChanged({ added: added, updated: updated, removed: removed });
+        usersById[userLocation.id] = userLocation;
+      }
     });
 
-    return observable
+    // remaining elements were not pulled from the server, hence we should remove them
+    const removed = _.values(filteredUsersById);
+
+    this.eventsById[event.id].usersById = _.keyBy(userLocations, 'id');
+    this.eventsById[event.id].filteredUsersById = usersById;
+
+    this.usersChanged({ added: added, updated: updated, removed: removed });
   }
 
   poll(interval) {

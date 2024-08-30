@@ -1,15 +1,14 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
 import { Api, AuthenticationStrategy } from '../api/api.entity'
-import { ActivatedRoute } from '@angular/router'
 import { UserService } from '../user/user.service'
 import { AuthorizationEvent } from './authorization/authorization.component'
 import { LocalStorageService } from '../http/local-storage.service'
 import { DiscalimeCloseEvent, DiscalimerCloseReason } from './disclaimer/disclaimer.component'
 import { animate, style, transition, trigger } from '@angular/animations'
 import { SignupEvent } from './authentication/local/signup.component'
-import * as _ from 'underscore'
 import { User } from 'core-lib-src/user'
 import { InitializedEvent } from './intialize/initialize.component'
+import * as _ from 'underscore'
 
 enum IngressState {
   Initialize,
@@ -85,7 +84,7 @@ class Initialize extends Ingress {
     ])
   ]
 })
-export class IngressComponent implements OnInit {
+export class IngressComponent implements OnChanges {
   @Input() api: Api
   @Input() landing: boolean
   @Output() complete = new EventEmitter<void>()
@@ -98,29 +97,14 @@ export class IngressComponent implements OnInit {
   localAuthenticationStrategy: any
 
   constructor(
-    private route: ActivatedRoute,
     private userService: UserService,
     private localStorageService: LocalStorageService
   ) { }
 
-  ngOnInit(): void {
-    this.route.data.subscribe(({ api }) => {
-      this.api = api
-
-      if (this.api.initial) {
-        this.ingress = new Initialize()
-      }
-
-      this.localAuthenticationStrategy = this.api?.authenticationStrategies['local'];
-      if (this.localAuthenticationStrategy) {
-        this.localAuthenticationStrategy.name = 'local';
-      }
-
-      this.thirdPartyStrategies = _.map(_.omit(this.api?.authenticationStrategies, this.localStrategyFilter), function (strategy: AuthenticationStrategy, name: string) {
-        strategy.name = name;
-        return strategy;
-      });
-    })
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.api.currentValue === true) {
+      this.ingress = new Initialize()
+    }
   }
 
   localStrategyFilter(_strategy: AuthenticationStrategy, name: string) {

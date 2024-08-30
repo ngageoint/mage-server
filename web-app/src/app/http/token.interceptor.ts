@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpContextToken, HttpStatusCode, HttpErrorResponse, HttpClient } from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpContextToken, HttpStatusCode, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable, Subject, switchMap, throwError } from 'rxjs';
 import { LocalStorageService } from './local-storage.service';
 import { AuthenticationDialogComponent } from '../ingress/authentication/authentication-dialog.component';
@@ -34,7 +34,6 @@ export class TokenInterceptorService implements HttpInterceptor {
                 this.isRefreshingToken = true
                 this.dialog.open(AuthenticationDialogComponent, {
                   width: '600px',
-                  height: '400px',
                   disableClose: true,
                   autoFocus: false
                 }).afterClosed().subscribe(() => {
@@ -44,9 +43,7 @@ export class TokenInterceptorService implements HttpInterceptor {
               }
               
               return this.tokenSubject.pipe(
-                switchMap(() => {
-                  return next.handle(this.tokenRequest(req))
-                })
+                switchMap(() => next.handle(this.tokenRequest(req)))
               )
             }
           }
@@ -60,7 +57,7 @@ export class TokenInterceptorService implements HttpInterceptor {
   }
 
   tokenRequest(req: HttpRequest<any>): HttpRequest<any> {
-    const token = this.localStorageService.getToken();
-    return req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) });
+    const token = this.localStorageService.getToken()
+    return req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
   }
 }
