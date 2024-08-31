@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, Subject, catchError, combineLatest, finalize, forkJoin, map, of, take, tap } from "rxjs";
+import { Observable, catchError, combineLatest, finalize, map, of, tap } from "rxjs";
 import { FilterService } from "../filter/filter.service";
 import { PollingService } from "./polling.service";
 import { ObservationService } from "../observation/observation.service";
@@ -473,17 +473,11 @@ export class EventService {
     return combineLatest([
       this.locationService
         .getUserLocationsForEvent(event, parameters)
-        .pipe(map((locations: any) => {
-          this.parseLocations(event, locations)
-        })),
+        .pipe(map((locations: any) => this.parseLocations(event, locations))),
       this.observationService
         .getObservationsForEvent(event, parameters)
-        .pipe(map((observations: any) => {
-          this.parseObservations(event, observations)
-        }))
-    ]).pipe(
-      take(1)
-    )
+        .pipe(map((observations: any) => this.parseObservations(event, observations)))
+    ])
   }
 
   fetchLayers(event) {
@@ -524,7 +518,7 @@ export class EventService {
     });
   }
 
-  parseObservations(event: any, observations: any): any {
+  parseObservations(event: any, observations: any): void {
     var added = [];
     var updated = [];
     var removed = [];
@@ -568,7 +562,7 @@ export class EventService {
     this.observationsChanged({ added: added, updated: updated, removed: removed });
   }
 
-  parseLocations(event, userLocations: any) {
+  parseLocations(event, userLocations: any): void {
     const added = [];
     const updated = [];
 
