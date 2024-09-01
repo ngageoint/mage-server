@@ -1,4 +1,6 @@
 <div *ngIf="user" class="home">
+  <banner [banner]="banners?.header">Hello</banner>
+
   <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
 
   <div class="home-content">
@@ -15,4 +17,6 @@
     
     </mat-sidenav-container>
   </div>
+
+  <banner [banner]="banners?.footer">Hello</banner>
 </div>

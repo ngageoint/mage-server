@@ -141,6 +141,7 @@ import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 import { IngressModule } from '../ingress/ingress.module';
 import { FilterControlComponent } from '../map/controls/filter.component';
 import { ExportControlComponent } from '../map/controls/export.component';
+import { BannerModule } from '../banner/banner.module';
 
 const routes: Routes = [{
   path: '',
@@ -233,6 +234,7 @@ const routes: Routes = [{
     ContactDialogComponent
   ],
   imports: [
+    BannerModule,
     IngressModule,
     UserAvatarModule,
     FeedItemSummaryModule,

@@ -5,6 +5,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { LocationService } from '../user/location/location.service';
 import { ActivatedRoute } from '@angular/router';
 import { User } from 'core-lib-src/user';
+import { Banners, SettingsService } from '../setttings/settings.service';
 import * as _ from 'underscore';
 
 @Component({
@@ -14,6 +15,7 @@ import * as _ from 'underscore';
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
+  banners: Banners
   user: User
   map: any
   event: any
@@ -26,6 +28,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private mapService: MapService,
     private filterService: FilterService,
     private locationService: LocationService,
+    private settingsService: SettingsService,
     private activatedRoute: ActivatedRoute
   ) { }
 
@@ -35,6 +38,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.activatedRoute.data.subscribe(({ user }) => {
       this.user = user
+    })
+
+    this.settingsService.getBanner().subscribe((banners: Banners) => {
+      this.banners = banners
     })
   }
 
