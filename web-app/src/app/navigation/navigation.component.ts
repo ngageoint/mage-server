@@ -1,13 +1,10 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { FilterComponent } from '../filter/filter.component';
 import { FilterService } from '../filter/filter.service';
 import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
 import { EventService } from '../event/event.service';
 import { PollingService } from '../event/polling.service';
 import * as _ from 'underscore';
-import { ExportDialogComponent } from '../export/export-dialog.component';
 
 @Component({
   selector: 'navigation',
@@ -25,7 +22,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   feedChangedUsers = {}
 
   constructor(
-    public dialog: MatDialog,
     private mapService: MapService,
     private userService: UserService,
     private eventService: EventService,
@@ -74,11 +70,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.onPreferencesToggle.emit()
   }
 
-  onFilter(): void {
-    this.dialog.open(FilterComponent, {
-      height: '580px',
-      width: '675px'
-    });
+  onLogout() {
+    
   }
 
   onFilterChanged(filter) {
@@ -106,12 +99,4 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
     }
   }
-
-  onExport(): void {
-    this.dialog.open(ExportDialogComponent).afterClosed().subscribe(result => {
-      if (!result || result === 'closeAction') {
-      }
-    });
-  }
-
 }

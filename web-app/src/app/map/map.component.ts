@@ -25,6 +25,9 @@ import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { UserService } from '../user/user.service'
+import { FilterComponent } from '../filter/filter.component'
+import { MatDialog } from '@angular/material/dialog'
+import { ExportDialogComponent } from '../export/export-dialog.component'
 
 Icon.Default.imagePath = '/'
 
@@ -90,6 +93,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   pollListener: any
 
   constructor(
+    public dialog: MatDialog,
     private mapService: MapService,
     private userService: UserService,
     private layerService: MapLayerService,
@@ -284,6 +288,20 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker)
     }
+  }
+
+  onFilter() {
+    this.dialog.open(FilterComponent, {
+      height: '580px',
+      width: '675px'
+    });
+  }
+
+  onExport() {
+    this.dialog.open(ExportDialogComponent).afterClosed().subscribe(result => {
+      if (!result || result === 'closeAction') {
+      }
+    });
   }
 
   onPoll() {

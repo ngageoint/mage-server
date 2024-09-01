@@ -14,7 +14,7 @@ export class UserAvatarComponent implements OnChanges {
   @Input() avatarHeight = 40
 
   data: string | ArrayBuffer
-  url: string | SafeUrl = '/assets/images/baseline-account_circle-24px.svg';
+  url?: SafeUrl = null
 
   constructor(
     private httpClient: HttpClient,

@@ -21,6 +21,13 @@
   margin-left: 16px;
 }
 
+.profile-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 @media(min-width:900px) {
   .navigation-options {
     visibility: hidden;

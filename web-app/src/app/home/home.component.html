@@ -1,16 +1,18 @@
 <div *ngIf="user" class="home">
   <navigation (onFeedToggle)="feed.toggle()" (onPreferencesToggle)="preferences.toggle()"></navigation>
 
-  <mat-sidenav-container class="main-container" hasBackdrop="false">
-    <mat-sidenav #feed mode="side" position="start" opened>
-      <feed-panel class="feed" [event]="event" [observationLocation]="newObservation"></feed-panel>
-    </mat-sidenav>
-
-    <mat-sidenav #preferences mode="slide" position="end" disableClose="true">
-      <preferences></preferences>
-    </mat-sidenav>
-
-    <map (addObservation)="onAddObservation($event)"></map>
-
-  </mat-sidenav-container>
+  <div class="home-content">
+    <mat-sidenav-container hasBackdrop="false">
+      <mat-sidenav #feed mode="side" position="start" opened>
+        <feed-panel class="feed" [event]="event" [observationLocation]="newObservation"></feed-panel>
+      </mat-sidenav>
+    
+      <mat-sidenav #preferences mode="slide" position="end" disableClose="true">
+        <preferences></preferences>
+      </mat-sidenav>
+    
+      <map (addObservation)="onAddObservation($event)"></map>
+    
+    </mat-sidenav-container>
+  </div>
 </div>

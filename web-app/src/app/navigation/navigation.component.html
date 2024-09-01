@@ -14,27 +14,30 @@
 
     <div>
       <span class="filter-event">{{filteredEvent.name}}</span>
-      <span *ngIf="filteredTeams" class="filter-teams"><span> > {{filteredTeams}}</span></span>
+      <span *ngIf="filteredTeams" class="filter-teams"><span>> {{filteredTeams}}</span></span>
       <span *ngIf="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
     </div>
     
     <div>
-      <button mat-button (click)="onFilter()">
-        <mat-icon>filter_alt</mat-icon>
+      <button mat-button (click)="togglePreferences()">
+        <mat-icon>tune</mat-icon>
       </button>
 
-      <button mat-button (click)="onExport()">
-        <mat-icon>file_download</mat-icon>
-      </button>
+      <a [routerLink]="['/profile']" mat-button>
+        <mat-icon>account_circle</mat-icon>
+      </a>
+
+      <a [routerLink]="['/about']" mat-button>
+        <mat-icon>info</mat-icon>
+      </a>
 
       <a mat-button href="admin/#/admin/">
         <mat-icon>admin_panel_settings</mat-icon>
       </a>
 
-      <button mat-button (click)="togglePreferences()">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-
+      <a mat-button (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+      </a>
     </div>
   </div>
 </mat-toolbar>

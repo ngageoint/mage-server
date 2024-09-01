@@ -139,6 +139,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { UserResolver } from '../ingress/user.resolver';
 import { UserAvatarModule } from '../user/user-avatar/user-avatar.module';
 import { IngressModule } from '../ingress/ingress.module';
+import { FilterControlComponent } from '../map/controls/filter.component';
+import { ExportControlComponent } from '../map/controls/export.component';
 
 const routes: Routes = [{
   path: '',
@@ -156,6 +158,8 @@ const routes: Routes = [{
     AddObservationComponent,
     LocationComponent,
     SearchComponent,
+    FilterControlComponent,
+    ExportControlComponent,
     MapComponent,
     PasswordResetSuccessDialog,
     PreferencesComponent,

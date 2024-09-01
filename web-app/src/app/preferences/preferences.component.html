@@ -1,11 +1,4 @@
 <div>
-  <div matRipple class="profile" (click)="onProfile()">
-    <user-avatar class="profile-avatar" [user]="user" [avatarWidth]="80" [avatarHeight]="80"></user-avatar>
-    <div class="profile-info">{{user?.displayName}}</div>
-    <div class="profile-info">{{user?.email}}</div>
-    <div class="profile-info">{{user?.phone}}</div>
-  </div>
-
   <div class="preferences">
     <div class="header mat-body-2">Preferences</div>
     <div class="preference">
@@ -22,18 +15,6 @@
     
     <div class="preference">
       <coordinate-system class="preference"></coordinate-system>
-    </div>
-    
-    <mat-divider class="divider"></mat-divider>
-    
-    <div matRipple class="preference-item" (click)="onAbout()">
-      <mat-icon class="material-icons-outlined">info</mat-icon>
-      <div>About</div>
-    </div>
-    
-    <div matRipple class="preference-item" (click)="onLogout()">
-      <mat-icon>logout</mat-icon>
-      <div>Logout</div>
     </div>
   </div>
 </div>

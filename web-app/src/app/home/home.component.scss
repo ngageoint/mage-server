@@ -3,18 +3,23 @@
 }
 
 .home {
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+.home-content {
+  flex: 1;
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
 .preferences-toolbar {
   display: flex;
   align-items: end;
-}
-
-.main-container {
-  height: 100vh;
 }
 
 .feed {

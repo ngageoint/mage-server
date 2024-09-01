@@ -97,10 +97,10 @@ export class EventService {
     })
 
     removed.forEach((removed: any) => {
-      this.observationsChanged({ removed: Object.values(this.eventsById[removed.id].filteredObservationsById) });
-      this.usersChanged({ removed: Object.values(this.eventsById[removed.id].filteredUsersById) });
-      this.layersChanged({ removed: Object.values(this.eventsById[removed.id].layersById) }, removed);
-      this.feedItemsChanged({ removed: Object.values(this.eventsById[removed.id].feedsById).map((feed: any) => ({ feed })) }, removed);
+      this.observationsChanged({ removed: Object.values(this.eventsById[removed.id]?.filteredObservationsById || {}) });
+      this.usersChanged({ removed: Object.values(this.eventsById[removed.id]?.filteredUsersById || {}) });
+      this.layersChanged({ removed: Object.values(this.eventsById[removed.id]?.layersById || {}) }, removed);
+      this.feedItemsChanged({ removed: Object.values(this.eventsById[removed.id]?.feedsById || {}).map((feed: any) => ({ feed })) }, removed);
       delete this.eventsById[removed.id];
     })
   }
