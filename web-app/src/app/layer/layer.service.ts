@@ -2,7 +2,6 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { FilterService } from "../filter/filter.service";
-import { LocalStorageService } from "../http/local-storage.service";
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +10,7 @@ export class LayerService {
 
   constructor(
     private httpClient: HttpClient,
-    private filterService: FilterService,
-    private localStorageService: LocalStorageService
+    private filterService: FilterService
   ) { }
 
   getLayersForEvent(event, includeUnavailable?: any): Observable<any> {

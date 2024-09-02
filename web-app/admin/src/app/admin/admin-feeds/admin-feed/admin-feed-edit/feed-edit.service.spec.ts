@@ -19,7 +19,7 @@ const emptyState: Readonly<FeedEditState> = Object.freeze({
   preview: null,
 })
 
-const emptyPreview: Readonly<FeedPreview> = Object.freeze({
+const emptyPreview: Readonly<FeedPreview> = {
   content: {
     feed: 'empty',
     items: {
@@ -33,7 +33,7 @@ const emptyPreview: Readonly<FeedPreview> = Object.freeze({
     service: 'empty',
     topic: 'empty'
   }
-})
+}
 
 const services: Service[] = [
   Object.freeze({

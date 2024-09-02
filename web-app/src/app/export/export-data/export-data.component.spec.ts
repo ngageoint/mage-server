@@ -20,10 +20,10 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatTableModule } from "@angular/material/table";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { Observable, of, Subject } from "rxjs";
-import { FilterService } from "src/app/upgrade/ajs-upgraded-providers";
 import { ExportDialogComponent } from "../export-dialog.component";
 import { ExportRequest, ExportResponse, Export, ExportService } from "../export.service";
 import { ExportDataComponent } from "./export-data.component";
+import { FilterService } from "src/app/filter/filter.service";
 
 class MockExportService {
     getExports(): Observable<any> {

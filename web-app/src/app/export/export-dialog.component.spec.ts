@@ -18,12 +18,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarDismiss, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { LocalStorageService, FilterService } from '../upgrade/ajs-upgraded-providers';
 import { ExportService, Export, ExportRequest, ExportResponse } from './export.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { LocalStorageService } from '../http/local-storage.service';
+import { FilterService } from '../filter/filter.service';
 
 class MockExportService {
   getExports(): Observable<any> {
