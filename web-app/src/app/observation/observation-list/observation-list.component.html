@@ -27,7 +27,7 @@
     <div *ngIf="loaded; else mask">
       <ng-container *ngFor="let observation of observationPages[currentObservationPage]; trackBy: trackByObservationId">
         <div class="feed-observation">
-          <observation-list-item [observation]="observation" [event]="event" [form]=[event.form]></observation-list-item>
+          <observation-list-item [observation]="observation" [event]="event" [form]=[event?.form]></observation-list-item>
         </div>
       </ng-container>
     </div>

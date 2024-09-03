@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import * as _ from 'underscore';
 import { LocalStorageService } from "../http/local-storage.service";
+import * as _ from 'underscore';
 
 @Injectable({
   providedIn: 'root'

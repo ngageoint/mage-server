@@ -34,11 +34,6 @@ export class MapService {
   ) {}
 
   init () {
-    this.eventService.addObservationsChangedListener(this);
-    this.eventService.addUsersChangedListener(this);
-    this.eventService.addLayersChangedListener(this);
-    this.eventService.addFeedItemsChangedListener(this)
-
     const observationLayer = {
       id: 'observations',
       name: 'Observations',
@@ -110,6 +105,11 @@ export class MapService {
       }
     }
     this.createGridLayer(mgrsOverlay);
+
+    this.eventService.addObservationsChangedListener(this);
+    this.eventService.addUsersChangedListener(this);
+    this.eventService.addLayersChangedListener(this);
+    this.eventService.addFeedItemsChangedListener(this)
   }
 
   destroy() {
@@ -140,8 +140,10 @@ export class MapService {
   }
 
   onLayersChanged(changed, event) {
+    const { added = [], updated = [], removed = [] } = changed
+
     let baseLayerFound = false;
-    changed.added.forEach((layer: any) => {
+    added.forEach((layer: any) => {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
       if (layer.type === 'Imagery' && layer.url.indexOf('private') === 0) {
@@ -187,15 +189,17 @@ export class MapService {
       }
     })
 
-    changed.removed.forEach((layer: any) => {
+    removed.forEach((layer: any) => {
       this.removeLayer(layer);
     })
   }
 
   onFeedItemsChanged(changed) {
+    const { added = [], updated = [], removed = [] } = changed
+
     // Filter out non geospatial feeds
     const geospatialFilter = ({ feed }) => { return feed.itemsHaveSpatialDimension; }
-    changed.added.filter(geospatialFilter).forEach(({ feed, items }) => {
+    added.filter(geospatialFilter).forEach(({ feed, items }) => {
       /*
       TODO: this icon stuff is a band-aid (R) hack. revisit later when this
       transitions to angular x and static icon api gets better.  consider using
@@ -229,14 +233,14 @@ export class MapService {
       });
     });
 
-    changed.updated.filter(geospatialFilter).forEach(({ feed, items }) => {
+    updated.filter(geospatialFilter).forEach(({ feed, items }) => {
       this.featuresChanged({
         id: `feed-${feed.id}`,
         updated: items
       });
     });
 
-    changed.removed.filter(({ feed }) => {
+    removed.filter(({ feed }) => {
       return feed.itemsHaveSpatialDimension;
     }).forEach(({ feed }) => {
       const layer = this.feedLayers[`feed-${feed.id}`];
@@ -247,12 +251,14 @@ export class MapService {
   }
 
   onObservationsChanged(changed) {
-    changed.added.forEach((added: any) => {
+    const { added = [], updated = [], removed = [] } = changed
+
+    added.forEach((added: any) => {
       this.observationsById[added.id] = added;
     })
-    if (changed.added.length) this.addFeaturesToLayer(changed.added, 'observations');
+    if (added.length) this.addFeaturesToLayer(added, 'observations');
 
-    changed.updated.forEach((updated: any) => {
+    updated.forEach((updated: any) => {
       const observation = this.observationsById[updated.id];
       if (observation) {
         this.observationsById[updated.id] = updated;
@@ -260,20 +266,21 @@ export class MapService {
       }
     })
 
-    changed.removed.forEach((removed: any) => {
+    removed.forEach((removed: any) => {
       delete this.observationsById[removed.id];
-
       this.removeFeatureFromLayer(removed, 'observations');
     })
   }
 
   onUsersChanged(changed) {
-    changed.added.forEach((added: any) => {
+    const { added = [], updated = [], removed = [] } = changed
+
+    added.forEach((added: any) => {
       this.usersById[added.id] = added;
       this.addFeaturesToLayer([added.location], 'people');
     })
 
-    changed.updated.forEach((updated: any) => {
+    updated.forEach((updated: any) => {
       const user = this.usersById[updated.id];
       if (user) {
         this.usersById[updated.id] = updated;
@@ -285,7 +292,7 @@ export class MapService {
       }
     })
 
-    changed.removed.forEach((removed: any) => {
+    removed.forEach((removed: any) => {
       delete this.usersById[removed.id];
       this.removeFeatureFromLayer(removed.location, 'people');
     })

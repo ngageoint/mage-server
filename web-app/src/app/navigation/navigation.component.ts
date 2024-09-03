@@ -55,8 +55,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.filterService.removeListener(this)
     this.filterService.removeFilters()
 
-    this.pollingService.setPollingInterval(0)
-
     this.mapService.destroy()
 
     this.eventService.destroy()
@@ -71,7 +69,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   onLogout() {
-    
+    this.userService.logout()
   }
 
   onFilterChanged(filter) {

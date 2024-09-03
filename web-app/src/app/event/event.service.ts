@@ -65,12 +65,13 @@ export class EventService {
   }
 
   onFilterChanged(filter: any) {
-    if (filter.event) {
+    const event = filter.event?.added?.length ? filter.event.added[0] : null
+    if (event) {
       this.onEventChanged(filter.event);
     }
 
-    if (filter.event || filter.timeInterval) { // requery server
-      this.fetch()
+    if (event || filter.timeInterval) { // requery server
+      this.fetch().subscribe()
     } else if (filter.teams) { // filter in memory
       this.onTeamsChanged()
     }
