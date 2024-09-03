@@ -42,6 +42,10 @@ export class EventService {
   }
 
   destroy() {
+    this.eventsById = {}
+    this.filterService.removeListener(this)
+    this.pollingService.removeListener(this)
+
     if (this.pollingTimeout) {
       clearTimeout(this.pollingTimeout)
     }
@@ -65,12 +69,11 @@ export class EventService {
   }
 
   onFilterChanged(filter: any) {
-    const event = filter.event?.added?.length ? filter.event.added[0] : null
-    if (event) {
+    if (filter.event) {
       this.onEventChanged(filter.event);
     }
 
-    if (event || filter.timeInterval) { // requery server
+    if (filter.event?.added?.length || filter.timeInterval) { // requery server
       this.fetch().subscribe()
     } else if (filter.teams) { // filter in memory
       this.onTeamsChanged()
@@ -82,7 +85,7 @@ export class EventService {
   }
 
   onEventChanged(event: any) {
-    const { added = [], removed = [], foo = [] } = event 
+    const { added = [], removed = [] } = event 
     added.forEach((added: any) => {
       if (!this.eventsById[added.id]) {
         this.eventsById[added.id] = (JSON.parse(JSON.stringify(added)));

@@ -13,10 +13,6 @@ import { moveItemInArray } from '@angular/cdk/drag-drop'
 import { locationMarker } from './marker/LocationMarker'
 import { observationMarker } from './marker/ObservationMarker'
 import { COUNTRIES as countries } from './layers/static/layers'
-
-import _ from 'underscore'
-import * as moment from 'moment'
-
 import 'leaflet-editable'
 import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
@@ -28,6 +24,9 @@ import { UserService } from '../user/user.service'
 import { FilterComponent } from '../filter/filter.component'
 import { MatDialog } from '@angular/material/dialog'
 import { ExportDialogComponent } from '../export/export-dialog.component'
+import _ from 'underscore'
+import * as moment from 'moment'
+import { Subscription } from 'rxjs'
 
 Icon.Default.imagePath = '/'
 
@@ -92,6 +91,11 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   listener: any
   pollListener: any
 
+  toggleSubscription: Subscription
+  zoomSubscription: Subscription
+  opacitySubscription: Subscription
+  styleSubscription: Subscription
+
   constructor(
     public dialog: MatDialog,
     private mapService: MapService,
@@ -101,10 +105,10 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     private filterService: FilterService,
     private localStorageService: LocalStorageService
   ) {
-    layerService.toggle$.subscribe(event => this.layerTogged(event));
-    layerService.zoom$.subscribe(event => this.zoom(event));
-    layerService.opacity$.subscribe(event => this.opacityChanged(event));
-    layerService.style$.subscribe(event => this.styleChanged(event));
+    this.toggleSubscription = layerService.toggle$.subscribe(event => this.layerTogged(event));
+    this.zoomSubscription = layerService.zoom$.subscribe(event => this.zoom(event));
+    this.opacitySubscription = layerService.opacity$.subscribe(event => this.opacityChanged(event));
+    this.styleSubscription = layerService.style$.subscribe(event => this.styleChanged(event));
 
     this.mapReizeObserver = new ResizeObserver(() => {
       this.map.invalidateSize({ pan: false, debounceMoveend: true })
@@ -204,7 +208,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     this.mapService.removeListener(this)
-    this.mapReizeObserver?.unobserve(this.mapElement.nativeElement);
+    this.mapReizeObserver?.unobserve(this.mapElement.nativeElement)
+
+    this.toggleSubscription.unsubscribe()
+    this.zoomSubscription.unsubscribe()
+    this.opacitySubscription.unsubscribe()
+    this.styleSubscription.unsubscribe()
   }
 
   saveMapPosition() {
@@ -707,8 +716,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       delete this.layers[layer.id]
 
       Object.values(this.groups).forEach((group: any) => {
-        group.layers = group.layers.filter(layer => {
-          return layer.layer !== layer.layer;
+        group.layers = group.layers.filter(groupLayer => {
+          return layer.layer !== groupLayer.layer;
         });
       });
     }

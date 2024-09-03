@@ -491,14 +491,6 @@ export class MapService {
     });
   }
 
-  overlayAdded(overlay) {
-    this.listeners.forEach((listener: any) => {
-      if (typeof listener.onOverlayAdded === 'function') {
-        listener.onOverlayAdded(overlay);
-      }
-    });
-  }
-
   removeLayer(layer) {
     const vectorLayer = this.vectorLayers[layer.id];
     if (vectorLayer) {
