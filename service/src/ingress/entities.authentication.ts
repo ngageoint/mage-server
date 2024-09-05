@@ -57,13 +57,14 @@ export interface IdentityProvider {
  * Enrollment policy defines rules and effects to apply when a new user establishes a Mage account.
  */
 export interface EnrollmentPolicy {
+  // TODO: configurable role assignment
+  // assignRole: string
   assignToTeams: TeamId[]
   assignToEvents: MageEventId[]
   requireAccountApproval: boolean
+  // TODO: move to different policy?
   requireDeviceApproval: boolean
 }
-
-
 
 export interface IdentityProviderRepository {
   findById(): Promise<IdentityProvider | null>
