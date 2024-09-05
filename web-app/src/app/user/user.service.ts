@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext, HttpEvent } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
-import { Observable, Subject } from 'rxjs'
+import { Observable, Subject, tap } from 'rxjs'
 import { LocalStorageService } from '../http/local-storage.service'
 import { BYPASS_TOKEN } from '../http/token.interceptor'
 import { User } from 'core-lib-src/user'
@@ -96,13 +96,13 @@ export class UserService {
   }
 
   getMyself(): Observable<any> {
-    const observable = this.httpClient.get<any>('/api/users/myself')
-
-    observable.subscribe((user: any) => {
-      this.setUser(user)
-    })
-
-    return observable
+    return this.httpClient
+      .get<any>('/api/users/myself')
+      .pipe(
+        tap((user: any) => {
+          this.setUser(user)
+        }),
+      )
   }
 
   setUser(user: any) {
