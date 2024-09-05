@@ -1,10 +1,11 @@
-import { Component, Output, EventEmitter, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, Output, EventEmitter, AfterViewInit, ElementRef, ViewChildren, QueryList, Input } from '@angular/core';
 import { DomEvent } from 'leaflet';
 import { MatButton } from '@angular/material/button';
 
 export enum LocationState {
-  ON,
-  OFF
+  Off,
+  Locate,
+  Broadcast
 }
 
 export interface LocationEvent {
@@ -19,36 +20,22 @@ export interface LocationEvent {
 export class LocationComponent implements AfterViewInit {
   @ViewChildren(MatButton, { read: ElementRef }) buttons: QueryList<ElementRef>;
 
-  @Output() onLocate = new EventEmitter<LocationEvent>();
-  @Output() onBroadcast = new EventEmitter<LocationEvent>();
+  @Input() state: LocationState
+  @Output() stageChange = new EventEmitter<LocationEvent>()
 
-  LocationState = LocationState;
-  locateState = LocationState.OFF;
-  broadcastState = LocationState.OFF;
+  LocationState = LocationState
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.buttons.first.nativeElement);
-    DomEvent.disableClickPropagation(this.buttons.last.nativeElement);
+    DomEvent.disableClickPropagation(this.buttons.first.nativeElement)
+    DomEvent.disableClickPropagation(this.buttons.last.nativeElement)
   }
 
-  locate(): void {
-    this.locateState = this.locateState === LocationState.ON ? LocationState.OFF : LocationState.ON;
-
-    if (this.locateState === LocationState.OFF && this.broadcastState === LocationState.ON) {
-      this.broadcast();
-    }
-
-    this.onLocate.emit({ state: this.locateState });
+  onLocate(): void {
+    this.stageChange.emit({ state: this.state === LocationState.Off ? LocationState.Locate : LocationState.Off })
   }
 
-  broadcast(): void {
-    this.broadcastState = this.broadcastState === LocationState.ON ? LocationState.OFF : LocationState.ON;
-
-    if (this.broadcastState === LocationState.ON && this.locateState === LocationState.OFF) {
-      this.locate();
-    }
-
-    this.onBroadcast.emit({ state: this.broadcastState });
+  onBroadcast(): void {
+    this.stageChange.emit({ state: this.state === LocationState.Broadcast ? LocationState.Locate : LocationState.Broadcast })
   }
 
 }

@@ -1,12 +1,12 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
-import { LocationState } from '../../app/map/controls/location.component'
+import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
 import { ZoomDirection } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
 import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
 import { MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map, LeafletEvent } from "leaflet"
+import { map, latLng, popup,tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map } from "leaflet"
 import { OpacityEvent, ZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -27,6 +27,7 @@ import { ExportDialogComponent } from '../export/export-dialog.component'
 import _ from 'underscore'
 import * as moment from 'moment'
 import { Subscription } from 'rxjs'
+import { ContactDialogComponent } from '../contact/contact-dialog.component'
 
 Icon.Default.imagePath = '/'
 
@@ -83,8 +84,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   spiderfyState: any = null
   currentLocation: any = null
   locationLayer = locationMarker([0, 0], { color: '#136AEC' })
-  locate = LocationState.OFF
-  broadcast = LocationState.OFF
+  locationState = LocationState.Off
   searchMarker: any
   featurePanes = []
   BASE_LAYER_PANE = 'baseLayerPane'
@@ -323,30 +323,49 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     })
   }
 
-  onLocate($event) {
-    this.locate = $event.state
-    if (this.locate === LocationState.ON) {
-      this.map.locate({
-        watch: true,
-        setView: false
+  onLocationState($event: LocationEvent) {
+    if ($event.state === LocationState.Broadcast &&
+      !this.eventService.isUserInEvent(this.userService.myself, this.filterService.getEvent())
+    ) {
+      const data = {
+        info: {
+          statusTitle: 'Cannot Send Your Location',
+          statusMessage: 'You are not part of this event.'
+        }
+      };
+
+      this.dialog.open(ContactDialogComponent, {
+        width: '500px',
+        data: data
       })
-    } else {
+
+      return
+    }
+
+    this.locationState = $event.state
+    if ($event.state === LocationState.Off) {
       this.map.stopLocate()
 
       if (this.map.hasLayer(this.locationLayer)) {
         this.map.removeLayer(this.locationLayer)
       }
       this.currentLocation = null
+    } else {
+      this.map.locate({
+        watch: true,
+        setView: false
+      })
     }
   }
 
   onLocation(location) {
     // skip if the location has not changed
     if (
-      this.currentLocation &&
+      this.locationState === LocationState.Off ||
+      (this.currentLocation &&
       this.currentLocation.latitude === location.latlng.lat &&
       this.currentLocation.longitude === location.latlng.lng &&
-      this.currentLocation.accuracy === location.accuracy
+      this.currentLocation.accuracy === location.accuracy)
     ) {
       return
     }
@@ -358,38 +377,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map.addLayer(this.locationLayer)
     }
 
-    if (this.broadcast === LocationState.ON) {
+    if (this.locationState === LocationState.Broadcast) {
       this.mapService.onLocation(location)
     }
-  }
-
-  onBroadcast($event) {
-    if (this.eventService.isUserInEvent(this.userService.myself, this.filterService.getEvent())) {
-      this.broadcast = $event.state
-      if (this.locate !== LocationState.ON) {
-        this.map.locate({
-          watch: true,
-          setView: false
-        })
-      }
-    } else {
-      //Dialog
-      // this.$uibModal.open({
-      //   template: require('../error/not.in.event.html'),
-      //   controller: 'NotInEventController',
-      //   resolve: {
-      //     title: function () {
-      //       return 'Cannot Broadcast Location';
-      //     }
-      //   }
-      // });
-      console.log('show not in event dialog')
-    }
-  }
-
-  onLocationStop() {
-    // TODO is this used
-    // this.userLocationControl.stopBroadcast()
   }
 
   onLayersChanged({ id, added = [], removed = [] }) {

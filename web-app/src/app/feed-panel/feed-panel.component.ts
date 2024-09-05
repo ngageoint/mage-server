@@ -9,6 +9,7 @@ import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
 import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
+import { ContactDialogComponent } from '../contact/contact-dialog.component';
 
 @Component({
   selector: 'feed-panel',
@@ -189,13 +190,17 @@ export class FeedPanelComponent implements OnInit, OnChanges {
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
     if (!this.eventService.isUserInEvent(this.userService.myself, event)) {
-      this.info = {
-        statusTitle: this.statusTitle,
-        statusMessage: this.statusMessage,
-        id: this.userService.myself.username
-      };
-      this.contactOpen = { opened: true };
-
+      this.dialog.open(ContactDialogComponent, {
+        width: '500px',
+        data: {
+          info: {
+            statusTitle: this.statusTitle,
+            statusMessage: this.statusMessage,
+            id: this.userService.myself.username
+          }
+        }
+      })
+      
       return
     }
 

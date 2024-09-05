@@ -122,7 +122,6 @@ import { ObservationEditAttachmentComponent } from '../observation/observation-e
 import { ObservationEditPasswordComponent } from '../observation/observation-edit/observation-edit-password/observation-edit-password.component';
 import { ObservationViewPasswordComponent } from '../observation/observation-view/observation-view-password/observation-view-password.component';
 import { PasswordPipe } from '../observation/observation-view/observation-view-password/password.pipe';
-import { ContactComponent } from '../contact/contact.component';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { ExportDataComponent } from '../export/export-data/export-data.component';
 import { NoExportsComponent } from '../export/empty-state/no-exports.component';
@@ -230,7 +229,6 @@ const routes: Routes = [{
     ObservationEditPasswordComponent,
     ObservationViewPasswordComponent,
     PasswordPipe,
-    ContactComponent,
     ContactDialogComponent
   ],
   imports: [

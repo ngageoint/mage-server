@@ -28,7 +28,7 @@
         <map-control-add-observation (onAddObservation)="onAddObservation()"></map-control-add-observation>
       </div>
       <div class="map-controls-right">
-        <map-control-location (onLocate)="onLocate($event)" (onBroadcast)="onBroadcast($event)"></map-control-location>
+        <map-control-location [state]="locationState" (stageChange)="onLocationState($event)"></map-control-location>
         <map-control-zoom (onZoom)="onZoom($event)"></map-control-zoom>
       </div>
     </div>
