@@ -34,7 +34,7 @@ export class ObservationListItemComponent implements OnChanges {
   edit = false
   canEdit = false
   canEditImportant = false
- 
+
   favorites = 0
   isUserFavorite = false
 

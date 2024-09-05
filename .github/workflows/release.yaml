@@ -40,7 +40,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: check project
@@ -72,17 +72,17 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
-      - name: download service packages
+      - name: download service artifacts
         uses: actions/download-artifact@v3
         with:
-          name: mage_service_packages
-      - name: download web-app packages
+          name: mage.service-artifacts
+      - name: download web-app artifacts
         uses: actions/download-artifact@v3
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
       - name: generate instance package.json
         run: |
           (
@@ -115,28 +115,20 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ needs.config.outputs.node_versions-latest }}
+          node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
         run: npm i -g json
       - name: download service packages
         uses: actions/download-artifact@v3
         with:
-          name: mage_service_packages
+          name: mage.service-artifacts
       - name: download web-app packages
         uses: actions/download-artifact@v3
         with:
-          name: mage_web-app_packages
+          name: mage.web-app-artifacts
       - name: publish to package registry
-        env:
-          NPM_CONFIG_USERCONFIG: "${{ runner.temp }}/gitlab.npmrc"
         run: |
           npm config set -- '//registry.npmjs.org/:_authToken' ${{ secrets.NPM_TOKEN }}
           npm publish --access public $(ls -1 ngageoint-mage.service-*.tgz)
           npm publish --access public $(ls -1 ngageoint-mage.web-core-lib-*.tgz)
           npm publish --access public $(ls -1 ngageoint-mage.web-app-*.tgz)
-          check_version=$(tar xzOf ngageoint-mage.image.service-*.tgz package/package.json | json version)
-          echo "checking @ngageoint/mage.image.service@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.image.service@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.image.service-*.tgz)
-          check_version=$(tar xzOf ngageoint-mage.nga-msi-*.tgz package/package.json | json version)
-          echo "checking @ngageoint/mage.nga-msi@${check_version}"
-          [[ -n $(npm view @ngageoint/mage.nga-msi@${check_version} version) ]] || npm publish --access public $(ls -1 ngageoint-mage.nga-msi-*.tgz)

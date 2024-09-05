@@ -67,44 +67,52 @@ but be aware some path-separator related bugs may exist
 The MAGE server is a [Node.js](https://nodejs.org) application, so of course you'll need to install Node on your
 platform of choice.  [Node Version Manager](https://github.com/nvm-sh/nvm) is a nice tool to use for installing and
 managing different versions of Node, as opposed to various package managers.  At the time of this writing, MAGE
-requires Node >= 14.15.x.
+requires Node > 18.x.  Developers should use the latest LTS, 20.x at the time of this writing.
 
 ### Install MongoDB
 
 Before running a MAGE server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
-At the time of this writing, MAGE supports MongoDB version 4.x.
+At the time of this writing, MAGE supports MongoDB version 4.x (4.4).
 
 ### Install MAGE server packages
 
-Starting with release [6.2.0](https://github.com/ngageoint/mage-server/releases/tag/6.2.0), MAGE server [releases](https://github.com/ngageoint/mage-server/releases) publish NPM package tarballs.  To install and run MAGE, download the tarball artifacts from the desired
-release to an empty directory, such as `mage-server`, and install them with NPM.
+Starting with release [6.2.2](https://github.com/ngageoint/mage-server/releases/tag/6.2.2), the MAGE server packages
+are available from the [NPM registry](https://npmjs.com).
 ```bash
+mkdir mage
+cd mage
 npm install --omit dev \
-ngageoint-mage.service-*.tgz \
-ngageoint-mage.web-app-*.tgz \
-ngageoint-mage.image.service-*.tgz \
-ngageoint-mage.nga-msi-*.tgz
+@ngageoint/mage.service \
+@ngageoint/mage.web-app \
+@ngageoint/mage.image.service \
 ```
 That will yield a `package.json` file that looks something like
 ```json
 {
   "dependencies": {
-    "@ngageoint/mage.image.service": "file:ngageoint-mage.image.service-1.0.0.tgz",
-    "@ngageoint/mage.nga-msi": "file:ngageoint-mage.nga-msi-1.0.1.tgz",
-    "@ngageoint/mage.service": "file:ngageoint-mage.service-6.2.0.tgz",
-    "@ngageoint/mage.web-app": "file:ngageoint-mage.web-app-6.2.0.tgz"
+    "@ngageoint/mage.image.service": "^1.0.4",
+    "@ngageoint/mage.service": "^6.2.12",
+    "@ngageoint/mage.web-app": "^6.2.12"
   }
 }
 ```
 as well as a `package-lock.json` file and `node_modules` directory containing all of the MAGE server's dependencies.
 
+### Register plugins
+
+As the example instance [configuration](./instance/config.js) demonstrates, you'll need to tell the MAGE service what
+plugins to load.  See the `plugins` entry in the configuration object, as well as the [plugins readme](./plugins/README.md).
+Note that the `@ngageoint/mage.image.service` package in the dependency list above is a plugin package, and
+[resides](./plugins/image/service) in this monorepo.
+
 ### Run `mage.service` script
 
 The `@ngageoint/mage.service` package includes a [`mage.service` [bin script](https://docs.npmjs.com/cli/v8/configuring-npm/package-json#bin) for starting
 the server process.  From the `instance` directory, you can run `npx @ngageoint/mage.service --help` to see the configuration
-options.
+options.  Also, the [`instance`](./instance) directory in this project has an example [configuration script](./instance/config.js)
+which the `mage.service` script would load with the `-C` flag, e.g., `mage.service -C config.js`.
 
-On Windows Server installations, running the command: `node node_modules\@ngageoint\mage.service\bin\mage.service.js` in the `instance` directory, will initialize the `mage.service` script.
+On Windows Server installations, running the command `node node_modules\@ngageoint\mage.service\bin\mage.service.js` in the `instance` directory will execute the `mage.service` script.
 
 #### Configuration merging
 
@@ -155,7 +163,7 @@ For convenience, the MAGE server project contains an [environment script](./serv
 can copy and customize.  You can configure the MAGE system user account to source the script at login.
 
 The Node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
-[http://localhost:4242](http://localhost:4242) if you are running MAGE locally.
+[http://127.0.0.1:4242](http://127.0.0.1:4242) if you are running MAGE locally.
 
 ### Running with [Docker](https://www.docker.com/what-docker)
 
@@ -187,6 +195,9 @@ where you have installed the MAGE server packages.
 ```bash
 forever start ./node_modules/.bin/mage.service <...options>
 ```
+NOTE: The `forever` readme now indicates that the project no longer has a dedicated developer and is totally reliant
+on community updates.  Try using the newer tools [pm2](https://pm2.keymetrics.io/) or [nodemon](https://nodemon.io/)
+for running `mage.service` persistently in production.
 
 #### Running as a Windows Service
 To continuously run mage.service on a windows environment, it is recommended to create a windows service using a tool such as [`node-windows`](https://github.com/coreybutler/node-windows).
@@ -247,11 +258,11 @@ in Cloud Foundry, for which Cloud Foundry should supply the connection string an
 
 ### Upgrading MAGE server
 
-Upgrading the MAGE server essentially consists of the same process as [installing for the first time](#install-mage-server-release-packages).
-1. As above, download the package tarballs for the desired version.
-2. Stop your current MAGE server if it is running.
-3. *_[BACK UP YOUR DATABASE](https://docs.mongodb.com/manual/core/backups/)!_* (You already do that regularly, right?)
-5. Start your new MAGE server, which will automatically run any database [migrations](#mage-database-setup) present in
+Upgrading the MAGE server essentially consists of the same process as [installing for the first time](#install-mage-server-packages).
+1. As above, install the desired versions of the packages.
+1. Stop your current MAGE server if it is running.
+1. *_[BACK UP YOUR DATABASE](https://docs.mongodb.com/manual/core/backups/)!_* (You already do that regularly, right?)
+1. Start your new MAGE server, which will automatically run any database [migrations](./service/src/migrations) present in
    the new version.
 
 ## Building from source
@@ -278,16 +289,72 @@ Build optional plugin packages similarly.:
 ```bash
 cd plugins/nga-msi
 npm ci
+npm link ../../service # **IMPORTANT** see below
 npm run build
 ```
 After building the core packages, install them as dependencies in the `instance` package.
 ```bash
 cd instance
-npm i --omit dev ../service ../web-app ../plugins/nga-msi
+npm i --omit dev ../service ../web-app/dist/app ../plugins/nga-msi
 ```
 The project's root [`package.json`](./package.json) provides some convenience script entries to install, build, and run
 the MAGE server components, however, those are deprecated and will likely go away after migrating to NPM 7+'s
 [workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces) feature.
+
+## Running from source
+
+To run the Mage server directly from your _built_ source tree, build the `service`, `web-app`, and any plugin packages 
+you want to run as described in the above section.  Then, from the `instance` directory, run
+```shell
+npm run start:dev
+```
+That [NPM script](./instance/package.json) will run the `mage.service` script from your working tree using the 
+[configuration](./instance/config.js) from the instance directory.  You can modify that configuration to suit
+your needs.
+
+### Local runtime issues
+
+You may run into some problems running the Mage instance from your working tree due to NPM's dependency installation
+behavior and/or Node's module resolution algorithm.  For example, if you are working on a plugin within this core
+Mage repository, you may see errors as plugins initialize.  This is usually a null reference error that looks something 
+like
+```
+2024-08-23T02:42:52.783Z - [mage.image] intializing image plugin ...
+...
+/<...>/mage-server/plugins/image/service/lib/processor.js:53
+            return yield stateRepo.get().then(x => !!x ? x : stateRepo.put(exports.defaultImagePluginConfig));
+                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'get')
+    at /<...>/mage-server/plugins/image/service/lib/processor.js:53:36
+```
+This is usually because the plugin package has a peer depedency on `@ngageoint/mage.service`, which NPM pulls from the
+public [registry](https://www.npmjs.com/package/@ngageoint/mage.service) and installs into the plugin's `node_modules` 
+directory.  However, your local Mage instance references `@ngageoint/mage.service` package from the local relative
+path.  This results in your instance having two copies of `@ngageoint/mage.service` - one from your local build linked
+in the top-level `instance/node_modules` directory, and one from the registry in the plugin's `node_modules` directory.
+In the case of the error above, this results in a discrepancy during dependency injection because the Mage service
+defines unique `Symbol` constants for plugins to indicate which elements they need from their host Mage service.  In 
+the plugin's modules, Node resolves these symbol constants and any other core `@ngageoint/mage.service` modules from
+the plugin's copy of the package, as opposed to the relative package installed at the instance level.  This is why you
+must ensure that you link the working tree core Mage service package in your plugin working tree, as the above 
+instructions state.
+```shell
+~/my_plugin % npm ci
+~/my_plugin % npm link <relative path to mage server repo>/service
+```
+Be aware that NPM's dependency resolution will delete this symbolic link every time you run `npm install`, 
+`npm install <dependency>`, or `npm ci` for the plugin, so always `npm link` your relative Mage service
+dependency again after those commands.
+
+If you encounter other unexpected issues running locally with plugins, especially reference errors, or other
+discrepancies in values the core modules define, check that the core service package is still linked properly
+in your plugin working tree.  You can check using the `npm ls` command as follows.
+```shell
+% npm ls @ngageoint/mage.service
+@ngageoint/mage.image.service@1.1.0-beta.1 /<...>/mage-server/plugins/image/service
+└── @ngageoint/mage.service@6.3.0-beta.6 -> ./../../../service
+```
 
 ## ReST API
 

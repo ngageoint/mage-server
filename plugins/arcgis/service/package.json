@@ -1,5 +1,5 @@
 {
-  "name": "@ngageoint/mage.arcgis",
+  "name": "@ngageoint/mage.arcgis.service",
   "version": "1.0.0",
   "description": "A mage service plugin that synchronizes mage observations to a configured ArcGIS feature layer.",
   "main": "lib/index.js",
@@ -39,15 +39,15 @@
   "homepage": "https://github.com/ngageoint/mage-server#readme",
   "dependencies": {
     "@terraformer/arcgis": "2.1.2",
-    "@types/geojson": "^7946.0.7",
     "form-data": "^4.0.0"
   },
   "peerDependencies": {
-    "@ngageoint/mage.service": "^6.2.9, ~6.3.0-beta",
+    "@ngageoint/mage.service": "^6.2.9 || ^6.3.0-beta",
     "express": "^4.17.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.21",
+    "@types/geojson": "^7946.0.7",
     "@types/jest": "^26.0.3",
     "cpy-cli": "^3.1.1",
     "jest": "^26.1.0",

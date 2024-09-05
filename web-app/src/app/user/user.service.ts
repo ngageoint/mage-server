@@ -101,7 +101,7 @@ export class UserService {
       .pipe(
         tap((user: any) => {
           this.setUser(user)
-        }),
+        })
       )
   }
 

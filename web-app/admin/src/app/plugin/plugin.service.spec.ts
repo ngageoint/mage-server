@@ -37,7 +37,6 @@ describe('PluginService', () => {
     }
     service = new PluginService(
       mockClient as unknown as HttpClient,
-      compiler as unknown as Compiler,
       injector as unknown as Injector,
       system as unknown as SystemJS.Registry,
       localStorageService
@@ -106,6 +105,7 @@ describe('PluginService', () => {
       '@angular/material/tree',
       'rxjs',
       'rxjs/operators',
+      '@ng-select/ng-select',
       '@ngageoint/mage.web-core-lib',
       '@ngageoint/mage.web-core-lib/common',
       '@ngageoint/mage.web-core-lib/feed',

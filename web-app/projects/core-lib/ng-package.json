@@ -5,6 +5,8 @@
     "entryFile": "src/public-api.ts"
   },
   "allowedNonPeerDependencies": [
-    "@types/geojson"
+    "@rollup/plugin-commonjs",
+    "@rollup/plugin-node-resolve",
+    "rxjs"
   ]
 }

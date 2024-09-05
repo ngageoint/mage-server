@@ -15,6 +15,7 @@ import { MapPopupService } from '../app/map/map-popup.service'
 import { PluginService } from '../app/plugin/plugin.service'
 
 import { FeedPanelComponent } from '../app/feed-panel/feed-panel.component';
+import { FeedItemMapPopupComponent } from '../app/feed/feed-item/feed-item-map/feed-item-map-popup.component'
 
 import { ObservationPopupComponent } from '../app/observation/observation-popup/observation-popup.component';
 import { ObservationListItemComponent } from '../app/observation/observation-list/observation-list-item.component';
@@ -67,10 +68,13 @@ app
   .directive('observationPopup', downgradeComponent({ component: ObservationPopupComponent }))
   .directive('observationListItem', downgradeComponent({ component: ObservationListItemComponent }))
   .directive('userAvatar', downgradeComponent({ component: UserAvatarComponent }))
+  .directive('feedItemMapPopup', downgradeComponent({ component: FeedItemMapPopupComponent }))
   .directive('feeds', downgradeComponent({ component: AdminFeedsComponent }))
   .directive('adminFeed', downgradeComponent({ component: AdminFeedComponent }))
   .directive('adminService', downgradeComponent({ component: AdminServiceComponent }))
   .directive('feedEdit', downgradeComponent({ component: AdminFeedEditComponent }))
+  .directive('swagger', downgradeComponent({ component: SwaggerComponent }))
+  .directive('export', downgradeComponent({ component: ExportComponent }))
   .directive('upgradedAdminMapSettings', downgradeComponent({ component: AdminMapComponent }))
   .directive('upgradedAdminSettings', downgradeComponent({ component: AdminSettingsComponent }))
   .directive('authenticationCreate', downgradeComponent({ component: AuthenticationCreateComponent }))

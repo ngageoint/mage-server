@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "ng-add": {
+      "description": "Install the library to the target project.",
+      "factory": "./schematics/ng-add/index#ngAdd"
+    },
+    "plugin-library": {
+      "description": "Generate a new MAGE web plugin library project.",
+      "factory": "./schematics/plugin-library/index#mageWebPluginLibrary",
+      "schema": "../../../node_modules/@schematics/angular/library/schema.json"
+    }
+  }
+}

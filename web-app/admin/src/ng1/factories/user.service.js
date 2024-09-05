@@ -116,25 +116,22 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
       uid: uid,
       appVersion: 'Web Client'
     };
-
-    const promise = $http.post('/auth/token?createDevice=false', $httpParamSerializer(params), {
+    return $http.post('/auth/token?createDevice=false', $httpParamSerializer(params), {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       ignoreAuthModule:true
-    });
-
-    promise.success(function(data) {
+    })
+    .then(({ data }) => {
       if (data.device.registered) {
         setUser(data.user);
         LocalStorageService.setToken(data.token);
         $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: newUser});
         return data;
       }
+      return null;
     });
-
-    return promise;
   }
 
   function acceptDisclaimer() {
@@ -142,47 +139,33 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
   }
 
   function signin(data) {
-    const deferred = $q.defer();
-
     data.appVersion = 'Web Client';
-    $http.post('/auth/local/signin', $httpParamSerializer(data), {
+    return $http.post('/auth/local/signin', $httpParamSerializer(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
-    }).then(function(response) {
-      deferred.resolve(response.data);
-    }).catch(function(response) {
-      deferred.reject(response);
-    });
-
-    return deferred.promise;
+    })
+    .then(response => response.data);
   }
 
   function logout() {
-    var promise =  $http.post('/api/logout');
-
-    promise.success(function() {
+    return $http.post('/api/logout').then(() => {
       clearUser();
       $state.go("landing");
     });
-
-    return promise;
   }
 
   function getMyself() {
-    var theDeferred = $q.defer();
-    $http.get('/api/users/myself',{
+    return $http.get('/api/users/myself', {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
-    }).success(function(user) {
+    })
+    .then(({ data: user }) => {
       setUser(user);
-
-      $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
-
-      theDeferred.resolve(user);
-    }).error(function() {
-      theDeferred.resolve({});
+      $rootScope.$broadcast('event:user', { user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin });
+      return user
+    })
+    .catch(() => {
+      return {}
     });
-
-    return theDeferred.promise;
   }
 
   function updatePassword(userId, authentication) {
@@ -192,65 +175,45 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
   }
 
   function updateMyPassword(authentication) {
-    const promise = $http.put('/api/users/myself/password', authentication, {
+    return $http.put('/api/users/myself/password', authentication, {
       headers: {"Content-Type": "application/json"},
       ignoreAuthModule:true
-    });
-
-    promise.success(function() {
+    })
+    .then(() => {
       clearUser();
     });
-
-    return promise;
   }
 
   function checkLoggedInUser() {
-    var deferred = $q.defer();
-
     $http.get('/api/users/myself', {ignoreAuthModule: true})
-      .success(function(user) {
+      .then(({ data: user }) => {
         setUser(user);
-        deferred.resolve(user);
+        return user;
       })
-      .error(function() {
-        deferred.resolve({});
+      .catch(() => {
+        return {};
       });
-
-    return deferred.promise;
   }
 
   function getUserCount(options) {
     options = options || {};
-
     return $http.get('/api/users/count', {params: options});
   }
 
   function getUser(id, options) {
     options = options || {};
-
-    const deferred = $q.defer();
-
     const parameters = {};
     if (options.populate) {
       parameters.populate = options.populate;
     }
-
-    $http.get('/api/users/' + id, { params: parameters }).success(function (user) {
-      deferred.resolve(user);
-    });
-
-    return deferred.promise;
+    return $http.get('/api/users/' + id, { params: parameters }).then(res => res.data)
   }
 
 
 
   function getAllUsers(options) {
     options = options || {};
-    console.log('Requesting users with options:', options);
-
-    const deferredUsers = $q.defer();
-
-    let queryParams = {
+    const queryParams = {
       page_size: options.pageSize || 10,
       page: options.pageIndex || 0,
       term: options.term || '',
@@ -261,23 +224,13 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
             : 'false'
           : 'true'
     };
-
-    if (typeof options.active === 'boolean')
+    if (typeof options.active === 'boolean') {
       queryParams.active = options.active;
-    if (typeof options.enabled === 'boolean')
+    }
+    if (typeof options.enabled === 'boolean') {
       queryParams.enabled = options.enabled;
-
-    $http
-      .get('/api/next-users/search', { params: queryParams })
-      .success(function (data) {
-        deferredUsers.resolve(data);
-      })
-      .error(function (error) {
-        console.log('error in getAllUsers', error);
-        deferredUsers.reject(error);
-      });
-
-    return deferredUsers.promise;
+    }
+    return $http.get('/api/next-users/search', { params: queryParams }).then(res => res.data)
   }
 
   function createUser(user, success, error, progress) {
@@ -314,14 +267,7 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
   }
 
   function deleteUser(user) {
-    var deferred = $q.defer();
-
-    $http.delete('/api/users/' + user.id)
-      .success(function() {
-        deferred.resolve();
-      });
-
-    return deferred.promise;
+    return $http.delete('/api/users/' + user.id).then(() => void(0))
   }
 
   // TODO is this really used in this service or just internal
@@ -329,13 +275,12 @@ function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $st
     service.myself = null;
     service.amAdmin = null;
     LocalStorageService.removeToken();
-
     $rootScope.$broadcast('logout');
   }
 
   // TODO should this go in Roles service/resource
   function getRoles() {
-    return $http.get('/api/roles');
+    return $http.get('/api/roles').then(res => res.data);
   }
 
   function hasPermission(permission) {

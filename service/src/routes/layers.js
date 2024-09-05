@@ -154,7 +154,7 @@ module.exports = function(app, security) {
           console.log('GeoPackage optimized', layer);
         })
         .catch((err) => {
-          console.log('err', err);
+          console.log(`error persisting state of layer ${layer._id.toString()} after optimization`, err);
         });
       });
   }
@@ -418,7 +418,7 @@ module.exports = function(app, security) {
       new api.Layer()
         .create(req.newLayer)
         .then(layer => {
-          const response = layerXform.transform(layer, { path: `${req.getPath()}/${layer.id}` });
+          const response = layerXform.transform(layer, { path: `${req.getPath()}/${layer._id.toString()}` });
           return res.location(layer._id.toString()).json(response);
         })
         .catch(err => next(err));

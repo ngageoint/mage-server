@@ -23,6 +23,29 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 - Protect against disabling all authentications.
 - Problem with OAuth web login
 
+## [6.2.12](https://github.com/ngageoint/mage-server/releases/tag/6.2.12)
+### Service
+#### Security
+* [CVE-2022-36313](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-36313).
+  * Upgrade [`file-type`](https://www.npmjs.com/package/file-type).
+  * Upgrade [`@ngageoint/geopackage`](https://www.npmjs.com/package/@ngageoint/geopackage) dependency which upgrades `file-type`.
+* [CVE-2020-28498](http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28498)
+  * Upgrade [`elliptic`](https://npmjs.com/package/elliptic) via [`pem2jwk`](https://www.npmjs.com/package/pem2jwk).
+* Use SHA-256 for token hash.
+### Web App
+#### Bug Fixes
+* Use native promises instead deprecated callbacks for `$http` in AngularJS.
+* Replace some `$deferred` and `$q` calls with native promises in AngularJS.
+* Broken navigation to event from layer page.
+* The event form _Feed Configuration_ page had a null reference error when generating the preview.
+#### Security
+* Change _About_ page links to HTTPS.
+* Remove unused Bootstrap JS vendor source from web-app to address several CVE reports.
+* Upgrade jQuery to 3.7.1.
+* Replace null/self-closing directive tags with properly closed tags.
+
+
+
 ## [6.2.11](https://github.com/ngageoint/mage-server/releases/tag/6.2.11)
 #### Features
 * Core web app now shares `@angular/animations` to web plugins.

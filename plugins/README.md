@@ -163,6 +163,16 @@ command to create a package tarball of your plugin.  This will create a file lik
 Copy the package tarball to a persistent location, like where you have [installed](../README.md#install-mage-server-packages)
 the MAGE server packages.
 
+#### Install the plugin
+
+You install plugin packages as dependencies of your[MAGE instance](../README.md#install-mage-server-packages) package,
+alongside the MAGE core packages.  Assuming you instance package resides in a directory called `mage`, copy your plugin
+package tarball to the `mage` directory.  Then, from the `mage` directory, run the following.
+```
+npm install --omit dev ./examples-mage-service-plugins-1.0.0.tgz
+```
+Your plugin package files should now be present in `mage/node_modules/@examples/mage-service-plugins`.
+
 #### Enable the plugin
 
 To enable your plugin, add the ID of the module that exports your `PluginInitHook` to the `servicePlugins` array in your [configuration object](../README.md#configuration-merging).  You can do this a few ways.
@@ -253,4 +263,45 @@ to also include an entry point to allow the MAGE service to load the `package.js
 
 ## Web UI plugins
 
-More to come soon.
+MAGE provides a library with [Angular CLI ]() integration to help create plugin packages for the MAGE web app.
+Below are the basic steps to create a MAGE web UI plugin.
+
+1. Initialize an Angular workspace.
+   ```bash
+   mkdir example
+   cd example
+   git init . # if you want version control
+   npx @angular/cli@14 new --directory . --create-application false @example/mage-plugins.workspace
+   ```
+1. Add the MAGE web core library.
+   ```bash
+   npm run ng -- add @ngageoint/mage.web-core-lib
+   ```
+1. Generate a new MAGE web UI plugin library.
+   ```bash
+   npm run ng -- generate @ngageoint/mage.web-core-lib:plugin-library @example/mage-plugins.plugin1
+   ```
+   That creates a new Angular library project in `projects/example/mage-plugins.plugin1`
+1. Add content to your plugin library.
+1. Build your plugin bundle.
+   ```bash
+   npm run ng -- build @example/mage-plugins.plugin1
+   ```
+   The output from the build will be in `dist/example/mage-plugins.plugin1`.
+1. Package your plugin.
+   ```
+   npm pack dist/example/mage-plugins.plugin1
+   ```
+   Take note that you must create the package from the project's output subdirectory of the `dist` directory, not from
+   the project root like a typical Node.js project.  This will create an NPM package tarball like
+   `example-mage-plugins.plugin1-0.0.1.tgz`, which contains the AMD module bundle that the MAGE web app can load.  You
+   can publish this tarball to NPM or install the tarball directly to your MAGE instance.
+1. Install your plugin to your MAGE instance.
+   TODO: ref above
+
+
+### Hooks
+See the available plugin [hook definitions](../web-app/projects/core-lib/plugin/plugin.model.ts).
+
+### Testing
+TODO: create a showcase app; run a dev server

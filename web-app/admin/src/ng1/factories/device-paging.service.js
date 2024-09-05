@@ -49,13 +49,15 @@ function DevicePagingService(DeviceService, $q) {
         var promises = [];
 
         for (const [key, value] of Object.entries(stateAndData)) {
-
-            var promise = $q.all({ count: DeviceService.count(value.countFilter), pageInfo: DeviceService.getAllDevices(value.deviceFilter) }).then(result => {
-                stateAndData[key].deviceCount = result.count.data.count;
+            var promise = $q.all({
+                count: DeviceService.count(value.countFilter).then(countDoc => countDoc.count),
+                pageInfo: DeviceService.getAllDevices(value.deviceFilter)
+            })
+            .then(result => {
+                stateAndData[key].deviceCount = result.count;
                 stateAndData[key].pageInfo = result.pageInfo;
                 $q.resolve(key);
             });
-
             promises.push(promise);
         }
 

@@ -1,6 +1,6 @@
 {
   "name": "@ngageoint/mage.random",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Feed plugin that returns random geojson points",
   "main": "lib/index.js",
   "files": [
