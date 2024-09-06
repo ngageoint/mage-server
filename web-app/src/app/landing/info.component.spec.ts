@@ -1,16 +1,21 @@
-import { TestBed, waitForAsync } from '@angular/core/testing';
-import { LandingComponent } from './landing.component';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { InfoComponent } from './info.component';
 
-describe('LandingComponent', () => {
-  let component: LandingComponent;
+describe('Info Component', () => {
+  let component: InfoComponent;
+  let fixture: ComponentFixture<InfoComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [LandingComponent]
-    })
-    .compileComponents();
+      declarations: [InfoComponent],
+      imports: []
+    }).compileComponents();
   }));
 
+  beforeEach(() => {
+    fixture = TestBed.createComponent(InfoComponent);
+    component = fixture.componentInstance;
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

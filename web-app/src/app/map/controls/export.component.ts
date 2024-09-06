@@ -13,7 +13,7 @@ export class ExportControlComponent implements AfterViewInit {
   @Output() click = new EventEmitter<void>();
 
   ngAfterViewInit(): void {
-    DomEvent.disableClickPropagation(this.button.nativeElement);
+    DomEvent.disableClickPropagation(this.button.nativeElement); 
   }
 
   onClick($event: MouseEvent): void {

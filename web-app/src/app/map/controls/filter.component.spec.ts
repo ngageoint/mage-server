@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { AddObservationComponent } from './add-observation.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FilterControlComponent } from './filter.component';
@@ -12,7 +11,7 @@ describe('Filter Control Component', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ MatIconModule, MatButtonModule ],
-      declarations: [ AddObservationComponent ]
+      declarations: [ FilterControlComponent ]
     })
     .compileComponents();
   }));

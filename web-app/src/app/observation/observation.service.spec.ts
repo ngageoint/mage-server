@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { ObservationService } from './observation.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-describe('Local Storage Service Tests', () => {
-
+describe('Observation Service', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [ObservationService],
-      imports: []
+      imports: [HttpClientTestingModule]
     });
   });
 

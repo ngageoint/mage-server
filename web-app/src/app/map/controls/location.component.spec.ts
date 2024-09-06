@@ -29,85 +29,76 @@ describe('LocationComponent', () => {
   });
 
   it('should toggle locate on', () => {
-    spyOn(component.onLocate, 'emit');
+    spyOn(component.stageChange, 'emit');
+    component.state = LocationState.Off
 
     const button = fixture.debugElement.queryAll(By.css('button'))[0];
     button.nativeElement.click();
 
-    expect(component.onLocate.emit).toHaveBeenCalledWith({
-      state: LocationState.ON
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Locate
     });
   });
 
   it('should toggle locate off', () => {
-    component.locateState = LocationState.ON;
+    component.state = LocationState.Locate;
 
-    spyOn(component.onLocate, 'emit');
+    spyOn(component.stageChange, 'emit');
 
     const button = fixture.debugElement.queryAll(By.css('button'))[0];
     button.nativeElement.click();
 
-    expect(component.onLocate.emit).toHaveBeenCalledWith({
-      state: LocationState.OFF
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Off
     });
   });
 
   it('should toggle broadcast on', () => {
-    spyOn(component.onBroadcast, 'emit');
+    spyOn(component.stageChange, 'emit');
 
     const button = fixture.debugElement.queryAll(By.css('button'))[1];
     button.nativeElement.click();
 
-    expect(component.onBroadcast.emit).toHaveBeenCalledWith({
-      state: LocationState.ON
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Broadcast
     });
   });
 
   it('should toggle broadcast off', () => {
-    component.broadcastState = LocationState.ON;
+    component.state = LocationState.Broadcast;
 
-    spyOn(component.onBroadcast, 'emit');
+    spyOn(component.stageChange, 'emit');
 
     const button = fixture.debugElement.queryAll(By.css('button'))[1];
     button.nativeElement.click();
 
-    expect(component.onBroadcast.emit).toHaveBeenCalledWith({
-      state: LocationState.OFF
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Locate
     });
   });
 
   it('should toggle locate on if broadcast is on', () => {
-    spyOn(component.onLocate, 'emit');
-    spyOn(component.onBroadcast, 'emit');
+    spyOn(component.stageChange, 'emit');
+    component.state = LocationState.Off
 
     const button = fixture.debugElement.queryAll(By.css('button'))[1];
     button.nativeElement.click();
 
-    expect(component.onBroadcast.emit).toHaveBeenCalledWith({
-      state: LocationState.ON
-    });
-
-    expect(component.onLocate.emit).toHaveBeenCalledWith({
-      state: LocationState.ON
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Broadcast
     });
   });
 
   it('should toggle broadcast off if locate is off', () => {
-    component.locateState = LocationState.ON;
-    component.broadcastState = LocationState.ON;
+    component.state = LocationState.Broadcast;
 
-    spyOn(component.onLocate, 'emit');
-    spyOn(component.onBroadcast, 'emit');
+    spyOn(component.stageChange, 'emit');
 
     const button = fixture.debugElement.queryAll(By.css('button'))[0];
     button.nativeElement.click();
 
-    expect(component.onBroadcast.emit).toHaveBeenCalledWith({
-      state: LocationState.OFF
-    });
-
-    expect(component.onLocate.emit).toHaveBeenCalledWith({
-      state: LocationState.OFF
+    expect(component.stageChange.emit).toHaveBeenCalledWith({
+      state: LocationState.Off
     });
   });
 });

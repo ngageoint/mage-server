@@ -1,15 +1,25 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TokenInterceptorService } from './token.interceptor';
+import { MatDialogModule } from '@angular/material/dialog';
 
-/* TODO test MUST include at least 1 test
-describe('TokenInterceptorService', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    providers: [{
-    }]
-  }));
+describe('Token Interceptor Service', () => {
 
-  // it('should be created', () => {
-  //   const service: TokenInterceptorService = TestBed.inject(TokenInterceptorService);
-  //   expect(service).toBeTruthy();
-  // });
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [TokenInterceptorService],
+      imports: [
+        HttpClientTestingModule,
+        MatDialogModule
+      ]
+    });
+  });
+
+  afterEach(() => {
+  });
+
+  it('should be created', () => {
+    const service: TokenInterceptorService = TestBed.inject(TokenInterceptorService);
+    expect(service).toBeTruthy();
+  });
 });
-*/

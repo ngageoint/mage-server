@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { LayerService } from './layer.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('Layer Service Tests', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [LayerService],
-      imports: []
+      imports: [HttpClientTestingModule]
     });
   });
 

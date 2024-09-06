@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { MapService } from './map.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('Map Service Tests', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [MapService],
-      imports: []
+      imports: [HttpClientTestingModule]
     });
   });
 

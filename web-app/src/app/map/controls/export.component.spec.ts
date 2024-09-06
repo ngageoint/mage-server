@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { AddObservationComponent } from './add-observation.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ExportControlComponent } from './export.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 describe('Export Control Component', () => {
   let component: ExportControlComponent;
@@ -11,8 +11,8 @@ describe('Export Control Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ MatIconModule, MatButtonModule ],
-      declarations: [ AddObservationComponent ]
+      imports: [ MatIconModule, MatButtonModule, MatTooltipModule ],
+      declarations: [ ExportControlComponent ]
     })
     .compileComponents();
   }));
