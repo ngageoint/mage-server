@@ -79,6 +79,7 @@ export interface UserRepository {
    */
   update(userAttrs: Partial<User> & Pick<User, 'id'>): Promise<User | null | UserRepositoryError>
   findById(id: UserId): Promise<User | null>
+  findByUsername(username: string): Promise<User | null>
   findAllByIds(ids: UserId[]): Promise<{ [id: string]: User | null }>
   find<MappedResult>(which?: UserFindParameters, mapping?: (user: User) => MappedResult): Promise<PageOf<MappedResult>>
   saveMapIcon(userId: UserId, icon: UserIcon, content: NodeJS.ReadableStream | Buffer): Promise<User | UserRepositoryError>
