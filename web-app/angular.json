@@ -183,7 +183,6 @@
               }
             ],
             "styles": [
-              "admin/src/ng1/vendor/bootstrap/css/bootstrap.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/@ngageoint/md-date-time-picker/dist/css/mdDateTimePicker.css",
               "admin/src/ng1/vendor/material-design-icons/icons.css",
@@ -199,7 +198,6 @@
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/jquery-minicolors/jquery.minicolors.min.js",
               "node_modules/jquery-file-download/src/Scripts/jquery.fileDownload.js",
-              "admin/src/ng1/vendor/bootstrap/js/bootstrap.min.js",
               "node_modules/systemjs/dist/system.js",
               "node_modules/systemjs/dist/extras/amd.js",
               "node_modules/systemjs/dist/extras/named-register.js",

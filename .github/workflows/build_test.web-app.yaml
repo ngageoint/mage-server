@@ -39,7 +39,7 @@ jobs:
       - name: pack
         run: |
           npm pack ./web-app/dist/core-lib
-          npm pack ./web-app/dist/app
+          npm pack ./web-app/dist
       - name: upload packages
         uses: actions/upload-artifact@v3
         with:
