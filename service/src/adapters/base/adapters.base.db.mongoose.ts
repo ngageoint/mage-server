@@ -101,6 +101,12 @@ export class BaseMongooseRepository<DocType extends mongoose.AnyObject, Model ex
     return { ...notFound, ...found }
   }
 
+  /**
+   * Use the {@link BaseMongooseRepository.documentStubForEntity entity mapping} to convert the given entity to a
+   * MongoDB document, and use that document to {@link mongoose.Document.set() set} the entries on the existing
+   * document.  To remove an entry from the persisted document, set the key's value to `undefined` in the given input
+   * document.  For example, `repo.update({ id: 'asdf0987', deleteThisKey: undefined })`.
+   */
   async update(attrs: Partial<Entity> & EntityReference): Promise<Entity | null> {
     let doc = (await this.model.findById(attrs.id))
     if (!doc) {
