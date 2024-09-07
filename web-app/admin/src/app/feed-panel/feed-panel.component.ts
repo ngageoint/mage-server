@@ -78,7 +78,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.currentTab = this.tabs[0]
 
     this.eventService.addObservationsChangedListener(this)
-    this.feedService.feeds.subscribe(feeds => this.onFeedsChanged(feeds));
+    this.feedService.feeds$.subscribe(feeds => this.onFeedsChanged(feeds));
     this.feedPanelService.item$.subscribe(event => this.onFeedItemEvent(event));
 
     this.feedPanelService.viewUser$.subscribe(event => {

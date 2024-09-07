@@ -4,12 +4,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTabGroup } from '@angular/material/tabs';
 import * as moment from 'moment';
 import { FeedAction, FeedPanelService } from './feed-panel.service';
-import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 import { MapService } from '../map/map.service';
 import { UserService } from '../user/user.service';
 import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
+import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
 
 @Component({
   selector: 'feed-panel',
@@ -82,7 +82,7 @@ export class FeedPanelComponent implements OnInit, OnChanges {
     this.currentTab = this.tabs[0]
 
     this.eventService.addObservationsChangedListener(this)
-    this.feedService.feeds.subscribe(feeds => this.onFeedsChanged(feeds));
+    this.feedService.feeds$.subscribe(feeds => this.onFeedsChanged(feeds));
     this.feedPanelService.item$.subscribe(event => this.onFeedItemEvent(event));
 
     this.feedPanelService.viewUser$.subscribe(event => {

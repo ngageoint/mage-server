@@ -5,11 +5,11 @@ import { PollingService } from "./polling.service";
 import { ObservationService } from "../observation/observation.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { LayerService } from "../layer/layer.service";
-import { FeedService } from "core-lib-src/feed";
 import { LocationService } from "../user/location/location.service";
 import { LocalStorageService } from "../http/local-storage.service";
 import * as _ from 'lodash'
 import * as moment from 'moment'
+import { FeedService } from "@ngageoint/mage.web-core-lib/feed";
 
 @Injectable({
   providedIn: 'root'

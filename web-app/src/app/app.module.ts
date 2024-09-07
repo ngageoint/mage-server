@@ -8,6 +8,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { AppRoutingModule } from './routing.module';
 import { LocalStorageService } from './http/local-storage.service';
 import { TokenInterceptorService } from './http/token.interceptor';
+import { MageCommonModule } from '@ngageoint/mage.web-core-lib/common';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { TokenInterceptorService } from './http/token.interceptor';
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    MatDialogModule
+    MatDialogModule,
+    MageCommonModule
   ],
   bootstrap: [ AppComponent ],
   providers: [
