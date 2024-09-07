@@ -8,8 +8,8 @@ export interface LocationMarkerOptions extends CircleMarkerOptions {
 }
 
 export class LocationMarker extends FeatureGroup {
-  private accuracyCircle: Circle
   private locationMarker: CircleMarker
+  private accuracyCircle: Circle
 
   constructor(latLng: LatLngExpression, options?: LocationMarkerOptions ) {
     const layers = []
@@ -22,7 +22,7 @@ export class LocationMarker extends FeatureGroup {
       }))
     }
 
-    layers.push(circleMarker(latLng, {
+    const locationMarker = circleMarker(latLng, {
       color: options?.color,
       fillColor: options?.color,
       fillOpacity: 0.7,
@@ -30,10 +30,12 @@ export class LocationMarker extends FeatureGroup {
       opacity: 0.9,
       radius: 5,
       pane: options?.pane
-    }))
+    })
+    layers.push(locationMarker)
     
     super(layers, {})
 
+    this.locationMarker = locationMarker
     this.accuracyCircle = circle(latLng, 0, {
       interactive: false,
       color: options?.color,
