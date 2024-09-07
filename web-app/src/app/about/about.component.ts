@@ -8,8 +8,6 @@ import { Router } from '@angular/router';
   styleUrls: ['./about.component.scss']
 })
 export class AboutComponent implements OnInit {
-
-  name: string
   mageVersion: {
     major: number,
     minor: number,
@@ -26,7 +24,6 @@ export class AboutComponent implements OnInit {
 
   ngOnInit(): void {
     this.apiService.getApi().subscribe(api =>{
-      this.name = api.name;
       this.mageVersion = api.version;
       this.apk = api.apk;
       this.nodeVersion = api.environment.nodeVersion;
@@ -35,6 +32,6 @@ export class AboutComponent implements OnInit {
   }
 
   onBack(): void {
-    this.router.navigate(['map']);
+    this.router.navigate(['home']);
   }
 }

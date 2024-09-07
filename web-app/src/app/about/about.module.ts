@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AboutComponent } from './about.component';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 const routes: Routes = [{
   path: '',
@@ -15,6 +16,7 @@ const routes: Routes = [{
   imports: [],
   exports: [
     CommonModule,
+    MatButtonModule,
     MatIconModule,
     MatToolbarModule
   ]
