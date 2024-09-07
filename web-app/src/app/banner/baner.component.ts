@@ -6,6 +6,6 @@ import { Banner } from '../setttings/settings.service';
   templateUrl: './banner.component.html',
   styleUrls: ['./banner.component.scss']
 })
-export class BannerComponet {
+export class BannerComponent {
   @Input() banner?: Banner
 }

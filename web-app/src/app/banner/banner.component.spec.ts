@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { BannerComponet } from './baner.component';
+import { BannerComponent } from './baner.component';
 
 describe('Banner Component', () => {
-  let component: BannerComponet;
-  let fixture: ComponentFixture<BannerComponet>;
+  let component: BannerComponent;
+  let fixture: ComponentFixture<BannerComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [BannerComponet],
+      declarations: [BannerComponent],
       imports: []
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(BannerComponet);
+    fixture = TestBed.createComponent(BannerComponent);
     component = fixture.componentInstance;
   });
 
